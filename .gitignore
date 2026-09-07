@@ -1,1 +1,10 @@
+.env
+*.har
+__pycache__/
+.venv/
+venv/
+*.pyc
+data/
+downloads/
+.DS_Store
 CLAUDE.md
