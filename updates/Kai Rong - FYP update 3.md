@@ -392,26 +392,26 @@ now done and measured; the third, cutting the cost of a correct answer, is not.
 | C2 | RQ3 second half: question-conditioned targeting, plotted against exhaustive and unmodified baselines | Early Oct, report 21 Oct | Not started, budget-blocked |
 | D | Final report and presentation | Early Nov | |
 
-**The risk has changed from schedule to budget.** The scheduling risk I flagged last time,
-that RQ3 might not start in time, is closed: it started and its first half is measured. What
-replaces it is money. The cheap model tier assumed in the proposal does not hold, because
-the cheap models could not complete the tasks at all, so every arm is paid for at
-`claude-haiku-4.5` rates. **$18.63 of the $20 is spent and the remaining $1.37 does not fund
-a further arm at all.**
+**The scheduling risk I flagged last time is closed.** RQ3 started and its first half is
+measured. On budget: the cheap model tier assumed in the proposal does not hold, because the
+cheap models could not complete the tasks at all, so every arm is paid for at
+`claude-haiku-4.5` rates. $18.63 of the original $20 is spent. I am adding a further $15
+myself, so the remaining experiments are funded and this is not a blocker. The failed
+cheap-tier assumption is still worth reporting as a finding about the cost of this class of
+agent.
 
-The targeting experiment needs roughly $10 to run properly: an exhaustive-retrieval arm as
-the correct-and-expensive baseline, the targeted policy itself, and repeats sufficient to
-separate them. Without a top-up I can still deliver a complete result on the abstention half
-of RQ3, but the efficiency half, which is the part that makes it a method rather than a
-safety check, would be argued from the oracle floor rather than measured.
+The targeting experiment needs roughly $10: an exhaustive-retrieval arm as the
+correct-and-expensive baseline, the targeted policy itself, and repeats sufficient to
+separate them. That is covered by the top-up.
 
 ---
 
 ## 9. For discussion
 
-1. **Budget.** Roughly $10 more of OpenRouter credit would let the targeting arm be
-   measured rather than argued. Is a top-up possible, and if not, is a smaller design
-   acceptable, for example fewer repeats on two tasks rather than three repeats on five?
+1. **Cost of this class of agent.** A browser agent re-sends the page at every step, so one
+   shopping task costs roughly what a whole conversation would. $18.63 covered 120 runs. Is
+   the per-run cost itself worth reporting as a result, given the proposal assumed a cheap
+   tier that turned out not to work at all?
 2. **Reporting soundness alongside accuracy.** One task reaches a correct answer on
    identical evidence to six wrong ones. I would like to report "was this answer earned"
    next to "was it right". Is that a defensible thing to put in the results, given it makes

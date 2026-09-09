@@ -819,7 +819,8 @@ will report both.
 The risk written down this morning was that the actual contribution had not started and
 might not finish. That one is closed. It started, and half of it is built and tested.
 
-**The new risk is money.** $18.63 of the $20 research credit is spent, leaving $1.37.
+**Money was briefly the new risk, and is now handled.** $18.63 of the original $20 is spent,
+and a further $15 is being added, so the remaining experiments can run.
 
 The reason is worth stating plainly, because it was a wrong assumption in the original
 proposal. The plan was to use cheap AI models. The cheap models could not do the task at
@@ -827,10 +828,9 @@ all — one could not follow the required output format, others were blocked by 
 providers regardless of credit. So everything runs on a model that works and is not free,
 and every experiment is paid for at that rate.
 
-$1.37 does not fund another experiment. The remaining half of the contribution needs
-roughly $10 to be measured rather than argued from theory. That is now the thing
-standing between this project and its own conclusion, and it is a conversation with the
-supervisor rather than a technical problem.
+The remaining half of the contribution needs roughly $10 to be measured rather than argued
+from theory, which the top-up covers. What is still worth reporting is that it costs
+anything at all: the cheap options the plan assumed simply could not do the task.
 
 ### What is still missing, stated plainly
 

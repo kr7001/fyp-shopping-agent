@@ -20,7 +20,7 @@
 
   --sans: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
   --mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
-  --measure: 68ch;
+  --measure: 70ch;
 }
 
 /* Dark is chosen on the page rather than inherited from the operating system, so the
@@ -61,7 +61,7 @@ code { font-family: var(--mono); font-weight: 500; font-size: 0.88em; }
   letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint);
 }
 
-.wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
 
 .masthead { border-bottom: 1px solid var(--line); }
 .masthead .wrap {
@@ -83,26 +83,45 @@ code { font-family: var(--mono); font-weight: 500; font-size: 0.88em; }
 .themebtn:hover { color: var(--ink); border-color: var(--ink); }
 .themebtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-main { padding: 48px 0 90px; display: flex; flex-direction: column; gap: 60px; }
-section { display: flex; flex-direction: column; gap: 18px; scroll-margin-top: 20px; }
+/* contents */
+
+.toc { border-bottom: 1px solid var(--line); background: var(--soft); }
+.toc .wrap { display: flex; flex-wrap: wrap; gap: 4px 26px; padding-top: 14px; padding-bottom: 14px; }
+.toc a { font-family: var(--mono); font-weight: 700; font-size: 11.5px; text-decoration: none; color: var(--muted); letter-spacing: 0.02em; }
+.toc a:hover { color: var(--accent); }
+
+main { padding: 46px 0 90px; display: flex; flex-direction: column; gap: 62px; }
+section { display: flex; flex-direction: column; gap: 18px; scroll-margin-top: 18px; }
 section > h2 { font-size: clamp(21px, 2.6vw, 27px); letter-spacing: -0.02em; }
+h3.sub { font-size: 17.5px; margin-top: 8px; }
 .lede { color: var(--muted); max-width: var(--measure); font-size: 15.5px; }
 .note { color: var(--muted); max-width: var(--measure); font-size: 14.5px; }
 
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 26px 36px; padding: 2px 0 6px; }
-.stat { display: flex; flex-direction: column; gap: 2px; }
-.stat .n { font-size: 32px; font-weight: 600; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+/* headline figures, each one links to the section that explains it */
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 24px 34px; padding: 2px 0 6px; }
+.stat { display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: inherit; border-top: 1px solid var(--line-strong); padding-top: 12px; }
+.stat:hover { border-top-color: var(--accent); }
+.stat:hover .l { color: var(--accent); }
+.stat .n { font-size: 30px; font-weight: 600; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
 .stat .l { font-family: var(--mono); font-weight: 700; font-size: 10.5px; color: var(--muted); letter-spacing: 0.05em; }
+.stat .l::after { content: " \2192"; color: var(--faint); }
 .stat.flag .n { color: var(--bad); }
 .stat.win .n { color: var(--good); }
 
+/* tables. Headers never wrap, so a short header such as "Runs" or "#" cannot be
+   squeezed narrower than its own text, which is what made several columns unreadable. */
+
 .tablewrap { overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 600px; }
-th, td { text-align: left; padding: 9px 14px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
-th { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; border-bottom-color: var(--line-strong); }
-td.num, th.num { font-family: var(--mono); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; padding-right: 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 620px; }
+th, td { text-align: left; padding: 9px 16px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; border-bottom-color: var(--line-strong); white-space: nowrap; }
+td.num, th.num { font-family: var(--mono); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; padding-right: 0; white-space: nowrap; }
+th.num { padding-right: 0; }
 td.mono { font-family: var(--mono); font-weight: 500; font-size: 12.5px; }
 td.dim { color: var(--muted); }
+td.wide { min-width: 26ch; }
+td.idx, th.idx { font-family: var(--mono); font-weight: 700; text-align: left; width: 34px; white-space: nowrap; color: var(--muted); }
 tr.hi td { background: var(--accent-soft); }
 tr.hi td.mono { font-weight: 700; }
 
@@ -117,14 +136,21 @@ caption { caption-side: top; text-align: left; font-family: var(--mono); font-we
 .quote {
   border-left: 2px solid var(--line-strong); padding: 4px 0 4px 18px;
   font-family: var(--mono); font-weight: 500; font-size: 13px; color: var(--ink);
-  display: flex; flex-direction: column; gap: 7px; max-width: 86ch;
+  display: flex; flex-direction: column; gap: 7px; max-width: 90ch;
 }
 .quote.bad { border-left-color: var(--bad); }
 .quote.good { border-left-color: var(--good); }
 .quote b { font-weight: 700; }
 .quote .who { font-family: var(--sans); font-weight: 400; font-size: 12.5px; color: var(--muted); }
 
-.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 34px 40px; }
+.rq { display: flex; flex-direction: column; gap: 10px; padding: 18px 0 0; border-top: 2px solid var(--line-strong); }
+.rq.answered { border-top-color: var(--good); }
+.rq.part { border-top-color: var(--warn); }
+.rqgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px 40px; }
+.rq .tagline { font-family: var(--mono); font-weight: 700; font-size: 11px; letter-spacing: 0.08em; color: var(--muted); }
+.rq h3 { font-size: 16.5px; }
+.rq p { font-size: 14.5px; color: var(--muted); }
+.rq .verdict { font-size: 14.5px; color: var(--ink); }
 
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 28px 36px; }
 .card { display: flex; flex-direction: column; gap: 7px; padding-top: 14px; border-top: 1px solid var(--line-strong); }
@@ -148,7 +174,7 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
     <div class="mast-text">
       <span class="eyebrow">Progress report &middot; 28 Aug to 9 Sep 2026</span>
       <h1>Six weeks, one working experiment</h1>
-      <p class="sub">Everything built, every test run, what it found, what broke, and what happens next. Written for the supervisor meeting.</p>
+      <p class="sub">What the project asks, how it was tested, what it found, and what broke. Every number on this page links to the section that explains it.</p>
       <div class="mast-meta">
         <span>Kayleen Lee Kai Rong</span>
         <span>Supervisor <b>Prof. Markus Kirchberg</b></span>
@@ -159,106 +185,136 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
   </div>
 </header>
 
+<nav class="toc" aria-label="Contents">
+  <div class="wrap">
+    <a href="#questions">1. Research questions</a>
+    <a href="#terms">2. Terms</a>
+    <a href="#setup">3. What was tested</a>
+    <a href="#results">4. Results</a>
+    <a href="#failures">5. The failures</a>
+    <a href="#findings">6. Findings</a>
+    <a href="#challenges">7. Challenges</a>
+    <a href="#built">8. What was built</a>
+    <a href="#environment">9. Environment</a>
+    <a href="#next">10. Next</a>
+  </div>
+</nav>
+
 <div class="wrap">
 <main>
 
   <section id="glance">
     <h2>Where the project stands</h2>
     <div class="stats">
-      <div class="stat"><span class="n">120</span><span class="l">AGENT RUNS SCORED</span></div>
-      <div class="stat"><span class="n">88</span><span class="l">PRODUCTS AUTHORED</span></div>
-      <div class="stat"><span class="n">17</span><span class="l">TEST QUESTIONS</span></div>
-      <div class="stat win"><span class="n">3 / 4</span><span class="l">FAILURES CAUGHT, HELD OUT</span></div>
-      <div class="stat flag"><span class="n">$18.63</span><span class="l">OF $20 CREDIT SPENT</span></div>
+      <a class="stat" href="#setup-runs"><span class="n">120</span><span class="l">AGENT RUNS</span></a>
+      <a class="stat" href="#setup-fixtures"><span class="n">19</span><span class="l">LISTINGS AUTHORED</span></a>
+      <a class="stat" href="#setup-questions"><span class="n">17</span><span class="l">TEST QUESTIONS</span></a>
+      <a class="stat flag" href="#rq2-result"><span class="n">0 / 97</span><span class="l">TIMES IT SAID I DO NOT KNOW</span></a>
+      <a class="stat win" href="#failures"><span class="n">3 / 4</span><span class="l">FAILURES CAUGHT BY THE FIX</span></a>
     </div>
-    <p class="lede">Three of the four planned milestones are done, two of them ahead of schedule. RQ1 and RQ2 are answered with measurements rather than assumptions, and the first half of RQ3, the actual contribution, is built and validated. What now blocks the second half is research credit, not time.</p>
+    <p class="lede">Two of the three research questions are answered with measurements. The third, which is the contribution, has its first half built and tested. The environment work that had to come first is at the bottom of this page, because it is scaffolding rather than result.</p>
   </section>
 
-  <section id="status">
-    <h2>What is done, and what is not</h2>
+  <section id="questions">
+    <h2>1. The three research questions</h2>
+    <p class="lede">Everything on this page exists to answer one of these. The registered title is <i>Ambiguity Without Adversary: Why Injection Defences Miss a Common Agent Failure in Commerce</i>. The failure in question is not an attack. It is an agent answering confidently about a price it never actually looked at.</p>
+
+    <div class="rqgrid">
+      <div class="rq part">
+        <span class="tagline">RQ1 &middot; PARTLY ANSWERED</span>
+        <h3>How often does interaction-gated information occur, and in what forms?</h3>
+        <p><b>Gated</b> means the data is on the page but only appears after you interact with it. A listing shows one price; the price for the size you want appears only after clicking that size.</p>
+        <p class="verdict">Two forms catalogued and built: <b>price by variant</b> and <b>stock by variant</b>. Frequency in the test shop turned out to be <b>zero</b>, which is itself the finding, and forced the environment work.</p>
+      </div>
+      <div class="rq answered">
+        <span class="tagline">RQ2 &middot; ANSWERED</span>
+        <h3>When a task needs gated information, does the agent retrieve it, and does it signal when it has not?</h3>
+        <p>Two separate questions. Does it get the answer right, and when it does not, does it warn you.</p>
+        <p class="verdict">Retrieves correctly <b>89%</b> of the time. Signals uncertainty <b>0 times in 97 runs</b>. The second half is the result that matters, because a caller cannot tell a guess from a checked answer.</p>
+      </div>
+      <div class="rq part">
+        <span class="tagline">RQ3 &middot; FIRST HALF DONE</span>
+        <h3>Can a question-conditioned retrieval policy reach correct answers with fewer interactions than exhaustive exploration?</h3>
+        <p>Two halves. Knowing when you have looked <i>enough</i>, and knowing <i>where</i> to look so that enough costs less.</p>
+        <p class="verdict"><b>First half built and validated:</b> the agent can now detect that its own answer is unsupported and refuse or retry. <b>Second half not started:</b> deciding what to retrieve before starting.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="terms">
+    <h2>2. Terms used on this page</h2>
+    <p class="lede">These are defined here so nothing below has to be guessed at.</p>
     <div class="tablewrap">
       <table>
-        <caption>Milestone status, 9 September</caption>
-        <thead><tr><th>Milestone</th><th>Planned</th><th>Status</th><th>Evidence</th></tr></thead>
+        <caption>Definitions</caption>
+        <thead><tr><th>Term</th><th>Means</th></tr></thead>
         <tbody>
-          <tr><td>Environment running and reproducible</td><td class="dim">28 Aug</td><td><span class="pill ok">DONE</span></td><td class="dim">Documented runbook, boot fault diagnosed</td></tr>
-          <tr><td>Price variance authored into WebArena</td><td class="dim">Sep</td><td><span class="pill ok">DONE</span></td><td class="dim">88 products, 19 multi-variant listings</td></tr>
-          <tr><td>openJiuwen agent running end to end</td><td class="dim">Sep</td><td><span class="pill ok">DONE</span></td><td class="dim">120 scored runs, two upstream bugs patched</td></tr>
-          <tr><td>RQ2 baseline measured</td><td class="dim">Sep</td><td><span class="pill ok">DONE</span></td><td class="dim">60 runs, then 97 unmodified runs total</td></tr>
-          <tr class="hi"><td>Checkpoint B, catalogue at scale</td><td class="dim">23 Sep</td><td><span class="pill ok">DONE, 2 WEEKS EARLY</span></td><td class="dim">15 competing listings, validated instance</td></tr>
-          <tr class="hi"><td>RQ3 first half, the abstention rail</td><td class="dim">Oct</td><td><span class="pill ok">DONE, 3 WEEKS EARLY</span></td><td class="dim">5 rules, 2 policy arms, held-out test</td></tr>
-          <tr><td>RQ3 second half, targeting</td><td class="dim">21 Oct</td><td><span class="pill no">BLOCKED ON BUDGET</span></td><td class="dim">Needs about $10 of credit to measure</td></tr>
-          <tr><td>Final report and presentation</td><td class="dim">Early Nov</td><td><span class="pill dim">NOT STARTED</span></td><td class="dim">On schedule</td></tr>
+          <tr><td class="mono">Listing</td><td class="dim">One product page, as a shopper sees it. Each has several buyable options, and the price can change with the option chosen</td></tr>
+          <tr><td class="mono">Variant</td><td class="dim">One buyable option inside a listing, for example the 2 x 9.5L pack. Technically a separate database record, which is why 19 listings amount to 88 database products</td></tr>
+          <tr><td class="mono">Gated question</td><td class="dim">A question whose answer is not visible on arrival and requires clicking. The opposite is a <b>control</b> question, included so a failure can be told apart from the shop being broken</td></tr>
+          <tr><td class="mono">Competing listings</td><td class="dim">Fifteen different sellers offering the same product at different prices, so answering "who is cheapest" requires opening many of them rather than reading one</td></tr>
+          <tr><td class="mono">Run</td><td class="dim">One attempt by the agent at one question. Each question is asked 3 or 5 times, because the same question is answered correctly and incorrectly on different attempts</td></tr>
+          <tr><td class="mono">Scored</td><td class="dim">Marked automatically against the answer taken from the shop's database, not by hand. Verdicts are correct, wrong, abstained, or failed</td></tr>
+          <tr class="hi"><td class="mono">Unmodified run</td><td class="dim">The agent as its authors shipped it, with none of my additions. This is the baseline everything is compared against. 97 of the 120 runs are unmodified</td></tr>
+          <tr><td class="mono">Action</td><td class="dim">One step that changes the page: a click, a navigation, a selection. The measure of how much work an answer cost</td></tr>
+          <tr><td class="mono">Abstention</td><td class="dim">The agent declining to answer and saying what it could not confirm, instead of asserting something it cannot support</td></tr>
+          <tr class="hi"><td class="mono">Held-out test</td><td class="dim">The rules were locked at a recorded version, <i>then</i> fresh runs were made. Those runs did not exist when the rules were written, so the rules cannot have been fitted to them. Without this, a good score only proves the rules were tuned to the answers already seen</td></tr>
+          <tr><td class="mono">Policy arm</td><td class="dim">One version of the system under test. Three arms here: <b>unmodified</b>, <b>gate</b> which refuses when unsupported, and <b>retry</b> which goes back and tries again</td></tr>
+          <tr><td class="mono">Oracle floor</td><td class="dim">The fewest listings any correct method could open and still be sure of the answer. For this market, 11 of 15. It is the efficiency target</td></tr>
         </tbody>
       </table>
     </div>
   </section>
 
-  <section id="built">
-    <h2>What was built</h2>
-    <p class="lede">Eleven programs, roughly 2,000 lines of Python, plus the environment work. Every one exists because something could not be measured without it.</p>
+  <section id="setup">
+    <h2>3. What was tested</h2>
+
     <div class="tablewrap">
       <table>
-        <caption>Code written, and why each piece was needed</caption>
-        <thead><tr><th>Program</th><th>What it does</th><th>Why it had to exist</th></tr></thead>
+        <caption>The experimental setup</caption>
+        <thead><tr><th>Component</th><th>Choice</th><th>Why</th></tr></thead>
         <tbody>
-          <tr><td class="mono">env/magento.py</td><td>Talks to the shop's admin interface</td><td class="dim">Products had to be created through the shop's own validation, not by editing its database</td></tr>
-          <tr><td class="mono">env/seed_variants.py</td><td>Creates listings whose price changes with the option chosen</td><td class="dim">WebArena had zero such products. Without them there is no gating to study</td></tr>
-          <tr><td class="mono">env/generate_catalogue.py</td><td>Generates a 15-seller market that provably contains the trap</td><td class="dim">A hand-made market can accidentally be easy. This one is checked against 8 rules</td></tr>
-          <tr><td class="mono">env/inspect_storefront.py</td><td>Reports what the shop actually shows against what the fixture claims</td><td class="dim">Found that search paginates at 12 of 15, which changes what a failure means</td></tr>
-          <tr><td class="mono">experiments/run_browser_task.py</td><td>Runs one question, records answer, cost, timing, full trace</td><td class="dim">The agent ships an interactive prompt, not something an experiment can call</td></tr>
-          <tr><td class="mono">experiments/trace_stats.py</td><td>Counts actions and observations from the trace</td><td class="dim">"How much did it look" is the independent variable of the whole project</td></tr>
-          <tr><td class="mono">experiments/score.py</td><td>Marks an answer against the database truth</td><td class="dim">Marking 120 runs by hand is not repeatable and not auditable</td></tr>
-          <tr><td class="mono">experiments/suite.py</td><td>Runs every question several times and tabulates</td><td class="dim">One run per question hides variance. The same question is answered right and wrong</td></tr>
-          <tr><td class="mono">experiments/rescore.py</td><td>Re-marks stored runs when the marking rules improve</td><td class="dim">Fixing a marking bug must not cost another $3 of re-running</td></tr>
-          <tr><td class="mono">experiments/sufficiency.py</td><td>Decides whether an answer is supported by what the run observed</td><td class="dim">This is the contribution. Five rules, all free to run</td></tr>
-          <tr><td class="mono">experiments/policy.py</td><td>Acts on that decision: abstain, or retry with the reason</td><td class="dim">A judgement is not a behaviour. This is the behaviour</td></tr>
-          <tr><td class="mono">experiments/replay_gate.py</td><td>Replays the rules over runs already recorded</td><td class="dim">Lets the whole abstention arm be measured for $0.00</td></tr>
+          <tr class="hi"><td>Model</td><td class="mono">claude-haiku-4.5<br><span class="dim">via OpenRouter</span></td><td class="dim">The cheap tier assumed in the proposal failed. One model could not follow the required output format, others were blocked by their providers regardless of credit. This is the cheapest model that completes the tasks at all</td></tr>
+          <tr><td>Agent</td><td class="mono">openJiuwen<br><span class="dim">Apache 2.0</span></td><td class="dim">A production open-source browser agent, so the failure being measured is not an artefact of something I wrote</td></tr>
+          <tr><td>Environment</td><td class="mono">WebArena-Verified<br><span class="dim">self-hosted Magento</span></td><td class="dim">A real e-commerce stack, run locally. No automated access to live commercial sites</td></tr>
+          <tr><td>Browser</td><td class="dim">Real Chrome, driven by Playwright</td><td class="dim">The agent reads the live page, so client-side pricing behaves as it does for a shopper</td></tr>
         </tbody>
       </table>
     </div>
-  </section>
 
-  <section id="environment">
-    <h2>Environment: what was wrong, and what fixed it</h2>
+    <h3 class="sub" id="setup-fixtures">The listings that were built</h3>
+    <p class="lede">WebArena ships 104,368 products and every one is single-price. Its options exist but change nothing, for example a cake topper in ten colours all costing $9.49. So the shop as shipped cannot exhibit the failure this project studies, and the listings had to be authored.</p>
     <div class="tablewrap">
       <table>
-        <caption>Setup problems and their resolutions</caption>
-        <thead><tr><th>Problem</th><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+        <caption>19 listings, 69 variants, 88 database products in total</caption>
+        <thead><tr><th>Fixture</th><th class="num">Listings</th><th class="num">Variants</th><th>Purpose</th></tr></thead>
         <tbody>
-          <tr><td>Shop appeared empty</td><td class="dim">Categories and search returned almost nothing, while the process manager reported everything healthy</td><td class="dim">Search engine hung on first boot under emulation, silently. Search and browsing both depend on it</td><td class="dim">Full container stop and start, then rebuild the indexes. Documented in the runbook</td></tr>
-          <tr class="hi"><td>Index rebuild never completed</td><td class="dim">19 minutes with no end</td><td class="dim">The container ran under slow instruction-by-instruction emulation on Apple Silicon</td><td class="dim">Enabled Rosetta translation. Same rebuild now takes <b>20 seconds</b></td></tr>
-          <tr><td>Rebuild left stuck</td><td class="dim">Indexes permanently reported "working"</td><td class="dim">An interrupted rebuild leaves rows locked</td><td class="dim">One SQL statement to clear them, recorded in the runbook</td></tr>
-          <tr><td>No price variance existed</td><td class="dim">All 104,368 products are single-price</td><td class="dim">The shop's options change nothing about price. Ten colours, all the same cost</td><td class="dim">Authored new multi-variant listings. This is the core environment contribution</td></tr>
+          <tr><td>Fixture 1, small</td><td class="num">4</td><td class="num">14</td><td class="dim">One specific trap per listing, so a failure points at a known cause. Used for the RQ2 baseline</td></tr>
+          <tr><td>Fixture 2, at scale</td><td class="num">15</td><td class="num">55</td><td class="dim">A market where checking everything is genuinely expensive. Used for RQ3</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">The fourth row is the important one and it was found before writing any analysis code rather than after. It means WebArena as shipped cannot exhibit the failure this project studies, so the environment had to be extended before anything could be measured.</p>
-  </section>
-
-  <section id="fixtures">
-    <h2>The test products that were built</h2>
-    <p class="lede">Two fixtures. The first is small and deliberately shaped so each question has one specific trap. The second is a fifteen-seller market where checking everything is genuinely expensive.</p>
+    <p class="note">The 69 are not extra products serving another purpose. They <b>are</b> the listings: one listing offering four pack sizes is one page a shopper sees and five database records. That is what makes the price gated, since only the selected variant's price is ever on the page.</p>
 
     <div class="tablewrap">
       <table>
-        <caption>Fixture 1 &middot; four listings, fourteen variants, used for the RQ2 baseline</caption>
-        <thead><tr><th>Listing</th><th>Advertised price</th><th>Option</th><th class="num">Real price</th><th class="num">Stock</th><th>The trap</th></tr></thead>
+        <caption>Fixture 1 &middot; four listings, and the specific trap each one sets</caption>
+        <thead><tr><th>Listing</th><th class="num">Advertised</th><th>Option</th><th class="num">Real price</th><th class="num">Stock</th><th class="wide">The trap</th></tr></thead>
         <tbody>
-          <tr><td rowspan="4" class="mono">IGR-WATER-A<br><span class="dim">Cellar Direct</span></td><td rowspan="4" class="num">$9.89</td><td>24 x 350ml</td><td class="num">11.90</td><td class="num">140</td><td rowspan="4" class="dim">Headline price is the cheapest option, not the largest. The 2 x 9.5L costs 2.5x the advertised figure</td></tr>
+          <tr><td rowspan="4" class="mono">IGR-WATER-A<br><span class="dim">Cellar Direct</span></td><td rowspan="4" class="num">$9.89</td><td>24 x 350ml</td><td class="num">11.90</td><td class="num">140</td><td rowspan="4" class="dim wide">The advertised price is the cheapest option, not the largest. The 2 x 9.5L costs 2.5x the advertised figure</td></tr>
           <tr><td>12 x 550ml</td><td class="num">9.89</td><td class="num">200</td></tr>
           <tr><td>6 x 1.25L</td><td class="num">10.50</td><td class="num">90</td></tr>
           <tr class="hi"><td>2 x 9.5L</td><td class="num">24.90</td><td class="num">40</td></tr>
 
-          <tr><td rowspan="3" class="mono">IGR-WATER-B<br><span class="dim">Hillside Provisions</span></td><td rowspan="3" class="num">$10.90</td><td>12 x 550ml</td><td class="num">10.90</td><td class="num">160</td><td rowspan="3" class="dim">Advertises dearer than A, but is <b>cheaper</b> on the large pack. Only visible after clicking both</td></tr>
+          <tr><td rowspan="3" class="mono">IGR-WATER-B<br><span class="dim">Hillside Provisions</span></td><td rowspan="3" class="num">$10.90</td><td>12 x 550ml</td><td class="num">10.90</td><td class="num">160</td><td rowspan="3" class="dim wide">Advertises dearer than A, but is <b>cheaper</b> on the large pack. Only visible after opening both and clicking the size on each</td></tr>
           <tr><td>6 x 1.25L</td><td class="num">11.40</td><td class="num">75</td></tr>
           <tr class="hi"><td>2 x 9.5L</td><td class="num">22.50</td><td class="num">55</td></tr>
 
-          <tr><td rowspan="3" class="mono">IGR-COFFEE-A</td><td rowspan="3" class="num">$8.50</td><td>250 g</td><td class="num">8.50</td><td class="num">300</td><td rowspan="3" class="dim">Buying in bulk is <b>worse</b> value, reversing the usual assumption. 1 kg costs more per kg than 250 g</td></tr>
+          <tr><td rowspan="3" class="mono">IGR-COFFEE-A</td><td rowspan="3" class="num">$8.50</td><td>250 g</td><td class="num">8.50</td><td class="num">300</td><td rowspan="3" class="dim wide">Buying in bulk is <b>worse</b> value, reversing the usual assumption. 1 kg costs more per kg than 250 g</td></tr>
           <tr><td>500 g</td><td class="num">14.90</td><td class="num">220</td></tr>
           <tr><td>1 kg</td><td class="num">32.00</td><td class="num">80</td></tr>
 
-          <tr><td rowspan="4" class="mono">IGR-TEE-A</td><td rowspan="4" class="num">$19.00</td><td>S</td><td class="num">19.00</td><td class="num">45</td><td rowspan="4" class="dim">Gating by stock rather than price. Size M is out of stock, visible only on selecting it</td></tr>
+          <tr><td rowspan="4" class="mono">IGR-TEE-A</td><td rowspan="4" class="num">$19.00</td><td>S</td><td class="num">19.00</td><td class="num">45</td><td rowspan="4" class="dim wide">Gating by stock rather than price. Size M is out of stock, and that is visible only on selecting it</td></tr>
           <tr class="hi"><td>M</td><td class="num">19.00</td><td class="num">0</td></tr>
           <tr><td>L</td><td class="num">19.00</td><td class="num">60</td></tr>
           <tr><td>XL</td><td class="num">21.00</td><td class="num">30</td></tr>
@@ -268,209 +324,296 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
 
     <div class="tablewrap">
       <table>
-        <caption>Fixture 2 &middot; fifteen competing sellers, generated and checked against eight rules</caption>
-        <thead><tr><th>SKU</th><th>Advertised "from"</th><th class="num">2 x 9.5L price</th><th class="num">Best per litre</th><th>Role in the experiment</th></tr></thead>
+        <caption>Fixture 2 &middot; fifteen competing sellers of the same water</caption>
+        <thead><tr><th>Seller</th><th class="num">Advertised</th><th class="num">2 x 9.5L</th><th class="num">Best per litre</th><th class="wide">Role in the experiment</th></tr></thead>
         <tbody>
-          <tr class="hi"><td class="mono">IGR-RVN-03 <span class="dim">Redhill Stores</span></td><td class="num">6.82</td><td class="num">17.68</td><td class="num">0.9305</td><td class="dim"><b>Correct answer</b> to "cheapest 2 x 9.5L". Advertises third cheapest</td></tr>
-          <tr><td class="mono">IGR-RVN-09 <span class="dim">Hillside Wholesale</span></td><td class="num">6.44</td><td class="num">19.26</td><td class="num">0.9758</td><td class="dim"><b>The trap.</b> Cheapest advertised price, so a quick look names this one. It is wrong</td></tr>
-          <tr class="hi"><td class="mono">IGR-RVN-07 <span class="dim">Thornbury Pantry</span></td><td class="num">6.83</td><td class="num">19.77</td><td class="num">0.9107</td><td class="dim"><b>Correct answer</b> to "best value per litre", and it is a different seller and a different pack size</td></tr>
-          <tr><td class="mono">IGR-RVN-11</td><td class="num">9.04</td><td class="num">20.62</td><td class="num">1.0853</td><td class="dim">Runner-up region</td></tr>
-          <tr><td class="mono">IGR-RVN-01</td><td class="num">8.44</td><td class="num">25.70</td><td class="num">1.1840</td><td class="dim">Cannot be ruled out by advertised price alone, so must be opened</td></tr>
-          <tr><td class="mono">IGR-RVN-04, 08, 05, 14, 06</td><td class="num">14.27&ndash;21.78</td><td class="num">41.26&ndash;67.17</td><td class="num">1.96&ndash;2.90</td><td class="dim">Five more stocking the target size, all clearly dearer</td></tr>
-          <tr><td class="mono">IGR-RVN-02, 10, 12, 13, 15</td><td class="num">11.27&ndash;19.57</td><td class="num">not stocked</td><td class="num">1.71&ndash;2.68</td><td class="dim">Five that do not stock the target at all, which is what makes "does every listing stock it" answerable and false</td></tr>
+          <tr class="hi"><td class="mono">IGR-RVN-03 <span class="dim">Redhill Stores</span></td><td class="num">6.82</td><td class="num">17.68</td><td class="num">0.9305</td><td class="dim wide"><b>Correct answer</b> to "cheapest 2 x 9.5L". Only third cheapest on advertised price</td></tr>
+          <tr><td class="mono">IGR-RVN-09 <span class="dim">Hillside Wholesale</span></td><td class="num">6.44</td><td class="num">19.26</td><td class="num">0.9758</td><td class="dim wide"><b>The trap.</b> Cheapest advertised, so a quick glance names it. It is wrong</td></tr>
+          <tr class="hi"><td class="mono">IGR-RVN-07 <span class="dim">Thornbury Pantry</span></td><td class="num">6.83</td><td class="num">19.77</td><td class="num">0.9107</td><td class="dim wide"><b>Correct answer</b> to "best value per litre". A different seller and a different pack size, so one lookup cannot answer both questions</td></tr>
+          <tr><td class="mono">IGR-RVN-11</td><td class="num">9.04</td><td class="num">20.62</td><td class="num">1.0853</td><td class="dim wide">Runner-up region</td></tr>
+          <tr><td class="mono">IGR-RVN-01</td><td class="num">8.44</td><td class="num">25.70</td><td class="num">1.1840</td><td class="dim wide">Cannot be ruled out from its advertised price, so it has to be opened</td></tr>
+          <tr><td class="mono">IGR-RVN-04, 05, 06, 08, 14</td><td class="num">14.27&ndash;21.78</td><td class="num">41.26&ndash;67.17</td><td class="num">1.96&ndash;2.90</td><td class="dim wide">Five more stocking the target size, all clearly dearer</td></tr>
+          <tr><td class="mono">IGR-RVN-02, 10, 12, 13, 15</td><td class="num">11.27&ndash;19.57</td><td class="num">&mdash;</td><td class="num">1.71&ndash;2.68</td><td class="dim wide">Five that do not stock the target size at all, which is what makes "does every listing stock it" false and answerable</td></tr>
         </tbody>
       </table>
     </div>
 
     <div class="tablewrap">
       <table>
-        <caption>Properties the generator guarantees, checked by rejection sampling over 8,000 candidates</caption>
-        <thead><tr><th>Property</th><th class="num">Value</th><th>Why it matters</th></tr></thead>
+        <caption>Properties the generator guarantees, by rejection sampling over 8,000 candidate markets</caption>
+        <thead><tr><th>Property</th><th class="num">Value</th><th class="wide">Why the experiment needs it</th></tr></thead>
         <tbody>
-          <tr><td>Listings</td><td class="num">15</td><td class="dim">Enough that opening everything is expensive</td></tr>
-          <tr><td>Stock the target size</td><td class="num">10 of 15</td><td class="dim">Makes the "every listing" question false, and refutable</td></tr>
-          <tr><td>Winning margin</td><td class="num">$1.58</td><td class="dim">Wide enough that a right answer is not rounding luck</td></tr>
-          <tr class="hi"><td>Minimum opens for any correct method</td><td class="num">11 of 15</td><td class="dim">The efficiency target. A perfect policy cannot do better than this</td></tr>
-          <tr><td>Rulable out by advertised price</td><td class="num">4</td><td class="dim">Some pruning is possible, which is what makes a smart policy worth building</td></tr>
-          <tr><td>Cheapest advert gives wrong answer</td><td class="num">yes</td><td class="dim">A one-glance answer is guaranteed wrong, by construction</td></tr>
-          <tr><td>Best per litre is a different seller</td><td class="num">yes</td><td class="dim">Stops one lookup from answering two questions</td></tr>
+          <tr><td>Competing listings</td><td class="num">15</td><td class="dim wide">Enough that opening everything is expensive</td></tr>
+          <tr><td>Stock the target size</td><td class="num">10 of 15</td><td class="dim wide">Makes the "every listing" question false, and refutable by one counterexample</td></tr>
+          <tr><td>Winning margin</td><td class="num">$1.58</td><td class="dim wide">Wide enough that a correct answer is not rounding luck</td></tr>
+          <tr class="hi"><td>Oracle floor</td><td class="num">11 of 15</td><td class="dim wide">The fewest openings any correct method could get away with. The efficiency target for RQ3</td></tr>
+          <tr><td>Rulable out by advertised price</td><td class="num">4</td><td class="dim wide">Some pruning is possible, which is what makes a smarter policy worth building rather than pointless</td></tr>
+          <tr><td>Cheapest advert is wrong</td><td class="num">yes</td><td class="dim wide">A one-glance answer is guaranteed wrong, by construction</td></tr>
         </tbody>
       </table>
     </div>
-  </section>
 
-  <section id="tasks">
-    <h2>The seventeen test questions</h2>
-    <p class="lede">Gated means the answer is not visible on arrival and requires interaction. Two are controls whose answer is on the page, included so a failure can be told apart from the environment simply being broken.</p>
+    <h3 class="sub" id="setup-questions">The seventeen questions asked</h3>
     <div class="tablewrap">
       <table>
-        <caption>Task suite, each run 3 or 5 times</caption>
-        <thead><tr><th>Question ID</th><th>Gated</th><th>Asks</th><th>Correct answer</th></tr></thead>
+        <caption>Each asked 3 or 5 times. Gated means the answer requires interaction</caption>
+        <thead><tr><th>Question ID</th><th>Type</th><th class="wide">Asks</th><th>Correct answer</th></tr></thead>
         <tbody>
-          <tr><td class="mono">water-a-headline</td><td class="dim">control</td><td>What price shows on first load</td><td class="dim">$9.89</td></tr>
-          <tr><td class="mono">water-a-9l5-price</td><td>yes</td><td>Price of the 2 x 9.5L pack</td><td class="dim">$24.90</td></tr>
-          <tr><td class="mono">water-b-9l5-price</td><td>yes</td><td>Price of the 2 x 9.5L pack, other seller</td><td class="dim">$22.50</td></tr>
-          <tr><td class="mono">water-a-cheapest-per-litre</td><td>yes</td><td>Which pack is cheapest per litre</td><td class="dim">2 x 9.5L</td></tr>
-          <tr class="hi"><td class="mono">water-cross-listing</td><td>yes</td><td>Which of two sellers is cheaper for the large pack</td><td class="dim">Hillside, $22.50. This is the live failure, reproduced</td></tr>
-          <tr><td class="mono">coffee-1kg-price</td><td>yes</td><td>Price of the 1 kg size</td><td class="dim">$32.00</td></tr>
-          <tr><td class="mono">coffee-best-value</td><td>yes</td><td>Which size is best value per kg</td><td class="dim">250 g, reversing the bulk assumption</td></tr>
-          <tr><td class="mono">coffee-bulk-check</td><td>yes</td><td>Is 1 kg the cheapest per kg</td><td class="dim">No</td></tr>
-          <tr><td class="mono">tee-m-stock</td><td>yes</td><td>Is size M buyable</td><td class="dim">No</td></tr>
-          <tr><td class="mono">tee-xl-price</td><td>yes</td><td>Price of size XL</td><td class="dim">$21.00</td></tr>
-          <tr><td class="mono">tee-all-sizes-stocked</td><td>yes</td><td>Is every size in stock</td><td class="dim">No, M is out</td></tr>
-          <tr><td class="mono">water-a-all-prices</td><td>yes</td><td>List every pack size and price</td><td class="dim">All four</td></tr>
-          <tr><td class="mono">scaled-headline</td><td class="dim">control</td><td>Which listing advertises lowest</td><td class="dim">Hillside Wholesale, $6.44</td></tr>
-          <tr class="hi"><td class="mono">scaled-cheapest-target</td><td>yes</td><td>Which seller is cheapest for 2 x 9.5L, across 15</td><td class="dim">Redhill Stores</td></tr>
-          <tr><td class="mono">scaled-target-price</td><td>yes</td><td>Lowest price anyone charges for it</td><td class="dim">$17.68</td></tr>
-          <tr><td class="mono">scaled-all-stocked</td><td>yes</td><td>Does every listing stock it</td><td class="dim">No, 10 of 15 do</td></tr>
-          <tr><td class="mono">scaled-best-per-litre</td><td>yes</td><td>Best value per litre across all listings and packs</td><td class="dim">Thornbury Pantry, 6 x 1.25L</td></tr>
+          <tr><td class="mono">water-a-headline</td><td class="dim">control</td><td class="wide">What price shows on first load</td><td class="dim">$9.89</td></tr>
+          <tr><td class="mono">water-a-9l5-price</td><td>gated</td><td class="wide">Price of the 2 x 9.5L pack</td><td class="dim">$24.90</td></tr>
+          <tr><td class="mono">water-b-9l5-price</td><td>gated</td><td class="wide">Same, other seller</td><td class="dim">$22.50</td></tr>
+          <tr><td class="mono">water-a-cheapest-per-litre</td><td>gated</td><td class="wide">Which pack is cheapest per litre</td><td class="dim">2 x 9.5L</td></tr>
+          <tr class="hi"><td class="mono">water-cross-listing</td><td>gated</td><td class="wide">Which of two sellers is cheaper for the large pack</td><td class="dim">Hillside, $22.50<br><span class="dim">the live failure, reproduced</span></td></tr>
+          <tr><td class="mono">coffee-1kg-price</td><td>gated</td><td class="wide">Price of the 1 kg size</td><td class="dim">$32.00</td></tr>
+          <tr><td class="mono">coffee-best-value</td><td>gated</td><td class="wide">Which size is best value per kg</td><td class="dim">250 g</td></tr>
+          <tr><td class="mono">coffee-bulk-check</td><td>gated</td><td class="wide">Is 1 kg the cheapest per kg</td><td class="dim">No</td></tr>
+          <tr><td class="mono">tee-m-stock</td><td>gated</td><td class="wide">Is size M buyable</td><td class="dim">No</td></tr>
+          <tr><td class="mono">tee-xl-price</td><td>gated</td><td class="wide">Price of size XL</td><td class="dim">$21.00</td></tr>
+          <tr><td class="mono">tee-all-sizes-stocked</td><td>gated</td><td class="wide">Is every size in stock</td><td class="dim">No, M is out</td></tr>
+          <tr><td class="mono">water-a-all-prices</td><td>gated</td><td class="wide">List every pack size and price</td><td class="dim">All four</td></tr>
+          <tr><td class="mono">scaled-headline</td><td class="dim">control</td><td class="wide">Which listing advertises lowest</td><td class="dim">Hillside Wholesale, $6.44</td></tr>
+          <tr class="hi"><td class="mono">scaled-cheapest-target</td><td>gated</td><td class="wide">Which of 15 sellers is cheapest for 2 x 9.5L</td><td class="dim">Redhill Stores</td></tr>
+          <tr><td class="mono">scaled-target-price</td><td>gated</td><td class="wide">Lowest price anyone charges for it</td><td class="dim">$17.68</td></tr>
+          <tr class="hi"><td class="mono">scaled-all-stocked</td><td>gated</td><td class="wide">Does every listing stock it</td><td class="dim">No, 10 of 15 do</td></tr>
+          <tr class="hi"><td class="mono">scaled-best-per-litre</td><td>gated</td><td class="wide">Best value per litre across all listings and packs</td><td class="dim">Thornbury Pantry, 6 x 1.25L</td></tr>
         </tbody>
       </table>
     </div>
-  </section>
 
-  <section id="experiments">
-    <h2>Every experiment run</h2>
+    <h3 class="sub" id="setup-runs">Every batch of runs</h3>
     <div class="tablewrap">
       <table>
-        <caption>Seven experiment batches, 120 browser runs</caption>
-        <thead><tr><th>When</th><th>What it tested</th><th class="num">Runs</th><th>Result</th><th class="num">Cost</th></tr></thead>
+        <caption>Seven batches, 120 runs. Arm defined in the terms table above</caption>
+        <thead><tr><th>When</th><th class="wide">What it tested</th><th>Arm</th><th class="num">Runs</th><th>Outcome</th><th class="num">Cost</th></tr></thead>
         <tbody>
-          <tr><td class="dim">8 Sep 22:30</td><td>Smoke test, does the agent work at all</td><td class="num">2</td><td><span class="pill ok">2 correct</span></td><td class="num">$0.05</td></tr>
-          <tr class="hi"><td class="dim">8 Sep 22:31</td><td><b>RQ2 baseline</b>, 12 questions x 5</td><td class="num">60</td><td><span class="pill ok">54 correct</span> <span class="pill no">6 wrong</span></td><td class="num">$2.98</td></tr>
-          <tr><td class="dim">9 Sep 01:50</td><td>First run at 15 listings</td><td class="num">5</td><td><span class="pill ok">4 correct</span> <span class="pill no">1 wrong</span></td><td class="num">$1.36</td></tr>
-          <tr class="hi"><td class="dim">9 Sep 02:03</td><td><b>Scaled baseline</b>, 5 questions x 3</td><td class="num">15</td><td><span class="pill ok">10 correct</span> <span class="pill no">5 wrong</span></td><td class="num">$3.13</td></tr>
-          <tr><td class="dim">9 Sep 10:27</td><td>Retry policy, single-question smoke</td><td class="num">2</td><td><span class="pill ok">wrong then corrected</span></td><td class="num">$0.74</td></tr>
-          <tr class="hi"><td class="dim">9 Sep 10:32</td><td><b>Retry arm</b>, the policy running live</td><td class="num">21</td><td><span class="pill ok">10 correct</span> <span class="pill amb">2 abstained</span> <span class="pill no">2 wrong</span></td><td class="num">$4.21</td></tr>
-          <tr class="hi"><td class="dim">9 Sep 11:21</td><td><b>Held-out baseline</b>, rules frozen first</td><td class="num">15</td><td><span class="pill ok">11 correct</span> <span class="pill no">4 wrong</span></td><td class="num">$3.41</td></tr>
+          <tr><td class="dim">8 Sep</td><td class="wide">Does the agent work at all</td><td class="dim">unmodified</td><td class="num">2</td><td><span class="pill ok">2 correct</span></td><td class="num">$0.05</td></tr>
+          <tr class="hi"><td class="dim">8 Sep</td><td class="wide"><b>RQ2 baseline</b>, 12 questions x 5</td><td class="dim">unmodified</td><td class="num">60</td><td><span class="pill ok">54 correct</span> <span class="pill no">6 wrong</span></td><td class="num">$2.98</td></tr>
+          <tr><td class="dim">9 Sep</td><td class="wide">First attempt at 15 listings</td><td class="dim">unmodified</td><td class="num">5</td><td><span class="pill ok">4 correct</span> <span class="pill no">1 wrong</span></td><td class="num">$1.36</td></tr>
+          <tr class="hi"><td class="dim">9 Sep</td><td class="wide"><b>Scaled baseline</b>, 5 questions x 3</td><td class="dim">unmodified</td><td class="num">15</td><td><span class="pill ok">10 correct</span> <span class="pill no">5 wrong</span></td><td class="num">$3.13</td></tr>
+          <tr><td class="dim">9 Sep</td><td class="wide">Retry policy, one question</td><td class="dim">retry</td><td class="num">2</td><td><span class="pill ok">wrong, then corrected</span></td><td class="num">$0.74</td></tr>
+          <tr class="hi"><td class="dim">9 Sep</td><td class="wide"><b>Retry arm</b>, the fix running live</td><td class="dim">retry</td><td class="num">21</td><td><span class="pill ok">10 correct</span> <span class="pill amb">2 abstained</span> <span class="pill no">2 wrong</span></td><td class="num">$4.21</td></tr>
+          <tr class="hi"><td class="dim">9 Sep</td><td class="wide"><b>Held-out baseline</b>, rules frozen first</td><td class="dim">unmodified</td><td class="num">15</td><td><span class="pill ok">11 correct</span> <span class="pill no">4 wrong</span></td><td class="num">$3.41</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">Sum of the per-run costs is $15.94. OpenRouter's own account total is <b>$18.63</b>, and that is the figure to trust. The difference is exploratory runs made before cost logging worked, plus a run's cost being read as soon as it moves rather than once fully settled. Recorded as a measurement limitation rather than smoothed over.</p>
+    <p class="note">97 of the 120 runs are unmodified, which is what makes the baseline large enough to trust. Every run records its answer, verdict, cost, timing, and the complete sequence of what the agent did, so any result can be re-examined later without re-running it.</p>
   </section>
 
   <section id="results">
-    <h2>Results</h2>
+    <h2>4. Results</h2>
 
+    <h3 class="sub" id="rq2-result">RQ2 &middot; does it retrieve, and does it signal</h3>
     <div class="tablewrap">
       <table>
-        <caption>RQ2 &middot; the unmodified agent, 97 runs across all baselines</caption>
-        <thead><tr><th>Measure</th><th class="num">Value</th><th>Reading</th></tr></thead>
+        <caption>The unmodified agent, across 97 runs</caption>
+        <thead><tr><th class="wide">Measure</th><th class="num">Value</th><th class="wide">Reading</th></tr></thead>
         <tbody>
-          <tr><td>Correct on gated questions</td><td class="num">89%</td><td class="dim">Mostly right, which is why the failures are dangerous rather than obvious</td></tr>
-          <tr class="hi"><td>Times it said "I do not know"</td><td class="num">0 of 97</td><td class="dim"><b>The central RQ2 result.</b> Every failure is a confident assertion</td></tr>
-          <tr><td>Median actions, correct answers</td><td class="num">5</td><td class="dim">Small fixture</td></tr>
-          <tr><td>Median actions, wrong answers</td><td class="num">3</td><td class="dim">Under-retrieval predicts failure</td></tr>
-          <tr><td>Median actions at 15 listings</td><td class="num">23 vs 7</td><td class="dim">Same direction, wider gap, so the pattern reproduces at scale</td></tr>
+          <tr><td class="wide">Correct on gated questions</td><td class="num">89%</td><td class="dim wide">Mostly right, which is exactly why the failures are dangerous rather than obvious</td></tr>
+          <tr class="hi"><td class="wide">Times it said it did not know</td><td class="num">0 of 97</td><td class="dim wide"><b>The central RQ2 result.</b> Every single failure is a confident assertion</td></tr>
+          <tr><td class="wide">Median actions, correct answers</td><td class="num">5</td><td class="dim wide">Small fixture</td></tr>
+          <tr><td class="wide">Median actions, wrong answers</td><td class="num">3</td><td class="dim wide">Under-retrieval is what predicts failure</td></tr>
+          <tr><td class="wide">Same, at 15 listings</td><td class="num">23 vs 7</td><td class="dim wide">Same direction, wider gap, so the pattern reproduces at scale</td></tr>
         </tbody>
       </table>
     </div>
 
+    <h3 class="sub">RQ3 &middot; the three arms compared</h3>
     <div class="tablewrap">
       <table>
-        <caption>RQ3 &middot; the abstention rail, both arms</caption>
-        <thead><tr><th>Arm</th><th>What it does</th><th class="num">Wrong answers</th><th class="num">Cost</th><th>Verdict</th></tr></thead>
+        <caption>Same questions, same market, three versions of the system</caption>
+        <thead><tr><th>Arm</th><th class="wide">What it does</th><th class="num">Wrong</th><th class="num">Cost</th><th class="wide">Verdict</th></tr></thead>
         <tbody>
-          <tr><td>Unmodified</td><td class="dim">Answers whatever it concludes</td><td class="num">5 of 15</td><td class="num">$3.13</td><td class="dim">Baseline</td></tr>
-          <tr><td>Gate</td><td class="dim">Refuses when the answer is unsupported</td><td class="num">0 of 12</td><td class="num">$0.00</td><td class="dim">Free, but can only refuse, never fix</td></tr>
-          <tr class="hi"><td>Retry</td><td class="dim">Goes back, told what was wrong</td><td class="num">2 of 15</td><td class="num">$4.21</td><td class="dim">Fixes failures, for 34% more spend</td></tr>
+          <tr><td>Unmodified</td><td class="dim wide">Answers whatever it concludes</td><td class="num">5 of 15</td><td class="num">$3.13</td><td class="dim wide">Baseline</td></tr>
+          <tr><td>Gate</td><td class="dim wide">Refuses when its answer is unsupported</td><td class="num">0 of 12</td><td class="num">$0.00</td><td class="dim wide">Free, but can only refuse. Never converts a failure into an answer</td></tr>
+          <tr class="hi"><td>Retry</td><td class="dim wide">Goes back and tries again, told what was wrong</td><td class="num">2 of 15</td><td class="num">$4.21</td><td class="dim wide">Fixes failures, for 34% more spend</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">The gate costs nothing because it issues no browser action. It reads the record of what the agent already saw and compares it against what the agent just claimed, which means it can also be replayed over runs recorded earlier, at no cost at all.</p>
+
+    <h3 class="sub">The honest test</h3>
+    <p class="lede">Two of the five rules were written after seeing failures they were meant to handle, so measuring them on those same failures proves nothing. The rules were locked at a recorded version, then fifteen fresh runs were made, then the rules were applied to those alone.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Held-out test &middot; 15 runs that did not exist when the rules were written</caption>
+        <thead><tr><th class="wide">Verdict</th><th class="num">Unmodified</th><th class="num">With the fix</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">Right answers</td><td class="num">11</td><td class="num">11</td></tr>
+          <tr class="hi"><td class="wide">Wrong answers</td><td class="num">4</td><td class="num">1</td></tr>
+          <tr><td class="wide">Refusals</td><td class="num">0</td><td class="num">3</td></tr>
+          <tr><td class="wide">Added cost</td><td class="num">&mdash;</td><td class="num">$0.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Across every run made so far, in sample and out, the check has never blocked a correct answer: <b>0 false refusals in 77 correct runs</b>.</p>
+  </section>
+
+  <section id="failures">
+    <h2>5. The four failures, and what caught them</h2>
+    <p class="lede">These are the four wrong answers in the held-out batch, quoted as given. Three were caught by the fix and one was not.</p>
+
+    <div class="tablewrap">
+      <table>
+        <caption>Every failure in the held-out batch</caption>
+        <thead><tr><th>Question</th><th class="num">Actions</th><th class="num">Opened</th><th class="wide">What it answered</th><th>Caught by</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">scaled-all-stocked</td><td class="num">6</td><td class="num">4 of 15</td><td class="dim wide">"Yes"</td><td><span class="pill ok">unverified<br>universal</span></td></tr>
+          <tr><td class="mono">scaled-best-per-litre</td><td class="num">6</td><td class="num">4 of 15</td><td class="dim wide">"...determined by analyzing all four sellers"</td><td><span class="pill ok">understated<br>population</span></td></tr>
+          <tr><td class="mono">scaled-best-per-litre</td><td class="num">7</td><td class="num">4 of 15</td><td class="dim wide">"...determined by analyzing all four sellers"</td><td><span class="pill ok">understated<br>population</span></td></tr>
+          <tr class="hi"><td class="mono">scaled-best-per-litre</td><td class="num">11</td><td class="num">4 of 15</td><td class="dim wide">"...$0.930/L for the 2 x 9.5L pack ($17.68 for 19 litres)"</td><td><span class="pill no">NOTHING</span></td></tr>
         </tbody>
       </table>
     </div>
 
+    <h3 class="sub">Failure 1, and how the retry fixes it</h3>
+    <div class="quote bad">
+      <span><b>Q.</b> Does every Rivenhall listing stock the 2 x 9.5L pack?</span>
+      <span><b>A.</b> Yes</span>
+      <span class="who">Wrong. Five of the fifteen do not stock it, and the agent had opened four. No hedge, no qualification. It answered this way three separate times.</span>
+    </div>
+    <div class="quote good">
+      <span><b>A, second attempt.</b> No. Out of 15 total listings, only 10 stock this pack size. The 5 that do not are: Chandler Wholesale, Pembroke Trading, ...</span>
+      <span class="who">Correct, with its evidence, three times out of three. The fix does not tell the agent the answer. It tells it that a claim about "every listing" cannot rest on four of them.</span>
+    </div>
+
+    <h3 class="sub">The one that escaped, and why it matters</h3>
+    <div class="quote bad">
+      <span><b>Caught:</b> "...at $0.930/L. This was determined by <b>analyzing all four sellers</b>"</span>
+      <span><b>Escaped:</b> "...at $0.930/L for the 2 x 9.5L pack (total price: $17.68 for 19 litres)"</span>
+      <span class="who">Same wrong answer, same four listings opened. The only difference is that the second one did not volunteer how much it had checked. The rule reads a claim the agent makes about itself, so an agent that says less about itself is checked less. That is a real ceiling on the method, not a bug in it, and it is written down as one.</span>
+    </div>
+
+    <h3 class="sub">The obvious fix, tested and rejected</h3>
+    <p class="lede">Requiring the agent to open enough listings would catch the escapee. It was tested against every unmodified run of the comparison questions:</p>
     <div class="tablewrap">
       <table>
-        <caption>The honest test &middot; rules frozen, then run on 15 fresh runs that did not exist yet</caption>
-        <thead><tr><th>Verdict</th><th class="num">Unmodified</th><th class="num">With the check</th></tr></thead>
+        <caption>Listings opened, by whether the answer was right</caption>
+        <thead><tr><th class="wide">Outcome</th><th class="wide">Listings opened, each run</th><th>Consequence of a rule at 11</th></tr></thead>
         <tbody>
-          <tr><td>Right answers</td><td class="num">11</td><td class="num">11</td></tr>
-          <tr class="hi"><td>Wrong answers</td><td class="num">4</td><td class="num">1</td></tr>
-          <tr><td>Refusals</td><td class="num">0</td><td class="num">3</td></tr>
-          <tr><td>Added cost</td><td class="num">&mdash;</td><td class="num">$0.00</td></tr>
+          <tr><td class="wide">Correct answers</td><td class="mono wide">1, 4, 4, 8, 12, 13, 14, 14</td><td class="dim">Three would be blocked</td></tr>
+          <tr><td class="wide">Wrong answers</td><td class="mono wide">4, 4, 4, 4, 4, 4</td><td class="dim">All six would be caught</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">Three of four failures caught, no right answer blocked, no extra cost. The rules were locked at a recorded version before these runs were made, so they could not have been tuned to fit them. Across every run made so far, in sample and out, the check has never once blocked a correct answer: <b>0 false refusals in 77 correct runs</b>.</p>
+    <p class="note"><b>The same numbers give something more useful than the rule would have.</b> One question is answered after opening exactly 4 listings in all seven runs, right and wrong alike. Its single correct answer rests on identical evidence to its six wrong ones. It was not reasoned to, it was landed on. A score out of ten cannot tell those apart, because there is nothing in the run to tell apart, which is the argument for reporting whether an answer was <i>earned</i> next to whether it was <i>right</i>.</p>
   </section>
 
   <section id="findings">
-    <h2>Main findings</h2>
+    <h2>6. Main findings</h2>
     <div class="tablewrap">
       <table>
         <caption>Six results, in the order they were found</caption>
-        <thead><tr><th class="num">#</th><th>Finding</th><th>Evidence</th><th>Consequence</th></tr></thead>
+        <thead><tr><th class="idx">#</th><th class="wide">Finding</th><th class="wide">Evidence</th><th class="wide">Consequence</th></tr></thead>
         <tbody>
-          <tr><td class="num">1</td><td><b>Structured data does not publish the price range</b></td><td class="dim">Both the live marketplace and WebArena publish a single price where the standard defines a low-to-high range</td><td class="dim">A shortcut that would let the agent skip listings does not exist. Prices must be read from the page</td></tr>
-          <tr><td class="num">2</td><td><b>WebArena cannot show this failure as shipped</b></td><td class="dim">All 104,368 products are single-price. Options exist but change nothing</td><td class="dim">Environment extension became a required first step, not an optional extra</td></tr>
-          <tr class="hi"><td class="num">3</td><td><b>The agent never signals uncertainty</b></td><td class="dim">0 abstentions in 97 unmodified runs</td><td class="dim">Answers this project's RQ2. A caller cannot tell a guess from a verified answer</td></tr>
-          <tr><td class="num">4</td><td><b>Only under-retrieval predicts failure</b></td><td class="dim">Wrong answers cluster at few actions. Past a threshold, extra looking buys nothing measurable</td><td class="dim">There is a minimum budget below which answers stop being reliable. That is the RQ3 premise, measured</td></tr>
-          <tr><td class="num">5</td><td><b>The failure needs scale to appear</b></td><td class="dim">With two named listings the agent scored 5 of 5. With fifteen it fails</td><td class="dim">A negative result that redirected the work. The trap is about cost, not about trickery</td></tr>
-          <tr class="hi"><td class="num">6</td><td><b>Right and earned are different properties</b></td><td class="dim">One question is answered after opening exactly 4 of 15 listings in all seven runs, right and wrong alike</td><td class="dim">Its one correct answer rests on identical evidence to its six wrong ones. Accuracy alone cannot see this</td></tr>
+          <tr><td class="idx">1</td><td class="wide"><b>Structured data does not publish the price range</b></td><td class="dim wide">Both the live marketplace and WebArena publish a single price where the web standard defines a low-to-high range for exactly this case</td><td class="dim wide">The shortcut that would let an agent skip listings does not exist. Prices must be read from the rendered page</td></tr>
+          <tr><td class="idx">2</td><td class="wide"><b>WebArena cannot show this failure as shipped</b></td><td class="dim wide">All 104,368 products are single-price. Options exist but change nothing, for example ten colours all at $9.49</td><td class="dim wide">Extending the environment became a required first step rather than an optional extra</td></tr>
+          <tr class="hi"><td class="idx">3</td><td class="wide"><b>The agent never signals uncertainty</b></td><td class="dim wide">0 abstentions in 97 unmodified runs, across seventeen questions and two fixtures</td><td class="dim wide">Answers RQ2. A caller cannot distinguish a one-action guess from a verified answer</td></tr>
+          <tr><td class="idx">4</td><td class="wide"><b>Only under-retrieval predicts failure</b></td><td class="dim wide">Wrong answers cluster at few actions. Past a threshold, extra looking buys nothing measurable</td><td class="dim wide">There is a minimum budget below which answers stop being reliable. That is the RQ3 premise as a measurement rather than an assumption</td></tr>
+          <tr><td class="idx">5</td><td class="wide"><b>The failure needs scale to appear</b></td><td class="dim wide">With two named listings the agent scored 5 of 5. With fifteen competing sellers it fails</td><td class="dim wide">A negative result that redirected the work. The trap is about cost, not about trickery, so it needs a market rather than a cleverer page</td></tr>
+          <tr class="hi"><td class="idx">6</td><td class="wide"><b>Right and earned are different properties</b></td><td class="dim wide">One question is answered after opening exactly 4 of 15 listings in all seven runs, right and wrong alike</td><td class="dim wide">Accuracy alone cannot see this. The report will carry soundness alongside correctness</td></tr>
         </tbody>
       </table>
-    </div>
-
-    <div class="grid2">
-      <div>
-        <p class="eyebrow" style="margin-bottom:8px">FINDING 3, AS IT ACTUALLY APPEARED</p>
-        <div class="quote bad">
-          <span><b>Q.</b> Does every Rivenhall listing stock the 2 x 9.5L pack?</span>
-          <span><b>A.</b> Yes</span>
-          <span class="who">Wrong. Five of fifteen do not stock it. The agent had opened four listings. No hedge, no qualification, three separate times.</span>
-        </div>
-      </div>
-      <div>
-        <p class="eyebrow" style="margin-bottom:8px">THE SAME QUESTION, AFTER THE FIX</p>
-        <div class="quote good">
-          <span><b>A.</b> No. Out of 15 total listings, only 10 stock this pack size. The 5 that do not are: Chandler Wholesale, Pembroke Trading, ...</span>
-          <span class="who">Correct, with its evidence, three times out of three. The fix does not tell it the answer. It tells it what was missing.</span>
-        </div>
-      </div>
     </div>
   </section>
 
   <section id="challenges">
-    <h2>Main challenges</h2>
+    <h2>7. Main challenges</h2>
     <div class="tablewrap">
       <table>
         <caption>What went wrong, and what it cost</caption>
-        <thead><tr><th>Challenge</th><th>What happened</th><th>Resolution</th></tr></thead>
+        <thead><tr><th class="wide">Challenge</th><th class="wide">What happened</th><th class="wide">Resolution</th></tr></thead>
         <tbody>
-          <tr><td><b>Cheap models could not do the task</b></td><td class="dim">The proposal assumed a cheap model tier. One could not follow the required output format; others were blocked by their providers regardless of credit</td><td class="dim">Everything runs on a model that works and is not free. This is the direct cause of the budget problem</td></tr>
-          <tr><td><b>Silent environment failure</b></td><td class="dim">The shop reported itself healthy while its search engine was hung, so the catalogue looked empty for no visible reason</td><td class="dim">Diagnosed and documented. Two wrong theories were tried first and are recorded as such</td></tr>
-          <tr><td><b>Two bugs inside the agent</b></td><td class="dim">A valid empty result was reported as a parse error, and a tool failure did not reach the caller, which reported success</td><td class="dim">Both patched locally. Candidates for contributing back, since the agent is open source</td></tr>
-          <tr class="hi"><td><b>I misdiagnosed a failure as fabrication</b></td><td class="dim">Reported that the agent invented prices. It had not. $15.01 is a real surcharge on a $9.89 base, and 9.89 + 15.01 = 24.90, the true price. It misread the meaning of a number it had correctly read</td><td class="dim">Corrected in every document. The distinction matters: a misreading is fixable by a rule, an invention is not</td></tr>
-          <tr><td><b>My marking rules were wrong twice</b></td><td class="dim">One rule penalised an answer for mentioning the alternatives, which is what a good comparison does. Another penalised an answer for showing its own arithmetic</td><td class="dim">Both fixed and all stored runs re-marked at no cost. One published claim had to be withdrawn as a result</td></tr>
-          <tr class="hi"><td><b>My own safety check blocked a correct answer</b></td><td class="dim">"$17.68, Redhill Stores" is right, but $17.68 never appears on the page, being a $6.82 base plus a $10.86 surcharge. The check only trusted answers that spelled out the sum</td><td class="dim">Fixed, which cost some detection power, because two of its catches turned out to be accidental. Losing an accidental catch is the correct trade</td></tr>
-          <tr><td><b>Results scored against a moved answer key</b></td><td class="dim">The catalogue is regenerated between rounds, so older runs were being marked against prices that no longer applied</td><td class="dim">Detected automatically by re-marking and checking for disagreement. Four runs excluded. Without this, the method looked worse than it is</td></tr>
+          <tr><td class="wide"><b>Cheap models could not do the task</b></td><td class="dim wide">The proposal assumed a cheap model tier. One could not follow the required output format, others were blocked by their providers regardless of account credit</td><td class="dim wide">Everything runs on a model that works and is not free. This is the direct cause of the spend</td></tr>
+          <tr><td class="wide"><b>Silent environment failure</b></td><td class="dim wide">The shop reported itself healthy while its search engine was hung, so the catalogue looked empty for no visible reason</td><td class="dim wide">Diagnosed and documented. Two wrong theories were tried first, and are recorded as wrong</td></tr>
+          <tr><td class="wide"><b>Two bugs inside the agent</b></td><td class="dim wide">A valid empty result was reported as a parse error, and a tool failure did not reach the caller, which then reported success</td><td class="dim wide">Both patched locally. Candidates for contributing back, since the agent is open source</td></tr>
+          <tr class="hi"><td class="wide"><b>I misdiagnosed a failure as fabrication</b></td><td class="dim wide">Reported that the agent invented prices. It had not. $15.01 is a real surcharge on a $9.89 base, and 9.89 + 15.01 = 24.90, which is the true price. It misread the meaning of a number it had read correctly</td><td class="dim wide">Corrected in every document. The distinction matters: a misreading is fixable by a rule, an invention is not</td></tr>
+          <tr><td class="wide"><b>My marking rules were wrong twice</b></td><td class="dim wide">One penalised an answer for mentioning the alternatives, which is what a good comparison does. Another penalised an answer for showing its own arithmetic</td><td class="dim wide">Both fixed and all stored runs re-marked at no cost. One already-written claim had to be withdrawn</td></tr>
+          <tr class="hi"><td class="wide"><b>My own check blocked a correct answer</b></td><td class="dim wide">"$17.68, Redhill Stores" is right, but $17.68 never appears on the page, being a $6.82 base plus a $10.86 surcharge. The check only trusted answers that spelled out the sum</td><td class="dim wide">Fixed, which cost some detection power, because two of its catches turned out to be accidental. Losing an accidental catch is the correct trade</td></tr>
+          <tr><td class="wide"><b>Runs scored against a moved answer key</b></td><td class="dim wide">The market is regenerated between rounds, so older runs were being marked against prices that no longer applied</td><td class="dim wide">Detected automatically by re-marking and checking for disagreement. Four runs excluded. Without this the method looked worse than it is</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">Five of these seven are mistakes I made rather than problems I encountered. They are listed because each one changed a number that had already been written down, and the record of catching them is part of what the work is.</p>
+    <p class="note">Five of these seven are mistakes I made rather than problems I encountered. They are listed because each one changed a number that had already been written down, and the record of catching them is part of the work.</p>
+  </section>
+
+  <section id="built">
+    <h2>8. What was built</h2>
+    <p class="lede">Twelve programs, roughly 2,000 lines of Python. Each exists because something could not be measured without it.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Code written, and why each piece was needed</caption>
+        <thead><tr><th>Program</th><th class="wide">What it does</th><th class="wide">Why it had to exist</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">magento.py</td><td class="wide">Talks to the shop's admin interface</td><td class="dim wide">Products had to be created through the shop's own validation rather than by editing its database directly</td></tr>
+          <tr><td class="mono">seed_variants.py</td><td class="wide">Creates listings whose price changes with the option chosen</td><td class="dim wide">WebArena had zero such products. Without them there is no gating to study</td></tr>
+          <tr><td class="mono">generate_catalogue.py</td><td class="wide">Generates a 15-seller market that provably contains the trap</td><td class="dim wide">A hand-made market can be accidentally easy. This one is checked against eight rules before being accepted</td></tr>
+          <tr><td class="mono">inspect_storefront.py</td><td class="wide">Reports what the shop shows against what the fixture claims</td><td class="dim wide">Found that search paginates at 12 of 15, which changes what a failure means</td></tr>
+          <tr><td class="mono">run_browser_task.py</td><td class="wide">Runs one question, records answer, cost, timing, full trace</td><td class="dim wide">The agent ships an interactive prompt, not something an experiment can call</td></tr>
+          <tr><td class="mono">trace_stats.py</td><td class="wide">Counts actions and observations from the trace</td><td class="dim wide">"How much did it look" is the independent variable of the whole project</td></tr>
+          <tr><td class="mono">score.py</td><td class="wide">Marks an answer against the database truth</td><td class="dim wide">Marking 120 runs by hand is neither repeatable nor auditable</td></tr>
+          <tr><td class="mono">suite.py</td><td class="wide">Runs every question several times and tabulates</td><td class="dim wide">One run per question hides variance, and the same question is answered right and wrong</td></tr>
+          <tr><td class="mono">rescore.py</td><td class="wide">Re-marks stored runs when the marking rules improve</td><td class="dim wide">Fixing a marking bug must not cost another $3 of re-running</td></tr>
+          <tr class="hi"><td class="mono">sufficiency.py</td><td class="wide">Decides whether an answer is supported by what the run observed</td><td class="dim wide">This is the contribution. Five rules, all free to run</td></tr>
+          <tr class="hi"><td class="mono">policy.py</td><td class="wide">Acts on that decision: refuse, or retry with the reason</td><td class="dim wide">A judgement is not a behaviour. This is the behaviour</td></tr>
+          <tr><td class="mono">replay_gate.py</td><td class="wide">Replays the rules over runs already recorded</td><td class="dim wide">Lets the entire refusal arm be measured for $0.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">The five rules</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>What sufficiency.py checks, all by reading the run's own record</caption>
+        <thead><tr><th>Rule</th><th class="wide">Catches</th><th class="wide">Example it caught</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">delta_as_absolute</td><td class="wide">A figure seen only as a surcharge, reported as a total</td><td class="dim wide">Reported $15.01 as the price, when the page showed "+$15.01" on a $9.89 base</td></tr>
+          <tr><td class="mono">unsupported_number</td><td class="wide">An amount appearing nowhere the run looked</td><td class="dim wide">A price that is on none of the opened pages, and is not a computed rate</td></tr>
+          <tr><td class="mono">claim_without_content</td><td class="wide">A completion claim carrying no figures</td><td class="dim wide">"Successfully listed all pack sizes and their prices" with no prices in the answer</td></tr>
+          <tr class="hi"><td class="mono">unverified_universal</td><td class="wide">"Yes" to a question about every listing, having opened some</td><td class="dim wide">"Yes" to "does every listing stock it", after opening 4 of 15</td></tr>
+          <tr class="hi"><td class="mono">understated_population</td><td class="wide">An answer whose own words say it covered too few</td><td class="dim wide">"determined by analyzing all four sellers", where there are fifteen</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="environment">
+    <h2>9. Environment: what was wrong, and what fixed it</h2>
+    <div class="tablewrap">
+      <table>
+        <caption>Setup problems and their resolutions</caption>
+        <thead><tr><th class="wide">Problem</th><th class="wide">Symptom</th><th class="wide">Cause</th><th class="wide">Fix</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">Shop appeared empty</td><td class="dim wide">Categories and search returned almost nothing while the process manager reported everything healthy</td><td class="dim wide">The search engine hung on first boot under emulation, silently. Search and browsing both depend on it</td><td class="dim wide">Full container stop and start, then rebuild the indexes. Documented as a runbook</td></tr>
+          <tr class="hi"><td class="wide">Index rebuild never completed</td><td class="dim wide">19 minutes with no end in sight</td><td class="dim wide">The container ran under slow instruction-by-instruction emulation on Apple Silicon</td><td class="dim wide">Enabled Rosetta translation. The same rebuild now takes <b>20 seconds</b></td></tr>
+          <tr><td class="wide">Rebuild left stuck</td><td class="dim wide">Indexes permanently reported "working"</td><td class="dim wide">An interrupted rebuild leaves database rows locked</td><td class="dim wide">One SQL statement to clear them, recorded in the runbook</td></tr>
+          <tr><td class="wide">No price variance existed</td><td class="dim wide">All 104,368 products are single-price</td><td class="dim wide">The shop's product options change nothing about price</td><td class="dim wide">Authored 19 multi-variant listings. This is the core environment contribution</td></tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 
   <section id="next">
-    <h2>Next week</h2>
+    <h2>10. Next</h2>
     <div class="cards">
-      <div class="card risk">
-        <span class="when">DECISION NEEDED</span>
-        <h4>Research credit</h4>
-        <p>$18.63 of $20 spent, $1.37 left. That funds no further experiment. The targeting arm needs about $10: an exhaustive-retrieval baseline, the policy itself, and enough repeats to separate them.</p>
+      <div class="card done">
+        <span class="when">UNBLOCKED</span>
+        <h4>Credit topped up</h4>
+        <p>$18.63 of the original $20 is spent. A further $15 is being added, so the remaining experiments can run. The cheap-tier assumption failing is still worth reporting as a finding, but it is no longer a blocker.</p>
       </div>
       <div class="card">
-        <span class="when">FREE, NO CREDIT NEEDED</span>
+        <span class="when">THE CONTRIBUTION</span>
         <h4>Build the targeting policy</h4>
-        <p>Decide what to retrieve from the question before starting, rather than checking the answer afterwards. Target is 11 opens against the current median of 23. Can be written and tested against recorded runs without spending anything.</p>
+        <p>Decide what to retrieve from the question <i>before</i> starting, rather than checking the answer afterwards. Target is the oracle floor of 11 openings against a current median of 23 actions. Can be written and tested against recorded runs before any of it is paid for.</p>
+      </div>
+      <div class="card">
+        <span class="when">NEEDS THE NEW CREDIT</span>
+        <h4>The exhaustive baseline</h4>
+        <p>The targeting arm needs something to be plotted against: a version that opens everything, which is correct and expensive. That is the upper bound the policy has to beat on cost while matching on accuracy.</p>
       </div>
       <div class="card">
         <span class="when">FREE</span>
         <h4>Close two known gaps</h4>
         <p>One rule fires on a legitimately qualified subset, found by probing it after the rules were frozen. And the per-litre question has only a 2% margin, so it risks measuring arithmetic rather than retrieval.</p>
-      </div>
-      <div class="card done">
-        <span class="when">THIS WEEK</span>
-        <h4>Report and discuss</h4>
-        <p>Send the update. Four things need a decision: the budget, whether to report soundness alongside accuracy, whether to submit the two bug fixes upstream, and whether one model is enough.</p>
       </div>
     </div>
   </section>
