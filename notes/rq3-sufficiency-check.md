@@ -102,3 +102,80 @@ reached it zero times. See [openjiuwen-architecture-review.md](openjiuwen-archit
   generalises beyond Magento's surcharge labelling is untested
 - The check is evaluated on the same runs that motivated its rules, so it is fitted to
   them. The real test is a held-out run against the modified agent
+
+---
+
+# Second slice: coverage, and a distinction the baseline cannot see
+
+2026-09-09, same session. Still no API spend.
+
+## The coverage rule
+
+A fourth test, `unverified_universal`. The logic that makes it safe is an asymmetry:
+**a universal claim requires full coverage, its refutation requires one instance.**
+"Every listing stocks it" is only supportable having looked at every listing. "This one
+does not" is settled by that one. So the rule fires only on an affirmative answer to a
+universal question when the run opened fewer listings than the question ranges over.
+
+That asymmetry is what lets the test run without knowing the right answer.
+
+## Result over the 82 recorded runs
+
+| Scored verdict | Flag | Runs |
+| --- | --- | --- |
+| correct | clean | 70 |
+| wrong | claim_without_content | 4 |
+| wrong | unverified_universal | 3 |
+| wrong | delta_as_absolute | 2 |
+| wrong | unsupported_number | 2 |
+| wrong | clean | 1 |
+
+**Caught 11 of 12. Zero false flags across 70 correct runs.**
+
+## The rule I decided not to write
+
+The last uncaught failure names the wrong seller on a global comparison, with no figure
+to check. Coverage looks like the obvious test, and the data says otherwise:
+
+```
+scaled-cheapest-target-1   correct   opened 4 of 15
+scaled-best-per-litre-1    wrong     opened 4 of 15
+```
+
+Coverage does not separate them. A gate on it would reject a correct answer, and a check
+that blocks correct answers has to be argued for rather than adopted.
+
+## What that exposes instead
+
+The correct run opened 4 listings. The oracle floor for that question is 11, and the
+agent has no pruning logic, so 4 opens cannot have ruled out the other 11. That answer was
+not reasoned to. It was landed on.
+
+Reported as a separate measure rather than a gate:
+
+```
+unearned  3 of 5 correct answers to global comparison questions were reached
+          with less evidence than any correct policy needs
+  scaled-cheapest-target-1   opened 8 of 15, floor 11
+  scaled-cheapest-target-1   opened 4 of 15, floor 11
+  scaled-best-per-litre-1    opened 4 of 15, floor 11
+```
+
+**Correctness and soundness are different properties, and an accuracy-only baseline
+cannot tell them apart.** Three of five correct answers to comparison questions were
+unearned. A policy that abstains on those scores *worse* on accuracy and is better in
+expectation, and RQ3 needs to be able to make that argument with numbers rather than
+assertion. This measure is how.
+
+It also reframes the headline baseline figure. 89% correct on gated tasks overstates the
+agent, because some of that 89% is luck that a larger or differently ordered catalogue
+would remove.
+
+## A logic error caught while writing this
+
+The first version applied the oracle floor to every question containing "every" or "all",
+which included the universal yes/no. Refuting a universal takes one counterexample, so
+scoring it against a floor of eleven called a sound answer unearned. The floor now applies
+to comparison questions only. This is the same class of mistake as the earlier scorer bug:
+a rule that was correct for the case it was written against and wrong for a neighbouring
+one.
