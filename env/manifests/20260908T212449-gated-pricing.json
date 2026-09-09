@@ -1,0 +1,182 @@
+{
+  "seeded_at": "2026-09-08T21:24:49",
+  "base_url": "http://localhost:7770",
+  "fixture": "gated_pricing.json",
+  "parent_skus": [
+    "IGR-WATER-A",
+    "IGR-WATER-B",
+    "IGR-COFFEE-A",
+    "IGR-TEE-A"
+  ],
+  "child_skus": [
+    "IGR-WATER-A-24-X-350ML",
+    "IGR-WATER-A-12-X-550ML",
+    "IGR-WATER-A-6-X-1-25L",
+    "IGR-WATER-A-2-X-9-5L",
+    "IGR-WATER-B-12-X-550ML",
+    "IGR-WATER-B-6-X-1-25L",
+    "IGR-WATER-B-2-X-9-5L",
+    "IGR-COFFEE-A-250-G",
+    "IGR-COFFEE-A-500-G",
+    "IGR-COFFEE-A-1-KG",
+    "IGR-TEE-A-S",
+    "IGR-TEE-A-M",
+    "IGR-TEE-A-L",
+    "IGR-TEE-A-XL"
+  ],
+  "ground_truth": {
+    "families": {
+      "water-cellar-direct": {
+        "parent_sku": "IGR-WATER-A",
+        "gating": "price-by-variant",
+        "from_price": 9.89,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-WATER-A-24-X-350ML",
+            "price": 11.9,
+            "qty": 140,
+            "unit_price": 1.4167
+          },
+          "12 x 550ml": {
+            "sku": "IGR-WATER-A-12-X-550ML",
+            "price": 9.89,
+            "qty": 200,
+            "unit_price": 1.4985
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-WATER-A-6-X-1-25L",
+            "price": 10.5,
+            "qty": 90,
+            "unit_price": 1.4
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-WATER-A-2-X-9-5L",
+            "price": 24.9,
+            "qty": 40,
+            "unit_price": 1.3105
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "2 x 9.5L",
+        "cheapest_unit_price": 1.3105,
+        "card_price_misleads": true
+      },
+      "water-hillside-provisions": {
+        "parent_sku": "IGR-WATER-B",
+        "gating": "price-by-variant",
+        "from_price": 10.9,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "12 x 550ml": {
+            "sku": "IGR-WATER-B-12-X-550ML",
+            "price": 10.9,
+            "qty": 160,
+            "unit_price": 1.6515
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-WATER-B-6-X-1-25L",
+            "price": 11.4,
+            "qty": 75,
+            "unit_price": 1.52
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-WATER-B-2-X-9-5L",
+            "price": 22.5,
+            "qty": 55,
+            "unit_price": 1.1842
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "2 x 9.5L",
+        "cheapest_unit_price": 1.1842,
+        "card_price_misleads": true
+      },
+      "coffee-bulk-reversal": {
+        "parent_sku": "IGR-COFFEE-A",
+        "gating": "price-by-variant",
+        "from_price": 8.5,
+        "from_price_option": "250 g",
+        "variants": {
+          "250 g": {
+            "sku": "IGR-COFFEE-A-250-G",
+            "price": 8.5,
+            "qty": 300,
+            "unit_price": 34.0
+          },
+          "500 g": {
+            "sku": "IGR-COFFEE-A-500-G",
+            "price": 14.9,
+            "qty": 220,
+            "unit_price": 29.8
+          },
+          "1 kg": {
+            "sku": "IGR-COFFEE-A-1-KG",
+            "price": 32.0,
+            "qty": 80,
+            "unit_price": 32.0
+          }
+        },
+        "unit_basis": "per_kg",
+        "cheapest_by_unit_price": "500 g",
+        "cheapest_unit_price": 29.8,
+        "card_price_misleads": true
+      },
+      "tee-stock-gating": {
+        "parent_sku": "IGR-TEE-A",
+        "gating": "stock-by-variant",
+        "from_price": 19.0,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-TEE-A-S",
+            "price": 19.0,
+            "qty": 45,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TEE-A-M",
+            "price": 19.0,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TEE-A-L",
+            "price": 19.0,
+            "qty": 60,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TEE-A-XL",
+            "price": 21.0,
+            "qty": 30,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      }
+    },
+    "cross_listing": {
+      "12 x 550ml": {
+        "cheapest_listing": "water-cellar-direct",
+        "cheapest_price": 9.89,
+        "listing_a_card_probe_would_pick": "water-cellar-direct",
+        "card_probe_wrong": false
+      },
+      "6 x 1.25L": {
+        "cheapest_listing": "water-cellar-direct",
+        "cheapest_price": 10.5,
+        "listing_a_card_probe_would_pick": "water-cellar-direct",
+        "card_probe_wrong": false
+      },
+      "2 x 9.5L": {
+        "cheapest_listing": "water-hillside-provisions",
+        "cheapest_price": 22.5,
+        "listing_a_card_probe_would_pick": "water-cellar-direct",
+        "card_probe_wrong": true
+      }
+    }
+  }
+}
