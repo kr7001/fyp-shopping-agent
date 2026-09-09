@@ -1,0 +1,68 @@
+﻿Summary
+Set up the WebArena shopping environment locally and audited how product pricing is exposed to agents. Most of the week went into environment troubleshooting. The audit produced one finding that changes the method.
+________________
+
+
+1. Environment
+WebArena shopping site now running locally via Docker, using the ServiceNow WebArena-Verified distribution rather than the original, as its images are considerably smaller and it corrects known annotation bugs.
+Setup was not straightforward. The image depends on Elasticsearch, which hangs during startup on Apple Silicon. Because the process still reports as running, the failure is silent, and it leaves the Magento indexes unbuilt so the catalogue appears almost empty. Resolved by a full container restart and a manual reindex. Setup procedure and timings are documented for reproducibility.
+________________
+
+
+2. Finding: catalogue composition
+The catalogue holds 104,368 products, all of type simple. There are no configurable products.
+Product options do exist, but they are Magento custom options, meaning one price regardless of selection. For example a cake topper offers ten colours, all at $9.49.
+Consequence. The environment provides interaction-gated options but not interaction-gated pricing. Configurable products with divergent per-variant prices will be authored for the experiments. This is workable and gives cleaner ground truth, since which products are mine will be documented explicitly.
+________________
+
+
+3. Finding: structured data collapses configurations to one price
+Checked what machine-readable product data each platform publishes.
+  
+
+Schema.org defines AggregateOffer with lowPrice and highPrice for exactly the case of a product available at multiple prices. Neither platform uses it. Both present a set of purchasable configurations as a single number.
+An agent trusting structured data over the rendered page, which is the standard approach, receives a confidently wrong answer with no ambiguity marker.
+Consequence for the method. The proposal's branch-and-bound approach for "which variant is cheapest" assumed a published lower bound to prune listings without opening them. That bound is not available from structured data on either platform. It must be parsed from the rendered listing instead. Discovered before implementation rather than after, and will be stated as a limitation.
+________________
+
+
+4. Deliverables this week
+Item
+	Status
+	WebArena shopping environment running locally
+	Done
+	Documented setup procedure, including the Apple Silicon issue and fix - github issue, submit pull request, blog post
+	Done
+	Catalogue composition verified via database query
+	Done
+	Structured data audit on WebArena and Shopee
+	Done
+	Repository with notes and observations
+	Done
+	
+
+	
+
+	________________
+
+
+
+
+5. Next
+#
+	Item
+	1
+	WebArena modifications. Author configurable products with divergent per-variant prices, so the environment reproduces the gating structure observed on live marketplaces. Document which products were added and why, so the ground truth is auditable
+	2
+	Run the openJiuwen browser agent against the environment and record token usage and cost - OpenRouter, Cloud Services (?)
+	3
+	Extend the structured data audit to Lazada and further Shopee sellers, to confirm the pattern is not seller-specific
+	4
+	Examine review pagination in WebArena as the second gating mechanism
+	
+
+________________
+
+
+6. For discussion
+Whether the environment limitation in Section 2 is better handled by authoring products in WebArena, or by adding WebMall as a second environment since it is built for multi-shop comparison shopping.
