@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+"""Compare every arm on the same four gated questions.
+
+The point of this file is comparability. Arms were run on different days with different
+task subsets and different repeat counts, and quoting them side by side without matching
+the questions would be the denominator problem again. So this restricts every arm to the
+gated scaled tasks, states the run count for each, and reports cost per run rather than
+suite totals.
+
+Reading the result: exhaustive retrieval is the upper bound, correct and expensive. The
+unmodified agent is the lower bound, cheap and sometimes wrong. Any policy worth having
+lives between them, and the gap between those two points is the space this project has to
+work in.
+
+    python experiments/arms.py
+"""
+
+from __future__ import annotations
+
+import collections
+import json
+import pathlib
+import statistics
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import policy as policy_module
+import score as scoring
+
+HERE = pathlib.Path(__file__).resolve().parent
+RESULTS = HERE / "results"
+
+# The gated questions of the scaled fixture. The control is excluded because its answer is
+# on the results page, so an exhaustive arm has nothing to be exhaustive about and would
+# only add cost that no arm can act on.
+GATED = ("scaled-cheapest-target", "scaled-target-price",
+         "scaled-all-stocked", "scaled-best-per-litre")
+
+
+def arm_name(payload: dict) -> str:
+    if payload.get("exhaustive"):
+        return "exhaustive"
+    if payload.get("confidence", "off") != "off":
+        return f"confidence:{payload['confidence']}"
+    policy = payload.get("policy", "off")
+    return "unmodified" if policy == "off" else policy
+
+
+def collect() -> dict[str, list[dict]]:
+    arms: dict[str, list[dict]] = collections.defaultdict(list)
+    for suite_path in sorted(RESULTS.glob("*/suite.json")):
+        payload = json.loads(suite_path.read_text())
+        rows = [r for r in payload["rows"] if r["task"] in GATED]
+        if not rows:
+            continue
+        arms[arm_name(payload)].extend(rows)
+    return arms
+
+
+def replayed_gate(arms: dict[str, list[dict]]) -> list[dict]:
+    """The gate arm, derived from the unmodified runs rather than run separately.
+
+    The gate issues no browser action, so applying it to a finished run gives exactly the
+    verdict it would have given live, at exactly the cost that run already incurred. It
+    belongs in this table at the unmodified arm's cost, which is the point: it is the only
+    arm that changes the outcome without changing the spend.
+    """
+    spec = json.loads((HERE / "tasks_scaled.json").read_text())
+    tasks = {t["id"]: t for t in spec["tasks"]}
+    out = []
+    for suite_path in sorted(RESULTS.glob("*/suite.json")):
+        payload = json.loads(suite_path.read_text())
+        if payload.get("policy", "off") != "off" or payload.get("exhaustive"):
+            continue
+        if payload.get("confidence", "off") != "off":
+            continue
+        for row in payload["rows"]:
+            if row["task"] not in GATED:
+                continue
+            log = suite_path.parent / (row.get("log") or "")
+            record = suite_path.parent / f"{row['task']}-{row['repeat']}.json"
+            if not log.exists() or not record.exists():
+                continue
+            result = json.loads(record.read_text()).get("result") or {}
+            answer = str(result.get("final") or "")
+            task = tasks[row["task"]]
+            # A run scored against a catalogue since regenerated cannot be compared.
+            if scoring.score(task, answer, True)["verdict"] != row["verdict"]:
+                continue
+            check = policy_module.gate(task, spec, answer, log)
+            verdict = (row["verdict"] if check["ok"]
+                       else scoring.score(task, policy_module.abstention_for(check),
+                                          True)["verdict"])
+            out.append({**row, "verdict": verdict})
+    return out
+
+
+def mean(values):
+    values = [v for v in values if v is not None]
+    return statistics.mean(values) if values else None
+
+
+def main() -> int:
+    arms = collect()
+    arms["gate"] = replayed_gate(arms)
+    order = ["unmodified", "confidence:plain", "gate", "retry", "exhaustive"]
+    order += [k for k in arms if k not in order]
+
+    print("EVERY ARM, ON THE SAME FOUR GATED QUESTIONS\n")
+    print(f"{'arm':18} {'runs':>5} {'correct':>8} {'refused':>8} {'wrong':>6} "
+          f"{'rate':>6} {'actions':>8} {'cost/run':>9}")
+    print("-" * 78)
+
+    for name in order:
+        rows = arms.get(name)
+        if not rows:
+            continue
+        verdicts = collections.Counter(r["verdict"] for r in rows)
+        answered = len(rows) - verdicts["abstained"]
+        rate = verdicts["correct"] / answered if answered else 0
+        print(f"{name:18} {len(rows):>5} {verdicts['correct']:>8} "
+              f"{verdicts['abstained']:>8} {verdicts['wrong']:>6} "
+              f"{rate:>5.0%} {str(round(mean(r.get('actions') for r in rows) or 0, 1)):>8} "
+              f"${mean(r.get('cost_usd') for r in rows) or 0:>8.3f}"
+              + ("   replayed, no extra spend" if name == "gate" else ""))
+
+    print("\nrate is correct as a share of questions the arm actually answered, so an arm")
+    print("that refuses is not rewarded for the refusals nor punished for them here.")
+
+    low = arms.get("unmodified")
+    high = arms.get("exhaustive")
+    if low and high:
+        lc = mean(r.get("cost_usd") for r in low)
+        hc = mean(r.get("cost_usd") for r in high)
+        la = mean(r.get("actions") for r in low)
+        ha = mean(r.get("actions") for r in high)
+        lr = sum(1 for r in low if r["verdict"] == "correct") / len(low)
+        hr = sum(1 for r in high if r["verdict"] == "correct") / len(high)
+        print(f"\nthe axis a policy has to live on")
+        print(f"  unmodified   {lr:>5.0%} correct   {la:>5.1f} actions   ${lc:.3f} per run")
+        print(f"  exhaustive   {hr:>5.0%} correct   {ha:>5.1f} actions   ${hc:.3f} per run")
+        print(f"  exhaustive costs {hc / lc:.1f}x the unmodified agent and gets "
+              f"{hr - lr:+.0%} accuracy")
+        print("\nA targeting policy has to beat exhaustive on cost while matching it on")
+        print("accuracy. That is the claim RQ3 makes and the one still unmeasured.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
