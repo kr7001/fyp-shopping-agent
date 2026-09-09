@@ -1,0 +1,112 @@
+{
+  "_about": [
+    "Configurable-product fixtures for the interaction-gated information experiments.",
+    "WebArena's stock catalogue is 100% simple products, and its 425,384 custom-option",
+    "values all carry a zero price delta, so the environment has option variance but no",
+    "price variance. These families add the missing structure: a price that only exists",
+    "in the DOM after the shopper selects a variant.",
+    "Every SKU here is prefixed IGR- so seeded rows are separable from WebArena's own."
+  ],
+  "attribute_set_id": 4,
+  "website_ids": [1],
+
+  "attributes": [
+    {
+      "code": "pack_size",
+      "label": "Pack Size",
+      "options": ["24 x 350ml", "12 x 550ml", "6 x 1.25L", "2 x 9.5L"]
+    },
+    {
+      "code": "net_weight",
+      "label": "Net Weight",
+      "options": ["250 g", "500 g", "1 kg"]
+    },
+    {
+      "code": "apparel_size",
+      "label": "Size",
+      "options": ["S", "M", "L", "XL"]
+    }
+  ],
+
+  "families": [
+    {
+      "key": "water-cellar-direct",
+      "parent_sku": "IGR-WATER-A",
+      "name": "Glenmoor Still Spring Water, Multipack - Cellar Direct",
+      "attribute": "pack_size",
+      "category_ids": [14],
+      "gating": "price-by-variant",
+      "note": [
+        "Mirrors the live marketplace listing observed by hand in August 2026.",
+        "The 'from' price on the card belongs to the 12 x 550ml pack, not to the",
+        "largest pack, and it is not the cheapest per litre. An agent that answers",
+        "from the card price alone reports the wrong pack."
+      ],
+      "variants": [
+        {"option": "24 x 350ml", "price": 11.90, "qty": 140, "units": 24, "volume_ml": 350},
+        {"option": "12 x 550ml", "price": 9.89, "qty": 200, "units": 12, "volume_ml": 550},
+        {"option": "6 x 1.25L", "price": 10.50, "qty": 90, "units": 6, "volume_ml": 1250},
+        {"option": "2 x 9.5L", "price": 24.90, "qty": 40, "units": 2, "volume_ml": 9500}
+      ]
+    },
+    {
+      "key": "water-hillside-provisions",
+      "parent_sku": "IGR-WATER-B",
+      "name": "Glenmoor Still Spring Water, Multipack - Hillside Provisions",
+      "attribute": "pack_size",
+      "category_ids": [14],
+      "gating": "price-by-variant",
+      "note": [
+        "The comparison trap. Same product, second seller. Its 'from' price is HIGHER",
+        "than Cellar Direct's, but its 2 x 9.5L carton is CHEAPER. Card-level retrieval",
+        "therefore inverts the true ranking for any large-carton question, which is the",
+        "failure the deployed shopping assistant made on the live site.",
+        "Ground truth for 'cheapest 2 x 9.5L': this seller, 22.50 against 24.90."
+      ],
+      "variants": [
+        {"option": "12 x 550ml", "price": 10.90, "qty": 160, "units": 12, "volume_ml": 550},
+        {"option": "6 x 1.25L", "price": 11.40, "qty": 75, "units": 6, "volume_ml": 1250},
+        {"option": "2 x 9.5L", "price": 22.50, "qty": 55, "units": 2, "volume_ml": 9500}
+      ]
+    },
+    {
+      "key": "coffee-bulk-reversal",
+      "parent_sku": "IGR-COFFEE-A",
+      "name": "Ridgeway Roasters Whole Bean Coffee, House Blend",
+      "attribute": "net_weight",
+      "category_ids": [14],
+      "gating": "price-by-variant",
+      "note": [
+        "Breaks the 'bigger pack is cheaper per unit' heuristic. Cost per kilo falls",
+        "from 250g to 500g and then rises again at 1kg, so the cheapest unit price sits",
+        "in the middle of the range and cannot be inferred from either endpoint.",
+        "An agent must open all three to answer correctly."
+      ],
+      "variants": [
+        {"option": "250 g", "price": 8.50, "qty": 300, "units": 1, "weight_g": 250},
+        {"option": "500 g", "price": 14.90, "qty": 220, "units": 1, "weight_g": 500},
+        {"option": "1 kg", "price": 32.00, "qty": 80, "units": 1, "weight_g": 1000}
+      ]
+    },
+    {
+      "key": "tee-stock-gating",
+      "parent_sku": "IGR-TEE-A",
+      "name": "Northmoor Heavyweight Cotton T-Shirt",
+      "attribute": "apparel_size",
+      "category_ids": [5],
+      "gating": "stock-by-variant",
+      "note": [
+        "Availability gating rather than price gating. The parent shows In Stock",
+        "because some variant is in stock. Size M is out of stock and size XL carries",
+        "a surcharge. Neither fact is in the first observation.",
+        "Point-lookup ground truth: M is NOT available."
+      ],
+      "variants": [
+        {"option": "S", "price": 19.00, "qty": 45},
+        {"option": "M", "price": 19.00, "qty": 0},
+        {"option": "L", "price": 19.00, "qty": 60},
+        {"option": "XL", "price": 21.00, "qty": 30}
+      ]
+    }
+  ]
+}

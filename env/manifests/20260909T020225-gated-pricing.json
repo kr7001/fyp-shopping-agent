@@ -1,0 +1,619 @@
+{
+  "seeded_at": "2026-09-09T02:02:25",
+  "base_url": "http://localhost:7770",
+  "fixture": "gated_pricing.json",
+  "parent_skus": [
+    "IGR-RVN-01",
+    "IGR-RVN-02",
+    "IGR-RVN-03",
+    "IGR-RVN-04",
+    "IGR-RVN-05",
+    "IGR-RVN-06",
+    "IGR-RVN-07",
+    "IGR-RVN-08",
+    "IGR-RVN-09",
+    "IGR-RVN-10",
+    "IGR-RVN-11",
+    "IGR-RVN-12",
+    "IGR-RVN-13",
+    "IGR-RVN-14",
+    "IGR-RVN-15"
+  ],
+  "child_skus": [
+    "IGR-RVN-01-24-X-350ML",
+    "IGR-RVN-01-12-X-550ML",
+    "IGR-RVN-01-6-X-1-25L",
+    "IGR-RVN-01-2-X-9-5L",
+    "IGR-RVN-02-24-X-350ML",
+    "IGR-RVN-02-12-X-550ML",
+    "IGR-RVN-02-6-X-1-25L",
+    "IGR-RVN-03-24-X-350ML",
+    "IGR-RVN-03-12-X-550ML",
+    "IGR-RVN-03-6-X-1-25L",
+    "IGR-RVN-03-2-X-9-5L",
+    "IGR-RVN-04-24-X-350ML",
+    "IGR-RVN-04-12-X-550ML",
+    "IGR-RVN-04-6-X-1-25L",
+    "IGR-RVN-04-2-X-9-5L",
+    "IGR-RVN-05-24-X-350ML",
+    "IGR-RVN-05-12-X-550ML",
+    "IGR-RVN-05-6-X-1-25L",
+    "IGR-RVN-05-2-X-9-5L",
+    "IGR-RVN-06-24-X-350ML",
+    "IGR-RVN-06-12-X-550ML",
+    "IGR-RVN-06-6-X-1-25L",
+    "IGR-RVN-06-2-X-9-5L",
+    "IGR-RVN-07-24-X-350ML",
+    "IGR-RVN-07-12-X-550ML",
+    "IGR-RVN-07-6-X-1-25L",
+    "IGR-RVN-07-2-X-9-5L",
+    "IGR-RVN-08-24-X-350ML",
+    "IGR-RVN-08-12-X-550ML",
+    "IGR-RVN-08-6-X-1-25L",
+    "IGR-RVN-08-2-X-9-5L",
+    "IGR-RVN-09-24-X-350ML",
+    "IGR-RVN-09-12-X-550ML",
+    "IGR-RVN-09-6-X-1-25L",
+    "IGR-RVN-09-2-X-9-5L",
+    "IGR-RVN-10-24-X-350ML",
+    "IGR-RVN-10-12-X-550ML",
+    "IGR-RVN-10-6-X-1-25L",
+    "IGR-RVN-11-24-X-350ML",
+    "IGR-RVN-11-12-X-550ML",
+    "IGR-RVN-11-6-X-1-25L",
+    "IGR-RVN-11-2-X-9-5L",
+    "IGR-RVN-12-24-X-350ML",
+    "IGR-RVN-12-12-X-550ML",
+    "IGR-RVN-12-6-X-1-25L",
+    "IGR-RVN-13-24-X-350ML",
+    "IGR-RVN-13-12-X-550ML",
+    "IGR-RVN-13-6-X-1-25L",
+    "IGR-RVN-14-24-X-350ML",
+    "IGR-RVN-14-12-X-550ML",
+    "IGR-RVN-14-6-X-1-25L",
+    "IGR-RVN-14-2-X-9-5L",
+    "IGR-RVN-15-24-X-350ML",
+    "IGR-RVN-15-12-X-550ML",
+    "IGR-RVN-15-6-X-1-25L"
+  ],
+  "ground_truth": {
+    "families": {
+      "scaled-01": {
+        "parent_sku": "IGR-RVN-01",
+        "gating": "price-by-variant",
+        "from_price": 8.44,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-RVN-01-24-X-350ML",
+            "price": 12.66,
+            "qty": 94,
+            "unit_price": 1.5071
+          },
+          "12 x 550ml": {
+            "sku": "IGR-RVN-01-12-X-550ML",
+            "price": 8.44,
+            "qty": 172,
+            "unit_price": 1.2788
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-RVN-01-6-X-1-25L",
+            "price": 8.88,
+            "qty": 158,
+            "unit_price": 1.184
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-RVN-01-2-X-9-5L",
+            "price": 25.7,
+            "qty": 31,
+            "unit_price": 1.3526
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "6 x 1.25L",
+        "cheapest_unit_price": 1.184,
+        "card_price_misleads": true
+      },
+      "scaled-02": {
+        "parent_sku": "IGR-RVN-02",
+        "gating": "price-by-variant",
+        "from_price": 15.28,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-RVN-02-24-X-350ML",
+            "price": 19.69,
+            "qty": 115,
+            "unit_price": 2.344
+          },
+          "12 x 550ml": {
+            "sku": "IGR-RVN-02-12-X-550ML",
+            "price": 15.28,
+            "qty": 77,
+            "unit_price": 2.3152
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-RVN-02-6-X-1-25L",
+            "price": 20.87,
+            "qty": 52,
+            "unit_price": 2.7827
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 2.3152,
+        "card_price_misleads": false
+      },
+      "scaled-03": {
+        "parent_sku": "IGR-RVN-03",
+        "gating": "price-by-variant",
+        "from_price": 6.82,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-RVN-03-24-X-350ML",
+            "price": 8.3,
+            "qty": 82,
+            "unit_price": 0.9881
+          },
+          "12 x 550ml": {
+            "sku": "IGR-RVN-03-12-X-550ML",
+            "price": 6.82,
+            "qty": 100,
+            "unit_price": 1.0333
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-RVN-03-6-X-1-25L",
+            "price": 8.95,
+            "qty": 67,
+            "unit_price": 1.1933
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-RVN-03-2-X-9-5L",
+            "price": 17.68,
+            "qty": 31,
+            "unit_price": 0.9305
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "2 x 9.5L",
+        "cheapest_unit_price": 0.9305,
+        "card_price_misleads": true
+      },
+      "scaled-04": {
+        "parent_sku": "IGR-RVN-04",
+        "gating": "price-by-variant",
+        "from_price": 14.27,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-RVN-04-24-X-350ML",
+            "price": 21.16,
+            "qty": 132,
+            "unit_price": 2.519
+          },
+          "12 x 550ml": {
+            "sku": "IGR-RVN-04-12-X-550ML",
+            "price": 14.27,
+            "qty": 93,
+            "unit_price": 2.1621
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-RVN-04-6-X-1-25L",
+            "price": 16.85,
+            "qty": 34,
+            "unit_price": 2.2467
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-RVN-04-2-X-9-5L",
+            "price": 41.26,
+            "qty": 99,
+            "unit_price": 2.1716
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 2.1621,
+        "card_price_misleads": false
+      },
+      "scaled-05": {
+        "parent_sku": "IGR-RVN-05",
+        "gating": "price-by-variant",
+        "from_price": 16.61,
+        "from_price_option": "6 x 1.25L",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-RVN-05-24-X-350ML",
+            "price": 21.71,
+            "qty": 232,
+            "unit_price": 2.5845
+          },
+          "12 x 550ml": {
+            "sku": "IGR-RVN-05-12-X-550ML",
+            "price": 16.78,
+            "qty": 29,
+            "unit_price": 2.5424
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-RVN-05-6-X-1-25L",
+            "price": 16.61,
+            "qty": 231,
+            "unit_price": 2.2147
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-RVN-05-2-X-9-5L",
+            "price": 49.13,
+            "qty": 70,
+            "unit_price": 2.5858
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "6 x 1.25L",
+        "cheapest_unit_price": 2.2147,
+        "card_price_misleads": false
+      },
+      "scaled-06": {
+        "parent_sku": "IGR-RVN-06",
+        "gating": "price-by-variant",
+        "from_price": 21.78,
+        "from_price_option": "6 x 1.25L",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-RVN-06-24-X-350ML",
+            "price": 25.02,
+            "qty": 181,
+            "unit_price": 2.9786
+          },
+          "12 x 550ml": {
+            "sku": "IGR-RVN-06-12-X-550ML",
+            "price": 22.32,
+            "qty": 195,
+            "unit_price": 3.3818
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-RVN-06-6-X-1-25L",
+            "price": 21.78,
+            "qty": 197,
+            "unit_price": 2.904
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-RVN-06-2-X-9-5L",
+            "price": 67.17,
+            "qty": 79,
+            "unit_price": 3.5353
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "6 x 1.25L",
+        "cheapest_unit_price": 2.904,
+        "card_price_misleads": false
+      },
+      "scaled-07": {
+        "parent_sku": "IGR-RVN-07",
+        "gating": "price-by-variant",
+        "from_price": 6.83,
+        "from_price_option": "6 x 1.25L",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-RVN-07-24-X-350ML",
+            "price": 8.86,
+            "qty": 135,
+            "unit_price": 1.0548
+          },
+          "12 x 550ml": {
+            "sku": "IGR-RVN-07-12-X-550ML",
+            "price": 6.85,
+            "qty": 128,
+            "unit_price": 1.0379
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-RVN-07-6-X-1-25L",
+            "price": 6.83,
+            "qty": 205,
+            "unit_price": 0.9107
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-RVN-07-2-X-9-5L",
+            "price": 19.77,
+            "qty": 30,
+            "unit_price": 1.0405
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "6 x 1.25L",
+        "cheapest_unit_price": 0.9107,
+        "card_price_misleads": false
+      },
+      "scaled-08": {
+        "parent_sku": "IGR-RVN-08",
+        "gating": "price-by-variant",
+        "from_price": 15.1,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-RVN-08-24-X-350ML",
+            "price": 16.48,
+            "qty": 170,
+            "unit_price": 1.9619
+          },
+          "12 x 550ml": {
+            "sku": "IGR-RVN-08-12-X-550ML",
+            "price": 15.1,
+            "qty": 122,
+            "unit_price": 2.2879
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-RVN-08-6-X-1-25L",
+            "price": 16.36,
+            "qty": 160,
+            "unit_price": 2.1813
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-RVN-08-2-X-9-5L",
+            "price": 41.98,
+            "qty": 72,
+            "unit_price": 2.2095
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "24 x 350ml",
+        "cheapest_unit_price": 1.9619,
+        "card_price_misleads": true
+      },
+      "scaled-09": {
+        "parent_sku": "IGR-RVN-09",
+        "gating": "price-by-variant",
+        "from_price": 6.44,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-RVN-09-24-X-350ML",
+            "price": 10.73,
+            "qty": 222,
+            "unit_price": 1.2774
+          },
+          "12 x 550ml": {
+            "sku": "IGR-RVN-09-12-X-550ML",
+            "price": 6.44,
+            "qty": 115,
+            "unit_price": 0.9758
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-RVN-09-6-X-1-25L",
+            "price": 9.27,
+            "qty": 200,
+            "unit_price": 1.236
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-RVN-09-2-X-9-5L",
+            "price": 19.26,
+            "qty": 31,
+            "unit_price": 1.0137
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 0.9758,
+        "card_price_misleads": false
+      },
+      "scaled-10": {
+        "parent_sku": "IGR-RVN-10",
+        "gating": "price-by-variant",
+        "from_price": 11.27,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-RVN-10-24-X-350ML",
+            "price": 14.92,
+            "qty": 89,
+            "unit_price": 1.7762
+          },
+          "12 x 550ml": {
+            "sku": "IGR-RVN-10-12-X-550ML",
+            "price": 11.27,
+            "qty": 140,
+            "unit_price": 1.7076
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-RVN-10-6-X-1-25L",
+            "price": 13.41,
+            "qty": 162,
+            "unit_price": 1.788
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 1.7076,
+        "card_price_misleads": false
+      },
+      "scaled-11": {
+        "parent_sku": "IGR-RVN-11",
+        "gating": "price-by-variant",
+        "from_price": 9.04,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-RVN-11-24-X-350ML",
+            "price": 10.34,
+            "qty": 234,
+            "unit_price": 1.231
+          },
+          "12 x 550ml": {
+            "sku": "IGR-RVN-11-12-X-550ML",
+            "price": 9.04,
+            "qty": 210,
+            "unit_price": 1.3697
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-RVN-11-6-X-1-25L",
+            "price": 9.04,
+            "qty": 44,
+            "unit_price": 1.2053
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-RVN-11-2-X-9-5L",
+            "price": 20.62,
+            "qty": 109,
+            "unit_price": 1.0853
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "2 x 9.5L",
+        "cheapest_unit_price": 1.0853,
+        "card_price_misleads": true
+      },
+      "scaled-12": {
+        "parent_sku": "IGR-RVN-12",
+        "gating": "price-by-variant",
+        "from_price": 12.13,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-RVN-12-24-X-350ML",
+            "price": 15.08,
+            "qty": 141,
+            "unit_price": 1.7952
+          },
+          "12 x 550ml": {
+            "sku": "IGR-RVN-12-12-X-550ML",
+            "price": 12.13,
+            "qty": 155,
+            "unit_price": 1.8379
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-RVN-12-6-X-1-25L",
+            "price": 16.02,
+            "qty": 189,
+            "unit_price": 2.136
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "24 x 350ml",
+        "cheapest_unit_price": 1.7952,
+        "card_price_misleads": true
+      },
+      "scaled-13": {
+        "parent_sku": "IGR-RVN-13",
+        "gating": "price-by-variant",
+        "from_price": 17.72,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-RVN-13-24-X-350ML",
+            "price": 23.38,
+            "qty": 181,
+            "unit_price": 2.7833
+          },
+          "12 x 550ml": {
+            "sku": "IGR-RVN-13-12-X-550ML",
+            "price": 17.72,
+            "qty": 159,
+            "unit_price": 2.6848
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-RVN-13-6-X-1-25L",
+            "price": 22.01,
+            "qty": 149,
+            "unit_price": 2.9347
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 2.6848,
+        "card_price_misleads": false
+      },
+      "scaled-14": {
+        "parent_sku": "IGR-RVN-14",
+        "gating": "price-by-variant",
+        "from_price": 20.87,
+        "from_price_option": "6 x 1.25L",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-RVN-14-24-X-350ML",
+            "price": 26.16,
+            "qty": 32,
+            "unit_price": 3.1143
+          },
+          "12 x 550ml": {
+            "sku": "IGR-RVN-14-12-X-550ML",
+            "price": 24.14,
+            "qty": 136,
+            "unit_price": 3.6576
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-RVN-14-6-X-1-25L",
+            "price": 20.87,
+            "qty": 179,
+            "unit_price": 2.7827
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-RVN-14-2-X-9-5L",
+            "price": 58.48,
+            "qty": 124,
+            "unit_price": 3.0779
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "6 x 1.25L",
+        "cheapest_unit_price": 2.7827,
+        "card_price_misleads": false
+      },
+      "scaled-15": {
+        "parent_sku": "IGR-RVN-15",
+        "gating": "price-by-variant",
+        "from_price": 19.57,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-RVN-15-24-X-350ML",
+            "price": 21.78,
+            "qty": 196,
+            "unit_price": 2.5929
+          },
+          "12 x 550ml": {
+            "sku": "IGR-RVN-15-12-X-550ML",
+            "price": 19.57,
+            "qty": 170,
+            "unit_price": 2.9652
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-RVN-15-6-X-1-25L",
+            "price": 25.58,
+            "qty": 26,
+            "unit_price": 3.4107
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "24 x 350ml",
+        "cheapest_unit_price": 2.5929,
+        "card_price_misleads": true
+      }
+    },
+    "cross_listing": {
+      "24 x 350ml": {
+        "cheapest_listing": "scaled-03",
+        "cheapest_price": 8.3,
+        "listing_a_card_probe_would_pick": "scaled-09",
+        "card_probe_wrong": true
+      },
+      "12 x 550ml": {
+        "cheapest_listing": "scaled-09",
+        "cheapest_price": 6.44,
+        "listing_a_card_probe_would_pick": "scaled-09",
+        "card_probe_wrong": false
+      },
+      "6 x 1.25L": {
+        "cheapest_listing": "scaled-07",
+        "cheapest_price": 6.83,
+        "listing_a_card_probe_would_pick": "scaled-09",
+        "card_probe_wrong": true
+      },
+      "2 x 9.5L": {
+        "cheapest_listing": "scaled-03",
+        "cheapest_price": 17.68,
+        "listing_a_card_probe_would_pick": "scaled-09",
+        "card_probe_wrong": true
+      }
+    }
+  }
+}
