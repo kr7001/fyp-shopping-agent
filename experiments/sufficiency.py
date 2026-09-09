@@ -68,6 +68,20 @@ COMPLETION_CLAIM = re.compile(
 UNIVERSAL_QUESTION = re.compile(r"\b(every|all)\b", re.IGNORECASE)
 AFFIRMS = re.compile(r"^\W*yes\b", re.IGNORECASE)
 
+# An answer that states the size of the set it considered can be checked against the size
+# of the set that exists. "analysing all 4 sellers" is a comparison over 4 of 15, stated
+# by the agent itself. This needs no ground truth about the right answer, only the
+# population, and it catches a failure the arithmetic rules cannot see: every figure can
+# be correctly observed and correctly combined and the comparison still be over the wrong
+# set. The count is written both ways, so both are read.
+NUMBER_WORDS = {w: i for i, w in enumerate(
+    "zero one two three four five six seven eight nine ten eleven twelve thirteen "
+    "fourteen fifteen sixteen seventeen eighteen nineteen twenty".split())}
+COVERAGE_CLAIM = re.compile(
+    r"\ball\s+(?:the\s+)?(\d{1,3}|" + "|".join(NUMBER_WORDS) + r")\s+"
+    r"(?:\w+\s+){0,2}?(sellers?|listings?|products?|results?|items?|options?)\b",
+    re.IGNORECASE)
+
 # A product page navigation. Search result pages carry a query string and are excluded,
 # since landing on the results page is not the same as opening a listing.
 PRODUCT_NAV = re.compile(r"page\.goto\('([^']+?\.html)'\)")
@@ -139,6 +153,19 @@ def verified_compositions(amounts: list[int], seen: dict[str, set[int]]) -> set[
             total = base + delta
             if total in amounts and base in seen["absolutes"] and delta in seen["deltas"]:
                 justified.update({base, delta, total})
+
+    # The loop above only exonerates an answer that states its own working. An answer
+    # that gives the total alone has nothing to compose, and was being called
+    # unsupported even when the observations fully justified it. That cost a correct
+    # answer in the retry arm: "$17.68, Redhill Stores" is right, and $17.68 is never
+    # printed on the page, because it is the $6.82 base plus the $10.86 surcharge. Both
+    # parts were observed. Showing the arithmetic is a virtue, not a precondition for
+    # being believed, so the composition is checked against what was observed too.
+    for base in seen["absolutes"]:
+        for delta in seen["deltas"]:
+            total = base + delta
+            if total in amounts:
+                justified.update({total})
     return justified
 
 
@@ -162,6 +189,18 @@ def check(answer: str, seen: dict[str, set[int]], *, question: str = "",
                 "why": (f"claims every one of {population} listings qualifies, "
                         f"having opened {opened}"),
                 "claimed": []}
+
+    # A stated coverage smaller than the population, checked before the figures, because
+    # the figures can all be sound while the comparison is over the wrong set.
+    if population:
+        for count, _noun in COVERAGE_CLAIM.findall(answer):
+            size = NUMBER_WORDS.get(count.lower(), None)
+            size = int(count) if size is None and count.isdigit() else size
+            if size is not None and size < population:
+                return {"flag": "understated_population", "ok": False,
+                        "why": (f"claims to have covered all {size}, where the result "
+                                f"set holds {population}"),
+                        "claimed": prices_in(answer)}
 
     claimed = prices_in(answer)
     rates = rate_values(answer)
