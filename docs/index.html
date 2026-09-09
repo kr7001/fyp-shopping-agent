@@ -1,0 +1,1127 @@
+<title>Ambiguity Without Adversary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+
+<style>
+:root {
+  --ground: #FFFFFF;
+  --soft: #F7F8FA;
+  --ink: #15181D;
+  --muted: #6C7480;
+  --faint: #99A0AB;
+  --line: #E8EAEE;
+  --line-strong: #D3D7DE;
+  --accent: #2359D0;
+  --accent-soft: #EEF3FD;
+  --tag: #8A6100;
+  --tag-soft: #FCF3DF;
+  --good: #16704A;
+  --bad: #B3312A;
+  --warn: #8A6100;
+
+  --sans: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  --measure: 68ch;
+}
+
+/* Dark is a deliberate choice made on the page, not inherited from the operating
+   system, so the default stays bright for everyone regardless of their OS setting. */
+:root[data-theme="dark"] {
+  --ground: #10141A;
+  --soft: #181D25;
+  --ink: #EAEDF2;
+  --muted: #A6AEBA;
+  --faint: #808895;
+  --line: #262D37;
+  --line-strong: #39424E;
+  --accent: #8FB0F5;
+  --accent-soft: #182339;
+  --tag: #E6BC66;
+  --tag-soft: #2C2514;
+  --good: #74C298;
+  --bad: #E8887B;
+  --warn: #DFB05C;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16.5px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 { margin: 0; line-height: 1.2; text-wrap: balance; font-weight: 600; letter-spacing: -0.015em; }
+p { margin: 0; }
+a { color: var(--accent); text-underline-offset: 3px; }
+
+.eyebrow {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+
+/* masthead */
+
+.masthead { border-bottom: 1px solid var(--line); }
+.masthead .wrap {
+  display: flex; flex-wrap: wrap; gap: 26px 40px;
+  align-items: flex-end; justify-content: space-between;
+  padding-top: 52px; padding-bottom: 34px;
+}
+.mast-text { display: flex; flex-direction: column; gap: 14px; max-width: 60ch; }
+.mast-text h1 { font-size: clamp(30px, 4.2vw, 44px); letter-spacing: -0.025em; }
+.mast-text .sub { color: var(--muted); font-size: 17.5px; max-width: 56ch; }
+.mast-meta { display: flex; flex-wrap: wrap; gap: 6px 24px; font-family: var(--mono); font-weight: 500; font-size: 12px; color: var(--muted); }
+.mast-meta b { color: var(--muted); font-weight: 400; }
+
+.switch { display: inline-flex; gap: 4px; }
+.switch button {
+  font-family: var(--mono); font-weight: 700; font-size: 12px;
+  border: 1px solid var(--line-strong); background: transparent; color: var(--muted);
+  padding: 8px 16px; border-radius: 2px; cursor: pointer;
+}
+.switch button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--ground); }
+.switch button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.themebtn {
+  font-family: var(--mono); font-weight: 700; font-size: 12px;
+  border: 1px solid var(--line-strong); background: transparent; color: var(--muted);
+  padding: 8px 14px; border-radius: 2px; cursor: pointer; margin-left: 10px;
+}
+.themebtn:hover { color: var(--ink); border-color: var(--ink); }
+.themebtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+body:not(.plain) .r-plain { display: none; }
+body.plain .r-tech { display: none; }
+
+/* layout */
+
+.shell { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: 56px; padding: 56px 0 100px; }
+@media (max-width: 920px) { .shell { grid-template-columns: 1fr; gap: 30px; padding-top: 34px; } }
+
+.rail { position: sticky; top: 26px; align-self: start; display: flex; flex-direction: column; gap: 1px; }
+.railgroup { display: flex; flex-direction: column; }
+.railrow { display: flex; align-items: baseline; gap: 4px; }
+.railrow > a {
+  flex: 1; font-family: var(--sans); font-size: 14px; font-weight: 600;
+  letter-spacing: -0.005em; text-decoration: none; color: var(--ink); padding: 6px 0;
+}
+.railrow > a:hover { color: var(--accent); }
+.railrow > a.here { color: var(--accent); }
+.railgroup.here .railtoggle { color: var(--accent); }
+.railrow > a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.railtoggle {
+  border: 0; background: transparent; cursor: pointer; color: var(--muted);
+  font-family: var(--mono); font-weight: 700; font-size: 13px; line-height: 1;
+  padding: 6px 2px; width: 18px; text-align: center;
+}
+.railtoggle:hover { color: var(--accent); }
+.railtoggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.railsub {
+  list-style: none; margin: 0 0 8px; padding: 2px 0 2px 10px;
+  border-left: 2px solid var(--line); display: flex; flex-direction: column; gap: 0;
+}
+/* display:flex above outranks the hidden attribute's default, so state it directly
+   or the list stays visible and the marker looks broken. */
+.railsub[hidden] { display: none; }
+.railsub a {
+  font-family: var(--sans); font-size: 13px; font-weight: 500; text-decoration: none;
+  color: var(--muted); padding: 4px 0 4px 8px; display: block;
+}
+.railsub a:hover { color: var(--accent); }
+.railsub a:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+@media (max-width: 920px) {
+  .rail { position: static; flex-direction: row; flex-wrap: wrap; gap: 0 4px; }
+  .railtoggle, .railsub { display: none; }
+  .railrow > a { padding: 5px 12px 5px 0; }
+}
+
+main { display: flex; flex-direction: column; gap: 84px; min-width: 0; }
+section { display: flex; flex-direction: column; gap: 26px; scroll-margin-top: 26px; }
+section > h2 { font-size: 25px; }
+.lede { color: var(--muted); max-width: var(--measure); font-size: 17px; }
+.prose { max-width: var(--measure); display: flex; flex-direction: column; gap: 15px; }
+h3.sub { font-size: 18px; margin-top: 12px; }
+.note { font-size: 14.5px; color: var(--muted); max-width: var(--measure); }
+
+/* problem */
+
+.problem { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 48px; align-items: start; }
+@media (max-width: 800px) { .problem { grid-template-columns: 1fr; gap: 32px; } }
+
+.pricelist { display: flex; flex-direction: column; gap: 0; }
+.pricelist .cap { font-family: var(--mono); font-weight: 700; font-size: 11.5px; color: var(--muted); padding-bottom: 10px; }
+.price {
+  display: grid; grid-template-columns: 1fr auto 74px; gap: 16px; align-items: baseline;
+  padding: 11px 12px; font-family: var(--mono); font-weight: 500; font-size: 13px;
+  border-bottom: 1px solid var(--line);
+}
+.price .per { color: var(--faint); font-size: 11.5px; }
+.price b { font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
+.price.shown { background: var(--soft); }
+.price.gated { background: var(--tag-soft); color: var(--tag); }
+.price.gated .per { color: var(--tag); }
+
+.rqlist { display: flex; flex-direction: column; gap: 12px; padding-top: 6px; border-top: 1px solid var(--line); }
+.rq { display: grid; grid-template-columns: 46px minmax(0, 1fr); gap: 14px; padding-top: 12px; }
+.rq .k { font-family: var(--mono); font-weight: 700; font-size: 12px; color: var(--muted); padding-top: 3px; }
+.rq .v { font-size: 15.5px; }
+
+.tag {
+  display: inline-block; font-family: var(--mono); font-weight: 700; font-size: 10.5px; letter-spacing: 0.06em;
+  padding: 2px 8px; border: 1px solid var(--line-strong); color: var(--muted); border-radius: 2px;
+  white-space: nowrap;
+}
+.tag.win { color: var(--good); border-color: var(--good); }
+.tag.neg { color: var(--warn); border-color: var(--warn); }
+
+/* architecture */
+
+.arch { display: grid; grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: 48px; align-items: start; }
+@media (max-width: 880px) { .arch { grid-template-columns: 1fr; gap: 30px; } }
+
+.diagram { overflow-x: auto; }
+.diagram svg { display: block; width: 100%; height: auto; min-width: 300px; }
+.node rect { fill: var(--ground); stroke: var(--line-strong); stroke-width: 1; }
+.node:hover rect { stroke: var(--accent); }
+.node.on rect { fill: var(--accent-soft); stroke: var(--accent); }
+.node text.t { fill: var(--ink); font-family: var(--sans); font-size: 13.5px; font-weight: 500; }
+.node text.s { fill: var(--muted); font-family: var(--mono); font-weight: 500; font-size: 10px; }
+.node.on text.s { fill: var(--muted); }
+.node { cursor: pointer; }
+.node:focus-visible rect { stroke: var(--accent); stroke-width: 2; }
+.flow { stroke: var(--line-strong); stroke-width: 1; fill: none; }
+.flowhead { fill: var(--line-strong); }
+
+.detail { position: sticky; top: 26px; display: flex; flex-direction: column; gap: 14px; }
+@media (max-width: 880px) { .detail { position: static; } }
+.detail h3 { font-size: 21px; }
+.detail .path { font-family: var(--mono); font-weight: 700; font-size: 12px; color: var(--accent); word-break: break-all; }
+.detail p { max-width: 56ch; color: var(--ink); }
+.detail ul { margin: 0; padding: 14px 0 0; list-style: none; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.detail li { font-size: 15px; color: var(--ink); padding-left: 16px; position: relative; }
+.detail li::before { content: ""; position: absolute; left: 0; top: 10px; width: 5px; height: 1px; background: var(--line-strong); }
+
+/* function reference */
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.toolbar input {
+  font-family: var(--mono); font-weight: 500; font-size: 13px; padding: 8px 12px;
+  border: 1px solid var(--line-strong); background: var(--ground); color: var(--ink);
+  border-radius: 2px; min-width: 220px;
+}
+.toolbar input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.chip {
+  font-family: var(--mono); font-weight: 700; font-size: 11.5px; padding: 7px 13px; cursor: pointer;
+  border: 1px solid var(--line-strong); background: transparent; color: var(--muted); border-radius: 2px;
+}
+.chip[aria-pressed="true"] { border-color: var(--ink); color: var(--ink); }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chip.plainbtn { border-style: dashed; }
+
+.fnfile { padding-top: 34px; }
+.fnhead { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; padding-bottom: 12px; }
+.fnhead .fpath { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--ink); }
+.fnhead .fmeta { font-family: var(--mono); font-weight: 500; font-size: 11px; color: var(--muted); }
+.fnhead .fwhat { font-size: 15px; color: var(--muted); flex-basis: 100%; max-width: var(--measure); padding-top: 4px; }
+.fn { border-top: 1px solid var(--line); }
+.fn > summary {
+  display: grid; grid-template-columns: 13px minmax(0, 1fr); gap: 11px; align-items: baseline;
+  padding: 11px 0; cursor: pointer; list-style: none;
+}
+.fn > summary::-webkit-details-marker { display: none; }
+.fn > summary:hover code { text-decoration: underline; text-underline-offset: 3px; }
+.fn > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.fn .mark { font-family: var(--mono); font-weight: 700; font-size: 12px; color: var(--muted); user-select: none; }
+.fn[open] .mark { color: var(--accent); }
+.fn code { font-family: var(--mono); font-weight: 700; font-size: 13px; color: var(--accent); word-break: break-word; }
+.fn .d { font-size: 15px; color: var(--muted); padding: 0 0 15px 24px; max-width: var(--measure); }
+.fn .d i { color: var(--ink); font-style: normal; }
+@media (max-width: 660px) { .fn .d { padding-left: 0; } }
+
+/* results */
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 28px 40px; padding: 4px 0 8px; }
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat .n { font-size: 34px; font-weight: 600; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.stat .l { font-family: var(--mono); font-weight: 700; font-size: 11px; color: var(--muted); letter-spacing: 0.05em; }
+.stat.flag .n { color: var(--bad); }
+
+.chartbox { overflow-x: auto; padding: 8px 0; }
+.chartbox svg { display: block; width: 100%; height: auto; min-width: 430px; }
+.bar { fill: var(--accent); }
+.bar.low { fill: var(--bad); }
+.axis { stroke: var(--line-strong); stroke-width: 1; }
+.grid { stroke: var(--line); stroke-width: 1; }
+.ctext { fill: var(--muted); font-family: var(--mono); font-weight: 500; font-size: 11px; }
+.cval { fill: var(--ink); font-family: var(--mono); font-size: 12px; font-weight: 700; }
+
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 580px; }
+th, td { text-align: left; padding: 10px 14px 10px 0; border-bottom: 1px solid var(--line); }
+th { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; border-bottom-color: var(--line-strong); }
+td.num, th.num { font-family: var(--mono); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; padding-right: 0; }
+td.task { font-family: var(--mono); font-weight: 500; font-size: 12.5px; }
+td.ctrl { color: var(--muted); font-family: var(--mono); font-weight: 500; font-size: 11.5px; }
+
+.pill { font-family: var(--mono); font-weight: 700; font-size: 11px; white-space: nowrap; }
+.pill.ok { color: var(--good); }
+.pill.no { color: var(--bad); }
+.pill.amb { color: var(--warn); }
+
+.quote {
+  border-left: 2px solid var(--bad); padding: 4px 0 4px 18px;
+  font-family: var(--mono); font-weight: 500; font-size: 13px; color: var(--ink);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.quote b { color: var(--bad); font-weight: 500; }
+
+.aside { border-top: 1px solid var(--line); padding-top: 16px; max-width: var(--measure); display: flex; flex-direction: column; gap: 8px; }
+.aside h4 { font-size: 15px; }
+
+/* timeline */
+
+.timeline { display: flex; flex-direction: column; }
+.tl { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 28px; padding: 26px 0; border-top: 1px solid var(--line); }
+@media (max-width: 720px) { .tl { grid-template-columns: 1fr; gap: 10px; } }
+.tl .when { font-family: var(--mono); font-weight: 700; font-size: 12.5px; color: var(--muted); padding-top: 3px; }
+.tl .what { display: flex; flex-direction: column; gap: 12px; }
+.tl h3 { font-size: 19px; }
+.tl ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; max-width: 62ch; }
+.tl li { font-size: 15.5px; color: var(--muted); padding-left: 16px; position: relative; }
+.tl li::before { content: ""; position: absolute; left: 0; top: 11px; width: 6px; height: 1px; background: var(--line-strong); }
+.tl .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* next */
+
+.nextgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 34px 40px; }
+.next { display: flex; flex-direction: column; gap: 8px; padding-top: 16px; border-top: 1px solid var(--line-strong); }
+.next.risk { border-top-color: var(--bad); }
+.next.risk h4 { color: var(--bad); }
+.next h4 { font-size: 16.5px; }
+.next .when { font-family: var(--mono); font-weight: 700; font-size: 10.5px; color: var(--muted); letter-spacing: 0.08em; }
+.next p { font-size: 14.5px; color: var(--muted); }
+
+footer { border-top: 1px solid var(--line); }
+footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="mast-text">
+      <span class="eyebrow">FYP · NUS Data Science and Analytics · Aug to Nov 2026</span>
+      <h1>Ambiguity Without Adversary</h1>
+      <p class="sub">Why shopping agents give confident wrong answers about prices that sit one click away, and whether a smarter retrieval rule can fix it.</p>
+      <div class="mast-meta">
+        <span>Kayleen Lee Kai Rong</span>
+        <span>Supervisor <b>Prof. Markus Kirchberg</b></span>
+        <span>Updated <b>9 Sep 2026</b></span>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="switch" role="group" aria-label="Reading level">
+        <button type="button" id="btn-tech" aria-pressed="true">Researcher</button>
+        <button type="button" id="btn-plain" aria-pressed="false">Plain English</button>
+      </div>
+      <button class="themebtn" type="button" id="themebtn" aria-pressed="false">Dark mode</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap shell">
+  <nav class="rail" aria-label="Sections">
+    <div class="railgroup" data-section="problem">
+      <div class="railrow">
+        <a href="#problem">The problem</a>
+        <button class="railtoggle" type="button" aria-expanded="false" aria-controls="rail-problem">+</button>
+      </div>
+      <ul class="railsub" id="rail-problem" hidden>
+        <li><a href="#problem">The listing</a></li>
+        <li><a href="#problem">Research questions</a></li>
+      </ul>
+    </div>
+    <div class="railgroup" data-section="architecture">
+      <div class="railrow">
+        <a href="#architecture">Architecture</a>
+        <button class="railtoggle" type="button" aria-expanded="false" aria-controls="rail-arch">+</button>
+      </div>
+      <ul class="railsub" id="rail-arch" hidden>
+        <li><a href="#architecture" data-k="env">1. WebArena shop</a></li>
+        <li><a href="#architecture" data-k="seed">2. Seeder</a></li>
+        <li><a href="#architecture" data-k="agent">3. openJiuwen agent</a></li>
+        <li><a href="#architecture" data-k="runner">4. Runner</a></li>
+        <li><a href="#architecture" data-k="trace">5. Trace counter</a></li>
+        <li><a href="#architecture" data-k="score">6. Scorer</a></li>
+        <li><a href="#architecture" data-k="suite">7. Suite driver</a></li>
+        <li><a href="#architecture" data-k="out">8. Results</a></li>
+      </ul>
+    </div>
+    <div class="railgroup" data-section="code">
+      <div class="railrow">
+        <a href="#code">Code reference</a>
+        <button class="railtoggle" type="button" aria-expanded="false" aria-controls="rail-code">+</button>
+      </div>
+      <ul class="railsub" id="rail-code" hidden>
+        <li><a href="#file-magento">magento.py</a></li>
+        <li><a href="#file-seeder">seed_variants.py</a></li>
+        <li><a href="#file-runner">run_browser_task.py</a></li>
+        <li><a href="#file-trace">trace_stats.py</a></li>
+        <li><a href="#file-score">score.py</a></li>
+        <li><a href="#file-suite">suite.py</a></li>
+      </ul>
+    </div>
+    <div class="railgroup" data-section="results">
+      <div class="railrow">
+        <a href="#results">Results</a>
+        <button class="railtoggle" type="button" aria-expanded="false" aria-controls="rail-results">+</button>
+      </div>
+      <ul class="railsub" id="rail-results" hidden>
+        <li><a href="#find-1">1. Never admits doubt</a></li>
+        <li><a href="#find-2">2. The two action cliff</a></li>
+        <li><a href="#find-3">3. Invented prices</a></li>
+        <li><a href="#find-4">4. Trap did not fire</a></li>
+        <li><a href="#task-table">Task by task</a></li>
+      </ul>
+    </div>
+    <div class="railgroup" data-section="timeline">
+      <div class="railrow">
+        <a href="#timeline">Weekly log</a>
+        <button class="railtoggle" type="button" aria-expanded="false" aria-controls="rail-log">+</button>
+      </div>
+      <ul class="railsub" id="rail-log" hidden>
+        <li><a href="#log-aug20">20 Aug</a></li>
+        <li><a href="#log-aug28">28 Aug</a></li>
+        <li><a href="#log-sep8">8 to 9 Sep</a></li>
+      </ul>
+    </div>
+    <div class="railgroup" data-section="next">
+      <div class="railrow">
+        <a href="#next">What comes next</a>
+        <button class="railtoggle" type="button" aria-expanded="false" aria-controls="rail-next">+</button>
+      </div>
+      <ul class="railsub" id="rail-next" hidden>
+        <li><a href="#next">Scale the catalogue</a></li>
+        <li><a href="#next">Retrieval policy</a></li>
+        <li><a href="#next">Scheduling risk</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+
+    <section id="problem">
+      <h2>The problem, in one listing</h2>
+      <p class="lede r-tech">Interaction gated information is data that exists on a page but is only reachable through interaction. The agent's first observation gives no signal that anything is missing.</p>
+      <p class="lede r-plain">Some prices only appear after you click. Nothing on the page warns you they exist, so an AI reading that page has no idea it is missing anything.</p>
+
+      <div class="problem">
+        <div>
+          <div class="pricelist">
+            <span class="cap">GLENMOOR STILL SPRING WATER, CELLAR DIRECT</span>
+            <div class="price shown"><span>12 x 550ml</span><span class="per">$1.50/L</span><b>$9.89</b></div>
+            <div class="price"><span>24 x 350ml</span><span class="per">$1.42/L</span><b>$11.90</b></div>
+            <div class="price"><span>6 x 1.25L</span><span class="per">$1.40/L</span><b>$10.50</b></div>
+            <div class="price gated"><span>2 x 9.5L</span><span class="per">$1.31/L</span><b>$24.90</b></div>
+          </div>
+          <p class="note r-tech" style="padding-top:14px">The shaded row is the only price in the rendered page on load, the cheapest variant rather than the best value. The amber row is reachable only after selecting that variant.</p>
+          <p class="note r-plain" style="padding-top:14px">The grey row is the only price you see when the page opens. The amber row, which is actually the best value per litre, appears only after you click.</p>
+        </div>
+
+        <div class="prose">
+          <p class="r-tech">A live AI shopping assistant, asked for the cheapest 9.5L carton, returned a ranked comparison naming one seller as 27 per cent cheaper, with a supporting cost per litre figure. It was wrong. That seller was more expensive for the size requested. No merchant did anything deceptive and no attacker was involved.</p>
+          <p class="r-plain">A real AI shopping assistant was asked which seller had the cheapest 9.5 litre carton. It confidently said one seller was 27 per cent cheaper and even showed the maths. It was wrong. That seller was the dearer one for that size. Nobody cheated. The AI just did not look hard enough.</p>
+          <p class="r-tech">That is the gap this project addresses. Prompt injection defences assume an adversary. Here there is none, only a retrieval policy that stops too early and a reporting layer that never signals doubt.</p>
+          <p class="r-plain">This matters because most AI safety research looks for attackers. This failure has no attacker at all. The AI simply stopped looking too soon, and never said that it was unsure.</p>
+
+          <div class="rqlist">
+            <div class="rq"><span class="k">RQ1</span><span class="v">How often does gating occur in a realistic shop, and in what forms?</span></div>
+            <div class="rq"><span class="k">RQ2</span><span class="v">When a task needs gated information, does the agent retrieve it, and does it signal when it has not? <span class="tag win">answered</span></span></div>
+            <div class="rq"><span class="k">RQ3</span><span class="v">Can a question conditioned retrieval policy reach correct answers with fewer interactions than exhaustive exploration? <span class="tag">the contribution</span></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <h2>Architecture</h2>
+      <p class="lede r-tech">Eight stages, from the self hosted shop to a scored results file. Select any stage for detail.</p>
+      <p class="lede r-plain">How the pieces fit together, from the fake shop at one end to the marked results at the other. Click any box.</p>
+
+      <div class="arch">
+        <div class="diagram">
+          <svg viewBox="0 0 330 762" role="img" aria-label="Pipeline diagram of eight stages">
+            <defs>
+              <marker id="ah" markerWidth="8" markerHeight="8" refX="4.5" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 z" class="flowhead"></path>
+              </marker>
+            </defs>
+
+            <g class="node on" data-k="env" tabindex="0" role="button" aria-label="WebArena shop">
+              <rect x="6" y="6" width="318" height="62" rx="2"></rect>
+              <text class="t" x="22" y="32">WebArena shop</text>
+              <text class="s" x="22" y="50">Docker, Magento 2.4.6, port 7770</text>
+            </g>
+            <path class="flow" d="M165 68 L165 92" marker-end="url(#ah)"></path>
+
+            <g class="node" data-k="seed" tabindex="0" role="button" aria-label="Seeder">
+              <rect x="6" y="100" width="318" height="62" rx="2"></rect>
+              <text class="t" x="22" y="126">Seeder</text>
+              <text class="s" x="22" y="144">env/seed_variants.py</text>
+            </g>
+            <path class="flow" d="M165 162 L165 186" marker-end="url(#ah)"></path>
+
+            <g class="node" data-k="agent" tabindex="0" role="button" aria-label="openJiuwen agent">
+              <rect x="6" y="194" width="318" height="62" rx="2"></rect>
+              <text class="t" x="22" y="220">openJiuwen agent</text>
+              <text class="s" x="22" y="238">Playwright MCP, Chrome, OpenRouter</text>
+            </g>
+            <path class="flow" d="M165 256 L165 280" marker-end="url(#ah)"></path>
+
+            <g class="node" data-k="runner" tabindex="0" role="button" aria-label="Runner">
+              <rect x="6" y="288" width="318" height="62" rx="2"></rect>
+              <text class="t" x="22" y="314">Runner</text>
+              <text class="s" x="22" y="332">experiments/run_browser_task.py</text>
+            </g>
+            <path class="flow" d="M165 350 L165 374" marker-end="url(#ah)"></path>
+
+            <g class="node" data-k="trace" tabindex="0" role="button" aria-label="Trace counter">
+              <rect x="6" y="382" width="318" height="62" rx="2"></rect>
+              <text class="t" x="22" y="408">Trace counter</text>
+              <text class="s" x="22" y="426">experiments/trace_stats.py</text>
+            </g>
+            <path class="flow" d="M165 444 L165 468" marker-end="url(#ah)"></path>
+
+            <g class="node" data-k="score" tabindex="0" role="button" aria-label="Scorer">
+              <rect x="6" y="476" width="318" height="62" rx="2"></rect>
+              <text class="t" x="22" y="502">Scorer</text>
+              <text class="s" x="22" y="520">experiments/score.py</text>
+            </g>
+            <path class="flow" d="M165 538 L165 562" marker-end="url(#ah)"></path>
+
+            <g class="node" data-k="suite" tabindex="0" role="button" aria-label="Suite driver">
+              <rect x="6" y="570" width="318" height="62" rx="2"></rect>
+              <text class="t" x="22" y="596">Suite driver</text>
+              <text class="s" x="22" y="614">experiments/suite.py</text>
+            </g>
+            <path class="flow" d="M165 632 L165 656" marker-end="url(#ah)"></path>
+
+            <g class="node" data-k="out" tabindex="0" role="button" aria-label="Results">
+              <rect x="6" y="664" width="318" height="62" rx="2"></rect>
+              <text class="t" x="22" y="690">Results</text>
+              <text class="s" x="22" y="708">results/stamp/suite.json</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="detail" id="detail" aria-live="polite">
+          <span class="eyebrow" id="d-step">Stage 1 of 8</span>
+          <h3 id="d-title">WebArena shop</h3>
+          <p class="path" id="d-path"></p>
+          <p id="d-body"></p>
+          <ul id="d-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="code">
+      <h2>Code reference</h2>
+      <p class="lede r-tech">Every function written for this project, with what it does and why it exists. 1,256 lines across seven modules.</p>
+      <p class="lede r-plain">Every piece of code written for this project, explained one function at a time. A function is a named chunk of code that does one job.</p>
+
+      <div class="toolbar">
+        <input type="search" id="fnsearch" placeholder="Search functions" aria-label="Search functions">
+        <button class="chip" data-f="all" aria-pressed="true">All</button>
+        <button class="chip" data-f="env" aria-pressed="false">Environment</button>
+        <button class="chip" data-f="exp" aria-pressed="false">Experiments</button>
+        <button class="chip plainbtn" type="button" id="expandall" aria-pressed="false">Expand all</button>
+      </div>
+
+      <div id="fnlist">
+
+        <div class="fnfile" id="file-magento" data-g="env">
+          <div class="fnhead">
+            <span class="fpath">env/magento.py</span>
+            <span class="fmeta">129 lines, 2 classes, 11 methods</span>
+            <span class="fwhat r-tech">Thin REST client for Magento. Every call returns parsed JSON or raises, so callers never check status codes.</span>
+            <span class="fwhat r-plain">The part that talks to the shop's software, like a phone line with a fixed set of things you are allowed to ask.</span>
+          </div>
+          <details class="fn"><summary><span class="mark">+</span><code>class MagentoError</code></summary><div class="d"><span class="r-tech">Raised when a REST call returns non 2xx. Carries status and body.</span><span class="r-plain">The error raised when the shop rejects a request, keeping the reason attached.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>class NotFound</code></summary><div class="d"><span class="r-tech">A 404 specifically, split out so that asking whether something exists reads as a question rather than an exception dance.</span><span class="r-plain">A special case for something not existing, so the code can ask politely instead of crashing.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>Magento.token</code></summary><div class="d"><span class="r-tech">Fetches and caches the admin token on first use. Magento tokens last four hours, outliving any run, so there is no refresh path.</span><span class="r-plain">Logs in once and remembers the pass. It lasts four hours, longer than anything we run.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>Magento.call</code></summary><div class="d"><span class="r-tech">Issues one REST call, raising <i>NotFound</i> on 404 and <i>MagentoError</i> otherwise.</span><span class="r-plain">Sends one request and hands back the answer, or raises a clear complaint.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>get, post, put, delete</code></summary><div class="d"><span class="r-tech">Thin verb wrappers over <i>call</i>.</span><span class="r-plain">Four shorthands for read, create, replace and remove.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>Magento.exists</code></summary><div class="d"><span class="r-tech">True when a GET finds something. Underpins every idempotency check, so re running the seeder is safe.</span><span class="r-plain">Checks whether something is already there, which is how re running the setup never creates duplicates.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>attribute, product</code></summary><div class="d"><span class="r-tech">Fetch one attribute or product by code or SKU, returning <i>None</i> rather than raising when absent.</span><span class="r-plain">Look up one option type or one product, returning nothing at all if it is not there.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>delete_product</code></summary><div class="d"><span class="r-tech">Removes a product, reporting whether it existed. Used by teardown.</span><span class="r-plain">Deletes a product and says whether it was there to begin with. Powers the undo.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>attribute_set_groups</code></summary><div class="d"><span class="r-tech">Lists the groups in an attribute set, so the seeder resolves the target group by name instead of hardcoding an id.</span><span class="r-plain">Finds the right drawer to file a new option type in, by name rather than by a fragile number.</span></div></details>
+        </div>
+
+        <div class="fnfile" id="file-seeder" data-g="env">
+          <div class="fnhead">
+            <span class="fpath">env/seed_variants.py</span>
+            <span class="fmeta">484 lines, 18 functions</span>
+            <span class="fwhat r-tech">Authors the configurable products WebArena lacks, verifies them, and writes the ground truth manifest. Idempotent, and teardown is a real undo.</span>
+            <span class="fwhat r-plain">Creates the click to reveal price products the shop was missing, checks they came out right, and writes the answer key.</span>
+          </div>
+          <details class="fn"><summary><span class="mark">+</span><code>slugify</code></summary><div class="d"><span class="r-tech">Turns a label into a URL safe key, giving every variant a deterministic SKU.</span><span class="r-plain">Turns a label like 2 x 9.5L into something safe for a web address, the same way every time.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>ensure_attribute</code></summary><div class="d"><span class="r-tech">Creates the dropdown attribute if absent, forcing global scope. Magento silently refuses a store scoped attribute in a configurable product.</span><span class="r-plain">Makes the Pack Size chooser. It must be set shop wide or Magento quietly ignores it.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>ensure_attribute_option</code></summary><div class="d"><span class="r-tech">Adds one option value, skipping if already present.</span><span class="r-plain">Adds one choice to the dropdown, such as 2 x 9.5L.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>option_index</code></summary><div class="d"><span class="r-tech">Maps option label to internal value index, dropping Magento's empty placeholder row.</span><span class="r-plain">Translates the human label into the number the shop uses internally.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>ensure_attribute_in_set</code></summary><div class="d"><span class="r-tech">Attaches the attribute to the product set. Magento returns 400 on a duplicate attach rather than treating it as a no op, so that case is caught.</span><span class="r-plain">Files the new chooser where products can use it, and copes with the shop erroring when it is already filed.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>ensure_child</code></summary><div class="d"><span class="r-tech">Creates one purchasable variant, hidden from listings. That hiding is what makes the price gated.</span><span class="r-plain">Creates one size with its own price, hidden from search, which is exactly what puts the price behind a click.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>ensure_parent</code></summary><div class="d"><span class="r-tech">Creates the configurable parent, the listing shoppers actually see.</span><span class="r-plain">Creates the product page itself, the one that shows a size dropdown.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>ensure_configurable_links</code></summary><div class="d"><span class="r-tech">Declares which attribute varies, then links each child. Order matters because the option must exist before children attach.</span><span class="r-plain">Tells the shop that size is what changes here, then connects each size to the listing.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>unit_price</code></summary><div class="d"><span class="r-tech">Price per litre or per kilo. Returns <i>None</i> where a unit price is meaningless, such as apparel sizes.</span><span class="r-plain">Works out cost per litre or per kilo, and refuses to invent one for t shirt sizes.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>analyse</code></summary><div class="d"><span class="r-tech">Computes the answer key. The from price a card probe would see, the true best value variant, and a flag for every family where those disagree.</span><span class="r-plain">Works out the right answers in advance, and flags every case where the headline price points the wrong way.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>cross_listing</code></summary><div class="d"><span class="r-tech">Where two sellers offer the same option, records which actually wins and whether a headline price comparison would pick the other. This is the deployed assistant failure in miniature.</span><span class="r-plain">For the two water sellers, works out who is genuinely cheaper, and whether a quick glance gives the opposite answer.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>expand_skus, load_fixture</code></summary><div class="d"><span class="r-tech">Derive each variant's SKU from its parent and option, then load the fixture file.</span><span class="r-plain">Gives every item a predictable product code and reads in the recipe file.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>cmd_seed</code></summary><div class="d"><span class="r-tech">The seed command. Attributes, then children, then parents, then links. Supports a dry run.</span><span class="r-plain">The build it command, in the only order the shop accepts. It can rehearse without writing anything.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>write_manifest</code></summary><div class="d"><span class="r-tech">Writes every SKU created plus the computed ground truth, timestamped. This file is what runs are scored against.</span><span class="r-plain">Saves the answer key with a timestamp, so results stay checkable months later.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>cmd_verify</code></summary><div class="d"><span class="r-tech">Reads back from Magento and compares against the fixture. Types, child sets, and prices to the cent.</span><span class="r-plain">Asks the shop what it actually stored and checks it matches what we asked for.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>cmd_teardown</code></summary><div class="d"><span class="r-tech">Deletes every seeded product. Requires an explicit confirmation flag, and lists what it would remove otherwise.</span><span class="r-plain">The undo. It refuses to delete anything until you confirm.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>main</code></summary><div class="d"><span class="r-tech">Argument parsing, converting <i>MagentoError</i> into a readable message rather than a traceback.</span><span class="r-plain">Reads the command you typed and turns shop errors into plain sentences.</span></div></details>
+        </div>
+
+        <div class="fnfile" id="file-runner" data-g="exp">
+          <div class="fnhead">
+            <span class="fpath">experiments/run_browser_task.py</span>
+            <span class="fmeta">184 lines, 5 functions</span>
+            <span class="fwhat r-tech">Drives one browser task and writes a run record. openJiuwen's own entrypoint is an interactive prompt, and experiments need one task, one record, one exit.</span>
+            <span class="fwhat r-plain">Runs the AI on one question and saves what happened. The tool's own launcher expects a human typing, which is no use for experiments.</span>
+          </div>
+          <details class="fn"><summary><span class="mark">+</span><code>openrouter_usage</code></summary><div class="d"><span class="r-tech">Cumulative spend on the API key. Returns <i>None</i> on failure so a logging problem never takes down a run.</span><span class="r-plain">Asks the AI provider how much has been spent so far, and shrugs rather than crashing if it cannot.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>openrouter_usage_after</code></summary><div class="d"><span class="r-tech">Polls until spend moves. The usage endpoint lags the completion by seconds, so an immediate read produced a false zero. It now records null rather than a zero it does not believe.</span><span class="r-plain">Waits for the bill to catch up. Reading too early showed every run as free, which was wrong. Now it records unknown instead of a fake zero.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>find_usage</code></summary><div class="d"><span class="r-tech">Walks the result structure for token usage. The result shape is undocumented, so this searches rather than guessing a path.</span><span class="r-plain">Hunts through the reply for word counts, since nobody documented where they live.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>run</code></summary><div class="d"><span class="r-tech">Builds the runtime, executes the task, and records answer, cost, elapsed time and error. A failed run is still logged, because failures are data.</span><span class="r-plain">Does the actual run and writes down the answer, cost and time. Failures get saved too, because they are the interesting part.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>main</code></summary><div class="d"><span class="r-tech">Command line handling for query, session, timeout, and an output path so the suite can address records directly.</span><span class="r-plain">Reads the question and options you typed.</span></div></details>
+        </div>
+
+        <div class="fnfile" id="file-trace" data-g="exp">
+          <div class="fnhead">
+            <span class="fpath">experiments/trace_stats.py</span>
+            <span class="fmeta">134 lines, 6 functions</span>
+            <span class="fwhat r-tech">Counts what a run actually did. The runtime emits no tool execution events, but every model call carries the whole conversation, so the last one holds the full history.</span>
+            <span class="fwhat r-plain">Counts the AI's steps. It never logs them directly, but each message to the AI repeats the whole story so far, so the last one contains everything.</span>
+          </div>
+          <details class="fn"><summary><span class="mark">+</span><code>normalise</code></summary><div class="d"><span class="r-tech">Strips the MCP prefix so the same tool counts once however it was addressed.</span><span class="r-plain">Tidies tool names so one action is not counted as two.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>final_messages</code></summary><div class="d"><span class="r-tech">The longest conversation in the log, which is the last turn's full history.</span><span class="r-plain">Finds the longest record in the log, which is the complete story.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>tool_sequence</code></summary><div class="d"><span class="r-tech">Tool names in the order called. This ordering is what shows whether the agent interacted or read the leaked config.</span><span class="r-plain">Lists every step in order, which is how we proved the AI clicked rather than peeking at the source.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>stats</code></summary><div class="d"><span class="r-tech">Splits calls into actions that change page state and observations that only read it. Actions are the RQ3 metric.</span><span class="r-plain">Separates doing things from looking at things. Clicking a size reveals a price, taking another photo does not.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>sibling_json</code></summary><div class="d"><span class="r-tech">Matches a log to its run record by nearest later timestamp, because the shell names the log at start and the runner names the record at finish.</span><span class="r-plain">Pairs each log with its results file, allowing for the two being stamped at different moments.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>main</code></summary><div class="d"><span class="r-tech">Command line handling, with an option to fold counts back into run records.</span><span class="r-plain">Runs it from the command line and writes the counts into the results.</span></div></details>
+        </div>
+
+        <div class="fnfile" id="file-score" data-g="exp">
+          <div class="fnhead">
+            <span class="fpath">experiments/score.py</span>
+            <span class="fmeta">103 lines, 3 functions</span>
+            <span class="fwhat r-tech">Marks a free text answer against ground truth. Deliberately conservative, since correct requires the expected value present and the designed trap absent.</span>
+            <span class="fwhat r-plain">Marks the AI's written answers automatically, and is strict about it.</span>
+          </div>
+          <details class="fn"><summary><span class="mark">+</span><code>prices_in</code></summary><div class="d"><span class="r-tech">Extracts every money shaped number in order of appearance.</span><span class="r-plain">Pulls every price out of the answer.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>abstained</code></summary><div class="d"><span class="r-tech">Detects declining to answer. Kept narrow on purpose, so that could not determine qualifies but a bare not does not.</span><span class="r-plain">Spots the AI admitting it does not know. Deliberately fussy, so ordinary sentences do not count.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>score</code></summary><div class="d"><span class="r-tech">Returns one of five verdicts with the evidence behind it. Abstained is tracked apart from wrong, because a run that declines has not misled anyone, and that distinction is RQ2's signalling question.</span><span class="r-plain">Gives one of five marks. Saying I do not know is scored separately from being wrong, because admitting doubt is a completely different outcome from stating a false price.</span></div></details>
+        </div>
+
+        <div class="fnfile" id="file-suite" data-g="exp">
+          <div class="fnhead">
+            <span class="fpath">experiments/suite.py and rescore.py</span>
+            <span class="fmeta">222 lines, 6 functions</span>
+            <span class="fwhat r-tech">Runs every task several times and summarises. One sample per task would have recorded a fabricating task as solved.</span>
+            <span class="fwhat r-plain">Runs every question five times and totals it up. Asking once would have missed the failure entirely.</span>
+          </div>
+          <details class="fn"><summary><span class="mark">+</span><code>run_once</code></summary><div class="d"><span class="r-tech">Executes one task, captures the log, and folds in trace counts.</span><span class="r-plain">Does one question and records everything about it.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>summarise</code></summary><div class="d"><span class="r-tech">Aggregates verdicts, mean actions and cost per task.</span><span class="r-plain">Adds up the marks, average clicks and cost for each question.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>print_summary</code></summary><div class="d"><span class="r-tech">Renders the results table, including mean actions for correct against wrong runs on gated tasks.</span><span class="r-plain">Prints the results table, comparing effort on right answers against wrong ones.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>mean</code></summary><div class="d"><span class="r-tech">Average, tolerating empty input.</span><span class="r-plain">Works out an average without falling over on missing data.</span></div></details>
+          <details class="fn"><summary><span class="mark">+</span><code>rescore.main</code></summary><div class="d"><span class="r-tech">Re marks a finished directory from stored records, keeping the previous verdict so a rule change is visible. Runs are expensive and marking rules improve.</span><span class="r-plain">Re marks old runs when the marking rules improve, without paying to run them again, and keeps the old mark so nothing changes silently.</span></div></details>
+        </div>
+
+      </div>
+      <p class="note" id="fnempty" hidden style="padding-top:24px">No functions match that search.</p>
+    </section>
+
+    <section id="results">
+      <h2>RQ2 baseline results</h2>
+      <p class="lede r-tech">Twelve tasks, five repeats each, sixty runs. Model claude-haiku-4.5 via OpenRouter, $2.98.</p>
+      <p class="lede r-plain">Twelve questions, each asked five times. Sixty runs in total, costing $2.98.</p>
+
+      <div class="stats">
+        <div class="stat"><span class="n">87%</span><span class="l">GATED CORRECT, 48 OF 55</span></div>
+        <div class="stat flag"><span class="n">0</span><span class="l">ABSTENTIONS IN 60 RUNS</span></div>
+        <div class="stat"><span class="n">$2.98</span><span class="l">TOTAL SUITE COST</span></div>
+        <div class="stat"><span class="n">5 vs 1</span><span class="l">MEDIAN ACTIONS, RIGHT vs WRONG</span></div>
+      </div>
+
+      <div class="prose">
+        <h3 class="sub" id="find-1">Finding 1. It never admits uncertainty</h3>
+        <p class="r-tech">Zero abstentions in sixty runs. The scorer tests a wide hedge vocabulary, including unable to, could not determine, insufficient and unclear, and none ever fired. Every failure is a confident assertion, so no downstream consumer can distinguish a guess from a verified answer.</p>
+        <p class="r-plain">Not once in sixty runs did the AI admit uncertainty. Every wrong answer was delivered with total confidence. If you were building on top of this agent, its guesses and its checked facts would look identical to you.</p>
+      </div>
+
+      <h3 class="sub" id="find-2">Finding 2. Correctness falls away below two actions</h3>
+      <div class="chartbox">
+        <svg viewBox="0 0 620 236" role="img" aria-label="Success rate by number of actions spent">
+          <text class="ctext" x="0" y="12">SUCCESS RATE ON GATED TASKS, BY ACTIONS SPENT</text>
+
+          <line class="grid" x1="345" y1="30" x2="345" y2="196"></line>
+          <line class="grid" x1="550" y1="30" x2="550" y2="196"></line>
+          <line class="axis" x1="140" y1="30" x2="140" y2="196"></line>
+
+          <text class="ctext" x="130" y="54" text-anchor="end">1 action</text>
+          <rect class="bar low" x="140" y="38" width="82" height="22"></rect>
+          <text class="cval" x="232" y="54">20%</text>
+          <text class="ctext" x="278" y="54">n=5</text>
+
+          <text class="ctext" x="130" y="96" text-anchor="end">2 to 3</text>
+          <rect class="bar" x="140" y="80" width="410" height="22"></rect>
+          <text class="cval" x="560" y="96">100%</text>
+
+          <text class="ctext" x="130" y="138" text-anchor="end">4 to 6</text>
+          <rect class="bar" x="140" y="122" width="369" height="22"></rect>
+          <text class="cval" x="519" y="138">90%</text>
+
+          <text class="ctext" x="130" y="180" text-anchor="end">7 or more</text>
+          <rect class="bar" x="140" y="164" width="381" height="22"></rect>
+          <text class="cval" x="531" y="180">93%</text>
+
+          <line class="axis" x1="140" y1="196" x2="550" y2="196"></line>
+          <text class="ctext" x="140" y="212" text-anchor="middle">0%</text>
+          <text class="ctext" x="345" y="212" text-anchor="middle">50%</text>
+          <text class="ctext" x="550" y="212" text-anchor="middle">100%</text>
+          <text class="ctext" x="0" y="232">The red bar marks the only bucket where the agent is unreliable.</text>
+        </svg>
+      </div>
+      <div class="prose">
+        <p class="r-tech">The relationship is not that more retrieval is better. Past three actions the rate is flat within noise. It is specifically under retrieval that predicts failure, and the cliff sits between one action and two. That is the RQ3 premise as a measurement rather than an assumption.</p>
+        <p class="r-plain">Read this carefully, because the obvious reading is wrong. It is not that trying harder gives better answers. Past three clicks, extra effort changes nothing. What it shows is that below two clicks the AI is simply guessing. There is a minimum amount of looking, and a lot of looking that achieves nothing.</p>
+      </div>
+
+      <h3 class="sub" id="find-3">Finding 3. Failures are inventions, not misreadings</h3>
+      <div class="quote">
+        <span>"The price of the 2 x 9.5L pack is <b>$15.01</b>" &nbsp; truth $24.90, 1 action</span>
+        <span>"The price of the 2 x 9.5L pack is <b>$11.60</b>" &nbsp; truth $22.50, 1 action</span>
+      </div>
+      <div class="prose">
+        <p class="r-tech">Neither figure appears anywhere on those pages. The predicted failure was reporting the headline price, $9.89 instead of $24.90, which is at least checkable against the page. Instead the agent produced values present nowhere, which is harder to detect and worse.</p>
+        <p class="r-plain">Neither of those numbers exists on the page. We expected the AI to report the visible headline price, which would be understandable and easy to spot. Instead it made numbers up entirely, which is far harder to catch.</p>
+      </div>
+
+      <h3 class="sub" id="find-4">Finding 4. The headline trap did not fire</h3>
+      <div class="prose">
+        <p class="r-tech">The task modelled on the deployed assistant failure scored five of five correct, at a mean of 6.4 actions. With two listings and both addresses given, the comparison is cheap enough that the agent simply does the work. The live failure occurred across a search page of many sellers, where opening every listing is expensive. Reproducing it needs scale rather than a better trap.</p>
+        <p class="r-plain">The question built to recreate the real world failure was answered correctly every single time. With only two shops to compare, checking both is easy, so the AI just checks both. The real failure happened across a page of many sellers, where checking everything is expensive. This is a useful negative result, because it turns build a bigger catalogue from a hunch into a requirement.</p>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr><th>Task</th><th>Gated</th><th>Verdicts across 5 runs</th><th class="num">Mean actions</th><th class="num">Mean calls</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="task">water-a-headline</td><td class="ctrl">control</td><td><span class="pill ok">5 correct</span></td><td class="num">1.0</td><td class="num">3.0</td></tr>
+            <tr><td class="task">water-a-9l5-price</td><td class="ctrl">yes</td><td><span class="pill ok">4 correct</span> <span class="pill no">1 wrong</span></td><td class="num">5.4</td><td class="num">13.6</td></tr>
+            <tr><td class="task">water-b-9l5-price</td><td class="ctrl">yes</td><td><span class="pill ok">3 correct</span> <span class="pill no">1 wrong</span> <span class="pill amb">1 ambiguous</span></td><td class="num">3.0</td><td class="num">8.0</td></tr>
+            <tr><td class="task">water-a-cheapest-per-litre</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">7.6</td><td class="num">19.8</td></tr>
+            <tr><td class="task">water-cross-listing</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">6.4</td><td class="num">13.0</td></tr>
+            <tr><td class="task">coffee-1kg-price</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">3.4</td><td class="num">7.2</td></tr>
+            <tr><td class="task">coffee-best-value</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">6.2</td><td class="num">15.4</td></tr>
+            <tr><td class="task">coffee-bulk-check</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">6.8</td><td class="num">14.2</td></tr>
+            <tr><td class="task">tee-m-stock</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">2.0</td><td class="num">4.0</td></tr>
+            <tr><td class="task">tee-xl-price</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">3.4</td><td class="num">7.2</td></tr>
+            <tr><td class="task">tee-all-sizes-stocked</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">2.2</td><td class="num">10.8</td></tr>
+            <tr><td class="task">water-a-all-prices</td><td class="ctrl">yes</td><td><span class="pill ok">1 correct</span> <span class="pill no">4 wrong</span></td><td class="num">5.0</td><td class="num">17.6</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note r-tech" style="padding-top:6px">The last row is a distinct failure mode. The answer asserts that it successfully listed all pack sizes and their prices, and contains no prices. At five to seven actions the retrieval likely happened and the reporting did not, so it should be counted separately from the fabrications.</p>
+      <p class="note r-plain" style="padding-top:6px">The last row failed differently. The answer announces that it successfully listed all pack sizes and their prices, and then lists none. It probably did look. It just never reported what it found.</p>
+
+      <div class="aside">
+        <h4>A correction worth recording</h4>
+        <p class="note r-tech">The first scorer marked six correct answers wrong. It penalised any mention of the alternatives, which is exactly what a good comparison answer does, such as saying that 500g is best at $29.80 per kg while 250g costs $34.00 per kg. The rule now treats naming the expected option as decisive. Results were re marked from stored records at no cost, and changed verdicts are retained.</p>
+        <p class="note r-plain">The first version of the marking program was wrong. It failed answers that mentioned the other options, which is what any good comparison does. The failure rate was overstated by half. Because every run was recorded, everything could be re marked without paying to run it again, and the old marks were kept so the change is visible.</p>
+      </div>
+    </section>
+
+    <section id="timeline">
+      <h2>Weekly log</h2>
+      <p class="lede r-tech">What was decided when, and why. Kept because the assessment values the record of what was considered.</p>
+      <p class="lede r-plain">What happened each week, including the dead ends, kept deliberately because the marking rewards showing your reasoning.</p>
+
+      <div class="timeline">
+        <div class="tl" id="log-aug20">
+          <div class="when">20 Aug 2026</div>
+          <div class="what">
+            <h3>Reframed from a security problem to a retrieval problem</h3>
+            <ul>
+              <li><span class="r-tech">The original framing assumed manipulated product feeds and an adversary. Reframed, because the same failure occurs with no attacker present.</span><span class="r-plain">The project started out about attackers tampering with shops. It changed, because the same failure happens with nobody attacking anything.</span></li>
+              <li><span class="r-tech">Adopted WebArena as the environment and openJiuwen, Apache 2.0, as the agent, rather than building either.</span><span class="r-plain">Decided to use an existing research shop and an existing open source AI agent rather than build both from scratch.</span></li>
+              <li><span class="r-tech">Manual observation of a live listing confirmed that the page holds one price at a time, and that its structured data publishes a plain offer rather than a price range.</span><span class="r-plain">Checked a real marketplace listing by hand and confirmed that only one price is ever in the page.</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tl" id="log-aug28">
+          <div class="when">28 Aug 2026</div>
+          <div class="what">
+            <h3>Environment running, and a finding that changed the method</h3>
+            <ul>
+              <li><span class="r-tech">WebArena shopping site running under Docker. Catalogue audited from the database, showing 104,368 products, all of them simple.</span><span class="r-plain">Got the fake shop running, then counted what was in it. All 104,368 products keep the same price whichever option you pick.</span></li>
+              <li><span class="r-tech">425,384 select type option values and 68,584 non select options, none carrying a price delta. The environment has option variance but no price variance.</span><span class="r-plain">There are 425,384 pick an option choices in the shop and every single one costs the same, so there was nothing actually hidden to study.</span></li>
+              <li><span class="r-tech">Consequence. Configurable products with divergent per variant prices must be authored, which gives cleaner ground truth because the added products are documented explicitly.</span><span class="r-plain">Which meant the missing products had to be built, with the upside that we then know exactly what the right answers are.</span></li>
+            </ul>
+            <div class="tags"><span class="tag neg">method changed</span></div>
+          </div>
+        </div>
+
+        <div class="tl" id="log-sep8">
+          <div class="when">8 to 9 Sep 2026</div>
+          <div class="what">
+            <h3>Agent running end to end, and the RQ2 baseline measured</h3>
+            <ul>
+              <li><span class="r-tech">August's Elasticsearch hang on Apple Silicon diagnosed. Docker ran the amd64 image under QEMU rather than Rosetta. Cold boot to cluster health went from 19 minutes without completing, to 20 seconds.</span><span class="r-plain">Fixed the shop refusing to start. It was translating between two chip languages the slow way. Startup went from 19 minutes and never finishing, to 20 seconds.</span></li>
+              <li><span class="r-tech">Seeded 4 configurable parents, 14 variant children and 3 attributes. No existing WebArena product was modified, everything is prefixed with IGR, and teardown works.</span><span class="r-plain">Built 18 new products with prices that change when you pick a size. Nothing that came with the shop was touched, and there is a one command undo.</span></li>
+              <li><span class="r-tech">Two upstream openJiuwen bugs found and patched. An empty probe result reported as a parse error, and the worker's failure flag not reaching the runtime result.</span><span class="r-plain">Found two real bugs in the AI agent's own code. One made found nothing look identical to broken, and the other reported failures as successes.</span></li>
+              <li><span class="r-tech">The cheap model assumption was falsified. One model fails the structured output contract outright, and two others were rate limited at their providers regardless of account credit.</span><span class="r-plain">The plan to use the cheapest AI models does not work. They either cannot follow the required format or were too busy to respond.</span></li>
+              <li><span class="r-tech">RQ2 baseline measured over 60 scored runs. 87 per cent gated correctness, zero abstentions, and correctness collapsing to 20 per cent at one action.</span><span class="r-plain">Ran the full experiment over 60 runs. Mostly right, never once admits doubt, and almost always wrong when it only clicks once.</span></li>
+            </ul>
+            <div class="tags"><span class="tag win">RQ2 answered</span> <span class="tag neg">cross listing trap needs scale</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="next">
+      <h2>What comes next</h2>
+      <p class="lede r-tech">Three checkpoints to the deadline. RQ3 is the contribution and it has not started.</p>
+      <p class="lede r-plain">Three milestones left. The most important part, the actual new idea, has not been built yet.</p>
+
+      <div class="nextgrid">
+        <div class="next">
+          <span class="when">BY 23 SEP</span>
+          <h4>Scale the catalogue</h4>
+          <p class="r-tech">Thirty to fifty listings, with tasks posed over search pages where exhaustive retrieval is genuinely costly. This completes RQ1 and re tests the cross listing trap at a scale where it can fire.</p>
+          <p class="r-plain">Build many more products, and ask questions across a whole search page rather than two known listings, so that checking everything becomes expensive, which is when the failure appears.</p>
+        </div>
+        <div class="next">
+          <span class="when">EARLY OCT TO 21 OCT</span>
+          <h4>Build the retrieval policy</h4>
+          <p class="r-tech">A question conditioned policy plotted against two baselines, exhaustive which is correct and expensive, and unmodified which is cheap and sometimes wrong. Targets are to eliminate answers given after a single action, cut runs spending seven or more where two suffice, and abstain rather than invent.</p>
+          <p class="r-plain">The actual contribution, a rule that decides what to check before answering. It must stop the one click guesses, stop the wasted effort, and say I do not know instead of inventing a price.</p>
+        </div>
+        <div class="next">
+          <span class="when">EARLY NOV</span>
+          <h4>Final report</h4>
+          <p class="r-tech">Write up and presentation, including the stated limitations of one model, a small failure sample, and an environment easier than the live case.</p>
+          <p class="r-plain">Write it all up honestly, including what the experiment cannot prove.</p>
+        </div>
+        <div class="next risk">
+          <span class="when">SCHEDULING RISK</span>
+          <h4>RQ3 has not started</h4>
+          <p class="r-tech">Everything so far is groundwork. The catalogue step is a means rather than the work, and is timeboxed to two weeks. If RQ3 is not underway by early October, the project risks delivering a well measured benchmark instead of a method.</p>
+          <p class="r-plain">Everything built so far is scaffolding. If the new idea is not being built by early October, this ends up as a careful set of measurements rather than a new method, and the method is what is being marked.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">
+    Self hosted experiments only. No automated access to live commercial sites. Live marketplace observation is manual, and used only to motivate the problem.
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // Theme is chosen here rather than read from the operating system, because a
+  // machine set to dark was overriding the page's intended bright default.
+  var themeBtn = document.getElementById("themebtn");
+  var root = document.documentElement;
+
+  function setTheme(dark) {
+    if (dark) { root.setAttribute("data-theme", "dark"); }
+    else { root.removeAttribute("data-theme"); }
+    themeBtn.setAttribute("aria-pressed", String(dark));
+    themeBtn.textContent = dark ? "Light mode" : "Dark mode";
+    try { localStorage.setItem("theme", dark ? "dark" : "light"); } catch (e) {}
+  }
+
+  var savedTheme = null;
+  try { savedTheme = localStorage.getItem("theme"); } catch (e) {}
+  setTheme(savedTheme === "dark");
+  themeBtn.addEventListener("click", function () {
+    setTheme(root.getAttribute("data-theme") !== "dark");
+  });
+
+  var btnTech = document.getElementById("btn-tech");
+  var btnPlain = document.getElementById("btn-plain");
+
+  function setRegister(plain) {
+    document.body.classList.toggle("plain", plain);
+    btnTech.setAttribute("aria-pressed", String(!plain));
+    btnPlain.setAttribute("aria-pressed", String(plain));
+  }
+  btnTech.addEventListener("click", function () { setRegister(false); });
+  btnPlain.addEventListener("click", function () { setRegister(true); });
+
+  var stages = {
+    env: {
+      n: 1,
+      title: "WebArena shop",
+      path: "Docker, webarena-shopping, localhost:7770",
+      tech: "The ServiceNow WebArena Verified distribution. Magento 2.4.6, MySQL, Elasticsearch and Redis inside one container. Chosen over the original WebArena images for size and for corrected annotation bugs.",
+      plain: "A complete, fully working fake online shop that runs on the laptop. Real shop software, 104,368 products, working search and cart, but no real money involved.",
+      list: [
+        "104,368 products, all originally simple",
+        "Database access gives definitive right answers",
+        "Runs amd64 under Rosetta translation on Apple Silicon"
+      ]
+    },
+    seed: {
+      n: 2,
+      title: "Seeder",
+      path: "env/seed_variants.py and env/magento.py",
+      tech: "Authors the configurable products WebArena lacks, over the Magento REST API rather than direct SQL, so the platform's own validation and indexing apply. Idempotent, with a real teardown.",
+      plain: "Builds the missing products whose price changes when you pick a size. It goes in through the shop's front desk rather than editing the database directly, so every rule the shop enforces still applies.",
+      list: [
+        "4 parent listings, 14 variants, 3 option types",
+        "All prefixed with IGR, and nothing existing is modified",
+        "Writes a ground truth manifest per run"
+      ]
+    },
+    agent: {
+      n: 3,
+      title: "openJiuwen agent",
+      path: "agent/agent-core, Playwright MCP, OpenRouter",
+      tech: "Huawei's open source browser agent, Apache 2.0. Its system prompt instructs minimal observation. Prefer the smallest probe, avoid unnecessary snapshots, and stop once the card probe returns the needed fields. Its unmodified behaviour is the baseline.",
+      plain: "A real, publicly released AI agent, not one built for this project, which is the point. Its instructions tell it to look as little as possible, because looking costs money. That is exactly the behaviour under study.",
+      list: [
+        "Around 70 browser tools via the MCP standard",
+        "Drives real Chrome through Playwright",
+        "Cheaper models could not complete the tasks at all"
+      ]
+    },
+    runner: {
+      n: 4,
+      title: "Runner",
+      path: "experiments/run_browser_task.py",
+      tech: "Executes one task and writes a run record with answer, cost, elapsed time and error. openJiuwen's own entrypoint is an interactive prompt, unusable for batch experiments.",
+      plain: "Runs the AI on a single question and writes down everything about what happened, including when it fails, because failures are the data.",
+      list: [
+        "Polls settled spend, since an early read gave a false zero",
+        "Records null rather than a zero it does not believe",
+        "An output path lets the suite address records directly"
+      ]
+    },
+    trace: {
+      n: 5,
+      title: "Trace counter",
+      path: "experiments/trace_stats.py",
+      tech: "Reconstructs the tool call sequence from the log. Splits calls into actions that change page state and observations that only read it.",
+      plain: "Counts the AI's steps, separating doing from looking. Clicking a size reveals a hidden price, taking another screenshot does not.",
+      list: [
+        "Actions are the RQ3 cost metric",
+        "The sequence proved the agent clicked rather than reading the leaked config",
+        "Recovered from conversation history, since no tool events are logged"
+      ]
+    },
+    score: {
+      n: 6,
+      title: "Scorer",
+      path: "experiments/score.py",
+      tech: "Marks free text answers against the manifest. Five verdicts, being correct, wrong, ambiguous, abstained and failed.",
+      plain: "Marks the answers automatically against the known correct values, so that sixty written answers do not have to be graded by hand.",
+      list: [
+        "Abstained is tracked apart from wrong",
+        "A run that declines has not misled anyone",
+        "That distinction is RQ2's signalling question"
+      ]
+    },
+    suite: {
+      n: 7,
+      title: "Suite driver",
+      path: "experiments/suite.py and rescore.py",
+      tech: "Runs every task with repeats and aggregates the result. Repeats are mandatory, because the same model on the same page answered correctly twice and then fabricated a price on the third attempt.",
+      plain: "Runs all the questions five times each and totals it up. Asking once was proven unsafe, because the same question got two right answers and then a made up one.",
+      list: [
+        "Twelve tasks, five repeats, sixty runs",
+        "rescore.py re marks stored runs at no cost",
+        "Changed verdicts are kept rather than overwritten"
+      ]
+    },
+    out: {
+      n: 8,
+      title: "Results",
+      path: "experiments/results/stamp/suite.json",
+      tech: "Per run, the verdict, answer, cost, elapsed time, actions, observations and the full tool sequence, plus per task aggregates.",
+      plain: "One file holding everything. Every answer, whether it was right, what it cost, how long it took and exactly what the AI did.",
+      list: [
+        "53 correct, 6 wrong, 1 ambiguous",
+        "Zero abstentions across all sixty runs",
+        "$2.98 in total"
+      ]
+    }
+  };
+
+  var dStep = document.getElementById("d-step");
+  var dTitle = document.getElementById("d-title");
+  var dPath = document.getElementById("d-path");
+  var dBody = document.getElementById("d-body");
+  var dList = document.getElementById("d-list");
+  var nodes = Array.prototype.slice.call(document.querySelectorAll(".node"));
+
+  function show(key) {
+    var s = stages[key];
+    if (!s) { return; }
+    nodes.forEach(function (n) { n.classList.toggle("on", n.getAttribute("data-k") === key); });
+    dStep.textContent = "Stage " + s.n + " of 8";
+    dTitle.textContent = s.title;
+    dPath.textContent = s.path;
+    dBody.innerHTML = '<span class="r-tech"></span><span class="r-plain"></span>';
+    dBody.querySelector(".r-tech").textContent = s.tech;
+    dBody.querySelector(".r-plain").textContent = s.plain;
+    dList.innerHTML = "";
+    s.list.forEach(function (item) {
+      var li = document.createElement("li");
+      li.textContent = item;
+      dList.appendChild(li);
+    });
+  }
+
+  nodes.forEach(function (n) {
+    n.addEventListener("click", function () { show(n.getAttribute("data-k")); });
+    n.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); show(n.getAttribute("data-k")); }
+    });
+  });
+  show("env");
+
+  // rail groups expand and collapse
+  function setGroup(btn, open) {
+    var list = document.getElementById(btn.getAttribute("aria-controls"));
+    btn.setAttribute("aria-expanded", String(open));
+    btn.textContent = open ? "\u2212" : "+";
+    list.hidden = !open;
+  }
+
+  var railGroups = Array.prototype.slice.call(document.querySelectorAll(".railgroup"))
+    .map(function (grp) {
+      return {
+        grp: grp,
+        btn: grp.querySelector(".railtoggle"),
+        head: grp.querySelector(".railrow > a"),
+        sec: document.getElementById(grp.getAttribute("data-section"))
+      };
+    });
+
+  railGroups.forEach(function (item) {
+    function toggle() { setGroup(item.btn, item.btn.getAttribute("aria-expanded") !== "true"); }
+    item.btn.addEventListener("click", toggle);
+    item.head.addEventListener("click", toggle);
+  });
+
+  // Every group starts closed and the one you are reading opens itself, so the rail
+  // shows the detail of where you are without listing everything at once. Re-syncing
+  // only when the section changes leaves a manual toggle alone until you scroll on.
+  var lastSection = null;
+
+  function syncRail() {
+    var mark = window.pageYOffset + 150;
+    var current = railGroups[0];
+    railGroups.forEach(function (item) {
+      if (item.sec && item.sec.offsetTop <= mark) { current = item; }
+    });
+    if (current === lastSection) { return; }
+    lastSection = current;
+    railGroups.forEach(function (item) {
+      var on = item === current;
+      setGroup(item.btn, on);
+      item.head.classList.toggle("here", on);
+      item.grp.classList.toggle("here", on);
+    });
+  }
+
+  var ticking = false;
+  window.addEventListener("scroll", function () {
+    if (ticking) { return; }
+    ticking = true;
+    window.requestAnimationFrame(function () { ticking = false; syncRail(); });
+  }, { passive: true });
+  syncRail();
+
+  // rail links that name an architecture stage also select it
+  Array.prototype.slice.call(document.querySelectorAll(".railsub a[data-k]")).forEach(function (link) {
+    link.addEventListener("click", function () { show(link.getAttribute("data-k")); });
+  });
+
+  var search = document.getElementById("fnsearch");
+  var chips = Array.prototype.slice.call(document.querySelectorAll(".chip"));
+  var files = Array.prototype.slice.call(document.querySelectorAll(".fnfile"));
+  var empty = document.getElementById("fnempty");
+  var expandBtn = document.getElementById("expandall");
+  var rows = Array.prototype.slice.call(document.querySelectorAll("details.fn"));
+  var group = "all";
+  var expandAll = false;
+
+  function applyFilter() {
+    var q = search.value.trim().toLowerCase();
+    var anyVisible = false;
+
+    files.forEach(function (file) {
+      var groupOk = group === "all" || file.getAttribute("data-g") === group;
+      var rows = Array.prototype.slice.call(file.querySelectorAll(".fn"));
+      var pathText = file.querySelector(".fpath").textContent.toLowerCase();
+      var fileMatch = q !== "" && pathText.indexOf(q) !== -1;
+      var shown = 0;
+
+      rows.forEach(function (row) {
+        var match = q === "" || fileMatch || row.textContent.toLowerCase().indexOf(q) !== -1;
+        row.hidden = !match;
+        // A search only pays off if the answer is visible, so matches open themselves.
+        // Clearing the box returns every row to its collapsed resting state.
+        if (q === "") { row.open = expandAll; } else if (match) { row.open = true; }
+        if (match) { shown += 1; }
+      });
+
+      var visible = groupOk && shown > 0;
+      file.hidden = !visible;
+      if (visible) { anyVisible = true; }
+    });
+
+    empty.hidden = anyVisible;
+  }
+
+  expandBtn.addEventListener("click", function () {
+    expandAll = !expandAll;
+    expandBtn.setAttribute("aria-pressed", String(expandAll));
+    expandBtn.textContent = expandAll ? "Collapse all" : "Expand all";
+    rows.forEach(function (row) { if (!row.hidden) { row.open = expandAll; } });
+  });
+
+  search.addEventListener("input", applyFilter);
+  chips.forEach(function (chip) {
+    chip.addEventListener("click", function () {
+      group = chip.getAttribute("data-f");
+      chips.forEach(function (c) { c.setAttribute("aria-pressed", String(c === chip)); });
+      applyFilter();
+    });
+  });
+})();
+</script>

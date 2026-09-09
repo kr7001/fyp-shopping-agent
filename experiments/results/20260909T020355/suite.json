@@ -1,0 +1,376 @@
+{
+  "ran_at": "2026-09-09T02:28:11",
+  "repeats": 3,
+  "summary": {
+    "by_task": {
+      "scaled-headline": {
+        "gated": false,
+        "verdicts": {
+          "correct": 3
+        },
+        "actions": [
+          1,
+          3,
+          2
+        ],
+        "tool_calls": [
+          4,
+          6,
+          5
+        ],
+        "cost": [
+          0.005472,
+          0.036152,
+          0.018037
+        ],
+        "mean_actions": 2.0,
+        "mean_tool_calls": 5.0,
+        "total_cost": 0.0597
+      },
+      "scaled-cheapest-target": {
+        "gated": true,
+        "verdicts": {
+          "correct": 3
+        },
+        "actions": [
+          6,
+          21,
+          24
+        ],
+        "tool_calls": [
+          12,
+          42,
+          61
+        ],
+        "cost": [
+          0.068418,
+          0.364147,
+          0.436473
+        ],
+        "mean_actions": 17.0,
+        "mean_tool_calls": 38.3,
+        "total_cost": 0.869
+      },
+      "scaled-target-price": {
+        "gated": true,
+        "verdicts": {
+          "correct": 3
+        },
+        "actions": [
+          25,
+          23,
+          19
+        ],
+        "tool_calls": [
+          61,
+          58,
+          38
+        ],
+        "cost": [
+          0.394185,
+          0.470344,
+          0.319092
+        ],
+        "mean_actions": 22.3,
+        "mean_tool_calls": 52.3,
+        "total_cost": 1.1836
+      },
+      "scaled-all-stocked": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 2,
+          "correct": 1
+        },
+        "actions": [
+          6,
+          28,
+          7
+        ],
+        "tool_calls": [
+          11,
+          57,
+          13
+        ],
+        "cost": [
+          0.076674,
+          0.430955,
+          0.081692
+        ],
+        "mean_actions": 13.7,
+        "mean_tool_calls": 27.0,
+        "total_cost": 0.5893
+      },
+      "scaled-best-per-litre": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 3
+        },
+        "actions": [
+          25,
+          7,
+          6
+        ],
+        "tool_calls": [
+          55,
+          12,
+          11
+        ],
+        "cost": [
+          0.275274,
+          0.077796,
+          0.076035
+        ],
+        "mean_actions": 12.7,
+        "mean_tool_calls": 26.0,
+        "total_cost": 0.4291
+      }
+    },
+    "overall": {
+      "correct": 10,
+      "wrong": 5
+    },
+    "total_cost": 3.1307
+  },
+  "rows": [
+    {
+      "task": "scaled-headline",
+      "family": "scaled",
+      "gated": false,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The Rivenhall water listing with the lowest price on the results page is 'Rivenhall Still Spring Water, Multipack - Hillside Wholesale' at $6.44",
+      "tool_calls": 4,
+      "actions": 1,
+      "observations": 3,
+      "cost_usd": 0.005472,
+      "elapsed_s": 18.0,
+      "error": null,
+      "log": "scaled-headline-1.log"
+    },
+    {
+      "task": "scaled-headline",
+      "family": "scaled",
+      "gated": false,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The lowest-priced Rivenhall water listing on the results page is 'Rivenhall Still Spring Water, Multipack - Hillside Wholesale' with a price of $6.44.",
+      "tool_calls": 6,
+      "actions": 3,
+      "observations": 3,
+      "cost_usd": 0.036152,
+      "elapsed_s": 25.1,
+      "error": null,
+      "log": "scaled-headline-2.log"
+    },
+    {
+      "task": "scaled-headline",
+      "family": "scaled",
+      "gated": false,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The lowest-priced Rivenhall water listing on the results page is 'Rivenhall Still Spring Water, Multipack - Hillside Wholesale' with a price of $6.44.",
+      "tool_calls": 5,
+      "actions": 2,
+      "observations": 3,
+      "cost_usd": 0.018037,
+      "elapsed_s": 21.2,
+      "error": null,
+      "log": "scaled-headline-3.log"
+    },
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The cheapest seller for the 2 x 9.5L Rivenhall pack is Redhill Stores at $17.68 (base price $6.82 + pack upgrade $10.86).",
+      "tool_calls": 12,
+      "actions": 6,
+      "observations": 6,
+      "cost_usd": 0.068418,
+      "elapsed_s": 39.8,
+      "error": null,
+      "log": "scaled-cheapest-target-1.log"
+    },
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The cheapest seller for the 2 x 9.5L Rivenhall pack is Redhill Stores at $17.68 (base price $6.82 + pack upgrade $10.86)",
+      "tool_calls": 42,
+      "actions": 21,
+      "observations": 21,
+      "cost_usd": 0.364147,
+      "elapsed_s": 140.7,
+      "error": null,
+      "log": "scaled-cheapest-target-2.log"
+    },
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The cheapest seller for the 2 x 9.5L Rivenhall pack is Redhill Stores at $17.68 (base price $6.82 + pack upgrade $10.86)",
+      "tool_calls": 61,
+      "actions": 24,
+      "observations": 37,
+      "cost_usd": 0.436473,
+      "elapsed_s": 177.7,
+      "error": null,
+      "log": "scaled-cheapest-target-3.log"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "found 17.68",
+      "answer": "The lowest price anyone charges for the 2 x 9.5L pack of Rivenhall water is $17.68 from Redhill Stores (base price $6.82 + pack surcharge $10.86).",
+      "tool_calls": 61,
+      "actions": 25,
+      "observations": 36,
+      "cost_usd": 0.394185,
+      "elapsed_s": 178.9,
+      "error": null,
+      "log": "scaled-target-price-1.log"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "found 17.68",
+      "answer": "The lowest price anyone charges for the 2 x 9.5L pack of Rivenhall water is $17.68 from Redhill Stores. This is calculated as the base price of $6.82 plus the 2 x 9.5L pack upgrade charge of $10.86.",
+      "tool_calls": 58,
+      "actions": 23,
+      "observations": 35,
+      "cost_usd": 0.470344,
+      "elapsed_s": 180.3,
+      "error": null,
+      "log": "scaled-target-price-2.log"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "found 17.68",
+      "answer": "The lowest price anyone charges for the 2 x 9.5L pack of Rivenhall water is $17.68 from Redhill Stores. This is calculated as the base price of $6.82 plus the pack size upgrade of $10.86 for the 2 x 9.5L option.",
+      "tool_calls": 38,
+      "actions": 19,
+      "observations": 19,
+      "cost_usd": 0.319092,
+      "elapsed_s": 133.7,
+      "error": null,
+      "log": "scaled-target-price-3.log"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "answered yes",
+      "answer": "Yes",
+      "tool_calls": 11,
+      "actions": 6,
+      "observations": 5,
+      "cost_usd": 0.076674,
+      "elapsed_s": 34.2,
+      "error": null,
+      "log": "scaled-all-stocked-1.log"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "answered no",
+      "answer": "No",
+      "tool_calls": 57,
+      "actions": 28,
+      "observations": 29,
+      "cost_usd": 0.430955,
+      "elapsed_s": 165.9,
+      "error": null,
+      "log": "scaled-all-stocked-2.log"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "wrong",
+      "why": "answered yes",
+      "answer": "Yes",
+      "tool_calls": 13,
+      "actions": 7,
+      "observations": 6,
+      "cost_usd": 0.081692,
+      "elapsed_s": 36.2,
+      "error": null,
+      "log": "scaled-all-stocked-3.log"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "Redhill Stores offers the lowest price per litre for Rivenhall Still Spring Water at $0.93 per litre (2 x 9.5L pack for $17.68). This was determined by analyzing all four sellers (Redhill Stores, Cellar Distributors, Ashgrove Cellars, and Bramley Pantry) and all their available pack sizes.",
+      "tool_calls": 55,
+      "actions": 25,
+      "observations": 30,
+      "cost_usd": 0.275274,
+      "elapsed_s": 166.5,
+      "error": null,
+      "log": "scaled-best-per-litre-1.log"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "Redhill Stores offers the lowest price per litre at $0.931/L for the 2 x 9.5L pack (19L total) at $17.68. This is the best value across all Rivenhall products and pack sizes from all four sellers.",
+      "tool_calls": 12,
+      "actions": 7,
+      "observations": 5,
+      "cost_usd": 0.077796,
+      "elapsed_s": 46.9,
+      "error": null,
+      "log": "scaled-best-per-litre-2.log"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "Redhill Stores offers the lowest price per litre at $0.930/L for the 2 x 9.5L pack (total price $17.68 for 19 litres). This is the best value across all Rivenhall listings and pack sizes from all four sellers (Cellar Distributors, Redhill Stores, Ashgrove Cellars, and Bramley Pantry).",
+      "tool_calls": 11,
+      "actions": 6,
+      "observations": 5,
+      "cost_usd": 0.076035,
+      "elapsed_s": 45.0,
+      "error": null,
+      "log": "scaled-best-per-litre-3.log"
+    }
+  ]
+}
