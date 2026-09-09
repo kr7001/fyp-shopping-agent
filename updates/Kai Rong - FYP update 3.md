@@ -86,8 +86,8 @@ Scored automatically against the manifest ground truth.
 
 | | |
 | --- | --- |
-| Overall | 53 correct, 6 wrong, 1 ambiguous |
-| Gated tasks | 48 of 55 correct, 87% |
+| Overall | 54 correct, 6 wrong |
+| Gated tasks | 49 of 55 correct, 89% |
 | Control task | 5 of 5, 1 action per run |
 | **Abstentions** | **0 of 60** |
 
@@ -107,12 +107,17 @@ Gated runs bucketed by page-changing actions spent:
 
 | Actions | Runs | Correct | Rate |
 | --- | --- | --- | --- |
-| 1 | 5 | 1 | **20%** |
-| 2–3 | 16 | 16 | 100% |
-| 4–6 | 20 | 18 | 90% |
-| 7+ | 14 | 13 | 93% |
+| 1 | 5 | 2 | **40%** |
+| 2 to 3 | 16 | 16 | 100% |
+| 4 to 6 | 20 | 18 | 90% |
+| 7 or more | 14 | 13 | 93% |
 
-Correct runs spent a median of 5 actions; wrong runs a median of 1.
+Correct runs spent a median of 5 actions; wrong runs a median of 3.
+
+*Revised 9 September. This bucket originally read 20 per cent with a wrong-run median of
+1 action. Both were inflated by a scorer rule that marked an answer ambiguous for naming
+both the target price and the surcharge, which is precisely what a correct answer showing
+its working does. The drop is softer than first reported and still present.*
 
 The relationship is **not** "more retrieval is better" — past three actions the rate is
 flat within noise. It is specifically under-retrieval that predicts failure, and the cliff
@@ -211,7 +216,7 @@ were re-scored from stored records without re-running, and changed verdicts are 
 
 ## 5. What RQ3 now has to beat
 
-The headroom is not correctness. At 87% the unmodified agent is mostly right. The headroom
+The headroom is not correctness. At 89% the unmodified agent is mostly right. The headroom
 is that it has no principle for knowing when it has retrieved enough:
 
 - It spends 1 action and fabricates, or 7 and is right, with nothing distinguishing the two

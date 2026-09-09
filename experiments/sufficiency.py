@@ -39,12 +39,39 @@ import trace_stats
 
 RESULTS = pathlib.Path(__file__).resolve().parent / "results"
 
-# A surcharge label: "+$15.01" or "+15.01". The plus is what makes it relative.
-DELTA = re.compile(r"\+\s*\$?(\d{1,4}\.\d{2})\b")
-# A money figure that is not preceded by a plus sign, so it reads as a total.
-ABSOLUTE = re.compile(r"(?<!\+)(?<!\+ )\$(\d{1,4}\.\d{2})\b")
-# Any decimal at all, used only to decide whether a number was seen in any form.
-ANY_DECIMAL = re.compile(r"\b(\d{1,5}\.\d{2})\b")
+# Money is handled in integer cents throughout. Comparing prices as floats invites a
+# value that does not round-trip to slip past an equality test, and the whole check rests
+# on equality tests.
+MONEY = r"(\d{1,5}\.\d{1,2})"
+
+# A surcharge label, "+$15.01" or "+15.01". The plus is what makes it relative.
+DELTA = re.compile(r"\+\s*\$?" + MONEY + r"(?![\d])")
+# A money figure not preceded by a plus, so it reads as a total.
+ABSOLUTE = re.compile(r"(?<!\+)(?<!\+ )\$" + MONEY + r"(?![\d])")
+# Any decimal at all. Prices reach the agent both as rendered text and as JSON, where
+# they carry one decimal place, so this deliberately accepts either.
+ANY_DECIMAL = re.compile(r"(?<![\d.])" + MONEY + r"(?![\d])")
+
+# A figure carrying a per-unit denominator is derived by the agent, not read off the
+# page, so it can be correct while appearing nowhere in the observations.
+RATE = re.compile(MONEY + r"\s*(?:/\s*(?:l|kg|litre|liter|kilogram)\b|"
+                          r"per\s+(?:litre|liter|kg|kilogram|l)\b)", re.IGNORECASE)
+
+# An answer that announces it has produced a list, and contains no figures.
+COMPLETION_CLAIM = re.compile(
+    r"\b(successfully\s+(?:listed|extracted|retrieved|gathered)|"
+    r"(?:listed|extracted)\s+all\b|here (?:are|is) the)", re.IGNORECASE)
+
+# Below this, a figure in this catalogue is a per-unit rate rather than a total. Rates
+# are computed by the agent and correctly absent from the page, so the unsupported test
+# does not apply to them. A stated domain assumption: the cheapest total in these
+# fixtures is $6.37 and the dearest rate is $1.65 per litre.
+RATE_CEILING_CENTS = 500
+
+
+def cents(value: str | float) -> int:
+    """Money as an integer number of cents."""
+    return int(round(float(value) * 100))
 
 
 def observed_text(log_path: pathlib.Path) -> str:
@@ -62,110 +89,85 @@ def observed_text(log_path: pathlib.Path) -> str:
     return "\n".join(parts)
 
 
-def evidence(text: str) -> dict[str, set[float]]:
+def evidence(text: str) -> dict[str, set[int]]:
     return {
-        "deltas": {float(m) for m in DELTA.findall(text)},
-        "absolutes": {float(m) for m in ABSOLUTE.findall(text)},
-        "any": {float(m) for m in ANY_DECIMAL.findall(text)},
+        "deltas": {cents(m) for m in DELTA.findall(text)},
+        "absolutes": {cents(m) for m in ABSOLUTE.findall(text)},
+        "any": {cents(m) for m in ANY_DECIMAL.findall(text)},
     }
 
 
-# A figure carrying a per-unit denominator is derived by the agent, not read off the
-# page, so it can be correct while appearing nowhere in the observations.
-RATE = re.compile(r"(\d{1,4}\.\d{2})\s*(?:/\s*(?:l|kg|litre|liter|kilogram)\b|per\s+(?:litre|liter|kg|kilogram|l)\b)",
-                  re.IGNORECASE)
-
-# An answer that announces it has produced a list, and contains no figures.
-COMPLETION_CLAIM = re.compile(
-    r"\b(successfully\s+(?:listed|extracted|retrieved|gathered)|"
-    r"(?:listed|extracted)\s+all\b|here (?:are|is) the)", re.IGNORECASE)
-
-# Below this, a figure in this catalogue is a per-unit rate rather than a total. Rates
-# are computed by the agent and correctly absent from the page, so the unsupported test
-# does not apply to them. This is a domain assumption, stated rather than hidden: the
-# cheapest total anywhere in these fixtures is $6.37 and the dearest rate is $1.65/L.
-RATE_CEILING = 5.00
+def prices_in(text: str) -> list[int]:
+    return [cents(m) for m in ANY_DECIMAL.findall(text or "")]
 
 
-def prices_in(text: str) -> list[float]:
-    return [float(m) for m in re.findall(r"(?<![\d.])(\d{1,4}\.\d{2})(?![\d])", text or "")]
+def rate_values(text: str) -> set[int]:
+    return {cents(m) for m in RATE.findall(text or "")}
 
 
-def rate_values(text: str) -> set[float]:
-    return {float(m) for m in RATE.findall(text or "")}
+def verified_compositions(amounts: list[int], seen: dict[str, set[int]]) -> set[int]:
+    """Figures exonerated by arithmetic the observations actually support.
 
+    An answer reading "$17.68 (base $6.82 + upgrade $10.86)" states its own working, and
+    punishing it would penalise exactly the behaviour this check exists to encourage.
 
-def shows_composition(claimed: list[float]) -> tuple[float, float, float] | None:
-    """Find a visible sum among the claimed figures.
-
-    An answer reading "$17.68 (base $6.82 + upgrade $10.86)" states its own arithmetic.
-    The components are deltas and bases, correctly labelled, and flagging one of them as
-    a price would punish exactly the behaviour the check exists to encourage.
+    The sum alone is not enough. An earlier version accepted any three figures where two
+    summed to a third, which let a wrong answer clear itself by inventing a plausible
+    breakdown: "$15.01 (base $9.89 + upgrade $5.12)" passed while $5.12 was never seen.
+    So the base has to have been observed as a total and the delta as a surcharge.
     """
-    for a in claimed:
-        for b in claimed:
-            if a is b:
+    justified: set[int] = set()
+    for base in amounts:
+        for delta in amounts:
+            if base == delta:
                 continue
-            for c in claimed:
-                if c not in (a, b) and abs(a + b - c) < 0.005:
-                    return (a, b, c)
-    return None
+            total = base + delta
+            if total in amounts and base in seen["absolutes"] and delta in seen["deltas"]:
+                justified.update({base, delta, total})
+    return justified
 
 
-def check(answer: str, seen: dict[str, set[float]]) -> dict:
+def check(answer: str, seen: dict[str, set[int]]) -> dict:
     """Verdict for one answer against one run's observations.
 
     `ok` means nothing was detected, not that the answer is right. This is a filter for
     specific, mechanically checkable faults, not a correctness oracle.
+
+    Every figure presented as an amount is tested, not only the first. Testing the first
+    let a wrong value escape by appearing later in the sentence, which made word order
+    decide whether the answer was checked at all.
     """
     claimed = prices_in(answer)
     rates = rate_values(answer)
-    # Only figures presented as amounts are testable against the page.
     amounts = [v for v in claimed if v not in rates]
-    if not amounts and not COMPLETION_CLAIM.search(answer):
-        return {"flag": None, "ok": True, "why": "no price claimed as an amount",
-                "claimed": claimed}
 
     if COMPLETION_CLAIM.search(answer) and not amounts:
-        return {
-            "flag": "claim_without_content",
-            "ok": False,
-            "why": "the answer announces a completed list and contains no figures",
-            "claimed": claimed,
-        }
-
+        return {"flag": "claim_without_content", "ok": False,
+                "why": "the answer announces a completed list and contains no figures",
+                "claimed": claimed}
     if not amounts:
         return {"flag": None, "ok": True, "why": "no price claimed as an amount",
                 "claimed": claimed}
 
-    composition = shows_composition(amounts)
-    if composition:
-        a, b, c = composition
-        return {"flag": None, "ok": True,
-                "why": f"answer states its own arithmetic, {a} + {b} = {c}",
-                "claimed": claimed}
+    justified = verified_compositions(amounts, seen)
 
-    # The asserted price is the first amount. Later figures are comparisons and context,
-    # and testing them produces false alarms on answers that correctly cite alternatives.
-    asserted = amounts[0]
+    for value in amounts:
+        if value in justified:
+            continue
+        if value in seen["deltas"] and value not in seen["absolutes"]:
+            return {"flag": "delta_as_absolute", "ok": False,
+                    "why": f"${value / 100:.2f} was observed only as a surcharge, never as a total",
+                    "claimed": claimed}
 
-    if asserted in seen["deltas"] and asserted not in seen["absolutes"]:
-        return {
-            "flag": "delta_as_absolute",
-            "ok": False,
-            "why": f"${asserted} was observed only as a surcharge, never as a total",
-            "claimed": claimed,
-        }
+    for value in amounts:
+        if value in justified or value < RATE_CEILING_CENTS:
+            continue
+        if value not in seen["any"]:
+            return {"flag": "unsupported_number", "ok": False,
+                    "why": f"${value / 100:.2f} does not appear anywhere the run looked",
+                    "claimed": claimed}
 
-    if asserted >= RATE_CEILING and asserted not in seen["any"]:
-        return {
-            "flag": "unsupported_number",
-            "ok": False,
-            "why": f"${asserted} does not appear anywhere the run looked",
-            "claimed": claimed,
-        }
-
-    return {"flag": None, "ok": True, "why": "the asserted figure was observed as a total",
+    return {"flag": None, "ok": True, "why": "every figure is observed or arithmetically justified",
             "claimed": claimed}
 
 

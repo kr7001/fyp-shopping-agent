@@ -67,8 +67,7 @@
       "water-b-9l5-price": {
         "gated": true,
         "verdicts": {
-          "correct": 3,
-          "ambiguous": 1,
+          "correct": 4,
           "wrong": 1
         },
         "actions": [
@@ -369,9 +368,8 @@
       }
     },
     "overall": {
-      "correct": 53,
-      "wrong": 6,
-      "ambiguous": 1
+      "correct": 54,
+      "wrong": 6
     },
     "total_cost": 2.9802
   },
@@ -573,8 +571,8 @@
       "family": "water-hillside-provisions",
       "gated": true,
       "repeat": 3,
-      "verdict": "ambiguous",
-      "why": "names both 22.5 and the trap price 10.9",
+      "verdict": "correct",
+      "why": "found 22.5, with working that resolves to it",
       "answer": "The price of the 2 x 9.5L pack is $22.50 (base price $10.90 + additional charge $11.60)",
       "tool_calls": 5,
       "actions": 1,
@@ -582,7 +580,8 @@
       "cost_usd": 0.01467,
       "elapsed_s": 19.1,
       "error": null,
-      "log": "water-b-9l5-price-3.log"
+      "log": "water-b-9l5-price-3.log",
+      "previous_verdict": "ambiguous"
     },
     {
       "task": "water-b-9l5-price",

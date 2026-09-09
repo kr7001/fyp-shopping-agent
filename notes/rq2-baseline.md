@@ -11,8 +11,8 @@ whose answer is on the card.
 
 | | |
 | --- | --- |
-| Overall | 53 correct, 6 wrong, 1 ambiguous of 60 |
-| Gated tasks | 48 correct of 55, 87% |
+| Overall | 54 correct, 6 wrong of 60 |
+| Gated tasks | 49 correct of 55, 89% |
 | Control task | 5 of 5, at 1 action per run |
 | **Abstentions** | **0 of 60** |
 
@@ -32,13 +32,19 @@ Gated runs, bucketed by the number of page-changing actions spent:
 
 | Actions | Runs | Correct | Rate |
 | --- | --- | --- | --- |
-| 1 | 5 | 1 | **20%** |
+| 1 | 5 | 2 | **40%** |
 | 2-3 | 16 | 16 | 100% |
 | 4-6 | 20 | 18 | 90% |
 | 7+ | 14 | 13 | 93% |
 
-Correct runs spent a median of 5 actions; wrong runs a median of 1. Four of the seven
-failures happened at exactly one action.
+Correct runs spent a median of 5 actions; wrong runs a median of 3.
+
+**Revised 2026-09-09.** This table originally read 20% in the one-action bucket, with a
+median of 1 action for wrong runs. Both were inflated by a scorer rule that marked an
+answer ambiguous for naming both the target price and the trap value. Magento states
+variant prices as a surcharge, so a correct answer often shows its working, and one such
+answer was being counted as a failure. The rule now accepts an answer whose arithmetic
+resolves to the target. The cliff is softer than first reported and still present.
 
 The relationship is not "more retrieval is better". Beyond three actions the rate is flat
 within noise. It is specifically **under-retrieval** that predicts failure, and the cliff
