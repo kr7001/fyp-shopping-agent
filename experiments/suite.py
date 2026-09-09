@@ -21,6 +21,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import policy as policy_module
 import score as scoring
 import trace_stats
 
@@ -31,9 +32,14 @@ RUNNER = HERE / "run_browser_task.py"
 RESULTS = HERE / "results"
 
 
-def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str) -> dict:
-    """Execute one task once and return its record, enriched with trace counts."""
-    query = task["query"].format(base=base_url)
+def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
+             query: str | None = None) -> dict:
+    """Execute one task once and return its record, enriched with trace counts.
+
+    `query` overrides the task text, which is how a policy retry re-asks the same task
+    with the reason its first answer was rejected.
+    """
+    query = query if query is not None else task["query"].format(base=base_url)
     record_path = out_dir / f"{tag}.json"
     log_path = out_dir / f"{tag}.log"
 
@@ -56,11 +62,57 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str) -> dict
     return record
 
 
+def add(*values) -> float | int | None:
+    """Sum what is present. A missing cost is unknown, not zero."""
+    present = [v for v in values if v is not None]
+    return sum(present) if present else None
+
+
+def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
+                 out_dir: pathlib.Path, tag: str) -> tuple:
+    """Run the sufficiency check and act on it.
+
+    Cost and interaction counts are reported for the arm as a whole, both attempts
+    included. A policy that buys accuracy with a second full run has to be charged for
+    it, or the comparison against the baseline is not a comparison.
+    """
+    result = record.get("result") or {}
+    trace = record.get("trace") or {}
+    check = policy_module.gate(task, spec, answer, out_dir / f"{tag}.log")
+
+    if check["ok"] or mode == "gate":
+        if not check["ok"]:
+            answer = policy_module.abstention_for(check)
+        return answer, record, result, trace, check
+
+    query = policy_module.retry_query(task["query"].format(base=spec["base_url"]), check)
+    tag2 = f"{tag}-retry"
+    second = run_once(task, spec["base_url"], out_dir, tag2, query=query)
+    result2 = second.get("result") or {}
+    answer2 = str(result2.get("final") or "")
+    trace2 = second.get("trace") or {}
+    check2 = policy_module.gate(task, spec, answer2, out_dir / f"{tag2}.log")
+
+    # Still unverified after being told why: abstain rather than emit it a second time.
+    final_answer = answer2 if check2["ok"] else policy_module.abstention_for(check2)
+    merged = {**second,
+              "cost_usd": add(record.get("cost_usd"), second.get("cost_usd")),
+              "elapsed_s": add(record.get("elapsed_s"), second.get("elapsed_s"))}
+    merged_trace = {key: add(trace.get(key), trace2.get(key))
+                    for key in ("tool_calls_total", "actions", "observations")}
+    return final_answer, merged, result2, merged_trace, {
+        **check2, "retried": True, "first_flag": check["flag"],
+        "first_why": check["why"], "first_answer": answer[:300]}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repeats", type=int, default=5)
     parser.add_argument("--tasks", type=pathlib.Path, default=HERE / "tasks.json")
     parser.add_argument("--only", nargs="*", help="task ids to run, default all")
+    parser.add_argument("--policy", choices=("off", "gate", "retry"), default="off",
+                        help="off is the unmodified baseline; gate abstains on a failed "
+                             "sufficiency check; retry re-asks once with the reason")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -88,14 +140,19 @@ def main() -> int:
             tag = f"{task['id']}-{repeat}"
             record = run_once(task, spec["base_url"], out_dir, tag)
             result = record.get("result") or {}
-            verdict = scoring.score(task, str(result.get("final") or ""),
-                                    bool(result.get("ok")))
+            answer = str(result.get("final") or "")
             trace = record.get("trace") or {}
+            check = None
+            if args.policy != "off":
+                answer, record, result, trace, check = apply_policy(
+                    args.policy, task, spec, answer, record, out_dir, tag)
+
+            verdict = scoring.score(task, answer, bool(result.get("ok")))
             row = {
                 "task": task["id"], "family": task["family"], "gated": task["gated"],
                 "repeat": repeat,
                 "verdict": verdict["verdict"], "why": verdict["why"],
-                "answer": str(result.get("final") or "")[:300],
+                "answer": answer[:300],
                 "tool_calls": trace.get("tool_calls_total"),
                 "actions": trace.get("actions"),
                 "observations": trace.get("observations"),
@@ -104,6 +161,14 @@ def main() -> int:
                 "error": record.get("error") or result.get("error"),
                 "log": record.get("log"),
             }
+            if check is not None:
+                row.update({"policy": args.policy, "flag": check.get("flag"),
+                            "flag_why": check.get("why"),
+                            "opened": check.get("opened"),
+                            "retried": bool(check.get("retried")),
+                            "first_flag": check.get("first_flag"),
+                            "first_why": check.get("first_why"),
+                            "first_answer": check.get("first_answer")})
             rows.append(row)
             print(f"[{done}/{total}] {tag:32} {row['verdict']:10} "
                   f"calls={row['tool_calls']} act={row['actions']} "
@@ -111,7 +176,13 @@ def main() -> int:
 
     summary = summarise(rows)
     payload = {"ran_at": dt.datetime.now().isoformat(timespec="seconds"),
-               "repeats": args.repeats, "summary": summary, "rows": rows}
+               "repeats": args.repeats, "policy": args.policy,
+               "tasks_file": args.tasks.name,
+               # The ground truth this suite was scored against. The catalogue is
+               # regenerated between rounds, so without it an old result cannot be told
+               # apart from a wrong one.
+               "instance": spec.get("_instance"),
+               "summary": summary, "rows": rows}
     (out_dir / "suite.json").write_text(json.dumps(payload, indent=2, default=str) + "\n")
 
     print_summary(summary, rows)
