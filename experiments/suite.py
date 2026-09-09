@@ -155,9 +155,10 @@ def main() -> int:
 
             # Read the stated confidence, then take it out of the answer. The scorer looks
             # for money and a two-digit percentage sitting in the text can be read as one.
-            confidence = None
+            confidence, reason = None, None
             if args.confidence != "off":
                 confidence = policy_module.parse_confidence(answer)
+                reason = policy_module.parse_reason(answer)
                 answer = policy_module.strip_confidence(answer)
 
             check = None
@@ -182,6 +183,7 @@ def main() -> int:
             }
             if args.confidence != "off":
                 row["confidence"] = confidence
+                row["confidence_reason"] = reason
                 row["confidence_wording"] = args.confidence
             if check is not None:
                 row.update({"policy": args.policy, "flag": check.get("flag"),

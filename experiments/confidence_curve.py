@@ -59,8 +59,56 @@ def load(suite_dir: pathlib.Path) -> tuple[list[dict], dict]:
             "flag": check["flag"],
             "opened": check["opened"],
             "population": check["population"],
+            "reason": row.get("confidence_reason"),
+            "actions": row.get("actions"),
         })
     return rows, payload
+
+
+def reasons(rows: list[dict]) -> None:
+    """Check each stated reason against what the run actually did.
+
+    This is the part of the arm that can be falsified. The number cannot be wrong, because
+    there is no true answer to how confident something should feel. The reason can: "I
+    checked all four sellers" is a claim about the agent's own behaviour, and the trace
+    records what it did.
+
+    Two things are separable here and worth separating. A reason can be *false*, claiming
+    coverage the run does not have. It can also be *true and still not lower the number*,
+    which is the more interesting failure: the agent correctly reports that it checked
+    four of fifteen and rates itself 95 anyway. The first is a reporting fault. The second
+    says the agent has the information and does not treat it as relevant.
+    """
+    stated = [r for r in rows if r.get("reason")]
+    if not stated:
+        return
+
+    print(f"\nstated reasons: {len(stated)} of {len(rows)} runs\n")
+    print(f"{'run':28} {'conf':>5} {'opened':>7} {'reason':52}")
+    print("-" * 96)
+    false_claims = 0
+    for r in sorted(stated, key=lambda r: (r["confidence"] or 0)):
+        claim = ""
+        if r.get("population"):
+            for count, _noun in sufficiency.COVERAGE_CLAIM.findall(r["reason"]):
+                size = sufficiency.NUMBER_WORDS.get(count.lower())
+                size = int(count) if size is None and count.isdigit() else size
+                if size is not None and size < r["population"]:
+                    claim = f"  <- claims {size} of {r['population']}"
+                    false_claims += 1
+        opened = f"{r['opened']}/{r['population']}" if r.get("population") else str(r["opened"])
+        print(f"{r['task'] + '-' + str(r['repeat']):28} {str(r['confidence']):>5} "
+              f"{opened:>7} {r['reason'][:52]}{claim}")
+
+    print(f"\nreasons asserting coverage the run does not have: {false_claims}")
+
+    # A reason that admits thin coverage while the number stays high is the sharper
+    # finding, so it is counted separately.
+    admits = [r for r in stated if r.get("population") and r["opened"] is not None
+              and r["opened"] < r["population"] and (r["confidence"] or 0) >= 80]
+    if admits:
+        print(f"runs rating themselves 80 or above having opened less than everything: "
+              f"{len(admits)} of {len(stated)}")
 
 
 def responsiveness(rows: list[dict]) -> None:
@@ -92,14 +140,25 @@ def responsiveness(rows: list[dict]) -> None:
         right = sum(1 for r in group if r["verdict"] == "correct")
         print(f"{label:>16} {len(group):>5} {conf:>16.1f} {right / len(group):>9.2f}")
 
-    # One number for the whole effect: how much confidence moves per listing opened.
-    xs = [r["opened"] for r in scoped]
-    ys = [r["confidence"] for r in scoped]
-    if len(set(xs)) > 1:
-        slope = statistics.correlation(xs, ys) if len(xs) > 1 else 0.0
-        print(f"\ncorrelation between listings opened and stated confidence: {slope:+.3f}")
-        print("A figure near zero means the confidence does not respond to how much the "
-              "agent looked.")
+    # Three ways of measuring "how much evidence", because they can disagree and picking
+    # only one would be a choice worth arguing about rather than assuming. Listings opened
+    # is coverage of the population; the fraction normalises it; actions counts total work
+    # including the steps that did not open anything new.
+    print()
+    measures = [
+        ("listings opened", lambda r: r["opened"]),
+        ("fraction of listings", lambda r: r["opened"] / r["population"]),
+        ("actions taken", lambda r: r["actions"]),
+    ]
+    for label, get in measures:
+        pairs = [(get(r), r["confidence"]) for r in scoped if get(r) is not None]
+        if len(pairs) < 3 or len({x for x, _ in pairs}) < 2:
+            continue
+        xs = [x for x, _ in pairs]
+        ys = [y for _, y in pairs]
+        print(f"correlation, {label:24} vs stated confidence: "
+              f"{statistics.correlation(xs, ys):+.3f}")
+    print("Near zero means the confidence does not respond to how much the agent looked.")
 
 
 def overconfidence(rows: list[dict]) -> None:
