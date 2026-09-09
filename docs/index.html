@@ -721,14 +721,19 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
         <p class="r-plain">Read this carefully, because the obvious reading is wrong. It is not that trying harder gives better answers. Past three clicks, extra effort changes nothing. What it shows is that below two clicks the AI is simply guessing. There is a minimum amount of looking, and a lot of looking that achieves nothing.</p>
       </div>
 
-      <h3 class="sub" id="find-3">Finding 3. Failures are inventions, not misreadings</h3>
+      <h3 class="sub" id="find-3">Finding 3. Failures are delta misreadings, not inventions</h3>
       <div class="quote">
         <span>"The price of the 2 x 9.5L pack is <b>$15.01</b>" &nbsp; truth $24.90, 1 action</span>
         <span>"The price of the 2 x 9.5L pack is <b>$11.60</b>" &nbsp; truth $22.50, 1 action</span>
       </div>
       <div class="prose">
-        <p class="r-tech">Neither figure appears anywhere on those pages. The predicted failure was reporting the headline price, $9.89 instead of $24.90, which is at least checkable against the page. Instead the agent produced values present nowhere, which is harder to detect and worse.</p>
-        <p class="r-plain">Neither of those numbers exists on the page. We expected the AI to report the visible headline price, which would be understandable and easy to spot. Instead it made numbers up entirely, which is far harder to catch.</p>
+        <p class="note"><b>Corrected 9 September</b> after re-reading the traces. This was originally reported as fabrication.</p>
+        <p class="r-tech">Neither figure appears in the page source, which is what first suggested invention. The traces show something more specific. Magento labels each variant option with a price <b>delta</b>, and both runs observed exactly that: <code style="font-family:var(--mono);font-weight:700">2 x 9.5L +$15.01</code>. Then $9.89 + $15.01 = $24.90, and $10.90 + $11.60 = $22.50. Both numbers are correct as surcharges. The agent retrieved the right token and misread its semantics, reporting a relative value as an absolute one. The label is computed in the browser from the page's own configuration block rather than written into the HTML, which is why a source check found nothing while the agent saw it plainly.</p>
+        <p class="r-plain">At first this looked like the AI making numbers up, because neither figure is anywhere in the page's code. Reading what the AI actually saw shows something different. The size dropdown does not list prices, it lists <b>surcharges</b>: the option reads "2 x 9.5L +$15.01", meaning fifteen dollars more than the price already on screen. Add them and you get $24.90, the right answer. The AI read the surcharge and reported it as the price. It found the right number and misunderstood what it meant.</p>
+        <p class="r-tech">A third run on the same task composed both values correctly and said so, which identifies composition rather than retrieval as the discriminating step. This is a sharper result than the original claim: interaction-gated prices are frequently expressed relative to the visible price, so the gated token only means anything combined with the headline the agent already had. The resulting error looks like a price, sits in a plausible range, and appears nowhere on the page, which makes it harder to catch than either a stale headline or an invention.</p>
+        <p class="r-plain">One run out of the three did the sum properly and showed its working, which proves the AI can do it. The lesson is that hidden prices are often written as "add this much" rather than as a total, so an agent has to combine two numbers rather than read one.</p>
+        <p class="r-tech">It also changes what the retrieval policy has to do. A coverage check, asking whether the required field was observed, passes both of these failures. What catches them is a consistency check: an absolute price reported after a delta label was seen must equal base plus delta. That is arithmetic requiring no further page fetch.</p>
+        <p class="r-plain">This changes the fix. Checking "did the AI look?" would not catch these, because it did look. Checking "does the number it reported add up?" would.</p>
       </div>
 
       <h3 class="sub" id="find-4">Finding 4. The headline trap did not fire</h3>
