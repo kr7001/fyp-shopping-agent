@@ -1,0 +1,277 @@
+{
+  "ran_at": "2026-09-10T00:55:54",
+  "repeats": 2,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": false,
+  "targeting": true,
+  "tasks_file": "tasks_scaled.json",
+  "instance": {
+    "target_option": "2 x 9.5L",
+    "listings": 15,
+    "listings_with_target": 10,
+    "winner": {
+      "sku": "IGR-RVN-03",
+      "seller": "Redhill Stores",
+      "price": 17.68
+    },
+    "runner_up_price": 19.26,
+    "winning_margin": 1.58,
+    "cheapest_card": {
+      "sku": "IGR-RVN-09",
+      "seller": "Hillside Wholesale",
+      "from_price": 6.44
+    },
+    "card_probe_wrong": true,
+    "best_per_litre": {
+      "sku": "IGR-RVN-07",
+      "seller": "Thornbury Pantry",
+      "option": "6 x 1.25L",
+      "price_per_litre": 0.9107
+    },
+    "unit_probe_wrong": true,
+    "oracle_min_opens": 11,
+    "prunable_by_bound": 4,
+    "exhaustive_opens": 15,
+    "bound_strength": 0.267,
+    "from_price_range": [
+      6.44,
+      21.78
+    ],
+    "target_price_range": [
+      17.68,
+      67.17
+    ]
+  },
+  "summary": {
+    "by_task": {
+      "scaled-cheapest-target": {
+        "gated": true,
+        "verdicts": {
+          "correct": 2
+        },
+        "actions": [
+          7,
+          7
+        ],
+        "tool_calls": [
+          12,
+          12
+        ],
+        "cost": [
+          0.064318,
+          0.083057
+        ],
+        "mean_actions": 7.0,
+        "mean_tool_calls": 12.0,
+        "total_cost": 0.1474
+      },
+      "scaled-target-price": {
+        "gated": true,
+        "verdicts": {
+          "correct": 2
+        },
+        "actions": [
+          7,
+          8
+        ],
+        "tool_calls": [
+          12,
+          14
+        ],
+        "cost": [
+          0.072534,
+          0.119575
+        ],
+        "mean_actions": 7.5,
+        "mean_tool_calls": 13.0,
+        "total_cost": 0.1921
+      },
+      "scaled-all-stocked": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 2
+        },
+        "actions": [
+          6,
+          5
+        ],
+        "tool_calls": [
+          11,
+          10
+        ],
+        "cost": [
+          0.076282,
+          0.075397
+        ],
+        "mean_actions": 5.5,
+        "mean_tool_calls": 10.5,
+        "total_cost": 0.1517
+      },
+      "scaled-best-per-litre": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 2
+        },
+        "actions": [
+          7,
+          6
+        ],
+        "tool_calls": [
+          16,
+          11
+        ],
+        "cost": [
+          0.147919,
+          0.08816
+        ],
+        "mean_actions": 6.5,
+        "mean_tool_calls": 13.5,
+        "total_cost": 0.2361
+      }
+    },
+    "overall": {
+      "correct": 4,
+      "wrong": 4
+    },
+    "total_cost": 0.7272
+  },
+  "rows": [
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The cheapest seller for the 2 x 9.5L Rivenhall pack is Redhill Stores at $17.68 total ($6.82 advertised + $10.86 for the 2 x 9.5L upgrade). I opened 4 listings and skipped 0 listings. I could not skip any listings because all unopened listings had advertised prices below my best total of $17.68, so ",
+      "tool_calls": 12,
+      "actions": 7,
+      "observations": 5,
+      "cost_usd": 0.064318,
+      "elapsed_s": 64.0,
+      "error": null,
+      "log": "scaled-cheapest-target-1.log",
+      "strategy": "total_bound"
+    },
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The cheapest seller for the 2 x 9.5L Rivenhall pack is Redhill Stores at $17.68 total ($6.82 base price + $10.86 pack size adjustment). Opened: 4 listings. Skipped: 0 listings. All listings had advertised prices below or close to the best total found, so all required checking to ensure the optimal a",
+      "tool_calls": 12,
+      "actions": 7,
+      "observations": 5,
+      "cost_usd": 0.083057,
+      "elapsed_s": 52.9,
+      "error": null,
+      "log": "scaled-cheapest-target-2.log",
+      "strategy": "total_bound"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "found 17.68",
+      "answer": "The lowest price anyone charges for the 2 x 9.5L pack of Rivenhall water is $17.68 from Redhill Stores ($6.82 base price + $10.86 for the 2 x 9.5L pack upgrade). I opened 4 listings and skipped 0 listings. No listings could be safely skipped because all advertised prices ($6.82, $8.44, $14.27, and $",
+      "tool_calls": 12,
+      "actions": 7,
+      "observations": 5,
+      "cost_usd": 0.072534,
+      "elapsed_s": 47.4,
+      "error": null,
+      "log": "scaled-target-price-1.log",
+      "strategy": "total_bound"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "found 17.68",
+      "answer": "The lowest price anyone charges for the 2 x 9.5L pack of Rivenhall water is $17.68 from Redhill Stores ($6.82 base + $10.86 for 2 x 9.5L pack). I opened 4 listings and skipped 0 listings. All listings had advertised prices below the best total found ($17.68), so none could be safely skipped accordin",
+      "tool_calls": 14,
+      "actions": 8,
+      "observations": 5,
+      "cost_usd": 0.119575,
+      "elapsed_s": 59.4,
+      "error": null,
+      "log": "scaled-target-price-2.log",
+      "strategy": "total_bound"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "answered yes",
+      "answer": "Yes",
+      "tool_calls": 11,
+      "actions": 6,
+      "observations": 5,
+      "cost_usd": 0.076282,
+      "elapsed_s": 42.0,
+      "error": null,
+      "log": "scaled-all-stocked-1.log",
+      "strategy": "refutation"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "wrong",
+      "why": "answered yes",
+      "answer": "Yes",
+      "tool_calls": 10,
+      "actions": 5,
+      "observations": 5,
+      "cost_usd": 0.075397,
+      "elapsed_s": 38.6,
+      "error": null,
+      "log": "scaled-all-stocked-2.log",
+      "strategy": "refutation"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "Redhill Stores offers the lowest price per litre at $0.812/L for the 24\u00d7350ml pack at $6.82. Analysis: Opened 3 listings (Redhill Stores $6.82, Cellar Distributors $8.44, Ashgrove Cellars $14.27) and skipped 1 listing (Bramley Pantry $16.61). Bramley Pantry was safely skipped because its best possib",
+      "tool_calls": 16,
+      "actions": 7,
+      "observations": 8,
+      "cost_usd": 0.147919,
+      "elapsed_s": 79.7,
+      "error": null,
+      "log": "scaled-best-per-litre-1.log",
+      "strategy": "rate_bound"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "Redhill Stores offers the lowest price per litre at $0.8119/L for the 24 x 350ml pack (8.4L total). Opened 3 listings, skipped 1 (Bramley Pantry at $16.61, whose theoretical best of $0.8742/L cannot beat Redhill's $0.8119/L).",
+      "tool_calls": 11,
+      "actions": 6,
+      "observations": 5,
+      "cost_usd": 0.08816,
+      "elapsed_s": 51.1,
+      "error": null,
+      "log": "scaled-best-per-litre-2.log",
+      "strategy": "rate_bound"
+    }
+  ]
+}

@@ -23,6 +23,7 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import policy as policy_module
 import score as scoring
+import targeting as targeting_module
 import trace_stats
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -115,6 +116,9 @@ def main() -> int:
     parser.add_argument("--repeats", type=int, default=5)
     parser.add_argument("--tasks", type=pathlib.Path, default=HERE / "tasks.json")
     parser.add_argument("--only", nargs="*", help="task ids to run, default all")
+    parser.add_argument("--targeting", action="store_true",
+                        help="choose a retrieval strategy from the question before "
+                             "opening anything. The second half of RQ3")
     parser.add_argument("--exhaustive", action="store_true",
                         help="instruct the agent to open every listing. The upper bound "
                              "on cost, correct and expensive, that a targeting policy has "
@@ -156,6 +160,9 @@ def main() -> int:
             done += 1
             tag = f"{task['id']}-{repeat}"
             query = task["query"].format(base=spec["base_url"])
+            strategy = None
+            if args.targeting:
+                query, strategy = targeting_module.targeting_query(query)
             if args.exhaustive:
                 query = policy_module.exhaustive_query(query)
             if args.confidence != "off":
@@ -193,6 +200,8 @@ def main() -> int:
                 "error": record.get("error") or result.get("error"),
                 "log": record.get("log"),
             }
+            if strategy:
+                row["strategy"] = strategy
             if args.confidence != "off":
                 row["confidence"] = confidence
                 row["confidence_reason"] = reason
@@ -207,6 +216,7 @@ def main() -> int:
                             "first_answer": check.get("first_answer")})
             rows.append(row)
             conf = f" conf={row.get('confidence')}" if args.confidence != "off" else ""
+            conf += f" [{strategy}]" if strategy else ""
             print(f"[{done}/{total}] {tag:32} {row['verdict']:10} "
                   f"calls={row['tool_calls']} act={row['actions']}{conf} "
                   f"${row['cost_usd']} {row['elapsed_s']}s")
@@ -216,6 +226,7 @@ def main() -> int:
                "repeats": args.repeats, "policy": args.policy,
                "confidence": args.confidence,
                "exhaustive": args.exhaustive,
+               "targeting": args.targeting,
                "tasks_file": args.tasks.name,
                # The ground truth this suite was scored against. The catalogue is
                # regenerated between rounds, so without it an old result cannot be told

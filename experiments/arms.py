@@ -38,6 +38,8 @@ GATED = ("scaled-cheapest-target", "scaled-target-price",
 
 
 def arm_name(payload: dict) -> str:
+    if payload.get("targeting"):
+        return "targeting"
     if payload.get("exhaustive"):
         return "exhaustive"
     if payload.get("confidence", "off") != "off":
@@ -72,6 +74,8 @@ def replayed_gate(arms: dict[str, list[dict]]) -> list[dict]:
         payload = json.loads(suite_path.read_text())
         if payload.get("policy", "off") != "off" or payload.get("exhaustive"):
             continue
+        if payload.get("targeting"):
+            continue
         if payload.get("confidence", "off") != "off":
             continue
         for row in payload["rows"]:
@@ -103,7 +107,7 @@ def mean(values):
 def main() -> int:
     arms = collect()
     arms["gate"] = replayed_gate(arms)
-    order = ["unmodified", "confidence:plain", "gate", "retry", "exhaustive"]
+    order = ["unmodified", "confidence:plain", "gate", "retry", "exhaustive", "targeting"]
     order += [k for k in arms if k not in order]
 
     print("EVERY ARM, ON THE SAME FOUR GATED QUESTIONS\n")
@@ -141,8 +145,29 @@ def main() -> int:
         print(f"  exhaustive   {hr:>5.0%} correct   {ha:>5.1f} actions   ${hc:.3f} per run")
         print(f"  exhaustive costs {hc / lc:.1f}x the unmodified agent and gets "
               f"{hr - lr:+.0%} accuracy")
-        print("\nA targeting policy has to beat exhaustive on cost while matching it on")
-        print("accuracy. That is the claim RQ3 makes and the one still unmeasured.")
+        aim = arms.get("targeting")
+        if not aim:
+            print("\nA targeting policy has to beat exhaustive on cost while matching it")
+            print("on accuracy. That is the claim RQ3 makes and the one still unmeasured.")
+        else:
+            ac = mean(r.get("cost_usd") for r in aim)
+            aa = mean(r.get("actions") for r in aim)
+            ar = sum(1 for r in aim if r["verdict"] == "correct") / len(aim)
+            print(f"  targeting    {ar:>5.0%} correct   {aa:>5.1f} actions   "
+                  f"${ac:.3f} per run")
+            print(f"\ntargeting against the exhaustive upper bound it has to beat")
+            print(f"  accuracy {ar:.0%} against {hr:.0%}")
+            print(f"  cost     ${ac:.3f} against ${hc:.3f}, "
+                  f"{100 * (1 - ac / hc):+.0f}% ")
+            print(f"  actions  {aa:.1f} against {ha:.1f}, {100 * (1 - aa / ha):+.0f}%")
+            if ar >= hr and ac < hc:
+                print("\nMatches the upper bound on accuracy for less. That is the RQ3 "
+                      "claim, met.")
+            elif ar < hr:
+                print("\nCheaper but less accurate. The saving was bought with correctness, "
+                      "which is not the claim.")
+            else:
+                print("\nAs accurate but not cheaper. The strategy did not reduce work.")
     return 0
 
 
