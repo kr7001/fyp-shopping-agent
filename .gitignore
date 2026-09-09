@@ -8,3 +8,8 @@ data/
 downloads/
 .DS_Store
 CLAUDE.md
+# Raw agent traces. Each log replays the whole conversation every turn, so a single
+# run is hundreds of KB and the results directory reaches hundreds of MB. The tool
+# sequence and counts that matter are folded into each run's JSON record by
+# experiments/trace_stats.py, so the logs are reproducible working files, not results.
+experiments/**/*.log
