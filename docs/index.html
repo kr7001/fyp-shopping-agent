@@ -671,10 +671,10 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
       <p class="lede r-plain">Twelve questions, each asked five times. Sixty runs in total, costing $2.98.</p>
 
       <div class="stats">
-        <div class="stat"><span class="n">87%</span><span class="l">GATED CORRECT, 48 OF 55</span></div>
+        <div class="stat"><span class="n">89%</span><span class="l">GATED CORRECT, 49 OF 55</span></div>
         <div class="stat flag"><span class="n">0</span><span class="l">ABSTENTIONS IN 60 RUNS</span></div>
         <div class="stat"><span class="n">$2.98</span><span class="l">TOTAL SUITE COST</span></div>
-        <div class="stat"><span class="n">5 vs 1</span><span class="l">MEDIAN ACTIONS, RIGHT vs WRONG</span></div>
+        <div class="stat"><span class="n">5 vs 3</span><span class="l">MEDIAN ACTIONS, RIGHT vs WRONG</span></div>
       </div>
 
       <div class="prose">
@@ -693,9 +693,9 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
           <line class="axis" x1="140" y1="30" x2="140" y2="196"></line>
 
           <text class="ctext" x="130" y="54" text-anchor="end">1 action</text>
-          <rect class="bar low" x="140" y="38" width="82" height="22"></rect>
-          <text class="cval" x="232" y="54">20%</text>
-          <text class="ctext" x="278" y="54">n=5</text>
+          <rect class="bar low" x="140" y="38" width="164" height="22"></rect>
+          <text class="cval" x="314" y="54">40%</text>
+          <text class="ctext" x="360" y="54">n=5</text>
 
           <text class="ctext" x="130" y="96" text-anchor="end">2 to 3</text>
           <rect class="bar" x="140" y="80" width="410" height="22"></rect>
@@ -717,8 +717,8 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
         </svg>
       </div>
       <div class="prose">
-        <p class="r-tech">The relationship is not that more retrieval is better. Past three actions the rate is flat within noise. It is specifically under retrieval that predicts failure, and the cliff sits between one action and two. That is the RQ3 premise as a measurement rather than an assumption.</p>
-        <p class="r-plain">Read this carefully, because the obvious reading is wrong. It is not that trying harder gives better answers. Past three clicks, extra effort changes nothing. What it shows is that below two clicks the AI is simply guessing. There is a minimum amount of looking, and a lot of looking that achieves nothing.</p>
+        <p class="r-tech">The relationship is not that more retrieval is better. Past three actions the rate is flat within noise. It is specifically under retrieval that predicts failure, and the drop sits between one action and two. Revised 9 September: this bucket originally read 20 per cent, inflated by a scorer rule that marked an answer ambiguous for naming both the target price and the surcharge, which is what a correct answer showing its working does. The drop is softer than first reported and still present.</p>
+        <p class="r-plain">Read this carefully, because the obvious reading is wrong. It is not that trying harder gives better answers. Past three clicks, extra effort changes nothing. What it shows is that below two clicks the AI is much less reliable. There is a minimum amount of looking, and a lot of looking that achieves nothing. This bucket first read 20 per cent, and was corrected to 40 per cent on 9 September when a marking mistake was found.</p>
       </div>
 
       <h3 class="sub" id="find-3">Finding 3. Failures are delta misreadings, not inventions</h3>
@@ -779,7 +779,7 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
       <p class="lede r-plain">The earlier test used two shops, and the AI compared both because checking two is easy. This one uses fifteen, where checking everything is expensive. That is when it starts failing.</p>
 
       <div class="stats">
-        <div class="stat"><span class="n">23 vs 7</span><span class="l">MEDIAN ACTIONS, RIGHT vs WRONG</span></div>
+        <div class="stat"><span class="n">23 vs 7</span><span class="l">MEDIAN ACTIONS AT SCALE</span></div>
         <div class="stat flag"><span class="n">0 / 75</span><span class="l">ABSTENTIONS, ALL RUNS TO DATE</span></div>
         <div class="stat"><span class="n">11</span><span class="l">ORACLE FLOOR, OF 15 OPENS</span></div>
         <div class="stat"><span class="n">$3.13</span><span class="l">15 RUNS</span></div>
@@ -800,8 +800,8 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
 
       <div class="prose">
         <h3 class="sub" id="scale-1">The pattern reproduced independently</h3>
-        <p class="r-tech">The RQ2 baseline showed correct runs at a median of 5 actions and wrong runs at 1. At fifteen listings the numbers move by roughly a factor of four, to 23 and 7, but the ratio holds at about three to one. Under retrieval predicts failure at both scales, which is two independent measurements of the same relationship rather than one.</p>
-        <p class="r-plain">In the smaller test, right answers took about 5 clicks and wrong ones about 1. Here right answers take about 23 and wrong ones about 7. The numbers are four times bigger, but the ratio is the same. Looking too little predicts being wrong, and that has now been measured twice on different setups.</p>
+        <p class="r-tech">The RQ2 baseline showed correct runs at a median of 5 actions and wrong runs at 3. At fifteen listings the medians are 23 and 7. The direction is the same at both scales and the separation is wider at scale. An earlier version of this page claimed the ratio held at about three to one across both, on pre-correction figures. It does not, and the separations rest on six and five failures respectively.</p>
+        <p class="r-plain">In the smaller test, right answers took about 5 clicks and wrong ones about 3. Here right answers take about 23 and wrong ones about 7. Looking too little predicts being wrong at both sizes, though the gap is wider at the larger one. These rest on a handful of failures, so treat them as a direction rather than a precise ratio.</p>
 
         <h3 class="sub" id="scale-2">The one word answer</h3>
         <p class="r-tech"><code style="font-family:var(--mono);font-weight:700">scaled-all-stocked</code> asks whether every listing stocks the 2 x 9.5L pack. Five of fifteen do not. Two runs answered, in full, "Yes", at six and seven actions. The third spent 28 actions and got it right.</p>

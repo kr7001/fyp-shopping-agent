@@ -47,10 +47,15 @@ Overall 10 correct, 5 wrong. **Zero abstentions in 15 runs.**
 | Correct, gated | 23 | 6 to 28 |
 | Wrong, gated | 7 | 6 to 25 |
 
-The RQ2 baseline showed correct runs at a median of 5 actions and wrong runs at 1. At
-fifteen listings the numbers move by roughly a factor of four but the ratio holds at
-about three to one. Under-retrieval predicts failure at both scales, which is now two
-independent measurements of the same relationship rather than one.
+The RQ2 baseline showed correct runs at a median of 5 actions and wrong runs at 3, after
+the scorer correction of 9 September. At fifteen listings the medians are 23 and 7. The
+direction is the same at both scales and the separation is wider at scale.
+
+**Revised 2026-09-09.** This paragraph originally claimed the ratio held at about three
+to one across both scales, on the pre-correction figures of 5 against 1. It does not.
+The RQ2 separation is closer to 1.7 to 1 and the scaled separation about 3.3 to 1, on six
+and five failures respectively. What is supported is that under-retrieval predicts
+failure at both scales. A stable ratio is not.
 
 ## Finding 2: still no abstentions, now 75 runs deep
 

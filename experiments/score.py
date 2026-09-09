@@ -52,6 +52,16 @@ def score(task: dict, answer: str, ok: bool) -> dict:
         target, trap = expect["value"], expect.get("trap")
         if target in found:
             if trap is not None and trap in found:
+                # An answer naming both is muddled only if it does not resolve them.
+                # Magento states variant prices as a surcharge, so a correct answer often
+                # shows its working: "$22.50 (base $10.90 + charge $11.60)". That names
+                # the trap value and is right, and an earlier version of this rule scored
+                # it ambiguous, penalising exactly the composition the task requires.
+                if any(abs(a + b - target) < 0.005
+                       for a in found for b in found if a is not b):
+                    return {"verdict": "correct",
+                            "why": f"found {target}, with working that resolves to it",
+                            "prices": found}
                 return {"verdict": "ambiguous",
                         "why": f"names both {target} and the trap price {trap}",
                         "prices": found}
