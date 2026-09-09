@@ -176,8 +176,12 @@ curl -s "http://localhost:7770/igr-water-a.html" | grep -oE '"amount":[0-9.]+' |
 #  12 "amount":9.89
 ```
 
-So the number was invented, not misread. This is the failure the project exists to study,
-on a capable model, with no adversary and no deception by the merchant.
+**Corrected 2026-09-09.** The number was not invented. Magento labels variant
+options with a price delta, and the trace shows this run observed `2 x 9.5L +$15.01`,
+which is exactly $24.90 minus the $9.89 base. The agent reported a relative value as
+an absolute one. The grep above is correct and the inference originally drawn from it
+was not: the label is computed in the browser rather than written into the HTML. See
+[delta-not-fabrication.md](delta-not-fabrication.md).
 
 Two things follow.
 
