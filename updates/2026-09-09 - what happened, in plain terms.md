@@ -660,26 +660,188 @@ of actions and observations, and the complete sequence of what the agent did.
 
 ---
 
+## Part 6b: The fix, built and tested the same day
+
+Part 6 ends with a problem: the AI never says "I do not know". This part is what was built
+about it, later the same day.
+
+### The idea in one sentence
+
+Before the AI is allowed to give an answer, check whether the things it says are actually
+in what it looked at.
+
+That sounds obvious. What makes it work is that **the check costs nothing**. It does not
+open any more pages or ask the AI anything. It reads the record of what the AI already saw,
+which is sitting on disk anyway, and compares it against the answer the AI just gave.
+
+### The five things it checks
+
+| Check | What it catches, in plain terms |
+| --- | --- |
+| Surcharge read as a price | The page said "+$15.01 extra". The AI reported $15.01 as the price |
+| A number from nowhere | The AI stated an amount that appears on none of the pages it opened |
+| Claiming without showing | "I have listed all the prices" — with no prices in the answer |
+| "Yes" without checking | Answering yes to "does every shop stock it" after opening 4 of 15 shops |
+| Comparing too few | The answer itself says it compared 4 sellers, and there are 15 |
+
+The last one is the sneakiest and worth dwelling on. The AI wrote, in its own answer,
+"determined by analyzing all four sellers". There are fifteen. Every price it quoted was
+real and every sum it did was right. It simply compared the wrong set of things, and then
+said so out loud without noticing that was a problem.
+
+### Two ways to use the check
+
+**The cautious way.** If the check fails, refuse to answer, and say what could not be
+confirmed. Costs nothing, because refusing requires no extra looking.
+
+**The persistent way.** If the check fails, go back and try again, and this time tell the AI
+what was wrong with its first attempt. Costs a whole second run.
+
+### What happened
+
+The persistent version worked, and one case is worth showing in full. A question asks
+whether every shop stocks the big carton. Three separate runs answered, in full:
+
+```
+Yes
+```
+
+after opening 4 of the 15 shops. All three were caught. All three second attempts came
+back with:
+
+```
+No. Out of 15 listings, only 10 stock the 2 x 9.5L pack. The 5 that do not
+are: Chandler Wholesale, Pembroke Trading, ...
+```
+
+A one-word wrong answer became a complete right one, three times out of three. Wrong
+answers across the whole set dropped from 5 to 2, and it cost about a third more.
+
+### Then it broke, in the most useful way possible
+
+Testing it on fresh runs broke it twice, and both breaks taught something.
+
+**It blocked an answer that was right.** The answer was "$17.68, Redhill Stores", which is
+correct. But $17.68 appears nowhere on the page, because the page shows a $6.82 base price
+and a $10.86 surcharge, and $17.68 is those two added together. My check only trusted an
+answer if the answer spelled out the sum. An answer that just gave the right total looked,
+to my check, like a number from nowhere.
+
+That is a bad rule. Showing your working should earn trust, not be the price of admission.
+Fixed.
+
+**Fixing it made the check worse before it made it better.** With the fix, two failures it
+used to catch got through. Looking at why: it had been catching them for the wrong reason.
+It was blocking them because $17.68 was not printed on a page, when their real error was
+comparing four sellers instead of fifteen. It was right by accident. Losing an accidental
+catch is the correct trade, and noticing it is only possible because every run is recorded.
+
+That is what led to the fifth check in the table above.
+
+### The honest test
+
+Here is the trap in this kind of work. Both of those fixes were written *after* looking at
+the runs they were meant to handle. So of course they handle those runs. Reporting a score
+measured that way would be measuring how well the rules were fitted to the answer sheet.
+
+So the rules were **locked**, recorded at a specific version in the project history, and
+then a completely fresh set of runs was made. Those runs did not exist when the rules were
+written and could not have influenced them. Then the check was applied to those alone:
+
+```
+15 fresh runs
+
+                baseline    with the check
+right answers        11                11
+wrong answers         4                 1
+refusals              0                 3
+
+extra cost:  $0.00
+```
+
+**Three of the four failures caught. Not one right answer blocked. No extra cost.**
+
+### The one that got away, and why it is interesting
+
+One failure escaped. It gave the same wrong answer as the two that were caught. The only
+difference is that it did not mention how much it had checked.
+
+The check reads what the AI says about its own effort. So an AI that says less about itself
+gets tested less. That is a real limit and it is written down as one.
+
+### The tempting fix that was rejected
+
+The obvious response is to demand the AI check enough shops before answering. There is even
+a known number: 11 of the 15 must be opened before any method could reliably get the right
+answer.
+
+The data refused it. Looking at every run of the comparison questions:
+
+```
+right answers came from opening:  1, 4, 4, 8, 12, 13, 14, 14 shops
+wrong answers came from opening:  4, 4, 4, 4, 4, 4 shops
+```
+
+Requiring 11 would catch all six failures — and block three right answers, including one
+that came from opening a single shop. The check currently has one clean property, that it
+never blocks a right answer, and this would trade it away.
+
+### But look again at those numbers
+
+On one task the AI opened exactly 4 shops in all seven runs. Right or wrong, always 4.
+
+Which means the time it was right, it was right on **identical evidence** to the six times
+it was wrong. It did not reason better. It guessed and the guess landed.
+
+A score out of ten cannot tell those apart, because there is nothing in the run to tell
+apart. This is the difference between two questions that sound the same:
+
+- Was the answer **right**?
+- Was the answer **earned**?
+
+Marking only the first makes a lucky guess and a careful answer look identical. The project
+will report both.
+
+---
+
 ## Part 7: What comes next
 
-| When | What | Why |
+| When | What | Status |
 | --- | --- | --- |
-| **Now** | Send the supervisor update | Results exist, they are worth reporting, last update was 20 August |
-| **By 23 Sep** | Build 30–50 listings, ask questions over search pages | Finding 5 says the interesting failure needs scale. Also properly answers RQ1 |
-| **Early Oct → 21 Oct** | Build and test the smarter retrieval rule | **This is the actual contribution** |
+| **Now** | Send the supervisor update | Overdue, last one was 20 August |
+| ~~By 23 Sep~~ | Build the bigger shop, ask questions over search pages | **Done 9 Sep**, two weeks early |
+| ~~Early Oct~~ | Teach the AI to say "I do not know" | **Done 9 Sep** |
+| **Early Oct → 21 Oct** | Teach it to look in the right places, so a right answer costs fewer clicks | Not started, needs money |
 | **Early Nov** | Final report and presentation | Deadline |
 
-### The risk worth naming out loud
+### The risk changed shape today
 
-It is 9 September. The final report is due in November. **RQ3 — the actual original
-contribution — has not been started.**
+The risk written down this morning was that the actual contribution had not started and
+might not finish. That one is closed. It started, and half of it is built and tested.
 
-Everything so far is groundwork: the shop, the products, the agent, the measuring tools, the
-baseline. All necessary. None of it is the contribution.
+**The new risk is money.** $16.60 of the $20 research credit is spent, leaving $3.40.
 
-The catalogue-building step is a *means*, not the work. It should be timeboxed to two weeks
-and no more. If RQ3 has not started by early October, the project risks handing in a
-well-measured benchmark instead of a new method — and the method is what is being marked.
+The reason is worth stating plainly, because it was a wrong assumption in the original
+proposal. The plan was to use cheap AI models. The cheap models could not do the task at
+all — one could not follow the required output format, others were blocked by their
+providers regardless of credit. So everything runs on a model that works and is not free,
+and every experiment is paid for at that rate.
+
+$3.40 funds one small test, not a full experiment. The remaining half of the contribution
+needs roughly $10 to be measured rather than argued from theory. That is now the thing
+standing between this project and its own conclusion, and it is a conversation with the
+supervisor rather than a technical problem.
+
+### What is still missing, stated plainly
+
+Everything built so far is **reactive**. It waits until the AI has answered, then checks the
+answer. The cautious version refuses; the persistent version pays for a whole second run.
+Neither makes the AI cheaper, and the persistent one makes it more expensive.
+
+The other half of the idea is the opposite: work out what needs checking **before** starting,
+from the question itself. Right now a right answer takes about 23 clicks. In theory 11
+should be enough. Closing that gap is the part that makes this a method rather than a safety
+net.
 
 ---
 
@@ -698,6 +860,9 @@ well-measured benchmark instead of a new method — and the method is what is be
 | **Magento** | The e-commerce software running the test shop |
 | **MCP** | A standard connector letting AI agents use external tools |
 | **Playwright** | Software that drives a real browser automatically |
+| **Abstention** | The AI declining to answer, and saying what it could not confirm |
+| **Out of sample** | Tested on data that did not exist when the method was written, so the method could not have been fitted to it |
+| **Soundness** | Whether an answer was *earned* by the evidence, as opposed to whether it happened to be right |
 | **Rate limit** | A provider refusing requests because too many are arriving |
 | **Rosetta / QEMU** | Two ways of translating between chip instruction languages |
 | **Token** | A chunk of text. AI services charge by the token |
