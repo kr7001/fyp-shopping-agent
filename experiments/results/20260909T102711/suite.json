@@ -1,0 +1,55 @@
+{
+  "ran_at": "2026-09-09T10:31:43",
+  "repeats": 1,
+  "policy": "retry",
+  "tasks_file": "tasks_scaled.json",
+  "summary": {
+    "by_task": {
+      "scaled-all-stocked": {
+        "gated": true,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          42
+        ],
+        "tool_calls": [
+          79
+        ],
+        "cost": [
+          0.7401730000000001
+        ],
+        "mean_actions": 42.0,
+        "mean_tool_calls": 79.0,
+        "total_cost": 0.7402
+      }
+    },
+    "overall": {
+      "correct": 1
+    },
+    "total_cost": 0.7402
+  },
+  "rows": [
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "answered no",
+      "answer": "No. Not every Rivenhall listing stocks the 2 x 9.5L pack. Out of 15 total listings, only 10 stock this pack size: Cellar Distributors, Redhill Stores, Ashgrove Cellars, Bramley Pantry, Larkspur Wholesale, Thornbury Pantry, Verity Provisions, Hillside Wholesale, Westmere Distributors, and Marlow Cell",
+      "tool_calls": 79,
+      "actions": 42,
+      "observations": 37,
+      "cost_usd": 0.7401730000000001,
+      "elapsed_s": 263.3,
+      "error": null,
+      "log": "scaled-all-stocked-1-retry.log",
+      "policy": "retry",
+      "flag": null,
+      "flag_why": "every figure is observed or arithmetically justified",
+      "opened": 0,
+      "retried": true
+    }
+  ]
+}
