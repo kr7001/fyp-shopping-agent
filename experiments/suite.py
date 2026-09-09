@@ -69,7 +69,7 @@ def add(*values) -> float | int | None:
 
 
 def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
-                 out_dir: pathlib.Path, tag: str) -> tuple:
+                 out_dir: pathlib.Path, tag: str, confidence: str = "off") -> tuple:
     """Run the sufficiency check and act on it.
 
     Cost and interaction counts are reported for the arm as a whole, both attempts
@@ -86,6 +86,8 @@ def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
         return answer, record, result, trace, check
 
     query = policy_module.retry_query(task["query"].format(base=spec["base_url"]), check)
+    if confidence != "off":
+        query = policy_module.confidence_query(query, confidence)
     tag2 = f"{tag}-retry"
     second = run_once(task, spec["base_url"], out_dir, tag2, query=query)
     result2 = second.get("result") or {}
@@ -110,6 +112,11 @@ def main() -> int:
     parser.add_argument("--repeats", type=int, default=5)
     parser.add_argument("--tasks", type=pathlib.Path, default=HERE / "tasks.json")
     parser.add_argument("--only", nargs="*", help="task ids to run, default all")
+    parser.add_argument("--confidence", choices=("off", "plain", "retrieval"), default="off",
+                        help="ask the agent to state a confidence with its answer. This is "
+                             "the verbalised-confidence baseline, not part of the "
+                             "contribution, and is measured to answer the obvious "
+                             "objection rather than to be used")
     parser.add_argument("--policy", choices=("off", "gate", "retry"), default="off",
                         help="off is the unmodified baseline; gate abstains on a failed "
                              "sufficiency check; retry re-asks once with the reason")
@@ -138,14 +145,26 @@ def main() -> int:
         for repeat in range(1, args.repeats + 1):
             done += 1
             tag = f"{task['id']}-{repeat}"
-            record = run_once(task, spec["base_url"], out_dir, tag)
+            query = task["query"].format(base=spec["base_url"])
+            if args.confidence != "off":
+                query = policy_module.confidence_query(query, args.confidence)
+            record = run_once(task, spec["base_url"], out_dir, tag, query=query)
             result = record.get("result") or {}
             answer = str(result.get("final") or "")
             trace = record.get("trace") or {}
+
+            # Read the stated confidence, then take it out of the answer. The scorer looks
+            # for money and a two-digit percentage sitting in the text can be read as one.
+            confidence = None
+            if args.confidence != "off":
+                confidence = policy_module.parse_confidence(answer)
+                answer = policy_module.strip_confidence(answer)
+
             check = None
             if args.policy != "off":
                 answer, record, result, trace, check = apply_policy(
-                    args.policy, task, spec, answer, record, out_dir, tag)
+                    args.policy, task, spec, answer, record, out_dir, tag,
+                    confidence=args.confidence)
 
             verdict = scoring.score(task, answer, bool(result.get("ok")))
             row = {
@@ -161,6 +180,9 @@ def main() -> int:
                 "error": record.get("error") or result.get("error"),
                 "log": record.get("log"),
             }
+            if args.confidence != "off":
+                row["confidence"] = confidence
+                row["confidence_wording"] = args.confidence
             if check is not None:
                 row.update({"policy": args.policy, "flag": check.get("flag"),
                             "flag_why": check.get("why"),
@@ -170,13 +192,15 @@ def main() -> int:
                             "first_why": check.get("first_why"),
                             "first_answer": check.get("first_answer")})
             rows.append(row)
+            conf = f" conf={row.get('confidence')}" if args.confidence != "off" else ""
             print(f"[{done}/{total}] {tag:32} {row['verdict']:10} "
-                  f"calls={row['tool_calls']} act={row['actions']} "
+                  f"calls={row['tool_calls']} act={row['actions']}{conf} "
                   f"${row['cost_usd']} {row['elapsed_s']}s")
 
     summary = summarise(rows)
     payload = {"ran_at": dt.datetime.now().isoformat(timespec="seconds"),
                "repeats": args.repeats, "policy": args.policy,
+               "confidence": args.confidence,
                "tasks_file": args.tasks.name,
                # The ground truth this suite was scored against. The catalogue is
                # regenerated between rounds, so without it an old result cannot be told

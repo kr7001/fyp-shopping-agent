@@ -33,6 +33,7 @@ to the live arm instead of having to be re-established.
 from __future__ import annotations
 
 import pathlib
+import re
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -105,3 +106,72 @@ def retry_query(query: str, verdict: dict) -> str:
             f"{hint_for(verdict)}\n"
             "Answer again from the start, and if you still cannot confirm the figure, "
             "say so rather than guessing.")
+
+# ---------------------------------------------------------------------------
+# The verbalised-confidence baseline.
+#
+# The obvious objection to this project is "why not just ask the agent how confident it
+# is, and abstain below a threshold". It has to be answered with a measurement rather than
+# a citation, so it is implemented here as a fourth arm.
+#
+# Two wordings, because they test different things and only one of them is the standard
+# baseline.
+#
+# `plain` is the formulation the calibration literature uses: confidence that the answer
+# is correct. This is the fair comparison.
+#
+# `retrieval` names the dimension this project cares about, asking the agent to consider
+# whether it gathered everything needed. It is a deliberately *stronger* baseline, and
+# close to a cheap version of the contribution. If it works, that is a real finding and a
+# far simpler fix than five rules, so it deserves a fair test rather than a strawman.
+#
+# The prediction, recorded before running: neither separates right from wrong, because the
+# agent is not uncertain. On a gated listing its context is internally consistent, it saw
+# one price and read it correctly, so high confidence is the calibrated response. If that
+# holds, confidence cannot be the signal, and an evidence-grounded check is necessary
+# rather than merely one option among several.
+CONFIDENCE_PROMPTS = {
+    # The agent's own contract is a JSON object whose `final` key holds the answer text, so
+    # the request has to name that field. A first attempt asked for a trailing line and was
+    # simply not complied with, which is a prompt-format problem rather than a result and
+    # would have quietly turned this baseline into a strawman.
+    "plain": (
+        "\n\nIn your final answer text, after the answer itself, end the `final` string "
+        "with how confident you are that the answer is correct, in exactly this format:\n"
+        "CONFIDENCE: <number from 0 to 100>\n"
+        "Include it every time, even when you are certain."),
+    "retrieval": (
+        "\n\nIn your final answer text, after the answer itself, end the `final` string "
+        "with how confident you are that the answer is correct, taking into account "
+        "whether you gathered all the information the question needed, in exactly this "
+        "format:\nCONFIDENCE: <number from 0 to 100>\n"
+        "Include it every time, even when you are certain."),
+}
+
+CONFIDENCE_RE = re.compile(r"CONFIDENCE\s*[:=]\s*(\d{1,3})", re.IGNORECASE)
+
+
+def confidence_query(query: str, wording: str) -> str:
+    return query + CONFIDENCE_PROMPTS[wording]
+
+
+def parse_confidence(answer: str) -> int | None:
+    """The confidence the agent stated, or None if it did not state one.
+
+    A missing figure is recorded as missing rather than defaulted. Treating an absent
+    confidence as 100 would manufacture the very overconfidence this arm tests for.
+    """
+    found = CONFIDENCE_RE.findall(answer or "")
+    if not found:
+        return None
+    value = int(found[-1])
+    return value if 0 <= value <= 100 else None
+
+
+def strip_confidence(answer: str) -> str:
+    """The answer without its confidence line, so scoring sees what it would have seen.
+
+    The stated number is a percentage and the scorer looks for money, so leaving it in
+    risks a two-digit confidence being read as part of a price.
+    """
+    return CONFIDENCE_RE.sub("", answer or "").strip()
