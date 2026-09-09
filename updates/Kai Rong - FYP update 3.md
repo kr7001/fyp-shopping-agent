@@ -8,13 +8,22 @@ Registered title: *Ambiguity Without Adversary: Why Injection Defences Miss a Co
 
 ## Summary
 
-The agent now runs end to end against the environment, and the RQ2 baseline is measured
-rather than assumed. Sixty scored runs produced two results that shape the rest of the
-project: the agent **never** signals uncertainty, and its correctness collapses only when
-it under-retrieves. A third result is negative and useful: the cross-listing failure that
-motivated the project does not reproduce at small scale.
+The agent now runs end to end against the environment, the RQ2 baseline is measured rather
+than assumed, Checkpoint B is finished two weeks early, and the first half of RQ3 is built
+and validated out of sample.
 
-Spend to date: **$3.75 of $20** of OpenRouter credit, 76 agent runs.
+Three results shape the rest of the project. The agent **never** signals uncertainty, in
+97 unmodified runs. Its correctness collapses only when it under-retrieves. And the
+cross-listing failure that motivated the project does not reproduce at small scale, but
+does at fifteen listings.
+
+The RQ3 contribution now has a measured first half. A check that asks whether an answer is
+supported by what the run observed, frozen and then tested on runs made afterwards, caught
+**3 of 4 failures while blocking 0 of 11 correct answers, at no added model cost**.
+
+Spend to date: **$16.60 of $20** of OpenRouter credit, 120 scored runs. The remaining
+$3.40 funds one small run rather than a full experiment arm, which is the item I most need
+to discuss.
 
 ---
 
@@ -214,44 +223,204 @@ were re-scored from stored records without re-running, and changed verdicts are 
 
 ---
 
-## 5. What RQ3 now has to beat
+## 5. Checkpoint B: at fifteen listings, the trap fires
+
+The RQ2 cross-listing task scored 5 of 5 because comparing two named listings is cheap.
+The live failure happened over a search page with many sellers, where opening everything
+is expensive. Reproducing it needed scale rather than a better trap.
+
+`env/generate_catalogue.py` authors fifteen competing listings by rejection sampling over
+8,000 attempts against eight validated instance rules, so the generated instance is
+guaranteed to have the properties the experiment depends on: a unique winner, a card
+probe that gives the wrong answer, a lower bound that prunes some listings but not
+enough, and a clear margin. The instance it selected has an **oracle floor of 11 opens of
+15**, with 4 listings prunable by the published "from" price.
+
+`env/inspect_storefront.py` reports what the storefront actually shows against what the
+fixture claims. It found that search paginates at 12 of 15, and that the winner sits on
+page one, so a failure on the headline task is a retrieval failure rather than a
+pagination failure. Pagination remains a real cost on the tasks that need every listing.
+
+Scaled baseline, 5 tasks x 3 repeats, $3.13:
+
+| Task | Verdicts | Mean actions |
+| --- | --- | --- |
+| scaled-headline (control) | 3 correct | 2.0 |
+| scaled-cheapest-target | 3 correct | 17.0 |
+| scaled-target-price | 3 correct | 22.3 |
+| scaled-all-stocked | 1 correct, 2 wrong | 13.7 |
+| scaled-best-per-litre | 3 wrong | 12.7 |
+
+The clearest failure is a one-word answer. `scaled-all-stocked` asks whether every listing
+stocks the 2 x 9.5L pack. Five of fifteen do not. Runs answered, in full, "Yes", after
+opening 4 of 15 listings.
+
+**One caveat I am not quoting as a finding yet.** The per-litre task fails consistently,
+but the margin between the right and wrong answers is 2 per cent, so it currently risks
+scoring arithmetic precision rather than retrieval. Recorded as an open item. Fixing it
+means reseeding, which would invalidate the runs already made against this fixture.
+
+---
+
+## 6. RQ3 first half: making the agent able to say it does not know
+
+RQ2 established that the agent never abstains. That is what makes its failures dangerous,
+because a caller cannot tell a one-action guess from a verified answer. The first half of
+RQ3 addresses exactly that, and is now built and measured.
+
+`experiments/sufficiency.py` holds five rules that decide whether an answer is supported
+by what the run actually observed. All five read only the tool results the run already
+produced, so none of them costs a page fetch:
+
+| Rule | Catches |
+| --- | --- |
+| `delta_as_absolute` | A figure observed only as a surcharge, reported as a total |
+| `unsupported_number` | An amount appearing nowhere the run looked |
+| `claim_without_content` | A completion claim carrying no figures |
+| `unverified_universal` | "Yes" to a question about every listing, having opened some |
+| `understated_population` | A comparison the answer itself says covered 4 of 15 |
+
+`experiments/policy.py` applies them two ways. **Gate** replaces an unverified answer with
+an abstention naming what could not be confirmed, and issues no browser action, so it adds
+no model cost. **Retry** re-asks the task with the reason attached, and pays a full second
+run.
+
+### The retry arm works, and its price is the finding
+
+Retry arm on the scaled suite, same fixture, $4.21 against the baseline's $3.13. Wrong
+answers fell from **5 to 2** for 34 per cent more spend. All three `scaled-all-stocked`
+runs answered a bare "Yes" after opening 4 of 15, all three were flagged, and all three
+second attempts returned the correct answer with its evidence:
+
+```
+attempt 1   "Yes"                                                      4 of 15 opened
+attempt 2   "No. Out of 15 listings, only 10 stock the 2 x 9.5L pack.
+             The 5 that do not are: Chandler Wholesale, Pembroke ..."  all 15 opened
+```
+
+Nothing was converted from wrong to correct for free. Every conversion cost a second full
+run, which is the honest cost of a purely reactive policy and the reason the second half
+of RQ3 matters.
+
+### The arm broke my own check, twice, and I would rather report that than hide it
+
+It **blocked a correct answer**. "$17.68, charged by Redhill Stores" is exactly right, and
+$17.68 appears nowhere on the page, because it is the $6.82 base plus the $10.86
+surcharge. My composition test only exonerated answers that stated their own working, so
+an answer giving the total alone was called unsupported. Showing the arithmetic should be
+a virtue, not a precondition for being believed.
+
+Fixing that cost recall, 11 of 12 down to 9 of 12, because two of the catches turned out
+to be accidental rather than sound. That in turn exposed a class the arithmetic rules
+cannot see: an answer whose every figure is observed and correctly combined, over the
+wrong set. The agent stated it itself, "determined by analyzing all four sellers", where
+there are fifteen. Hence the fifth rule.
+
+### Frozen, then tested on runs that did not exist yet
+
+Both fixes were written from failures in that arm, so their figures were in sample. I
+therefore froze the rules at a specific commit, ran a fresh baseline, $3.41, and replayed
+the gate over that directory alone:
+
+```
+15 baseline runs replayed under the gate
+
+verdict       baseline    gate
+-------------------------------
+abstained            0       3
+correct             11      11
+wrong                4       1
+
+wrong answers withdrawn   3 of 4
+correct answers withdrawn 0 of 11
+added model cost          $0.00, the gate issues no browser action
+```
+
+Precision holds at 1.00 across 77 correct runs, in sample and out.
+
+The failure that escaped gives the same wrong answer as the two that were caught, and
+differs only in not volunteering how much it had looked at. `understated_population` reads
+a claim the agent makes about itself, so an agent that says less is checked less. That is
+a real ceiling on the rule rather than a bug in it.
+
+### Gating on retrieval coverage was tested and rejected
+
+The obvious fix is to require the agent to have opened enough listings, since the escaping
+run opened 4 against an oracle floor of 11. Across every unmodified run of the two
+comparison tasks:
+
+```
+correct opens: [1, 4, 4, 8, 12, 13, 14, 14]
+wrong   opens: [4, 4, 4, 4, 4, 4]
+```
+
+A floor at 11 catches all six failures and blocks three correct answers, trading away the
+one property the gate currently has.
+
+**The same numbers give something more useful.** `scaled-best-per-litre` opens exactly 4
+listings in all seven runs, right and wrong alike, so its one correct answer rests on the
+same evidence as its six wrong ones. Accuracy cannot separate those outcomes because
+nothing in the runs separates them. Correctness and soundness are different properties,
+and I intend to report both rather than only the first.
+
+---
+
+## 7. What the second half of RQ3 has to beat
 
 The headroom is not correctness. At 89% the unmodified agent is mostly right. The headroom
 is that it has no principle for knowing when it has retrieved enough:
 
-- It spends 1 action and fabricates, or 7 and is right, with nothing distinguishing the two
-  beforehand
+- It spends 1 action and misreads a surcharge as a price, or 7 and is right, with nothing
+  distinguishing the two beforehand
 - Actions past three buy nothing measurable, so a large share of current spend is waste
 - It never abstains, so a caller cannot tell a one-action guess from a verified answer
 
 A question-conditioned policy has three targets: eliminate sub-two-action answers, cut runs
-spending 7+ actions where 2 suffice, and abstain rather than invent when the budget runs out.
+spending 7+ actions where 2 suffice, and abstain rather than assert when the budget runs out. The first two of those three are
+now done and measured; the third, cutting the cost of a correct answer, is not.
 
 ---
 
-## 6. Plan and dates
+## 8. Plan and dates
 
-| Checkpoint | Work | Target |
-| --- | --- | --- |
-| B | Scale the catalogue to 30–50 listings; tasks over search pages where exhaustive retrieval is genuinely costly. Completes RQ1 and re-tests the cross-listing trap at scale | 23 Sep |
-| C | RQ3 prototype: question-conditioned retrieval policy, plotted against exhaustive and unmodified baselines | Begin early Oct, report 21 Oct |
-| D | Final report and presentation | Early Nov |
+| Checkpoint | Work | Target | Status |
+| --- | --- | --- | --- |
+| B | Scale the catalogue; tasks over search pages where exhaustive retrieval is genuinely costly | 23 Sep | **Done 9 Sep**, two weeks early |
+| C1 | RQ3 first half: the sufficiency check, as a gate and as a retry, validated out of sample | — | **Done 9 Sep** |
+| C2 | RQ3 second half: question-conditioned targeting, plotted against exhaustive and unmodified baselines | Early Oct, report 21 Oct | Not started, budget-blocked |
+| D | Final report and presentation | Early Nov | |
 
-**Scheduling risk I want to flag.** RQ3 is the contribution and has not started. Checkpoint B
-is a means, not the work, so I intend to timebox it to two weeks. If RQ3 is not underway by
-early October the project risks delivering a benchmark rather than a method.
+**The risk has changed from schedule to budget.** The scheduling risk I flagged last time,
+that RQ3 might not start in time, is closed: it started and its first half is measured. What
+replaces it is money. The cheap model tier assumed in the proposal does not hold, because
+the cheap models could not complete the tasks at all, so every arm is paid for at
+`claude-haiku-4.5` rates. $16.60 of the $20 is spent and the remaining $3.40 funds one small
+run rather than a full arm.
+
+The targeting experiment needs roughly $10 to run properly: an exhaustive-retrieval arm as
+the correct-and-expensive baseline, the targeted policy itself, and repeats sufficient to
+separate them. Without a top-up I can still deliver a complete result on the abstention half
+of RQ3, but the efficiency half, which is the part that makes it a method rather than a
+safety check, would be argued from the oracle floor rather than measured.
 
 ---
 
-## 7. For discussion
+## 9. For discussion
 
-1. The `spConfig` leak means WebArena's gating is weaker than a live marketplace's. Is
+1. **Budget.** Roughly $10 more of OpenRouter credit would let the targeting arm be
+   measured rather than argued. Is a top-up possible, and if not, is a smaller design
+   acceptable, for example fewer repeats on two tasks rather than three repeats on five?
+2. **Reporting soundness alongside accuracy.** One task reaches a correct answer on
+   identical evidence to six wrong ones. I would like to report "was this answer earned"
+   next to "was it right". Is that a defensible thing to put in the results, given it makes
+   the unmodified baseline look worse than its accuracy suggests?
+3. The `spConfig` leak means WebArena's gating is weaker than a live marketplace's. Is
    stating it as a limitation sufficient, or is it worth building a harder variant that
    serves variant prices over AJAX?
-2. The exhaustive-listing failure — asserting success while returning no data — is a
+4. The exhaustive-listing failure — asserting success while returning no data — is a
    reporting failure rather than a retrieval failure. Should it count against the baseline,
    or be reported as a separate category?
-3. Two upstream bug fixes are ready. Worth submitting as a pull request for the record, or a
+5. Two upstream bug fixes are ready. Worth submitting as a pull request for the record, or a
    distraction from the critical path?
-4. Is one model (`claude-haiku-4.5`) sufficient for the baseline, or should the final results
+6. Is one model (`claude-haiku-4.5`) sufficient for the baseline, or should the final results
    include a second model to show the behaviour is not model-specific?
