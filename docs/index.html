@@ -395,6 +395,17 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
         <li><a href="#task-table">Task by task</a></li>
       </ul>
     </div>
+    <div class="railgroup" data-section="scaled">
+      <div class="railrow">
+        <a href="#scaled">At scale</a>
+        <button class="railtoggle" type="button" aria-expanded="false" aria-controls="rail-scaled">+</button>
+      </div>
+      <ul class="railsub" id="rail-scaled" hidden>
+        <li><a href="#scale-1">Pattern reproduced</a></li>
+        <li><a href="#scale-2">The one word answer</a></li>
+        <li><a href="#scale-3">Not quoting yet</a></li>
+      </ul>
+    </div>
     <div class="railgroup" data-section="timeline">
       <div class="railrow">
         <a href="#timeline">Weekly log</a>
@@ -404,6 +415,7 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
         <li><a href="#log-aug20">20 Aug</a></li>
         <li><a href="#log-aug28">28 Aug</a></li>
         <li><a href="#log-sep8">8 to 9 Sep</a></li>
+        <li><a href="#log-sep9">9 Sep, checkpoint B</a></li>
       </ul>
     </div>
     <div class="railgroup" data-section="next">
@@ -756,6 +768,46 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
       </div>
     </section>
 
+    <section id="scaled">
+      <h2>At scale: the trap fires</h2>
+      <p class="lede r-tech">15 listings, 5 tasks, 3 repeats, $3.13. The RQ2 cross listing task scored 5 of 5 because two listings are cheap to compare. Widening the search page changes that.</p>
+      <p class="lede r-plain">The earlier test used two shops, and the AI compared both because checking two is easy. This one uses fifteen, where checking everything is expensive. That is when it starts failing.</p>
+
+      <div class="stats">
+        <div class="stat"><span class="n">23 vs 7</span><span class="l">MEDIAN ACTIONS, RIGHT vs WRONG</span></div>
+        <div class="stat flag"><span class="n">0 / 75</span><span class="l">ABSTENTIONS, ALL RUNS TO DATE</span></div>
+        <div class="stat"><span class="n">11</span><span class="l">ORACLE FLOOR, OF 15 OPENS</span></div>
+        <div class="stat"><span class="n">$3.13</span><span class="l">15 RUNS</span></div>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Task</th><th>Gated</th><th>Verdicts across 3 runs</th><th class="num">Mean actions</th></tr></thead>
+          <tbody>
+            <tr><td class="task">scaled-headline</td><td class="ctrl">control</td><td><span class="pill ok">3 correct</span></td><td class="num">2.0</td></tr>
+            <tr><td class="task">scaled-cheapest-target</td><td class="ctrl">yes</td><td><span class="pill ok">3 correct</span></td><td class="num">17.0</td></tr>
+            <tr><td class="task">scaled-target-price</td><td class="ctrl">yes</td><td><span class="pill ok">3 correct</span></td><td class="num">22.3</td></tr>
+            <tr><td class="task">scaled-all-stocked</td><td class="ctrl">yes</td><td><span class="pill ok">1 correct</span> <span class="pill no">2 wrong</span></td><td class="num">13.7</td></tr>
+            <tr><td class="task">scaled-best-per-litre</td><td class="ctrl">yes</td><td><span class="pill no">3 wrong</span></td><td class="num">12.7</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="prose">
+        <h3 class="sub" id="scale-1">The pattern reproduced independently</h3>
+        <p class="r-tech">The RQ2 baseline showed correct runs at a median of 5 actions and wrong runs at 1. At fifteen listings the numbers move by roughly a factor of four, to 23 and 7, but the ratio holds at about three to one. Under retrieval predicts failure at both scales, which is two independent measurements of the same relationship rather than one.</p>
+        <p class="r-plain">In the smaller test, right answers took about 5 clicks and wrong ones about 1. Here right answers take about 23 and wrong ones about 7. The numbers are four times bigger, but the ratio is the same. Looking too little predicts being wrong, and that has now been measured twice on different setups.</p>
+
+        <h3 class="sub" id="scale-2">The one word answer</h3>
+        <p class="r-tech"><code style="font-family:var(--mono);font-weight:700">scaled-all-stocked</code> asks whether every listing stocks the 2 x 9.5L pack. Five of fifteen do not. Two runs answered, in full, "Yes", at six and seven actions. The third spent 28 actions and got it right.</p>
+        <p class="r-plain">One question asks whether every shop stocks the big carton. Five of the fifteen do not. Two runs answered with a single word, "Yes", after six and seven clicks. The run that spent 28 clicks got it right.</p>
+
+        <h3 class="sub" id="scale-3">A result worth not quoting yet</h3>
+        <p class="r-tech">The per litre task failed 3 of 3, each naming the target winner rather than the true per litre winner. The arithmetic in the answers is correct as far as it goes, and the margin between the two is 2 per cent. The failure is a genuine early stop, but the task lacks the margin rule that guards the target price question, so it currently risks scoring arithmetic precision rather than retrieval. Recorded as an open item rather than fixed, because reseeding would invalidate the fifteen runs.</p>
+        <p class="r-plain">One task failed every time, but the right and wrong answers are only 2 per cent apart. That is too close to be sure the AI failed at looking rather than at rounding. It is written down as something to fix rather than reported as a finding.</p>
+      </div>
+    </section>
+
     <section id="timeline">
       <h2>Weekly log</h2>
       <p class="lede r-tech">What was decided when, and why. Kept because the assessment values the record of what was considered.</p>
@@ -799,6 +851,19 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
               <li><span class="r-tech">RQ2 baseline measured over 60 scored runs. 87 per cent gated correctness, zero abstentions, and correctness collapsing to 20 per cent at one action.</span><span class="r-plain">Ran the full experiment over 60 runs. Mostly right, never once admits doubt, and almost always wrong when it only clicks once.</span></li>
             </ul>
             <div class="tags"><span class="tag win">RQ2 answered</span> <span class="tag neg">cross listing trap needs scale</span></div>
+          </div>
+        </div>
+        <div class="tl" id="log-sep9">
+          <div class="when">9 Sep 2026</div>
+          <div class="what">
+            <h3>Checkpoint B. The failure returns at fifteen listings</h3>
+            <ul>
+              <li><span class="r-tech">Built a generator that draws catalogues and validates them against eight stated instance rules, rejecting any draw where the trap fails to appear. Two of those rules exist because a pilot exposed degenerate instances.</span><span class="r-plain">Wrote a program that invents shops and prices, then checks each invented catalogue actually contains the trap before using it.</span></li>
+              <li><span class="r-tech">Scale set at 15 listings against the agent's own 100 step guardrail. At 30 listings exhaustive retrieval would fail rather than merely cost more, and a failed baseline cannot anchor the RQ3 plot.</span><span class="r-plain">Chose fifteen shops, not fifty, because the AI gives up after 100 steps and fifty shops would break it rather than just cost more.</span></li>
+              <li><span class="r-tech">Search paginates at 12, a second gating layer. The winner sat on page 1 here, so these results isolate variant gating from pagination.</span><span class="r-plain">The search page only shows 12 results at a time, which hides three shops behind a second page. That is another way information gets hidden.</span></li>
+              <li><span class="r-tech">The published from price prunes only 4 of 15 listings at a realistic price spread, measured over 300 draws per setting. Bounds are not where RQ3's savings are.</span><span class="r-plain">The advertised price turns out to be nearly useless for ruling shops out, so the savings have to come from somewhere else.</span></li>
+            </ul>
+            <div class="tags"><span class="tag win">trap fires at scale</span> <span class="tag neg">bounds are weak</span></div>
           </div>
         </div>
       </div>
