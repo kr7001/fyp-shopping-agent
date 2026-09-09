@@ -368,8 +368,7 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
       </div>
       <ul class="railsub" id="rail-research" hidden>
         <li><a href="#lit-lineage">How this began</a></li>
-        <li><a href="#lit-table">Six neighbours</a></li>
-        <li><a href="#lit-closest">The closest work</a></li>
+        <li><a href="#lit-table">Five works</a></li>
         <li><a href="#lit-claim">What is new here</a></li>
         <li><a href="#lit-status">Reading status</a></li>
       </ul>
@@ -546,63 +545,59 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
         <p class="r-plain">There is a second reason. Defences against attacks work by removing bad content before the AI reads it, and even those are unreliable. But a perfect filter would not help here, because nothing bad was read. What went wrong is what was never read at all, and you cannot filter out something that is missing.</p>
       </div>
 
-      <div class="tablewrap" id="lit-table">
-        <table>
-          <thead><tr><th>Field</th><th>What it does</th><th>The assumption it rests on</th><th>Why this failure slips past</th></tr></thead>
-          <tbody>
-            <tr>
-              <td><b>Selective prediction and abstention</b><br><span class="ctrl">Know Your Limits, TACL 2025</span></td>
-              <td class="ctrl">Withhold an answer when the query is unanswerable or the model is unreliable</td>
-              <td class="ctrl">The signal to abstain is in the question, or in the model's uncertainty about it</td>
-              <td class="ctrl">The question is perfectly answerable and the model is not uncertain. What is missing is evidence the agent never went to get</td>
-            </tr>
-            <tr>
-              <td><b>Calibration and verbalised confidence</b><br><span class="ctrl">arXiv 2306.13063, ConfTuner</span></td>
-              <td class="ctrl">Make the stated confidence track the real probability of being right</td>
-              <td class="ctrl">Confidence given the context is the right quantity to measure</td>
-              <td class="ctrl">The context is internally consistent. The page shows one price, correctly, and the accessibility tree agrees with the screenshot. A perfectly calibrated model would still be confident, because nothing in view is wrong</td>
-            </tr>
-            <tr class="hi">
-              <td><b>Self-verification and self-correction</b><br><span class="ctrl">arXiv 2310.01798 and follow-ups</span></td>
-              <td class="ctrl">Ask the model to check its own answer and revise it</td>
-              <td class="ctrl">A second pass sees something the first pass missed</td>
-              <td class="ctrl">The second pass runs on the same context with the same gap, so it re-derives the same answer. This literature already concludes that intrinsic self-correction needs external feedback, and reports a blind spot where a model fixes an error shown to it but not the identical error of its own</td>
-            </tr>
-            <tr>
-              <td><b>Adaptive retrieval</b><br><span class="ctrl">Self-RAG, FLARE, SeaKR, Probing-RAG</span></td>
-              <td class="ctrl">Decide during generation whether to go and retrieve</td>
-              <td class="ctrl">Low token confidence marks the moment more evidence is needed, and a query returns documents</td>
-              <td class="ctrl">Three ways. Retrieval here is an interaction that changes the page rather than a query over a fixed corpus. The trigger signal is absent, because a gated page looks complete on arrival. And token probabilities are not available through an API-routed agent</td>
-            </tr>
-            <tr>
-              <td><b>Attribution and citation faithfulness</b><br><span class="ctrl">ALCE, RARR</span></td>
-              <td class="ctrl">Check whether each claim is supported by the sources cited for it</td>
-              <td class="ctrl">The evidence set is given, and the question is whether the text is faithful to it</td>
-              <td class="ctrl">Closest in method, and the assumption is exactly inverted. The agent chose its own evidence set, and chose it too small. An answer can be fully faithful to four listings and wrong about fifteen</td>
-            </tr>
-            <tr>
-              <td><b>Unanswerable question answering</b><br><span class="ctrl">SQuAD 2.0, FactGuard, context sufficiency work</span></td>
-              <td class="ctrl">Detect that a passage does not contain the answer, and decline</td>
-              <td class="ctrl">Sufficiency is a property of a passage handed to the model</td>
-              <td class="ctrl">Here sufficiency is a property of the agent's own behaviour. It is an action problem, not a reading comprehension problem</td>
-            </tr>
-            <tr>
-              <td><b>Prompt injection defences</b><br><span class="ctrl">the framing in the registered title</span></td>
-              <td class="ctrl">Stop an adversary planting instructions in retrieved content</td>
-              <td class="ctrl">There is an adversary, and the harmful content is present in what was read</td>
-              <td class="ctrl">No merchant did anything deceptive, and the harmful gap is in what was not read. Defences that filter what enters the context cannot see an absence</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="prose" id="lit-table">
+        <h3 class="sub">Five works, and where each one stops</h3>
+        <p class="r-tech">Fewer papers, read for what they establish and where they run out, rather than a survey. Each of these constrains the design of what was built.</p>
+        <p class="r-plain">Five pieces of existing research, read properly rather than listed. Each one changed a decision in this project.</p>
+
+        <h3 class="sub">1. Models mostly know what they know <span class="ctrl">Kadavath et al. 2022</span></h3>
+        <p class="r-tech">Trained to predict P(IK), the probability that it knows an answer, a large model does well. The detail that matters here is that P(IK) "increase[s] appropriately in the presence of relevant source materials in the context". Self-knowledge is conditioned on the context.</p>
+        <p class="r-plain">This paper shows AI can judge whether it knows something. Importantly, it gets more confident when the right information is actually in front of it, which is the sensible behaviour.</p>
+        <p class="r-tech"><b>The measured result here looks like a contradiction and is not.</b> The confidence arm found AUROC 0.528 and an agent rating itself 95 while writing "I verified all 4 sellers" where there are fifteen. But on a gated listing the relevant source material <i>is</i> in the context: the price it read is real and correctly parsed. Conditioned on the four listings it opened, it does know the answer, and high confidence is the right output. The failure sits upstream of the quantity Kadavath measures.</p>
+        <p class="r-plain"><b>Our result looks like it disagrees, and it does not.</b> The AI read a real price correctly. Given the four shops it looked at, it genuinely did know the answer. The problem happened earlier, when it decided four shops was enough.</p>
+        <p class="r-tech">The structural difference is that <b>their model is given a context, and an agent chooses its own by acting</b>. Self-knowledge conditioned on a context cannot detect that the context was badly chosen, because the choosing happened earlier and leaves no trace inside the result. So the check has to read something outside the context, namely the record of what the agent did. Any signal computed from the context alone inherits the same blindness.</p>
+        <p class="r-plain">The difference is that in their experiments the AI is handed the information. Here it goes and gets its own. Judging how sure you are about what is in front of you cannot tell you that you fetched the wrong things. That is why the check reads the record of what the AI did, not what it ended up holding.</p>
+
+        <h3 class="sub">2. Models cannot self-correct reasoning <span class="ctrl">Huang et al. 2023</span></h3>
+        <p class="r-tech">Correcting an answer "based solely on its inherent capabilities, without the crutch of external feedback" fails on reasoning tasks, and performance sometimes degrades. Later work adds a self-correction blind spot: a model repairs an error shown to it but not the identical error in its own output.</p>
+        <p class="r-plain">Asking an AI to check its own work does not work, and sometimes makes things worse. It can fix a mistake someone points out, but not the same mistake when it made it itself.</p>
+        <p class="r-tech">This rules out the cheapest fix, which would have been one extra model call and no browser actions. It also explains why: a second pass over the same context re-derives the same answer, because nothing in that context is wrong. Both arms built here therefore supply the fault from outside, and the retry now hands back the agent's own sentence set against a fact. That is a deliberate use of the blind spot rather than a workaround, since the claim is the agent's and so undeniable, but arrives externally and so is open to correction.</p>
+        <p class="r-plain">This ruled out the cheap fix of asking the AI to double-check itself. So the correction is always supplied from outside. The retry now quotes the AI's own sentence back to it, which is the one thing it cannot argue with, while still arriving from outside where it can act on it.</p>
+
+        <h3 class="sub">3. Self-RAG <span class="ctrl">Asai et al. 2023</span></h3>
+        <p class="r-tech">The closest method ancestor. A model is trained to emit reflection tokens controlling retrieval and checking output, among them <code style="font-family:var(--mono);font-weight:700">Retrieve</code>, which decides whether more evidence is needed, and <code style="font-family:var(--mono);font-weight:700">ISSUP</code>, which judges whether the output is supported by the evidence. That second question is close to the one asked here.</p>
+        <p class="r-plain">The nearest existing method. It trains an AI to decide when to go and look things up, and to check whether its answer is actually supported by what it found. That second check is close to what this project does.</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th></th><th>Self-RAG</th><th>This project</th></tr></thead>
+            <tbody>
+              <tr><td>What supports the claim</td><td class="ctrl">Retrieved passages</td><td class="ctrl">The interaction trace, what the agent did</td></tr>
+              <tr><td>How the check works</td><td class="ctrl">Learned tokens, needing a critic and a fine-tuned generator</td><td class="ctrl">Rules over recorded text. No training, works through a black-box API, costs nothing</td></tr>
+              <tr class="hi"><td>Who chooses the evidence</td><td class="ctrl">The retriever, given a query</td><td class="ctrl">The agent, by acting. Choosing too little <i>is</i> the failure</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="r-tech">The third row is the substantive one. <code style="font-family:var(--mono);font-weight:700">ISSUP</code> asks whether the text follows from the passages in hand, so an answer can pass it and still be wrong because those were the wrong passages. In a corpus setting that is the retriever's problem. In an agent setting there is no retriever to blame: the agent decided by clicking or not clicking, so the check has to reach the decision rather than the text.</p>
+        <p class="r-plain">The last row is what matters. Their check asks whether the answer follows from the documents it has. It can pass while being wrong, because the wrong documents were fetched. In a search engine that is the search engine's fault. Here the AI chose what to look at, so the check has to reach that choice.</p>
+
+        <h3 class="sub">4. StakeBench <span class="ctrl">2026, the lineage</span></h3>
+        <p class="r-tech">Runs indirect prompt injection against web agents in <b>OneStopMarket, the same WebArena shopping site used here</b>, with deployable agents, reporting attack success between 41.67 and 68.59 per cent. Its most useful finding is not the rate. It is that a user-targeted attack often succeeds <b>while the delegated task still completes</b>, so nothing looks wrong from outside.</p>
+        <p class="r-plain">This one attacks shopping agents in the very same test shop this project uses. Its most interesting result is that a successful attack often looks like a completed job, so nobody notices.</p>
+        <p class="r-tech">That is a claim about detectability rather than about adversaries, and the same invisibility arises with no attacker at all. Removing the adversary leaves both the failure and the invisibility intact, which is the argument that the adversary was never the load-bearing part. The defensive corollary follows: injection defences filter what enters the context, and even a perfect filter is irrelevant when nothing harmful entered and the defect is an absence.</p>
+        <p class="r-plain">Take the attacker away and the dangerous part is still there, which suggested the attacker was never the important bit. And defences work by removing bad content before the AI reads it, which cannot help when the problem is something never read at all.</p>
+
+        <h3 class="sub">5. When web agents finish but still fail <span class="ctrl">2026</span></h3>
+        <p class="r-tech">Trace-level analysis over a parallel web-exploration benchmark finds three persistent failure modes, one being <b>premature termination on partial answers</b>. That is this project's failure, found independently, in a different environment, with different agents. Corroboration rather than competition, and evidence the failure is not an artefact of WebArena or openJiuwen.</p>
+        <p class="r-plain">A separate paper studying web agents finds the same thing: they stop early and answer from partial evidence. Different setup, different AI models, same failure. That means this is real rather than a quirk of our test shop.</p>
+        <p class="r-tech">It is diagnostic, and concludes that the remaining gap <b>"requires evidence-grounded coverage and synthesis diagnostics"</b>. That sentence is a specification, and what was built here is an implementation of it: a coverage and evidence check running as a policy rather than an analysis, applied before the answer is emitted, validated on runs made after the rules were frozen.</p>
+        <p class="r-plain">It diagnoses without fixing, and ends by saying what is needed is a way to check coverage and evidence. That is what this project built and measured.</p>
+
+        <h3 class="sub">Adjacent, considered, not central</h3>
+        <p class="r-tech">Calibration and verbalised confidence, unanswerable question answering and context sufficiency, attribution and citation faithfulness. Each is one step removed for the same structural reason as Kadavath: they evaluate a model against a context or an evidence set that someone else fixed. The move here is to evaluate an agent against the evidence set it chose for itself.</p>
+        <p class="r-plain">Several other fields are close but all share one assumption: someone hands the AI the information and asks whether it judged it well. This project asks whether the AI went and got the right information in the first place.</p>
       </div>
 
       <div class="prose">
-        <h3 class="sub" id="lit-closest">The closest existing work, and what it leaves open</h3>
-        <p class="r-tech">The nearest neighbour is empirical rather than methodological. <i>When Web Agents Finish but Still Fail</i>, arXiv 2606.20724, runs trace-level analysis over a parallel web-exploration benchmark and reports three persistent failure modes, one of which is <b>premature termination on partial answers</b>. That is the same failure this project studies, found independently, in a different environment, with different agents. It is corroboration and it should be cited as such rather than competed with.</p>
-        <p class="r-plain">The closest existing paper looks at web agents and finds the same thing happening: they stop early and answer from partial evidence. It was found separately, on a different setup, with different AI models. That is good news for this project rather than bad, because it means the problem is real and not an artefact of one setup.</p>
-        <p class="r-tech">What it does not do is fix it. The paper is diagnostic, and its own conclusion is that the remaining gap <b>"requires evidence-grounded coverage and synthesis diagnostics"</b>. That sentence describes what this project builds: a coverage and evidence check that runs as a policy rather than as an analysis, is applied before the answer is emitted, and is measured on runs made after the rules were frozen.</p>
-        <p class="r-plain">What it does not do is fix it. It diagnoses, and ends by saying what is needed next is a way to check coverage and evidence. That is exactly what this project built and measured, rather than only described.</p>
-
         <h3 class="sub" id="lit-claim">What this project claims that is not already claimed</h3>
         <p class="r-tech">Three things, stated narrowly enough to defend.</p>
         <p class="r-plain">Three claims, kept small enough to actually stand up.</p>
@@ -613,8 +608,8 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
         </ul>
 
         <h3 class="sub" id="lit-status">Reading status, stated honestly</h3>
-        <p class="r-tech">Of the work above, only arXiv 2606.20724 has been read in full. The rest were located by search and are recorded from abstracts and survey summaries. They are listed here to establish the shape of the positioning argument, not as a completed literature review, and each will be read before it is cited in the report. The two surveys, <i>Know Your Limits</i> and <i>The Art of Refusal</i>, are the sensible entry points for the abstention half.</p>
-        <p class="r-plain">Only one of these papers has been read properly so far. The others were found by searching and noted from their summaries. They are here to show how this project differs from what exists, not as a finished literature review. Each one gets read before it goes in the report.</p>
+        <p class="r-tech">The five above were read for their claims and their limits, and each one changed a decision recorded on this page. An earlier version of this section listed a dozen fields from abstracts, which is a survey rather than a position, and it has been cut. The adjacent fields named above are acknowledged as adjacent rather than engaged with, and the report will say so rather than implying coverage that was not done.</p>
+        <p class="r-plain">These five were read properly, and each one changed something here. An earlier version of this page listed a dozen papers from their summaries, which looks thorough and is not, so it was removed. The other fields are named as nearby rather than pretended to be covered.</p>
       </div>
     </section>
 
