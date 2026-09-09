@@ -26,6 +26,18 @@ Both images are amd64 and run under emulation on Apple Silicon. First boot is sl
 Docker Desktop must be running first (`open -a Docker` on macOS, then wait for the daemon).
 
 ```bash
+./env/start.sh            # storefront only
+./env/start.sh --admin    # storefront and the admin panel
+```
+
+The script starts the container, waits for Elasticsearch, then checks the catalogue
+actually returns products. That last check matters: Magento serves a 200 while its search
+engine is still booting, and in that window the shop looks empty for no visible reason.
+A plain `docker start` cannot tell the two states apart.
+
+By hand, if preferred:
+
+```bash
 docker start webarena-shopping
 # admin panel, only when authoring products
 docker start webarena-shopping-admin
