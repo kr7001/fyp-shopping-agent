@@ -28,7 +28,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import policy as policy_module
-import score as scoring
+import sufficiency
 
 HERE = pathlib.Path(__file__).resolve().parent
 RESULTS = HERE / "results"
@@ -57,8 +57,63 @@ def load(suite_dir: pathlib.Path) -> tuple[list[dict], dict]:
             "verdict": row["verdict"],
             "confidence": row.get("confidence"),
             "flag": check["flag"],
+            "opened": check["opened"],
+            "population": check["population"],
         })
     return rows, payload
+
+
+def responsiveness(rows: list[dict]) -> None:
+    """Does the stated confidence move when the evidence behind it is thin?
+
+    A confidence figure cannot be wrong the way a price can, because there is no true
+    answer to how confident something should feel. What it can be is inert: a number that
+    does not change when the thing it is supposedly about changes.
+
+    This is the sharpest available test of that. The agent knows how many listings it
+    opened, since it opened them. If it says 95 having seen four of fifteen and also says
+    95 having seen all fifteen, the number is not a measurement of anything. It is a
+    token that looks like one.
+    """
+    stated = [r for r in rows if r["confidence"] is not None and r["opened"] is not None]
+    scoped = [r for r in stated if r.get("population")]
+    if not scoped:
+        return
+
+    print("\nconfidence against the evidence behind it")
+    print(f"{'listings opened':>16} {'runs':>5} {'mean confidence':>16} {'accuracy':>9}")
+    print("-" * 50)
+    buckets = [(0, 3, "1 to 3"), (4, 6, "4 to 6"), (7, 10, "7 to 10"), (11, 99, "11 or more")]
+    for low, high, label in buckets:
+        group = [r for r in scoped if low <= r["opened"] <= high]
+        if not group:
+            continue
+        conf = statistics.mean(r["confidence"] for r in group)
+        right = sum(1 for r in group if r["verdict"] == "correct")
+        print(f"{label:>16} {len(group):>5} {conf:>16.1f} {right / len(group):>9.2f}")
+
+    # One number for the whole effect: how much confidence moves per listing opened.
+    xs = [r["opened"] for r in scoped]
+    ys = [r["confidence"] for r in scoped]
+    if len(set(xs)) > 1:
+        slope = statistics.correlation(xs, ys) if len(xs) > 1 else 0.0
+        print(f"\ncorrelation between listings opened and stated confidence: {slope:+.3f}")
+        print("A figure near zero means the confidence does not respond to how much the "
+              "agent looked.")
+
+
+def overconfidence(rows: list[dict]) -> None:
+    """The gap between what it claims and what it delivers."""
+    stated = [r for r in rows
+              if r["confidence"] is not None and r["verdict"] in ("correct", "wrong")]
+    if not stated:
+        return
+    claimed = statistics.mean(r["confidence"] for r in stated) / 100
+    actual = sum(1 for r in stated if r["verdict"] == "correct") / len(stated)
+    print(f"\nstated confidence  {claimed:.2f}")
+    print(f"actual accuracy    {actual:.2f}")
+    print(f"overconfidence     {claimed - actual:+.2f}"
+          f"   (positive means it claims more than it delivers)")
 
 
 def distribution(rows: list[dict]) -> None:
@@ -166,6 +221,8 @@ def main() -> int:
     rows, payload = load(suite_dir)
     print(f"suite {suite_dir.name}, wording '{payload.get('confidence')}'\n")
     distribution(rows)
+    overconfidence(rows)
+    responsiveness(rows)
     sweep(rows)
     head_to_head(rows)
     return 0
