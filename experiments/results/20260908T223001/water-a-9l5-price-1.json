@@ -1,0 +1,28 @@
+{
+  "ran_at": "2026-09-08T22:30:40",
+  "provider": "openrouter",
+  "model": "anthropic/claude-haiku-4.5",
+  "query": "On http://localhost:7770/igr-water-a.html what is the price of the 2 x 9.5L pack? Report the exact price.",
+  "elapsed_s": 36.0,
+  "cost_usd": 0.027751,
+  "cost_note": null,
+  "spend_before_usd": 0.20050269,
+  "spend_after_usd": 0.22825349,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "e994d052f78e450da0b2ef981d0ee8f6",
+    "final": "The price of the 2 x 9.5L pack is $24.90",
+    "page": {
+      "url": "http://localhost:7770/igr-water-a.html",
+      "title": "Glenmoor Still Spring Water, Multipack - Cellar Direct"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "ran_at": "2026-09-08T23:04:22",
+  "provider": "openrouter",
+  "model": "anthropic/claude-haiku-4.5",
+  "query": "On http://localhost:7770/igr-tee-a.html is every size currently in stock? Answer yes or no, and name any size that is not.",
+  "elapsed_s": 35.6,
+  "cost_usd": 0.038732,
+  "cost_note": null,
+  "spend_before_usd": 3.01228254,
+  "spend_after_usd": 3.05101419,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "5fcd5dae380a4175bc4c749b4277581b",
+    "final": "No. Size M is not in stock.",
+    "page": {
+      "url": "http://localhost:7770/igr-tee-a.html",
+      "title": "Northmoor Heavyweight Cotton T-Shirt"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  }
+}

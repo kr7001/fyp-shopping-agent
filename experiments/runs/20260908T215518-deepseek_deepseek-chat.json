@@ -1,0 +1,40 @@
+{
+  "ran_at": "2026-09-08T21:55:18",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-chat",
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Glenmoor and list every product shown with its price.",
+  "elapsed_s": 18.3,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "075cae7dea3f4f56ba966ba26eaba6a2",
+    "final": "No products found for the search term 'Glenmoor'.",
+    "page": {
+      "url": "http://localhost:7770/catalogsearch/result/?q=Glenmoor",
+      "title": "Search results for: 'Glenmoor'"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 2,
+    "actions": 1,
+    "observations": 1,
+    "unclassified_tools": [],
+    "assistant_turns": 1,
+    "by_tool": {
+      "browser_navigate": 1,
+      "browser_probe_cards": 1
+    },
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards"
+    ]
+  },
+  "trace_log": "20260908T215458.log"
+}

@@ -1,0 +1,41 @@
+{
+  "ran_at": "2026-09-08T21:53:05",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-chat",
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Glenmoor and list every product shown with its price.",
+  "elapsed_s": 10.1,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": false,
+    "session_id": "smoke",
+    "request_id": "d949dc2231fe4d8c84546c820934e61e",
+    "final": "",
+    "page": {
+      "url": "",
+      "title": ""
+    },
+    "screenshot": null,
+    "error": "[181001] model call failed, reason: openAI API async invoke error: RateLimitError: Error code: 429 - {'error': {'message': 'Provider returned error', 'code': 429, 'metadata': {'raw': 'deepseek/deepseek-chat is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations', 'provider_name': 'StreamLake', 'is_byok': False, 'limit_source': 'upstream_provider_shared_pool', 'remedy_hint': 'Retry shortly, add your own provider key (https://openrouter.ai/settings/integrations), or route to another provider with provider routing: https://openrouter.ai/docs/features/provider-routing', 'previous_errors': [{'code': 429, 'message': 'Provider returned error', 'provider_name': 'DeepInfra', 'raw': 'deepseek/deepseek-chat is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations'}]}}, 'user_id': 'user_3A0o8nOdceWPKl8GdQRPhSnLX3A'}",
+    "attempt": 2,
+    "failure_summary": "Failure summary for continuation:\n- Original task: Go to http://localhost:7770/catalogsearch/result/?q=Glenmoor and list every product shown with its price.\n- Failed attempt: 2\n- Error: [181001] model call failed, reason: openAI API async invoke error: RateLimitError: Error code: 429 - {'error': {'message': 'Provider returned error', 'code': 429, 'metadata': {'raw': 'deepseek/deepseek-chat is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate...[truncated]\nKnown progress for continuation:\n- Known progress status: partial\n- Recent browser tool activity:\n  - mcp_playwright-official_browser_navigate: ### Ran Playwright code ```js await page.goto('http://localhost:7770/catalogsearch/result/?q=Glenmoor'); ``` ### Page - Page URL: http://localhost:7770/catalogs...[truncated]",
+    "progress_state": {
+      "status": "partial",
+      "completed_steps": [],
+      "remaining_steps": [],
+      "next_step": null,
+      "completion_evidence": [],
+      "missing_requirements": [],
+      "recent_tool_steps": [
+        "mcp_playwright-official_browser_navigate: ### Ran Playwright code ```js await page.goto('http://localhost:7770/catalogsearch/result/?q=Glenmoor'); ``` ### Page - Page URL: http://localhost:7770/catalogs...[truncated]"
+      ],
+      "last_page": {
+        "url": "",
+        "title": ""
+      },
+      "last_screenshot": null,
+      "last_worker_final": null,
+      "request_id": "d949dc2231fe4d8c84546c820934e61e"
+    }
+  }
+}

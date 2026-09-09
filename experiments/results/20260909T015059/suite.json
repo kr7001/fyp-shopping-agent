@@ -1,0 +1,185 @@
+{
+  "ran_at": "2026-09-09T01:59:51",
+  "repeats": 1,
+  "summary": {
+    "by_task": {
+      "scaled-headline": {
+        "gated": false,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          2
+        ],
+        "tool_calls": [
+          6
+        ],
+        "cost": [
+          0.029725
+        ],
+        "mean_actions": 2.0,
+        "mean_tool_calls": 6.0,
+        "total_cost": 0.0297
+      },
+      "scaled-cheapest-target": {
+        "gated": true,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          39
+        ],
+        "tool_calls": [
+          77
+        ],
+        "cost": [
+          0.772905
+        ],
+        "mean_actions": 39.0,
+        "mean_tool_calls": 77.0,
+        "total_cost": 0.7729
+      },
+      "scaled-target-price": {
+        "gated": true,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          20
+        ],
+        "tool_calls": [
+          45
+        ],
+        "cost": [
+          0.378246
+        ],
+        "mean_actions": 20.0,
+        "mean_tool_calls": 45.0,
+        "total_cost": 0.3782
+      },
+      "scaled-all-stocked": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 1
+        },
+        "actions": [
+          7
+        ],
+        "tool_calls": [
+          12
+        ],
+        "cost": [
+          0.099505
+        ],
+        "mean_actions": 7.0,
+        "mean_tool_calls": 12.0,
+        "total_cost": 0.0995
+      },
+      "scaled-best-per-litre": {
+        "gated": true,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          7
+        ],
+        "tool_calls": [
+          14
+        ],
+        "cost": [
+          0.083214
+        ],
+        "mean_actions": 7.0,
+        "mean_tool_calls": 14.0,
+        "total_cost": 0.0832
+      }
+    },
+    "overall": {
+      "correct": 4,
+      "wrong": 1
+    },
+    "total_cost": 1.3636
+  },
+  "rows": [
+    {
+      "task": "scaled-headline",
+      "family": "scaled",
+      "gated": false,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The Rivenhall water listing with the lowest price on the results page is 'Rivenhall Still Spring Water, Multipack - Fenwick Wholesale' with a price of $6.37.",
+      "tool_calls": 6,
+      "actions": 2,
+      "observations": 4,
+      "cost_usd": 0.029725,
+      "elapsed_s": 26.8,
+      "error": null,
+      "log": "scaled-headline-1.log"
+    },
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The cheapest seller for the 2 x 9.5L Rivenhall pack is Yarrow Merchants at $16.84",
+      "tool_calls": 77,
+      "actions": 39,
+      "observations": 38,
+      "cost_usd": 0.772905,
+      "elapsed_s": 249.5,
+      "error": null,
+      "log": "scaled-cheapest-target-1.log"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "found 16.84",
+      "answer": "The lowest price anyone charges for the 2 x 9.5L pack of Rivenhall water is $16.84 from Yarrow Merchants (base price $6.43 + $10.41 for the 2 x 9.5L pack option).",
+      "tool_calls": 45,
+      "actions": 20,
+      "observations": 25,
+      "cost_usd": 0.378246,
+      "elapsed_s": 144.3,
+      "error": null,
+      "log": "scaled-target-price-1.log"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "answered yes",
+      "answer": "Yes",
+      "tool_calls": 12,
+      "actions": 7,
+      "observations": 5,
+      "cost_usd": 0.099505,
+      "elapsed_s": 38.3,
+      "error": null,
+      "log": "scaled-all-stocked-1.log"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "Fenwick Wholesale offers the lowest price per litre at $0.849/L for the 6 x 1.25L pack size (base price $6.37 with no surcharge, totaling $6.37 for 7.5 litres).",
+      "tool_calls": 14,
+      "actions": 7,
+      "observations": 7,
+      "cost_usd": 0.083214,
+      "elapsed_s": 57.2,
+      "error": null,
+      "log": "scaled-best-per-litre-1.log"
+    }
+  ]
+}

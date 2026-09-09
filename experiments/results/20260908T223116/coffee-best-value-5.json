@@ -1,0 +1,28 @@
+{
+  "ran_at": "2026-09-08T22:55:24",
+  "provider": "openrouter",
+  "model": "anthropic/claude-haiku-4.5",
+  "query": "On http://localhost:7770/igr-coffee-a.html which size is the best value per kilogram? Name the size.",
+  "elapsed_s": 34.0,
+  "cost_usd": 0.063819,
+  "cost_note": null,
+  "spend_before_usd": 2.25603419,
+  "spend_after_usd": 2.31985329,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "64d7f688c71b466482cc5e7174d44036",
+    "final": "The best value per kilogram is 500g at $29.80 per kg. This is the lowest price per kilogram among the three available sizes (250g at $34.00/kg, 500g at $29.80/kg, and 1kg at $32.00/kg).",
+    "page": {
+      "url": "http://localhost:7770/igr-coffee-a.html",
+      "title": "Ridgeway Roasters Whole Bean Coffee, House Blend"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  }
+}
