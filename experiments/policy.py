@@ -247,6 +247,26 @@ REASON_RE = re.compile(
     r"|REASON\s*[:=]\s*(.+?)(?:\n|$)", re.IGNORECASE)
 
 
+# The upper bound on cost. Correct and expensive, by construction, and the thing a
+# targeting policy has to beat on cost while matching on accuracy. Without it there is no
+# axis: the unmodified agent gives a cheap and sometimes-wrong point, and one point is not
+# a trade-off curve.
+#
+# This instructs the same agent rather than computing the answer from the database. An
+# oracle would give the right answer at zero interactions and measure nothing about
+# retrieval. What is wanted is the cost of the honest strategy, which is to look at
+# everything, executed by the same agent under the same conditions.
+EXHAUSTIVE = (
+    "\n\nBefore answering, open every listing in the search results, including any on "
+    "later pages, and check the relevant option on each one. Do not stop early because a "
+    "listing looks unpromising from its search-result price. Base the answer only on "
+    "listings you have opened, and say how many you opened.")
+
+
+def exhaustive_query(query: str) -> str:
+    return query + EXHAUSTIVE
+
+
 def confidence_query(query: str, wording: str) -> str:
     return query + CONFIDENCE_PROMPTS[wording]
 

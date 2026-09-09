@@ -115,6 +115,10 @@ def main() -> int:
     parser.add_argument("--repeats", type=int, default=5)
     parser.add_argument("--tasks", type=pathlib.Path, default=HERE / "tasks.json")
     parser.add_argument("--only", nargs="*", help="task ids to run, default all")
+    parser.add_argument("--exhaustive", action="store_true",
+                        help="instruct the agent to open every listing. The upper bound "
+                             "on cost, correct and expensive, that a targeting policy has "
+                             "to beat")
     parser.add_argument("--confidence", choices=("off", "plain", "retrieval"), default="off",
                         help="ask the agent to state a confidence with its answer. This is "
                              "the verbalised-confidence baseline, not part of the "
@@ -152,6 +156,8 @@ def main() -> int:
             done += 1
             tag = f"{task['id']}-{repeat}"
             query = task["query"].format(base=spec["base_url"])
+            if args.exhaustive:
+                query = policy_module.exhaustive_query(query)
             if args.confidence != "off":
                 query = policy_module.confidence_query(query, args.confidence)
             record = run_once(task, spec["base_url"], out_dir, tag, query=query)
@@ -209,6 +215,7 @@ def main() -> int:
     payload = {"ran_at": dt.datetime.now().isoformat(timespec="seconds"),
                "repeats": args.repeats, "policy": args.policy,
                "confidence": args.confidence,
+               "exhaustive": args.exhaustive,
                "tasks_file": args.tasks.name,
                # The ground truth this suite was scored against. The catalogue is
                # regenerated between rounds, so without it an old result cannot be told
