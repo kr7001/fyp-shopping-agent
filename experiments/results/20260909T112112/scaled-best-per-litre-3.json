@@ -1,0 +1,73 @@
+{
+  "ran_at": "2026-09-09T11:50:36",
+  "provider": "openrouter",
+  "model": "anthropic/claude-haiku-4.5",
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Rivenhall . Across all the Rivenhall listings and all their pack sizes, which seller offers the lowest price per litre?",
+  "elapsed_s": 85.9,
+  "cost_usd": 0.092874,
+  "cost_note": null,
+  "spend_before_usd": 18.50612834,
+  "spend_after_usd": 18.59900189,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "78d316b0d2b54df88b923e00818dfad0",
+    "final": "Redhill Stores offers the lowest price per litre at $0.930/L for the 2 x 9.5L pack size (total price: $17.68 for 19 litres)",
+    "page": {
+      "url": "http://localhost:7770/catalogsearch/result/?q=Rivenhall",
+      "title": "Search results for: 'Rivenhall'"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 26,
+    "actions": 11,
+    "observations": 15,
+    "unclassified_tools": [],
+    "assistant_turns": 26,
+    "by_tool": {
+      "browser_navigate": 10,
+      "browser_find": 6,
+      "browser_evaluate": 6,
+      "browser_probe_cards": 1,
+      "browser_click": 1,
+      "browser_snapshot": 1,
+      "browser_take_screenshot": 1
+    },
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_click",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_find",
+      "browser_find",
+      "browser_find",
+      "browser_navigate",
+      "browser_find",
+      "browser_navigate",
+      "browser_find",
+      "browser_navigate",
+      "browser_find",
+      "browser_navigate",
+      "browser_take_screenshot",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate"
+    ]
+  },
+  "log": "scaled-best-per-litre-3.log"
+}

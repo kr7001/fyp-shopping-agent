@@ -188,6 +188,16 @@ outside the container.
 - `env/` now holds `seed_variants.py`, which authors configurable products with per-variant pricing over the Magento REST API and writes a ground-truth manifest per run. See [env/README.md](env/README.md)
 - Seeded and verified: 4 configurable parents and 14 variant children, all prefixed `IGR-`, plus 3 new attributes on attribute set 4. No existing WebArena product was modified. The environment now has interaction-gated pricing it did not have before
 
+### 2026-09-09
+- RQ3 first slice: a sufficiency check that decides whether an answer is supported by what the run observed, applied as a policy in two arms. `gate` abstains, `retry` re-asks with the reason. See [notes/rq3-policy-arms.md](notes/rq3-policy-arms.md)
+- The gate issues no browser action, so it replays exactly over runs already recorded and costs nothing. Over 78 earlier baseline runs it withdrew 12 of 12 wrong answers and lost none of 66 correct ones
+- Retry arm, 15 runs, $4.21 against the baseline's $3.13: wrong answers fell from 5 to 2. All three `scaled-all-stocked` runs answered a bare "Yes" after opening 4 of 15, were flagged, and all three second attempts returned the correct answer with its evidence
+- That arm broke the check twice. It blocked a correct answer whose price was a base plus a surcharge and so never printed on the page, and it was blind to an answer that combines real figures over the wrong set. Both fixed, so both figures were in sample
+- Rules frozen at `7771e24`, fresh baseline run, $3.41, replayed under them alone: **3 of 4 failures caught, 0 of 11 correct answers blocked, $0.00 added cost**. Out of sample
+- Gating on retrieval coverage was tested and rejected again. Correct answers to the comparison tasks opened 1, 4, 4, 8, 12, 13, 14 and 14 listings; wrong ones opened 4 every time. A floor at 11 catches all six failures and blocks three correct answers
+- `scaled-best-per-litre` opens exactly 4 listings in all seven runs, right and wrong alike, so its one correct answer rests on the same evidence as its six wrong ones. Correctness and soundness are separate properties and the report carries both
+- Spend to date $16.60 of $20
+
 ### 2026-09-08, later
 - openJiuwen runs end to end against the seeded environment. `experiments/` now holds a task suite, a scorer, an interaction counter and a suite driver
 - RQ2 baseline measured: 60 runs, $2.98, `claude-haiku-4.5`. 87% correct on gated tasks, **0 abstentions in 60 runs**, and correctness collapses to 20% when the agent spends only one action. See [notes/rq2-baseline.md](notes/rq2-baseline.md)

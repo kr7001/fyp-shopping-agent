@@ -118,16 +118,80 @@ sound figures are combined over the wrong set.
 
 With it, 12 of 12 wrong runs are caught and no correct run is flagged.
 
-## What is in sample
+## What is in sample, and the held-out test
 
 Rules 1 to 4 were validated over 82 runs before any of them was used live, so their
 figures were out of sample when the retry arm ran. The composition fix and
 `understated_population` were both written from failures in that arm, so the 12 of 12
-above is in sample for them and should not be quoted as a clean result.
+above is in sample for them.
 
-The clean test is cheap, because the gate needs no model calls of its own: one fresh
-baseline suite, replayed under the current rules. About $3, and it is the next thing to
-spend money on.
+So the rules were frozen at commit `7771e24` and a fresh baseline was run, 5 tasks x 3
+repeats, $3.41, on data that did not exist when the rules were written. Replayed with
+`replay_gate.py --suite`, which reads that directory alone:
+
+```
+15 baseline runs replayed under the gate
+
+verdict       baseline    gate
+-------------------------------
+abstained            0       3
+correct             11      11
+wrong                4       1
+
+wrong answers withdrawn   3 of 4
+correct answers withdrawn 0 of 11
+added model cost          $0.00, the gate issues no browser action
+```
+
+**Three of four failures caught, no correct answer lost, out of sample, for no tokens.**
+Precision holds at 1.00 across 77 correct runs now, in sample and out.
+
+### The one that escaped
+
+`scaled-best-per-litre-3` gives the same wrong answer as its two siblings, and the two
+siblings are caught:
+
+```
+caught    "... $0.930/L ... determined by analyzing all four sellers"
+escaped   "... $0.930/L for the 2 x 9.5L pack (total price: $17.68 for 19 litres)"
+```
+
+Every figure in the escaping answer was observed, and its arithmetic composes. The only
+thing separating it from the ones that are caught is that it did not volunteer how much
+it had looked at. `understated_population` reads a claim the agent makes about itself, so
+an agent that says less is checked less. That is a real ceiling on the rule and not a bug
+in it.
+
+### Why coverage still does not close that gap
+
+The obvious fix is to gate on coverage directly, since the escaping run opened 4 of 15
+against an oracle floor of 11. The data has refused this twice now, and refuses it again
+with more of it. Over every baseline run of the two global comparison tasks:
+
+```
+correct opens: [1, 4, 4, 8, 12, 13, 14, 14]
+wrong   opens: [4, 4, 4, 4, 4, 4]
+```
+
+Gating on `opened < 11` would catch all six failures and block three correct answers.
+That trades the one property the gate currently has, that it never withholds a correct
+answer, for recall on one task.
+
+What the same numbers do say is worth more than the rule would have been.
+`scaled-best-per-litre` opens exactly 4 listings in all seven runs, correct and wrong
+alike. Its one correct answer was reached with the same evidence as its six wrong ones.
+Accuracy cannot distinguish those two outcomes, because there is nothing in the run to
+distinguish. That is the soundness argument with the cleanest evidence in the project so
+far, and it belongs in the report next to the accuracy figures rather than underneath
+them.
+
+### Known limitation, deliberately not fixed yet
+
+`understated_population` fires on a legitimately qualified subset: "all 10 listings that
+stock the pack are cheaper" reads as coverage of 10 where the population is 15. No run in
+113 has produced that shape, so it is not yet a measured fault. It was found by probing
+the rule directly, after the rules were frozen for the held-out test, and fixing it then
+would have voided the freeze. Queued rather than patched.
 
 ## The costs the arms do not remove
 
