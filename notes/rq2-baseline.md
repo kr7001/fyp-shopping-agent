@@ -38,30 +38,52 @@ Gated runs, bucketed by the number of page-changing actions spent:
 | 7+ | 14 | 13 | 93% |
 
 Correct runs spent a median of 5 actions; wrong runs a median of 1. Four of the seven
-failures happened at exactly one action, and all four invented a number.
+failures happened at exactly one action.
 
 The relationship is not "more retrieval is better". Beyond three actions the rate is flat
 within noise. It is specifically **under-retrieval** that predicts failure, and the cliff
 sits between one action and two.
 
 That is the RQ3 premise stated as a measurement rather than an assumption: there is a
-minimum retrieval budget below which answers are fabricated, and above which extra
+minimum retrieval budget below which answers stop being reliable, and above which extra
 interactions buy nothing.
 
 ## Finding 3: two distinct failure modes
 
-**Under-retrieval, then fabrication.** One action, no variant selected, a price invented:
+**Corrected 2026-09-09, see [delta-not-fabrication.md](delta-not-fabrication.md).** This
+section originally described the first mode as fabrication. It is not.
+
+**Delta misread as an absolute price.** One action, and a number that is right as a
+surcharge and wrong as a price:
 
 ```
-water-a-9l5-price   1 action   "The price of the 2 x 9.5L pack is $15.01"   (truth $24.90)
-water-b-9l5-price   1 action   "The price of the 2 x 9.5L pack is $11.60"   (truth $22.50)
+water-a-9l5-price   1 action   "The price of the 2 x 9.5L pack is $15.01"   truth $24.90
+water-b-9l5-price   1 action   "The price of the 2 x 9.5L pack is $11.60"   truth $22.50
 ```
 
-Neither $15.01 nor $11.60 appears anywhere on those pages. These are not misreadings of
-the headline price, they are inventions.
+Magento labels each variant option with a price **delta**. The option reads
+`2 x 9.5L +$15.01`, and the traces confirm both runs observed exactly that:
 
-One further run reached the right number by wrong reasoning, reporting $22.50 as
-"base price $10.90 + additional charge". Scored ambiguous. The arithmetic is coincidental.
+```
+9.89 + 15.01 = 24.90     truth 24.90
+10.90 + 11.60 = 22.50    truth 22.50
+```
+
+Both numbers are correct as deltas. The agent retrieved the right token and misread its
+semantics. The original check, that neither number appears in the page source, was itself
+correct; the inference from it was wrong. The label is computed in the browser from
+`spConfig` rather than written into the HTML, so it lives only in the rendered page,
+which is where the agent was looking and where the grep was not.
+
+A third run on the same task shows that composition is the discriminating step:
+
+```
+"The price of the 2 x 9.5L pack is $22.50 (base price $10.90 + additional charge $11.60)"
+```
+
+Same two numbers observed, correct answer, because it added them. Scored ambiguous only
+because the scorer penalises an answer carrying both the target and the trap value, which
+is the wrong rule for an answer showing its own working.
 
 **Retrieved but did not report.** `water-a-all-prices` asks for every pack size and price
 and failed four times in five, at 5, 6, 7 and 1 actions:
@@ -72,9 +94,8 @@ and failed four times in five, at 5, 6, 7 and 1 actions:
 ```
 
 The answer asserts completion and contains no prices. At 5 to 7 actions the retrieval
-probably happened; the final answer simply omits the content. This is a reporting-contract
-failure rather than a retrieval failure, and it should be reported separately from the
-fabrication cases.
+probably happened and the reporting did not. This is a reporting-contract failure rather
+than a retrieval failure and should be counted separately.
 
 ## Finding 4: the cross-listing trap did not fire
 
@@ -92,15 +113,16 @@ listing is expensive. Reproducing it needs scale, not a better trap.
 The headroom is not correctness. At 87% on gated tasks the unmodified agent is mostly
 right. The headroom is that it has no way to know when it has retrieved enough:
 
-- It spends 1 action and fabricates, or spends 7 and is right, with no principle
+- It spends 1 action and misreads, or spends 7 and is right, with no principle
   distinguishing the two beforehand
 - Extra actions past three buy nothing measurable, so a large part of current spend is
   waste
 - It never abstains, so a caller cannot tell a 1-action guess from a 7-action verification
 
-A question-conditioned policy has three things to beat: eliminate the sub-two-action
-answers, cut the cases spending 7+ actions where 2 suffice, and abstain instead of
-inventing when the budget genuinely runs out.
+A question-conditioned policy has four things to beat: eliminate the sub-two-action
+answers, cut the cases spending 7+ actions where 2 suffice, check that a reported price is
+consistent with any delta label observed, and abstain rather than answer when the budget
+genuinely runs out.
 
 ## Caveats
 

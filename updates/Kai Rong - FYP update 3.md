@@ -122,20 +122,47 @@ This is the RQ3 premise as a measurement rather than an assumption: there is a m
 retrieval budget below which answers are fabricated, and above which extra interactions buy
 nothing.
 
-### Finding 3: failures are fabrications, not misreadings
+### Finding 3: failures are delta misreadings, not fabrications
+
+*This finding was corrected on 9 September after re-reading the traces. It was originally
+reported as fabrication.*
 
 ```
-water-a-9l5-price   1 action   "The price of the 2 x 9.5L pack is $15.01"   (truth $24.90)
-water-b-9l5-price   1 action   "The price of the 2 x 9.5L pack is $11.60"   (truth $22.50)
+water-a-9l5-price   1 action   "The price of the 2 x 9.5L pack is $15.01"   truth $24.90
+water-b-9l5-price   1 action   "The price of the 2 x 9.5L pack is $11.60"   truth $22.50
 ```
 
-Neither number appears anywhere on those pages. The agent did not misread the headline
-price; it invented a value. One further run reached $22.50 by incorrect reasoning
-("base price $10.90 plus additional charge") and was scored ambiguous.
+Neither number appears in the page source, which is what originally suggested invention.
+The traces show something more specific. Magento labels each variant option with a price
+**delta**, and both runs observed exactly that:
+
+```
+option seen: "2 x 9.5L +$15.01"     9.89 + 15.01 = 24.90    truth 24.90
+option seen: "2 x 9.5L +$11.60"    10.90 + 11.60 = 22.50    truth 22.50
+```
+
+Both numbers are correct as surcharges. The agent retrieved the right token and misread
+its semantics, reporting a relative value as an absolute one. The label is computed in the
+browser from the page's own configuration block rather than written into the HTML, which
+is why a source check found nothing while the agent saw it plainly.
+
+A third run on the same task composed the two values correctly and said so, which
+identifies composition as the discriminating step rather than retrieval.
+
+This is a sharper result than the original claim. Interaction-gated prices are frequently
+expressed *relative to* the visible price, so the gated token is only meaningful in
+combination with the headline the agent already had. The resulting error looks like a
+price, sits in a plausible range, and appears nowhere on the page, which makes it harder
+to detect than either a stale headline or an outright invention.
+
+It also changes what the RQ3 policy must do. A coverage check would pass both failures,
+because the required field was observed. What catches them is a consistency check: an
+absolute price reported after a delta label was seen must equal base plus delta. That is
+verifiable arithmetic needing no further retrieval.
 
 A separate failure mode appeared on the exhaustive task, which asks for every pack size and
 price and failed four times in five: the answer asserts *"Successfully listed all pack sizes
-and their prices"* and contains no prices. At 5–7 actions the retrieval likely happened and
+and their prices"* and contains no prices. At 5 to 7 actions the retrieval likely happened and
 the reporting did not. Worth counting separately.
 
 ### Finding 4 (negative): the cross-listing trap did not fire
