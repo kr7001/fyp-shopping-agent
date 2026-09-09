@@ -130,25 +130,57 @@ def retry_query(query: str, verdict: dict) -> str:
 # one price and read it correctly, so high confidence is the calibrated response. If that
 # holds, confidence cannot be the signal, and an evidence-grounded check is necessary
 # rather than merely one option among several.
+# The scale is anchored, because an unanchored one is a weak baseline. Left to invent its
+# own meaning, a model's "95" cannot be interpreted and cannot be argued with. The anchors
+# below are the standard ones: a frequency framing rather than a feeling, endpoints that
+# say what they mean, and a midpoint that fixes the scale's centre.
+#
+# 0 to 100 rather than 0 to 10, deliberately. The documented failure of verbalised
+# confidence is clustering at the top of the range, and a ten-point scale hides that by
+# construction, since 9 and 9.5 are the same token. A hundred-point scale makes the
+# clustering visible, and the clustering is itself a result.
+SCALE = (
+    "\nUse this scale:\n"
+    "  100 = you checked directly and no further checking could change the answer\n"
+    "   75 = probably right, but you did not verify everything that could matter\n"
+    "   50 = as likely wrong as right\n"
+    "    0 = you know this is a guess\n"
+    "As a check on the number: out of 100 questions where you felt exactly like this, "
+    "how many would you expect to get right? That count is your confidence.\n")
+
+# Asking for the reason is what turns this arm from a calibration measurement into
+# something falsifiable. The number cannot be hallucinated, because there is no true
+# answer to how confident something should feel. The reason can: "I checked all four
+# sellers" is a claim about the agent's own behaviour, and the trace records what it
+# actually did. So the justification is where a self-report can be caught being wrong.
+# One line rather than two. Asked for the number on one line and the reason on the next,
+# the agent supplied the number and dropped the reason, which is half-compliance that
+# would have been recorded as "gave no reason" rather than as a format problem. Fusing
+# them into a single required line removes the option of answering half of it.
+REASON = ("The sentence after 'because' must name what you checked and what you did "
+          "not.\n")
+
 CONFIDENCE_PROMPTS = {
-    # The agent's own contract is a JSON object whose `final` key holds the answer text, so
-    # the request has to name that field. A first attempt asked for a trailing line and was
-    # simply not complied with, which is a prompt-format problem rather than a result and
-    # would have quietly turned this baseline into a strawman.
+    # The formulation the calibration literature uses. The fair comparison.
     "plain": (
-        "\n\nIn your final answer text, after the answer itself, end the `final` string "
-        "with how confident you are that the answer is correct, in exactly this format:\n"
-        "CONFIDENCE: <number from 0 to 100>\n"
-        "Include it every time, even when you are certain."),
+        "\n\nEnd the `final` string with your confidence that the answer is correct, on "
+        "one line, in exactly this format:\n"
+        "CONFIDENCE: <number from 0 to 100> because <one sentence>\n"
+        + SCALE + REASON + "Include the whole line every time, even when you are certain."),
+    # Names the dimension this project cares about. A deliberately stronger baseline, and
+    # close to a cheap version of the contribution, so it gets a real test.
     "retrieval": (
-        "\n\nIn your final answer text, after the answer itself, end the `final` string "
-        "with how confident you are that the answer is correct, taking into account "
-        "whether you gathered all the information the question needed, in exactly this "
-        "format:\nCONFIDENCE: <number from 0 to 100>\n"
-        "Include it every time, even when you are certain."),
+        "\n\nEnd the `final` string with your confidence that the answer is correct, "
+        "taking into account whether you gathered all the information the question "
+        "needed, on one line, in exactly this format:\n"
+        "CONFIDENCE: <number from 0 to 100> because <one sentence>\n"
+        + SCALE + REASON + "Include the whole line every time, even when you are certain."),
 }
 
 CONFIDENCE_RE = re.compile(r"CONFIDENCE\s*[:=]\s*(\d{1,3})", re.IGNORECASE)
+REASON_RE = re.compile(
+    r"CONFIDENCE\s*[:=]\s*\d{1,3}\s*(?:because|,|-|\u2014)\s*(.+?)(?:\n|$)"
+    r"|REASON\s*[:=]\s*(.+?)(?:\n|$)", re.IGNORECASE)
 
 
 def confidence_query(query: str, wording: str) -> str:
@@ -168,10 +200,20 @@ def parse_confidence(answer: str) -> int | None:
     return value if 0 <= value <= 100 else None
 
 
+def parse_reason(answer: str) -> str | None:
+    """The agent's stated justification for its confidence, if it gave one."""
+    found = REASON_RE.search(answer or "")
+    if not found:
+        return None
+    text = found.group(1) or found.group(2) or ""
+    return " ".join(text.split()) or None
+
+
 def strip_confidence(answer: str) -> str:
     """The answer without its confidence line, so scoring sees what it would have seen.
 
     The stated number is a percentage and the scorer looks for money, so leaving it in
     risks a two-digit confidence being read as part of a price.
     """
-    return CONFIDENCE_RE.sub("", answer or "").strip()
+    without = REASON_RE.sub("", answer or "")
+    return CONFIDENCE_RE.sub("", without).strip()
