@@ -116,8 +116,8 @@ listing is expensive. Reproducing it needs scale, not a better trap.
 
 ## What this means for RQ3
 
-The headroom is not correctness. At 87% on gated tasks the unmodified agent is mostly
-right. The headroom is that it has no way to know when it has retrieved enough:
+The headroom is not correctness. At 89% on gated tasks in this fixture, 81% pooled
+across every unmodified run since, the agent is mostly right. The headroom is that it has no way to know when it has retrieved enough:
 
 - It spends 1 action and misreads, or spends 7 and is right, with no principle
   distinguishing the two beforehand

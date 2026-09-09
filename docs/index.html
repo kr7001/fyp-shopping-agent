@@ -434,6 +434,7 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
         <button class="railtoggle" type="button" aria-expanded="false" aria-controls="rail-policy">+</button>
       </div>
       <ul class="railsub" id="rail-policy" hidden>
+        <li><a href="#pol-0">What it claims</a></li>
         <li><a href="#pol-1">Two arms</a></li>
         <li><a href="#pol-2">The gate is free</a></li>
         <li><a href="#pol-3">Retry, and what it cost</a></li>
@@ -822,7 +823,7 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
       <p class="lede r-plain">Twelve questions, each asked five times. Sixty runs in total, costing $2.98.</p>
 
       <div class="stats">
-        <div class="stat"><span class="n">89%</span><span class="l">GATED CORRECT, 49 OF 55</span></div>
+        <div class="stat"><span class="n">81%</span><span class="l">GATED CORRECT, 69 OF 85</span></div>
         <div class="stat flag"><span class="n">0</span><span class="l">ABSTENTIONS IN 60 RUNS</span></div>
         <div class="stat"><span class="n">$2.98</span><span class="l">TOTAL SUITE COST</span></div>
         <div class="stat"><span class="n">5 vs 3</span><span class="l">MEDIAN ACTIONS, RIGHT vs WRONG</span></div>
@@ -978,6 +979,12 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
       </div>
 
       <div class="prose">
+        <h3 class="sub" id="pol-0">What this half does and does not claim</h3>
+        <p class="r-tech">RQ3 asks whether a policy can reach correct answers with <i>fewer</i> interactions. Nothing on this page does that yet, and the retry arm costs 34 per cent more than the baseline. That is not a result falling short of its own claim. The reactive half was never the efficiency claim: it exists to establish that sufficiency is detectable at all, which was not obvious beforehand and is now measured. The proactive half, deciding what to retrieve from the question before starting, is the efficiency claim, and it is unrun.</p>
+        <p class="r-plain">The research question asks whether the AI can be made to get things right with <i>less</i> clicking. Nothing here does that yet, and the retry version costs about a third more. That is deliberate rather than a failure. This half only had to show that the AI can tell when it has not looked enough, which was an open question and is now answered. Making it cheaper is the other half, and it has not been built.</p>
+        <p class="r-tech">There is also a gap that has to be named rather than discovered. There is no exhaustive arm yet, meaning no version that opens every listing, so there is <b>no upper bound on cost to plot anything against</b>. Until that exists no efficiency claim can be made in either direction.</p>
+        <p class="r-plain">One thing is missing and worth saying out loud. There is no version yet that checks everything, so there is no ceiling to compare against. Until that exists, no claim about saving effort can be made at all.</p>
+
         <h3 class="sub" id="pol-1">Two arms, because they cost different amounts</h3>
         <p class="r-tech">The check is a judgement. A policy is what the system does with it, and there are two separable options. <b>Gate</b> replaces an unverified answer with an abstention naming what could not be confirmed, and issues no browser action, so it adds no model cost. <b>Retry</b> re-asks the task with the reason attached, and pays a full second run.</p>
         <p class="r-plain">Two versions. The cautious one refuses to answer and says why, which is free because it does no extra looking. The expensive one goes back and tries again, told what it got wrong, and that costs another whole run.</p>

@@ -200,6 +200,15 @@ outside the container.
 - `env/` now holds `seed_variants.py`, which authors configurable products with per-variant pricing over the Magento REST API and writes a ground-truth manifest per run. See [env/README.md](env/README.md)
 - Seeded and verified: 4 configurable parents and 14 variant children, all prefixed `IGR-`, plus 3 new attributes on attribute set 4. No existing WebArena product was modified. The environment now has interaction-gated pricing it did not have before
 
+### 2026-09-09, later
+- Verbalised-confidence baseline measured and it fails. 15 runs, $2.78. The task the agent never gets right scores 100, the task it always gets right scores 95. AUROC 0.528 against 0.5 for no signal, stated confidence 0.98 against accuracy 0.60. No threshold separates them, and the sufficiency check stops the same failures while discarding none of the correct answers. See [notes/confidence-baseline.md](notes/confidence-baseline.md)
+- Asked why, the agent says "I verified all 4 sellers" where there are fifteen, and rates itself 95. So the information needed to abstain is already in its own output and the number ignores it. Feeding that justification into the check doubles recall, 3 of 6 to 6 of 6, in sample
+- Retry now quotes the agent's own justification back to it rather than reporting an external verdict, and an `investigate` arm asks it to diagnose its own error and retrieve only what settles it, rather than redoing the task
+- Headline figures are now computed by `experiments/headline.py` rather than written by hand, after two documents carried different percentages for what read as the same claim. **89% on the 4-listing fixture, 64% at 15 listings, 81% pooled over 85 gated runs.** A rate without its fixture and denominator is not quotable; the gap between the two is the scale finding
+- Live price instability scoped out as a limitation. A TikTok Shop listing priced the same option at S$188.30 and S$205.55 on consecutive loads. Not the project's to fix, but it makes the self-hosted environment necessary rather than merely convenient. See [notes/live-price-instability.md](notes/live-price-instability.md)
+- Literature positioning written against selective prediction, calibration, self-verification, adaptive retrieval, attribution and unanswerable QA, plus the project's lineage from injection work in the same WebArena shop. See [notes/related-work.md](notes/related-work.md)
+- **Open and named: there is no exhaustive arm, so there is no upper bound on cost and no efficiency claim can be made in either direction yet**
+
 ### 2026-09-09
 - RQ3 first slice: a sufficiency check that decides whether an answer is supported by what the run observed, applied as a policy in two arms. `gate` abstains, `retry` re-asks with the reason. See [notes/rq3-policy-arms.md](notes/rq3-policy-arms.md)
 - The gate issues no browser action, so it replays exactly over runs already recorded and costs nothing. Over 78 earlier baseline runs it withdrew 12 of 12 wrong answers and lost none of 66 correct ones

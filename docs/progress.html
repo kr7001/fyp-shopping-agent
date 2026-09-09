@@ -228,13 +228,14 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         <span class="tagline">RQ2 &middot; ANSWERED</span>
         <h3>When a task needs gated information, does the agent retrieve it, and does it signal when it has not?</h3>
         <p>Two separate questions. Does it get the answer right, and when it does not, does it warn you.</p>
-        <p class="verdict">Retrieves correctly <b>89%</b> of the time. Signals uncertainty <b>0 times in 97 runs</b>. The second half is the result that matters, because a caller cannot tell a guess from a checked answer.</p>
+        <p class="verdict">Retrieves correctly <b>89%</b> of the time on the 4-listing fixture and <b>64%</b> at 15 listings, <b>81%</b> pooled over 85 gated runs. Signals uncertainty <b>0 times in 97 runs</b>. The second half is the result that matters, because a caller cannot tell a guess from a checked answer.</p>
       </div>
       <div class="rq part">
         <span class="tagline">RQ3 &middot; FIRST HALF DONE</span>
         <h3>Can a question-conditioned retrieval policy reach correct answers with fewer interactions than exhaustive exploration?</h3>
         <p>Two halves. Knowing when you have looked <i>enough</i>, and knowing <i>where</i> to look so that enough costs less.</p>
-        <p class="verdict"><b>First half built and validated:</b> the agent can now detect that its own answer is unsupported and refuse or retry. <b>Second half not started:</b> deciding what to retrieve before starting.</p>
+        <p class="verdict"><b>First half built and validated:</b> the agent can detect that its own answer is unsupported, and refuse or retry.</p>
+        <p class="verdict"><b>The efficiency claim is not what has been tested, and the first half was never meant to make it.</b> It exists to establish that sufficiency is detectable at all, which was not obvious and is now measured. It is reactive, so it costs more, not less: the retry arm spends 34 per cent above baseline. The proactive half, deciding what to retrieve before starting, is the efficiency claim and it is unrun.</p>
       </div>
     </div>
   </section>
@@ -404,7 +405,9 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         <caption>The unmodified agent, across 97 runs</caption>
         <thead><tr><th class="wide">Measure</th><th class="num">Value</th><th class="wide">Reading</th></tr></thead>
         <tbody>
-          <tr><td class="wide">Correct on gated questions</td><td class="num">89%</td><td class="dim wide">Mostly right, which is exactly why the failures are dangerous rather than obvious</td></tr>
+          <tr><td class="wide">Correct, 4-listing fixture</td><td class="num">89%</td><td class="dim wide">51 of 57 gated runs. The easy case</td></tr>
+          <tr><td class="wide">Correct, 15-listing fixture</td><td class="num">64%</td><td class="dim wide">18 of 28 gated runs. The same agent, a harder market</td></tr>
+          <tr><td class="wide">Correct, pooled</td><td class="num">81%</td><td class="dim wide">69 of 85 gated runs. Quote a rate only with its fixture attached, because the gap between the two is the scale finding rather than noise</td></tr>
           <tr class="hi"><td class="wide">Times it said it did not know</td><td class="num">0 of 97</td><td class="dim wide"><b>The central RQ2 result.</b> Every single failure is a confident assertion</td></tr>
           <tr><td class="wide">Median actions, correct answers</td><td class="num">5</td><td class="dim wide">Small fixture</td></tr>
           <tr><td class="wide">Median actions, wrong answers</td><td class="num">3</td><td class="dim wide">Under-retrieval is what predicts failure</td></tr>
@@ -417,15 +420,15 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
     <div class="tablewrap">
       <table>
         <caption>Same questions, same market, three versions of the system</caption>
-        <thead><tr><th>Arm</th><th class="wide">What it does</th><th class="num">Wrong</th><th class="num">Cost</th><th class="wide">Verdict</th></tr></thead>
+        <thead><tr><th>Arm</th><th class="wide">What it does</th><th class="num">Answered</th><th class="num">Refused</th><th class="num">Wrong</th><th class="num">Cost</th></tr></thead>
         <tbody>
-          <tr><td>Unmodified</td><td class="dim wide">Answers whatever it concludes</td><td class="num">5 of 15</td><td class="num">$3.13</td><td class="dim wide">Baseline</td></tr>
-          <tr><td>Gate</td><td class="dim wide">Refuses when its answer is unsupported</td><td class="num">0 of 12</td><td class="num">$0.00</td><td class="dim wide">Free, but can only refuse. Never converts a failure into an answer</td></tr>
-          <tr class="hi"><td>Retry</td><td class="dim wide">Goes back and tries again, told what was wrong</td><td class="num">2 of 15</td><td class="num">$4.21</td><td class="dim wide">Fixes failures, for 34% more spend</td></tr>
+          <tr><td>Unmodified</td><td class="dim wide">Answers whatever it concludes</td><td class="num">15</td><td class="num">0</td><td class="num">5</td><td class="num">$3.13</td></tr>
+          <tr><td>Gate</td><td class="dim wide">Refuses when its answer is unsupported</td><td class="num">10</td><td class="num">5</td><td class="num">0</td><td class="num">$0.00</td></tr>
+          <tr class="hi"><td>Retry</td><td class="dim wide">Goes back and tries again, told what was wrong</td><td class="num">15</td><td class="num">0</td><td class="num">2</td><td class="num">$4.21</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">The gate costs nothing because it issues no browser action. It reads the record of what the agent already saw and compares it against what the agent just claimed, which means it can also be replayed over runs recorded earlier, at no cost at all.</p>
+    <p class="note">All three arms run the same 15 questions, so the denominators are the same and the columns are comparable. The gate does not answer fewer questions because it failed on them; it declines 5 and is wrong on none of the 10 it answers. The gate costs nothing because it issues no browser action, reading the record of what the agent already saw and comparing it against what the agent just claimed.</p>
 
     <h3 class="sub">The honest test</h3>
     <p class="lede">Two of the five rules were written after seeing failures they were meant to handle, so measuring them on those same failures proves nothing. The rules were locked at a recorded version, then fifteen fresh runs were made, then the rules were applied to those alone.</p>
@@ -601,10 +604,10 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         <h4>Build the targeting policy</h4>
         <p>Decide what to retrieve from the question <i>before</i> starting, rather than checking the answer afterwards. Target is the oracle floor of 11 openings against a current median of 23 actions. Can be written and tested against recorded runs before any of it is paid for.</p>
       </div>
-      <div class="card">
-        <span class="when">NEEDS THE NEW CREDIT</span>
+      <div class="card risk">
+        <span class="when">MISSING, AND IT BLOCKS THE MAIN PLOT</span>
         <h4>The exhaustive baseline</h4>
-        <p>The targeting arm needs something to be plotted against: a version that opens everything, which is correct and expensive. That is the upper bound the policy has to beat on cost while matching on accuracy.</p>
+        <p>There is currently <b>no cost axis</b> to plot a policy against. An exhaustive arm, which opens every listing and is correct and expensive, is the upper bound the policy must beat on cost while matching on accuracy. Without it there is no upper end to the scale, so no efficiency result can be stated at all. Named here rather than left to surface as a hole.</p>
       </div>
       <div class="card">
         <span class="when">FREE</span>
