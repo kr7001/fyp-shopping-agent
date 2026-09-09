@@ -294,6 +294,9 @@ td.ctrl { color: var(--muted); font-family: var(--mono); font-weight: 500; font-
 .claims li::before { content: ""; position: absolute; left: 0; top: 12px; width: 9px; height: 1px; background: var(--accent); }
 .claims b { color: var(--ink); font-weight: 600; }
 
+tr.deep td { border-bottom-color: var(--line-strong); }
+tr.deep td:first-child { box-shadow: inset 2px 0 0 var(--warn); padding-left: 12px; }
+
 /* timeline */
 
 .timeline { display: flex; flex-direction: column; }
@@ -355,7 +358,7 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
       </div>
       <ul class="railsub" id="rail-problem" hidden>
         <li><a href="#problem">The listing</a></li>
-        <li><a href="#problem">Research questions</a></li>
+        <li><a href="#gating-forms">Four forms of gating</a></li>
       </ul>
     </div>
     <div class="railgroup" data-section="research">
@@ -364,7 +367,8 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
         <button class="railtoggle" type="button" aria-expanded="false" aria-controls="rail-research">+</button>
       </div>
       <ul class="railsub" id="rail-research" hidden>
-        <li><a href="#lit-table">Five neighbours</a></li>
+        <li><a href="#lit-lineage">How this began</a></li>
+        <li><a href="#lit-table">Six neighbours</a></li>
         <li><a href="#lit-closest">The closest work</a></li>
         <li><a href="#lit-claim">What is new here</a></li>
         <li><a href="#lit-status">Reading status</a></li>
@@ -455,9 +459,9 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
         <button class="railtoggle" type="button" aria-expanded="false" aria-controls="rail-next">+</button>
       </div>
       <ul class="railsub" id="rail-next" hidden>
-        <li><a href="#next">Scale the catalogue</a></li>
-        <li><a href="#next">Retrieval policy</a></li>
-        <li><a href="#next">Scheduling risk</a></li>
+        <li><a href="#next">Done, two weeks early</a></li>
+        <li><a href="#next">The abstention rail</a></li>
+        <li><a href="#next">Targeting, and cost</a></li>
       </ul>
     </div>
   </nav>
@@ -495,12 +499,51 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
           </div>
         </div>
       </div>
+
+      <div class="prose">
+        <h3 class="sub" id="gating-forms">Four forms of gating, and how deep each one is</h3>
+        <p class="r-tech">Price by variant is the form built and measured so far. It is also the shallowest, because one click reveals the missing figure. The supervisor's suggestion to add discounts and vouchers turns out to matter more than realism, because it reaches a depth the current method's guarantee does not survive.</p>
+        <p class="r-plain">So far the project covers one kind of hiding: the price changes when you pick a size. That is the easy kind, because one click reveals it. Adding discounts and vouchers, as the supervisor suggested, is not only about realism. It reaches a kind of hiding that breaks the shortcut the method depends on.</p>
+
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Form</th><th>What is hidden</th><th>Interaction needed</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><b>Price by variant</b></td><td class="ctrl">The price of the option you want</td><td class="ctrl">One click, reversible</td><td><span class="pill ok">BUILT AND MEASURED</span></td></tr>
+              <tr><td><b>Stock by variant</b></td><td class="ctrl">Whether the option can be bought at all</td><td class="ctrl">One click, reversible</td><td><span class="pill ok">BUILT AND MEASURED</span></td></tr>
+              <tr><td><b>Price by quantity</b></td><td class="ctrl">A tier discount that only applies above a threshold</td><td class="ctrl">Set a quantity, still on the page</td><td><span class="pill amb">DESIGNED, NOT BUILT</span></td></tr>
+              <tr class="deep"><td><b>Price by cart state</b></td><td class="ctrl">Whether a voucher applies, and what the total actually becomes</td><td class="ctrl">Add to cart, enter a code, and the state persists across pages</td><td><span class="pill amb">DESIGNED, NOT BUILT</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="r-tech">The fourth row is different in kind, not degree. A variant click is reversible and local: select another size and the page returns. A cart is <b>global and persistent</b>, so retrieving the answer changes the state that later retrievals happen in, and an exploratory add-to-cart has to be undone rather than simply navigated away from. Any policy that treats retrieval as free observation is wrong here.</p>
+        <p class="r-plain">The last row is a different kind of problem, not just a harder one. Clicking a size is undoable and affects nothing else. Putting something in a basket changes the state of everything after it, and has to be actively undone. So checking a price is no longer a harmless look.</p>
+
+        <div class="quote">
+          <span>from price is a valid lower bound &nbsp; &rarr; &nbsp; <b>skip the listing</b></span>
+          <span>from price minus an unknown voucher &nbsp; &rarr; &nbsp; <b>the bound is unsound</b></span>
+        </div>
+
+        <p class="r-tech">That is the real consequence, and it is a limitation rather than an inconvenience. The exact method for comparison questions is branch and bound, which prunes a listing when its advertised "from" price already exceeds the best total found. That is only sound because no variant can cost less than the "from" price. A voucher makes the true minimum payable lower than the advertised figure, so the bound no longer holds and pruning could skip the actual winner. The measured pruning result is therefore stated as holding <b>in the absence of voucher pricing</b>, which is now an explicit scope boundary rather than an unexamined assumption.</p>
+        <p class="r-plain">Here is why it matters. The method saves time by skipping shops whose cheapest advertised price is already too expensive to win. That is safe only if nothing can be cheaper than advertised. A voucher makes things cheaper than advertised, so the shortcut could skip the actual winner. The result stands, but only for shops without vouchers, and that limit is now written down rather than assumed.</p>
+      </div>
     </section>
 
     <section id="research">
       <h2>Where this sits in the literature</h2>
       <p class="lede r-tech">The project is not the first to want an agent that knows when to stop. Five established lines of work address something adjacent, and each rests on an assumption this failure violates. The distinction in one line: abstention research asks whether a model knows that it does not know. This asks whether an agent knows that it did not look.</p>
       <p class="lede r-plain">Plenty of research already tries to make AI admit when it is unsure. Five separate fields work on it, and each one assumes something that is not true here. The short version: they ask whether the AI knows it is ignorant. This asks whether the AI knows it never checked.</p>
+
+      <div class="prose">
+        <h3 class="sub" id="lit-lineage">How this project got here</h3>
+        <p class="r-tech">The registered title names injection defences because that is where the work started. The direct predecessor is <b>StakeBench</b>, arXiv 2606.13385, which runs indirect prompt injection against web agents in <b>OneStopMarket, the WebArena shopping site this project also uses</b>, with deployable agents rather than research prototypes, and reports attack success between 41.67 and 68.59 per cent. Behind it sit InjecAgent, arXiv 2403.02691, which established the tool-integrated agent injection benchmark, and WASP, arXiv 2504.18575, which did the same for web agents.</p>
+        <p class="r-plain">The project began as a security project, which is why the registered title mentions attacks. The closest earlier work runs attacks against shopping agents in the very same test shop this project uses, and finds they succeed between 41 and 69 per cent of the time. Two other papers built the benchmarks that made that possible.</p>
+        <p class="r-tech">The pivot came from a single observation about that literature. StakeBench's most interesting finding is that a user-targeted attack often succeeds <b>while the delegated task still completes</b>, so nothing looks wrong from the outside. That is a statement about detectability rather than about adversaries, and the same undetectability arises with no attacker at all: on a gated listing the agent reports a price, the task completes, and the answer is wrong. Removing the adversary leaves the failure and the invisibility intact, which is what suggested the adversary was never the load-bearing part.</p>
+        <p class="r-plain">The change of direction came from one observation. That paper's most striking finding is that a successful attack often looks like a completed job, so nobody notices. But the same invisibility happens with no attacker: the AI reports a price, the task looks done, the answer is wrong. Take the attacker away and the dangerous part is still there, which suggested the attacker was never the important bit.</p>
+        <p class="r-tech">There is also a defensive argument. Injection defences work by filtering or isolating what enters the agent's context, and the field's own results show those defences are fragile, with adaptive attacks breaking existing ones, arXiv 2503.00061. Even a perfect filter cannot help here, because there is nothing harmful in the context to remove. The defect is an absence, and absences do not arrive to be filtered.</p>
+        <p class="r-plain">There is a second reason. Defences against attacks work by removing bad content before the AI reads it, and even those are unreliable. But a perfect filter would not help here, because nothing bad was read. What went wrong is what was never read at all, and you cannot filter out something that is missing.</p>
+      </div>
 
       <div class="tablewrap" id="lit-table">
         <table>
