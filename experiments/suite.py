@@ -86,11 +86,12 @@ def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
             answer = policy_module.abstention_for(check)
         return answer, record, result, trace, check
 
-    query = policy_module.retry_query(
-        task["query"].format(base=spec["base_url"]), check, reason=reason)
+    build = (policy_module.investigate_query if mode == "investigate"
+             else policy_module.retry_query)
+    query = build(task["query"].format(base=spec["base_url"]), check, reason=reason)
     if confidence != "off":
         query = policy_module.confidence_query(query, confidence)
-    tag2 = f"{tag}-retry"
+    tag2 = f"{tag}-{mode}"
     second = run_once(task, spec["base_url"], out_dir, tag2, query=query)
     result2 = second.get("result") or {}
     answer2 = str(result2.get("final") or "")
@@ -119,9 +120,12 @@ def main() -> int:
                              "the verbalised-confidence baseline, not part of the "
                              "contribution, and is measured to answer the obvious "
                              "objection rather than to be used")
-    parser.add_argument("--policy", choices=("off", "gate", "retry"), default="off",
+    parser.add_argument("--policy", choices=("off", "gate", "retry", "investigate"),
+                        default="off",
                         help="off is the unmodified baseline; gate abstains on a failed "
-                             "sufficiency check; retry re-asks once with the reason")
+                             "sufficiency check; retry re-asks the whole task with the "
+                             "reason; investigate asks the agent to diagnose its own "
+                             "error and retrieve only what settles it")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 

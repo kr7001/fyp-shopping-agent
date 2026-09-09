@@ -130,6 +130,37 @@ def self_contradiction(verdict: dict, reason: str | None) -> str | None:
     return None
 
 
+def investigate_query(query: str, verdict: dict, reason: str | None = None) -> str:
+    """Ask the agent to diagnose its own error rather than repeat the task.
+
+    The retry arm works and is expensive. Told it was wrong, the agent starts over: on
+    `scaled-all-stocked` the first attempt opened 4 listings and the second opened all 15,
+    which is how a $0.08 wrong answer became a $0.68 right one. The redo is doing the
+    whole task again to fix one gap.
+
+    This framing asks a narrower question. Something you believed is false, so find what
+    produced it and repair that specifically. It is guided self-diagnosis rather than the
+    intrinsic kind the literature reports as unreliable: the fault is supplied from
+    outside, and only the investigation is the agent's own.
+
+    Whether it is actually cheaper is a hypothesis, not an assumption. It could equally
+    cost more, if diagnosing an error turns out to need the same coverage as avoiding it.
+    That comparison against the redo arm is the point of having both.
+    """
+    own_words = self_contradiction(verdict, reason)
+    evidence = own_words or f"A check found that it {verdict['why']}."
+    return (f"{query}\n\n"
+            "Your previous attempt gave an answer that is not supported by what you "
+            f"actually retrieved.\n\n{evidence}\n\n"
+            "Do not simply repeat the task. Work out what went wrong:\n"
+            "1. Where did the figure you reported come from, and what did you take it to "
+            "mean?\n"
+            "2. What did you not check that could change the answer?\n"
+            "3. Retrieve only what is needed to settle that, then answer again.\n"
+            "State what you had got wrong. If you still cannot confirm the answer, say "
+            "so rather than guessing.")
+
+
 def retry_query(query: str, verdict: dict, reason: str | None = None) -> str:
     own_words = self_contradiction(verdict, reason)
     fault = own_words or f"A verification check found that it {verdict['why']}."

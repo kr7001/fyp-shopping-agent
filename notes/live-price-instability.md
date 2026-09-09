@@ -92,7 +92,29 @@ The last two connect this to the existing audit table, which currently covers Sh
 WebArena. A third platform, with an instability finding attached, makes that table
 considerably more useful.
 
-## A guardrail for this, and why it is not built yet
+## Scope decision: stated as a limitation, not addressed
+
+**Decided 2026-09-09.** Price instability on live platforms is out of scope, and is
+reported as a limitation rather than handled.
+
+The reason is that it is not the project's to fix. A retrieval policy decides what to go
+and look at. It cannot make a merchant's price stop moving, and no amount of retrieval
+makes an unstable value stable. Every other limitation recorded here is a boundary the
+project drew; this one is a property of the world the project observes.
+
+What it does change is what may be claimed. Two sentences belong in the report:
+
+- Results are measured on a self-hosted environment where the ground truth is fixed. This
+  is necessary, not merely convenient, because a live listing was observed pricing the
+  same option at S$188.30 and S$205.55 on consecutive loads
+- An agent that reports a live price correctly may still be reporting a figure that is not
+  a property of the product. Correctness, soundness and stability are three different
+  things, and this project measures the first two
+
+The observation stays in the record because it justifies the environment choice and
+because it is a real finding about live commerce. It does not become a mechanism to build.
+
+## A guardrail for this, and why it was not built
 
 The natural response is a rule: reload the page, and if the price moved, stop and tell the
 user rather than answering. Reload several times to be sure. It fits the existing family,
