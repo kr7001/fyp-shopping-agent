@@ -15,6 +15,22 @@ gating that the current method's guarantee does not survive.
 | Stock by variant | Whether the option is buyable | One click | yes | Built, measured |
 | Price by quantity | A tier discount above a threshold | Set a quantity | yes | Designed |
 | **Price by cart state** | Whether a voucher applies, and the real total | Add to cart, enter a code | **no** | Designed |
+| **Price by identity** | A discount only shown to a signed-in shopper | Log in | n/a | Observed, out of scope |
+| **Price by session** | Nothing. The figure simply differs between loads | None. Reloading is enough | n/a | Observed, see below |
+
+The last two came from manual observation rather than design, and are recorded in
+[live-price-instability.md](live-price-instability.md). Both break an assumption the first
+four share.
+
+**Price by identity.** A TikTok Shop listing carries the prompt "Log in to see your
+exclusive discounts". A signed-out agent cannot retrieve that discount at all, no matter
+how thoroughly it looks. So a voucher is not always a page element waiting to be found,
+and a WebArena voucher fixture should not assume it is.
+
+**Price by session.** The same listing, same option, reloaded, showed S$188.30 and then
+S$205.55. This is not gating in the original sense, because nothing is hidden. It is
+worse: the value is not stable, so there is no fixed answer to retrieve. Two agents asking
+at the same moment can read different prices and both be right.
 
 The first three are local and reversible: select another option and the page returns to
 where it was. The fourth is not. A cart is global and persistent, so retrieving the answer
