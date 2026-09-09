@@ -1,0 +1,90 @@
+{
+  "ran_at": "2026-09-09T22:09:58",
+  "repeats": 1,
+  "policy": "off",
+  "confidence": "plain",
+  "tasks_file": "tasks_scaled.json",
+  "instance": {
+    "target_option": "2 x 9.5L",
+    "listings": 15,
+    "listings_with_target": 10,
+    "winner": {
+      "sku": "IGR-RVN-03",
+      "seller": "Redhill Stores",
+      "price": 17.68
+    },
+    "runner_up_price": 19.26,
+    "winning_margin": 1.58,
+    "cheapest_card": {
+      "sku": "IGR-RVN-09",
+      "seller": "Hillside Wholesale",
+      "from_price": 6.44
+    },
+    "card_probe_wrong": true,
+    "best_per_litre": {
+      "sku": "IGR-RVN-07",
+      "seller": "Thornbury Pantry",
+      "option": "6 x 1.25L",
+      "price_per_litre": 0.9107
+    },
+    "unit_probe_wrong": true,
+    "oracle_min_opens": 11,
+    "prunable_by_bound": 4,
+    "exhaustive_opens": 15,
+    "bound_strength": 0.267,
+    "from_price_range": [
+      6.44,
+      21.78
+    ],
+    "target_price_range": [
+      17.68,
+      67.17
+    ]
+  },
+  "summary": {
+    "by_task": {
+      "scaled-headline": {
+        "gated": false,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          2
+        ],
+        "tool_calls": [
+          5
+        ],
+        "cost": [
+          0.027085
+        ],
+        "mean_actions": 2.0,
+        "mean_tool_calls": 5.0,
+        "total_cost": 0.0271
+      }
+    },
+    "overall": {
+      "correct": 1
+    },
+    "total_cost": 0.0271
+  },
+  "rows": [
+    {
+      "task": "scaled-headline",
+      "family": "scaled",
+      "gated": false,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The Rivenhall water listing with the lowest price on the results page is 'Rivenhall Still Spring Water, Multipack - Hillside Wholesale' at $6.44.",
+      "tool_calls": 5,
+      "actions": 2,
+      "observations": 3,
+      "cost_usd": 0.027085,
+      "elapsed_s": 31.5,
+      "error": null,
+      "log": "scaled-headline-1.log",
+      "confidence": null,
+      "confidence_wording": "plain"
+    }
+  ]
+}
