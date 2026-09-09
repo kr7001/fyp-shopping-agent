@@ -10,10 +10,16 @@ does. Keeping the two separate is the point. It says how much of the effect come
 being allowed to refuse, and how much from being told why and trying again.
 
     python experiments/replay_gate.py
+    python experiments/replay_gate.py --suite 20260909T120000
+
+`--suite` restricts the replay to one results directory. That is how a held-out
+measurement is taken: freeze the rules, run a fresh baseline, and replay only that
+suite, so runs the rules were written against cannot flatter the figure.
 """
 
 from __future__ import annotations
 
+import argparse
 import collections
 import json
 import pathlib
@@ -56,7 +62,7 @@ def full_answer(suite_dir: pathlib.Path, row: dict) -> str:
     return row.get("answer") or ""
 
 
-def replay() -> int:
+def replay(only_suite: str | None = None) -> int:
     index = task_index()
     rows: list[dict] = []
     stale: list[str] = []
@@ -65,6 +71,8 @@ def replay() -> int:
         # A suite already run under a policy is not a baseline, so replaying the gate
         # over it would be measuring the gate on top of itself.
         if payload.get("policy", "off") != "off":
+            continue
+        if only_suite and suite_path.parent.name != only_suite:
             continue
         for row in payload["rows"]:
             log_path = suite_path.parent / (row.get("log") or "")
@@ -96,6 +104,9 @@ def replay() -> int:
         print("no baseline runs with traces on disk")
         return 1
 
+    suites = sorted({r["suite"] for r in rows})
+    print(f"suites: {', '.join(suites)}")
+
     before = collections.Counter(r["before"] for r in rows)
     after = collections.Counter(r["after"] for r in rows)
     print(f"{len(rows)} baseline runs replayed under the gate")
@@ -123,5 +134,12 @@ def replay() -> int:
     return 0
 
 
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--suite", help="replay only this results directory")
+    args = parser.parse_args()
+    return replay(args.suite)
+
+
 if __name__ == "__main__":
-    raise SystemExit(replay())
+    raise SystemExit(main())

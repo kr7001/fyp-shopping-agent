@@ -390,7 +390,7 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
       <ul class="railsub" id="rail-results" hidden>
         <li><a href="#find-1">1. Never admits doubt</a></li>
         <li><a href="#find-2">2. The two action cliff</a></li>
-        <li><a href="#find-3">3. Invented prices</a></li>
+        <li><a href="#find-3">3. Delta misreadings</a></li>
         <li><a href="#find-4">4. Trap did not fire</a></li>
         <li><a href="#task-table">Task by task</a></li>
       </ul>
@@ -404,6 +404,19 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
         <li><a href="#scale-1">Pattern reproduced</a></li>
         <li><a href="#scale-2">The one word answer</a></li>
         <li><a href="#scale-3">Not quoting yet</a></li>
+      </ul>
+    </div>
+    <div class="railgroup" data-section="policy">
+      <div class="railrow">
+        <a href="#policy">The fix</a>
+        <button class="railtoggle" type="button" aria-expanded="false" aria-controls="rail-policy">+</button>
+      </div>
+      <ul class="railsub" id="rail-policy" hidden>
+        <li><a href="#pol-1">Two arms</a></li>
+        <li><a href="#pol-2">The gate is free</a></li>
+        <li><a href="#pol-3">Retry, and what it cost</a></li>
+        <li><a href="#pol-4">It broke my own check</a></li>
+        <li><a href="#pol-5">The held-out test</a></li>
       </ul>
     </div>
     <div class="railgroup" data-section="timeline">
@@ -742,7 +755,7 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
         <p class="r-plain">The question built to recreate the real world failure was answered correctly every single time. With only two shops to compare, checking both is easy, so the AI just checks both. The real failure happened across a page of many sellers, where checking everything is expensive. This is a useful negative result, because it turns build a bigger catalogue from a hunch into a requirement.</p>
       </div>
 
-      <div class="tablewrap">
+      <div class="tablewrap" id="task-table">
         <table>
           <thead>
             <tr><th>Task</th><th>Gated</th><th>Verdicts across 5 runs</th><th class="num">Mean actions</th><th class="num">Mean calls</th></tr>
@@ -810,6 +823,48 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
         <h3 class="sub" id="scale-3">A result worth not quoting yet</h3>
         <p class="r-tech">The per litre task failed 3 of 3, each naming the target winner rather than the true per litre winner. The arithmetic in the answers is correct as far as it goes, and the margin between the two is 2 per cent. The failure is a genuine early stop, but the task lacks the margin rule that guards the target price question, so it currently risks scoring arithmetic precision rather than retrieval. Recorded as an open item rather than fixed, because reseeding would invalidate the fifteen runs.</p>
         <p class="r-plain">One task failed every time, but the right and wrong answers are only 2 per cent apart. That is too close to be sure the AI failed at looking rather than at rounding. It is written down as something to fix rather than reported as a finding.</p>
+      </div>
+    </section>
+
+
+    <section id="policy">
+      <h2>The fix, and what it is allowed to claim</h2>
+      <p class="lede r-tech">A check that decides whether an answer is supported by what the run observed, applied as a policy. Frozen, then measured on data that did not exist when it was written.</p>
+      <p class="lede r-plain">A test that asks whether the AI actually saw enough to say what it said. Written first, locked, then tried on fresh runs so it could not be tuned to flatter itself.</p>
+
+      <div class="stats">
+        <div class="stat"><span class="n">3 / 4</span><span class="l">FAILURES CAUGHT, HELD OUT</span></div>
+        <div class="stat"><span class="n">0 / 77</span><span class="l">CORRECT ANSWERS BLOCKED</span></div>
+        <div class="stat"><span class="n">$0.00</span><span class="l">ADDED COST OF THE GATE</span></div>
+        <div class="stat flag"><span class="n">5 &rarr; 2</span><span class="l">WRONG, RETRY ARM, +34% SPEND</span></div>
+      </div>
+
+      <div class="prose">
+        <h3 class="sub" id="pol-1">Two arms, because they cost different amounts</h3>
+        <p class="r-tech">The check is a judgement. A policy is what the system does with it, and there are two separable options. <b>Gate</b> replaces an unverified answer with an abstention naming what could not be confirmed, and issues no browser action, so it adds no model cost. <b>Retry</b> re-asks the task with the reason attached, and pays a full second run.</p>
+        <p class="r-plain">Two versions. The cautious one refuses to answer and says why, which is free because it does no extra looking. The expensive one goes back and tries again, told what it got wrong, and that costs another whole run.</p>
+
+        <h3 class="sub" id="pol-2">The gate is free, so it runs on runs already recorded</h3>
+        <p class="r-tech">Because the gate never touches the browser, replaying it over a finished run gives exactly the verdict it would have given live. Over 78 earlier baseline runs it withdrew 12 of 12 wrong answers and lost none of 66 correct ones. Four runs were excluded, scored against a catalogue since regenerated, detected by rescoring the untouched answer and finding today's scorer disagrees with the verdict recorded at the time. Without that exclusion the gate appeared to withhold four correct answers, which would have been a false result reported against my own method.</p>
+        <p class="r-plain">Because the cautious version does no extra looking, it can be applied to runs that already happened and the answer is exactly what it would have been at the time. On 78 old runs it withdrew every one of the 12 wrong answers and did not withdraw a single right one. Four runs were thrown out because the shop's prices had been rebuilt since, so they were being marked against an answer key that no longer applied. Left in, they made the method look worse than it is, which is the direction of mistake worth catching.</p>
+
+        <h3 class="sub" id="pol-3">Retry works, and the price is the finding</h3>
+        <p class="r-tech">Retry arm, same tasks and fixture as the scaled baseline: wrong answers fell from 5 to 2 for 34 per cent more spend, $4.21 against $3.13. All three <code style="font-family:var(--mono);font-weight:700">scaled-all-stocked</code> runs answered a bare "Yes" after opening 4 of 15, all three were flagged, and all three second attempts returned the correct answer with its evidence. One of those three is scored <span class="pill no">failed</span> because the runtime reported <code style="font-family:var(--mono);font-weight:700">ok: false</code> though the text was right. The scorer was not adjusted to fix that, because changing a scorer in favour of one's own policy after seeing the result is how a result stops meaning anything.</p>
+        <p class="r-plain">Going back and trying again works. Wrong answers dropped from 5 to 2, and it cost about a third more. The clearest case: a question about whether every shop stocks the big carton got a one word "Yes" after checking 4 of 15 shops, three times over. All three were caught, and all three second attempts came back with the full correct answer. One of those is still marked as failed on a technicality, and it was left marked that way rather than quietly re-marked in the method's favour.</p>
+
+        <h3 class="sub" id="pol-4">The arm broke my own check, twice</h3>
+        <p class="r-tech">It blocked a correct answer. "$17.68, charged by Redhill Stores" is exactly right, and $17.68 appears nowhere on the page, because it is the $6.82 base plus the $10.86 surcharge. The composition test only exonerated answers that stated their own working, so an answer giving the total alone was called unsupported. Showing the arithmetic should be a virtue, not a precondition for being believed. Fixing it cost recall, 11 of 12 down to 9 of 12, because two catches turned out to be accidental rather than sound. That in turn exposed a class the arithmetic rules cannot see: an answer whose every figure is observed and correctly combined, over the wrong set. The agent said so itself, "determined by analyzing all four sellers", where there are fifteen.</p>
+        <p class="r-plain">Testing it on fresh runs broke it in two ways. First it blocked an answer that was right, because the price it gave was a base plus a surcharge and so never appeared on the page as one number. The rule only trusted answers that spelled out the sum. Fixing that made it catch less, which was the honest trade, because two of its catches had been luck. That revealed the deeper problem: an answer can have every number right and still compare the wrong things. The AI admitted it in its own words, saying it had analysed all four shops when there are fifteen.</p>
+
+        <h3 class="sub" id="pol-5">Frozen, then tested on data that did not exist yet</h3>
+        <p class="r-tech">Both fixes were written from failures in that arm, so their figures were in sample. The rules were therefore frozen at commit <code style="font-family:var(--mono);font-weight:700">7771e24</code> and a fresh baseline run, $3.41, replayed under them alone.</p>
+        <div class="quote">
+          <span>held out, 15 runs &nbsp; <b>3 of 4</b> failures caught &nbsp; <b>0 of 11</b> correct answers blocked &nbsp; <b>$0.00</b> added cost</span>
+        </div>
+        <p class="r-tech">The one that escaped gives the same wrong answer as the two that were caught, and differs only in not volunteering how much it had looked at. The rule reads a claim the agent makes about itself, so an agent that says less is checked less. Gating on coverage directly would close it and break the property the gate currently has: across every baseline run of the two comparison tasks, correct answers opened 1, 4, 4, 8, 12, 13, 14 and 14 listings while wrong ones opened 4 every time. Gating at the oracle floor of 11 would catch all six failures and block three correct answers.</p>
+        <p class="r-plain">One failure got through. It gave the same wrong answer as the two that were caught, and the only difference is that it did not say how much it had checked. The test reads what the AI claims about its own effort, so an AI that says less gets tested less. The obvious fix, demanding it check enough shops, would catch that one and start blocking right answers, because some right answers came from checking very little.</p>
+        <p class="r-tech">That last point is the more useful result. <code style="font-family:var(--mono);font-weight:700">scaled-best-per-litre</code> opens exactly 4 listings in all seven runs, right and wrong alike, so its one correct answer was reached on the same evidence as its six wrong ones. Accuracy cannot separate those outcomes because there is nothing in the runs to separate. Soundness and correctness are different properties, and the report should carry both.</p>
+        <p class="r-plain">That is worth more than the rule would have been. On one task the AI checks exactly four shops every single time, whether it ends up right or wrong. The time it was right, it was right by luck on the same evidence that made it wrong six times. A score out of ten cannot tell those apart, which is the whole argument for measuring whether an answer was earned rather than only whether it was right.</p>
       </div>
     </section>
 
