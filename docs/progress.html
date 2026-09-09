@@ -1,0 +1,507 @@
+<title>Progress Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+
+<style>
+:root {
+  --ground: #FFFFFF;
+  --soft: #F7F8FA;
+  --ink: #15181D;
+  --muted: #6C7480;
+  --faint: #99A0AB;
+  --line: #E8EAEE;
+  --line-strong: #D3D7DE;
+  --accent: #2359D0;
+  --accent-soft: #EEF3FD;
+  --good: #16704A;
+  --bad: #B3312A;
+  --warn: #8A6100;
+
+  --sans: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  --measure: 68ch;
+}
+
+/* Dark is chosen on the page rather than inherited from the operating system, so the
+   default stays bright, matching the overview page this one sits beside. */
+:root[data-theme="dark"] {
+  --ground: #10141A;
+  --soft: #181D25;
+  --ink: #EAEDF2;
+  --muted: #A6AEBA;
+  --faint: #808895;
+  --line: #262D37;
+  --line-strong: #39424E;
+  --accent: #8FB0F5;
+  --accent-soft: #182339;
+  --good: #74C298;
+  --bad: #E8887B;
+  --warn: #DFB05C;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16.5px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 { margin: 0; line-height: 1.2; text-wrap: balance; font-weight: 600; letter-spacing: -0.015em; }
+p { margin: 0; }
+a { color: var(--accent); text-underline-offset: 3px; }
+code { font-family: var(--mono); font-weight: 500; font-size: 0.88em; }
+
+.eyebrow {
+  font-family: var(--mono); font-weight: 700; font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint);
+}
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+
+.masthead { border-bottom: 1px solid var(--line); }
+.masthead .wrap {
+  display: flex; flex-wrap: wrap; gap: 24px 40px;
+  align-items: flex-end; justify-content: space-between;
+  padding-top: 48px; padding-bottom: 30px;
+}
+.mast-text { display: flex; flex-direction: column; gap: 12px; max-width: 62ch; }
+.mast-text h1 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.025em; }
+.mast-text .sub { color: var(--muted); font-size: 17px; max-width: 58ch; }
+.mast-meta { display: flex; flex-wrap: wrap; gap: 6px 22px; font-family: var(--mono); font-weight: 500; font-size: 12px; color: var(--muted); }
+.mast-meta b { color: var(--muted); font-weight: 400; }
+
+.themebtn {
+  font-family: var(--mono); font-weight: 700; font-size: 12px;
+  border: 1px solid var(--line-strong); background: transparent; color: var(--muted);
+  padding: 8px 14px; border-radius: 2px; cursor: pointer;
+}
+.themebtn:hover { color: var(--ink); border-color: var(--ink); }
+.themebtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+main { padding: 48px 0 90px; display: flex; flex-direction: column; gap: 60px; }
+section { display: flex; flex-direction: column; gap: 18px; scroll-margin-top: 20px; }
+section > h2 { font-size: clamp(21px, 2.6vw, 27px); letter-spacing: -0.02em; }
+.lede { color: var(--muted); max-width: var(--measure); font-size: 15.5px; }
+.note { color: var(--muted); max-width: var(--measure); font-size: 14.5px; }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 26px 36px; padding: 2px 0 6px; }
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat .n { font-size: 32px; font-weight: 600; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.stat .l { font-family: var(--mono); font-weight: 700; font-size: 10.5px; color: var(--muted); letter-spacing: 0.05em; }
+.stat.flag .n { color: var(--bad); }
+.stat.win .n { color: var(--good); }
+
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 600px; }
+th, td { text-align: left; padding: 9px 14px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; border-bottom-color: var(--line-strong); }
+td.num, th.num { font-family: var(--mono); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; padding-right: 0; }
+td.mono { font-family: var(--mono); font-weight: 500; font-size: 12.5px; }
+td.dim { color: var(--muted); }
+tr.hi td { background: var(--accent-soft); }
+tr.hi td.mono { font-weight: 700; }
+
+caption { caption-side: top; text-align: left; font-family: var(--mono); font-weight: 700; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding-bottom: 8px; }
+
+.pill { font-family: var(--mono); font-weight: 700; font-size: 11px; white-space: nowrap; }
+.pill.ok { color: var(--good); }
+.pill.no { color: var(--bad); }
+.pill.amb { color: var(--warn); }
+.pill.dim { color: var(--muted); }
+
+.quote {
+  border-left: 2px solid var(--line-strong); padding: 4px 0 4px 18px;
+  font-family: var(--mono); font-weight: 500; font-size: 13px; color: var(--ink);
+  display: flex; flex-direction: column; gap: 7px; max-width: 86ch;
+}
+.quote.bad { border-left-color: var(--bad); }
+.quote.good { border-left-color: var(--good); }
+.quote b { font-weight: 700; }
+.quote .who { font-family: var(--sans); font-weight: 400; font-size: 12.5px; color: var(--muted); }
+
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 34px 40px; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 28px 36px; }
+.card { display: flex; flex-direction: column; gap: 7px; padding-top: 14px; border-top: 1px solid var(--line-strong); }
+.card.risk { border-top-color: var(--bad); }
+.card.risk h4 { color: var(--bad); }
+.card.done { border-top-color: var(--good); }
+.card h4 { font-size: 16px; }
+.card .when { font-family: var(--mono); font-weight: 700; font-size: 10.5px; color: var(--muted); letter-spacing: 0.08em; }
+.card p { font-size: 14.5px; color: var(--muted); }
+
+.backlink { font-family: var(--mono); font-weight: 700; font-size: 12px; }
+
+footer { border-top: 1px solid var(--line); }
+footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; display: flex; flex-wrap: wrap; gap: 8px 28px; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="mast-text">
+      <span class="eyebrow">Progress report &middot; 28 Aug to 9 Sep 2026</span>
+      <h1>Six weeks, one working experiment</h1>
+      <p class="sub">Everything built, every test run, what it found, what broke, and what happens next. Written for the supervisor meeting.</p>
+      <div class="mast-meta">
+        <span>Kayleen Lee Kai Rong</span>
+        <span>Supervisor <b>Prof. Markus Kirchberg</b></span>
+        <span><a href="index.html" class="backlink">&larr; Project overview</a></span>
+      </div>
+    </div>
+    <button class="themebtn" type="button" id="themebtn" aria-pressed="false">Dark mode</button>
+  </div>
+</header>
+
+<div class="wrap">
+<main>
+
+  <section id="glance">
+    <h2>Where the project stands</h2>
+    <div class="stats">
+      <div class="stat"><span class="n">120</span><span class="l">AGENT RUNS SCORED</span></div>
+      <div class="stat"><span class="n">88</span><span class="l">PRODUCTS AUTHORED</span></div>
+      <div class="stat"><span class="n">17</span><span class="l">TEST QUESTIONS</span></div>
+      <div class="stat win"><span class="n">3 / 4</span><span class="l">FAILURES CAUGHT, HELD OUT</span></div>
+      <div class="stat flag"><span class="n">$18.63</span><span class="l">OF $20 CREDIT SPENT</span></div>
+    </div>
+    <p class="lede">Three of the four planned milestones are done, two of them ahead of schedule. RQ1 and RQ2 are answered with measurements rather than assumptions, and the first half of RQ3, the actual contribution, is built and validated. What now blocks the second half is research credit, not time.</p>
+  </section>
+
+  <section id="status">
+    <h2>What is done, and what is not</h2>
+    <div class="tablewrap">
+      <table>
+        <caption>Milestone status, 9 September</caption>
+        <thead><tr><th>Milestone</th><th>Planned</th><th>Status</th><th>Evidence</th></tr></thead>
+        <tbody>
+          <tr><td>Environment running and reproducible</td><td class="dim">28 Aug</td><td><span class="pill ok">DONE</span></td><td class="dim">Documented runbook, boot fault diagnosed</td></tr>
+          <tr><td>Price variance authored into WebArena</td><td class="dim">Sep</td><td><span class="pill ok">DONE</span></td><td class="dim">88 products, 19 multi-variant listings</td></tr>
+          <tr><td>openJiuwen agent running end to end</td><td class="dim">Sep</td><td><span class="pill ok">DONE</span></td><td class="dim">120 scored runs, two upstream bugs patched</td></tr>
+          <tr><td>RQ2 baseline measured</td><td class="dim">Sep</td><td><span class="pill ok">DONE</span></td><td class="dim">60 runs, then 97 unmodified runs total</td></tr>
+          <tr class="hi"><td>Checkpoint B, catalogue at scale</td><td class="dim">23 Sep</td><td><span class="pill ok">DONE, 2 WEEKS EARLY</span></td><td class="dim">15 competing listings, validated instance</td></tr>
+          <tr class="hi"><td>RQ3 first half, the abstention rail</td><td class="dim">Oct</td><td><span class="pill ok">DONE, 3 WEEKS EARLY</span></td><td class="dim">5 rules, 2 policy arms, held-out test</td></tr>
+          <tr><td>RQ3 second half, targeting</td><td class="dim">21 Oct</td><td><span class="pill no">BLOCKED ON BUDGET</span></td><td class="dim">Needs about $10 of credit to measure</td></tr>
+          <tr><td>Final report and presentation</td><td class="dim">Early Nov</td><td><span class="pill dim">NOT STARTED</span></td><td class="dim">On schedule</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="built">
+    <h2>What was built</h2>
+    <p class="lede">Eleven programs, roughly 2,000 lines of Python, plus the environment work. Every one exists because something could not be measured without it.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Code written, and why each piece was needed</caption>
+        <thead><tr><th>Program</th><th>What it does</th><th>Why it had to exist</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">env/magento.py</td><td>Talks to the shop's admin interface</td><td class="dim">Products had to be created through the shop's own validation, not by editing its database</td></tr>
+          <tr><td class="mono">env/seed_variants.py</td><td>Creates listings whose price changes with the option chosen</td><td class="dim">WebArena had zero such products. Without them there is no gating to study</td></tr>
+          <tr><td class="mono">env/generate_catalogue.py</td><td>Generates a 15-seller market that provably contains the trap</td><td class="dim">A hand-made market can accidentally be easy. This one is checked against 8 rules</td></tr>
+          <tr><td class="mono">env/inspect_storefront.py</td><td>Reports what the shop actually shows against what the fixture claims</td><td class="dim">Found that search paginates at 12 of 15, which changes what a failure means</td></tr>
+          <tr><td class="mono">experiments/run_browser_task.py</td><td>Runs one question, records answer, cost, timing, full trace</td><td class="dim">The agent ships an interactive prompt, not something an experiment can call</td></tr>
+          <tr><td class="mono">experiments/trace_stats.py</td><td>Counts actions and observations from the trace</td><td class="dim">"How much did it look" is the independent variable of the whole project</td></tr>
+          <tr><td class="mono">experiments/score.py</td><td>Marks an answer against the database truth</td><td class="dim">Marking 120 runs by hand is not repeatable and not auditable</td></tr>
+          <tr><td class="mono">experiments/suite.py</td><td>Runs every question several times and tabulates</td><td class="dim">One run per question hides variance. The same question is answered right and wrong</td></tr>
+          <tr><td class="mono">experiments/rescore.py</td><td>Re-marks stored runs when the marking rules improve</td><td class="dim">Fixing a marking bug must not cost another $3 of re-running</td></tr>
+          <tr><td class="mono">experiments/sufficiency.py</td><td>Decides whether an answer is supported by what the run observed</td><td class="dim">This is the contribution. Five rules, all free to run</td></tr>
+          <tr><td class="mono">experiments/policy.py</td><td>Acts on that decision: abstain, or retry with the reason</td><td class="dim">A judgement is not a behaviour. This is the behaviour</td></tr>
+          <tr><td class="mono">experiments/replay_gate.py</td><td>Replays the rules over runs already recorded</td><td class="dim">Lets the whole abstention arm be measured for $0.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="environment">
+    <h2>Environment: what was wrong, and what fixed it</h2>
+    <div class="tablewrap">
+      <table>
+        <caption>Setup problems and their resolutions</caption>
+        <thead><tr><th>Problem</th><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Shop appeared empty</td><td class="dim">Categories and search returned almost nothing, while the process manager reported everything healthy</td><td class="dim">Search engine hung on first boot under emulation, silently. Search and browsing both depend on it</td><td class="dim">Full container stop and start, then rebuild the indexes. Documented in the runbook</td></tr>
+          <tr class="hi"><td>Index rebuild never completed</td><td class="dim">19 minutes with no end</td><td class="dim">The container ran under slow instruction-by-instruction emulation on Apple Silicon</td><td class="dim">Enabled Rosetta translation. Same rebuild now takes <b>20 seconds</b></td></tr>
+          <tr><td>Rebuild left stuck</td><td class="dim">Indexes permanently reported "working"</td><td class="dim">An interrupted rebuild leaves rows locked</td><td class="dim">One SQL statement to clear them, recorded in the runbook</td></tr>
+          <tr><td>No price variance existed</td><td class="dim">All 104,368 products are single-price</td><td class="dim">The shop's options change nothing about price. Ten colours, all the same cost</td><td class="dim">Authored new multi-variant listings. This is the core environment contribution</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">The fourth row is the important one and it was found before writing any analysis code rather than after. It means WebArena as shipped cannot exhibit the failure this project studies, so the environment had to be extended before anything could be measured.</p>
+  </section>
+
+  <section id="fixtures">
+    <h2>The test products that were built</h2>
+    <p class="lede">Two fixtures. The first is small and deliberately shaped so each question has one specific trap. The second is a fifteen-seller market where checking everything is genuinely expensive.</p>
+
+    <div class="tablewrap">
+      <table>
+        <caption>Fixture 1 &middot; four listings, fourteen variants, used for the RQ2 baseline</caption>
+        <thead><tr><th>Listing</th><th>Advertised price</th><th>Option</th><th class="num">Real price</th><th class="num">Stock</th><th>The trap</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="4" class="mono">IGR-WATER-A<br><span class="dim">Cellar Direct</span></td><td rowspan="4" class="num">$9.89</td><td>24 x 350ml</td><td class="num">11.90</td><td class="num">140</td><td rowspan="4" class="dim">Headline price is the cheapest option, not the largest. The 2 x 9.5L costs 2.5x the advertised figure</td></tr>
+          <tr><td>12 x 550ml</td><td class="num">9.89</td><td class="num">200</td></tr>
+          <tr><td>6 x 1.25L</td><td class="num">10.50</td><td class="num">90</td></tr>
+          <tr class="hi"><td>2 x 9.5L</td><td class="num">24.90</td><td class="num">40</td></tr>
+
+          <tr><td rowspan="3" class="mono">IGR-WATER-B<br><span class="dim">Hillside Provisions</span></td><td rowspan="3" class="num">$10.90</td><td>12 x 550ml</td><td class="num">10.90</td><td class="num">160</td><td rowspan="3" class="dim">Advertises dearer than A, but is <b>cheaper</b> on the large pack. Only visible after clicking both</td></tr>
+          <tr><td>6 x 1.25L</td><td class="num">11.40</td><td class="num">75</td></tr>
+          <tr class="hi"><td>2 x 9.5L</td><td class="num">22.50</td><td class="num">55</td></tr>
+
+          <tr><td rowspan="3" class="mono">IGR-COFFEE-A</td><td rowspan="3" class="num">$8.50</td><td>250 g</td><td class="num">8.50</td><td class="num">300</td><td rowspan="3" class="dim">Buying in bulk is <b>worse</b> value, reversing the usual assumption. 1 kg costs more per kg than 250 g</td></tr>
+          <tr><td>500 g</td><td class="num">14.90</td><td class="num">220</td></tr>
+          <tr><td>1 kg</td><td class="num">32.00</td><td class="num">80</td></tr>
+
+          <tr><td rowspan="4" class="mono">IGR-TEE-A</td><td rowspan="4" class="num">$19.00</td><td>S</td><td class="num">19.00</td><td class="num">45</td><td rowspan="4" class="dim">Gating by stock rather than price. Size M is out of stock, visible only on selecting it</td></tr>
+          <tr class="hi"><td>M</td><td class="num">19.00</td><td class="num">0</td></tr>
+          <tr><td>L</td><td class="num">19.00</td><td class="num">60</td></tr>
+          <tr><td>XL</td><td class="num">21.00</td><td class="num">30</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <caption>Fixture 2 &middot; fifteen competing sellers, generated and checked against eight rules</caption>
+        <thead><tr><th>SKU</th><th>Advertised "from"</th><th class="num">2 x 9.5L price</th><th class="num">Best per litre</th><th>Role in the experiment</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="mono">IGR-RVN-03 <span class="dim">Redhill Stores</span></td><td class="num">6.82</td><td class="num">17.68</td><td class="num">0.9305</td><td class="dim"><b>Correct answer</b> to "cheapest 2 x 9.5L". Advertises third cheapest</td></tr>
+          <tr><td class="mono">IGR-RVN-09 <span class="dim">Hillside Wholesale</span></td><td class="num">6.44</td><td class="num">19.26</td><td class="num">0.9758</td><td class="dim"><b>The trap.</b> Cheapest advertised price, so a quick look names this one. It is wrong</td></tr>
+          <tr class="hi"><td class="mono">IGR-RVN-07 <span class="dim">Thornbury Pantry</span></td><td class="num">6.83</td><td class="num">19.77</td><td class="num">0.9107</td><td class="dim"><b>Correct answer</b> to "best value per litre", and it is a different seller and a different pack size</td></tr>
+          <tr><td class="mono">IGR-RVN-11</td><td class="num">9.04</td><td class="num">20.62</td><td class="num">1.0853</td><td class="dim">Runner-up region</td></tr>
+          <tr><td class="mono">IGR-RVN-01</td><td class="num">8.44</td><td class="num">25.70</td><td class="num">1.1840</td><td class="dim">Cannot be ruled out by advertised price alone, so must be opened</td></tr>
+          <tr><td class="mono">IGR-RVN-04, 08, 05, 14, 06</td><td class="num">14.27&ndash;21.78</td><td class="num">41.26&ndash;67.17</td><td class="num">1.96&ndash;2.90</td><td class="dim">Five more stocking the target size, all clearly dearer</td></tr>
+          <tr><td class="mono">IGR-RVN-02, 10, 12, 13, 15</td><td class="num">11.27&ndash;19.57</td><td class="num">not stocked</td><td class="num">1.71&ndash;2.68</td><td class="dim">Five that do not stock the target at all, which is what makes "does every listing stock it" answerable and false</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <caption>Properties the generator guarantees, checked by rejection sampling over 8,000 candidates</caption>
+        <thead><tr><th>Property</th><th class="num">Value</th><th>Why it matters</th></tr></thead>
+        <tbody>
+          <tr><td>Listings</td><td class="num">15</td><td class="dim">Enough that opening everything is expensive</td></tr>
+          <tr><td>Stock the target size</td><td class="num">10 of 15</td><td class="dim">Makes the "every listing" question false, and refutable</td></tr>
+          <tr><td>Winning margin</td><td class="num">$1.58</td><td class="dim">Wide enough that a right answer is not rounding luck</td></tr>
+          <tr class="hi"><td>Minimum opens for any correct method</td><td class="num">11 of 15</td><td class="dim">The efficiency target. A perfect policy cannot do better than this</td></tr>
+          <tr><td>Rulable out by advertised price</td><td class="num">4</td><td class="dim">Some pruning is possible, which is what makes a smart policy worth building</td></tr>
+          <tr><td>Cheapest advert gives wrong answer</td><td class="num">yes</td><td class="dim">A one-glance answer is guaranteed wrong, by construction</td></tr>
+          <tr><td>Best per litre is a different seller</td><td class="num">yes</td><td class="dim">Stops one lookup from answering two questions</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="tasks">
+    <h2>The seventeen test questions</h2>
+    <p class="lede">Gated means the answer is not visible on arrival and requires interaction. Two are controls whose answer is on the page, included so a failure can be told apart from the environment simply being broken.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Task suite, each run 3 or 5 times</caption>
+        <thead><tr><th>Question ID</th><th>Gated</th><th>Asks</th><th>Correct answer</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">water-a-headline</td><td class="dim">control</td><td>What price shows on first load</td><td class="dim">$9.89</td></tr>
+          <tr><td class="mono">water-a-9l5-price</td><td>yes</td><td>Price of the 2 x 9.5L pack</td><td class="dim">$24.90</td></tr>
+          <tr><td class="mono">water-b-9l5-price</td><td>yes</td><td>Price of the 2 x 9.5L pack, other seller</td><td class="dim">$22.50</td></tr>
+          <tr><td class="mono">water-a-cheapest-per-litre</td><td>yes</td><td>Which pack is cheapest per litre</td><td class="dim">2 x 9.5L</td></tr>
+          <tr class="hi"><td class="mono">water-cross-listing</td><td>yes</td><td>Which of two sellers is cheaper for the large pack</td><td class="dim">Hillside, $22.50. This is the live failure, reproduced</td></tr>
+          <tr><td class="mono">coffee-1kg-price</td><td>yes</td><td>Price of the 1 kg size</td><td class="dim">$32.00</td></tr>
+          <tr><td class="mono">coffee-best-value</td><td>yes</td><td>Which size is best value per kg</td><td class="dim">250 g, reversing the bulk assumption</td></tr>
+          <tr><td class="mono">coffee-bulk-check</td><td>yes</td><td>Is 1 kg the cheapest per kg</td><td class="dim">No</td></tr>
+          <tr><td class="mono">tee-m-stock</td><td>yes</td><td>Is size M buyable</td><td class="dim">No</td></tr>
+          <tr><td class="mono">tee-xl-price</td><td>yes</td><td>Price of size XL</td><td class="dim">$21.00</td></tr>
+          <tr><td class="mono">tee-all-sizes-stocked</td><td>yes</td><td>Is every size in stock</td><td class="dim">No, M is out</td></tr>
+          <tr><td class="mono">water-a-all-prices</td><td>yes</td><td>List every pack size and price</td><td class="dim">All four</td></tr>
+          <tr><td class="mono">scaled-headline</td><td class="dim">control</td><td>Which listing advertises lowest</td><td class="dim">Hillside Wholesale, $6.44</td></tr>
+          <tr class="hi"><td class="mono">scaled-cheapest-target</td><td>yes</td><td>Which seller is cheapest for 2 x 9.5L, across 15</td><td class="dim">Redhill Stores</td></tr>
+          <tr><td class="mono">scaled-target-price</td><td>yes</td><td>Lowest price anyone charges for it</td><td class="dim">$17.68</td></tr>
+          <tr><td class="mono">scaled-all-stocked</td><td>yes</td><td>Does every listing stock it</td><td class="dim">No, 10 of 15 do</td></tr>
+          <tr><td class="mono">scaled-best-per-litre</td><td>yes</td><td>Best value per litre across all listings and packs</td><td class="dim">Thornbury Pantry, 6 x 1.25L</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="experiments">
+    <h2>Every experiment run</h2>
+    <div class="tablewrap">
+      <table>
+        <caption>Seven experiment batches, 120 browser runs</caption>
+        <thead><tr><th>When</th><th>What it tested</th><th class="num">Runs</th><th>Result</th><th class="num">Cost</th></tr></thead>
+        <tbody>
+          <tr><td class="dim">8 Sep 22:30</td><td>Smoke test, does the agent work at all</td><td class="num">2</td><td><span class="pill ok">2 correct</span></td><td class="num">$0.05</td></tr>
+          <tr class="hi"><td class="dim">8 Sep 22:31</td><td><b>RQ2 baseline</b>, 12 questions x 5</td><td class="num">60</td><td><span class="pill ok">54 correct</span> <span class="pill no">6 wrong</span></td><td class="num">$2.98</td></tr>
+          <tr><td class="dim">9 Sep 01:50</td><td>First run at 15 listings</td><td class="num">5</td><td><span class="pill ok">4 correct</span> <span class="pill no">1 wrong</span></td><td class="num">$1.36</td></tr>
+          <tr class="hi"><td class="dim">9 Sep 02:03</td><td><b>Scaled baseline</b>, 5 questions x 3</td><td class="num">15</td><td><span class="pill ok">10 correct</span> <span class="pill no">5 wrong</span></td><td class="num">$3.13</td></tr>
+          <tr><td class="dim">9 Sep 10:27</td><td>Retry policy, single-question smoke</td><td class="num">2</td><td><span class="pill ok">wrong then corrected</span></td><td class="num">$0.74</td></tr>
+          <tr class="hi"><td class="dim">9 Sep 10:32</td><td><b>Retry arm</b>, the policy running live</td><td class="num">21</td><td><span class="pill ok">10 correct</span> <span class="pill amb">2 abstained</span> <span class="pill no">2 wrong</span></td><td class="num">$4.21</td></tr>
+          <tr class="hi"><td class="dim">9 Sep 11:21</td><td><b>Held-out baseline</b>, rules frozen first</td><td class="num">15</td><td><span class="pill ok">11 correct</span> <span class="pill no">4 wrong</span></td><td class="num">$3.41</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Sum of the per-run costs is $15.94. OpenRouter's own account total is <b>$18.63</b>, and that is the figure to trust. The difference is exploratory runs made before cost logging worked, plus a run's cost being read as soon as it moves rather than once fully settled. Recorded as a measurement limitation rather than smoothed over.</p>
+  </section>
+
+  <section id="results">
+    <h2>Results</h2>
+
+    <div class="tablewrap">
+      <table>
+        <caption>RQ2 &middot; the unmodified agent, 97 runs across all baselines</caption>
+        <thead><tr><th>Measure</th><th class="num">Value</th><th>Reading</th></tr></thead>
+        <tbody>
+          <tr><td>Correct on gated questions</td><td class="num">89%</td><td class="dim">Mostly right, which is why the failures are dangerous rather than obvious</td></tr>
+          <tr class="hi"><td>Times it said "I do not know"</td><td class="num">0 of 97</td><td class="dim"><b>The central RQ2 result.</b> Every failure is a confident assertion</td></tr>
+          <tr><td>Median actions, correct answers</td><td class="num">5</td><td class="dim">Small fixture</td></tr>
+          <tr><td>Median actions, wrong answers</td><td class="num">3</td><td class="dim">Under-retrieval predicts failure</td></tr>
+          <tr><td>Median actions at 15 listings</td><td class="num">23 vs 7</td><td class="dim">Same direction, wider gap, so the pattern reproduces at scale</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <caption>RQ3 &middot; the abstention rail, both arms</caption>
+        <thead><tr><th>Arm</th><th>What it does</th><th class="num">Wrong answers</th><th class="num">Cost</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td>Unmodified</td><td class="dim">Answers whatever it concludes</td><td class="num">5 of 15</td><td class="num">$3.13</td><td class="dim">Baseline</td></tr>
+          <tr><td>Gate</td><td class="dim">Refuses when the answer is unsupported</td><td class="num">0 of 12</td><td class="num">$0.00</td><td class="dim">Free, but can only refuse, never fix</td></tr>
+          <tr class="hi"><td>Retry</td><td class="dim">Goes back, told what was wrong</td><td class="num">2 of 15</td><td class="num">$4.21</td><td class="dim">Fixes failures, for 34% more spend</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <caption>The honest test &middot; rules frozen, then run on 15 fresh runs that did not exist yet</caption>
+        <thead><tr><th>Verdict</th><th class="num">Unmodified</th><th class="num">With the check</th></tr></thead>
+        <tbody>
+          <tr><td>Right answers</td><td class="num">11</td><td class="num">11</td></tr>
+          <tr class="hi"><td>Wrong answers</td><td class="num">4</td><td class="num">1</td></tr>
+          <tr><td>Refusals</td><td class="num">0</td><td class="num">3</td></tr>
+          <tr><td>Added cost</td><td class="num">&mdash;</td><td class="num">$0.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Three of four failures caught, no right answer blocked, no extra cost. The rules were locked at a recorded version before these runs were made, so they could not have been tuned to fit them. Across every run made so far, in sample and out, the check has never once blocked a correct answer: <b>0 false refusals in 77 correct runs</b>.</p>
+  </section>
+
+  <section id="findings">
+    <h2>Main findings</h2>
+    <div class="tablewrap">
+      <table>
+        <caption>Six results, in the order they were found</caption>
+        <thead><tr><th class="num">#</th><th>Finding</th><th>Evidence</th><th>Consequence</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td><b>Structured data does not publish the price range</b></td><td class="dim">Both the live marketplace and WebArena publish a single price where the standard defines a low-to-high range</td><td class="dim">A shortcut that would let the agent skip listings does not exist. Prices must be read from the page</td></tr>
+          <tr><td class="num">2</td><td><b>WebArena cannot show this failure as shipped</b></td><td class="dim">All 104,368 products are single-price. Options exist but change nothing</td><td class="dim">Environment extension became a required first step, not an optional extra</td></tr>
+          <tr class="hi"><td class="num">3</td><td><b>The agent never signals uncertainty</b></td><td class="dim">0 abstentions in 97 unmodified runs</td><td class="dim">Answers this project's RQ2. A caller cannot tell a guess from a verified answer</td></tr>
+          <tr><td class="num">4</td><td><b>Only under-retrieval predicts failure</b></td><td class="dim">Wrong answers cluster at few actions. Past a threshold, extra looking buys nothing measurable</td><td class="dim">There is a minimum budget below which answers stop being reliable. That is the RQ3 premise, measured</td></tr>
+          <tr><td class="num">5</td><td><b>The failure needs scale to appear</b></td><td class="dim">With two named listings the agent scored 5 of 5. With fifteen it fails</td><td class="dim">A negative result that redirected the work. The trap is about cost, not about trickery</td></tr>
+          <tr class="hi"><td class="num">6</td><td><b>Right and earned are different properties</b></td><td class="dim">One question is answered after opening exactly 4 of 15 listings in all seven runs, right and wrong alike</td><td class="dim">Its one correct answer rests on identical evidence to its six wrong ones. Accuracy alone cannot see this</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <p class="eyebrow" style="margin-bottom:8px">FINDING 3, AS IT ACTUALLY APPEARED</p>
+        <div class="quote bad">
+          <span><b>Q.</b> Does every Rivenhall listing stock the 2 x 9.5L pack?</span>
+          <span><b>A.</b> Yes</span>
+          <span class="who">Wrong. Five of fifteen do not stock it. The agent had opened four listings. No hedge, no qualification, three separate times.</span>
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow" style="margin-bottom:8px">THE SAME QUESTION, AFTER THE FIX</p>
+        <div class="quote good">
+          <span><b>A.</b> No. Out of 15 total listings, only 10 stock this pack size. The 5 that do not are: Chandler Wholesale, Pembroke Trading, ...</span>
+          <span class="who">Correct, with its evidence, three times out of three. The fix does not tell it the answer. It tells it what was missing.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="challenges">
+    <h2>Main challenges</h2>
+    <div class="tablewrap">
+      <table>
+        <caption>What went wrong, and what it cost</caption>
+        <thead><tr><th>Challenge</th><th>What happened</th><th>Resolution</th></tr></thead>
+        <tbody>
+          <tr><td><b>Cheap models could not do the task</b></td><td class="dim">The proposal assumed a cheap model tier. One could not follow the required output format; others were blocked by their providers regardless of credit</td><td class="dim">Everything runs on a model that works and is not free. This is the direct cause of the budget problem</td></tr>
+          <tr><td><b>Silent environment failure</b></td><td class="dim">The shop reported itself healthy while its search engine was hung, so the catalogue looked empty for no visible reason</td><td class="dim">Diagnosed and documented. Two wrong theories were tried first and are recorded as such</td></tr>
+          <tr><td><b>Two bugs inside the agent</b></td><td class="dim">A valid empty result was reported as a parse error, and a tool failure did not reach the caller, which reported success</td><td class="dim">Both patched locally. Candidates for contributing back, since the agent is open source</td></tr>
+          <tr class="hi"><td><b>I misdiagnosed a failure as fabrication</b></td><td class="dim">Reported that the agent invented prices. It had not. $15.01 is a real surcharge on a $9.89 base, and 9.89 + 15.01 = 24.90, the true price. It misread the meaning of a number it had correctly read</td><td class="dim">Corrected in every document. The distinction matters: a misreading is fixable by a rule, an invention is not</td></tr>
+          <tr><td><b>My marking rules were wrong twice</b></td><td class="dim">One rule penalised an answer for mentioning the alternatives, which is what a good comparison does. Another penalised an answer for showing its own arithmetic</td><td class="dim">Both fixed and all stored runs re-marked at no cost. One published claim had to be withdrawn as a result</td></tr>
+          <tr class="hi"><td><b>My own safety check blocked a correct answer</b></td><td class="dim">"$17.68, Redhill Stores" is right, but $17.68 never appears on the page, being a $6.82 base plus a $10.86 surcharge. The check only trusted answers that spelled out the sum</td><td class="dim">Fixed, which cost some detection power, because two of its catches turned out to be accidental. Losing an accidental catch is the correct trade</td></tr>
+          <tr><td><b>Results scored against a moved answer key</b></td><td class="dim">The catalogue is regenerated between rounds, so older runs were being marked against prices that no longer applied</td><td class="dim">Detected automatically by re-marking and checking for disagreement. Four runs excluded. Without this, the method looked worse than it is</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Five of these seven are mistakes I made rather than problems I encountered. They are listed because each one changed a number that had already been written down, and the record of catching them is part of what the work is.</p>
+  </section>
+
+  <section id="next">
+    <h2>Next week</h2>
+    <div class="cards">
+      <div class="card risk">
+        <span class="when">DECISION NEEDED</span>
+        <h4>Research credit</h4>
+        <p>$18.63 of $20 spent, $1.37 left. That funds no further experiment. The targeting arm needs about $10: an exhaustive-retrieval baseline, the policy itself, and enough repeats to separate them.</p>
+      </div>
+      <div class="card">
+        <span class="when">FREE, NO CREDIT NEEDED</span>
+        <h4>Build the targeting policy</h4>
+        <p>Decide what to retrieve from the question before starting, rather than checking the answer afterwards. Target is 11 opens against the current median of 23. Can be written and tested against recorded runs without spending anything.</p>
+      </div>
+      <div class="card">
+        <span class="when">FREE</span>
+        <h4>Close two known gaps</h4>
+        <p>One rule fires on a legitimately qualified subset, found by probing it after the rules were frozen. And the per-litre question has only a 2% margin, so it risks measuring arithmetic rather than retrieval.</p>
+      </div>
+      <div class="card done">
+        <span class="when">THIS WEEK</span>
+        <h4>Report and discuss</h4>
+        <p>Send the update. Four things need a decision: the budget, whether to report soundness alongside accuracy, whether to submit the two bug fixes upstream, and whether one model is enough.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>Self-hosted experiments only. No automated access to live commercial sites.</span>
+    <span>120 runs, all logged with cost and full trace.</span>
+    <span><a href="index.html">Project overview</a></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById("themebtn");
+  var stored = null;
+  try { stored = localStorage.getItem("igr-theme"); } catch (e) { stored = null; }
+  function apply(mode) {
+    root.setAttribute("data-theme", mode);
+    btn.setAttribute("aria-pressed", mode === "dark" ? "true" : "false");
+    btn.textContent = mode === "dark" ? "Light mode" : "Dark mode";
+  }
+  apply(stored === "dark" ? "dark" : "light");
+  btn.addEventListener("click", function () {
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    apply(next);
+    try { localStorage.setItem("igr-theme", next); } catch (e) {}
+  });
+})();
+</script>

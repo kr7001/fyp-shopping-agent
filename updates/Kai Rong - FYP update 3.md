@@ -21,9 +21,11 @@ The RQ3 contribution now has a measured first half. A check that asks whether an
 supported by what the run observed, frozen and then tested on runs made afterwards, caught
 **3 of 4 failures while blocking 0 of 11 correct answers, at no added model cost**.
 
-Spend to date: **$16.60 of $20** of OpenRouter credit, 120 scored runs. The remaining
-$3.40 funds one small run rather than a full experiment arm, which is the item I most need
-to discuss.
+Spend to date: **$18.63 of $20** of OpenRouter credit, 120 browser runs. The remaining
+**$1.37** does not fund a further experiment arm at all, which is the item I most need to
+discuss.
+
+Cost is measured two ways and they disagree. The sum of per-run deltas is $15.94; OpenRouter's own usage for the key is $18.63. The key figure is authoritative and the per-run figures are a lower bound: exploratory runs made before cost capture worked are absent, and a run's delta is read as soon as spend moves rather than once it has fully settled.
 
 ---
 
@@ -394,8 +396,8 @@ now done and measured; the third, cutting the cost of a correct answer, is not.
 that RQ3 might not start in time, is closed: it started and its first half is measured. What
 replaces it is money. The cheap model tier assumed in the proposal does not hold, because
 the cheap models could not complete the tasks at all, so every arm is paid for at
-`claude-haiku-4.5` rates. $16.60 of the $20 is spent and the remaining $3.40 funds one small
-run rather than a full arm.
+`claude-haiku-4.5` rates. **$18.63 of the $20 is spent and the remaining $1.37 does not fund
+a further arm at all.**
 
 The targeting experiment needs roughly $10 to run properly: an exhaustive-retrieval arm as
 the correct-and-expensive baseline, the targeted policy itself, and repeats sufficient to
