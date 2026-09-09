@@ -91,3 +91,36 @@ A reload series is cheap and settles most of it:
 The last two connect this to the existing audit table, which currently covers Shopee and
 WebArena. A third platform, with an instability finding attached, makes that table
 considerably more useful.
+
+## A guardrail for this, and why it is not built yet
+
+The natural response is a rule: reload the page, and if the price moved, stop and tell the
+user rather than answering. Reload several times to be sure. It fits the existing family,
+since every other rule also compares an answer against what was observed.
+
+It is not built, for one reason that is about evidence rather than effort.
+
+**WebArena serves a fixed price, so there is nothing for the rule to detect.** Across the
+132 runs recorded so far a page is revisited within a run 8 times, and a revisit cannot
+disagree with itself when the backend is static. Testing the detector would mean first
+building instability into the environment, and then the result is a detector catching a
+phenomenon its author invented, at whatever magnitude and frequency the author chose. That
+is a much weaker claim than any of the results already recorded, all of which measure the
+agent against a fixture whose properties were fixed before the agent was involved.
+
+There is also a cost objection. Confirming stability by reloading N times multiplies
+observation cost across every listing, on a project whose contribution is about spending
+*fewer* interactions. A guardrail that triples the cost of every price read would have to
+justify itself against that, and cannot do so on synthetic instability.
+
+**The cheap version that avoids both problems.** Do not reload deliberately. Instead check
+for disagreement in observations the run already made, since agents revisit pages anyway.
+That costs nothing, needs no new interaction, and would fire on a real site. It is written
+here so that the design exists, and is the right thing to build **if** the project ever
+runs against a captured live snapshot rather than the live site itself.
+
+**What would make this reportable without building anything.** The reload series described
+above, done by hand. Ten timestamped readings of one listing, plus a private-window arm and
+a logged-in arm, is enough to state the magnitude and the mechanism. That is a finding
+about live commerce, which is what this observation actually is, rather than a mechanism
+demonstrated against a fixture built to reward it.

@@ -69,7 +69,8 @@ def add(*values) -> float | int | None:
 
 
 def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
-                 out_dir: pathlib.Path, tag: str, confidence: str = "off") -> tuple:
+                 out_dir: pathlib.Path, tag: str, confidence: str = "off",
+                 reason: str | None = None) -> tuple:
     """Run the sufficiency check and act on it.
 
     Cost and interaction counts are reported for the arm as a whole, both attempts
@@ -85,7 +86,8 @@ def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
             answer = policy_module.abstention_for(check)
         return answer, record, result, trace, check
 
-    query = policy_module.retry_query(task["query"].format(base=spec["base_url"]), check)
+    query = policy_module.retry_query(
+        task["query"].format(base=spec["base_url"]), check, reason=reason)
     if confidence != "off":
         query = policy_module.confidence_query(query, confidence)
     tag2 = f"{tag}-retry"
@@ -165,7 +167,7 @@ def main() -> int:
             if args.policy != "off":
                 answer, record, result, trace, check = apply_policy(
                     args.policy, task, spec, answer, record, out_dir, tag,
-                    confidence=args.confidence)
+                    confidence=args.confidence, reason=reason)
 
             verdict = scoring.score(task, answer, bool(result.get("ok")))
             row = {

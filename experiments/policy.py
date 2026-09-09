@@ -63,6 +63,9 @@ HINTS = {
     "unverified_universal": (
         "You answered yes to a question about every listing, having opened only some of "
         "them. Either open the rest, or say which ones you did not check."),
+    "understated_population": (
+        "You compared fewer options than the result set contains. Open the listings you "
+        "have not seen, or name the ones you did not compare and say so in the answer."),
 }
 
 
@@ -99,10 +102,40 @@ def hint_for(verdict: dict) -> str:
                                       "against what you retrieved. Check it again.")
 
 
-def retry_query(query: str, verdict: dict) -> str:
+def self_contradiction(verdict: dict, reason: str | None) -> str | None:
+    """The agent's own sentence, set against a fact that refutes it.
+
+    The retry already tells the agent what is wrong. This tells it in its own words, which
+    is a different and probably stronger thing. The self-correction literature reports a
+    blind spot in which a model repairs an error shown to it but not the identical error
+    in its own output, so the repair depends on the fault arriving from outside. Quoting
+    the agent's own claim back converts an own-error into a shown-error while keeping it
+    undeniable, since it wrote the sentence.
+
+    The measured runs show this is available for free whenever a justification was asked
+    for. A run that opened 4 of 15 listings wrote "I verified all 4 sellers" and rated
+    itself 95. The sentence names the fault more precisely than any external description
+    of it would.
+    """
+    if not reason or not verdict.get("population"):
+        return None
+    for count, noun in sufficiency.COVERAGE_CLAIM.findall(reason):
+        size = sufficiency.NUMBER_WORDS.get(count.lower())
+        size = int(count) if size is None and count.isdigit() else size
+        if size is not None and size < verdict["population"]:
+            return (f'You wrote: "{reason.strip()}"\n'
+                    f"That describes {size} {noun}. The search results hold "
+                    f"{verdict['population']} listings, and you opened "
+                    f"{verdict.get('opened')}.")
+    return None
+
+
+def retry_query(query: str, verdict: dict, reason: str | None = None) -> str:
+    own_words = self_contradiction(verdict, reason)
+    fault = own_words or f"A verification check found that it {verdict['why']}."
     return (f"{query}\n\n"
-            "Your previous attempt in this browser session produced an answer that "
-            f"failed a verification check: {verdict['why']}.\n"
+            f"Your previous attempt produced an answer that could not be verified. "
+            f"{fault}\n"
             f"{hint_for(verdict)}\n"
             "Answer again from the start, and if you still cannot confirm the figure, "
             "say so rather than guessing.")
