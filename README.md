@@ -208,7 +208,7 @@ outside the container.
 - Rules frozen at `7771e24`, fresh baseline run, $3.41, replayed under them alone: **3 of 4 failures caught, 0 of 11 correct answers blocked, $0.00 added cost**. Out of sample
 - Gating on retrieval coverage was tested and rejected again. Correct answers to the comparison tasks opened 1, 4, 4, 8, 12, 13, 14 and 14 listings; wrong ones opened 4 every time. A floor at 11 catches all six failures and blocks three correct answers
 - `scaled-best-per-litre` opens exactly 4 listings in all seven runs, right and wrong alike, so its one correct answer rests on the same evidence as its six wrong ones. Correctness and soundness are separate properties and the report carries both
-- Spend to date **$18.63 of $20**, 120 browser runs. Cost is measured two ways and they disagree. The sum of per-run deltas is $15.94; OpenRouter's own usage for the key is $18.63. The key figure is authoritative and the per-run figures are a lower bound: exploratory runs made before cost capture worked are absent, and a run's delta is read as soon as spend moves rather than once it has fully settled.
+- Spend to date **$18.63**, 120 browser runs, topped up by a further $15 so the remaining arms are funded. Cost is measured two ways and they disagree. The sum of per-run deltas is $15.94; OpenRouter's own usage for the key is $18.63. The key figure is authoritative and the per-run figures are a lower bound: exploratory runs made before cost capture worked are absent, and a run's delta is read as soon as spend moves rather than once it has fully settled.
 
 ### 2026-09-08, later
 - openJiuwen runs end to end against the seeded environment. `experiments/` now holds a task suite, a scorer, an interaction counter and a suite driver
