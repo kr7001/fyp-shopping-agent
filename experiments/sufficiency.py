@@ -62,6 +62,16 @@ COMPLETION_CLAIM = re.compile(
     r"\b(successfully\s+(?:listed|extracted|retrieved|gathered)|"
     r"(?:listed|extracted)\s+all\b|here (?:are|is) the)", re.IGNORECASE)
 
+# A universal claim, "every listing stocks it", is only supportable if the run looked at
+# every listing. Its negation is not: one counterexample settles it. That asymmetry is
+# what makes this checkable without knowing the right answer.
+UNIVERSAL_QUESTION = re.compile(r"\b(every|all)\b", re.IGNORECASE)
+AFFIRMS = re.compile(r"^\W*yes\b", re.IGNORECASE)
+
+# A product page navigation. Search result pages carry a query string and are excluded,
+# since landing on the results page is not the same as opening a listing.
+PRODUCT_NAV = re.compile(r"page\.goto\('([^']+?\.html)'\)")
+
 # Below this, a figure in this catalogue is a per-unit rate rather than a total. Rates
 # are computed by the agent and correctly absent from the page, so the unsupported test
 # does not apply to them. A stated domain assumption: the cheapest total in these
@@ -97,6 +107,11 @@ def evidence(text: str) -> dict[str, set[int]]:
     }
 
 
+def listings_opened(text: str) -> set[str]:
+    """Distinct product pages the run actually navigated to."""
+    return {url.rsplit("/", 1)[-1] for url in PRODUCT_NAV.findall(text) if "?" not in url}
+
+
 def prices_in(text: str) -> list[int]:
     return [cents(m) for m in ANY_DECIMAL.findall(text or "")]
 
@@ -127,7 +142,8 @@ def verified_compositions(amounts: list[int], seen: dict[str, set[int]]) -> set[
     return justified
 
 
-def check(answer: str, seen: dict[str, set[int]]) -> dict:
+def check(answer: str, seen: dict[str, set[int]], *, question: str = "",
+          population: int | None = None, opened: int | None = None) -> dict:
     """Verdict for one answer against one run's observations.
 
     `ok` means nothing was detected, not that the answer is right. This is a filter for
@@ -137,6 +153,16 @@ def check(answer: str, seen: dict[str, set[int]]) -> dict:
     let a wrong value escape by appearing later in the sentence, which made word order
     decide whether the answer was checked at all.
     """
+    # A universal claim is checked first, because it can be unsupported while containing
+    # no figures at all. "Yes" is the whole answer in the cases this catches.
+    if (question and population and opened is not None
+            and UNIVERSAL_QUESTION.search(question) and AFFIRMS.match(answer)
+            and opened < population):
+        return {"flag": "unverified_universal", "ok": False,
+                "why": (f"claims every one of {population} listings qualifies, "
+                        f"having opened {opened}"),
+                "claimed": []}
+
     claimed = prices_in(answer)
     rates = rate_values(answer)
     amounts = [v for v in claimed if v not in rates]
@@ -173,6 +199,23 @@ def check(answer: str, seen: dict[str, set[int]]) -> dict:
 
 def evaluate() -> int:
     """Replay the check over every recorded run and report what it would have done."""
+    tasks: dict[str, dict] = {}
+    populations: dict[str, int] = {}
+    floors: dict[str, int] = {}
+    for spec_path in (RESULTS.parent / "tasks.json", RESULTS.parent / "tasks_scaled.json"):
+        if not spec_path.exists():
+            continue
+        spec = json.loads(spec_path.read_text())
+        instance = spec.get("_instance") or {}
+        size = instance.get("listings")
+        floor = instance.get("oracle_min_opens")
+        for task in spec["tasks"]:
+            tasks[task["id"]] = task
+            if size:
+                populations[task["id"]] = size
+            if floor:
+                floors[task["id"]] = floor
+
     rows = []
     for suite_path in sorted(RESULTS.glob("*/suite.json")):
         payload = json.loads(suite_path.read_text())
@@ -180,9 +223,27 @@ def evaluate() -> int:
             log_path = suite_path.parent / (row.get("log") or "")
             if not row.get("log") or not log_path.exists():
                 continue
-            verdict = check(row.get("answer") or "", evidence(observed_text(log_path)))
-            rows.append({**row, "suite": suite_path.parent.name, **{
-                "flag": verdict["flag"], "flag_why": verdict["why"]}})
+            text = observed_text(log_path)
+            task = tasks.get(row["task"], {})
+            verdict = check(row.get("answer") or "", evidence(text),
+                            question=task.get("query", ""),
+                            population=populations.get(row["task"]),
+                            opened=len(listings_opened(text)))
+            opened = len(listings_opened(text))
+            # The oracle floor belongs to comparison questions only. Naming the single
+            # best across every listing requires opening everything the published prices
+            # cannot rule out. A universal yes/no does not: refuting "every listing
+            # stocks it" takes one counterexample, so scoring it against a floor of
+            # eleven would call a sound answer unearned.
+            query = task.get("query", "").lower()
+            is_comparison = any(w in query for w in
+                                ("cheapest", "lowest", "best value", "which seller"))
+            is_global = is_comparison and ("across all" in query or "all the" in query)
+            rows.append({**row, "suite": suite_path.parent.name,
+                         "flag": verdict["flag"], "flag_why": verdict["why"],
+                         "opened": opened,
+                         "population": populations.get(row["task"]),
+                         "floor": floors.get(row["task"]) if is_global else None})
 
     if not rows:
         print("no runs with traces on disk. Logs are gitignored, so this needs a local run.")
@@ -203,6 +264,7 @@ def evaluate() -> int:
 
     print(f"\ncaught      {len(caught)} of {len(wrong)} wrong or ambiguous runs")
     print(f"false flags {len(false_flags)} of {len(right)} correct runs")
+    report_soundness(rows)
 
     if caught:
         print("\ncaught:")
@@ -213,6 +275,34 @@ def evaluate() -> int:
         for r in false_flags:
             print(f"  {r['task']}-{r['repeat']:<2} {r['flag']:20} {r['flag_why']}")
     return 0
+
+
+def report_soundness(rows: list[dict]) -> None:
+    """Correct answers that were not actually earned.
+
+    Coverage deliberately does not gate the global comparison questions, because it does
+    not separate right from wrong on them: one correct run opened 4 of 15 listings and
+    one wrong run opened 4 as well. Blocking on coverage would reject a correct answer.
+
+    That is not a reason to ignore the signal. The agent has no pruning logic, and the
+    oracle floor for these questions is 11 listings, so a correct answer after 4 opens
+    was not reasoned to, it was landed on. Correctness and soundness are different
+    properties, and an accuracy-only baseline cannot tell them apart. A policy that
+    abstains here scores worse on accuracy and is better in expectation, which is an
+    argument RQ3 has to be able to make with numbers.
+    """
+    unearned = [r for r in rows
+                if r["verdict"] == "correct" and r.get("floor")
+                and r.get("opened") is not None and r["opened"] < r["floor"]]
+    scoped = [r for r in rows if r["verdict"] == "correct" and r.get("floor")]
+    if not scoped:
+        return
+    print(f"\nunearned    {len(unearned)} of {len(scoped)} correct answers to global "
+          f"comparison questions were reached with less evidence than any correct "
+          f"policy needs")
+    for r in unearned:
+        print(f"  {r['task']}-{r['repeat']:<2} opened {r['opened']} of "
+              f"{r['population']}, oracle floor {r['floor']}")
 
 
 def main() -> int:
