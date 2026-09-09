@@ -289,6 +289,11 @@ td.ctrl { color: var(--muted); font-family: var(--mono); font-weight: 500; font-
 .aside { border-top: 1px solid var(--line); padding-top: 16px; max-width: var(--measure); display: flex; flex-direction: column; gap: 8px; }
 .aside h4 { font-size: 15px; }
 
+.claims { margin: 4px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; max-width: var(--measure); }
+.claims li { font-size: 15.5px; color: var(--muted); padding-left: 18px; position: relative; }
+.claims li::before { content: ""; position: absolute; left: 0; top: 12px; width: 9px; height: 1px; background: var(--accent); }
+.claims b { color: var(--ink); font-weight: 600; }
+
 /* timeline */
 
 .timeline { display: flex; flex-direction: column; }
@@ -351,6 +356,18 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
       <ul class="railsub" id="rail-problem" hidden>
         <li><a href="#problem">The listing</a></li>
         <li><a href="#problem">Research questions</a></li>
+      </ul>
+    </div>
+    <div class="railgroup" data-section="research">
+      <div class="railrow">
+        <a href="#research">Related work</a>
+        <button class="railtoggle" type="button" aria-expanded="false" aria-controls="rail-research">+</button>
+      </div>
+      <ul class="railsub" id="rail-research" hidden>
+        <li><a href="#lit-table">Five neighbours</a></li>
+        <li><a href="#lit-closest">The closest work</a></li>
+        <li><a href="#lit-claim">What is new here</a></li>
+        <li><a href="#lit-status">Reading status</a></li>
       </ul>
     </div>
     <div class="railgroup" data-section="architecture">
@@ -477,6 +494,83 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
             <div class="rq"><span class="k">RQ3</span><span class="v">Can a question conditioned retrieval policy reach correct answers with fewer interactions than exhaustive exploration? <span class="tag">the contribution</span></span></div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section id="research">
+      <h2>Where this sits in the literature</h2>
+      <p class="lede r-tech">The project is not the first to want an agent that knows when to stop. Five established lines of work address something adjacent, and each rests on an assumption this failure violates. The distinction in one line: abstention research asks whether a model knows that it does not know. This asks whether an agent knows that it did not look.</p>
+      <p class="lede r-plain">Plenty of research already tries to make AI admit when it is unsure. Five separate fields work on it, and each one assumes something that is not true here. The short version: they ask whether the AI knows it is ignorant. This asks whether the AI knows it never checked.</p>
+
+      <div class="tablewrap" id="lit-table">
+        <table>
+          <thead><tr><th>Field</th><th>What it does</th><th>The assumption it rests on</th><th>Why this failure slips past</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><b>Selective prediction and abstention</b><br><span class="ctrl">Know Your Limits, TACL 2025</span></td>
+              <td class="ctrl">Withhold an answer when the query is unanswerable or the model is unreliable</td>
+              <td class="ctrl">The signal to abstain is in the question, or in the model's uncertainty about it</td>
+              <td class="ctrl">The question is perfectly answerable and the model is not uncertain. What is missing is evidence the agent never went to get</td>
+            </tr>
+            <tr>
+              <td><b>Calibration and verbalised confidence</b><br><span class="ctrl">arXiv 2306.13063, ConfTuner</span></td>
+              <td class="ctrl">Make the stated confidence track the real probability of being right</td>
+              <td class="ctrl">Confidence given the context is the right quantity to measure</td>
+              <td class="ctrl">The context is internally consistent. The page shows one price, correctly, and the accessibility tree agrees with the screenshot. A perfectly calibrated model would still be confident, because nothing in view is wrong</td>
+            </tr>
+            <tr class="hi">
+              <td><b>Self-verification and self-correction</b><br><span class="ctrl">arXiv 2310.01798 and follow-ups</span></td>
+              <td class="ctrl">Ask the model to check its own answer and revise it</td>
+              <td class="ctrl">A second pass sees something the first pass missed</td>
+              <td class="ctrl">The second pass runs on the same context with the same gap, so it re-derives the same answer. This literature already concludes that intrinsic self-correction needs external feedback, and reports a blind spot where a model fixes an error shown to it but not the identical error of its own</td>
+            </tr>
+            <tr>
+              <td><b>Adaptive retrieval</b><br><span class="ctrl">Self-RAG, FLARE, SeaKR, Probing-RAG</span></td>
+              <td class="ctrl">Decide during generation whether to go and retrieve</td>
+              <td class="ctrl">Low token confidence marks the moment more evidence is needed, and a query returns documents</td>
+              <td class="ctrl">Three ways. Retrieval here is an interaction that changes the page rather than a query over a fixed corpus. The trigger signal is absent, because a gated page looks complete on arrival. And token probabilities are not available through an API-routed agent</td>
+            </tr>
+            <tr>
+              <td><b>Attribution and citation faithfulness</b><br><span class="ctrl">ALCE, RARR</span></td>
+              <td class="ctrl">Check whether each claim is supported by the sources cited for it</td>
+              <td class="ctrl">The evidence set is given, and the question is whether the text is faithful to it</td>
+              <td class="ctrl">Closest in method, and the assumption is exactly inverted. The agent chose its own evidence set, and chose it too small. An answer can be fully faithful to four listings and wrong about fifteen</td>
+            </tr>
+            <tr>
+              <td><b>Unanswerable question answering</b><br><span class="ctrl">SQuAD 2.0, FactGuard, context sufficiency work</span></td>
+              <td class="ctrl">Detect that a passage does not contain the answer, and decline</td>
+              <td class="ctrl">Sufficiency is a property of a passage handed to the model</td>
+              <td class="ctrl">Here sufficiency is a property of the agent's own behaviour. It is an action problem, not a reading comprehension problem</td>
+            </tr>
+            <tr>
+              <td><b>Prompt injection defences</b><br><span class="ctrl">the framing in the registered title</span></td>
+              <td class="ctrl">Stop an adversary planting instructions in retrieved content</td>
+              <td class="ctrl">There is an adversary, and the harmful content is present in what was read</td>
+              <td class="ctrl">No merchant did anything deceptive, and the harmful gap is in what was not read. Defences that filter what enters the context cannot see an absence</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="prose">
+        <h3 class="sub" id="lit-closest">The closest existing work, and what it leaves open</h3>
+        <p class="r-tech">The nearest neighbour is empirical rather than methodological. <i>When Web Agents Finish but Still Fail</i>, arXiv 2606.20724, runs trace-level analysis over a parallel web-exploration benchmark and reports three persistent failure modes, one of which is <b>premature termination on partial answers</b>. That is the same failure this project studies, found independently, in a different environment, with different agents. It is corroboration and it should be cited as such rather than competed with.</p>
+        <p class="r-plain">The closest existing paper looks at web agents and finds the same thing happening: they stop early and answer from partial evidence. It was found separately, on a different setup, with different AI models. That is good news for this project rather than bad, because it means the problem is real and not an artefact of one setup.</p>
+        <p class="r-tech">What it does not do is fix it. The paper is diagnostic, and its own conclusion is that the remaining gap <b>"requires evidence-grounded coverage and synthesis diagnostics"</b>. That sentence describes what this project builds: a coverage and evidence check that runs as a policy rather than as an analysis, is applied before the answer is emitted, and is measured on runs made after the rules were frozen.</p>
+        <p class="r-plain">What it does not do is fix it. It diagnoses, and ends by saying what is needed next is a way to check coverage and evidence. That is exactly what this project built and measured, rather than only described.</p>
+
+        <h3 class="sub" id="lit-claim">What this project claims that is not already claimed</h3>
+        <p class="r-tech">Three things, stated narrowly enough to defend.</p>
+        <p class="r-plain">Three claims, kept small enough to actually stand up.</p>
+        <ul class="claims">
+          <li><span class="r-tech"><b>A failure class defined by absence rather than error.</b> Interaction-gated information produces a context in which every observation is correct and the answer is still wrong. That is not covered by uncertainty over a given context, nor by faithfulness to a given evidence set, because the defect is in what was never observed.</span><span class="r-plain"><b>A kind of failure where nothing the AI saw was wrong.</b> Everything it read was accurate. The answer is still wrong, because of what it never went to look at. Existing methods check what is there, so they cannot see this.</span></li>
+          <li><span class="r-tech"><b>A sufficiency check grounded in the action trace, not in model confidence.</b> The rules compare what the answer asserts against what the run observed, using arithmetic and coverage. They need no logits, no second model call, and no fine-tuning, so they cost nothing and work through a black-box API. Measured held out: 3 of 4 failures caught, 0 of 11 correct answers blocked, and 0 false refusals across 77 correct runs in total.</span><span class="r-plain"><b>A check that reads the record of what the AI did, not how sure it sounds.</b> It compares the answer against what was actually seen. It needs no access to the model's internals and no extra AI call, so it is free. Tested on runs made after it was locked: caught 3 of 4 failures and never once blocked a right answer.</span></li>
+          <li><span class="r-tech"><b>Soundness reported separately from correctness.</b> On one task the agent opens exactly four of fifteen listings in every run, so its single correct answer rests on the same evidence as its six wrong ones. An accuracy-only evaluation cannot distinguish those, and this project reports both.</span><span class="r-plain"><b>Measuring whether an answer was earned, not only whether it was right.</b> On one question the AI checks exactly four of fifteen shops every single time. The one time it was right, it was right by luck on the same evidence that made it wrong six times. Marks out of ten cannot see that.</span></li>
+        </ul>
+
+        <h3 class="sub" id="lit-status">Reading status, stated honestly</h3>
+        <p class="r-tech">Of the work above, only arXiv 2606.20724 has been read in full. The rest were located by search and are recorded from abstracts and survey summaries. They are listed here to establish the shape of the positioning argument, not as a completed literature review, and each will be read before it is cited in the report. The two surveys, <i>Know Your Limits</i> and <i>The Art of Refusal</i>, are the sensible entry points for the abstention half.</p>
+        <p class="r-plain">Only one of these papers has been read properly so far. The others were found by searching and noted from their summaries. They are here to show how this project differs from what exists, not as a finished literature review. Each one gets read before it goes in the report.</p>
       </div>
     </section>
 

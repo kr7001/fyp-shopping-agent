@@ -173,11 +173,9 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
   <div class="wrap">
     <div class="mast-text">
       <span class="eyebrow">Progress report &middot; 28 Aug to 9 Sep 2026</span>
-      <h1>Six weeks, one working experiment</h1>
-      <p class="sub">What the project asks, how it was tested, what it found, and what broke. Every number on this page links to the section that explains it.</p>
+      <h1>Progress Update 9th September</h1>
+      <p class="sub">What the project asks, how it was tested, what it found, and what broke.</p>
       <div class="mast-meta">
-        <span>Kayleen Lee Kai Rong</span>
-        <span>Supervisor <b>Prof. Markus Kirchberg</b></span>
         <span><a href="index.html" class="backlink">&larr; Project overview</a></span>
       </div>
     </div>
@@ -212,19 +210,19 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
       <a class="stat flag" href="#rq2-result"><span class="n">0 / 97</span><span class="l">TIMES IT SAID I DO NOT KNOW</span></a>
       <a class="stat win" href="#failures"><span class="n">3 / 4</span><span class="l">FAILURES CAUGHT BY THE FIX</span></a>
     </div>
-    <p class="lede">Two of the three research questions are answered with measurements. The third, which is the contribution, has its first half built and tested. The environment work that had to come first is at the bottom of this page, because it is scaffolding rather than result.</p>
+    <p class="lede">Two of the three research questions are answered with measurements. The third, which is the contribution, has its first half built and tested.</p>
   </section>
 
   <section id="questions">
     <h2>1. The three research questions</h2>
-    <p class="lede">Everything on this page exists to answer one of these. The registered title is <i>Ambiguity Without Adversary: Why Injection Defences Miss a Common Agent Failure in Commerce</i>. The failure in question is not an attack. It is an agent answering confidently about a price it never actually looked at.</p>
+    <p class="lede">Everything on this page exists to answer one of these.</p>
 
     <div class="rqgrid">
       <div class="rq part">
         <span class="tagline">RQ1 &middot; PARTLY ANSWERED</span>
         <h3>How often does interaction-gated information occur, and in what forms?</h3>
         <p><b>Gated</b> means the data is on the page but only appears after you interact with it. A listing shows one price; the price for the size you want appears only after clicking that size.</p>
-        <p class="verdict">Two forms catalogued and built: <b>price by variant</b> and <b>stock by variant</b>. Frequency in the test shop turned out to be <b>zero</b>, which is itself the finding, and forced the environment work.</p>
+        <p class="verdict">Two forms catalogued and built: <b>price by variant</b> and <b>stock by variant</b>. Frequency in the test shop turned out to be <b>zero</b>, but shops in real life like Shopee is not the case, so had to modify the test WebArena Environment.</p>
       </div>
       <div class="rq answered">
         <span class="tagline">RQ2 &middot; ANSWERED</span>
@@ -243,7 +241,6 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
 
   <section id="terms">
     <h2>2. Terms used on this page</h2>
-    <p class="lede">These are defined here so nothing below has to be guessed at.</p>
     <div class="tablewrap">
       <table>
         <caption>Definitions</caption>
@@ -294,7 +291,6 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         </tbody>
       </table>
     </div>
-    <p class="note">The 69 are not extra products serving another purpose. They <b>are</b> the listings: one listing offering four pack sizes is one page a shopper sees and five database records. That is what makes the price gated, since only the selected variant's price is ever on the page.</p>
 
     <div class="tablewrap">
       <table>
