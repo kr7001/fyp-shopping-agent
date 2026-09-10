@@ -227,6 +227,7 @@ def main() -> int:
                "confidence": args.confidence,
                "exhaustive": args.exhaustive,
                "targeting": args.targeting,
+               "targeting_version": targeting_module.VERSION if args.targeting else None,
                "tasks_file": args.tasks.name,
                # The ground truth this suite was scored against. The catalogue is
                # regenerated between rounds, so without it an old result cannot be told
