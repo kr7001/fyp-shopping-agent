@@ -8,24 +8,27 @@ Registered title: *Ambiguity Without Adversary: Why Injection Defences Miss a Co
 
 ## Summary
 
-The agent now runs end to end against the environment, the RQ2 baseline is measured rather
-than assumed, Checkpoint B is finished two weeks early, and the first half of RQ3 is built
-and validated out of sample.
+The agent runs end to end against the environment, the RQ2 baseline is measured rather than
+assumed, Checkpoint B is finished two weeks early, and **both halves of RQ3 are built and
+the efficiency claim is met.**
 
-Three results shape the rest of the project. The agent **never** signals uncertainty, in
-97 unmodified runs. Its correctness collapses only when it under-retrieves. And the
-cross-listing failure that motivated the project does not reproduce at small scale, but
-does at fifteen listings.
+Three results shape the project. The agent **never** signals uncertainty, in 97 unmodified
+runs. Its correctness collapses only when it under-retrieves. And the cross-listing failure
+that motivated the project does not reproduce at small scale but does at fifteen listings.
 
-The RQ3 contribution now has a measured first half. A check that asks whether an answer is
-supported by what the run observed, frozen and then tested on runs made afterwards, caught
-**3 of 4 failures while blocking 0 of 11 correct answers, at no added model cost**.
+**The contribution now has both halves.** A check that asks whether an answer is supported
+by what the run observed, and a policy that chooses what to retrieve from the question
+before opening anything. Together they **match exhaustive retrieval on accuracy for 35 per
+cent fewer interactions and 33 per cent less money, with no wrong answers in twelve runs**,
+and hold on a second market generated after the policy was finished: 7 correct, 1 refused,
+0 wrong.
 
-Spend to date: **$18.63 of $20** of OpenRouter credit, 120 browser runs. The remaining
-**$1.37** does not fund a further experiment arm at all, which is the item I most need to
-discuss.
+I also published a result and withdrew it the same day, which is written up in section 7b
+rather than left out.
 
-Cost is measured two ways and they disagree. The sum of per-run deltas is $15.94; OpenRouter's own usage for the key is $18.63. The key figure is authoritative and the per-run figures are a lower bound: exploratory runs made before cost capture worked are absent, and a run's delta is read as soon as spend moves rather than once it has fully settled.
+Spend to date: **$18.63 of the original $20 plus $21 self-funded**, roughly 190 browser
+runs. Thank you for arranging the further credit; the first thing it buys is an exhaustive
+arm on the held-out market, without which no saving can be stated there.
 
 ---
 
@@ -367,19 +370,101 @@ and I intend to report both rather than only the first.
 
 ---
 
-## 7. What the second half of RQ3 has to beat
+## 7. RQ3 second half: the efficiency claim, met
 
-The headroom is not correctness. At 89% the unmodified agent is mostly right. The headroom
-is that it has no principle for knowing when it has retrieved enough:
+The first half establishes that insufficiency is detectable. It does not make anything
+cheaper, and was never meant to: the retry arm costs 34 per cent above baseline. The second
+half is the part the research question actually asks about, and it is now built and
+measured.
 
-- It spends 1 action and misreads a surcharge as a price, or 7 and is right, with nothing
-  distinguishing the two beforehand
-- Actions past three buy nothing measurable, so a large share of current spend is waste
-- It never abstains, so a caller cannot tell a one-action guess from a verified answer
+### First, an upper bound to measure against
 
-A question-conditioned policy has three targets: eliminate sub-two-action answers, cut runs
-spending 7+ actions where 2 suffice, and abstain rather than assert when the budget runs out. The first two of those three are
-now done and measured; the third, cutting the cost of a correct answer, is not.
+There was no cost axis. The unmodified agent gives one point, cheap and sometimes wrong,
+and one point is not a trade-off. So an exhaustive arm was run: the same agent, instructed
+to open every listing.
+
+**8 runs, $4.54, 8 of 8 correct, 28.4 actions, $0.568 per run.**
+
+That settled something the project had been assuming. It gets the per-litre question right,
+having been wrong in every run of every other arm. So the failure is **not** a reasoning or
+arithmetic limitation. The information is reachable, the comparison is within the model's
+competence, and the answer costs $0.57. What the unmodified agent lacks is the decision to
+go and look.
+
+### The policy
+
+Three strategies, chosen from the wording of the question rather than from the task name:
+
+| Strategy | Triggered by | Why it saves work |
+| --- | --- | --- |
+| Total bound | "cheapest", "lowest price" | The advertised price is a floor, so a listing already dearer than the best total found cannot win |
+| Refutation | "does every listing..." | Proving needs all fifteen; refuting needs one counterexample |
+| Rate bound | "per litre", "best value" | The best possible rate is the advertised price over the largest pack |
+
+### The result
+
+| Arm | Correct | Refused | Wrong | Actions | Cost per run |
+| --- | --- | --- | --- | --- | --- |
+| Unmodified | 64% | 0 | 10 of 28 | 17.7 | $0.276 |
+| Exhaustive | 100% | 0 | 0 of 8 | 28.4 | $0.568 |
+| **Targeting + gate** | **100%** | 2 | **0 of 12** | **18.4** | **$0.382** |
+
+**It matches the exhaustive upper bound on accuracy for 35 per cent fewer interactions and
+33 per cent less money, with no wrong answers in twelve runs.**
+
+The two halves turn out to be complements rather than alternatives. Targeting alone was
+wrong four times in eight, because making the cheap answer cheaper does nothing about
+asserting the expensive one on no evidence. The gate alone never became cheaper. Together
+they have no wrong answers.
+
+### And it holds on a market it has never seen
+
+A second market was generated with a different seed and brand and seeded alongside the
+first, so no recorded run lost its ground truth. Different winner, different trap,
+different per-litre answer, and a per-litre winner that does not stock the target pack at
+all, which is a structure the policy had never met.
+
+**7 correct, 1 refused, 0 wrong.** Across both markets, sixteen of sixteen answers are
+either correct or refused.
+
+No saving is claimed from the held-out market. There is no exhaustive arm there, so 15.1
+actions has nothing to be divided by, and borrowing a denominator from a different market
+is an error I have already made in three other forms this week. That run is the first thing
+the new credit should buy.
+
+---
+
+## 7b. A result I published and withdrew the same day
+
+This belongs in the report and I would rather raise it than have it found.
+
+The first version of the targeting arm was recorded as the efficiency claim met: 4 of 4
+correct at 7.2 actions against exhaustive's 31.3, a 4.4 times saving. It was wrong.
+
+That version **never enumerated the candidate set.** It read the first four listings on the
+search page, treated them as the whole market, and pruned within them. The true winner
+happens to sit inside those four, so the answers came out right without the bound doing any
+work. Seven actions against thirty-one was not a saving from pruning, it was a saving from
+not looking.
+
+Two things about it are worth the space:
+
+- **The sufficiency check caught it and I did not.** `understated_population` fired on
+  exactly those runs, because the answers said "I opened 4 listings, all 4 listings were
+  checked". The measurement instrument built for the agent turned out to work on its author
+- It is the project's own thesis applied to me. A correct-looking result reached from
+  insufficient evidence, unnoticed because the answer was right, is precisely the failure
+  RQ2 documents
+
+The fix was to make enumeration an explicit first step, since a bound cannot rule out a
+candidate that was never enumerated. All the figures in section 7 are from after that fix.
+
+A similar correction happened on the held-out run, in the opposite direction. It reported
+three refusals and two were my own bug: both per-litre answers were correct to four decimal
+places and were refused for showing their working, because the check read "8.4 litres" as
+an unsupported $8.40. That is the same family as the delta misread in section 3, a number
+meaning something other than money, this time in my instrument rather than the agent's
+answer.
 
 ---
 
@@ -389,40 +474,45 @@ now done and measured; the third, cutting the cost of a correct answer, is not.
 | --- | --- | --- | --- |
 | B | Scale the catalogue; tasks over search pages where exhaustive retrieval is genuinely costly | 23 Sep | **Done 9 Sep**, two weeks early |
 | C1 | RQ3 first half: the sufficiency check, as a gate and as a retry, validated out of sample | — | **Done 9 Sep** |
-| C2 | RQ3 second half: question-conditioned targeting, plotted against exhaustive and unmodified baselines | Early Oct, report 21 Oct | Not started, budget-blocked |
+| C2 | RQ3 second half: question-conditioned targeting, against exhaustive and unmodified baselines | 21 Oct | **Done 10 Sep**, six weeks early |
+| C3 | Exhaustive arm on the held-out market, so a saving can be stated there | Late Sep | First call on the new credit |
+| C4 | The two generalisation checks: a second model, a second scaffold | Early Oct | Not started |
 | D | Final report and presentation | Early Nov | |
 
-**The scheduling risk I flagged last time is closed.** RQ3 started and its first half is
-measured. On budget: the cheap model tier assumed in the proposal does not hold, because the
-cheap models could not complete the tasks at all, so every arm is paid for at
-`claude-haiku-4.5` rates. $18.63 of the original $20 is spent. I am adding a further $15
-myself, so the remaining experiments are funded and this is not a blocker. The failed
-cheap-tier assumption is still worth reporting as a finding about the cost of this class of
-agent.
+**The risk has moved again, and this time it is about strength rather than existence.**
+Everything is built and nothing is broken. What the results currently lack is weight: twelve
+runs on the headline, two markets, one model, one agent scaffold. A reviewer's first three
+questions would be whether it is the model, whether it is twelve runs, and whether it is
+this one market, and the new credit answers all three.
 
-The targeting experiment needs roughly $10: an exhaustive-retrieval arm as the
-correct-and-expensive baseline, the targeted policy itself, and repeats sufficient to
-separate them. That is covered by the top-up.
+There is one further honesty point. The strategies are supplied in the prompt and not
+enforced, so nothing verifies the agent followed them beyond what its traces show. A
+tool-level implementation would be stronger and is a candidate for the remaining time if
+the generalisation checks come back clean.
 
 ---
 
 ## 9. For discussion
 
-1. **Cost of this class of agent.** A browser agent re-sends the page at every step, so one
+1. **The withdrawn result.** Section 7b describes a result I recorded and retracted within
+   hours, caught by the project's own checking tool rather than by me. I think it belongs in
+   the final report as evidence that the method works, including on its author. Would you
+   agree, or does it read as carelessness?
+2. **Cost of this class of agent.** A browser agent re-sends the page at every step, so one
    shopping task costs roughly what a whole conversation would. $18.63 covered 120 runs. Is
    the per-run cost itself worth reporting as a result, given the proposal assumed a cheap
    tier that turned out not to work at all?
-2. **Reporting soundness alongside accuracy.** One task reaches a correct answer on
+3. **Reporting soundness alongside accuracy.** One task reaches a correct answer on
    identical evidence to six wrong ones. I would like to report "was this answer earned"
    next to "was it right". Is that a defensible thing to put in the results, given it makes
    the unmodified baseline look worse than its accuracy suggests?
-3. The `spConfig` leak means WebArena's gating is weaker than a live marketplace's. Is
+4. The `spConfig` leak means WebArena's gating is weaker than a live marketplace's. Is
    stating it as a limitation sufficient, or is it worth building a harder variant that
    serves variant prices over AJAX?
-4. The exhaustive-listing failure — asserting success while returning no data — is a
+5. The exhaustive-listing failure — asserting success while returning no data — is a
    reporting failure rather than a retrieval failure. Should it count against the baseline,
    or be reported as a separate category?
-5. Two upstream bug fixes are ready. Worth submitting as a pull request for the record, or a
+6. Two upstream bug fixes are ready. Worth submitting as a pull request for the record, or a
    distraction from the critical path?
-6. Is one model (`claude-haiku-4.5`) sufficient for the baseline, or should the final results
+7. Is one model (`claude-haiku-4.5`) sufficient for the baseline, or should the final results
    include a second model to show the behaviour is not model-specific?
