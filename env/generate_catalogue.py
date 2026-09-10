@@ -40,6 +40,12 @@ HERE = pathlib.Path(__file__).resolve().parent
 DEFAULT_OUT = HERE / "fixtures" / "scaled_water.json"
 
 BRAND = "Rivenhall"
+# A held-out test needs a market the policy has not been developed against. Rather than
+# replacing the existing one, which would destroy the fixture every recorded run was
+# scored on, a second market is generated under a different brand and SKU prefix so both
+# can live in the same shop at once. The brand is what the task queries search for, so two
+# brands means two independent instances.
+SKU_PREFIX = "IGR-RVN"
 """One token shared by every listing, so a single search returns the whole set."""
 
 TARGET_OPTION = "2 x 9.5L"
@@ -180,7 +186,7 @@ def build_listing(name: str, index: int, rng: random.Random) -> dict:
 
     return {
         "key": f"scaled-{index:02d}",
-        "parent_sku": f"IGR-RVN-{index:02d}",
+        "parent_sku": f"{SKU_PREFIX}-{index:02d}",
         "name": f"{BRAND} Still Spring Water, Multipack - {name}",
         "seller": name,
         "attribute": "pack_size",
@@ -374,13 +380,24 @@ def report(facts: dict, listings: list[dict]) -> None:
               f"{from_price(listing):>8.2f} {('-' if target is None else f'{target:.2f}'):>10}{flag}")
 
 
+def _use_brand(brand: str, prefix: str) -> None:
+    """Point the module at a different market before anything reads the constants."""
+    global BRAND, SKU_PREFIX
+    BRAND, SKU_PREFIX = brand, prefix
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--listings", type=int, default=15)
     parser.add_argument("--seed", type=int, default=7)
+    parser.add_argument("--brand", default=BRAND,
+                        help="product brand, which is also what the tasks search for. A "
+                             "second brand gives an independent market in the same shop")
+    parser.add_argument("--sku-prefix", default=SKU_PREFIX)
     parser.add_argument("--out", type=pathlib.Path, default=DEFAULT_OUT)
     parser.add_argument("--report", action="store_true", help="print the instance and write nothing")
     args = parser.parse_args()
+    _use_brand(args.brand, args.sku_prefix)
 
     listings, facts, attempt = generate(args.listings, args.seed)
 

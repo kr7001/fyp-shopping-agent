@@ -128,6 +128,11 @@ def main() -> int:
 
     fixture = json.loads(args.fixture.read_text())
     spec = build(fixture)
+    brand = (fixture.get("_generated") or {}).get("brand", "Rivenhall")
+    if brand != "Rivenhall":
+        for task in spec["tasks"]:
+            task["query"] = task["query"].replace("Rivenhall", brand)
+        spec["brand"] = brand
     args.out.write_text(json.dumps(spec, indent=2) + "\n")
 
     facts = spec["_instance"]
