@@ -58,9 +58,46 @@ def classify(question: str) -> str:
     return "survey"
 
 
+
+# A bound is a device for deciding what not to open. It is not a price, and the measured
+# failure of the rate strategy was the agent carrying the bound's arithmetic into its
+# answer: it combined an advertised price of $6.82 with the volume of a pack that actually
+# costs $8.30, and reported $0.812 per litre for a pack that has no such rate. The
+# arithmetic was right and the attribution was invented.
+#
+# So every strategy that hands the agent a bound now also says, in the same breath, that
+# figures derived from it may not be reported. Stated once here and appended to both bound
+# strategies, since the same hazard applies to each.
+
+# A bound rules out candidates. It cannot rule out candidates you never knew existed, and
+# the first run of this arm failed exactly there: the agent read the first four listings
+# on the search page, treated those as the whole market, and pruned within them. It got
+# the right answer twice because the true winner happens to sit inside the first four,
+# which is luck rather than the strategy working. Seven actions against exhaustive's
+# thirty-one was not a saving from pruning, it was a saving from not looking.
+#
+# So enumeration is now a separate, explicit first step, stated before any strategy. It
+# costs actions, and honestly so: the price of a sound bound is knowing what you are
+# bounding over.
+ENUMERATE = (
+    "First, establish the complete candidate set before opening anything.\n"
+    "The search results are paginated. Go through every page and list every listing "
+    "together with its advertised price. State how many listings exist in total, and do "
+    "not assume the first screen is all of them.\n"
+    "You may only skip a listing you have enumerated. A bound cannot rule out something "
+    "you never knew was there.\n\n"
+    "Then use this retrieval strategy.\n")
+
+QUARANTINE = (
+    "\nImportant: the figure this bound produces is a limit used only to decide what to "
+    "skip. It is not a real price and must never appear in your answer. Only report a "
+    "price you read from a listing you opened, attached to the exact pack size it was "
+    "shown against. Never pair an advertised price with a pack size unless you opened the "
+    "listing and saw that price shown for that pack.")
+
 STRATEGIES = {
     "total_bound": (
-        "Use this retrieval strategy, and follow it rather than opening listings in the "
+        ENUMERATE + "Use this retrieval strategy, and follow it rather than opening listings in the "
         "order they appear.\n"
         "1. Read the advertised price of every listing from the search results first. "
         "That price is the cheapest option in that listing, so nothing inside it can cost "
@@ -73,9 +110,9 @@ STRATEGIES = {
         "4. Stop as soon as no unopened listing has an advertised price below your best "
         "total.\n"
         "In your answer, say how many listings you opened, how many you skipped, and why "
-        "skipping them was safe."),
+        "skipping them was safe." + QUARANTINE),
     "refutation": (
-        "Use this retrieval strategy, and note what the question actually requires.\n"
+        ENUMERATE + "Use this retrieval strategy, and note what the question actually requires.\n"
         "It asks whether EVERY listing qualifies. Those two possible answers need "
         "different amounts of evidence. To answer No you need one counterexample and "
         "nothing more. To answer Yes you need to have checked all of them.\n"
@@ -86,7 +123,7 @@ STRATEGIES = {
         "you answer Yes.\n"
         "In your answer, say how many listings you opened and which one settled it."),
     "rate_bound": (
-        "Use this retrieval strategy, and follow it rather than opening listings in the "
+        ENUMERATE + "Use this retrieval strategy, and follow it rather than opening listings in the "
         "order they appear.\n"
         f"1. The largest pack any listing offers is {LARGEST_PACK_LITRES} litres, so a "
         "listing's best possible price per litre is its advertised price divided by "
@@ -98,9 +135,9 @@ STRATEGIES = {
         "cannot win.\n"
         "4. Stop when no unopened listing can beat your best rate.\n"
         "In your answer, say how many listings you opened, how many you skipped, and why "
-        "skipping them was safe."),
+        "skipping them was safe." + QUARANTINE),
     "survey": (
-        "Open every listing in the search results and check the relevant option on each "
+        ENUMERATE + "Open every listing in the search results and check the relevant option on each "
         "before answering. Say how many you opened."),
 }
 

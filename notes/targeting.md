@@ -1,5 +1,31 @@
 # Targeting: choosing what to retrieve from the question
 
+> **Correction, 2026-09-10.** The first version of this note reported total_bound as the
+> RQ3 claim met, 4 of 4 correct at 7.2 actions against exhaustive's 31.3. **That result is
+> withdrawn.** The arm never enumerated the candidate set: it read the first four listings
+> on the search page and treated those as the whole market. The true winner for the
+> cheapest-total questions happens to sit inside those four, so the answers were right
+> without the bound doing any work. Seven actions against thirty-one was not a saving from
+> pruning, it was a saving from not looking.
+>
+> The exhaustive arm saw all fifteen and opened all fifteen, because its instruction said
+> "including any on later pages". So this was never a perception limit. It was a missing
+> step in my strategy prompt.
+>
+> Two things about how it surfaced. **The sufficiency check caught it and I did not**:
+> `understated_population` fired on exactly these runs, because the answers said "I opened
+> 4 listings, all 4 listings were checked". And it is this project's own thesis applied to
+> its author, since I reported a correct-looking result reached from insufficient evidence
+> and did not notice because the answer was right.
+>
+> It also explains `best-per-litre` being wrong in every arm except exhaustive: Thornbury
+> Pantry, the correct answer, was never visible. That task was unanswerable wherever the
+> agent did not paginate.
+>
+> Enumeration is now an explicit first step in every strategy. The sections below record
+> the original run and are kept for the record rather than corrected in place.
+
+
 2026-09-10. 8 runs, $0.73, four gated scaled questions, two repeats each. Matches the
 exhaustive arm exactly, so the comparison is like for like.
 
