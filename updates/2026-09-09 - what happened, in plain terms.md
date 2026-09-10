@@ -804,6 +804,117 @@ will report both.
 
 ---
 
+## Part 6c: The other half, built the next day
+
+Part 6b is about teaching the AI to notice when it has not looked enough. That is only half
+the idea, and it is the half that costs *more*. Refusing is free, but going back and trying
+again pays for a whole second run.
+
+The other half is the one the project actually promised: getting the right answer with
+**less** work.
+
+### First, find out what "expensive but correct" looks like
+
+There was nothing to compare against. We knew the AI was cheap and sometimes wrong. We did
+not know what it costs to be reliably right.
+
+So: same AI, one instruction added. *Open every single shop before answering.*
+
+**Eight runs. Eight correct. About $0.57 each.**
+
+That answered a question that had been open the whole project. **The AI is not bad at the
+maths.** Told to look at everything, it gets right the exact question it had never once got
+right before. The information was always reachable and the comparison was always within its
+ability. What it lacks is the decision to go and look.
+
+Now there are two ends of a scale:
+
+```
+cheap and often wrong    64% right   about $0.28 a run
+right and expensive     100% right   about $0.57 a run
+```
+
+Anything worth building lives between them.
+
+### Teaching it to choose how to search
+
+Three different questions need three different kinds of work, and the AI now picks based on
+how the question is worded:
+
+| Question sounds like | What it does | Why that is cheaper |
+|---|---|---|
+| "which is cheapest" | Check the cheap shops first, skip any shop whose advertised price is already higher than the best real total found | A shop that starts dearer than your best answer cannot win |
+| "does every shop have it" | Hunt for a single shop that does not | To say no, one example is enough. To say yes, you need all of them |
+| "best value per litre" | Same skipping idea, using the best rate a shop could possibly offer | A shop that cannot beat your best rate even at its best is not worth opening |
+
+### It worked
+
+**Same accuracy as checking everything. About a third less effort. Nothing wrong across
+twelve runs.**
+
+And the two halves turned out to need each other. On its own, the searching half was wrong
+half the time, because being efficient does nothing about confidently answering from too
+little. On its own, the refusing half never got any cheaper. Together they got nothing
+wrong.
+
+### Then it was tested on a shop it had never seen
+
+Everything above was developed against one generated shop, and the method had been fixed
+twice after watching it fail there. So the numbers were fitted to the very problems they
+were built to solve.
+
+So a **second shop** was built: fifteen different sellers, different prices, different
+right answers, and a different structure for the per-litre question. The method had never
+seen any of it.
+
+**Seven right, one refusal, nothing wrong.**
+
+---
+
+## Part 6d: The result that was announced and taken back
+
+This happened in the middle of the day above, and it is worth telling properly.
+
+The searching half was tested and the numbers looked superb: **right every time, using
+about a fifth of the effort of checking everything.** That was reported as the project's
+main claim, met.
+
+It was wrong, and it was taken back a few hours later.
+
+**The AI had only ever looked at four shops.** The search page shows twelve, with more on a
+second page, and the instruction never told it to go through them all. It read the first
+four, treated those as the entire market, and skipped nothing, because there was nothing it
+knew about to skip.
+
+It got the right answer because **the winning shop happens to be one of those first four.**
+Pure luck.
+
+So "a fifth of the effort" was never a saving from being clever. It was a saving from not
+looking.
+
+Two things make this worth writing down rather than quietly deleting:
+
+**The project's own checking tool caught it first.** The check that reads what the AI did
+and compares it against what the AI claimed had flagged those exact runs, because the
+answers said "I opened 4 listings, all 4 listings were checked". The tool built to catch
+the AI caught the person running the experiment.
+
+**It is the project's own subject, happening to me.** A right-looking answer, reached
+without enough evidence, believed because it was right. That is precisely the failure this
+entire project is about.
+
+The fix was one paragraph: list every shop first, and only skip what you have listed. A
+skipping rule cannot skip something it never knew existed. Every number in Part 6c is from
+after that fix.
+
+There was a second correction in the other direction on the final test. It first showed
+three refusals, and two of them were the checking tool's fault, not the AI's. Both answers
+were exactly right and were refused **for showing their working**: they wrote "8.4 litres",
+and the checker read that as an unsupported price of $8.40. A volume mistaken for money,
+which is the same kind of mistake the whole project started from, this time in my own tool.
+
+---
+
 ## Part 7: What comes next
 
 | When | What | Status |
@@ -811,7 +922,9 @@ will report both.
 | **Now** | Send the supervisor update | Overdue, last one was 20 August |
 | ~~By 23 Sep~~ | Build the bigger shop, ask questions over search pages | **Done 9 Sep**, two weeks early |
 | ~~Early Oct~~ | Teach the AI to say "I do not know" | **Done 9 Sep** |
-| **Early Oct → 21 Oct** | Teach it to look in the right places, so a right answer costs fewer clicks | Not started, needs money |
+| ~~Early Oct~~ | Teach it to look in the right places, so a right answer costs fewer clicks | **Done 10 Sep**, six weeks early |
+| **Late Sep** | Run "check everything" on the second shop, so a saving can be claimed there too | First thing the new money buys |
+| **Early Oct** | Repeat with a different AI and a different agent program | Not started |
 | **Early Nov** | Final report and presentation | Deadline |
 
 ### The risk changed shape today
@@ -834,14 +947,19 @@ anything at all: the cheap options the plan assumed simply could not do the task
 
 ### What is still missing, stated plainly
 
-Everything built so far is **reactive**. It waits until the AI has answered, then checks the
-answer. The cautious version refuses; the persistent version pays for a whole second run.
-Neither makes the AI cheaper, and the persistent one makes it more expensive.
+Not the idea any more. The idea is built and it works. What is missing is **weight**.
 
-The other half of the idea is the opposite: work out what needs checking **before** starting,
-from the question itself. Right now a right answer takes about 23 clicks. In theory 11
-should be enough. Closing that gap is the part that makes this a method rather than a safety
-net.
+The headline rests on twelve runs, on two shops, with one AI and one agent program. The
+three obvious objections are that it might be the particular AI, that twelve runs is not
+many, and that it might be these particular shops. None of those is answered yet, and all
+three are answerable with the new credit.
+
+One smaller gap: the second shop has no "check everything" run to compare against, so we can
+say the method got nothing wrong there but cannot yet say how much effort it saved.
+
+And one honesty point. The AI is *told* the searching strategy in words; nothing forces it to
+follow. It appears to follow, from the record of what it did, but building it as an actual
+tool rather than an instruction would be stronger.
 
 ---
 
