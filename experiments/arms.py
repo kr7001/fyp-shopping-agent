@@ -39,7 +39,8 @@ GATED = ("scaled-cheapest-target", "scaled-target-price",
 
 def arm_name(payload: dict) -> str:
     if payload.get("targeting"):
-        return "targeting"
+        policy = payload.get("policy", "off")
+        return "targeting" if policy == "off" else f"targeting+{policy}"
     if payload.get("exhaustive"):
         return "exhaustive"
     if payload.get("confidence", "off") != "off":
@@ -107,7 +108,8 @@ def mean(values):
 def main() -> int:
     arms = collect()
     arms["gate"] = replayed_gate(arms)
-    order = ["unmodified", "confidence:plain", "gate", "retry", "exhaustive", "targeting"]
+    order = ["unmodified", "confidence:plain", "gate", "retry", "exhaustive",
+             "targeting", "targeting+gate"]
     order += [k for k in arms if k not in order]
 
     print("EVERY ARM, ON THE SAME FOUR GATED QUESTIONS\n")
@@ -145,7 +147,8 @@ def main() -> int:
         print(f"  exhaustive   {hr:>5.0%} correct   {ha:>5.1f} actions   ${hc:.3f} per run")
         print(f"  exhaustive costs {hc / lc:.1f}x the unmodified agent and gets "
               f"{hr - lr:+.0%} accuracy")
-        aim = arms.get("targeting")
+        aim = arms.get("targeting+gate") or arms.get("targeting")
+        aim_name = "targeting+gate" if arms.get("targeting+gate") else "targeting"
         if not aim:
             print("\nA targeting policy has to beat exhaustive on cost while matching it")
             print("on accuracy. That is the claim RQ3 makes and the one still unmeasured.")
@@ -153,9 +156,14 @@ def main() -> int:
             ac = mean(r.get("cost_usd") for r in aim)
             aa = mean(r.get("actions") for r in aim)
             ar = sum(1 for r in aim if r["verdict"] == "correct") / len(aim)
-            print(f"  targeting    {ar:>5.0%} correct   {aa:>5.1f} actions   "
-                  f"${ac:.3f} per run")
-            print(f"\ntargeting against the exhaustive upper bound it has to beat")
+            answered = len(aim) - sum(1 for r in aim if r["verdict"] == "abstained")
+            ar = (sum(1 for r in aim if r["verdict"] == "correct") / answered
+                  if answered else 0)
+            print(f"  {aim_name:12} {ar:>5.0%} correct   {aa:>5.1f} actions   "
+                  f"${ac:.3f} per run"
+                  + (f"   of {answered} answered, {len(aim) - answered} refused"
+                     if answered != len(aim) else ""))
+            print(f"\n{aim_name} against the exhaustive upper bound it has to beat")
             print(f"  accuracy {ar:.0%} against {hr:.0%}")
             print(f"  cost     ${ac:.3f} against ${hc:.3f}, "
                   f"{100 * (1 - ac / hc):+.0f}% ")
