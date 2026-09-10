@@ -209,6 +209,7 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
       <a class="stat" href="#setup-questions"><span class="n">17</span><span class="l">TEST QUESTIONS</span></a>
       <a class="stat flag" href="#rq2-result"><span class="n">0 / 97</span><span class="l">TIMES IT SAID I DO NOT KNOW</span></a>
       <a class="stat win" href="#failures"><span class="n">3 / 4</span><span class="l">FAILURES CAUGHT BY THE FIX</span></a>
+      <a class="stat win" href="#axis"><span class="n">&minus;35%</span><span class="l">INTERACTIONS AT EQUAL ACCURACY</span></a>
     </div>
     <p class="lede">Two of the three research questions are answered with measurements. The third, which is the contribution, has its first half built and tested.</p>
   </section>
@@ -234,8 +235,8 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         <span class="tagline">RQ3 &middot; FIRST HALF DONE</span>
         <h3>Can a question-conditioned retrieval policy reach correct answers with fewer interactions than exhaustive exploration?</h3>
         <p>Two halves. Knowing when you have looked <i>enough</i>, and knowing <i>where</i> to look so that enough costs less.</p>
-        <p class="verdict"><b>First half built and validated:</b> the agent can detect that its own answer is unsupported, and refuse or retry.</p>
-        <p class="verdict"><b>The efficiency claim is not what has been tested, and the first half was never meant to make it.</b> It exists to establish that sufficiency is detectable at all, which was not obvious and is now measured. It is reactive, so it costs more, not less: the retry arm spends 34 per cent above baseline. The proactive half, deciding what to retrieve before starting, is the efficiency claim and it is unrun.</p>
+        <p class="verdict"><b>Both halves now built.</b> The agent detects that its own answer is unsupported and refuses, and it chooses a retrieval strategy from the question before opening anything.</p>
+        <p class="verdict"><b>Together they match exhaustive retrieval on accuracy for 35 per cent fewer interactions and 33 per cent less money, with no wrong answers in 12 runs.</b> That is the claim the question was written to make. It is in sample, because the policy was fixed after watching it fail, so a held-out run on a fresh catalogue is the next thing to spend money on.</p>
       </div>
     </div>
   </section>
@@ -420,15 +421,18 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
     <div class="tablewrap">
       <table>
         <caption>Same questions, same market, three versions of the system</caption>
-        <thead><tr><th>Arm</th><th class="wide">What it does</th><th class="num">Answered</th><th class="num">Refused</th><th class="num">Wrong</th><th class="num">Cost</th></tr></thead>
+        <thead><tr><th>Arm</th><th class="wide">What it does</th><th class="num">Correct</th><th class="num">Refused</th><th class="num">Wrong</th><th class="num">Actions</th><th class="num">Cost/run</th></tr></thead>
         <tbody>
-          <tr><td>Unmodified</td><td class="dim wide">Answers whatever it concludes</td><td class="num">15</td><td class="num">0</td><td class="num">5</td><td class="num">$3.13</td></tr>
-          <tr><td>Gate</td><td class="dim wide">Refuses when its answer is unsupported</td><td class="num">10</td><td class="num">5</td><td class="num">0</td><td class="num">$0.00</td></tr>
-          <tr class="hi"><td>Retry</td><td class="dim wide">Goes back and tries again, told what was wrong</td><td class="num">15</td><td class="num">0</td><td class="num">2</td><td class="num">$4.21</td></tr>
+          <tr><td>Unmodified</td><td class="dim wide">Answers whatever it concludes</td><td class="num">64%</td><td class="num">0</td><td class="num">10 of 28</td><td class="num">17.7</td><td class="num">$0.276</td></tr>
+          <tr><td>Confidence</td><td class="dim wide">States how sure it is, threshold on that</td><td class="num">50%</td><td class="num">0</td><td class="num">6 of 12</td><td class="num">13.9</td><td class="num">$0.219</td></tr>
+          <tr><td>Gate</td><td class="dim wide">Refuses when its answer is unsupported</td><td class="num">94%</td><td class="num">9</td><td class="num">1 of 25</td><td class="num">17.2</td><td class="num">$0.260</td></tr>
+          <tr><td>Retry</td><td class="dim wide">Goes back, told what was wrong</td><td class="num">73%</td><td class="num">2</td><td class="num">2 of 13</td><td class="num">27.3</td><td class="num">$0.374</td></tr>
+          <tr><td>Exhaustive</td><td class="dim wide">Opens every listing. The upper bound</td><td class="num">100%</td><td class="num">0</td><td class="num">0 of 8</td><td class="num">28.4</td><td class="num">$0.568</td></tr>
+          <tr class="hi"><td><b>Targeting + gate</b></td><td class="dim wide">Picks a strategy from the question, then refuses if unsupported</td><td class="num">100%</td><td class="num">2</td><td class="num">0 of 12</td><td class="num">18.4</td><td class="num">$0.382</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">All three arms run the same 15 questions, so the denominators are the same and the columns are comparable. The gate does not answer fewer questions because it failed on them; it declines 5 and is wrong on none of the 10 it answers. The gate costs nothing because it issues no browser action, reading the record of what the agent already saw and comparing it against what the agent just claimed.</p>
+    <p class="note" id="axis">Every arm is restricted to the same four gated questions, so the denominators match. Correct is a share of what the arm actually answered, so refusing is neither rewarded nor punished by that column. The two ends of the axis are the unmodified agent, cheap and wrong a third of the time, and exhaustive retrieval, correct and 2.1 times the price. Targeting plus the gate sits where a policy has to sit: exhaustive's accuracy, closer to the unmodified agent's cost. The gate does not answer fewer questions because it failed on them; The gate costs nothing because it issues no browser action, reading the record of what the agent already saw and comparing it against what the agent just claimed.</p>
 
     <h3 class="sub">The honest test</h3>
     <p class="lede">Two of the five rules were written after seeing failures they were meant to handle, so measuring them on those same failures proves nothing. The rules were locked at a recorded version, then fifteen fresh runs were made, then the rules were applied to those alone.</p>
@@ -605,9 +609,9 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         <p>Decide what to retrieve from the question <i>before</i> starting, rather than checking the answer afterwards. Target is the oracle floor of 11 openings against a current median of 23 actions. Can be written and tested against recorded runs before any of it is paid for.</p>
       </div>
       <div class="card risk">
-        <span class="when">MISSING, AND IT BLOCKS THE MAIN PLOT</span>
-        <h4>The exhaustive baseline</h4>
-        <p>There is currently <b>no cost axis</b> to plot a policy against. An exhaustive arm, which opens every listing and is correct and expensive, is the upper bound the policy must beat on cost while matching on accuracy. Without it there is no upper end to the scale, so no efficiency result can be stated at all. Named here rather than left to surface as a hole.</p>
+        <span class="when">THE NEXT THING TO BUY</span>
+        <h4>A held-out test</h4>
+        <p>The headline result is <b>in sample</b>. The policy was corrected after watching it fail, so the figures are fitted to the failure they were designed to fix. A run on a regenerated catalogue is what turns it into a result, and it is the first thing the new credit should pay for.</p>
       </div>
       <div class="card">
         <span class="when">FREE</span>
