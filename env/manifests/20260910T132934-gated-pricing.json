@@ -1,0 +1,619 @@
+{
+  "seeded_at": "2026-09-10T13:29:34",
+  "base_url": "http://localhost:7770",
+  "fixture": "gated_pricing.json",
+  "parent_skus": [
+    "IGR-CAL-01",
+    "IGR-CAL-02",
+    "IGR-CAL-03",
+    "IGR-CAL-04",
+    "IGR-CAL-05",
+    "IGR-CAL-06",
+    "IGR-CAL-07",
+    "IGR-CAL-08",
+    "IGR-CAL-09",
+    "IGR-CAL-10",
+    "IGR-CAL-11",
+    "IGR-CAL-12",
+    "IGR-CAL-13",
+    "IGR-CAL-14",
+    "IGR-CAL-15"
+  ],
+  "child_skus": [
+    "IGR-CAL-01-24-X-350ML",
+    "IGR-CAL-01-12-X-550ML",
+    "IGR-CAL-01-6-X-1-25L",
+    "IGR-CAL-01-2-X-9-5L",
+    "IGR-CAL-02-24-X-350ML",
+    "IGR-CAL-02-12-X-550ML",
+    "IGR-CAL-02-6-X-1-25L",
+    "IGR-CAL-02-2-X-9-5L",
+    "IGR-CAL-03-24-X-350ML",
+    "IGR-CAL-03-12-X-550ML",
+    "IGR-CAL-03-6-X-1-25L",
+    "IGR-CAL-04-24-X-350ML",
+    "IGR-CAL-04-12-X-550ML",
+    "IGR-CAL-04-6-X-1-25L",
+    "IGR-CAL-04-2-X-9-5L",
+    "IGR-CAL-05-24-X-350ML",
+    "IGR-CAL-05-12-X-550ML",
+    "IGR-CAL-05-6-X-1-25L",
+    "IGR-CAL-05-2-X-9-5L",
+    "IGR-CAL-06-24-X-350ML",
+    "IGR-CAL-06-12-X-550ML",
+    "IGR-CAL-06-6-X-1-25L",
+    "IGR-CAL-06-2-X-9-5L",
+    "IGR-CAL-07-24-X-350ML",
+    "IGR-CAL-07-12-X-550ML",
+    "IGR-CAL-07-6-X-1-25L",
+    "IGR-CAL-07-2-X-9-5L",
+    "IGR-CAL-08-24-X-350ML",
+    "IGR-CAL-08-12-X-550ML",
+    "IGR-CAL-08-6-X-1-25L",
+    "IGR-CAL-09-24-X-350ML",
+    "IGR-CAL-09-12-X-550ML",
+    "IGR-CAL-09-6-X-1-25L",
+    "IGR-CAL-10-24-X-350ML",
+    "IGR-CAL-10-12-X-550ML",
+    "IGR-CAL-10-6-X-1-25L",
+    "IGR-CAL-11-24-X-350ML",
+    "IGR-CAL-11-12-X-550ML",
+    "IGR-CAL-11-6-X-1-25L",
+    "IGR-CAL-11-2-X-9-5L",
+    "IGR-CAL-12-24-X-350ML",
+    "IGR-CAL-12-12-X-550ML",
+    "IGR-CAL-12-6-X-1-25L",
+    "IGR-CAL-12-2-X-9-5L",
+    "IGR-CAL-13-24-X-350ML",
+    "IGR-CAL-13-12-X-550ML",
+    "IGR-CAL-13-6-X-1-25L",
+    "IGR-CAL-13-2-X-9-5L",
+    "IGR-CAL-14-24-X-350ML",
+    "IGR-CAL-14-12-X-550ML",
+    "IGR-CAL-14-6-X-1-25L",
+    "IGR-CAL-14-2-X-9-5L",
+    "IGR-CAL-15-24-X-350ML",
+    "IGR-CAL-15-12-X-550ML",
+    "IGR-CAL-15-6-X-1-25L"
+  ],
+  "ground_truth": {
+    "families": {
+      "scaled-01": {
+        "parent_sku": "IGR-CAL-01",
+        "gating": "price-by-variant",
+        "from_price": 16.14,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-CAL-01-24-X-350ML",
+            "price": 23.61,
+            "qty": 237,
+            "unit_price": 2.8107
+          },
+          "12 x 550ml": {
+            "sku": "IGR-CAL-01-12-X-550ML",
+            "price": 16.14,
+            "qty": 179,
+            "unit_price": 2.4455
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-CAL-01-6-X-1-25L",
+            "price": 22.98,
+            "qty": 219,
+            "unit_price": 3.064
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-CAL-01-2-X-9-5L",
+            "price": 48.64,
+            "qty": 74,
+            "unit_price": 2.56
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 2.4455,
+        "card_price_misleads": false
+      },
+      "scaled-02": {
+        "parent_sku": "IGR-CAL-02",
+        "gating": "price-by-variant",
+        "from_price": 18.35,
+        "from_price_option": "6 x 1.25L",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-CAL-02-24-X-350ML",
+            "price": 21.52,
+            "qty": 197,
+            "unit_price": 2.5619
+          },
+          "12 x 550ml": {
+            "sku": "IGR-CAL-02-12-X-550ML",
+            "price": 21.09,
+            "qty": 138,
+            "unit_price": 3.1955
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-CAL-02-6-X-1-25L",
+            "price": 18.35,
+            "qty": 138,
+            "unit_price": 2.4467
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-CAL-02-2-X-9-5L",
+            "price": 64.74,
+            "qty": 82,
+            "unit_price": 3.4074
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "6 x 1.25L",
+        "cheapest_unit_price": 2.4467,
+        "card_price_misleads": false
+      },
+      "scaled-03": {
+        "parent_sku": "IGR-CAL-03",
+        "gating": "price-by-variant",
+        "from_price": 9.54,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-CAL-03-24-X-350ML",
+            "price": 10.31,
+            "qty": 227,
+            "unit_price": 1.2274
+          },
+          "12 x 550ml": {
+            "sku": "IGR-CAL-03-12-X-550ML",
+            "price": 9.54,
+            "qty": 131,
+            "unit_price": 1.4455
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-CAL-03-6-X-1-25L",
+            "price": 10.31,
+            "qty": 130,
+            "unit_price": 1.3747
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "24 x 350ml",
+        "cheapest_unit_price": 1.2274,
+        "card_price_misleads": true
+      },
+      "scaled-04": {
+        "parent_sku": "IGR-CAL-04",
+        "gating": "price-by-variant",
+        "from_price": 5.54,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-CAL-04-24-X-350ML",
+            "price": 7.26,
+            "qty": 86,
+            "unit_price": 0.8643
+          },
+          "12 x 550ml": {
+            "sku": "IGR-CAL-04-12-X-550ML",
+            "price": 5.54,
+            "qty": 45,
+            "unit_price": 0.8394
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-CAL-04-6-X-1-25L",
+            "price": 8.66,
+            "qty": 112,
+            "unit_price": 1.1547
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-CAL-04-2-X-9-5L",
+            "price": 19.75,
+            "qty": 63,
+            "unit_price": 1.0395
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 0.8394,
+        "card_price_misleads": false
+      },
+      "scaled-05": {
+        "parent_sku": "IGR-CAL-05",
+        "gating": "price-by-variant",
+        "from_price": 19.67,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-CAL-05-24-X-350ML",
+            "price": 23.84,
+            "qty": 127,
+            "unit_price": 2.8381
+          },
+          "12 x 550ml": {
+            "sku": "IGR-CAL-05-12-X-550ML",
+            "price": 19.67,
+            "qty": 115,
+            "unit_price": 2.9803
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-CAL-05-6-X-1-25L",
+            "price": 21.08,
+            "qty": 193,
+            "unit_price": 2.8107
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-CAL-05-2-X-9-5L",
+            "price": 55.85,
+            "qty": 84,
+            "unit_price": 2.9395
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "6 x 1.25L",
+        "cheapest_unit_price": 2.8107,
+        "card_price_misleads": true
+      },
+      "scaled-06": {
+        "parent_sku": "IGR-CAL-06",
+        "gating": "price-by-variant",
+        "from_price": 16.91,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-CAL-06-24-X-350ML",
+            "price": 21.47,
+            "qty": 180,
+            "unit_price": 2.556
+          },
+          "12 x 550ml": {
+            "sku": "IGR-CAL-06-12-X-550ML",
+            "price": 16.91,
+            "qty": 200,
+            "unit_price": 2.5621
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-CAL-06-6-X-1-25L",
+            "price": 21.84,
+            "qty": 218,
+            "unit_price": 2.912
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-CAL-06-2-X-9-5L",
+            "price": 56.06,
+            "qty": 49,
+            "unit_price": 2.9505
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "24 x 350ml",
+        "cheapest_unit_price": 2.556,
+        "card_price_misleads": true
+      },
+      "scaled-07": {
+        "parent_sku": "IGR-CAL-07",
+        "gating": "price-by-variant",
+        "from_price": 10.22,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-CAL-07-24-X-350ML",
+            "price": 16.63,
+            "qty": 178,
+            "unit_price": 1.9798
+          },
+          "12 x 550ml": {
+            "sku": "IGR-CAL-07-12-X-550ML",
+            "price": 10.22,
+            "qty": 96,
+            "unit_price": 1.5485
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-CAL-07-6-X-1-25L",
+            "price": 16.05,
+            "qty": 95,
+            "unit_price": 2.14
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-CAL-07-2-X-9-5L",
+            "price": 30.08,
+            "qty": 173,
+            "unit_price": 1.5832
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 1.5485,
+        "card_price_misleads": false
+      },
+      "scaled-08": {
+        "parent_sku": "IGR-CAL-08",
+        "gating": "price-by-variant",
+        "from_price": 5.75,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-CAL-08-24-X-350ML",
+            "price": 6.97,
+            "qty": 78,
+            "unit_price": 0.8298
+          },
+          "12 x 550ml": {
+            "sku": "IGR-CAL-08-12-X-550ML",
+            "price": 5.75,
+            "qty": 61,
+            "unit_price": 0.8712
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-CAL-08-6-X-1-25L",
+            "price": 8.79,
+            "qty": 79,
+            "unit_price": 1.172
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "24 x 350ml",
+        "cheapest_unit_price": 0.8298,
+        "card_price_misleads": true
+      },
+      "scaled-09": {
+        "parent_sku": "IGR-CAL-09",
+        "gating": "price-by-variant",
+        "from_price": 8.14,
+        "from_price_option": "6 x 1.25L",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-CAL-09-24-X-350ML",
+            "price": 9.72,
+            "qty": 123,
+            "unit_price": 1.1571
+          },
+          "12 x 550ml": {
+            "sku": "IGR-CAL-09-12-X-550ML",
+            "price": 8.23,
+            "qty": 165,
+            "unit_price": 1.247
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-CAL-09-6-X-1-25L",
+            "price": 8.14,
+            "qty": 216,
+            "unit_price": 1.0853
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "6 x 1.25L",
+        "cheapest_unit_price": 1.0853,
+        "card_price_misleads": false
+      },
+      "scaled-10": {
+        "parent_sku": "IGR-CAL-10",
+        "gating": "price-by-variant",
+        "from_price": 18.2,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-CAL-10-24-X-350ML",
+            "price": 21.8,
+            "qty": 216,
+            "unit_price": 2.5952
+          },
+          "12 x 550ml": {
+            "sku": "IGR-CAL-10-12-X-550ML",
+            "price": 18.2,
+            "qty": 240,
+            "unit_price": 2.7576
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-CAL-10-6-X-1-25L",
+            "price": 23.06,
+            "qty": 226,
+            "unit_price": 3.0747
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "24 x 350ml",
+        "cheapest_unit_price": 2.5952,
+        "card_price_misleads": true
+      },
+      "scaled-11": {
+        "parent_sku": "IGR-CAL-11",
+        "gating": "price-by-variant",
+        "from_price": 6.39,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-CAL-11-24-X-350ML",
+            "price": 8.04,
+            "qty": 185,
+            "unit_price": 0.9571
+          },
+          "12 x 550ml": {
+            "sku": "IGR-CAL-11-12-X-550ML",
+            "price": 6.39,
+            "qty": 153,
+            "unit_price": 0.9682
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-CAL-11-6-X-1-25L",
+            "price": 7.04,
+            "qty": 69,
+            "unit_price": 0.9387
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-CAL-11-2-X-9-5L",
+            "price": 17.36,
+            "qty": 106,
+            "unit_price": 0.9137
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "2 x 9.5L",
+        "cheapest_unit_price": 0.9137,
+        "card_price_misleads": true
+      },
+      "scaled-12": {
+        "parent_sku": "IGR-CAL-12",
+        "gating": "price-by-variant",
+        "from_price": 11.0,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-CAL-12-24-X-350ML",
+            "price": 13.12,
+            "qty": 160,
+            "unit_price": 1.5619
+          },
+          "12 x 550ml": {
+            "sku": "IGR-CAL-12-12-X-550ML",
+            "price": 11.0,
+            "qty": 204,
+            "unit_price": 1.6667
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-CAL-12-6-X-1-25L",
+            "price": 14.26,
+            "qty": 42,
+            "unit_price": 1.9013
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-CAL-12-2-X-9-5L",
+            "price": 34.48,
+            "qty": 173,
+            "unit_price": 1.8147
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "24 x 350ml",
+        "cheapest_unit_price": 1.5619,
+        "card_price_misleads": true
+      },
+      "scaled-13": {
+        "parent_sku": "IGR-CAL-13",
+        "gating": "price-by-variant",
+        "from_price": 11.08,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-CAL-13-24-X-350ML",
+            "price": 14.07,
+            "qty": 120,
+            "unit_price": 1.675
+          },
+          "12 x 550ml": {
+            "sku": "IGR-CAL-13-12-X-550ML",
+            "price": 11.08,
+            "qty": 240,
+            "unit_price": 1.6788
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-CAL-13-6-X-1-25L",
+            "price": 13.06,
+            "qty": 223,
+            "unit_price": 1.7413
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-CAL-13-2-X-9-5L",
+            "price": 27.68,
+            "qty": 139,
+            "unit_price": 1.4568
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "2 x 9.5L",
+        "cheapest_unit_price": 1.4568,
+        "card_price_misleads": true
+      },
+      "scaled-14": {
+        "parent_sku": "IGR-CAL-14",
+        "gating": "price-by-variant",
+        "from_price": 11.44,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-CAL-14-24-X-350ML",
+            "price": 17.14,
+            "qty": 116,
+            "unit_price": 2.0405
+          },
+          "12 x 550ml": {
+            "sku": "IGR-CAL-14-12-X-550ML",
+            "price": 11.44,
+            "qty": 237,
+            "unit_price": 1.7333
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-CAL-14-6-X-1-25L",
+            "price": 14.68,
+            "qty": 153,
+            "unit_price": 1.9573
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-CAL-14-2-X-9-5L",
+            "price": 39.05,
+            "qty": 131,
+            "unit_price": 2.0553
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 1.7333,
+        "card_price_misleads": false
+      },
+      "scaled-15": {
+        "parent_sku": "IGR-CAL-15",
+        "gating": "price-by-variant",
+        "from_price": 19.26,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-CAL-15-24-X-350ML",
+            "price": 25.18,
+            "qty": 30,
+            "unit_price": 2.9976
+          },
+          "12 x 550ml": {
+            "sku": "IGR-CAL-15-12-X-550ML",
+            "price": 19.26,
+            "qty": 48,
+            "unit_price": 2.9182
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-CAL-15-6-X-1-25L",
+            "price": 25.05,
+            "qty": 226,
+            "unit_price": 3.34
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 2.9182,
+        "card_price_misleads": false
+      }
+    },
+    "cross_listing": {
+      "24 x 350ml": {
+        "cheapest_listing": "scaled-08",
+        "cheapest_price": 6.97,
+        "listing_a_card_probe_would_pick": "scaled-04",
+        "card_probe_wrong": true
+      },
+      "12 x 550ml": {
+        "cheapest_listing": "scaled-04",
+        "cheapest_price": 5.54,
+        "listing_a_card_probe_would_pick": "scaled-04",
+        "card_probe_wrong": false
+      },
+      "6 x 1.25L": {
+        "cheapest_listing": "scaled-11",
+        "cheapest_price": 7.04,
+        "listing_a_card_probe_would_pick": "scaled-04",
+        "card_probe_wrong": true
+      },
+      "2 x 9.5L": {
+        "cheapest_listing": "scaled-11",
+        "cheapest_price": 17.36,
+        "listing_a_card_probe_would_pick": "scaled-04",
+        "card_probe_wrong": true
+      }
+    }
+  }
+}

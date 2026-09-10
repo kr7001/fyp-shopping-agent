@@ -52,6 +52,16 @@ ABSOLUTE = re.compile(r"(?<!\+)(?<!\+ )\$" + MONEY + r"(?![\d])")
 # they carry one decimal place, so this deliberately accepts either.
 ANY_DECIMAL = re.compile(r"(?<![\d.])" + MONEY + r"(?![\d])")
 
+# A figure with a unit attached is a quantity, not a price. "8.4 litres" says how much, not
+# how much it costs, and the money patterns below cannot tell the difference on their own.
+# This was found on the held-out run: two correct answers were refused because they showed
+# their working, "24 x 350ml (8.4 litres total)", and 8.4 was read as an unsupported $8.40.
+# The same family as the delta misread that started this project, a number meaning
+# something other than money, this time in my own checker rather than the agent's answer.
+QUANTITY = re.compile(
+    MONEY + r"\s*(?:l\b|litres?|liters?|ml\b|kg\b|g\b|kilograms?|grams?|"
+            r"bottles?|packs?|units?|items?)", re.IGNORECASE)
+
 # A figure carrying a per-unit denominator is derived by the agent, not read off the
 # page, so it can be correct while appearing nowhere in the observations.
 RATE = re.compile(MONEY + r"\s*(?:/\s*(?:l|kg|litre|liter|kilogram)\b|"
@@ -133,6 +143,11 @@ def prices_in(text: str) -> list[int]:
 
 def rate_values(text: str) -> set[int]:
     return {cents(m) for m in RATE.findall(text or "")}
+
+
+def quantity_values(text: str) -> set[int]:
+    """Figures that are measurements rather than money."""
+    return {cents(m) for m in QUANTITY.findall(text or "")}
 
 
 def verified_compositions(amounts: list[int], seen: dict[str, set[int]]) -> set[int]:
@@ -217,7 +232,8 @@ def check(answer: str, seen: dict[str, set[int]], *, question: str = "",
 
     claimed = prices_in(answer)
     rates = rate_values(answer)
-    amounts = [v for v in claimed if v not in rates]
+    quantities = quantity_values(answer)
+    amounts = [v for v in claimed if v not in rates and v not in quantities]
 
     if COMPLETION_CLAIM.search(answer) and not amounts:
         return {"flag": "claim_without_content", "ok": False,
