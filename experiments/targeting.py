@@ -38,7 +38,7 @@ import re
 # under different versions are different policies and must not be pooled, which is the
 # same denominator discipline applied everywhere else. v1 lacked the enumeration step and
 # pruned within whatever the first screen happened to show.
-VERSION = 2
+VERSION = 3
 
 # Ordered, and the order matters. A universal question about stock also contains the word
 # "lowest" in some phrasings, so the coverage test is applied before the price tests.
@@ -118,16 +118,24 @@ STRATEGIES = {
         "In your answer, say how many listings you opened, how many you skipped, and why "
         "skipping them was safe." + QUARANTINE),
     "refutation": (
-        ENUMERATE + "Use this retrieval strategy, and note what the question actually requires.\n"
-        "It asks whether EVERY listing qualifies. Those two possible answers need "
-        "different amounts of evidence. To answer No you need one counterexample and "
-        "nothing more. To answer Yes you need to have checked all of them.\n"
-        "1. Open listings and check the option asked about.\n"
-        "2. The moment you find one that does not have it, you can answer No and stop. "
-        "Name it as your evidence.\n"
-        "3. Only if you have opened every listing without finding a counterexample may "
-        "you answer Yes.\n"
-        "In your answer, say how many listings you opened and which one settled it."),
+        ENUMERATE + "Note what the question actually requires, because the two possible "
+        "answers need very different amounts of work.\n"
+        "To answer No you need exactly ONE listing that lacks the option. Nothing more. "
+        "One counterexample settles a claim about every listing.\n"
+        "To answer Yes you must have opened every single one.\n"
+        "So hunt for a counterexample rather than surveying:\n"
+        "1. Open a listing and check for the option asked about.\n"
+        "2. If it lacks the option, you are finished. Answer No, name that listing as your "
+        "evidence, and stop immediately. Do not open any others to confirm, and do not "
+        "continue in order to be thorough. Opening more cannot change the answer.\n"
+        "3. Only if you exhaust every enumerated listing without finding one may you "
+        "answer Yes.\n"
+        "In your answer, say how many listings you opened and which one settled it. "
+        "Stopping after one or two openings is the correct outcome here, not a sign that "
+        "you did too little.\n"
+        "Note that the previous version of this instruction was followed to the letter and "
+        "not to its point: the agent enumerated and then opened ten listings when the "
+        "first counterexample had already settled the question."),
     "rate_bound": (
         ENUMERATE + "Use this retrieval strategy, and follow it rather than opening listings in the "
         "order they appear.\n"
