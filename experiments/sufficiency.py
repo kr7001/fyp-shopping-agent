@@ -67,6 +67,7 @@ COMPLETION_CLAIM = re.compile(
 # what makes this checkable without knowing the right answer.
 UNIVERSAL_QUESTION = re.compile(r"\b(every|all)\b", re.IGNORECASE)
 AFFIRMS = re.compile(r"^\W*yes\b", re.IGNORECASE)
+DENIES = re.compile(r"^\W*no\b", re.IGNORECASE)
 
 # An answer that states the size of the set it considered can be checked against the size
 # of the set that exists. "analysing all 4 sellers" is a comparison over 4 of 15, stated
@@ -201,6 +202,18 @@ def check(answer: str, seen: dict[str, set[int]], *, question: str = "",
                         "why": (f"claims to have covered all {size}, where the result "
                                 f"set holds {population}"),
                         "claimed": prices_in(answer)}
+
+    # The mirror of the rule above, and it was missing. Refuting a claim about every
+    # listing is cheap precisely because one counterexample settles it, but a
+    # counterexample has to have been seen. A run that answered "No" having opened no
+    # listing at all was right, and right by luck, and passed this check clean because the
+    # coverage rule only ever looked at affirmations.
+    if (question and opened is not None and UNIVERSAL_QUESTION.search(question)
+            and DENIES.match(answer) and opened == 0):
+        return {"flag": "refutation_without_evidence", "ok": False,
+                "why": ("denies a claim about every listing without having opened any, so "
+                        "no counterexample was observed"),
+                "claimed": prices_in(answer)}
 
     claimed = prices_in(answer)
     rates = rate_values(answer)
