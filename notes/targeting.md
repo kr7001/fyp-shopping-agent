@@ -210,3 +210,84 @@ it needs a sharper prompt rather than a new idea.
   exactly what that permits
 - The v1 numbers remain in the section above, wrong, with the correction attached. They
   are kept because the record of what was claimed is part of the result
+
+---
+
+# Refutation v3, and a hole it exposed
+
+2026-09-10. 3 runs, $0.65, `scaled-all-stocked` only.
+
+v2's refutation was correct three times from three and cost more than it should. Refuting
+a claim about every listing needs one counterexample, five of fifteen lack the pack, and
+the runs were opening ten or eleven. The agent was following the letter of the instruction
+and not its point.
+
+The instruction now says to stop immediately on the first counterexample, and that
+stopping after one or two openings is the correct outcome rather than a sign of having
+done too little.
+
+| | Actions | Against exhaustive's 20.0 |
+| --- | --- | --- |
+| v2 | 14.3 | 28% saved |
+| **v3** | **10.3** | **48% saved** |
+
+Still 3 of 3 correct, and one run named its counterexample explicitly:
+
+```
+No. Not every Rivenhall listing stocks the 2 x 9.5L pack. Counterexample:
+Chandler Wholesale (listing 11 of 15) does not offer it.
+```
+
+## The hole
+
+One of the three answered **"No" having opened no listing at all.** Correct, and correct by
+luck.
+
+The coverage rule only ever looked at affirmations. `unverified_universal` catches a "Yes"
+from partial coverage, and nothing caught the mirror case, because refuting is supposed to
+be cheap. But cheap is not free: one counterexample settles the question and the
+counterexample has to have been seen.
+
+Checked rather than assumed: the search results page contains no mention of "9.5L" and no
+mention of stock at the option level, so a listing's lack of the pack cannot be established
+without opening it. The rule is sound.
+
+Added `refutation_without_evidence`: a denial of a universal claim with zero listings
+opened. It fires on two recorded runs, both correct, both unearned.
+
+## What that does to the gate's headline, honestly
+
+The gate's strongest property was that it had never blocked a correct answer. That is no
+longer true.
+
+```
+93 baseline runs replayed under the gate
+
+verdict       baseline    gate
+-------------------------------
+abstained            0      17
+correct             77      75
+wrong               16       1
+
+wrong answers withdrawn   15 of 16
+correct answers withdrawn  2 of 77
+```
+
+Two correct answers are now withheld, and both are answers reached with no evidence at
+all. Whether that counts as a cost depends on which property is being bought. Under
+accuracy it is a loss of two. Under soundness it is the rule working: an answer that was
+right without evidence is exactly what this project argues should not be trusted.
+
+The honest way to report it is both numbers, not the flattering one.
+
+## A recurring hazard worth naming
+
+`replay_gate.py` had been pooling the confidence, exhaustive and targeting suites into the
+baseline, because its filter tested only the one flag that existed when it was written.
+That is the third time a figure has come out wrong from mixing conditions, after the two
+headline percentages and the pooling of targeting v1 with v2.
+
+The pattern is the same each time: an arm is added, and code written before it existed
+silently treats it as more of what it already knew. The filter is now written as an
+explicit list of everything that makes a suite not a baseline, and any further arm has to
+be added to it deliberately.

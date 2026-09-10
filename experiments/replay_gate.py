@@ -68,9 +68,19 @@ def replay(only_suite: str | None = None) -> int:
     stale: list[str] = []
     for suite_path in sorted(RESULTS.glob("*/suite.json")):
         payload = json.loads(suite_path.read_text())
-        # A suite already run under a policy is not a baseline, so replaying the gate
-        # over it would be measuring the gate on top of itself.
-        if payload.get("policy", "off") != "off":
+        # A suite already run under a policy is not a baseline, so replaying the gate over
+        # it would be measuring the gate on top of itself. The same goes for every other
+        # condition that changes what the agent was asked to do. This filter has had to be
+        # widened three times as arms accumulated, each time after a figure came out wrong,
+        # so it is now written as an explicit list of everything that makes a suite not a
+        # baseline rather than as a test of the one flag that existed when it was written.
+        not_baseline = (
+            payload.get("policy", "off") != "off"     # gate or retry already applied
+            or payload.get("confidence", "off") != "off"  # prompt asked for a confidence
+            or payload.get("exhaustive")              # told to open everything
+            or payload.get("targeting")               # given a retrieval strategy
+        )
+        if not_baseline:
             continue
         if only_suite and suite_path.parent.name != only_suite:
             continue

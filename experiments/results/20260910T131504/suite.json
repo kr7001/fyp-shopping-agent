@@ -1,0 +1,156 @@
+{
+  "ran_at": "2026-09-10T13:20:54",
+  "repeats": 3,
+  "policy": "gate",
+  "confidence": "off",
+  "exhaustive": false,
+  "targeting": true,
+  "targeting_version": 3,
+  "tasks_file": "tasks_scaled.json",
+  "instance": {
+    "target_option": "2 x 9.5L",
+    "listings": 15,
+    "listings_with_target": 10,
+    "winner": {
+      "sku": "IGR-RVN-03",
+      "seller": "Redhill Stores",
+      "price": 17.68
+    },
+    "runner_up_price": 19.26,
+    "winning_margin": 1.58,
+    "cheapest_card": {
+      "sku": "IGR-RVN-09",
+      "seller": "Hillside Wholesale",
+      "from_price": 6.44
+    },
+    "card_probe_wrong": true,
+    "best_per_litre": {
+      "sku": "IGR-RVN-07",
+      "seller": "Thornbury Pantry",
+      "option": "6 x 1.25L",
+      "price_per_litre": 0.9107
+    },
+    "unit_probe_wrong": true,
+    "oracle_min_opens": 11,
+    "prunable_by_bound": 4,
+    "exhaustive_opens": 15,
+    "bound_strength": 0.267,
+    "from_price_range": [
+      6.44,
+      21.78
+    ],
+    "target_price_range": [
+      17.68,
+      67.17
+    ]
+  },
+  "summary": {
+    "by_task": {
+      "scaled-all-stocked": {
+        "gated": true,
+        "verdicts": {
+          "correct": 3
+        },
+        "actions": [
+          12,
+          9,
+          10
+        ],
+        "tool_calls": [
+          24,
+          25,
+          25
+        ],
+        "cost": [
+          0.202917,
+          0.299138,
+          0.149248
+        ],
+        "mean_actions": 10.3,
+        "mean_tool_calls": 24.7,
+        "total_cost": 0.6513
+      }
+    },
+    "overall": {
+      "correct": 3
+    },
+    "total_cost": 0.6513
+  },
+  "rows": [
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "answered no",
+      "answer": "No. Not every Rivenhall listing stocks the 2 x 9.5L pack. Counterexample: Rivenhall Still Spring Water, Multipack - Chandler Wholesale (listing 11 of 15) does not offer the 2 x 9.5L pack option in its Pack Size dropdown.",
+      "tool_calls": 24,
+      "actions": 12,
+      "observations": 12,
+      "cost_usd": 0.202917,
+      "elapsed_s": 113.8,
+      "error": null,
+      "log": "scaled-all-stocked-1.log",
+      "strategy": "refutation",
+      "policy": "gate",
+      "flag": null,
+      "flag_why": "every figure is observed or arithmetically justified",
+      "opened": 7,
+      "retried": false,
+      "first_flag": null,
+      "first_why": null,
+      "first_answer": null
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "answered no",
+      "answer": "No",
+      "tool_calls": 25,
+      "actions": 9,
+      "observations": 16,
+      "cost_usd": 0.299138,
+      "elapsed_s": 118.1,
+      "error": null,
+      "log": "scaled-all-stocked-2.log",
+      "strategy": "refutation",
+      "policy": "gate",
+      "flag": null,
+      "flag_why": "no price claimed as an amount",
+      "opened": 0,
+      "retried": false,
+      "first_flag": null,
+      "first_why": null,
+      "first_answer": null
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "answered no",
+      "answer": "No",
+      "tool_calls": 25,
+      "actions": 10,
+      "observations": 15,
+      "cost_usd": 0.149248,
+      "elapsed_s": 108.9,
+      "error": null,
+      "log": "scaled-all-stocked-3.log",
+      "strategy": "refutation",
+      "policy": "gate",
+      "flag": null,
+      "flag_why": "no price claimed as an amount",
+      "opened": 8,
+      "retried": false,
+      "first_flag": null,
+      "first_why": null,
+      "first_answer": null
+    }
+  ]
+}
