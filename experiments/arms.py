@@ -40,7 +40,11 @@ GATED = ("scaled-cheapest-target", "scaled-target-price",
 def arm_name(payload: dict) -> str:
     if payload.get("targeting"):
         policy = payload.get("policy", "off")
-        return "targeting" if policy == "off" else f"targeting+{policy}"
+        # A suite predating the version field ran the strategies that pruned within the
+        # first screen without enumerating, which is a different policy, not a repeat.
+        version = payload.get("targeting_version", 1)
+        base = "targeting" if policy == "off" else f"targeting+{policy}"
+        return f"{base} v{version}"
     if payload.get("exhaustive"):
         return "exhaustive"
     if payload.get("confidence", "off") != "off":
@@ -109,7 +113,7 @@ def main() -> int:
     arms = collect()
     arms["gate"] = replayed_gate(arms)
     order = ["unmodified", "confidence:plain", "gate", "retry", "exhaustive",
-             "targeting", "targeting+gate"]
+             "targeting v1", "targeting+gate v1", "targeting+gate v2"]
     order += [k for k in arms if k not in order]
 
     print("EVERY ARM, ON THE SAME FOUR GATED QUESTIONS\n")
@@ -147,8 +151,9 @@ def main() -> int:
         print(f"  exhaustive   {hr:>5.0%} correct   {ha:>5.1f} actions   ${hc:.3f} per run")
         print(f"  exhaustive costs {hc / lc:.1f}x the unmodified agent and gets "
               f"{hr - lr:+.0%} accuracy")
-        aim = arms.get("targeting+gate") or arms.get("targeting")
-        aim_name = "targeting+gate" if arms.get("targeting+gate") else "targeting"
+        aim_name = next((k for k in ("targeting+gate v2", "targeting+gate v1",
+                                     "targeting v1") if arms.get(k)), None)
+        aim = arms.get(aim_name) if aim_name else None
         if not aim:
             print("\nA targeting policy has to beat exhaustive on cost while matching it")
             print("on accuracy. That is the claim RQ3 makes and the one still unmeasured.")

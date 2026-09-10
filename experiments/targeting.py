@@ -34,6 +34,12 @@ from __future__ import annotations
 
 import re
 
+# Bumped whenever a strategy prompt changes in a way that changes behaviour. Runs made
+# under different versions are different policies and must not be pooled, which is the
+# same denominator discipline applied everywhere else. v1 lacked the enumeration step and
+# pruned within whatever the first screen happened to show.
+VERSION = 2
+
 # Ordered, and the order matters. A universal question about stock also contains the word
 # "lowest" in some phrasings, so the coverage test is applied before the price tests.
 UNIVERSAL = re.compile(r"\b(every|all)\b.*\b(stock|carry|offer|have)\b", re.IGNORECASE)

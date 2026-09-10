@@ -140,3 +140,73 @@ rule about attribution rather than about presence, and that rule does not exist 
   exactly what that permits
 - `LARGEST_PACK_LITRES = 19` is a fixture constant. A policy facing an unknown catalogue
   would have to establish it, and the rate bound is loose because of it
+
+---
+
+# Targeting v2: enumerate, then prune
+
+2026-09-10. 12 runs, $4.58, four gated questions, three repeats, run with the gate on.
+Results in `experiments/results/20260910T101847/`.
+
+The only change from v1 is that every strategy now begins by establishing the candidate
+set: paginate the search results, list every listing with its advertised price, and skip
+only what has been enumerated.
+
+**Enumeration verified before reading anything else.** All twelve runs observed the full
+seller list and opened between 10 and 15 listings, against v1's four.
+
+## The result
+
+| | Correct | Refused | Wrong | Actions | Cost per run |
+| --- | --- | --- | --- | --- | --- |
+| Unmodified | 64% | 0 | 10 of 28 | 17.7 | $0.276 |
+| Exhaustive | 100% | 0 | 0 of 8 | 28.4 | $0.568 |
+| **Targeting + gate** | **100%** | 2 | **0 of 12** | **18.4** | **$0.382** |
+
+Rate is correct as a share of what the arm answered.
+
+**It matches the exhaustive upper bound on accuracy, for 35 per cent fewer interactions
+and 33 per cent less money, and it gets no answers wrong at all.** That is the claim RQ3
+was written to make.
+
+## By strategy
+
+| Strategy | Correct | Refused | Wrong | Actions | Exhaustive | Saving |
+| --- | --- | --- | --- | --- | --- | --- |
+| total_bound | 5 | 1 | 0 | 21.7 | 31.2 | 31% |
+| refutation | 3 | 0 | 0 | 14.3 | 20.0 | 28% |
+| rate_bound | 2 | 1 | 0 | 16.0 | 31.0 | 48% |
+
+Two of these are firsts. `scaled-all-stocked` is correct three times from three, having
+been wrong in every previous arm except exhaustive. `scaled-best-per-litre` is correct at
+all for the first time in the project, which follows directly from the correction: its
+answer, Thornbury Pantry, was never visible until the agent was made to paginate.
+
+## The gate is doing work, and it is the right work
+
+Two runs were refused rather than answered, and both refusals look correct:
+`understated_population` on a run that opened 9 listings and described that as complete,
+and `unsupported_number` on a per-litre answer. Neither became a wrong answer, and the
+other ten were right. **The combination has no wrong answers in twelve runs**, which
+neither half achieved alone: targeting alone was wrong four times in eight, and the gate
+alone never got cheaper.
+
+## What is still on the table
+
+`refutation` should be the cheapest strategy and is not. Refuting "does every listing
+stock it" needs **one** counterexample, and five of the fifteen do not stock the pack, so
+a hunt should terminate in two or three openings. The runs opened ten or eleven. The agent
+enumerated and then surveyed rather than hunting, so it is executing the letter of the
+strategy and not its point. That is the largest remaining saving visible in the data and
+it needs a sharper prompt rather than a new idea.
+
+## Caveats, and the one that matters most
+
+- **In sample.** The enumeration step was added after watching v1 fail, so these numbers
+  are fitted to the failure they were designed to fix. A held-out run on a regenerated
+  catalogue is needed before this figure is quoted as a result
+- 12 runs, three per question. A direction, not an interval
+- Strategies are supplied in the prompt and not enforced. The refutation shortfall is
+  exactly what that permits
+- The v1 numbers remain in the section above, wrong, with the correction attached. They
+  are kept because the record of what was claimed is part of the result
