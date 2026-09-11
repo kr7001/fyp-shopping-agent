@@ -37,6 +37,17 @@ GATED = ("scaled-cheapest-target", "scaled-target-price",
          "scaled-all-stocked", "scaled-best-per-litre")
 
 
+def market_suffix(payload: dict) -> str:
+    """Which market a suite ran against, when it is not the development one."""
+    tasks_file = payload.get("tasks_file", "tasks.json")
+    brand = payload.get("brand")
+    if brand and brand != "Rivenhall":
+        return f" [{brand}]"
+    if "heldout" in tasks_file:
+        return " [held-out]"
+    return ""
+
+
 def arm_name(payload: dict) -> str:
     if payload.get("targeting"):
         policy = payload.get("policy", "off")
@@ -44,7 +55,11 @@ def arm_name(payload: dict) -> str:
         # first screen without enumerating, which is a different policy, not a repeat.
         version = payload.get("targeting_version", 1)
         base = "targeting" if policy == "off" else f"targeting+{policy}"
-        return f"{base} v{version}"
+        # Runs on different markets are different measurements, not more repeats of one.
+        # This is the fifth time a figure has come out wrong from pooling things that only
+        # looked alike, so the market is now part of the arm's identity rather than an
+        # assumption that every suite used the development fixture.
+        return f"{base} v{version}{market_suffix(payload)}"
     if payload.get("exhaustive"):
         return "exhaustive"
     if payload.get("confidence", "off") != "off":
@@ -113,7 +128,8 @@ def main() -> int:
     arms = collect()
     arms["gate"] = replayed_gate(arms)
     order = ["unmodified", "confidence:plain", "gate", "retry", "exhaustive",
-             "targeting v1", "targeting+gate v1", "targeting+gate v2"]
+             "targeting v1", "targeting+gate v1", "targeting+gate v2",
+             "targeting+gate v3", "targeting+gate v3 [Calderwood]"]
     order += [k for k in arms if k not in order]
 
     print("EVERY ARM, ON THE SAME FOUR GATED QUESTIONS\n")
@@ -136,6 +152,26 @@ def main() -> int:
 
     print("\nrate is correct as a share of questions the arm actually answered, so an arm")
     print("that refuses is not rewarded for the refusals nor punished for them here.")
+
+    # The gate is a replay of baseline runs, so its cost and actions are those runs' own
+    # figures. It reads lower than the unmodified row only because the replay drops runs
+    # whose recorded verdict no longer reproduces, and one of those three was expensive.
+    # Presenting that difference as a saving would be wrong: the gate issues no browser
+    # action, so it cannot change cost at all. Paired against exactly the runs it replayed,
+    # the cost is identical by construction and the verdicts are the only thing that moves.
+    gate = arms.get("gate") or []
+    if gate:
+        keys = {(r["task"], r["repeat"], round(r["cost_usd"], 6)) for r in gate}
+        paired = [r for r in arms.get("unmodified", [])
+                  if (r["task"], r["repeat"], round(r["cost_usd"], 6)) in keys]
+        if paired:
+            pw = sum(1 for r in paired if r["verdict"] == "wrong")
+            gw = sum(1 for r in gate if r["verdict"] == "wrong")
+            print(f"\ngate, paired against the same {len(paired)} runs it replays")
+            print(f"  cost     ${mean(r['cost_usd'] for r in paired):.3f} either way, "
+                  f"identical by construction")
+            print(f"  actions  {mean(r['actions'] for r in paired):.1f} either way")
+            print(f"  wrong    {pw} without it, {gw} with it")
 
     low = arms.get("unmodified")
     high = arms.get("exhaustive")
