@@ -12,7 +12,7 @@ The agent runs end to end against the environment, the RQ2 baseline is measured 
 assumed, Checkpoint B is finished two weeks early, and **both halves of RQ3 are built and
 the efficiency claim is met.**
 
-Three results shape the project. The agent **never** signals uncertainty, in 95 unmodified
+Three results shape the project. The agent **never** signals uncertainty, in 107 unmodified
 runs on the current catalogues. At fifteen listings its failures come from under-retrieval. And the cross-listing failure
 that motivated the project does not reproduce at small scale but does at fifteen listings.
 
@@ -30,8 +30,9 @@ Spend to date: **$18.63 of the original $20 plus $21 self-funded**, roughly 190 
 runs. Thank you for arranging the further credit; the first thing it buys is an exhaustive
 arm on the held-out market, without which no saving can be stated there.
 
-*As of 14 September:* $43.08 on the OpenRouter account and 263 run records, after re-running
-the RQ2 baseline clean. The per-run logged costs sum to $37.30 and remain a lower bound.
+*As of 14 September:* $45.48 on the OpenRouter account and 275 run records, after
+re-running the RQ2 baseline clean and adding a third unmodified batch. The per-run logged
+costs sum to $39.45 and remain a lower bound.
 
 ---
 
@@ -372,14 +373,30 @@ correct answers withdrawn 0 of 11
 added model cost          $0.00, the gate issues no browser action
 ```
 
-*Corrected 14 September.* I wrote here that precision held at 1.00 across 77 correct runs.
-Over the 95 unmodified runs on the current catalogues the gate withholds 2 of 79 correct
-answers and withdraws 13 of 16 wrong ones. Both withheld answers are correct yes-or-no
-answers that mention a surcharge in passing, "XL +$2.00", which the surcharge rule reads as a
-price. The earlier 1.00 included the runs that had the answers on the page.
+*Added 14 September: a second held-out batch.* Twelve more gated runs on the same market,
+made after every rule change to date. The rules had changed in three places since the
+freeze (`refutation_without_evidence` added, the units fix, click-opened listings counted),
+so the batch was replayed under the literal `7771e24` code, which reproduces the result
+above exactly. The current rules decide identically on every run in both batches.
 
-The failure that escaped gives the same wrong answer as the two that were caught, and
-differs only in not volunteering how much it had looked at. `understated_population` reads
+| Gated questions only | Batch 2 | Batch 3 | Both |
+| --- | --- | --- | --- |
+| Wrong answers withdrawn | 3 of 4 | 3 of 6 | **6 of 10** |
+| Correct answers withheld | 0 of 8 | 1 of 6 | **1 of 14** |
+| Added cost | $0.00 | $0.00 | $0.00 |
+
+The first batch alone overstated recall. The withheld answer named the right seller after
+opening 4 of 15 listings while claiming to have checked "all four": right, but not earned.
+
+*Corrected 14 September.* I wrote here that precision held at 1.00 across 77 correct runs.
+Over all 107 unmodified runs on the current catalogues, in sample and out, the gate
+withholds 3 of 85 correct answers and withdraws 16 of 22 wrong ones. Two withheld answers
+are correct yes-or-no answers that mention a surcharge in passing, "XL +$2.00", which the
+surcharge rule reads as a price; the third is the unearned answer above. The earlier 1.00
+included the runs that had the answers on the page.
+
+Every failure that escaped, one in batch 2 and three in batch 3, is a per-litre answer that
+opened 4 of 15 listings and did not volunteer how much it had looked at. `understated_population` reads
 a claim the agent makes about itself, so an agent that says less is checked less. That is
 a real ceiling on the rule rather than a bug in it.
 
@@ -398,19 +415,21 @@ typing a URL, and missed listings opened by clicking a card. Counted correctly, 
 same two tasks on the current catalogue draw:
 
 ```
-correct opens: [4, 15, 15, 15, 15, 15]
-wrong   opens: [4, 4, 4, 4, 4, 4]
+correct opens: [4, 4, 14, 15, 15, 15, 15, 15, 15]
+wrong   opens: [4, 4, 4, 4, 4, 4, 4, 4, 4]
 ```
 
-A floor at 11 would catch all six failures and block one correct answer, which was itself
-reached after opening 4 of 15. The rejection no longer holds as I stated it. Whether to add
+Over three batches, a floor at 11 would catch all nine failures and block two correct
+answers, each reached after opening 4 of 15. The rejection no longer holds as I stated it. Whether to add
 a coverage rule, and at what floor for each kind of question, is an open design question:
 refuting a claim about every listing needs one counterexample, not eleven openings.
 
-**The same numbers give something more useful.** `scaled-best-per-litre` opens exactly 4
-listings in all seven runs, right and wrong alike, so its one correct answer rests on the
-same evidence as its six wrong ones. Accuracy cannot separate those outcomes because
-nothing in the runs separates them. Correctness and soundness are different properties,
+**The same numbers give something more useful.** `scaled-cheapest-target` was answered
+correctly twice after opening 4 of 15 listings, below the 11 that any verified answer needs:
+the winner happened to sit among the four opened. Accuracy scores those as successes although
+nothing in the runs separates them from a lucky guess. `scaled-best-per-litre` opens exactly
+4 listings in all nine runs on the current market and is wrong in all nine. (Its one correct
+answer, which I used here before, came from a catalogue draw since replaced.) Correctness and soundness are different properties,
 and I intend to report both rather than only the first.
 
 ---
@@ -450,7 +469,7 @@ Three strategies, chosen from the wording of the question rather than from the t
 
 | Arm | Correct | Refused | Wrong | Actions | Cost per run |
 | --- | --- | --- | --- | --- | --- |
-| Unmodified | 62% | 0 | 9 of 24 | 17.6 | $0.267 |
+| Unmodified | 58% | 0 | 15 of 36 | 15.8 | $0.238 |
 | Exhaustive | 100% | 0 | 0 of 8 | 28.4 | $0.568 |
 | **Targeting + gate** | **100%** | 1 | **0 of 12** | **18.4** | **$0.382** |
 
