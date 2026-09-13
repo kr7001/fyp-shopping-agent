@@ -87,5 +87,7 @@
       "confidence_reason": "I reviewed all 15 products across both pages of the search results and directly compared all prices shown on the results page.",
       "confidence_wording": "retrieval"
     }
-  ]
+  ],
+  "draw": "Rivenhall:2cf12d1df7",
+  "draw_basis": "computed from the instance recorded in this suite"
 }

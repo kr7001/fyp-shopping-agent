@@ -25,6 +25,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import policy as policy_module
+import suite
 import score as scoring
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -37,15 +38,27 @@ GATED = ("scaled-cheapest-target", "scaled-target-price",
          "scaled-all-stocked", "scaled-best-per-litre")
 
 
-def market_suffix(payload: dict) -> str:
-    """Which market a suite ran against, when it is not the development one."""
-    tasks_file = payload.get("tasks_file", "tasks.json")
-    brand = payload.get("brand")
-    if brand and brand != "Rivenhall":
-        return f" [{brand}]"
-    if "heldout" in tasks_file:
-        return " [held-out]"
-    return ""
+# The draws each question set is currently scored against. A suite on any other draw was
+# scored against answers that no longer describe the shop, so it is labelled, never pooled.
+DEV_DRAW = suite.draw_id(json.loads((HERE / "tasks_scaled.json").read_text()))
+HELDOUT_DRAW = suite.draw_id(json.loads((HERE / "tasks_heldout.json").read_text()))
+
+
+def draw_suffix(payload: dict) -> str:
+    """Which catalogue draw a suite ran against, when it is not the development one.
+
+    The sixth figure to come out wrong from pooling came from here: `collect` grouped by
+    condition alone, so four runs from a Rivenhall draw since replaced sat inside the
+    unmodified baseline. The draw is now part of an arm's identity, the same way the
+    targeting version and the market already were. Suites that predate the `draw` field
+    were assigned one by backfill_draw.py, with the basis written alongside.
+    """
+    draw = payload.get("draw")
+    if draw == DEV_DRAW:
+        return ""
+    if draw == HELDOUT_DRAW:
+        return " [Calderwood]"
+    return f" [draw {draw or 'unknown'}]"
 
 
 def arm_name(payload: dict) -> str:
@@ -59,7 +72,7 @@ def arm_name(payload: dict) -> str:
         # This is the fifth time a figure has come out wrong from pooling things that only
         # looked alike, so the market is now part of the arm's identity rather than an
         # assumption that every suite used the development fixture.
-        return f"{base} v{version}{market_suffix(payload)}"
+        return f"{base} v{version}"
     if payload.get("exhaustive"):
         return "exhaustive"
     if payload.get("confidence", "off") != "off":
@@ -75,7 +88,7 @@ def collect() -> dict[str, list[dict]]:
         rows = [r for r in payload["rows"] if r["task"] in GATED]
         if not rows:
             continue
-        arms[arm_name(payload)].extend(rows)
+        arms[arm_name(payload) + draw_suffix(payload)].extend(rows)
     return arms
 
 
@@ -92,11 +105,11 @@ def replayed_gate(arms: dict[str, list[dict]]) -> list[dict]:
     out = []
     for suite_path in sorted(RESULTS.glob("*/suite.json")):
         payload = json.loads(suite_path.read_text())
-        if payload.get("policy", "off") != "off" or payload.get("exhaustive"):
-            continue
-        if payload.get("targeting"):
-            continue
-        if payload.get("confidence", "off") != "off":
+        # Only the unmodified arm, and only on the draw tasks_scaled.json describes. This
+        # used to test whether today's scorer reproduced the stored verdict, as a proxy for
+        # "same catalogue". The proxy let a superseded-draw run through whenever its answer
+        # happened to be wrong under both answer keys, which one was.
+        if arm_name(payload) != "unmodified" or payload.get("draw") != DEV_DRAW:
             continue
         for row in payload["rows"]:
             if row["task"] not in GATED:
@@ -108,9 +121,6 @@ def replayed_gate(arms: dict[str, list[dict]]) -> list[dict]:
             result = json.loads(record.read_text()).get("result") or {}
             answer = str(result.get("final") or "")
             task = tasks[row["task"]]
-            # A run scored against a catalogue since regenerated cannot be compared.
-            if scoring.score(task, answer, True)["verdict"] != row["verdict"]:
-                continue
             check = policy_module.gate(task, spec, answer, log)
             verdict = (row["verdict"] if check["ok"]
                        else scoring.score(task, policy_module.abstention_for(check),
@@ -154,11 +164,11 @@ def main() -> int:
     print("that refuses is not rewarded for the refusals nor punished for them here.")
 
     # The gate is a replay of baseline runs, so its cost and actions are those runs' own
-    # figures. It reads lower than the unmodified row only because the replay drops runs
-    # whose recorded verdict no longer reproduces, and one of those three was expensive.
-    # Presenting that difference as a saving would be wrong: the gate issues no browser
-    # action, so it cannot change cost at all. Paired against exactly the runs it replayed,
-    # the cost is identical by construction and the verdicts are the only thing that moves.
+    # figures. It once read cheaper than the unmodified row because the replay and the
+    # baseline were drawn from different sets of runs. Presenting that as a saving would be
+    # wrong: the gate issues no browser action, so it cannot change cost at all. Paired
+    # against exactly the runs it replays, the cost is identical by construction and the
+    # verdicts are the only thing that moves.
     gate = arms.get("gate") or []
     if gate:
         keys = {(r["task"], r["repeat"], round(r["cost_usd"], 6)) for r in gate}

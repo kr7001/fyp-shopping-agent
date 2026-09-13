@@ -456,5 +456,7 @@
       "confidence_reason": "I verified all four sellers' pack sizes and calculated price per litre for each option, confirming Redhill Stores has the lowest rate across all available pack sizes.",
       "confidence_wording": "plain"
     }
-  ]
+  ],
+  "draw": "Rivenhall:2cf12d1df7",
+  "draw_basis": "computed from the instance recorded in this suite"
 }

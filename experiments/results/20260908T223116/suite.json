@@ -1342,5 +1342,7 @@
       "log": "water-a-all-prices-5.log"
     }
   ],
-  "rescored": true
+  "rescored": true,
+  "draw": "small:46a4b87c4d",
+  "draw_basis": "small fixture, before 13 Sep 2026: authoring notes, two of them stating the answer, were in the product descriptions the agent read"
 }

@@ -181,5 +181,7 @@
       "error": null,
       "log": "scaled-best-per-litre-1.log"
     }
-  ]
+  ],
+  "draw": "Rivenhall:superseded",
+  "draw_basis": "no instance recorded; started before the current Rivenhall draw was seeded at 20260909T020159 local. Answers name Yarrow Merchants at $16.84, absent from the current catalogue"
 }

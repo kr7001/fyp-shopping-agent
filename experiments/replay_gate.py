@@ -28,6 +28,7 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import policy as policy_module
 import score as scoring
+import suite
 
 HERE = pathlib.Path(__file__).resolve().parent
 RESULTS = HERE / "results"
@@ -64,8 +65,10 @@ def full_answer(suite_dir: pathlib.Path, row: dict) -> str:
 
 def replay(only_suite: str | None = None) -> int:
     index = task_index()
+    current = {suite.draw_id(spec) for spec in specs()}
     rows: list[dict] = []
     stale: list[str] = []
+    superseded: list[str] = []
     for suite_path in sorted(RESULTS.glob("*/suite.json")):
         payload = json.loads(suite_path.read_text())
         # A suite already run under a policy is not a baseline, so replaying the gate over
@@ -83,6 +86,13 @@ def replay(only_suite: str | None = None) -> int:
         if not_baseline:
             continue
         if only_suite and suite_path.parent.name != only_suite:
+            continue
+        # By default only suites on a draw the task files still describe. A suite from an
+        # earlier draw is replayed only when named with --suite, so it is never pooled with
+        # the current one by accident. The small fixture's earlier draw carried the answer
+        # notes on its product pages, which is reason enough to keep it out of any total.
+        if not only_suite and payload.get("draw") not in current:
+            superseded.append(f"{suite_path.parent.name} ({payload.get('draw')})")
             continue
         for row in payload["rows"]:
             log_path = suite_path.parent / (row.get("log") or "")
@@ -120,6 +130,9 @@ def replay(only_suite: str | None = None) -> int:
     before = collections.Counter(r["before"] for r in rows)
     after = collections.Counter(r["after"] for r in rows)
     print(f"{len(rows)} baseline runs replayed under the gate")
+    if superseded:
+        print(f"{len(superseded)} suites on a superseded draw left out, replay one with "
+              f"--suite: {', '.join(superseded)}")
     if stale:
         print(f"{len(stale)} skipped, scored against a catalogue that has since been "
               f"regenerated")
