@@ -6,6 +6,7 @@
     "tell a right answer from the specific failure the task is designed to provoke.",
     "`gated` marks tasks whose answer is not in the first observation."
   ],
+  "_environment": "2026-09-13: authoring notes removed from the four product descriptions. Before this, the notes stating each trap and two answers were on the page. See README decision log.",
   "base_url": "http://localhost:7770",
   "tasks": [
     {

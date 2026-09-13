@@ -273,5 +273,7 @@
       "log": "scaled-best-per-litre-2.log",
       "strategy": "rate_bound"
     }
-  ]
+  ],
+  "draw": "Rivenhall:2cf12d1df7",
+  "draw_basis": "computed from the instance recorded in this suite"
 }

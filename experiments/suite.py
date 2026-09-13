@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import collections
 import datetime as dt
+import hashlib
 import json
 import pathlib
 import subprocess
@@ -61,6 +62,24 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
     record["log"] = log_path.name
     record_path.write_text(json.dumps(record, indent=2, default=str) + "\n")
     return record
+
+
+def draw_id(spec: dict) -> str:
+    """Which catalogue, in which state, a task file's answers belong to.
+
+    Runs scored against different answer keys are different measurements, and pooling
+    them has produced a wrong figure six times now. The id is a hash of the answer key
+    itself, so a regenerated market gets a new one without anyone remembering to bump a
+    number. `_environment` is for the one change a hash of the answers cannot see: the page
+    changing while the answers stay the same, as when the authoring notes were removed
+    from the small fixture's product descriptions on 13 Sep 2026.
+    """
+    market = spec.get("brand") or ("Rivenhall" if spec.get("_instance") else "small")
+    key = {"answers": spec.get("_instance")
+           or [[t["id"], t["expect"]] for t in spec["tasks"]],
+           "environment": spec.get("_environment")}
+    digest = hashlib.sha1(json.dumps(key, sort_keys=True).encode()).hexdigest()[:10]
+    return f"{market}:{digest}"
 
 
 def add(*values) -> float | int | None:
@@ -229,6 +248,7 @@ def main() -> int:
                "targeting": args.targeting,
                "targeting_version": targeting_module.VERSION if args.targeting else None,
                "tasks_file": args.tasks.name,
+               "draw": draw_id(spec),
                # The ground truth this suite was scored against. The catalogue is
                # regenerated between rounds, so without it an old result cannot be told
                # apart from a wrong one.

@@ -122,8 +122,7 @@
       "scaled-best-per-litre": {
         "gated": true,
         "verdicts": {
-          "wrong": 2,
-          "abstained": 1
+          "wrong": 3
         },
         "actions": [
           9,
@@ -147,8 +146,8 @@
     },
     "overall": {
       "correct": 3,
-      "abstained": 7,
-      "wrong": 2
+      "abstained": 6,
+      "wrong": 3
     },
     "total_cost": 1.0632
   },
@@ -408,9 +407,9 @@
       "family": "scaled",
       "gated": true,
       "repeat": 2,
-      "verdict": "abstained",
-      "why": "answer declined to commit",
-      "answer": "I could not determine this reliably. $8.40 does not appear anywhere the run looked. The figure above is not confirmed by what I retrieved.",
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "Redhill Stores offers the lowest price per litre at $0.812/L for the 24 x 350ml pack (24 bottles \u00d7 350ml = 8.4 litres total at $6.82).",
       "tool_calls": 20,
       "actions": 8,
       "observations": 12,
@@ -420,13 +419,14 @@
       "log": "scaled-best-per-litre-2.log",
       "strategy": "rate_bound",
       "policy": "gate",
-      "flag": "unsupported_number",
-      "flag_why": "$8.40 does not appear anywhere the run looked",
+      "flag": null,
+      "flag_why": "every figure is observed or arithmetically justified",
       "opened": 4,
       "retried": false,
       "first_flag": null,
       "first_why": null,
-      "first_answer": null
+      "first_answer": null,
+      "previous_verdict": "abstained"
     },
     {
       "task": "scaled-best-per-litre",
@@ -452,6 +452,22 @@
       "first_flag": null,
       "first_why": null,
       "first_answer": null
+    }
+  ],
+  "draw": "Rivenhall:2cf12d1df7",
+  "draw_basis": "computed from the instance recorded in this suite",
+  "rescored": [
+    {
+      "on": "2026-09-13",
+      "reason": "Gate replayed with the corrected checker: sufficiency QUANTITY pattern (f9d15b8, 10 Sep 14:11) stops reading '8.4 litres' as $8.40, and listings_opened now counts listings opened by click, not only by goto (13 Sep). Both fixes postdate this run.",
+      "changed": [
+        {
+          "task": "scaled-best-per-litre",
+          "repeat": 2,
+          "from": "abstained",
+          "to": "wrong"
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,133 @@
+{
+  "ran_at": "2026-09-13T23:34:31",
+  "repeats": 5,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": false,
+  "targeting": false,
+  "targeting_version": null,
+  "tasks_file": "tasks.json",
+  "instance": null,
+  "summary": {
+    "by_task": {
+      "water-cross-listing": {
+        "gated": true,
+        "verdicts": {
+          "correct": 5
+        },
+        "actions": [
+          5,
+          5,
+          8,
+          5,
+          5
+        ],
+        "tool_calls": [
+          10,
+          10,
+          14,
+          10,
+          10
+        ],
+        "cost": [
+          0.049376,
+          0.083433,
+          0.042575,
+          0.073509,
+          0.08314
+        ],
+        "mean_actions": 5.6,
+        "mean_tool_calls": 10.8,
+        "total_cost": 0.332
+      }
+    },
+    "overall": {
+      "correct": 5
+    },
+    "total_cost": 0.332
+  },
+  "rows": [
+    {
+      "task": "water-cross-listing",
+      "family": "cross",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "Hillside Provisions is the cheaper seller for the 2 x 9.5L pack of Glenmoor Still Spring Water at $22.50 (compared to Cellar Direct at $24.90).",
+      "tool_calls": 10,
+      "actions": 5,
+      "observations": 5,
+      "cost_usd": 0.049376,
+      "elapsed_s": 31.2,
+      "error": null,
+      "log": "water-cross-listing-1.log"
+    },
+    {
+      "task": "water-cross-listing",
+      "family": "cross",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "Hillside Provisions is the cheaper seller for the 2 x 9.5L pack of Glenmoor Still Spring Water at $22.50 (compared to Cellar Direct at $24.90).",
+      "tool_calls": 10,
+      "actions": 5,
+      "observations": 5,
+      "cost_usd": 0.083433,
+      "elapsed_s": 32.0,
+      "error": null,
+      "log": "water-cross-listing-2.log"
+    },
+    {
+      "task": "water-cross-listing",
+      "family": "cross",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "Hillside Provisions is the cheaper seller for the 2 x 9.5L pack of Glenmoor Still Spring Water at $22.50 (compared to Cellar Direct at $24.90).",
+      "tool_calls": 14,
+      "actions": 8,
+      "observations": 6,
+      "cost_usd": 0.042575,
+      "elapsed_s": 42.6,
+      "error": null,
+      "log": "water-cross-listing-3.log"
+    },
+    {
+      "task": "water-cross-listing",
+      "family": "cross",
+      "gated": true,
+      "repeat": 4,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "Hillside Provisions is the cheaper seller for the 2 x 9.5L pack of Glenmoor Still Spring Water at $22.50, compared to Cellar Direct's $24.90.",
+      "tool_calls": 10,
+      "actions": 5,
+      "observations": 5,
+      "cost_usd": 0.073509,
+      "elapsed_s": 31.7,
+      "error": null,
+      "log": "water-cross-listing-4.log"
+    },
+    {
+      "task": "water-cross-listing",
+      "family": "cross",
+      "gated": true,
+      "repeat": 5,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "Hillside Provisions is the cheaper seller for the 2 x 9.5L pack of Glenmoor Still Spring Water at $22.50 (compared to Cellar Direct at $24.90).",
+      "tool_calls": 10,
+      "actions": 5,
+      "observations": 5,
+      "cost_usd": 0.08314,
+      "elapsed_s": 33.0,
+      "error": null,
+      "log": "water-cross-listing-5.log"
+    }
+  ],
+  "draw": "small:1c41e6786c",
+  "draw_basis": "small fixture, after the authoring notes were removed"
+}

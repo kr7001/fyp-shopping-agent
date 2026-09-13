@@ -95,7 +95,7 @@
       "strategy": "refutation",
       "policy": "gate",
       "flag": null,
-      "flag_why": "every figure is observed or arithmetically justified",
+      "flag_why": "no price claimed as an amount",
       "opened": 7,
       "retried": false,
       "first_flag": null,
@@ -121,7 +121,7 @@
       "policy": "gate",
       "flag": null,
       "flag_why": "no price claimed as an amount",
-      "opened": 0,
+      "opened": 3,
       "retried": false,
       "first_flag": null,
       "first_why": null,
@@ -151,6 +151,15 @@
       "first_flag": null,
       "first_why": null,
       "first_answer": null
+    }
+  ],
+  "draw": "Rivenhall:2cf12d1df7",
+  "draw_basis": "computed from the instance recorded in this suite",
+  "rescored": [
+    {
+      "on": "2026-09-13",
+      "reason": "Gate replayed with the corrected checker: sufficiency QUANTITY pattern (f9d15b8, 10 Sep 14:11) stops reading '8.4 litres' as $8.40, and listings_opened now counts listings opened by click, not only by goto (13 Sep). Both fixes postdate this run.",
+      "changed": []
     }
   ]
 }

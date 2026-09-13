@@ -97,6 +97,13 @@ COVERAGE_CLAIM = re.compile(
 # since landing on the results page is not the same as opening a listing.
 PRODUCT_NAV = re.compile(r"page\.goto\('([^']+?\.html)'\)")
 
+# A listing is also opened by clicking its card on the results page, which issues no goto.
+# Counting only gotos missed 35 runs, one of them a correct "No" refused as having opened
+# nothing after it had opened three listings by click. Every tool result reports the page it
+# left the browser on, so the landing URL is the record of what was actually visited. Scoped
+# to the authored listings, since those are the only products any question is about.
+PRODUCT_LANDED = re.compile(r"Page URL: https?://[^\s\\'\"]+?/(igr-[a-z0-9-]+\.html)")
+
 # Below this, a figure in this catalogue is a per-unit rate rather than a total. Rates
 # are computed by the agent and correctly absent from the page, so the unsupported test
 # does not apply to them. A stated domain assumption: the cheapest total in these
@@ -133,8 +140,9 @@ def evidence(text: str) -> dict[str, set[int]]:
 
 
 def listings_opened(text: str) -> set[str]:
-    """Distinct product pages the run actually navigated to."""
-    return {url.rsplit("/", 1)[-1] for url in PRODUCT_NAV.findall(text) if "?" not in url}
+    """Distinct product pages the run actually landed on, by navigation or by click."""
+    navigated = {url.rsplit("/", 1)[-1] for url in PRODUCT_NAV.findall(text) if "?" not in url}
+    return navigated | set(PRODUCT_LANDED.findall(text))
 
 
 def prices_in(text: str) -> list[int]:
