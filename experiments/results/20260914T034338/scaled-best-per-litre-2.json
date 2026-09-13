@@ -1,0 +1,61 @@
+{
+  "ran_at": "2026-09-14T04:00:34",
+  "provider": "openrouter",
+  "model": "anthropic/claude-haiku-4.5",
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Rivenhall . Across all the Rivenhall listings and all their pack sizes, which seller offers the lowest price per litre?",
+  "elapsed_s": 50.7,
+  "cost_usd": 0.047156,
+  "cost_note": null,
+  "spend_before_usd": 45.32570914,
+  "spend_after_usd": 45.37286534,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "23b796d5701e470f9d8827202c7c87c4",
+    "final": "Redhill Stores offers the lowest price per litre for Rivenhall products. Across all pack sizes and sellers, the lowest price per litre is $0.358/L from Redhill Stores for the 2 x 9.5L pack (total 19 litres for $6.82). This is significantly lower than all other options from all sellers.",
+    "page": {
+      "url": "http://localhost:7770/catalogsearch/result/?q=Rivenhall",
+      "title": "Search results for: 'Rivenhall'"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 16,
+    "actions": 7,
+    "observations": 9,
+    "unclassified_tools": [],
+    "assistant_turns": 16,
+    "by_tool": {
+      "browser_navigate": 6,
+      "browser_find": 6,
+      "browser_probe_cards": 2,
+      "browser_click": 1,
+      "browser_snapshot": 1
+    },
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_click",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_find",
+      "browser_find",
+      "browser_find",
+      "browser_navigate",
+      "browser_find",
+      "browser_navigate",
+      "browser_find",
+      "browser_navigate",
+      "browser_find",
+      "browser_navigate",
+      "browser_probe_cards"
+    ]
+  },
+  "log": "scaled-best-per-litre-2.log"
+}

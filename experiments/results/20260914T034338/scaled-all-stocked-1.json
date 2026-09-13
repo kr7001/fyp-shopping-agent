@@ -1,0 +1,58 @@
+{
+  "ran_at": "2026-09-14T03:56:50",
+  "provider": "openrouter",
+  "model": "anthropic/claude-haiku-4.5",
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Rivenhall . Does every Rivenhall listing stock the 2 x 9.5L pack? Answer yes or no.",
+  "elapsed_s": 31.7,
+  "cost_usd": 0.062382,
+  "cost_note": null,
+  "spend_before_usd": 44.99646479,
+  "spend_after_usd": 45.05884689,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "760284def5af45e6a487e3e006aaa8fa",
+    "final": "Yes",
+    "page": {
+      "url": "http://localhost:7770/catalogsearch/result/?q=Rivenhall",
+      "title": "Search results for: 'Rivenhall'"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 13,
+    "actions": 7,
+    "observations": 6,
+    "unclassified_tools": [],
+    "assistant_turns": 13,
+    "by_tool": {
+      "browser_navigate": 5,
+      "browser_find": 4,
+      "browser_click": 2,
+      "browser_probe_cards": 1,
+      "browser_snapshot": 1
+    },
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_click",
+      "browser_click",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_find",
+      "browser_navigate",
+      "browser_find",
+      "browser_navigate",
+      "browser_find",
+      "browser_navigate",
+      "browser_find"
+    ]
+  },
+  "log": "scaled-all-stocked-1.log"
+}
