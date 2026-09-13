@@ -951,27 +951,34 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
 
     <section id="scaled">
       <h2>At scale: the trap fires</h2>
-      <p class="lede r-tech">15 listings, 5 tasks, 3 repeats, $3.13. The RQ2 cross listing task scored 5 of 5 because two listings are cheap to compare. Widening the search page changes that.</p>
+      <p class="lede r-tech">15 listings, 5 tasks, three batches of 3 repeats: 45 runs, $8.77 logged. The RQ2 cross listing task scored 5 of 5 because two listings are cheap to compare. Widening the search page changes that.</p>
       <p class="lede r-plain">The earlier test used two shops, and the AI compared both because checking two is easy. This one uses fifteen, where checking everything is expensive. That is when it starts failing.</p>
 
       <div class="stats">
         <div class="stat"><span class="n">22 vs 7</span><span class="l">MEDIAN ACTIONS AT SCALE</span></div>
-        <div class="stat flag"><span class="n">0 / 97</span><span class="l">ABSTENTIONS, UNMODIFIED AGENT</span></div>
+        <div class="stat flag"><span class="n">0 / 107</span><span class="l">ABSTENTIONS, UNMODIFIED AGENT</span></div>
         <div class="stat"><span class="n">11</span><span class="l">ORACLE FLOOR, OF 15 OPENS</span></div>
-        <div class="stat"><span class="n">$3.13</span><span class="l">15 RUNS</span></div>
+        <div class="stat"><span class="n">$8.77</span><span class="l">45 RUNS</span></div>
       </div>
 
       <div class="tablewrap">
         <table>
-          <thead><tr><th>Task</th><th>Gated</th><th>Verdicts across 3 runs</th><th class="num">Mean actions</th></tr></thead>
+          <thead><tr><th>Task</th><th>Gated</th><th>Verdicts across 9 runs, three batches</th><th class="num">Mean actions</th></tr></thead>
           <tbody>
-            <tr><td class="task">scaled-headline</td><td class="ctrl">control</td><td><span class="pill ok">3 correct</span></td><td class="num">2.0</td></tr>
-            <tr><td class="task">scaled-cheapest-target</td><td class="ctrl">yes</td><td><span class="pill ok">3 correct</span></td><td class="num">17.0</td></tr>
-            <tr><td class="task">scaled-target-price</td><td class="ctrl">yes</td><td><span class="pill ok">3 correct</span></td><td class="num">22.3</td></tr>
-            <tr><td class="task">scaled-all-stocked</td><td class="ctrl">yes</td><td><span class="pill ok">1 correct</span> <span class="pill no">2 wrong</span></td><td class="num">13.7</td></tr>
-            <tr><td class="task">scaled-best-per-litre</td><td class="ctrl">yes</td><td><span class="pill no">3 wrong</span></td><td class="num">12.7</td></tr>
+            <tr><td class="task">scaled-headline</td><td class="ctrl">control</td><td><span class="pill ok">9 correct</span></td><td class="num">1.8</td></tr>
+            <tr><td class="task">scaled-cheapest-target</td><td class="ctrl">yes</td><td><span class="pill ok">9 correct</span></td><td class="num">20.3</td></tr>
+            <tr><td class="task">scaled-target-price</td><td class="ctrl">yes</td><td><span class="pill ok">9 correct</span></td><td class="num">20.8</td></tr>
+            <tr><td class="task">scaled-all-stocked</td><td class="ctrl">yes</td><td><span class="pill ok">3 correct</span> <span class="pill no">6 wrong</span></td><td class="num">12.7</td></tr>
+            <tr><td class="task">scaled-best-per-litre</td><td class="ctrl">yes</td><td><span class="pill no">9 wrong</span></td><td class="num">9.3</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <h3 class="sub" id="scaled-per-litre">Why the per-litre question is never right</h3>
+      <div class="prose">
+        <p class="r-tech">In all nine runs the agent's first read of the results page was <code style="font-family:var(--mono);font-weight:700">browser_probe_cards</code>, which openJiuwen's prompt tells it to call first on listing pages. The probe defaults to <code style="font-family:var(--mono);font-weight:700">viewport_only</code>, and at a 1200 by 701 window the grid shows one row, so it returned <code style="font-family:var(--mono);font-weight:700">total_candidates: 4, returned: 4</code>, with nothing to say eleven more listings exist. All nine runs opened exactly those four and named Redhill Stores at $0.93 a litre, which is the right answer over those four; five of the nine answers say "all four sellers". The best rate in the market, Thornbury Pantry at $0.911 on the 6 x 1.25L, is the sixth card and was never opened. One run also paired the $6.82 advertised price with the 19 litre pack, for a rate of $0.358 that no listing offers.</p>
+        <p class="r-tech">The same four-card read explains the rest of the table. The cheapest 2 x 9.5L seller is the second card, so the price questions come out right even when only four listings are opened. The five listings that lack the pack are cards 11 to 15, so a four-card read concludes that every listing stocks it. The failure is not arithmetic, although the right and wrong rates differ by only 2 per cent: every arm that enumerates the market gets the per-litre question right, exhaustive 2 of 2, targeting v2 with the gate 3 of 3, the held-out market 2 of 2, and every arm that does not gets none.</p>
+        <p class="r-plain">The price-per-litre question is never answered right, and the reason is simple. The AI's first look at the results uses a tool that only reports the products visible on screen, which is the first row of four, and the tool says "four found". So the AI treats those four as the whole shop, does the maths correctly on them, and names the best of the four. The real best deal is the sixth product, which it never opens. Every version that makes it look at all fifteen gets the question right.</p>
       </div>
 
       <div class="prose">

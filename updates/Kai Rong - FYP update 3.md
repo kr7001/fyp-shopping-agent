@@ -297,6 +297,34 @@ but the margin between the right and wrong answers is 2 per cent, so it currentl
 scoring arithmetic precision rather than retrieval. Recorded as an open item. Fixing it
 means reseeding, which would invalidate the runs already made against this fixture.
 
+*Resolved 14 September: the per-litre failure is retrieval, not arithmetic.* Over three
+batches the per-litre question is 0 of 9, and every run fails the same way:
+
+- The agent's first read of the results page is `browser_probe_cards`, which openJiuwen's
+  prompt tells it to call first on listing pages. The probe defaults to `viewport_only`, and
+  at a 1200 x 701 window the grid shows one row, so it reports `total_candidates: 4,
+  returned: 4`. Nothing in that output says eleven more listings exist.
+- All nine runs open exactly those four listings and name Redhill Stores at $0.93 a litre,
+  which is the correct answer over the four. Five of the nine say "all four sellers".
+- The best rate, Thornbury Pantry at $0.911 on the 6 x 1.25L, is the sixth card. No run
+  opened it. One run also paired the $6.82 advertised price with the 19 litre pack for a
+  rate of $0.358 that no listing offers.
+
+The same read explains the other questions. The cheapest 2 x 9.5L seller is the second card,
+so price questions are right even from four listings; the five listings lacking the pack are
+cards 11 to 15, so a four-card read answers "every listing stocks it". And the 2 per cent
+margin does not stop an agent that looks:
+
+| Arm | Per-litre |
+| --- | --- |
+| Unmodified | 0 of 9 |
+| Confidence prompt | 0 of 3 |
+| Retry | 0 of 3 (2 wrong, 1 refused) |
+| Targeting v1, no enumeration | 0 of 2 |
+| Exhaustive | **2 of 2** |
+| Targeting v2 with the gate | **3 of 3** |
+| Held-out market, targeting v3 with the gate | **2 of 2** |
+
 ---
 
 ## 6. RQ3 first half: making the agent able to say it does not know
