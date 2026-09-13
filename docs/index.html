@@ -1127,6 +1127,11 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
       </div>
 
       <div class="prose">
+        <p class="r-tech">The SKU is the fixture's identifier, not the catalogue name. Each listing is titled by brand, with the seller as a suffix: <span class="ctrl">Glenmoor Still Spring Water, Multipack - Cellar Direct</span>, and likewise Hillside Provisions. The coffee is <span class="ctrl">Ridgeway Roasters Whole Bean Coffee, House Blend</span>, the shirt <span class="ctrl">Northmoor Heavyweight Cotton T-Shirt</span>. Storefront search resolves them by brand, so <span class="ctrl">Glenmoor</span> returns both water listings while the seller name does not: searching Cellar Direct fuzzy matches Cellar Distributors in Rivenhall, and Ridgeway also returns a pre-existing WebArena table lamp, a genuine distractor rather than a fixture fault. Direct URLs follow the SKU lowercased, <span class="ctrl">igr-water-a.html</span> and so on. Parents are visibility 4, Catalog and Search; the per size children are visibility 1, Not Visible Individually, which is what makes a variant price reachable only by selecting it.</p>
+        <p class="r-plain">The code like IGR-WATER-A is my internal label, not what the shop calls it. In the shop each item is named after its brand with the seller added on the end, so the first one is Glenmoor Still Spring Water, Multipack - Cellar Direct. Searching the shop works on the brand, Glenmoor, not the seller. The individual pack sizes deliberately have no page of their own, which is exactly why their prices can only be seen by clicking.</p>
+      </div>
+
+      <div class="prose">
         <h3 class="sub" id="inv-tasks">The seventeen questions</h3>
         <p class="r-tech">Twelve on the small fixture, five on each 15 listing market. Two are controls whose answer is on the page, included so a failure can be told apart from the environment being broken.</p>
         <p class="r-plain">Seventeen questions. Two of them have their answer in plain sight, included so that a failure means the AI failed rather than the shop being broken.</p>

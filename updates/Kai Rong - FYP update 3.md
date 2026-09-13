@@ -58,12 +58,24 @@ remains intact and my additions are separable and auditable.
 
 The four families and what each is designed to test:
 
-| Family | Gating | Designed trap |
-| --- | --- | --- |
-| Cellar Direct water | price by variant | "From" price is the 12 x 550ml pack; cheapest per litre is the 2 x 9.5L |
-| Hillside Provisions water | price by variant | Higher headline price, **cheaper** 2 x 9.5L. Card-level comparison ranks the sellers backwards |
-| Ridgeway coffee | price by variant | Cost per kg falls then rises; best value is the middle size |
-| Northmoor t-shirt | stock by variant | Parent reads In Stock; size M is not |
+| Catalogue name | SKU / URL key | Gating | Designed trap |
+| --- | --- | --- | --- |
+| Glenmoor Still Spring Water, Multipack - Cellar Direct | `IGR-WATER-A` | price by variant | "From" price is the 12 x 550ml pack; cheapest per litre is the 2 x 9.5L |
+| Glenmoor Still Spring Water, Multipack - Hillside Provisions | `IGR-WATER-B` | price by variant | Higher headline price, **cheaper** 2 x 9.5L. Card-level comparison ranks the sellers backwards |
+| Ridgeway Roasters Whole Bean Coffee, House Blend | `IGR-COFFEE-A` | price by variant | Cost per kg falls then rises; best value is the middle size |
+| Northmoor Heavyweight Cotton T-Shirt | `IGR-TEE-A` | stock by variant | Parent reads In Stock; size M is not |
+
+Each is reachable at `http://localhost:7770/<url key>.html`, lowercased, e.g.
+`igr-water-a.html`. In storefront search they are found by **brand** — Glenmoor,
+Ridgeway, Northmoor — not by the seller name in the title suffix. Searching a
+seller name instead fuzzy-matches across markets: "Cellar Direct" also returns
+the Rivenhall seller "Cellar Distributors". "Ridgeway" additionally returns a
+pre-existing WebArena table lamp, which is a genuine distractor in the
+candidate set rather than a fixture fault.
+
+Parent products are `visibility=4` (Catalog, Search); the per-size children are
+`visibility=1` (Not Visible Individually), so a variant price is reachable only
+by selecting it on the parent page. That is the gate.
 
 ---
 
