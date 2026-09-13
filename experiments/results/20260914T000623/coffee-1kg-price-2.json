@@ -1,0 +1,50 @@
+{
+  "ran_at": "2026-09-14T00:24:13",
+  "provider": "openrouter",
+  "model": "anthropic/claude-haiku-4.5",
+  "query": "On http://localhost:7770/igr-coffee-a.html what is the price of the 1 kg size? Report the exact price.",
+  "elapsed_s": 20.9,
+  "cost_usd": 0.036868,
+  "cost_note": null,
+  "spend_before_usd": 40.56109219,
+  "spend_after_usd": 40.59796034,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "7198da48561f414aa82e549b42f0e613",
+    "final": "The price of the 1 kg size is $32.00",
+    "page": {
+      "url": "http://localhost:7770/igr-coffee-a.html",
+      "title": "Ridgeway Roasters Whole Bean Coffee, House Blend"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 6,
+    "actions": 3,
+    "observations": 3,
+    "unclassified_tools": [],
+    "assistant_turns": 6,
+    "by_tool": {
+      "browser_snapshot": 3,
+      "browser_navigate": 1,
+      "browser_click": 1,
+      "browser_select_option": 1
+    },
+    "sequence": [
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_click",
+      "browser_snapshot",
+      "browser_select_option",
+      "browser_snapshot"
+    ]
+  },
+  "log": "coffee-1kg-price-2.log"
+}

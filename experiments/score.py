@@ -21,8 +21,19 @@ ABSTENTION_MARKERS = (
     "not found", "unclear", "i don't know", "i do not know",
 )
 
-NEGATIVE_MARKERS = ("no", "not available", "out of stock", "unavailable", "sold out")
+NEGATIVE_MARKERS = ("no", "not available", "out of stock", "unavailable", "sold out",
+                    "not every", "not all")
 POSITIVE_MARKERS = ("yes", "in stock", "available")
+
+# An answer that opens with yes or no has said which it means, and the rest is explanation.
+# Reading markers anywhere in the text instead, as substrings, scored "Yes. All 10 listings
+# stock the pack. I enumerated all listings (no pagination)..." as a No, because "no" sits
+# inside "(no pagination)". The same test also matched "not", "cannot" and "know".
+LEADING_ANSWER = re.compile(r"^[\W_]*(yes|no)\b")
+
+
+def has_marker(text: str, markers: tuple[str, ...]) -> bool:
+    return any(re.search(rf"\b{re.escape(m)}\b", text) for m in markers)
 
 
 def prices_in(text: str) -> list[float]:
@@ -92,9 +103,14 @@ def score(task: dict, answer: str, ok: bool) -> dict:
 
     if kind == "boolean":
         wants_yes = expect["value"]
-        # Check the negative first: "not available" contains "available".
-        says_no = any(m in low for m in NEGATIVE_MARKERS)
-        says_yes = any(m in low for m in POSITIVE_MARKERS) and not says_no
+        lead = LEADING_ANSWER.match(low)
+        if lead:
+            says_no = lead.group(1) == "no"
+            says_yes = not says_no
+        else:
+            # Check the negative first: "not available" contains "available".
+            says_no = has_marker(low, NEGATIVE_MARKERS)
+            says_yes = has_marker(low, POSITIVE_MARKERS) and not says_no
         if says_no == (not wants_yes) and (says_no or says_yes):
             return {"verdict": "correct", "why": f"answered {'no' if says_no else 'yes'}",
                     "prices": found}
