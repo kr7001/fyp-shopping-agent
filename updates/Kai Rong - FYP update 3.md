@@ -12,8 +12,8 @@ The agent runs end to end against the environment, the RQ2 baseline is measured 
 assumed, Checkpoint B is finished two weeks early, and **both halves of RQ3 are built and
 the efficiency claim is met.**
 
-Three results shape the project. The agent **never** signals uncertainty, in 97 unmodified
-runs. Its correctness collapses only when it under-retrieves. And the cross-listing failure
+Three results shape the project. The agent **never** signals uncertainty, in 95 unmodified
+runs on the current catalogues. At fifteen listings its failures come from under-retrieval. And the cross-listing failure
 that motivated the project does not reproduce at small scale but does at fifteen listings.
 
 **The contribution now has both halves.** A check that asks whether an answer is supported
@@ -29,6 +29,9 @@ rather than left out.
 Spend to date: **$18.63 of the original $20 plus $21 self-funded**, roughly 190 browser
 runs. Thank you for arranging the further credit; the first thing it buys is an exhaustive
 arm on the held-out market, without which no saving can be stated there.
+
+*As of 14 September:* $43.08 on the OpenRouter account and 263 run records, after re-running
+the RQ2 baseline clean. The per-run logged costs sum to $37.30 and remain a lower bound.
 
 ---
 
@@ -107,15 +110,21 @@ stayed theoretical, but it is a stated limitation, and WebArena is the easier ca
 
 ## 3. RQ2 baseline
 
-12 tasks, 11 gated plus one control, 5 repeats each. `claude-haiku-4.5`. 60 runs, $2.98.
-Scored automatically against the manifest ground truth.
+> **Corrected 14 September.** The first run of this baseline, on 8 September, had authoring
+> notes on the product pages that explained each trap, two of them stating the answer. A note
+> was in context in 59 of its 60 runs and the model cited it in 26. The notes were removed and
+> the baseline re-run. Every figure in this section is from the clean re-run; the 8 September
+> figures are given alongside where they differ.
 
-| | |
-| --- | --- |
-| Overall | 54 correct, 6 wrong |
-| Gated tasks | 49 of 55 correct, 89% |
-| Control task | 5 of 5, 1 action per run |
-| **Abstentions** | **0 of 60** |
+12 tasks, 11 gated plus one control, 5 repeats each. `claude-haiku-4.5`. 60 runs, $3.63
+logged. Scored automatically against the manifest ground truth.
+
+| | Clean, 14 Sep | Notes on page, 8 Sep |
+| --- | --- | --- |
+| Overall | 53 correct, 7 wrong | 54 correct, 6 wrong |
+| Gated tasks | 48 of 55 correct, 87% | 49 of 55, 89% |
+| Control task | 5 of 5, 1 action per run | 5 of 5 |
+| **Abstentions** | **0 of 60** | 0 of 60 |
 
 ### Finding 1: the agent never signals uncertainty
 
@@ -127,31 +136,36 @@ This answers the second half of RQ2 directly. The agent does sometimes fail to r
 gated information, and when it does, it does not say so. There is no uncertainty marker for
 a downstream system to act on.
 
-### Finding 2: correctness collapses only under-retrieval
+### Finding 2: on this fixture, effort does not predict failure
 
 Gated runs bucketed by page-changing actions spent:
 
-| Actions | Runs | Correct | Rate |
-| --- | --- | --- | --- |
-| 1 | 5 | 2 | **40%** |
-| 2 to 3 | 16 | 16 | 100% |
-| 4 to 6 | 20 | 18 | 90% |
-| 7 or more | 14 | 13 | 93% |
+| Actions | Runs | Correct | Rate | 8 Sep, notes on page |
+| --- | --- | --- | --- | --- |
+| 1 | 3 | 2 | 67% | 2 of 5, 40% |
+| 2 to 3 | 20 | 20 | 100% | 16 of 16 |
+| 4 to 6 | 20 | 18 | 90% | 18 of 20 |
+| 7 or more | 12 | 8 | 67% | 13 of 14 |
 
-Correct runs spent a median of 5 actions; wrong runs a median of 3.
+Correct runs spent a median of 4.5 actions; wrong runs a median of 9. On 8 September the
+medians were 5 and 3.
 
 *Revised 9 September. This bucket originally read 20 per cent with a wrong-run median of
 1 action. Both were inflated by a scorer rule that marked an answer ambiguous for naming
 both the target price and the surcharge, which is precisely what a correct answer showing
 its working does. The drop is softer than first reported and still present.*
 
-The relationship is **not** "more retrieval is better" — past three actions the rate is
-flat within noise. It is specifically under-retrieval that predicts failure, and the cliff
-sits between one action and two.
+*Corrected 14 September.* I read the 8 September table as under-retrieval predicting
+failure, with a cliff between one action and two. The clean re-run does not support that on
+this fixture. Its seven failures are three separate mechanisms at three levels of effort:
+one surcharge misread as a price at one action, two answers that missed a sold-out size at
+five and six actions (Magento drops a size with no in-stock variant from the rendered
+dropdown, so the agent never saw it), and four answers that announced a list without giving
+it at nine and ten actions. What predicts failure here is the kind of question.
 
-This is the RQ3 premise as a measurement rather than an assumption: there is a minimum
-retrieval budget below which answers are fabricated, and above which extra interactions buy
-nothing.
+At fifteen listings the pattern does hold, and more strongly: correct answers take a median
+of 23 actions and wrong ones 7, because the failure there is not opening enough listings.
+The RQ3 premise rests on that fixture, where it was always meant to.
 
 ### Finding 3: failures are delta misreadings, not fabrications
 
@@ -162,6 +176,9 @@ reported as fabrication.*
 water-a-9l5-price   1 action   "The price of the 2 x 9.5L pack is $15.01"   truth $24.90
 water-b-9l5-price   1 action   "The price of the 2 x 9.5L pack is $11.60"   truth $22.50
 ```
+
+*In the clean re-run this happened once in 55 gated runs, the $15.01 case. The $11.60 case
+appeared only on 8 September.*
 
 Neither number appears in the page source, which is what originally suggested invention.
 The traces show something more specific. Magento labels each variant option with a price
@@ -177,7 +194,7 @@ its semantics, reporting a relative value as an absolute one. The label is compu
 browser from the page's own configuration block rather than written into the HTML, which
 is why a source check found nothing while the agent saw it plainly.
 
-A third run on the same task composed the two values correctly and said so, which
+The other runs on the same task composed the two values correctly and said so, which
 identifies composition as the discriminating step rather than retrieval.
 
 This is a sharper result than the original claim. Interaction-gated prices are frequently
@@ -199,7 +216,8 @@ the reporting did not. Worth counting separately.
 ### Finding 4 (negative): the cross-listing trap did not fire
 
 The task modelled directly on the deployed-assistant failure was correct **5 times out of 5**,
-at a mean of 6.4 actions. Given two listings and both URLs, the agent opened each, selected
+at a mean of 5.8 actions in the clean re-run, and 5 of 5 again at 5.6 in a separate clean run
+the day before. Given two listings and both URLs, the agent opened each, selected
 the variant on each, and named the correct seller and price.
 
 With two listings the comparison is cheap enough that the agent simply does the work. The
@@ -246,8 +264,9 @@ The RQ2 cross-listing task scored 5 of 5 because comparing two named listings is
 The live failure happened over a search page with many sellers, where opening everything
 is expensive. Reproducing it needed scale rather than a better trap.
 
-`env/generate_catalogue.py` authors fifteen competing listings by rejection sampling over
-8,000 attempts against eight validated instance rules, so the generated instance is
+`env/generate_catalogue.py` authors fifteen competing listings by rejection sampling
+against eight validated instance rules (up to 8,000 attempts; this market passed on
+attempt 111, and about 1 draw in 435 passes), so the generated instance is
 guaranteed to have the properties the experiment depends on: a unique winner, a card
 probe that gives the wrong answer, a lower bound that prunes some listings but not
 enough, and a clear margin. The instance it selected has an **oracle floor of 11 opens of
@@ -353,26 +372,40 @@ correct answers withdrawn 0 of 11
 added model cost          $0.00, the gate issues no browser action
 ```
 
-Precision holds at 1.00 across 77 correct runs, in sample and out.
+*Corrected 14 September.* I wrote here that precision held at 1.00 across 77 correct runs.
+Over the 95 unmodified runs on the current catalogues the gate withholds 2 of 79 correct
+answers and withdraws 13 of 16 wrong ones. Both withheld answers are correct yes-or-no
+answers that mention a surcharge in passing, "XL +$2.00", which the surcharge rule reads as a
+price. The earlier 1.00 included the runs that had the answers on the page.
 
 The failure that escaped gives the same wrong answer as the two that were caught, and
 differs only in not volunteering how much it had looked at. `understated_population` reads
 a claim the agent makes about itself, so an agent that says less is checked less. That is
 a real ceiling on the rule rather than a bug in it.
 
-### Gating on retrieval coverage was tested and rejected
+### Gating on retrieval coverage: rejected on a miscount, now open
 
 The obvious fix is to require the agent to have opened enough listings, since the escaping
-run opened 4 against an oracle floor of 11. Across every unmodified run of the two
-comparison tasks:
+run opened 4 against an oracle floor of 11. I first rejected it on these counts:
 
 ```
 correct opens: [1, 4, 4, 8, 12, 13, 14, 14]
 wrong   opens: [4, 4, 4, 4, 4, 4]
 ```
 
-A floor at 11 catches all six failures and blocks three correct answers, trading away the
-one property the gate currently has.
+*Corrected 14 September.* The counter behind those figures only saw listings opened by
+typing a URL, and missed listings opened by clicking a card. Counted correctly, over the
+same two tasks on the current catalogue draw:
+
+```
+correct opens: [4, 15, 15, 15, 15, 15]
+wrong   opens: [4, 4, 4, 4, 4, 4]
+```
+
+A floor at 11 would catch all six failures and block one correct answer, which was itself
+reached after opening 4 of 15. The rejection no longer holds as I stated it. Whether to add
+a coverage rule, and at what floor for each kind of question, is an open design question:
+refuting a claim about every listing needs one counterexample, not eleven openings.
 
 **The same numbers give something more useful.** `scaled-best-per-litre` opens exactly 4
 listings in all seven runs, right and wrong alike, so its one correct answer rests on the
@@ -417,9 +450,9 @@ Three strategies, chosen from the wording of the question rather than from the t
 
 | Arm | Correct | Refused | Wrong | Actions | Cost per run |
 | --- | --- | --- | --- | --- | --- |
-| Unmodified | 64% | 0 | 10 of 28 | 17.7 | $0.276 |
+| Unmodified | 62% | 0 | 9 of 24 | 17.6 | $0.267 |
 | Exhaustive | 100% | 0 | 0 of 8 | 28.4 | $0.568 |
-| **Targeting + gate** | **100%** | 2 | **0 of 12** | **18.4** | **$0.382** |
+| **Targeting + gate** | **100%** | 1 | **0 of 12** | **18.4** | **$0.382** |
 
 **It matches the exhaustive upper bound on accuracy for 35 per cent fewer interactions and
 33 per cent less money, with no wrong answers in twelve runs.**
@@ -436,8 +469,8 @@ first, so no recorded run lost its ground truth. Different winner, different tra
 different per-litre answer, and a per-litre winner that does not stock the target pack at
 all, which is a structure the policy had never met.
 
-**7 correct, 1 refused, 0 wrong.** Across both markets, sixteen of sixteen answers are
-either correct or refused.
+**7 correct, 1 refused, 0 wrong.** Across both markets, all twenty runs are correct or
+refused: 18 correct, 2 refused, 0 wrong.
 
 No saving is claimed from the held-out market. There is no exhaustive arm there, so 15.1
 actions has nothing to be divided by, and borrowing a denominator from a different market

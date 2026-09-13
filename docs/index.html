@@ -343,7 +343,7 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
       <div class="mast-meta">
         <span>Kayleen Lee Kai Rong</span>
         <span>Supervisor <b>Prof. Markus Kirchberg</b></span>
-        <span>Updated <b>9 Sep 2026</b></span>
+        <span>Updated <b>14 Sep 2026</b></span>
         <span><a href="progress.html">Progress report, 28 Aug to 9 Sep &rarr;</a></span>
       </div>
     </div>
@@ -625,7 +625,7 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
         <p class="r-plain">Three claims, kept small enough to actually stand up.</p>
         <ul class="claims">
           <li><span class="r-tech"><b>A failure class defined by absence rather than error.</b> Interaction-gated information produces a context in which every observation is correct and the answer is still wrong. That is not covered by uncertainty over a given context, nor by faithfulness to a given evidence set, because the defect is in what was never observed.</span><span class="r-plain"><b>A kind of failure where nothing the AI saw was wrong.</b> Everything it read was accurate. The answer is still wrong, because of what it never went to look at. Existing methods check what is there, so they cannot see this.</span></li>
-          <li><span class="r-tech"><b>A sufficiency check grounded in the action trace, not in model confidence.</b> The rules compare what the answer asserts against what the run observed, using arithmetic and coverage. They need no logits, no second model call and no fine-tuning, so they cost nothing and work through a black-box API. Over 93 baseline runs the gate withdraws <b>15 of 16 wrong answers</b> and withholds 2 of 77 correct ones. Both of those two answered with no evidence at all, which is the rule working rather than failing, but the figure is reported rather than the flattering earlier one of none.</span><span class="r-plain"><b>A check that reads the record of what the AI did, not how sure it sounds.</b> It needs no access to the model's internals and no extra AI call, so it is free. Across 93 runs it withdraws 15 of the 16 wrong answers, and holds back 2 right ones, both of which were answered with no evidence at all.</span></li>
+          <li><span class="r-tech"><b>A sufficiency check grounded in the action trace, not in model confidence.</b> The rules compare what the answer asserts against what the run observed, using arithmetic and coverage. They need no logits, no second model call and no fine-tuning, so they cost nothing and work through a black-box API. Over the 95 unmodified runs on the two current markets the gate withdraws <b>13 of 16 wrong answers</b> and withholds 2 of 79 correct ones. Both of those are correct yes-or-no answers that mention a surcharge in passing, "XL +$2.00", which the surcharge rule reads as a price. That is a false positive of the rule, and it is reported as one.</span><span class="r-plain"><b>A check that reads the record of what the AI did, not how sure it sounds.</b> It needs no access to the model's internals and no extra AI call, so it is free. Across 95 runs it withdraws 13 of the 16 wrong answers, and holds back 2 right ones, where a correct answer mentioned an extra charge and the check mistook it for a price.</span></li>
           <li><span class="r-tech"><b>Soundness reported separately from correctness.</b> On one task the agent opens exactly four of fifteen listings in every run, so its single correct answer rests on the same evidence as its six wrong ones. An accuracy-only evaluation cannot distinguish those, and this project reports both.</span><span class="r-plain"><b>Measuring whether an answer was earned, not only whether it was right.</b> On one question the AI checks exactly four of fifteen shops every single time. The one time it was right, it was right by luck on the same evidence that made it wrong six times. Marks out of ten cannot see that.</span></li>
         </ul>
 
@@ -836,23 +836,23 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
 
     <section id="results">
       <h2>RQ2 baseline results</h2>
-      <p class="lede r-tech">Twelve tasks, five repeats each, sixty runs. Model claude-haiku-4.5 via OpenRouter, $2.98.</p>
-      <p class="lede r-plain">Twelve questions, each asked five times. Sixty runs in total, costing $2.98.</p>
+      <p class="lede r-tech">Twelve tasks, five repeats each, sixty runs. Model claude-haiku-4.5 via OpenRouter, $3.63 logged. Re-run on 14 Sep with the answer notes removed from the product pages. The 8 Sep run is kept in the batch table but superseded: a note explaining each trap, two of them stating the answer, was in context in 59 of its 60 runs.</p>
+      <p class="lede r-plain">Twelve questions, each asked five times, sixty runs, $3.63. This is the second time it was run. The first time, notes left on the test pages gave away the answers, so every figure here comes from the clean re-run.</p>
 
       <div class="stats">
-        <div class="stat"><span class="n">81%</span><span class="l">GATED CORRECT, 69 OF 85</span></div>
+        <div class="stat"><span class="n">87%</span><span class="l">GATED CORRECT, 48 OF 55</span></div>
         <div class="stat flag"><span class="n">0</span><span class="l">ABSTENTIONS IN 60 RUNS</span></div>
-        <div class="stat"><span class="n">$2.98</span><span class="l">TOTAL SUITE COST</span></div>
-        <div class="stat"><span class="n">5 vs 3</span><span class="l">MEDIAN ACTIONS, RIGHT vs WRONG</span></div>
+        <div class="stat"><span class="n">$3.63</span><span class="l">SUITE COST, LOGGED</span></div>
+        <div class="stat"><span class="n">4.5 vs 9</span><span class="l">MEDIAN ACTIONS, RIGHT vs WRONG</span></div>
       </div>
 
       <div class="prose">
         <h3 class="sub" id="find-1">Finding 1. It never admits uncertainty</h3>
-        <p class="r-tech">Zero abstentions in sixty runs. The scorer tests a wide hedge vocabulary, including unable to, could not determine, insufficient and unclear, and none ever fired. Every failure is a confident assertion, so no downstream consumer can distinguish a guess from a verified answer.</p>
+        <p class="r-tech">Zero abstentions in sixty runs, and none in the 95 unmodified runs across both current markets. The scorer tests a wide hedge vocabulary, including unable to, could not determine, insufficient and unclear, and none ever fired. Every failure is a confident assertion, so no downstream consumer can distinguish a guess from a verified answer.</p>
         <p class="r-plain">Not once in sixty runs did the AI admit uncertainty. Every wrong answer was delivered with total confidence. If you were building on top of this agent, its guesses and its checked facts would look identical to you.</p>
       </div>
 
-      <h3 class="sub" id="find-2">Finding 2. Correctness falls away below two actions</h3>
+      <h3 class="sub" id="find-2">Finding 2. On the small fixture, effort does not predict failure</h3>
       <div class="chartbox">
         <svg viewBox="0 0 620 236" role="img" aria-label="Success rate by number of actions spent">
           <text class="ctext" x="0" y="12">SUCCESS RATE ON GATED TASKS, BY ACTIONS SPENT</text>
@@ -862,9 +862,9 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
           <line class="axis" x1="140" y1="30" x2="140" y2="196"></line>
 
           <text class="ctext" x="130" y="54" text-anchor="end">1 action</text>
-          <rect class="bar low" x="140" y="38" width="164" height="22"></rect>
-          <text class="cval" x="314" y="54">40%</text>
-          <text class="ctext" x="360" y="54">n=5</text>
+          <rect class="bar" x="140" y="38" width="273" height="22"></rect>
+          <text class="cval" x="423" y="54">67%</text>
+          <text class="ctext" x="468" y="54">n=3</text>
 
           <text class="ctext" x="130" y="96" text-anchor="end">2 to 3</text>
           <rect class="bar" x="140" y="80" width="410" height="22"></rect>
@@ -875,31 +875,32 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
           <text class="cval" x="519" y="138">90%</text>
 
           <text class="ctext" x="130" y="180" text-anchor="end">7 or more</text>
-          <rect class="bar" x="140" y="164" width="381" height="22"></rect>
-          <text class="cval" x="531" y="180">93%</text>
+          <rect class="bar" x="140" y="164" width="273" height="22"></rect>
+          <text class="cval" x="423" y="180">67%</text>
+          <text class="ctext" x="468" y="180">n=12</text>
 
           <line class="axis" x1="140" y1="196" x2="550" y2="196"></line>
           <text class="ctext" x="140" y="212" text-anchor="middle">0%</text>
           <text class="ctext" x="345" y="212" text-anchor="middle">50%</text>
           <text class="ctext" x="550" y="212" text-anchor="middle">100%</text>
-          <text class="ctext" x="0" y="232">The red bar marks the only bucket where the agent is unreliable.</text>
+          <text class="ctext" x="0" y="232">Clean re-run, 55 gated runs. The two lowest buckets sit at opposite ends.</text>
         </svg>
       </div>
       <div class="prose">
-        <p class="r-tech">The relationship is not that more retrieval is better. Past three actions the rate is flat within noise. It is specifically under retrieval that predicts failure, and the drop sits between one action and two. Revised 9 September: this bucket originally read 20 per cent, inflated by a scorer rule that marked an answer ambiguous for naming both the target price and the surcharge, which is what a correct answer showing its working does. The drop is softer than first reported and still present.</p>
-        <p class="r-plain">Read this carefully, because the obvious reading is wrong. It is not that trying harder gives better answers. Past three clicks, extra effort changes nothing. What it shows is that below two clicks the AI is much less reliable. There is a minimum amount of looking, and a lot of looking that achieves nothing. This bucket first read 20 per cent, and was corrected to 40 per cent on 9 September when a marking mistake was found.</p>
+        <p class="r-tech">The 8 September run showed success dropping below two actions, 40 per cent at one action, and it was read as under-retrieval predicting failure. The clean re-run does not support that on this fixture. The one-action bucket is 2 of 3, and seven or more actions is 8 of 12. The seven failures come from three separate mechanisms at three levels of effort: one surcharge misread as a price at one action, two answers that missed a hidden size at five and six actions, and four answers that announced a list without giving it at nine and ten. Median actions are 4.5 for correct answers and 9 for wrong ones. At fifteen listings the direction is the opposite, 23 against 7, because there the failure is not opening enough listings. What predicts failure is the kind of question, not a count of clicks.</p>
+        <p class="r-plain">The first run suggested the AI goes wrong when it barely looks. With the answers no longer on the page, that pattern goes away on the small shop. The wrong answers came from three different mistakes, made after very little looking, some looking, and a lot of looking. On the big shop with fifteen sellers it does hold: wrong answers there come from not opening enough shops.</p>
       </div>
 
       <h3 class="sub" id="find-3">Finding 3. Failures are delta misreadings, not inventions</h3>
       <div class="quote">
         <span>"The price of the 2 x 9.5L pack is <b>$15.01</b>" &nbsp; truth $24.90, 1 action</span>
-        <span>"The price of the 2 x 9.5L pack is <b>$11.60</b>" &nbsp; truth $22.50, 1 action</span>
+        <span>"The price of the 2 x 9.5L pack is <b>$11.60</b>" &nbsp; truth $22.50, 1 action, 8 Sep run only</span>
       </div>
       <div class="prose">
-        <p class="note"><b>Corrected 9 September</b> after re-reading the traces. This was originally reported as fabrication.</p>
+        <p class="note"><b>Corrected 9 September</b> after re-reading the traces. This was originally reported as fabrication. <b>14 September:</b> in the clean re-run this happened once in 55 gated runs, the $15.01 case. The $11.60 case appeared only in the 8 September run.</p>
         <p class="r-tech">Neither figure appears in the page source, which is what first suggested invention. The traces show something more specific. Magento labels each variant option with a price <b>delta</b>, and both runs observed exactly that: <code style="font-family:var(--mono);font-weight:700">2 x 9.5L +$15.01</code>. Then $9.89 + $15.01 = $24.90, and $10.90 + $11.60 = $22.50. Both numbers are correct as surcharges. The agent retrieved the right token and misread its semantics, reporting a relative value as an absolute one. The label is computed in the browser from the page's own configuration block rather than written into the HTML, which is why a source check found nothing while the agent saw it plainly.</p>
         <p class="r-plain">At first this looked like the AI making numbers up, because neither figure is anywhere in the page's code. Reading what the AI actually saw shows something different. The size dropdown does not list prices, it lists <b>surcharges</b>: the option reads "2 x 9.5L +$15.01", meaning fifteen dollars more than the price already on screen. Add them and you get $24.90, the right answer. The AI read the surcharge and reported it as the price. It found the right number and misunderstood what it meant.</p>
-        <p class="r-tech">A third run on the same task composed both values correctly and said so, which identifies composition rather than retrieval as the discriminating step. This is a sharper result than the original claim: interaction-gated prices are frequently expressed relative to the visible price, so the gated token only means anything combined with the headline the agent already had. The resulting error looks like a price, sits in a plausible range, and appears nowhere on the page, which makes it harder to catch than either a stale headline or an invention.</p>
+        <p class="r-tech">The other runs on the same task composed both values correctly and said so, which identifies composition rather than retrieval as the discriminating step. This is a sharper result than the original claim: interaction-gated prices are frequently expressed relative to the visible price, so the gated token only means anything combined with the headline the agent already had. The resulting error looks like a price, sits in a plausible range, and appears nowhere on the page, which makes it harder to catch than either a stale headline or an invention.</p>
         <p class="r-plain">One run out of the three did the sum properly and showed its working, which proves the AI can do it. The lesson is that hidden prices are often written as "add this much" rather than as a total, so an agent has to combine two numbers rather than read one.</p>
         <p class="r-tech">It also changes what the retrieval policy has to do. A coverage check, asking whether the required field was observed, passes both of these failures. What catches them is a consistency check: an absolute price reported after a delta label was seen must equal base plus delta. That is arithmetic requiring no further page fetch.</p>
         <p class="r-plain">This changes the fix. Checking "did the AI look?" would not catch these, because it did look. Checking "does the number it reported add up?" would.</p>
@@ -907,8 +908,14 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
 
       <h3 class="sub" id="find-4">Finding 4. The headline trap did not fire</h3>
       <div class="prose">
-        <p class="r-tech">The task modelled on the deployed assistant failure scored five of five correct, at a mean of 6.4 actions. With two listings and both addresses given, the comparison is cheap enough that the agent simply does the work. The live failure occurred across a search page of many sellers, where opening every listing is expensive. Reproducing it needs scale rather than a better trap.</p>
+        <p class="r-tech">The task modelled on the deployed assistant failure scored five of five correct in the clean re-run, at a mean of 5.8 actions, and five of five again at 5.6 in a separate clean run the day before: ten of ten. With two listings and both addresses given, the comparison is cheap enough that the agent simply does the work. The live failure occurred across a search page of many sellers, where opening every listing is expensive. Reproducing it needs scale rather than a better trap.</p>
         <p class="r-plain">The question built to recreate the real world failure was answered correctly every single time. With only two shops to compare, checking both is easy, so the AI just checks both. The real failure happened across a page of many sellers, where checking everything is expensive. This is a useful negative result, because it turns build a bigger catalogue from a hunch into a requirement.</p>
+      </div>
+
+      <h3 class="sub" id="find-5">Finding 5. A sold-out size is removed, not marked</h3>
+      <div class="prose">
+        <p class="r-tech">Asked whether every size of the t-shirt is in stock, 2 of 5 clean runs answered yes. Magento renders a configurable option only if it has an in-stock child, so size M is absent from the rendered dropdown. It is still in the page's JavaScript configuration, with an empty product list, which is the same split between rendered page and source as the variant prices. The agent saw S, L and XL and concluded every size it could see was available; one run wrote that M "is not offered". On 8 September all five runs answered correctly, and all five had the note "M is NOT available" in context. This is gating by absence: nothing in the observation marks the gap, and the sufficiency check cannot catch it on this fixture, because it has no listed set of sizes to compare against.</p>
+        <p class="r-plain">Asked whether every t-shirt size was in stock, the AI said yes in two of five runs. The shop does not grey out a sold-out size, it leaves it out of the menu entirely, so the AI never saw that size M existed. In the first run a note on the page told it the answer, and it got all five right.</p>
       </div>
 
       <div class="tablewrap" id="task-table">
@@ -917,22 +924,22 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
             <tr><th>Task</th><th>Gated</th><th>Verdicts across 5 runs</th><th class="num">Mean actions</th><th class="num">Mean calls</th></tr>
           </thead>
           <tbody>
-            <tr><td class="task">water-a-headline</td><td class="ctrl">control</td><td><span class="pill ok">5 correct</span></td><td class="num">1.0</td><td class="num">3.0</td></tr>
-            <tr><td class="task">water-a-9l5-price</td><td class="ctrl">yes</td><td><span class="pill ok">4 correct</span> <span class="pill no">1 wrong</span></td><td class="num">5.4</td><td class="num">13.6</td></tr>
-            <tr><td class="task">water-b-9l5-price</td><td class="ctrl">yes</td><td><span class="pill ok">3 correct</span> <span class="pill no">1 wrong</span> <span class="pill amb">1 ambiguous</span></td><td class="num">3.0</td><td class="num">8.0</td></tr>
-            <tr><td class="task">water-a-cheapest-per-litre</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">7.6</td><td class="num">19.8</td></tr>
-            <tr><td class="task">water-cross-listing</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">6.4</td><td class="num">13.0</td></tr>
-            <tr><td class="task">coffee-1kg-price</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">3.4</td><td class="num">7.2</td></tr>
-            <tr><td class="task">coffee-best-value</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">6.2</td><td class="num">15.4</td></tr>
-            <tr><td class="task">coffee-bulk-check</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">6.8</td><td class="num">14.2</td></tr>
-            <tr><td class="task">tee-m-stock</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">2.0</td><td class="num">4.0</td></tr>
-            <tr><td class="task">tee-xl-price</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">3.4</td><td class="num">7.2</td></tr>
-            <tr><td class="task">tee-all-sizes-stocked</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">2.2</td><td class="num">10.8</td></tr>
-            <tr><td class="task">water-a-all-prices</td><td class="ctrl">yes</td><td><span class="pill ok">1 correct</span> <span class="pill no">4 wrong</span></td><td class="num">5.0</td><td class="num">17.6</td></tr>
+            <tr><td class="task">water-a-headline</td><td class="ctrl">control</td><td><span class="pill ok">5 correct</span></td><td class="num">1.0</td><td class="num">3.2</td></tr>
+            <tr><td class="task">water-a-9l5-price</td><td class="ctrl">yes</td><td><span class="pill ok">4 correct</span> <span class="pill no">1 wrong</span></td><td class="num">4.6</td><td class="num">11.4</td></tr>
+            <tr><td class="task">water-b-9l5-price</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">2.8</td><td class="num">10.8</td></tr>
+            <tr><td class="task">water-a-cheapest-per-litre</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">5.6</td><td class="num">15.4</td></tr>
+            <tr><td class="task">water-cross-listing</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">5.8</td><td class="num">13.0</td></tr>
+            <tr><td class="task">coffee-1kg-price</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">3.0</td><td class="num">6.0</td></tr>
+            <tr><td class="task">coffee-best-value</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">5.0</td><td class="num">11.6</td></tr>
+            <tr><td class="task">coffee-bulk-check</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">5.6</td><td class="num">17.2</td></tr>
+            <tr><td class="task">tee-m-stock</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">2.0</td><td class="num">5.6</td></tr>
+            <tr><td class="task">tee-xl-price</td><td class="ctrl">yes</td><td><span class="pill ok">5 correct</span></td><td class="num">3.0</td><td class="num">6.8</td></tr>
+            <tr><td class="task">tee-all-sizes-stocked</td><td class="ctrl">yes</td><td><span class="pill ok">3 correct</span> <span class="pill no">2 wrong</span></td><td class="num">5.4</td><td class="num">22.4</td></tr>
+            <tr><td class="task">water-a-all-prices</td><td class="ctrl">yes</td><td><span class="pill ok">1 correct</span> <span class="pill no">4 wrong</span></td><td class="num">9.0</td><td class="num">25.0</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="note r-tech" style="padding-top:6px">The last row is a distinct failure mode. The answer asserts that it successfully listed all pack sizes and their prices, and contains no prices. At five to seven actions the retrieval likely happened and the reporting did not, so it should be counted separately from the fabrications.</p>
+      <p class="note r-tech" style="padding-top:6px">The last row is a distinct failure mode. The answer asserts that it successfully listed all pack sizes and their prices, and contains no prices. At nine to ten actions in the clean re-run, the retrieval likely happened and the reporting did not, so it should be counted separately from the fabrications.</p>
       <p class="note r-plain" style="padding-top:6px">The last row failed differently. The answer announces that it successfully listed all pack sizes and their prices, and then lists none. It probably did look. It just never reported what it found.</p>
 
       <div class="aside">
@@ -1007,8 +1014,8 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
         <p class="r-plain">Two versions. The cautious one refuses to answer and says why, which is free because it does no extra looking. The expensive one goes back and tries again, told what it got wrong, and that costs another whole run.</p>
 
         <h3 class="sub" id="pol-2">The gate is free, so it runs on runs already recorded</h3>
-        <p class="r-tech">Because the gate never touches the browser, replaying it over a finished run gives exactly the verdict it would have given live. Over 93 baseline runs it withdraws 15 of 16 wrong answers and withholds 2 of 77 correct ones, both of which answered with no evidence at all. Four runs were excluded, scored against a catalogue since regenerated, detected by rescoring the untouched answer and finding today's scorer disagrees with the verdict recorded at the time. Without that exclusion the gate appeared to withhold four correct answers, which would have been a false result reported against my own method.</p>
-        <p class="r-plain">Because the cautious version does no extra looking, it can be applied to runs that already happened and the answer is exactly what it would have been at the time. On 93 old runs it withdraws 15 of the 16 wrong answers, and holds back 2 right ones, both answered with no evidence at all. Four runs were thrown out because the shop's prices had been rebuilt since, so they were being marked against an answer key that no longer applied. Left in, they made the method look worse than it is, which is the direction of mistake worth catching.</p>
+        <p class="r-tech">Because the gate never touches the browser, replaying it over a finished run gives exactly the verdict it would have given live. Over the 95 unmodified runs on the two current markets it withdraws 13 of 16 wrong answers and withholds 2 of 79 correct ones, both correct yes-or-no answers that mention a surcharge the rule misreads as a price. Runs from a catalogue draw since replaced, and the 8 September small-fixture run that had the answers on its pages, are left out by draw rather than detected by guesswork: every suite now records which draw it ran on. The earlier method, rescoring each answer and dropping it if today's scorer disagreed, let one superseded run through whenever its answer happened to be wrong under both answer keys.</p>
+        <p class="r-plain">Because the cautious version does no extra looking, it can be applied to runs that already happened and the answer is exactly what it would have been at the time. On 95 old runs it withdraws 13 of the 16 wrong answers, and holds back 2 right ones, where the check mistook an extra charge for a price. Runs made on a version of the shop that has since been rebuilt, or on pages that still had the answers written on them, are kept out, because they were marked against conditions that no longer apply.</p>
 
         <h3 class="sub" id="pol-3">Retry works, and the price is the finding</h3>
         <p class="r-tech">Retry arm, same tasks and fixture as the scaled baseline: wrong answers fell from 5 to 2 for 34 per cent more spend, $4.21 against $3.13. All three <code style="font-family:var(--mono);font-weight:700">scaled-all-stocked</code> runs answered a bare "Yes" after opening 4 of 15, all three were flagged, and all three second attempts returned the correct answer with its evidence. One of those three is scored <span class="pill no">failed</span> because the runtime reported <code style="font-family:var(--mono);font-weight:700">ok: false</code> though the text was right. The scorer was not adjusted to fix that, because changing a scorer in favour of one's own policy after seeing the result is how a result stops meaning anything.</p>
@@ -1023,8 +1030,8 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
         <div class="quote">
           <span>held out, 15 runs &nbsp; <b>3 of 4</b> failures caught &nbsp; <b>0 of 11</b> correct answers blocked &nbsp; <b>$0.00</b> added cost</span>
         </div>
-        <p class="r-tech">The one that escaped gives the same wrong answer as the two that were caught, and differs only in not volunteering how much it had looked at. The rule reads a claim the agent makes about itself, so an agent that says less is checked less. Gating on coverage directly would close it and break the property the gate currently has: across every baseline run of the two comparison tasks, correct answers opened 1, 4, 4, 8, 12, 13, 14 and 14 listings while wrong ones opened 4 every time. Gating at the oracle floor of 11 would catch all six failures and block three correct answers.</p>
-        <p class="r-plain">One failure got through. It gave the same wrong answer as the two that were caught, and the only difference is that it did not say how much it had checked. The test reads what the AI claims about its own effort, so an AI that says less gets tested less. The obvious fix, demanding it check enough shops, would catch that one and start blocking right answers, because some right answers came from checking very little.</p>
+        <p class="r-tech">The one that escaped gives the same wrong answer as the two that were caught, and differs only in not volunteering how much it had looked at. The rule reads a claim the agent makes about itself, so an agent that says less is checked less. Gating on coverage directly was first rejected here on figures that turned out to be miscounted, because the counter missed listings opened by clicking a card. Counted correctly, across every baseline run of the two comparison tasks on the current draw, correct answers opened 4, 15, 15, 15, 15 and 15 listings and wrong ones opened 4 every time. A floor at the oracle's 11 would catch all six failures and block one correct answer, which was itself reached after opening 4 of 15. The rejection no longer holds as stated. Whether to add a coverage rule, and at what floor for each kind of question, is open: refuting a claim about every listing needs one counterexample, not eleven openings.</p>
+        <p class="r-plain">One failure got through. It gave the same wrong answer as the two that were caught, and the only difference is that it did not say how much it had checked. The test reads what the AI claims about its own effort, so an AI that says less gets tested less. The obvious fix, demanding it check enough shops, was first turned down because it seemed to block right answers. That was a counting mistake in my own tool, which missed shops the AI opened by clicking. Counted properly, the right answers nearly all came from checking every shop, and the rule would block only one, which came from checking four. So that fix is back on the table.</p>
         <p class="r-tech">That last point is the more useful result. <code style="font-family:var(--mono);font-weight:700">scaled-best-per-litre</code> opens exactly 4 listings in all seven runs, right and wrong alike, so its one correct answer was reached on the same evidence as its six wrong ones. Accuracy cannot separate those outcomes because there is nothing in the runs to separate. Soundness and correctness are different properties, and the report should carry both.</p>
         <p class="r-plain">That is worth more than the rule would have been. On one task the AI checks exactly four shops every single time, whether it ends up right or wrong. The time it was right, it was right by luck on the same evidence that made it wrong six times. A score out of ten cannot tell those apart, which is the whole argument for measuring whether an answer was earned rather than only whether it was right.</p>
       </div>
@@ -1036,22 +1043,22 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
       <p class="lede r-plain">The full list: every product built, every question asked, every version tested, and what each one scored.</p>
 
       <div class="prose">
-        <h3 class="sub" id="inv-arms">The seven arms</h3>
+        <h3 class="sub" id="inv-arms">The eight arms</h3>
         <p class="r-tech">Every arm restricted to the same four gated questions of the 15 listing market, so the denominators match. Correct is a share of what the arm actually answered, so refusing is neither rewarded nor punished by that column.</p>
-        <p class="r-plain">Seven versions, all measured on the same four questions so the numbers can be compared. The correct column counts only questions the version chose to answer.</p>
+        <p class="r-plain">Eight versions, all measured on the same four questions so the numbers can be compared. The correct column counts only questions the version chose to answer.</p>
       </div>
 
       <div class="tablewrap">
         <table>
           <thead><tr><th class="wide">Arm</th><th class="wide">What it does</th><th class="num">Runs</th><th class="num">Correct</th><th class="num">Refused</th><th class="num">Wrong</th><th class="num">Actions</th><th class="num">Cost/run</th></tr></thead>
           <tbody>
-            <tr><td class="wide">Unmodified</td><td class="dim wide">The agent as shipped, nothing added</td><td class="num">28</td><td class="num">64%</td><td class="num">0</td><td class="num">10</td><td class="num">17.7</td><td class="num">$0.276</td></tr>
+            <tr><td class="wide">Unmodified</td><td class="dim wide">The agent as shipped, nothing added</td><td class="num">24</td><td class="num">62%</td><td class="num">0</td><td class="num">9</td><td class="num">17.6</td><td class="num">$0.267</td></tr>
             <tr><td class="wide">Confidence</td><td class="dim wide">States 0 to 100 how sure it is, threshold on that</td><td class="num">12</td><td class="num">50%</td><td class="num">0</td><td class="num">6</td><td class="num">13.9</td><td class="num">$0.219</td></tr>
-            <tr><td class="wide">Gate</td><td class="dim wide">Refuses when the answer is unsupported. No browser action, so free</td><td class="num">25</td><td class="num">93%</td><td class="num">11</td><td class="num">1</td><td class="num">17.2</td><td class="num">$0.260</td></tr>
+            <tr><td class="wide">Gate</td><td class="dim wide">Refuses when the answer is unsupported. No browser action, so free</td><td class="num">24</td><td class="num">94%</td><td class="num">8</td><td class="num">1</td><td class="num">17.6</td><td class="num">$0.267</td></tr>
             <tr><td class="wide">Retry</td><td class="dim wide">Re-asks the whole task, told what was wrong</td><td class="num">13</td><td class="num">73%</td><td class="num">2</td><td class="num">2</td><td class="num">27.3</td><td class="num">$0.374</td></tr>
             <tr><td class="wide">Exhaustive</td><td class="dim wide">Opens every listing. The upper bound on cost</td><td class="num">8</td><td class="num">100%</td><td class="num">0</td><td class="num">0</td><td class="num">28.4</td><td class="num">$0.568</td></tr>
             <tr><td class="wide">Targeting v1</td><td class="dim wide">Strategy from the question, but never enumerated the market</td><td class="num">8</td><td class="num">50%</td><td class="num">0</td><td class="num">4</td><td class="num">6.6</td><td class="num">$0.091</td></tr>
-            <tr class="hi"><td class="wide"><b>Targeting v2 + gate</b></td><td class="dim wide">Enumerate, prune on a bound, refuse if unsupported</td><td class="num">12</td><td class="num">100%</td><td class="num">2</td><td class="num">0</td><td class="num">18.4</td><td class="num">$0.382</td></tr>
+            <tr class="hi"><td class="wide"><b>Targeting v2 + gate</b></td><td class="dim wide">Enumerate, prune on a bound, refuse if unsupported</td><td class="num">12</td><td class="num">100%</td><td class="num">1</td><td class="num">0</td><td class="num">18.4</td><td class="num">$0.382</td></tr>
             <tr class="hi"><td class="wide"><b>Same, held-out market</b></td><td class="dim wide">A second market the policy had never seen</td><td class="num">8</td><td class="num">100%</td><td class="num">1</td><td class="num">0</td><td class="num">15.1</td><td class="num">$0.328</td></tr>
           </tbody>
         </table>
@@ -1164,8 +1171,8 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
 
       <div class="prose">
         <h3 class="sub" id="inv-spend">Every batch of runs</h3>
-        <p class="r-tech">Roughly 190 scored runs. Cost is measured two ways and they disagree: the per run deltas sum to less than OpenRouter's own account total, because exploratory runs predate cost capture and a run's cost is read as soon as spend moves rather than once settled. The account figure is authoritative and the per run figures are a lower bound.</p>
-        <p class="r-plain">About 190 runs in total. The two ways of counting the cost disagree slightly, and the account total is the one to trust.</p>
+        <p class="r-tech">263 run records. Cost is measured two ways and they disagree: the per run deltas sum to less than OpenRouter's own account total, because exploratory runs predate cost capture and a run's cost is read as soon as spend moves rather than once settled. The account figure is authoritative and the per run figures are a lower bound.</p>
+        <p class="r-plain">263 runs in total. The two ways of counting the cost disagree slightly, and the account total is the one to trust.</p>
       </div>
 
       <div class="tablewrap">
@@ -1173,8 +1180,8 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
           <thead><tr><th>When</th><th class="wide">Batch</th><th class="num">Runs</th><th class="wide">Result</th><th class="num">Cost</th></tr></thead>
           <tbody>
             <tr><td class="ctrl">8 Sep</td><td class="wide">Smoke test, does the agent run at all</td><td class="num">2</td><td class="dim wide">2 correct</td><td class="num">$0.05</td></tr>
-            <tr class="hi"><td class="ctrl">8 Sep</td><td class="wide">RQ2 baseline, 12 questions x 5</td><td class="num">60</td><td class="dim wide">54 correct, 6 wrong, <b>0 abstentions</b></td><td class="num">$2.98</td></tr>
-            <tr><td class="ctrl">9 Sep</td><td class="wide">First run at 15 listings</td><td class="num">5</td><td class="dim wide">4 correct, 1 wrong</td><td class="num">$1.36</td></tr>
+            <tr class="hi"><td class="ctrl">8 Sep</td><td class="wide">RQ2 baseline, 12 questions x 5</td><td class="num">60</td><td class="dim wide">54 correct, 6 wrong, <b>0 abstentions</b>. Superseded: the answer notes were on the page</td><td class="num">$2.98</td></tr>
+            <tr><td class="ctrl">9 Sep</td><td class="wide">First run at 15 listings</td><td class="num">5</td><td class="dim wide">4 correct, 1 wrong. Superseded: a catalogue draw since replaced</td><td class="num">$1.36</td></tr>
             <tr><td class="ctrl">9 Sep</td><td class="wide">Scaled baseline</td><td class="num">15</td><td class="dim wide">10 correct, 5 wrong</td><td class="num">$3.13</td></tr>
             <tr><td class="ctrl">9 Sep</td><td class="wide">Retry arm, the fix running live</td><td class="num">21</td><td class="dim wide">Wrong fell from 5 to 2</td><td class="num">$4.21</td></tr>
             <tr><td class="ctrl">9 Sep</td><td class="wide">Held-out baseline, rules frozen first</td><td class="num">15</td><td class="dim wide">3 of 4 failures caught, 0 correct blocked</td><td class="num">$3.41</td></tr>
@@ -1182,9 +1189,11 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
             <tr class="hi"><td class="ctrl">10 Sep</td><td class="wide">Exhaustive upper bound</td><td class="num">8</td><td class="dim wide">8 of 8 correct. Established the cost axis</td><td class="num">$4.54</td></tr>
             <tr><td class="ctrl">10 Sep</td><td class="wide">Targeting v1</td><td class="num">8</td><td class="dim wide">Withdrawn. Never enumerated the market</td><td class="num">$0.73</td></tr>
             <tr><td class="ctrl">10 Sep</td><td class="wide">Targeting v1 plus gate</td><td class="num">12</td><td class="dim wide">Gate caught the enumeration failure</td><td class="num">$1.06</td></tr>
-            <tr class="hi"><td class="ctrl">10 Sep</td><td class="wide">Targeting v2 plus gate</td><td class="num">12</td><td class="dim wide"><b>10 correct, 2 refused, 0 wrong.</b> Matched the upper bound for a third less</td><td class="num">$4.58</td></tr>
+            <tr class="hi"><td class="ctrl">10 Sep</td><td class="wide">Targeting v2 plus gate</td><td class="num">12</td><td class="dim wide"><b>11 correct, 1 refused, 0 wrong</b> after rescoring on 13 Sep (first recorded as 10, 2, 0). Matched the upper bound for a third less</td><td class="num">$4.58</td></tr>
             <tr><td class="ctrl">10 Sep</td><td class="wide">Refutation v3</td><td class="num">3</td><td class="dim wide">Actions 14.3 to 10.3, still 3 of 3 correct</td><td class="num">$0.65</td></tr>
             <tr class="hi"><td class="ctrl">10 Sep</td><td class="wide"><b>Held-out market</b></td><td class="num">8</td><td class="dim wide"><b>7 correct, 1 refused, 0 wrong</b> on a market never seen</td><td class="num">$2.62</td></tr>
+            <tr><td class="ctrl">13 Sep</td><td class="wide">Two-listing comparison, answer notes removed</td><td class="num">5</td><td class="dim wide">5 of 5 correct, no leaked text in any run's context</td><td class="num">$0.33</td></tr>
+            <tr class="hi"><td class="ctrl">14 Sep</td><td class="wide">RQ2 baseline re-run clean, 12 questions x 5</td><td class="num">60</td><td class="dim wide">53 correct, 7 wrong, <b>0 abstentions</b>. Replaces the 8 Sep run</td><td class="num">$3.63</td></tr>
           </tbody>
         </table>
       </div>
@@ -1279,6 +1288,20 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
               <li><span class="r-tech">That run reported three refusals and two were my own bug. Both per-litre answers were correct to four decimal places and were refused for showing their working, because the check read "8.4 litres" as an unsupported $8.40. The same family as the delta misread that started the project, a number meaning something other than money, this time in my instrument rather than the agent's answer.</span><span class="r-plain">Two of those refusals turned out to be wrong. The answers were right, and the checker mistook a volume in litres for a price.</span></li>
             </ul>
             <div class="tags"><span class="tag win">RQ3 efficiency claim met</span> <span class="tag win">held out, no wrong answers</span> <span class="tag neg">one result withdrawn</span> <span class="tag neg">no exhaustive arm on the held out market</span></div>
+          </div>
+        </div>
+
+        <div class="tl" id="log-sep13">
+          <div class="when">13 to 14 Sep 2026</div>
+          <div class="what">
+            <h3>The answer key was on the page, and three bugs in my own instruments</h3>
+            <ul>
+              <li><span class="r-tech"><b>The small fixture's pages carried the answers.</b> The seeder wrote each family's authoring note into the product description, which renders inside the snapshot the agent reads. On one page it read "Ground truth for 'cheapest 2 x 9.5L': this seller, 22.50 against 24.90". A note was in context in 59 of the 60 runs of the 8 Sep baseline, and the model cited it in 26. The 30 generated listings were never affected.</span><span class="r-plain">Notes I had written for myself about each test product were showing on the product pages, and two of them gave the answer away. The AI read them in almost every run of the first test. The big fifteen-seller shops never had them.</span></li>
+              <li><span class="r-tech">Notes removed from Magento, verified absent, and the baseline re-run clean: <b>53 correct, 7 wrong, 0 abstentions, 48 of 55 gated (87%)</b> against 49 of 55 with the answers on the page. The task most helped by its note fell from 5 of 5 to 3 of 5: Magento drops a sold-out size from the rendered dropdown, so the agent never saw it. The drop in accuracy below two actions did not survive the re-run.</span><span class="r-plain">After removing the notes, the whole first test was run again. The overall score barely moved, 87 per cent against 89, but one question dropped from five right to three, and one earlier pattern about effort went away.</span></li>
+              <li><span class="r-tech"><b>Three bugs in my own tools.</b> The listing counter only saw listings opened by typing a URL, not by clicking a card, so 35 runs were undercounted. The yes-or-no scorer matched "no" anywhere, so "(no pagination)" read as a No. And two scripts added results together across catalogue draws, including one that counted the exhaustive arm as the unmodified agent. All three fixed; every suite now records its draw.</span><span class="r-plain">My counting tool missed shops the AI opened by clicking. My marking tool read "no" inside other words. And two summary scripts mixed results from different versions of the shop. All three are fixed.</span></li>
+              <li><span class="r-tech">Corrected on the current fifteen-listing market: <b>unmodified 24 runs, 62.5%</b>; gate 15 correct, 8 refused, 1 wrong; held-out market stored as 7 correct, 1 refused, 0 wrong. Coverage gating had been rejected on the miscount: counted correctly, correct answers opened 4, 15, 15, 15, 15 and 15 listings against 4 for every wrong one, so that question is open again. The confidence baseline was re-checked with the fixed counter and <b>AUROC 0.528 is unchanged</b>.</span><span class="r-plain">With the fixes, the plain AI scores 62.5 per cent on the big shop. A fix I had rejected turned out to be rejected on bad counts, so it is back under consideration. The result that the AI's own confidence is useless still stands.</span></li>
+            </ul>
+            <div class="tags"><span class="tag neg">answer key found on the page</span> <span class="tag neg">three instrument bugs</span> <span class="tag win">baseline re-run clean</span> <span class="tag win">confidence result unchanged</span></div>
           </div>
         </div>
 
@@ -1444,7 +1467,8 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
       list: [
         "Twelve tasks, five repeats, sixty runs",
         "rescore.py re marks stored runs at no cost",
-        "Changed verdicts are kept rather than overwritten"
+        "Changed verdicts are kept, and each rescore records why",
+        "Every suite records the catalogue draw it ran on"
       ]
     },
     out: {
@@ -1454,9 +1478,9 @@ footer .wrap { padding: 24px 32px 48px; color: var(--faint); font-size: 13px; }
       tech: "Per run, the verdict, answer, cost, elapsed time, actions, observations and the full tool sequence, plus per task aggregates.",
       plain: "One file holding everything. Every answer, whether it was right, what it cost, how long it took and exactly what the AI did.",
       list: [
-        "53 correct, 6 wrong, 1 ambiguous",
+        "Clean baseline: 53 correct, 7 wrong",
         "Zero abstentions across all sixty runs",
-        "$2.98 in total"
+        "$3.63 logged"
       ]
     }
   };

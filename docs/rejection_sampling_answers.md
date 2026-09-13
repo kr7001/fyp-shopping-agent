@@ -9,6 +9,14 @@ converted to Singapore time (UTC+8) unless marked.
 
 ---
 
+## Update, 14 September
+
+- **Small-fixture baseline re-run clean**, 60 runs, $3.63 logged: 53 correct, 7 wrong, 0 abstentions, 48 of 55 gated (87%), no leaked text in context. The sold-out t-shirt size is dropped from Magento's rendered dropdown, and two runs answered "every size in stock" without ever seeing it.
+- **Confidence baseline re-run with the fixed counter: AUROC 0.528 unchanged**, and the head-to-head and reason-fed gate figures unchanged. Only the opened-versus-confidence correlation moved, -0.535 to -0.338.
+- **The opened-listing figures did not hold.** Correct answers on the two comparison tasks opened 4, 15, 15, 15, 15, 15 on the current draw, not 1, 4, 4, 8, 12, 13, 14, 14. A floor at 11 would block one correct answer, not three. Coverage gating is reopened, not adopted.
+- **A third bug, in the boolean scorer** ("no" matched inside "(no pagination)"), fixed. The live gate's Calderwood refusal was of a wrong answer.
+- **Gate over 95 unmodified runs on current draws:** 13 of 16 wrong withdrawn, 2 of 79 correct withheld. The table below says the gate withdraws no correct answer; that is true of the 24 Rivenhall runs and not of the small fixture.
+
 ## Update, later on 13 September: what was fixed and what it changed
 
 Everything below this section is the original answer set, kept as written. Where a later

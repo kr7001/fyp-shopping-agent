@@ -516,14 +516,21 @@ file so the change in rules is visible rather than silent.
 
 ## Part 5: What the experiment found
 
-**60 runs. $2.98. Total project spend so far: $3.75 of $20.**
+> **Corrected 14 September.** It turned out the notes I wrote about each test product were
+> showing on the product pages, and two of them gave the answer away ("Ground truth... 22.50
+> against 24.90", "M is NOT available"). The AI had one of those notes in front of it in 59
+> of the 60 runs below. The notes were removed and the whole experiment run again. The
+> figures in this part are from that clean re-run, with the first run's figures alongside
+> where they changed.
 
-| | |
-| --- | --- |
-| Overall | 53 correct, 6 wrong, 1 ambiguous |
-| On hidden-information questions | 48 of 55 correct — 87% |
-| On the control question | 5 of 5, one step each |
-| **Times the agent admitted uncertainty** | **0 out of 60** |
+**60 runs. $3.63 logged.** (The first run cost $2.98, when total project spend was $3.75 of $20.)
+
+| | Clean re-run | First run, notes on page |
+| --- | --- | --- |
+| Overall | 53 correct, 7 wrong | 54 correct, 6 wrong (as re-marked on 9 Sep) |
+| On hidden-information questions | 48 of 55 correct — 87% | 49 of 55 — 89% |
+| On the control question | 5 of 5, one step each | 5 of 5 |
+| **Times the agent admitted uncertainty** | **0 out of 60** | 0 out of 60 |
 
 ### Finding 1: it never says "I don't know"
 
@@ -539,18 +546,27 @@ person, or another program — to act on.
 If you are building on top of such an agent, you cannot tell its guesses from its
 verifications. They look identical.
 
-### Finding 2: correctness falls off a cliff, and only at the bottom
+### Finding 2: on this small shop, effort does not predict failure
 
-Grouping the hidden-information runs by how many actions the agent spent:
+Grouping the hidden-information runs from the clean re-run by how many actions the agent spent:
 
 | Actions spent | Runs | Correct | Success rate |
 | --- | --- | --- | --- |
-| 1 | 5 | 1 | **20%** |
-| 2–3 | 16 | 16 | 100% |
+| 1 | 3 | 2 | 67% |
+| 2–3 | 20 | 20 | 100% |
 | 4–6 | 20 | 18 | 90% |
-| 7+ | 14 | 13 | 93% |
+| 7+ | 12 | 8 | 67% |
 
-Correct runs took a median of 5 actions. Wrong runs took a median of **1**.
+Correct runs took a median of 4.5 actions. Wrong runs took a median of **9**.
+
+*Corrected 14 September.* The first run, with the answers on the page, seemed to show a cliff:
+one-action answers mostly wrong, everything above two actions reliable. What follows below was
+written about that first run, and the clean re-run does not back it up. The seven wrong answers
+came from three different mistakes, made after one action, after five or six, and after nine or
+ten. On this small shop, counting clicks does not tell you which answers to trust. On the big
+shop with fifteen sellers it does: there, wrong answers come from opening too few shops, a
+median of 7 actions against 23 for right ones. The rest of this finding is kept as it was first
+written, so the change of mind is visible.
 
 Read the table carefully, because the obvious reading is wrong. This is **not** "more effort
 is better". Past three actions the success rate is flat — 100%, 90%, 93% — those differences
@@ -566,7 +582,12 @@ This is exactly the premise RQ3 needs, now measured rather than assumed. There i
 amount of looking required, below which answers are fabricated. There is also a lot of
 looking that achieves nothing — which means there is real waste to cut.
 
-### Finding 3: failures are inventions, not misreadings
+### Finding 3: failures looked like inventions, and were misreadings
+
+*Corrected 9 September, and again 14 September.* Both numbers below turned out to be real: the
+size menu shows the extra charge for each size ("2 x 9.5L +$15.01"), and $9.89 + $15.01 is the
+right answer, $24.90. The AI read the extra charge and reported it as the price. In the clean
+re-run this happened once in 55 questions. The original text follows.
 
 ```
 "The price of the 2 x 9.5L pack is $15.01"   — truth $24.90, one action
@@ -595,14 +616,15 @@ One task asks for *every* pack size and price. It failed 4 times out of 5, but d
 
 Read it again. It **announces** that it listed the prices. It does not list any prices.
 
-These runs spent 5, 6 and 7 actions — enough that the looking probably did happen. The
+In the clean re-run these runs spent 9 and 10 actions — enough that the looking probably did happen. The
 failure is in the reporting, not the retrieval. That is a different problem and should be
 counted separately, not lumped in with the fabrications.
 
 ### Finding 5: the headline trap did not work — and that is useful
 
 The task built to reproduce the real-world failure — *which seller is cheaper for the 9.5L
-carton?* — was answered **correctly 5 times out of 5**, averaging 6.4 actions.
+carton?* — was answered **correctly 5 times out of 5**, averaging 5.8 actions in the clean
+re-run, and 5 out of 5 again in a separate clean run the day before.
 
 Given two listings and both addresses, the agent opened each one, selected the size on each,
 compared properly, and named Hillside Provisions at $22.50. Exactly right.
@@ -615,6 +637,20 @@ agent into shortcuts.
 This is a **negative result**, and a genuinely valuable one. It converts "we should build a
 bigger catalogue" from a hunch into an evidence-backed requirement. The trap needs *scale*,
 not cleverer design.
+
+### Finding 6 (added 14 September): a sold-out size simply disappears
+
+Asked whether every t-shirt size is in stock, the AI said **yes** in 2 of the 5 clean runs. The
+right answer is no, size M is sold out.
+
+The shop does not grey out a sold-out size. It leaves it out of the size menu altogether, so
+the AI saw S, L and XL, and every size it could see was in stock. One run even wrote that M
+"is not offered". In the first run, the note on the page said "M is NOT available", and all
+five runs got it right.
+
+This is a different kind of hidden information. The price of a size is hidden until you click.
+A sold-out size is not hidden behind anything; it is simply not there, and nothing on the page
+tells you something is missing.
 
 ---
 
@@ -631,7 +667,7 @@ The opportunity is **not** making the agent more accurate. At 87% it is mostly r
 
 The opportunity is that it has **no principle for knowing when it has looked enough**:
 
-1. It sometimes spends 1 action and invents an answer
+1. It sometimes spends 1 action and reports an extra charge as if it were the price
 2. It sometimes spends 7 actions where 2 would have done — pure waste
 3. It never abstains, so a guess and a verified fact are indistinguishable from outside
 
@@ -775,16 +811,26 @@ The obvious response is to demand the AI check enough shops before answering. Th
 a known number: 11 of the 15 must be opened before any method could reliably get the right
 answer.
 
-The data refused it. Looking at every run of the comparison questions:
+At first the data seemed to refuse it. Looking at every run of the comparison questions:
 
 ```
 right answers came from opening:  1, 4, 4, 8, 12, 13, 14, 14 shops
 wrong answers came from opening:  4, 4, 4, 4, 4, 4 shops
 ```
 
-Requiring 11 would catch all six failures — and block three right answers, including one
-that came from opening a single shop. The check currently has one clean property, that it
-never blocks a right answer, and this would trade it away.
+*Corrected 14 September.* Those counts were wrong. My counting tool only noticed a shop when
+the AI typed its address, and missed every shop it opened by clicking. Counted properly:
+
+```
+right answers came from opening:  4, 15, 15, 15, 15, 15 shops
+wrong answers came from opening:  4, 4, 4, 4, 4, 4 shops
+```
+
+So the right answers nearly all came from opening every shop. Requiring 11 would catch all
+six failures and block just one right answer, the one that came from opening only four.
+The fix is back on the table. Whether to use it, and how many shops each kind of question
+should need, is still to be decided, because "does every shop have it" only needs one
+counterexample.
 
 ### But look again at those numbers
 
@@ -830,7 +876,7 @@ ability. What it lacks is the decision to go and look.
 Now there are two ends of a scale:
 
 ```
-cheap and often wrong    64% right   about $0.28 a run
+cheap and often wrong    62% right   about $0.27 a run
 right and expensive     100% right   about $0.57 a run
 ```
 
