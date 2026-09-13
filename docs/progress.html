@@ -208,7 +208,7 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
       <a class="stat" href="#setup-runs"><span class="n">263</span><span class="l">AGENT RUNS TO 14 SEP</span></a>
       <a class="stat" href="#setup-fixtures"><span class="n">19</span><span class="l">LISTINGS AUTHORED</span></a>
       <a class="stat" href="#setup-questions"><span class="n">17</span><span class="l">TEST QUESTIONS</span></a>
-      <a class="stat flag" href="#rq2-result"><span class="n">0 / 95</span><span class="l">TIMES IT SAID I DO NOT KNOW</span></a>
+      <a class="stat flag" href="#rq2-result"><span class="n">0 / 107</span><span class="l">TIMES IT SAID I DO NOT KNOW</span></a>
       <a class="stat win" href="#failures"><span class="n">3 / 4</span><span class="l">FAILURES CAUGHT BY THE FIX</span></a>
       <a class="stat win" href="#axis"><span class="n">&minus;35%</span><span class="l">INTERACTIONS AT EQUAL ACCURACY</span></a>
     </div>
@@ -230,7 +230,7 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         <span class="tagline">RQ2 &middot; ANSWERED</span>
         <h3>When a task needs gated information, does the agent retrieve it, and does it signal when it has not?</h3>
         <p>Two separate questions. Does it get the answer right, and when it does not, does it warn you.</p>
-        <p class="verdict">Retrieves correctly <b>88%</b> of the time on the 4-listing fixture and <b>62.5%</b> at 15 listings, each quoted with its own denominator and never pooled. Signals uncertainty <b>0 times in 95 runs</b>. The second half is the result that matters, because a caller cannot tell a guess from a checked answer.</p>
+        <p class="verdict">Retrieves correctly <b>88%</b> of the time on the 4-listing fixture and <b>58%</b> at 15 listings, each quoted with its own denominator and never pooled. Signals uncertainty <b>0 times in 107 runs</b>. The second half is the result that matters, because a caller cannot tell a guess from a checked answer.</p>
       </div>
       <div class="rq part">
         <span class="tagline">RQ3 &middot; FIRST HALF DONE</span>
@@ -404,16 +404,16 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
     <h3 class="sub" id="rq2-result">RQ2 &middot; does it retrieve, and does it signal</h3>
     <div class="tablewrap">
       <table>
-        <caption>The unmodified agent, across 95 runs on the current catalogues</caption>
+        <caption>The unmodified agent, across 107 runs on the current catalogues</caption>
         <thead><tr><th class="wide">Measure</th><th class="num">Value</th><th class="wide">Reading</th></tr></thead>
         <tbody>
           <tr><td class="wide">Correct, 4-listing fixture</td><td class="num">88%</td><td class="dim wide">53 of 60 gated runs, with the answer notes removed from the pages. The easy case</td></tr>
-          <tr><td class="wide">Correct, 15-listing fixture</td><td class="num">62.5%</td><td class="dim wide">15 of 24 gated runs. The same agent, a harder market</td></tr>
+          <tr><td class="wide">Correct, 15-listing fixture</td><td class="num">58%</td><td class="dim wide">21 of 36 gated runs, over three batches of 12 (58%, 67%, 50%). The same agent, a harder market</td></tr>
           <tr><td class="wide">Correct, pooled</td><td class="num">&mdash;</td><td class="dim wide">Not reported. The two rates come from different catalogues, and a figure that adds them together hides the gap between them, which is the scale finding</td></tr>
-          <tr class="hi"><td class="wide">Times it said it did not know</td><td class="num">0 of 95</td><td class="dim wide"><b>The central RQ2 result.</b> Every single failure is a confident assertion</td></tr>
+          <tr class="hi"><td class="wide">Times it said it did not know</td><td class="num">0 of 107</td><td class="dim wide"><b>The central RQ2 result.</b> Every single failure is a confident assertion</td></tr>
           <tr><td class="wide">Median actions, correct answers</td><td class="num">4.5</td><td class="dim wide">Small fixture, clean re-run</td></tr>
           <tr><td class="wide">Median actions, wrong answers</td><td class="num">9</td><td class="dim wide">On the small fixture effort does not predict failure. The seven failures are three different mechanisms at one, five to six, and nine to ten actions</td></tr>
-          <tr><td class="wide">Same, at 15 listings</td><td class="num">23 vs 7</td><td class="dim wide">Here it does: wrong answers open too few listings. Under-retrieval predicts failure at scale, not on a two-listing page</td></tr>
+          <tr><td class="wide">Same, at 15 listings</td><td class="num">22 vs 7</td><td class="dim wide">Here it does: wrong answers open too few listings. Under-retrieval predicts failure at scale, not on a two-listing page</td></tr>
         </tbody>
       </table>
     </div>
@@ -424,9 +424,9 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         <caption>Same questions, same market, three versions of the system</caption>
         <thead><tr><th>Arm</th><th class="wide">What it does</th><th class="num">Correct</th><th class="num">Refused</th><th class="num">Wrong</th><th class="num">Actions</th><th class="num">Cost/run</th></tr></thead>
         <tbody>
-          <tr><td>Unmodified</td><td class="dim wide">Answers whatever it concludes</td><td class="num">62%</td><td class="num">0</td><td class="num">9 of 24</td><td class="num">17.6</td><td class="num">$0.267</td></tr>
+          <tr><td>Unmodified</td><td class="dim wide">Answers whatever it concludes</td><td class="num">58%</td><td class="num">0</td><td class="num">15 of 36</td><td class="num">15.8</td><td class="num">$0.238</td></tr>
           <tr><td>Confidence</td><td class="dim wide">States how sure it is, threshold on that</td><td class="num">50%</td><td class="num">0</td><td class="num">6 of 12</td><td class="num">13.9</td><td class="num">$0.219</td></tr>
-          <tr><td>Gate</td><td class="dim wide">Refuses when its answer is unsupported</td><td class="num">94%</td><td class="num">8</td><td class="num">1 of 24</td><td class="num">17.6</td><td class="num">$0.267</td></tr>
+          <tr><td>Gate</td><td class="dim wide">Refuses when its answer is unsupported</td><td class="num">83%</td><td class="num">12</td><td class="num">4 of 36</td><td class="num">15.8</td><td class="num">$0.238</td></tr>
           <tr><td>Retry</td><td class="dim wide">Goes back, told what was wrong</td><td class="num">73%</td><td class="num">2</td><td class="num">2 of 13</td><td class="num">27.3</td><td class="num">$0.374</td></tr>
           <tr><td>Exhaustive</td><td class="dim wide">Opens every listing. The upper bound</td><td class="num">100%</td><td class="num">0</td><td class="num">0 of 8</td><td class="num">28.4</td><td class="num">$0.568</td></tr>
           <tr class="hi"><td><b>Targeting + gate</b></td><td class="dim wide">Picks a strategy from the question, then refuses if unsupported</td><td class="num">100%</td><td class="num">1</td><td class="num">0 of 12</td><td class="num">18.4</td><td class="num">$0.382</td></tr>
@@ -434,23 +434,23 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         </tbody>
       </table>
     </div>
-    <p class="note" id="axis">Every arm is restricted to the same four gated questions, so the denominators match. Correct is a share of what the arm actually answered, so refusing is neither rewarded nor punished by that column. The two ends of the axis are the unmodified agent, cheap and wrong 9 times in 24, and exhaustive retrieval, correct and 2.1 times the price. Targeting plus the gate sits where a policy has to sit: exhaustive's accuracy, closer to the unmodified agent's cost. The gate does not answer fewer questions because it failed on them; The gate costs nothing because it issues no browser action, reading the record of what the agent already saw and comparing it against what the agent just claimed.</p>
+    <p class="note" id="axis">Every arm is restricted to the same four gated questions, so the denominators match. Correct is a share of what the arm actually answered, so refusing is neither rewarded nor punished by that column. The two ends of the axis are the unmodified agent, cheap and wrong 15 times in 36, and exhaustive retrieval, correct and 2.4 times the price. Targeting plus the gate sits where a policy has to sit: exhaustive's accuracy, closer to the unmodified agent's cost. The gate does not answer fewer questions because it failed on them; The gate costs nothing because it issues no browser action, reading the record of what the agent already saw and comparing it against what the agent just claimed.</p>
 
     <h3 class="sub">The honest test</h3>
-    <p class="lede">Two of the five rules were written after seeing failures they were meant to handle, so measuring them on those same failures proves nothing. The rules were locked at a recorded version, then fifteen fresh runs were made, then the rules were applied to those alone.</p>
+    <p class="lede">Two of the five rules were written after seeing failures they were meant to handle, so measuring them on those same failures proves nothing. The rules were locked at a recorded version, <code>7771e24</code>, then fifteen fresh runs were made, then the rules were applied to those alone. A second held-out batch of twelve followed on 14 September. The rules had changed in three places by then, so that batch was replayed under the literal frozen code; the current rules decide identically on every run in both batches.</p>
     <div class="tablewrap">
       <table>
-        <caption>Held-out test &middot; 15 runs that did not exist when the rules were written</caption>
-        <thead><tr><th class="wide">Verdict</th><th class="num">Unmodified</th><th class="num">With the fix</th></tr></thead>
+        <caption>Held-out test &middot; two batches the frozen rules never saw, gated questions only</caption>
+        <thead><tr><th class="wide">Verdict</th><th class="num">Batch 2, unmodified</th><th class="num">Batch 2, frozen fix</th><th class="num">Batch 3, unmodified</th><th class="num">Batch 3, frozen fix</th></tr></thead>
         <tbody>
-          <tr><td class="wide">Right answers</td><td class="num">11</td><td class="num">11</td></tr>
-          <tr class="hi"><td class="wide">Wrong answers</td><td class="num">4</td><td class="num">1</td></tr>
-          <tr><td class="wide">Refusals</td><td class="num">0</td><td class="num">3</td></tr>
-          <tr><td class="wide">Added cost</td><td class="num">&mdash;</td><td class="num">$0.00</td></tr>
+          <tr><td class="wide">Right answers</td><td class="num">8</td><td class="num">8</td><td class="num">6</td><td class="num">5</td></tr>
+          <tr class="hi"><td class="wide">Wrong answers</td><td class="num">4</td><td class="num">1</td><td class="num">6</td><td class="num">3</td></tr>
+          <tr><td class="wide">Refusals</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">4</td></tr>
+          <tr><td class="wide">Added cost</td><td class="num">&mdash;</td><td class="num">$0.00</td><td class="num">&mdash;</td><td class="num">$0.00</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">Over the 95 unmodified runs on the current catalogues the check withholds <b>2 of 79 correct answers</b> and withdraws 13 of 16 wrong ones. Both withheld answers were correct yes-or-no answers that mentioned a surcharge in passing, which the surcharge rule reads as a price. The earlier figure of none came from runs later found to have the answers on the page.</p>
+    <p class="note"><b>Across both held-out batches: 6 of 10 wrong answers withdrawn, 1 of 14 correct answers withheld.</b> The first batch alone, 3 of 4, overstated recall. The withheld answer was right after opening 4 of 15 listings while claiming to have checked "all four". Over all 107 unmodified runs on the current catalogues, in sample and out, the check withdraws 16 of 22 wrong answers and withholds 3 of 85 correct ones: that one, and two correct yes-or-no answers that mentioned a surcharge the rule reads as a price. The earlier figure of none came from runs later found to have the answers on the page.</p>
   </section>
 
   <section id="failures">
@@ -459,13 +459,19 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
 
     <div class="tablewrap">
       <table>
-        <caption>Every failure in the held-out batch</caption>
+        <caption>Every failure in the two held-out batches</caption>
         <thead><tr><th>Question</th><th class="num">Actions</th><th class="num">Opened</th><th class="wide">What it answered</th><th>Caught by</th></tr></thead>
         <tbody>
           <tr><td class="mono">scaled-all-stocked</td><td class="num">6</td><td class="num">4 of 15</td><td class="dim wide">"Yes"</td><td><span class="pill ok">unverified<br>universal</span></td></tr>
           <tr><td class="mono">scaled-best-per-litre</td><td class="num">6</td><td class="num">4 of 15</td><td class="dim wide">"...determined by analyzing all four sellers"</td><td><span class="pill ok">understated<br>population</span></td></tr>
           <tr><td class="mono">scaled-best-per-litre</td><td class="num">7</td><td class="num">4 of 15</td><td class="dim wide">"...determined by analyzing all four sellers"</td><td><span class="pill ok">understated<br>population</span></td></tr>
           <tr class="hi"><td class="mono">scaled-best-per-litre</td><td class="num">11</td><td class="num">4 of 15</td><td class="dim wide">"...$0.930/L for the 2 x 9.5L pack ($17.68 for 19 litres)"</td><td><span class="pill no">NOTHING</span></td></tr>
+          <tr><td class="mono">scaled-all-stocked <span class="dim">b3</span></td><td class="num">7</td><td class="num">4 of 15</td><td class="dim wide">"Yes"</td><td><span class="pill ok">unverified<br>universal</span></td></tr>
+          <tr><td class="mono">scaled-all-stocked <span class="dim">b3</span></td><td class="num">7</td><td class="num">4 of 15</td><td class="dim wide">"Yes"</td><td><span class="pill ok">unverified<br>universal</span></td></tr>
+          <tr><td class="mono">scaled-all-stocked <span class="dim">b3</span></td><td class="num">6</td><td class="num">4 of 15</td><td class="dim wide">"Yes"</td><td><span class="pill ok">unverified<br>universal</span></td></tr>
+          <tr class="hi"><td class="mono">scaled-best-per-litre <span class="dim">b3</span></td><td class="num">8</td><td class="num">4 of 15</td><td class="dim wide">"...$0.93 per litre for the 2 x 9.5L pack (total 19 litres for $17.68)"</td><td><span class="pill no">NOTHING</span></td></tr>
+          <tr class="hi"><td class="mono">scaled-best-per-litre <span class="dim">b3</span></td><td class="num">7</td><td class="num">4 of 15</td><td class="dim wide">"...$0.358/L from Redhill Stores for the 2 x 9.5L pack (total 19 litres for $6.82)"</td><td><span class="pill no">NOTHING</span></td></tr>
+          <tr class="hi"><td class="mono">scaled-best-per-litre <span class="dim">b3</span></td><td class="num">7</td><td class="num">4 of 15</td><td class="dim wide">"...at $0.93 per litre (2 x 9.5L pack for $17.68 total)"</td><td><span class="pill no">NOTHING</span></td></tr>
         </tbody>
       </table>
     </div>
@@ -495,13 +501,13 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         <caption>Listings opened, by whether the answer was right</caption>
         <thead><tr><th class="wide">Outcome</th><th class="wide">Listings opened, each run</th><th>Consequence of a rule at 11</th></tr></thead>
         <tbody>
-          <tr><td class="wide">Correct answers</td><td class="mono wide">4, 15, 15, 15, 15, 15</td><td class="dim">One would be blocked, and it opened 4 of 15</td></tr>
-          <tr><td class="wide">Wrong answers</td><td class="mono wide">4, 4, 4, 4, 4, 4</td><td class="dim">All six would be caught</td></tr>
+          <tr><td class="wide">Correct answers</td><td class="mono wide">4, 4, 14, 15, 15, 15, 15, 15, 15</td><td class="dim">Two would be blocked, each opened 4 of 15</td></tr>
+          <tr><td class="wide">Wrong answers</td><td class="mono wide">4, 4, 4, 4, 4, 4, 4, 4, 4</td><td class="dim">All nine would be caught</td></tr>
         </tbody>
       </table>
     </div>
     <p class="note">The earlier counts were 1, 4, 4, 8, 12, 13, 14 and 14 for correct answers, which made the rule look costly. The rejection no longer holds as first stated. Whether to add a coverage rule, and at what floor for each kind of question, is open: refuting a claim about every listing needs one counterexample, not eleven openings.</p>
-    <p class="note"><b>The same numbers still give something more useful than the rule would have.</b> One question is answered after opening exactly 4 listings in all seven runs, right and wrong alike. Its single correct answer rests on identical evidence to its six wrong ones. It was not reasoned to, it was landed on. A score out of ten cannot tell those apart, because there is nothing in the run to tell apart, which is the argument for reporting whether an answer was <i>earned</i> next to whether it was <i>right</i>.</p>
+    <p class="note"><b>The same numbers still give something more useful than the rule would have.</b> The cheapest-pack question was answered correctly twice after opening 4 of 15 listings, below the 11 any verified answer needs: the winner happened to sit among the four opened. Those answers were not reasoned to, they were landed on. The per-litre question opens exactly 4 listings in all nine runs and is wrong in all nine. A score out of ten cannot tell those apart, because there is nothing in the run to tell apart, which is the argument for reporting whether an answer was <i>earned</i> next to whether it was <i>right</i>.</p>
   </section>
 
   <section id="findings">
@@ -513,10 +519,10 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         <tbody>
           <tr><td class="idx">1</td><td class="wide"><b>Structured data does not publish the price range</b></td><td class="dim wide">Both the live marketplace and WebArena publish a single price where the web standard defines a low-to-high range for exactly this case</td><td class="dim wide">The shortcut that would let an agent skip listings does not exist. Prices must be read from the rendered page</td></tr>
           <tr><td class="idx">2</td><td class="wide"><b>WebArena cannot show this failure as shipped</b></td><td class="dim wide">All 104,368 products are single-price. Options exist but change nothing, for example ten colours all at $9.49</td><td class="dim wide">Extending the environment became a required first step rather than an optional extra</td></tr>
-          <tr class="hi"><td class="idx">3</td><td class="wide"><b>The agent never signals uncertainty</b></td><td class="dim wide">0 abstentions in 95 unmodified runs on the current catalogues, across seventeen questions and two fixtures</td><td class="dim wide">Answers RQ2. A caller cannot distinguish a one-action guess from a verified answer</td></tr>
-          <tr><td class="idx">4</td><td class="wide"><b>Under-retrieval predicts failure at scale</b></td><td class="dim wide">At 15 listings wrong answers take a median 7 actions against 23 for correct ones. On the 4-listing fixture the pattern did not survive the clean re-run: failures there sit at one, five to six, and nine to ten actions</td><td class="dim wide">The RQ3 premise holds where it matters, on a search page with many sellers. On a small page what predicts failure is the kind of question, not the amount of looking</td></tr>
+          <tr class="hi"><td class="idx">3</td><td class="wide"><b>The agent never signals uncertainty</b></td><td class="dim wide">0 abstentions in 107 unmodified runs on the current catalogues, across seventeen questions and two fixtures</td><td class="dim wide">Answers RQ2. A caller cannot distinguish a one-action guess from a verified answer</td></tr>
+          <tr><td class="idx">4</td><td class="wide"><b>Under-retrieval predicts failure at scale</b></td><td class="dim wide">At 15 listings wrong answers take a median 7 actions against 22 for correct ones. On the 4-listing fixture the pattern did not survive the clean re-run: failures there sit at one, five to six, and nine to ten actions</td><td class="dim wide">The RQ3 premise holds where it matters, on a search page with many sellers. On a small page what predicts failure is the kind of question, not the amount of looking</td></tr>
           <tr><td class="idx">5</td><td class="wide"><b>The failure needs scale to appear</b></td><td class="dim wide">With two named listings the agent scored 10 of 10 across two clean runs. With fifteen competing sellers it fails</td><td class="dim wide">A negative result that redirected the work. The trap is about cost, not about trickery, so it needs a market rather than a cleverer page</td></tr>
-          <tr class="hi"><td class="idx">6</td><td class="wide"><b>Right and earned are different properties</b></td><td class="dim wide">One question is answered after opening exactly 4 of 15 listings in all seven runs, right and wrong alike</td><td class="dim wide">Accuracy alone cannot see this. The report will carry soundness alongside correctness</td></tr>
+          <tr class="hi"><td class="idx">6</td><td class="wide"><b>Right and earned are different properties</b></td><td class="dim wide">Two correct answers to the cheapest-pack question opened 4 of 15 listings, below the 11 a verified answer needs. The gate withheld one of them</td><td class="dim wide">Accuracy alone cannot see this. The report will carry soundness alongside correctness</td></tr>
         </tbody>
       </table>
     </div>

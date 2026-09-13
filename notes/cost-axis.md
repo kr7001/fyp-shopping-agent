@@ -6,16 +6,17 @@ questions so the denominators match.
 
 > **Corrected 14 Sep 2026.** The unmodified row pooled four runs from a Rivenhall draw
 > replaced on 9 Sep, and the gate was replayed with a checker that could not see listings
-> opened by click. Figures below are on the current draw with the corrected checker. The
+> opened by click. A third unmodified batch was added the same day, so both rows now cover
+> three batches of 12. Figures below are on the current draw with the corrected checker. The
 > exhaustive, confidence and retry rows are unchanged. See the README decision log, 13 Sep.
 
 ## Every arm, same questions
 
 | Arm | Runs | Correct | Refused | Wrong | Rate | Actions | Cost per run |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Unmodified | 24 | 15 | 0 | 9 | 62% | 17.6 | $0.267 |
+| Unmodified | 36 | 21 | 0 | 15 | 58% | 15.8 | $0.238 |
 | Confidence, plain | 12 | 6 | 0 | 6 | 50% | 13.9 | $0.219 |
-| **Gate** | 24 | 15 | 8 | 1 | **94%** | 17.6 | **$0.267**, replayed |
+| **Gate** | 36 | 20 | 12 | 4 | **83%** | 15.8 | **$0.238**, replayed |
 | Retry | 13 | 8 | 2 | 2 | 73% | 27.3 | $0.374 |
 | **Exhaustive** | 8 | 8 | 0 | 0 | **100%** | 28.4 | **$0.568** |
 
@@ -24,8 +25,8 @@ rewarded nor punished by that column.
 
 ## The upper bound behaves exactly as an upper bound should
 
-**8 of 8 correct, at 2.1 times the cost of the unmodified agent.** That includes
-`scaled-best-per-litre`, which every other arm gets wrong in every run: 0 of 6 unmodified,
+**8 of 8 correct, at 2.4 times the cost of the unmodified agent.** That includes
+`scaled-best-per-litre`, which every other arm gets wrong in every run: 0 of 9 unmodified,
 0 of 3 under the confidence prompt, 0 of 3 on retry. Told to open everything, the agent
 gets it right twice out of two.
 
@@ -37,7 +38,7 @@ the unmodified agent lacks is the decision to go and look.
 ## The axis
 
 ```
-unmodified     62% correct   17.6 actions   $0.267
+unmodified     58% correct   15.8 actions   $0.238
 exhaustive    100% correct   28.4 actions   $0.568
 ```
 
@@ -53,8 +54,9 @@ least one.
 
 **The gate is the only arm that changes the outcome without changing the spend.** It
 issues no browser action, so it sits at the unmodified arm's cost and converts wrong
-answers into refusals: 94% correct on what it answers, one wrong of 24, and none of the 15
-correct answers withdrawn. It buys soundness, not accuracy, and it buys it for nothing.
+answers into refusals: 83% correct on what it answers, four wrong of 36, and one of the 21
+correct answers withdrawn, an answer that was right after opening 4 of 15 listings. On the
+two batches its rules never saw, it withdraws 6 of 10 wrong answers and 1 of 14 correct. It buys soundness, not accuracy, and it buys it for nothing.
 
 **The retry buys accuracy and pays for it**, 73% at $0.374, because a second attempt is a
 second full run.

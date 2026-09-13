@@ -565,7 +565,7 @@ written about that first run, and the clean re-run does not back it up. The seve
 came from three different mistakes, made after one action, after five or six, and after nine or
 ten. On this small shop, counting clicks does not tell you which answers to trust. On the big
 shop with fifteen sellers it does: there, wrong answers come from opening too few shops, a
-median of 7 actions against 23 for right ones. The rest of this finding is kept as it was first
+median of 7 actions against 22 for right ones. The rest of this finding is kept as it was first
 written, so the change of mind is visible.
 
 Read the table carefully, because the obvious reading is wrong. This is **not** "more effort
@@ -797,10 +797,17 @@ extra cost:  $0.00
 
 **Three of the four failures caught. Not one right answer blocked. No extra cost.**
 
-### The one that got away, and why it is interesting
+*Added 14 September.* That was one batch of fresh runs, so it was tested again on a second
+batch of twelve, still using the locked rules exactly as they were. This time the check caught
+three of six failures and held back one right answer, one that had named the right seller after
+checking only four of fifteen shops. Across both tests: **six of ten failures caught, one of
+fourteen right answers held back.** The first test on its own made the check look better than
+it is.
 
-One failure escaped. It gave the same wrong answer as the two that were caught. The only
-difference is that it did not mention how much it had checked.
+### The ones that got away, and why they are interesting
+
+Across both tests, four failures escaped. Every one was a price-per-litre answer after
+checking four shops, and none mentioned how much it had checked.
 
 The check reads what the AI says about its own effort. So an AI that says less about itself
 gets tested less. That is a real limit and it is written down as one.
@@ -822,22 +829,24 @@ wrong answers came from opening:  4, 4, 4, 4, 4, 4 shops
 the AI typed its address, and missed every shop it opened by clicking. Counted properly:
 
 ```
-right answers came from opening:  4, 15, 15, 15, 15, 15 shops
-wrong answers came from opening:  4, 4, 4, 4, 4, 4 shops
+right answers came from opening:  4, 4, 14, 15, 15, 15, 15, 15, 15 shops
+wrong answers came from opening:  4, 4, 4, 4, 4, 4, 4, 4, 4 shops
 ```
 
 So the right answers nearly all came from opening every shop. Requiring 11 would catch all
-six failures and block just one right answer, the one that came from opening only four.
+nine failures and block just two right answers, each from opening only four.
 The fix is back on the table. Whether to use it, and how many shops each kind of question
 should need, is still to be decided, because "does every shop have it" only needs one
 counterexample.
 
 ### But look again at those numbers
 
-On one task the AI opened exactly 4 shops in all seven runs. Right or wrong, always 4.
+Twice, the AI named the cheapest seller correctly after opening only 4 of the 15 shops.
+It could not have known. Any honest answer needs at least 11 opened, and the right seller
+just happened to be among the four it looked at. It did not reason its way there. It guessed
+and the guess landed.
 
-Which means the time it was right, it was right on **identical evidence** to the six times
-it was wrong. It did not reason better. It guessed and the guess landed.
+On another task it opened exactly 4 shops in all nine runs, and was wrong all nine times.
 
 A score out of ten cannot tell those apart, because there is nothing in the run to tell
 apart. This is the difference between two questions that sound the same:
@@ -876,7 +885,7 @@ ability. What it lacks is the decision to go and look.
 Now there are two ends of a scale:
 
 ```
-cheap and often wrong    62% right   about $0.27 a run
+cheap and often wrong    58% right   about $0.24 a run
 right and expensive     100% right   about $0.57 a run
 ```
 
