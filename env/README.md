@@ -56,7 +56,14 @@ python seed_variants.py seed --dry-run    # print the plan, write nothing
 python seed_variants.py seed              # idempotent, safe to re-run
 python seed_variants.py verify            # read back from Magento, check prices
 python seed_variants.py teardown --yes    # delete every IGR- product
+python seed_variants.py strip-notes       # blank descriptions seeded before 13 Sep 2026
 ```
+
+A family's `note` in the fixture is for people reading the fixture. It is never sent to
+Magento. Until 13 Sep 2026 it was written into the product description, which the agent
+reads, and on the hand-written fixture those notes stated the answers. `strip-notes`
+removes them from products seeded before the change; `seed` cannot, because it skips any
+product that already exists. See the README decision log for what the leak affected.
 
 Then reindex, or the storefront will not show any of it:
 

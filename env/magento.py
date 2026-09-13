@@ -61,9 +61,16 @@ class Magento:
             self._token = response.json()
         return self._token
 
-    def call(self, method: str, path: str, payload: Any = None) -> Any:
-        """Issue one REST call. `path` is relative to /rest/V1."""
-        url = f"{self.base_url}/rest/V1{path}"
+    def call(self, method: str, path: str, payload: Any = None,
+             store: str | None = None) -> Any:
+        """Issue one REST call. `path` is relative to /rest/V1.
+
+        `store` selects the scope a write lands in. Plain /rest/V1 writes to the default
+        store view, which leaves any admin-scope (store 0) value underneath untouched.
+        Pass "all" to write store 0, "default" to write the storefront's own row.
+        """
+        prefix = f"/rest/{store}/V1" if store else "/rest/V1"
+        url = f"{self.base_url}{prefix}{path}"
         response = self._session.request(
             method,
             url,
@@ -84,8 +91,8 @@ class Magento:
     def post(self, path: str, payload: Any) -> Any:
         return self.call("POST", path, payload)
 
-    def put(self, path: str, payload: Any) -> Any:
-        return self.call("PUT", path, payload)
+    def put(self, path: str, payload: Any, store: str | None = None) -> Any:
+        return self.call("PUT", path, payload, store=store)
 
     def delete(self, path: str) -> Any:
         return self.call("DELETE", path)

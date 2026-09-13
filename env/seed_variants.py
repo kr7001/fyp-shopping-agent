@@ -14,6 +14,7 @@ Usage:
     python seed_variants.py seed
     python seed_variants.py verify
     python seed_variants.py teardown
+    python seed_variants.py strip-notes
 """
 
 from __future__ import annotations
@@ -199,10 +200,16 @@ def ensure_parent(m: Magento, family: dict, fixture: dict,
             "stock_item": {"is_in_stock": True, "manage_stock": False,
                            "use_config_manage_stock": False},
         },
+        # The family's `note` is deliberately not sent. It used to become the product
+        # description, and on the hand-written fixture those notes explain each trap and
+        # in two cases state the answer ("Ground truth for 'cheapest 2 x 9.5L': this
+        # seller, 22.50 against 24.90"). The description renders in the Details section,
+        # which is inside the accessibility snapshot the agent reads, so the answer key
+        # was in context for 59 of 60 baseline runs. Notes stay in the fixture JSON, where
+        # the ground truth belongs, and never reach Magento. See README, 13 Sep 2026.
         "custom_attributes": [
             {"attribute_code": "category_ids",
              "value": [str(c) for c in family["category_ids"]]},
-            {"attribute_code": "description", "value": " ".join(family["note"])},
             {"attribute_code": "url_key", "value": slugify(sku)},
         ],
     }})
@@ -462,6 +469,34 @@ def cmd_teardown(m: Magento, args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_strip_notes(m: Magento, args: argparse.Namespace) -> int:
+    """Blank the description of every parent in a fixture, in both store scopes.
+
+    Undoes the note leak on products seeded before the seeder stopped writing notes.
+    `seed` cannot do it, because it skips any parent that already exists. Both scopes
+    are cleared because the original REST writes left a copy at store 0 and store 1, and
+    clearing only the storefront row would leave the admin copy to resurface.
+    """
+    fixture = load_fixture(args.fixture)
+    for family in fixture["families"]:
+        sku = family["parent_sku"]
+        if m.product(sku) is None:
+            print(f"absent   {sku}")
+            continue
+        if args.dry_run:
+            print(f"would blank description on {sku}")
+            continue
+        for store in ("all", "default"):
+            m.put(f"/products/{sku}", {"product": {
+                "sku": sku,
+                "custom_attributes": [{"attribute_code": "description", "value": ""}],
+            }}, store=store)
+        print(f"blanked  {sku}")
+    print("\nFlush the page cache before checking the storefront: "
+          "docker exec webarena-shopping php /var/www/magento2/bin/magento cache:flush")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--base-url", default="http://localhost:7770")
@@ -486,6 +521,12 @@ def main(argv: list[str] | None = None) -> int:
     teardown.add_argument("--fixture", help=fixture_help)
     teardown.add_argument("--yes", action="store_true")
     teardown.set_defaults(func=cmd_teardown, dry_run=False)
+
+    strip = sub.add_parser("strip-notes",
+                           help="blank descriptions that carry authoring notes")
+    strip.add_argument("--fixture", help=fixture_help)
+    strip.add_argument("--dry-run", action="store_true")
+    strip.set_defaults(func=cmd_strip_notes)
 
     args = parser.parse_args(argv)
     m = Magento(base_url=args.base_url, username=args.user, password=args.password)
