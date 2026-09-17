@@ -785,7 +785,7 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
           <tr class="hi"><td class="idx">0</td><td class="wide"><b>Rules and tools</b>, done 18 Sep</td><td class="dim wide">Freeze the coverage rule and rebuild the policy as plan objects, before any new market exists to be spent</td><td class="dim">done</td><td class="num">$0</td></tr>
           <tr class="hi"><td class="idx">1</td><td class="wide"><b>Two cheap probes</b>, done 18 Sep</td><td class="dim wide">Yes to both. The model writes a sound plan 6 of 8 times unaided and 7 of 8 when told the soundness properties, and a second model runs the agent at a fifth of the cost. Details in <a href="#appendix-probes">appendix L</a></td><td class="dim">done</td><td class="num">$0.14</td></tr>
           <tr class="hi"><td class="idx">2</td><td class="wide"><b>A shop that hides variant prices properly</b>, done 18 Sep</td><td class="dim wide">Built as a theme selected by user agent, so nothing else in the shop moves. Measured in <a href="#rq2-gate">section 9</a>: the agent starts selecting sizes, pays 64 per cent more, and is no more right</td><td class="dim">done</td><td class="num">$5.4</td></tr>
-          <tr><td class="idx">3</td><td class="wide">A second and third agent, <b>first one built</b></td><td class="dim wide">Whether the four card habit belongs to agents in general or to this one. A plain loop written from scratch with no card probe, then a widely used open source agent</td><td class="dim">running</td><td class="num">$8</td></tr>
+          <tr class="hi"><td class="idx">3</td><td class="wide">A second and third agent, <b>first result in</b></td><td class="dim wide">The from-scratch loop opens fewer listings than openJiuwen, not more, which falsified the prediction and moved the finding. See <a href="#appendix-scaffold">appendix M</a>. A widely used open source agent is still to come</td><td class="dim">part done</td><td class="num">$3.4 so far</td></tr>
           <tr><td class="idx">4</td><td class="wide">More kinds of question and product</td><td class="dim wide">Clothing, where price and stock are both gated, reviews, where the answer is spread across pages, and a question that cannot be answered at all</td><td class="dim">mid Oct</td><td class="num">$13</td></tr>
           <tr class="hi"><td class="idx">5</td><td class="wide"><b>Freeze, then one final run</b></td><td class="dim wide">Every number in the report produced under one frozen version</td><td class="dim">late Oct</td><td class="num">$8</td></tr>
         </tbody>
@@ -1053,6 +1053,21 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
     </div>
     <p class="claim">Two results from four runs. A second model runs the agent at <b>$0.028 per run against $0.137</b>, so the second model axis is affordable. And on three of the four questions it opens 7 to 10 listings, where all nine of the first model's failures on this market opened exactly 4. Its own four-listing run is the one it got wrong.</p>
     <p class="note">That changes what the four card habit is. It is not a property of the card probe alone, because the probe is identical here and the behaviour is not. It is the model and the scaffold together, which makes the second scaffold in phase 3 a test of something narrower and more interesting than it was. One repeat per question, so this is a signal rather than a result.</p>
+
+    <h3 class="sub" id="appendix-scaffold">M. A second scaffold, and a prediction that failed</h3>
+    <p class="lede">Every failure on this page was produced by one agent, whose card probe reads the visible window and reports four candidates where there are fifteen. That could be a fact about agents or a fact about that probe. The control is an agent with no probe at all: a loop written from scratch with four tools, go to a URL, read the page, choose an option, answer, and no advice about how much to look. Same model, same step budget, same viewport, same scoring and the same coverage counter.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>The same four gated questions on the held-out market</caption>
+        <thead><tr><th>Scaffold</th><th class="num">Runs</th><th class="num">Right</th><th class="num">Listings opened</th><th class="num">Actions</th><th class="num">Cost/run</th></tr></thead>
+        <tbody>
+          <tr><td>openJiuwen</td><td class="num">12</td><td class="num">3</td><td class="num">4 to 15</td><td class="num">10.2</td><td class="num">$0.137</td></tr>
+          <tr class="hi"><td><b>From scratch, no probe</b></td><td class="num">4</td><td class="num">1</td><td class="num"><b>2 to 4</b></td><td class="num">21.0</td><td class="num">$0.859</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The prediction, written down before the run, was that a loop with no probe would under-retrieve less. It under-retrieves more. It spends its actions re-searching, sorting by price, sorting by name, paging and rephrasing the query, and opens two to four listings while taking twenty-one actions.</p>
+    <p class="note">So the four card ceiling is not what makes the agent stop early. A scaffold with no ceiling at all stops sooner, for six times the money. The probe both causes the ceiling and carries the agent further through the market than a bare loop manages. That puts the failure in the model's judgement about when it has looked enough rather than in one agent's default, which is a broader claim than this phase set out to test. Four runs, so it is a signal, and it is recorded here with the prediction it falsified.</p>
 
     <h3 class="sub">K. Environment notes</h3>
     <div class="tablewrap">
