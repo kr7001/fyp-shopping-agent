@@ -768,7 +768,7 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         <thead><tr><th class="idx">#</th><th class="wide">Phase</th><th class="wide">The question it answers</th><th>When</th><th class="num">Cost</th></tr></thead>
         <tbody>
           <tr class="hi"><td class="idx">0</td><td class="wide"><b>Rules and tools</b>, done 18 Sep</td><td class="dim wide">Freeze the coverage rule and rebuild the policy as plan objects, before any new market exists to be spent</td><td class="dim">done</td><td class="num">$0</td></tr>
-          <tr><td class="idx">1</td><td class="wide">Two cheap probes</td><td class="dim wide">Can the model write its own plan well enough to pass the checker, and can a second model drive the agent at all</td><td class="dim">this week</td><td class="num">$2</td></tr>
+          <tr class="hi"><td class="idx">1</td><td class="wide"><b>Two cheap probes</b>, done 18 Sep</td><td class="dim wide">Yes to both. The model writes a sound plan 6 of 8 times unaided and 7 of 8 when told the soundness properties, and a second model runs the agent at a fifth of the cost. Details in <a href="#appendix-probes">appendix L</a></td><td class="dim">done</td><td class="num">$0.14</td></tr>
           <tr class="hi"><td class="idx">2</td><td class="wide"><b>A shop that hides variant prices properly</b></td><td class="dim wide">Rebuild the held-out market with the same prices and the page level giveaway removed, so the leak's worth can be measured with nothing else changed</td><td class="dim">late Sep</td><td class="num">$7</td></tr>
           <tr><td class="idx">3</td><td class="wide">A second and third agent</td><td class="dim wide">Whether the four card habit belongs to agents in general or to this one. A plain script written from scratch, then a widely used open source agent</td><td class="dim">early Oct</td><td class="num">$8</td></tr>
           <tr><td class="idx">4</td><td class="wide">More kinds of question and product</td><td class="dim wide">Clothing, where price and stock are both gated, reviews, where the answer is spread across pages, and a question that cannot be answered at all</td><td class="dim">mid Oct</td><td class="num">$13</td></tr>
@@ -994,6 +994,50 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         </tbody>
       </table>
     </div>
+
+    <h3 class="sub" id="appendix-probes">L. The two probes of 18 September</h3>
+    <p class="lede">Both were built to decide what to build next rather than to produce a headline, and both were designed to be answerable for about a dollar.</p>
+
+    <h4 class="sub2">Can the model write its own retrieval plan</h4>
+    <div class="tablewrap">
+      <table>
+        <caption>Eight questions, two conditions, sixteen calls, no browser, $0.028</caption>
+        <thead><tr><th>Condition</th><th class="wide">What the model was told</th><th class="num">Sound plans</th><th class="wide">What failed</th></tr></thead>
+        <tbody>
+          <tr><td>Blind</td><td class="dim wide">The schema and the question, nothing about what makes a plan sound</td><td class="num">6 of 8</td><td class="dim wide">Both failures bound over the population without enumerating it first, which is the mistake the first targeting version made</td></tr>
+          <tr class="hi"><td>Guided</td><td class="dim wide">The same, plus the four properties the checker tests</td><td class="num">7 of 8</td><td class="dim wide">A counting question labelled as universal. The plan was behaviourally right, opening all fifteen, and the label was wrong</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Three of the eight questions are kinds the strategy table has no entry for, which is the case the idea exists for: a threshold question that can stop at the first listing under the threshold, a count that cannot stop early at all, and a question the shop cannot answer.</p>
+
+    <div class="tablewrap">
+      <table>
+        <caption>What the probe found out about the checker, which is what it was for</caption>
+        <thead><tr><th class="wide">Finding</th><th class="wide">Consequence</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">The checker demanded enumeration of every plan</td><td class="dim wide">Wrong for an existential question, where one seller under $20 settles it and the others need never be listed. Now required only where something is actually skipped</td></tr>
+          <tr><td class="wide">The checker demanded listing coverage for every superlative</td><td class="dim wide">Wrong when the attribute compared is published on the results page, which is what makes the control question a control. The plan now records which case it is in</td></tr>
+          <tr class="warn"><td class="wide"><b>Asked which seller delivers fastest, the model planned to open all fifteen listings and compare delivery times</b></td><td class="dim wide">The shop publishes no delivery times. Every one of the four properties held, so the checker passed a plan to retrieve something that does not exist. <b>The missing fifth property is that the attribute compared must exist in the environment</b>, and it is exactly the rule the unanswerable question in phase 4 needs</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 class="sub2">Does a second model work, and does it fail the same way</h4>
+    <div class="tablewrap">
+      <table>
+        <caption>deepseek-v4-flash against claude-haiku-4.5, same agent, same four gated questions, same held-out market</caption>
+        <thead><tr><th>Question</th><th>DeepSeek</th><th class="num">Opened</th><th class="num">Cost</th><th>Haiku, 3 repeats</th><th class="num">Haiku opened</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="mono">cheapest-target</td><td><span class="pill ok">right</span></td><td class="num">10</td><td class="num">$0.057</td><td><span class="pill no">0 of 3</span></td><td class="num">4, 4, 4</td></tr>
+          <tr class="hi"><td class="mono">target-price</td><td><span class="pill ok">right</span></td><td class="num">7</td><td class="num">$0.024</td><td><span class="pill ok">2 of 3</span></td><td class="num">15, 4, 12</td></tr>
+          <tr><td class="mono">all-stocked</td><td><span class="pill no">wrong</span></td><td class="num">4</td><td class="num">$0.004</td><td><span class="pill amb">1 of 3</span></td><td class="num">15, 4, 4</td></tr>
+          <tr><td class="mono">best-per-litre</td><td><span class="pill no">wrong</span></td><td class="num">10</td><td class="num">$0.027</td><td><span class="pill no">0 of 3</span></td><td class="num">4, 4, 4</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">Two results from four runs. A second model runs the agent at <b>$0.028 per run against $0.137</b>, so the second model axis is affordable. And on three of the four questions it opens 7 to 10 listings, where all nine of the first model's failures on this market opened exactly 4. Its own four-listing run is the one it got wrong.</p>
+    <p class="note">That changes what the four card habit is. It is not a property of the card probe alone, because the probe is identical here and the behaviour is not. It is the model and the scaffold together, which makes the second scaffold in phase 3 a test of something narrower and more interesting than it was. One repeat per question, so this is a signal rather than a result.</p>
 
     <h3 class="sub">K. Environment notes</h3>
     <div class="tablewrap">

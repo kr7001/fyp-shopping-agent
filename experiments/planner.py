@@ -120,6 +120,10 @@ def plan(question: str) -> dict:
         "kind": kind,
         "quantifier": QUANTIFIERS[kind],
         "population": "every listing in the search results, including later pages",
+        # Where the attribute being compared actually lives. On the results page it can be
+        # compared without opening anything, which is what makes the control question a
+        # control. Everything the policy is measured on is gated behind a listing page.
+        "evidence_source": "listing pages",
         "enumerate_first": True,
         "bound": BOUNDS[kind],
         "stop_rule": STOP_RULES[kind],
@@ -142,6 +146,14 @@ def verify(plan_obj: dict) -> list[str]:
     Four properties, each one already paid for in a measured failure. They are what a plan
     from a model would have to satisfy before it is allowed to reach the agent, and what a
     hand-written plan is held to in the meantime.
+
+    Two of the four were stated too broadly when first written, and `plan_probe.py` found
+    both on its first run by asking the model for plans the strategy table has no entry for.
+    Enumeration was demanded of every plan, which is wrong for an existential question: one
+    seller under $20 settles "is anyone under $20", and finding it needs no list of the
+    others. And coverage was demanded of every superlative, which is wrong when the attribute
+    being compared is on the results page, as it is for the control question. Both are now
+    conditional, and both conditions are stated in the plan rather than inferred.
     """
     problems = []
     kind = plan_obj.get("kind")
@@ -149,10 +161,14 @@ def verify(plan_obj: dict) -> list[str]:
         problems.append(f"no strategy text exists for kind {kind!r}")
         return problems
 
+    evidence = plan_obj.get("evidence_required") or {}
+    quantifier = plan_obj.get("quantifier")
+    gated = plan_obj.get("evidence_source", "listing pages") == "listing pages"
+
     # A bound rules out candidates. It cannot rule out candidates that were never
     # enumerated, which is how the first targeting arm read four listings of fifteen and
-    # called it pruning.
-    if not plan_obj.get("enumerate_first"):
+    # called it pruning. Required only where something is actually skipped.
+    if (plan_obj.get("bound") or quantifier == "argmin") and not plan_obj.get("enumerate_first"):
         problems.append("the population is bounded over without being enumerated first")
 
     # A bound that may appear in the answer is how $6.82 became a per-litre rate for a pack
@@ -161,18 +177,17 @@ def verify(plan_obj: dict) -> list[str]:
         problems.append("a bound is used but nothing forbids reporting the figure it "
                         "produces as a price")
 
-    evidence = plan_obj.get("evidence_required") or {}
-    quantifier = plan_obj.get("quantifier")
-
     # Refuting a universal takes one counterexample. A plan that surveys instead is sound
     # and wasteful, and a plan that answers without a witness is neither.
     if quantifier == "universal" and not evidence.get("counterexample"):
         problems.append("a universal claim is answered without requiring a counterexample")
 
     # Naming the best of a population that was never covered is the failure the coverage
-    # rule catches after the fact. A plan should not propose it in the first place.
-    if quantifier == "argmin" and evidence.get("min_listings_opened") not in (
-            "oracle_floor", "population"):
+    # rule catches after the fact. A plan should not propose it in the first place. It does
+    # not apply when the attribute compared is published on the results page, since then
+    # nothing has to be opened to compare it.
+    if (quantifier == "argmin" and gated
+            and evidence.get("min_listings_opened") not in ("oracle_floor", "population")):
         problems.append("the best of a population is claimed without requiring coverage "
                         "of that population")
     return problems
