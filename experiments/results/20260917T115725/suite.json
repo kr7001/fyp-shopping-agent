@@ -1,0 +1,421 @@
+{
+  "ran_at": "2026-09-17T12:12:22",
+  "repeats": 3,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": false,
+  "targeting": false,
+  "targeting_version": null,
+  "tasks_file": "tasks_heldout.json",
+  "draw": "Calderwood:95cc00c4ca",
+  "instance": {
+    "target_option": "2 x 9.5L",
+    "listings": 15,
+    "listings_with_target": 10,
+    "winner": {
+      "sku": "IGR-CAL-11",
+      "seller": "Bramley Trading",
+      "price": 17.36
+    },
+    "runner_up_price": 19.75,
+    "winning_margin": 2.39,
+    "cheapest_card": {
+      "sku": "IGR-CAL-04",
+      "seller": "Chandler Direct",
+      "from_price": 5.54
+    },
+    "card_probe_wrong": true,
+    "best_per_litre": {
+      "sku": "IGR-CAL-08",
+      "seller": "Oakfield Pantry",
+      "option": "24 x 350ml",
+      "price_per_litre": 0.8298
+    },
+    "unit_probe_wrong": true,
+    "oracle_min_opens": 11,
+    "prunable_by_bound": 4,
+    "exhaustive_opens": 15,
+    "bound_strength": 0.267,
+    "from_price_range": [
+      5.54,
+      19.67
+    ],
+    "target_price_range": [
+      17.36,
+      64.74
+    ]
+  },
+  "summary": {
+    "by_task": {
+      "scaled-headline": {
+        "gated": false,
+        "verdicts": {
+          "correct": 3
+        },
+        "actions": [
+          3,
+          3,
+          4
+        ],
+        "tool_calls": [
+          7,
+          6,
+          9
+        ],
+        "cost": [
+          0.02971,
+          0.037358,
+          0.059022
+        ],
+        "mean_actions": 3.3,
+        "mean_tool_calls": 7.3,
+        "total_cost": 0.1261
+      },
+      "scaled-cheapest-target": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 3
+        },
+        "actions": [
+          7,
+          6,
+          7
+        ],
+        "tool_calls": [
+          12,
+          11,
+          12
+        ],
+        "cost": [
+          0.061825,
+          0.080922,
+          0.078692
+        ],
+        "mean_actions": 6.7,
+        "mean_tool_calls": 11.7,
+        "total_cost": 0.2214
+      },
+      "scaled-target-price": {
+        "gated": true,
+        "verdicts": {
+          "correct": 2,
+          "wrong": 1
+        },
+        "actions": [
+          24,
+          8,
+          15
+        ],
+        "tool_calls": [
+          47,
+          13,
+          33
+        ],
+        "cost": [
+          0.423322,
+          0.081614,
+          0.256204
+        ],
+        "mean_actions": 15.7,
+        "mean_tool_calls": 31.0,
+        "total_cost": 0.7611
+      },
+      "scaled-all-stocked": {
+        "gated": true,
+        "verdicts": {
+          "correct": 1,
+          "wrong": 2
+        },
+        "actions": [
+          23,
+          6,
+          6
+        ],
+        "tool_calls": [
+          44,
+          11,
+          11
+        ],
+        "cost": [
+          0.248267,
+          0.056963,
+          0.072044
+        ],
+        "mean_actions": 11.7,
+        "mean_tool_calls": 22.0,
+        "total_cost": 0.3773
+      },
+      "scaled-best-per-litre": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 3
+        },
+        "actions": [
+          7,
+          6,
+          7
+        ],
+        "tool_calls": [
+          12,
+          11,
+          14
+        ],
+        "cost": [
+          0.065388,
+          0.091703,
+          0.132255
+        ],
+        "mean_actions": 6.7,
+        "mean_tool_calls": 12.3,
+        "total_cost": 0.2893
+      }
+    },
+    "overall": {
+      "correct": 6,
+      "wrong": 9
+    },
+    "total_cost": 1.7753
+  },
+  "rows": [
+    {
+      "task": "scaled-headline",
+      "family": "scaled",
+      "gated": false,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The Calderwood water listing with the lowest price on the results page is 'Calderwood Still Spring Water, Multipack - Chandler Direct' at $5.54",
+      "tool_calls": 7,
+      "actions": 3,
+      "observations": 4,
+      "cost_usd": 0.02971,
+      "elapsed_s": 37.2,
+      "error": null,
+      "log": "scaled-headline-1.log"
+    },
+    {
+      "task": "scaled-headline",
+      "family": "scaled",
+      "gated": false,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The Calderwood water listing with the lowest price on the results page is 'Calderwood Still Spring Water, Multipack - Chandler Direct' with a price of $5.54.",
+      "tool_calls": 6,
+      "actions": 3,
+      "observations": 3,
+      "cost_usd": 0.037358,
+      "elapsed_s": 25.5,
+      "error": null,
+      "log": "scaled-headline-2.log"
+    },
+    {
+      "task": "scaled-headline",
+      "family": "scaled",
+      "gated": false,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The Calderwood water listing with the lowest price on the results page is 'Calderwood Still Spring Water, Multipack - Chandler Direct' with a price of $5.54.",
+      "tool_calls": 9,
+      "actions": 4,
+      "observations": 5,
+      "cost_usd": 0.059022,
+      "elapsed_s": 36.7,
+      "error": null,
+      "log": "scaled-headline-3.log"
+    },
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "named an excluded option instead",
+      "answer": "The cheapest seller for the 2 x 9.5L Calderwood pack is Chandler Direct at $19.75 (base price $5.54 + pack size upgrade $14.21).",
+      "tool_calls": 12,
+      "actions": 7,
+      "observations": 5,
+      "cost_usd": 0.061825,
+      "elapsed_s": 42.7,
+      "error": null,
+      "log": "scaled-cheapest-target-1.log"
+    },
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "wrong",
+      "why": "named an excluded option instead",
+      "answer": "The cheapest seller for the 2 x 9.5L Calderwood Still Spring Water pack is Chandler Direct at $19.75 (base price $5.54 + pack upgrade $14.21).",
+      "tool_calls": 11,
+      "actions": 6,
+      "observations": 5,
+      "cost_usd": 0.080922,
+      "elapsed_s": 36.0,
+      "error": null,
+      "log": "scaled-cheapest-target-2.log"
+    },
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "wrong",
+      "why": "named an excluded option instead",
+      "answer": "The cheapest seller for the 2 x 9.5L Calderwood Still Spring Water pack is Chandler Direct at $19.75 (base price $5.54 + pack size upgrade $14.21).",
+      "tool_calls": 12,
+      "actions": 7,
+      "observations": 5,
+      "cost_usd": 0.078692,
+      "elapsed_s": 39.2,
+      "error": null,
+      "log": "scaled-cheapest-target-3.log"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "found 17.36",
+      "answer": "The lowest price anyone charges for the 2 x 9.5L pack of Calderwood water is $17.36 from Bramley Trading (base price $6.39 + pack upgrade $10.97).",
+      "tool_calls": 47,
+      "actions": 24,
+      "observations": 23,
+      "cost_usd": 0.423322,
+      "elapsed_s": 154.7,
+      "error": null,
+      "log": "scaled-target-price-1.log"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "wrong",
+      "why": "expected 17.36, saw [19.75]",
+      "answer": "The lowest price for the 2 x 9.5L pack of Calderwood water is $19.75, offered by Chandler Direct.",
+      "tool_calls": 13,
+      "actions": 8,
+      "observations": 5,
+      "cost_usd": 0.081614,
+      "elapsed_s": 41.6,
+      "error": null,
+      "log": "scaled-target-price-2.log"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "found 17.36",
+      "answer": "The lowest price anyone charges for the 2 x 9.5L pack of Calderwood water is $17.36 from Bramley Trading.",
+      "tool_calls": 33,
+      "actions": 15,
+      "observations": 18,
+      "cost_usd": 0.256204,
+      "elapsed_s": 96.2,
+      "error": null,
+      "log": "scaled-target-price-3.log"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "answered no",
+      "answer": "No. Not every Calderwood listing stocks the 2 x 9.5L pack. Out of 15 total Calderwood listings found in the search results, only 10 products offer the 2 x 9.5L pack option. Five products (Whitlock Wholesale, Oakfield Pantry, Hillside Merchants, Westmere Pantry, and Marlow Merchants) do not stock thi",
+      "tool_calls": 44,
+      "actions": 23,
+      "observations": 21,
+      "cost_usd": 0.248267,
+      "elapsed_s": 127.7,
+      "error": null,
+      "log": "scaled-all-stocked-1.log"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "wrong",
+      "why": "answered yes",
+      "answer": "Yes",
+      "tool_calls": 11,
+      "actions": 6,
+      "observations": 5,
+      "cost_usd": 0.056963,
+      "elapsed_s": 34.0,
+      "error": null,
+      "log": "scaled-all-stocked-2.log"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "wrong",
+      "why": "answered yes",
+      "answer": "YES - Every Calderwood listing stocks the 2 x 9.5L pack. All 4 Calderwood products found in the search results (Kettering Distributors, Thornbury Provisions, Chandler Direct, and Pembroke Merchants) have the 2 x 9.5L pack size option available.",
+      "tool_calls": 11,
+      "actions": 6,
+      "observations": 5,
+      "cost_usd": 0.072044,
+      "elapsed_s": 32.8,
+      "error": null,
+      "log": "scaled-all-stocked-3.log"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "Chandler Direct offers the lowest price per litre for Calderwood products at $0.84/L (12 x 550ml pack for $5.54). Across all four sellers and all pack sizes, Chandler Direct consistently offers the best value with prices ranging from $0.84/L to $1.15/L, compared to competitors ranging from $2.44/L t",
+      "tool_calls": 12,
+      "actions": 7,
+      "observations": 5,
+      "cost_usd": 0.065388,
+      "elapsed_s": 45.6,
+      "error": null,
+      "log": "scaled-best-per-litre-1.log"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "Chandler Direct offers the lowest price per litre at $0.84/L for the 12 x 550ml pack (6.6 litres total) priced at $5.54. This is significantly lower than all other sellers: Kettering Distributors ($2.44/L best), Thornbury Provisions ($2.45/L best), and Pembroke Merchants ($2.81/L best).",
+      "tool_calls": 11,
+      "actions": 6,
+      "observations": 5,
+      "cost_usd": 0.091703,
+      "elapsed_s": 43.0,
+      "error": null,
+      "log": "scaled-best-per-litre-2.log"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "Chandler Direct offers the lowest price per litre for Calderwood Still Spring Water across all listings and pack sizes at $0.84 per litre (12 x 550ml pack for $5.54 total).",
+      "tool_calls": 14,
+      "actions": 7,
+      "observations": 7,
+      "cost_usd": 0.132255,
+      "elapsed_s": 59.9,
+      "error": null,
+      "log": "scaled-best-per-litre-3.log"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "ran_at": "2026-09-17T12:09:46",
+  "provider": "openrouter",
+  "model": "anthropic/claude-haiku-4.5",
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Calderwood . Does every Calderwood listing stock the 2 x 9.5L pack? Answer yes or no.",
+  "elapsed_s": 32.8,
+  "cost_usd": 0.072044,
+  "cost_note": null,
+  "spend_before_usd": 1.53741755,
+  "spend_after_usd": 1.6094612,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "784d4d5985424f5fb26ff7d4025a4987",
+    "final": "YES - Every Calderwood listing stocks the 2 x 9.5L pack. All 4 Calderwood products found in the search results (Kettering Distributors, Thornbury Provisions, Chandler Direct, and Pembroke Merchants) have the 2 x 9.5L pack size option available.",
+    "page": {
+      "url": "http://localhost:7770/igr-cal-05.html",
+      "title": "Calderwood Still Spring Water, Multipack - Pembroke Merchants"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 11,
+    "actions": 6,
+    "observations": 5,
+    "unclassified_tools": [],
+    "assistant_turns": 11,
+    "by_tool": {
+      "browser_navigate": 5,
+      "browser_snapshot": 4,
+      "browser_probe_cards": 1,
+      "browser_click": 1
+    },
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_click",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_snapshot"
+    ]
+  },
+  "log": "scaled-all-stocked-3.log"
+}
