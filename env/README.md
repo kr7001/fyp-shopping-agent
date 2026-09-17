@@ -93,3 +93,42 @@ storefront, and it records exactly which products are mine rather than WebArena'
 - Elasticsearch actually up. Catalog Search is in Update on Save mode, so a product save
   triggers an inline fulltext reindex. See the Apple Silicon note in the root README —
   on an M-series Mac without Rosetta enabled this is the step that appears to hang
+
+## The gated store view, added 18 September 2026
+
+Magento hands the browser every variant price on first load. The page carries an
+`optionPrices` table, and the configurable widget renders each option label with its
+surcharge, `2 x 9.5L +$32.50`. Both are readable in the first observation an agent takes,
+so a variant price is not gated here the way it is on the live marketplace, where the page
+holds exactly one price at a time. The agent noticed before I did: it selects a pack size
+in 11 of 122 runs on the fifteen seller markets, and adds the surcharge to the base price
+instead in 48 of 290 stored answers.
+
+`install_gated_theme.py` adds a **second store view** rather than changing the shop.
+
+| | Store view `default` | Store view `gated` |
+| --- | --- | --- |
+| Theme | Magento Blank, untouched | `IGR/suppressed` |
+| Prices in the page on load | all four | the "from" price only |
+| Option labels | `2 x 9.5L +$32.50` | `2 x 9.5L` |
+| Price after selecting the option | $48.64 | $48.64 |
+
+Same products, same prices, same answers. Every run already recorded was made against
+`default`, which still renders exactly as it did, so nothing recorded loses the environment
+it was measured in. Reach the gated view by adding `___store=gated` to any URL.
+
+```bash
+python env/install_gated_theme.py --check
+python env/install_gated_theme.py --install
+docker exec webarena-shopping php /var/www/magento2/bin/magento indexer:reindex catalogsearch_fulltext
+python env/install_gated_theme.py --remove
+```
+
+Run the reindex **on its own**. Two reindexes at once is how this container ends up with an
+index stuck in `working`, which the root README has the fix for.
+
+**What this does not claim.** The real prices still reach the browser, in an opaque blob
+that the page decodes for the one option actually selected. An agent that runs JavaScript of
+its own could decode it, exactly as an agent on the live marketplace could call the API its
+page fetches from. What is removed is the price being *readable in the observation the agent
+takes before interacting*, which is the property the experiments measure.
