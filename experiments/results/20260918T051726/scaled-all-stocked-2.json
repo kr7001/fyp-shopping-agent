@@ -1,0 +1,55 @@
+{
+  "ran_at": "2026-09-18T05:35:33",
+  "provider": "openrouter",
+  "model": "anthropic/claude-haiku-4.5",
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Calderwood . Does every Calderwood listing stock the 2 x 9.5L pack? Answer yes or no.",
+  "elapsed_s": 38.0,
+  "cost_usd": 0.059075,
+  "cost_note": null,
+  "spend_before_usd": 16.75528786,
+  "spend_after_usd": 16.81436326,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "eb66c0e0c9934f21abd6d0d7598af2d1",
+    "final": "Yes",
+    "page": {
+      "url": "http://localhost:7770/catalogsearch/result/?q=Calderwood",
+      "title": "Search results for: 'Calderwood'"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 11,
+    "actions": 6,
+    "observations": 5,
+    "unclassified_tools": [],
+    "assistant_turns": 11,
+    "by_tool": {
+      "browser_navigate": 5,
+      "browser_snapshot": 4,
+      "browser_probe_cards": 1,
+      "browser_click": 1
+    },
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_click",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_snapshot"
+    ]
+  },
+  "log": "scaled-all-stocked-2.log"
+}
