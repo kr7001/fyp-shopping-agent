@@ -39,6 +39,18 @@ import trace_stats
 
 RESULTS = pathlib.Path(__file__).resolve().parent / "results"
 
+# Which rule set scored a run. Bumped when a rule is added or its decision changes, so a
+# recorded verdict says what judged it rather than leaving it to be inferred from a date.
+#
+#   1  the six rules frozen at 7771e24 and measured on two held-out batches
+#   2  adds superlative_without_coverage, written 17 September 2026 from the principle
+#      rather than from the runs it would catch, and frozen before the next market exists
+#
+# Runs scored under different versions are different measurements. A figure quoted from
+# version 1 runs stays a version 1 figure, and the effect of version 2 on them is reported
+# by replay, separately, never by restating the original number.
+RULES_VERSION = 2
+
 # Money is handled in integer cents throughout. Comparing prices as floats invites a
 # value that does not round-trip to slip past an equality test, and the whole check rests
 # on equality tests.
@@ -92,6 +104,22 @@ COVERAGE_CLAIM = re.compile(
     r"\ball\s+(?:the\s+)?(\d{1,3}|" + "|".join(NUMBER_WORDS) + r")\s+"
     r"(?:\w+\s+){0,2}?(sellers?|listings?|products?|results?|items?|options?)\b",
     re.IGNORECASE)
+
+# A superlative asserted over a whole market. "Which seller is cheapest across all the
+# listings" is a claim about a population, and it is only determined by what was retrieved
+# if the retrieval covered enough of that population to rule the rest out. The scope marker
+# is required as well as the superlative, so that a question about the packs inside one
+# listing, or about what the results page advertises, does not match.
+SUPERLATIVE = re.compile(
+    r"\b(cheapest|dearest|lowest\s+(?:price|cost|rate)?|highest|best\s+value|"
+    r"most\s+expensive|least\s+expensive)\b", re.IGNORECASE)
+MARKET_SCOPE = re.compile(
+    r"\b(across\s+all|all\s+the\s+listings|all\s+listings|every\s+listing|"
+    r"all\s+sellers|every\s+seller|which\s+seller|anyone\s+charges|any\s+seller)\b",
+    re.IGNORECASE)
+# Answerable from the results page without opening anything, so coverage of the listings
+# is not what makes it sound. The control question is of this shape.
+ON_RESULTS_PAGE = re.compile(r"\b(advertis\w+|on the results page)\b", re.IGNORECASE)
 
 # A product page navigation. Search result pages carry a query string and are excluded,
 # since landing on the results page is not the same as opening a listing.
@@ -193,8 +221,15 @@ def verified_compositions(amounts: list[int], seen: dict[str, set[int]]) -> set[
     return justified
 
 
+def superlative_over_population(question: str) -> bool:
+    """Does this question ask for the best item in a whole market."""
+    return bool(SUPERLATIVE.search(question) and MARKET_SCOPE.search(question)
+                and not ON_RESULTS_PAGE.search(question))
+
+
 def check(answer: str, seen: dict[str, set[int]], *, question: str = "",
-          population: int | None = None, opened: int | None = None) -> dict:
+          population: int | None = None, opened: int | None = None,
+          floor: int | None = None) -> dict:
     """Verdict for one answer against one run's observations.
 
     `ok` means nothing was detected, not that the answer is right. This is a filter for
@@ -225,6 +260,41 @@ def check(answer: str, seen: dict[str, set[int]], *, question: str = "",
                         "why": (f"claims to have covered all {size}, where the result "
                                 f"set holds {population}"),
                         "claimed": prices_in(answer)}
+
+    # A superlative over a market, asserted after opening fewer listings than any correct
+    # method would need.
+    #
+    # Written from the principle rather than from the runs. The three rules above all read
+    # something the agent said about itself, so an agent that says less about itself is
+    # checked less, which is a ceiling on the method rather than a bug in it. This rule
+    # reads the question and the trace instead, and needs the answer to volunteer nothing.
+    #
+    # The principle: a claim about the best item in a population is determined by what was
+    # retrieved only if what was retrieved rules out the rest of that population. The
+    # generator already computes the fewest listings any correct method could open, after
+    # pruning everything the published prices allow, and calls it the oracle floor. Below
+    # that floor an answer may still be right, but it was not determined by the evidence,
+    # and the project reports earned separately from right for exactly this reason.
+    #
+    # Deliberately not written while looking at which runs it would catch. Six of the nine
+    # failures on the held-out market are of this shape and none of the rules above sees
+    # them, which is what prompted a rule, but fitting the threshold to those six would
+    # spend the held-out market. The threshold is the floor the generator computes, and the
+    # next market is where it gets tested.
+    #
+    # The floor recorded in these fixtures is computed for the target-pack comparison. The
+    # per-litre question ranges over every pack of every listing, so its true floor is at
+    # least as high, which makes this a conservative test on that question rather than an
+    # aggressive one.
+    if (question and opened is not None and superlative_over_population(question)
+            and (floor or population)):
+        required = floor or population
+        if opened < required:
+            return {"flag": "superlative_without_coverage", "ok": False,
+                    "why": (f"names the best of {population or required} listings having "
+                            f"opened {opened}, below the {required} any correct method "
+                            f"needs"),
+                    "claimed": prices_in(answer)}
 
     # The mirror of the rule above, and it was missing. Refuting a claim about every
     # listing is cheap precisely because one counterexample settles it, but a
@@ -304,7 +374,8 @@ def evaluate() -> int:
             verdict = check(row.get("answer") or "", evidence(text),
                             question=task.get("query", ""),
                             population=populations.get(row["task"]),
-                            opened=len(listings_opened(text)))
+                            opened=len(listings_opened(text)),
+                            floor=floors.get(row["task"]))
             opened = len(listings_opened(text))
             # The oracle floor belongs to comparison questions only. Naming the single
             # best across every listing requires opening everything the published prices
