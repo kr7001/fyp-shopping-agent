@@ -588,6 +588,21 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
       </table>
     </div>
     <p class="note">On the development market this table was muddy, which is why a coverage rule had been considered and set aside. On the market nobody tuned anything against it is unambiguous, and it is the strongest evidence in the project that the failure is under-retrieval rather than reasoning.</p>
+
+    <h3 class="sub" id="rq2-gate">What happens when the variant gate is actually closed</h3>
+    <p class="lede">The shop was handing the browser every variant price on load, and writing each surcharge into the option label, so a price this project calls gated could be read without interacting. On 18 September a theme that suppresses both was added, selected by the browser's user agent so that ordinary browsing, and every run already recorded, render exactly as before. Same products, same prices, same answers, same URLs.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Twelve unmodified runs each, same market, the label being the only difference</caption>
+        <thead><tr><th>Page</th><th class="num">Right</th><th class="num">Actions</th><th class="num">Opened</th><th class="num">Cost/run</th><th class="num">Selected a size</th><th class="num">Added up a label</th></tr></thead>
+        <tbody>
+          <tr><td>Ordinary</td><td class="num">3 of 12</td><td class="num">10.2</td><td class="num">6.5</td><td class="num">$0.137</td><td class="num">0 of 12</td><td class="num">4 of 12</td></tr>
+          <tr class="hi"><td><b>Surcharge suppressed</b></td><td class="num">2 of 12</td><td class="num">18.3</td><td class="num">5.8</td><td class="num">$0.224</td><td class="num"><b>8 of 12</b></td><td class="num"><b>0 of 12</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The gate now behaves like a gate. Selection goes from none to two thirds of runs, where across 122 recorded runs on these markets the agent had selected a pack size twice in total. It costs 64 per cent more and buys nothing: accuracy moves from 3 of 12 to 2 of 12, which at twelve runs is noise.</p>
+    <p class="note">Coverage still separates the verdicts, and separates them identically in both arms. Every right answer opened 12 to 15 listings and every wrong answer opened exactly 4. <b>Closing the gate inside a listing changed how the agent works and left what decides correctness untouched.</b> That is the two layer reading measured rather than argued, and it is why the results on this page are about the gate between the search page and the listings.</p>
   </section>
 
   <section id="rq3">
@@ -748,7 +763,7 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         <thead><tr><th class="wide">Limit</th><th class="wide">What it means for the results</th></tr></thead>
         <tbody>
           <tr class="hi"><td class="wide"><b>One model and one agent</b></td><td class="dim wide">Every figure comes from one model driving one agent, and the four card habit belongs to that agent. Whether the failure is general is a question a second agent answers, and it has not run yet</td></tr>
-          <tr class="hi"><td class="wide"><b>The shop leaks variant prices</b></td><td class="dim wide">Magento writes the surcharge into the option label and ships every variant price inside the page's own scripts, so inside a listing the agent can add rather than click. 48 of 290 stored answers show it doing exactly that. <b>The gate that really holds here is between the search page and the listings</b>, which is where every measured failure lives. The gate inside a listing is real on the live marketplace and weak here</td></tr>
+          <tr class="hi"><td class="wide"><b>The shop leaked variant prices, and now need not</b></td><td class="dim wide">Magento writes the surcharge into the option label and ships every variant price in the page, so inside a listing the agent could add rather than click, and 48 of 290 stored answers show it doing so. Since 18 September a theme selected by user agent suppresses that, and the effect is measured in <a href="#rq2-gate">section 9</a>. <b>The gate that decides correctness is between the search page and the listings</b>, which is where every measured failure lives. The gate inside a listing is real on the live marketplace, was cosmetic here, and is now closable on demand</td></tr>
           <tr><td class="wide">Twelve runs per version</td><td class="dim wide">Enough to see a difference of this size, not enough to put a confidence interval on it. Every number is a direction</td></tr>
           <tr><td class="wide">Strategies are supplied, not enforced</td><td class="dim wide">The policy is text appended to the question. Nothing verifies the agent followed it beyond what its record shows</td></tr>
           <tr><td class="wide">Pruning assumes no vouchers</td><td class="dim wide">Skipping a listing is sound only because nothing inside it can cost less than its advertised price. A voucher breaks that, so the saving holds in the absence of voucher pricing</td></tr>
@@ -769,8 +784,8 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         <tbody>
           <tr class="hi"><td class="idx">0</td><td class="wide"><b>Rules and tools</b>, done 18 Sep</td><td class="dim wide">Freeze the coverage rule and rebuild the policy as plan objects, before any new market exists to be spent</td><td class="dim">done</td><td class="num">$0</td></tr>
           <tr class="hi"><td class="idx">1</td><td class="wide"><b>Two cheap probes</b>, done 18 Sep</td><td class="dim wide">Yes to both. The model writes a sound plan 6 of 8 times unaided and 7 of 8 when told the soundness properties, and a second model runs the agent at a fifth of the cost. Details in <a href="#appendix-probes">appendix L</a></td><td class="dim">done</td><td class="num">$0.14</td></tr>
-          <tr class="hi"><td class="idx">2</td><td class="wide"><b>A shop that hides variant prices properly</b></td><td class="dim wide">Rebuild the held-out market with the same prices and the page level giveaway removed, so the leak's worth can be measured with nothing else changed</td><td class="dim">late Sep</td><td class="num">$7</td></tr>
-          <tr><td class="idx">3</td><td class="wide">A second and third agent</td><td class="dim wide">Whether the four card habit belongs to agents in general or to this one. A plain script written from scratch, then a widely used open source agent</td><td class="dim">early Oct</td><td class="num">$8</td></tr>
+          <tr class="hi"><td class="idx">2</td><td class="wide"><b>A shop that hides variant prices properly</b>, done 18 Sep</td><td class="dim wide">Built as a theme selected by user agent, so nothing else in the shop moves. Measured in <a href="#rq2-gate">section 9</a>: the agent starts selecting sizes, pays 64 per cent more, and is no more right</td><td class="dim">done</td><td class="num">$5.4</td></tr>
+          <tr><td class="idx">3</td><td class="wide">A second and third agent, <b>first one built</b></td><td class="dim wide">Whether the four card habit belongs to agents in general or to this one. A plain loop written from scratch with no card probe, then a widely used open source agent</td><td class="dim">running</td><td class="num">$8</td></tr>
           <tr><td class="idx">4</td><td class="wide">More kinds of question and product</td><td class="dim wide">Clothing, where price and stock are both gated, reviews, where the answer is spread across pages, and a question that cannot be answered at all</td><td class="dim">mid Oct</td><td class="num">$13</td></tr>
           <tr class="hi"><td class="idx">5</td><td class="wide"><b>Freeze, then one final run</b></td><td class="dim wide">Every number in the report produced under one frozen version</td><td class="dim">late Oct</td><td class="num">$8</td></tr>
         </tbody>

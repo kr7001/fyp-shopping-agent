@@ -187,6 +187,7 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
   <div class="wrap">
     <a href="#before">1. Where things stood</a>
     <a href="#tested">2. What I tested</a>
+    <a href="#gatefix">3b. Closing the gate</a>
     <a href="#results">3. What came back</a>
     <a href="#meaning">4. What it means</a>
     <a href="#wrong">5. What I got wrong</a>
@@ -360,6 +361,25 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
     <p class="note">Magento writes the size surcharge into the dropdown label, and ships every size's price inside the page's own JavaScript. So inside a listing the agent can add rather than click, and 48 of 290 stored answers show it doing exactly that, for example "base price $5.54 plus pack size upgrade $14.21". <b>The wall that really holds in this shop is the one between the search page and the listings</b>, which is where every failure I have measured actually happens. The wall inside a listing is real on the live marketplace and weaker here, and that is now written down as a limit of the environment rather than left implied.</p>
   </section>
 
+  <section id="gatefix">
+    <h2>3b. What happened when I closed the price gate properly</h2>
+    <p class="lede">Halfway through this week I found that my own shop was giving the answer away. Magento writes the extra cost into the size menu, so the menu reads <b>2 x 9.5L +$32.50</b> before you click anything. The thing I am studying was readable without interacting.</p>
+    <p class="lede">I added a version of the page that hides it, switched on by the browser the AI uses, so that ordinary browsing and every run I have already recorded are untouched. Same shops, same prices, same answers, same web addresses. Then I ran the plain AI twelve times against it.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Twelve runs each, the size menu being the only difference</caption>
+        <thead><tr><th>Page</th><th class="num">Right</th><th class="num">Actions</th><th class="num">Shops opened</th><th class="num">Cost/run</th><th class="num">Clicked a size</th><th class="num">Added up the menu</th></tr></thead>
+        <tbody>
+          <tr><td>Ordinary</td><td class="num">3 of 12</td><td class="num">10.2</td><td class="num">6.5</td><td class="num">$0.137</td><td class="num">0 of 12</td><td class="num">4 of 12</td></tr>
+          <tr class="hi"><td><b>Extra cost hidden</b></td><td class="num">2 of 12</td><td class="num">18.3</td><td class="num">5.8</td><td class="num">$0.224</td><td class="num"><b>8 of 12</b></td><td class="num"><b>0 of 12</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note"><b>The AI starts clicking.</b> It went from never choosing a size to choosing one in two runs out of three. Across 122 earlier runs on these shops it had chosen a size twice in total. With nothing to add up in the menu it has to interact, and it does.</p>
+    <p class="note"><b>It works harder and is no more right.</b> 64 per cent more money and 79 per cent more actions, for 2 right out of 12 against 3, which at twelve runs is the same number. The giveaway was saving it effort, not saving it from being wrong.</p>
+    <p class="note"><b>And the reason is the same as ever.</b> In both versions every right answer came from opening 12 to 15 shops and every wrong answer came from opening exactly 4. Closing the gate inside a shop changed how the AI works and left the thing that decides the answer untouched. That is worth more than the fix itself: it says the problem is the shops it never opens, not the prices it cannot see.</p>
+  </section>
+
   <section id="meaning">
     <h2>4. What the results mean</h2>
     <div class="tablewrap">
@@ -417,8 +437,8 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         <tbody>
           <tr class="hi"><td class="idx">0</td><td class="wide"><b>Tools and rules</b>, done</td><td class="dim wide">Freeze the coverage rule and rebuild the policy as plans, before any new market exists</td><td class="dim">this week</td><td class="num">$0</td></tr>
           <tr class="hi"><td class="idx">1</td><td class="wide"><b>Two cheap probes</b>, done</td><td class="dim wide">Yes to both, for $0.14. The model writes a sound plan 6 times in 8 unaided, and 7 in 8 when told what makes a plan sound. A second model runs the agent for a fifth of the price and looks at more of the shop than the first one does</td><td class="dim">done 18 Sep</td><td class="num">$0.14</td></tr>
-          <tr class="hi"><td class="idx">2</td><td class="wide"><b>A shop that hides variant prices properly</b></td><td class="dim wide">Magento gives the prices away inside the page. Rebuilding Calderwood with the same prices and the giveaway removed measures what that leak was worth, with nothing else changed</td><td class="dim">late Sep</td><td class="num">$7</td></tr>
-          <tr><td class="idx">3</td><td class="wide">A second and third agent</td><td class="dim wide">The four card habit belongs to this agent. A plain script I write myself, and a widely used open source agent, say whether the failure belongs to agents in general or to this one</td><td class="dim">early Oct</td><td class="num">$8</td></tr>
+          <tr class="hi"><td class="idx">2</td><td class="wide"><b>A shop that hides variant prices properly</b>, done</td><td class="dim wide">Built, and it works. The AI now has to click a size to see its price, which it had almost never done before. It works 64 per cent harder for it and is no more right, because what makes it wrong is not looking at enough shops</td><td class="dim">done 18 Sep</td><td class="num">$5.40</td></tr>
+          <tr><td class="idx">3</td><td class="wide">A second and third agent, <b>first one built</b></td><td class="dim wide">The four card habit belongs to this agent. A plain script I wrote myself, with no card shortcut at all, says whether the failure belongs to agents in general or to this one. Running now</td><td class="dim">running</td><td class="num">$8</td></tr>
           <tr><td class="idx">4</td><td class="wide">More kinds of question and product</td><td class="dim wide">Clothing, where price and stock are both hidden, and reviews, where the answer is spread over pages. Also a question that cannot be answered at all, where refusing is the only right response</td><td class="dim">mid Oct</td><td class="num">$13</td></tr>
           <tr class="hi"><td class="idx">5</td><td class="wide"><b>Freeze everything, then one final run</b></td><td class="dim wide">The numbers that go in the report, all produced under one frozen version</td><td class="dim">late Oct</td><td class="num">$8</td></tr>
         </tbody>
