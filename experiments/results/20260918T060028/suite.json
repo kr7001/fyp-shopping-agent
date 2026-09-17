@@ -1,0 +1,277 @@
+{
+  "ran_at": "2026-09-18T06:16:15",
+  "repeats": 2,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": false,
+  "targeting": false,
+  "targeting_version": null,
+  "rules_version": null,
+  "model": "anthropic/claude-haiku-4.5",
+  "scaffold": "naive",
+  "tasks_file": "tasks_heldout.json",
+  "draw": "Calderwood:95cc00c4ca",
+  "instance": {
+    "target_option": "2 x 9.5L",
+    "listings": 15,
+    "listings_with_target": 10,
+    "winner": {
+      "sku": "IGR-CAL-11",
+      "seller": "Bramley Trading",
+      "price": 17.36
+    },
+    "runner_up_price": 19.75,
+    "winning_margin": 2.39,
+    "cheapest_card": {
+      "sku": "IGR-CAL-04",
+      "seller": "Chandler Direct",
+      "from_price": 5.54
+    },
+    "card_probe_wrong": true,
+    "best_per_litre": {
+      "sku": "IGR-CAL-08",
+      "seller": "Oakfield Pantry",
+      "option": "24 x 350ml",
+      "price_per_litre": 0.8298
+    },
+    "unit_probe_wrong": true,
+    "oracle_min_opens": 11,
+    "prunable_by_bound": 4,
+    "exhaustive_opens": 15,
+    "bound_strength": 0.267,
+    "from_price_range": [
+      5.54,
+      19.67
+    ],
+    "target_price_range": [
+      17.36,
+      64.74
+    ]
+  },
+  "summary": {
+    "by_task": {
+      "scaled-cheapest-target": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 1,
+          "abstained": 1
+        },
+        "actions": [
+          21,
+          24
+        ],
+        "tool_calls": [
+          23,
+          26
+        ],
+        "cost": [
+          0.582487,
+          1.178554
+        ],
+        "mean_actions": 22.5,
+        "mean_tool_calls": 24.5,
+        "total_cost": 1.761
+      },
+      "scaled-target-price": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 2
+        },
+        "actions": [
+          23,
+          23
+        ],
+        "tool_calls": [
+          25,
+          25
+        ],
+        "cost": [
+          1.010142,
+          0.860317
+        ],
+        "mean_actions": 23.0,
+        "mean_tool_calls": 25.0,
+        "total_cost": 1.8705
+      },
+      "scaled-all-stocked": {
+        "gated": true,
+        "verdicts": {
+          "correct": 2
+        },
+        "actions": [
+          18,
+          18
+        ],
+        "tool_calls": [
+          20,
+          20
+        ],
+        "cost": [
+          0.650185,
+          0.738506
+        ],
+        "mean_actions": 18.0,
+        "mean_tool_calls": 20.0,
+        "total_cost": 1.3887
+      },
+      "scaled-best-per-litre": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 1,
+          "correct": 1
+        },
+        "actions": [
+          22,
+          26
+        ],
+        "tool_calls": [
+          24,
+          28
+        ],
+        "cost": [
+          0.749568,
+          1.245211
+        ],
+        "mean_actions": 24.0,
+        "mean_tool_calls": 26.0,
+        "total_cost": 1.9948
+      }
+    },
+    "overall": {
+      "wrong": 4,
+      "abstained": 1,
+      "correct": 3
+    },
+    "total_cost": 7.015
+  },
+  "rows": [
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "named an excluded option instead",
+      "answer": "Based on my search of the Calderwood listings, the cheapest seller for the 2 x 9.5L pack is Chandler Direct at $5.54. This is confirmed by the related search term \"Calderwood Chandler Direct 2 x 9.5L\" that appeared in the search results.",
+      "tool_calls": 23,
+      "actions": 21,
+      "observations": 1,
+      "cost_usd": 0.582487,
+      "elapsed_s": 107.9,
+      "error": null,
+      "log": "scaled-cheapest-target-1.log"
+    },
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "abstained",
+      "why": "answer declined to commit",
+      "answer": "Based on the search results from the Calderwood listings, Chandler Direct is the cheapest seller with an \"As low as\" price of $5.54. However, I was unable to access the individual product pages to confirm that this price is specifically for the 2 x 9.5L pack. The search results only show \"As low as\"",
+      "tool_calls": 26,
+      "actions": 24,
+      "observations": 1,
+      "cost_usd": 1.178554,
+      "elapsed_s": 131.5,
+      "error": null,
+      "log": "scaled-cheapest-target-2.log"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "reported trap price 5.54",
+      "answer": "$5.54",
+      "tool_calls": 25,
+      "actions": 23,
+      "observations": 1,
+      "cost_usd": 1.010142,
+      "elapsed_s": 118.9,
+      "error": null,
+      "log": "scaled-target-price-1.log"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "wrong",
+      "why": "reported trap price 5.54",
+      "answer": "$5.54",
+      "tool_calls": 25,
+      "actions": 23,
+      "observations": 1,
+      "cost_usd": 0.860317,
+      "elapsed_s": 116.5,
+      "error": null,
+      "log": "scaled-target-price-2.log"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "answered no",
+      "answer": "No",
+      "tool_calls": 20,
+      "actions": 18,
+      "observations": 1,
+      "cost_usd": 0.650185,
+      "elapsed_s": 89.7,
+      "error": null,
+      "log": "scaled-all-stocked-1.log"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "answered no",
+      "answer": "No",
+      "tool_calls": 20,
+      "actions": 18,
+      "observations": 1,
+      "cost_usd": 0.738506,
+      "elapsed_s": 88.7,
+      "error": null,
+      "log": "scaled-all-stocked-2.log"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "Chandler Direct offers the lowest price per litre for Calderwood products at $0.29 per litre ($5.54 for a 2 x 9.5L pack, totaling 19 litres).",
+      "tool_calls": 24,
+      "actions": 22,
+      "observations": 1,
+      "cost_usd": 0.749568,
+      "elapsed_s": 129.1,
+      "error": null,
+      "log": "scaled-best-per-litre-1.log"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "Based on my exploration of the Calderwood search results, I found 15 Calderwood Still Spring Water products from different sellers. Each product is listed as a \"Multipack\" with \"As low as\" pricing, indicating multiple pack size options. The lowest \"As low as\" price is offered by Chandler Direct at $",
+      "tool_calls": 28,
+      "actions": 26,
+      "observations": 1,
+      "cost_usd": 1.245211,
+      "elapsed_s": 162.2,
+      "error": null,
+      "log": "scaled-best-per-litre-2.log"
+    }
+  ]
+}
