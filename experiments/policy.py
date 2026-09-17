@@ -66,6 +66,11 @@ HINTS = {
     "understated_population": (
         "You compared fewer options than the result set contains. Open the listings you "
         "have not seen, or name the ones you did not compare and say so in the answer."),
+    "superlative_without_coverage": (
+        "You named the best of the whole market having opened only a few of its "
+        "listings. A listing you have not opened can only be ruled out by its advertised "
+        "price, and only when that price is already above the best total you have found. "
+        "Open the listings you cannot rule out that way, then answer."),
 }
 
 
@@ -88,8 +93,10 @@ def gate(task: dict, spec: dict, answer: str, log_path: pathlib.Path) -> dict:
         question=task.get("query", ""),
         population=inst.get("listings"),
         opened=len(opened),
+        floor=inst.get("oracle_min_opens"),
     )
-    return {**verdict, "opened": len(opened), "population": inst.get("listings")}
+    return {**verdict, "opened": len(opened), "population": inst.get("listings"),
+            "floor": inst.get("oracle_min_opens")}
 
 
 def abstention_for(verdict: dict) -> str:

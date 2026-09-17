@@ -184,6 +184,47 @@ outside the container.
 
 ---
 
+## Market ledger
+
+A market can be spent once. The moment its failures are examined, any rule written
+afterwards is fitted to them, and it stops being able to test that rule. Runs already
+recorded against it stay valid as measurements. What is lost is its use as a held-out test.
+
+Keep this table current. It is the only record of which market may still test what.
+
+| Market | Listings | Status | What it may still be used for |
+| --- | --- | --- | --- |
+| small fixture | 4 | **Development.** Authoring notes removed 13 Sep 2026, everything before that is a different environment | RQ2 baseline. Not a held-out test for anything |
+| Rivenhall | 15 | **Development.** The targeting strategies were written and twice corrected against its failures | Cost and action comparisons. Not a held-out test |
+| Calderwood | 15 | **Spent 17 Sep 2026.** Held out until then, and its nine failures have now been read, which is what produced the coverage rule | Reporting the held-out result already measured. It cannot test rules version 2 |
+| Apparel | planned | **Reserved.** Generated after rules version 2 is frozen, so it can test it | The held-out test for the coverage rule, and the first market with two gates at once |
+| Calderwood-S | planned | **Reserved.** Calderwood's prices with the variant prices suppressed in the DOM | Measuring what the Magento price leak was worth, with answers held identical |
+
+Two rules follow from the table and are worth stating separately, because both have already
+been broken once.
+
+**Freeze before generating.** A rule written after seeing a market's failures cannot be
+tested on that market. Write it from the principle, record the version, then generate the
+next market.
+
+**One change per comparison.** When the DOM changes, prices stay identical. When the
+scaffold changes, the model stays fixed. When the model changes, the scaffold stays fixed.
+
+### The metric that survives a change of scaffold
+
+`actions` counts what `trace_stats.py` classifies from openJiuwen's tool calls, so it is not
+comparable across agents that name their tools differently. Two figures are:
+
+| Metric | Where it comes from | Why it transfers |
+| --- | --- | --- |
+| Listings opened | `sufficiency.listings_opened`, from URLs in the trace | A product page visit is a property of the browser, not of the agent |
+| Cost per run | OpenRouter usage delta around the run | Tokens are tokens |
+
+Report those two first when a second scaffold arrives. Actions stay in the tables as a
+per-scaffold detail.
+
+---
+
 ## Decision log
 
 ### 2026-08-28

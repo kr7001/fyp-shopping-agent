@@ -23,6 +23,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import policy as policy_module
+import sufficiency
 import score as scoring
 import targeting as targeting_module
 import trace_stats
@@ -247,6 +248,10 @@ def main() -> int:
                "exhaustive": args.exhaustive,
                "targeting": args.targeting,
                "targeting_version": targeting_module.VERSION if args.targeting else None,
+               # Which sufficiency rules judged this suite. A verdict that does not say
+               # what judged it cannot be compared with one scored under different rules,
+               # and the rules have now changed once.
+               "rules_version": sufficiency.RULES_VERSION if args.policy != "off" else None,
                "tasks_file": args.tasks.name,
                "draw": draw_id(spec),
                # The ground truth this suite was scored against. The catalogue is
