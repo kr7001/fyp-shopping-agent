@@ -1,0 +1,350 @@
+{
+  "ran_at": "2026-09-17T12:54:24",
+  "repeats": 3,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": true,
+  "targeting": false,
+  "targeting_version": null,
+  "tasks_file": "tasks_heldout.json",
+  "draw": "Calderwood:95cc00c4ca",
+  "instance": {
+    "target_option": "2 x 9.5L",
+    "listings": 15,
+    "listings_with_target": 10,
+    "winner": {
+      "sku": "IGR-CAL-11",
+      "seller": "Bramley Trading",
+      "price": 17.36
+    },
+    "runner_up_price": 19.75,
+    "winning_margin": 2.39,
+    "cheapest_card": {
+      "sku": "IGR-CAL-04",
+      "seller": "Chandler Direct",
+      "from_price": 5.54
+    },
+    "card_probe_wrong": true,
+    "best_per_litre": {
+      "sku": "IGR-CAL-08",
+      "seller": "Oakfield Pantry",
+      "option": "24 x 350ml",
+      "price_per_litre": 0.8298
+    },
+    "unit_probe_wrong": true,
+    "oracle_min_opens": 11,
+    "prunable_by_bound": 4,
+    "exhaustive_opens": 15,
+    "bound_strength": 0.267,
+    "from_price_range": [
+      5.54,
+      19.67
+    ],
+    "target_price_range": [
+      17.36,
+      64.74
+    ]
+  },
+  "summary": {
+    "by_task": {
+      "scaled-cheapest-target": {
+        "gated": true,
+        "verdicts": {
+          "correct": 2,
+          "wrong": 1
+        },
+        "actions": [
+          21,
+          25,
+          31
+        ],
+        "tool_calls": [
+          54,
+          81,
+          59
+        ],
+        "cost": [
+          0.476504,
+          0.564045,
+          0.549554
+        ],
+        "mean_actions": 25.7,
+        "mean_tool_calls": 64.7,
+        "total_cost": 1.5901
+      },
+      "scaled-target-price": {
+        "gated": true,
+        "verdicts": {
+          "failed": 1,
+          "correct": 2
+        },
+        "actions": [
+          43,
+          28,
+          32
+        ],
+        "tool_calls": [
+          99,
+          62,
+          65
+        ],
+        "cost": [
+          1.008445,
+          0.494272,
+          0.421245
+        ],
+        "mean_actions": 34.3,
+        "mean_tool_calls": 75.3,
+        "total_cost": 1.924
+      },
+      "scaled-all-stocked": {
+        "gated": true,
+        "verdicts": {
+          "correct": 3
+        },
+        "actions": [
+          32,
+          34,
+          33
+        ],
+        "tool_calls": [
+          75,
+          72,
+          73
+        ],
+        "cost": [
+          0.592313,
+          0.613014,
+          0.606747
+        ],
+        "mean_actions": 33.0,
+        "mean_tool_calls": 73.3,
+        "total_cost": 1.8121
+      },
+      "scaled-best-per-litre": {
+        "gated": true,
+        "verdicts": {
+          "correct": 3
+        },
+        "actions": [
+          23,
+          20,
+          19
+        ],
+        "tool_calls": [
+          47,
+          40,
+          38
+        ],
+        "cost": [
+          0.570009,
+          0.489342,
+          0.388313
+        ],
+        "mean_actions": 20.7,
+        "mean_tool_calls": 41.7,
+        "total_cost": 1.4477
+      }
+    },
+    "overall": {
+      "correct": 10,
+      "wrong": 1,
+      "failed": 1
+    },
+    "total_cost": 6.7738
+  },
+  "rows": [
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "After opening all 15 Calderwood listings across both pages of search results, the cheapest seller for the 2 x 9.5L pack is Bramley Trading at $17.36 ($6.39 base price + $10.97 surcharge for 2 x 9.5L option). I opened 15 listings total.",
+      "tool_calls": 54,
+      "actions": 21,
+      "observations": 33,
+      "cost_usd": 0.476504,
+      "elapsed_s": 156.5,
+      "error": null,
+      "log": "scaled-cheapest-target-1.log"
+    },
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "The cheapest seller for the 2 x 9.5L Calderwood pack is Oakfield Pantry at $5.75. I opened all 15 listings in the search results across both pages.",
+      "tool_calls": 81,
+      "actions": 25,
+      "observations": 56,
+      "cost_usd": 0.564045,
+      "elapsed_s": 274.7,
+      "error": null,
+      "log": "scaled-cheapest-target-2.log"
+    },
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "Based on checking all 15 Calderwood listings in the search results, the cheapest seller for the 2 x 9.5L pack is Bramley Trading at $17.36. I opened and checked all 15 listings across both pages of search results.",
+      "tool_calls": 59,
+      "actions": 31,
+      "observations": 28,
+      "cost_usd": 0.549554,
+      "elapsed_s": 185.5,
+      "error": null,
+      "log": "scaled-cheapest-target-3.log"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "failed",
+      "why": "run did not produce an answer",
+      "answer": "Max iterations reached without completion",
+      "tool_calls": 99,
+      "actions": 43,
+      "observations": 56,
+      "cost_usd": 1.008445,
+      "elapsed_s": 305.8,
+      "error": "max_iterations_reached",
+      "log": "scaled-target-price-1.log"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "found 17.36",
+      "answer": "The lowest price for the 2 x 9.5L pack of Calderwood water is $17.36, charged by Bramley Trading. I opened all 15 listings in the search results (across 2 pages) and checked each one for the 2 x 9.5L pack option. 10 listings had this option available, and 5 listings did not offer this pack size.",
+      "tool_calls": 62,
+      "actions": 28,
+      "observations": 34,
+      "cost_usd": 0.494272,
+      "elapsed_s": 212.7,
+      "error": null,
+      "log": "scaled-target-price-2.log"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "found 17.36",
+      "answer": "The lowest price for the 2 x 9.5L pack of Calderwood water is $17.36, charged by Bramley Trading. I opened and checked all 15 listings in the search results (10 on page 1 and 5 on page 2). Of these, 10 listings offered the 2 x 9.5L pack option, and 5 listings did not have this option available. The ",
+      "tool_calls": 65,
+      "actions": 32,
+      "observations": 33,
+      "cost_usd": 0.421245,
+      "elapsed_s": 211.4,
+      "error": null,
+      "log": "scaled-target-price-3.log"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "answered no",
+      "answer": "NO - Not every Calderwood listing stocks the 2 x 9.5L pack. Out of 15 total Calderwood listings checked, only 10 have the 2 x 9.5L pack option available. The 5 listings that do NOT have this option are: Whitlock Wholesale, Oakfield Pantry, Hillside Merchants, Westmere Pantry, and Marlow Merchants. A",
+      "tool_calls": 75,
+      "actions": 32,
+      "observations": 43,
+      "cost_usd": 0.592313,
+      "elapsed_s": 232.8,
+      "error": null,
+      "log": "scaled-all-stocked-1.log"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "answered no",
+      "answer": "No. Not every Calderwood listing stocks the 2 x 9.5L pack. Out of 15 total Calderwood listings checked, only 10 have the 2 x 9.5L pack option available. The 5 listings that do NOT have the 2 x 9.5L pack are: Whitlock Wholesale, Oakfield Pantry, Hillside Merchants, Westmere Pantry, and Marlow Merchan",
+      "tool_calls": 72,
+      "actions": 34,
+      "observations": 38,
+      "cost_usd": 0.613014,
+      "elapsed_s": 222.5,
+      "error": null,
+      "log": "scaled-all-stocked-2.log"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "answered no",
+      "answer": "No. Not every Calderwood listing stocks the 2 x 9.5L pack. I opened and checked all 15 Calderwood listings across 2 pages. 10 listings have the 2 x 9.5L option, but 5 listings do not: Whitlock Wholesale, Oakfield Pantry, Hillside Merchants, Westmere Pantry, and Marlow Merchants.",
+      "tool_calls": 73,
+      "actions": 33,
+      "observations": 40,
+      "cost_usd": 0.606747,
+      "elapsed_s": 216.6,
+      "error": null,
+      "log": "scaled-all-stocked-3.log"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "Oakfield Pantry offers the lowest price per litre at $0.83/L for the 24 x 350ml pack size (8.4L total for $6.97). I opened and checked all 15 Calderwood listings across both pages of search results, examining all available pack sizes for each seller to calculate the best price per litre for each.",
+      "tool_calls": 47,
+      "actions": 23,
+      "observations": 24,
+      "cost_usd": 0.570009,
+      "elapsed_s": 184.6,
+      "error": null,
+      "log": "scaled-best-per-litre-1.log"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "Oakfield Pantry offers the lowest price per litre at $0.83/L (24 x 350ml pack). I opened and checked all 15 Calderwood listings across both pages of search results.",
+      "tool_calls": 40,
+      "actions": 20,
+      "observations": 20,
+      "cost_usd": 0.489342,
+      "elapsed_s": 155.4,
+      "error": null,
+      "log": "scaled-best-per-litre-2.log"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "Oakfield Pantry offers the lowest price per litre at $0.83/L for the 24 x 350ml pack size (8.4L total for $6.97). I opened and checked all 15 Calderwood listings found in the search results.",
+      "tool_calls": 38,
+      "actions": 19,
+      "observations": 19,
+      "cost_usd": 0.388313,
+      "elapsed_s": 135.8,
+      "error": null,
+      "log": "scaled-best-per-litre-3.log"
+    }
+  ]
+}
