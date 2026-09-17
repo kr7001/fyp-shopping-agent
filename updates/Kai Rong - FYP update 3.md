@@ -12,7 +12,7 @@ The agent runs end to end against the environment, the RQ2 baseline is measured 
 assumed, Checkpoint B is finished two weeks early, and **both halves of RQ3 are built and
 the efficiency claim is met.**
 
-Three results shape the project. The agent **never** signals uncertainty, in 107 unmodified
+Three results shape the project. The agent **never** signals uncertainty, in 125 unmodified
 runs on the current catalogues. At fifteen listings its failures come from under-retrieval. And the cross-listing failure
 that motivated the project does not reproduce at small scale but does at fifteen listings.
 
@@ -33,6 +33,10 @@ arm on the held-out market, without which no saving can be stated there.
 *As of 14 September:* $45.48 on the OpenRouter account and 275 run records, after
 re-running the RQ2 baseline clean and adding a third unmodified batch. The per-run logged
 costs sum to $39.45 and remain a lower bound.
+
+*As of 17 September:* the faculty credit of $50 arrived and $9.94 of it has been spent, on
+31 runs that completed the held-out market: the unmodified and exhaustive arms it never
+had, and four more policy runs so all three arms stand at twelve.
 
 ---
 
@@ -417,8 +421,8 @@ The first batch alone overstated recall. The withheld answer named the right sel
 opening 4 of 15 listings while claiming to have checked "all four": right, but not earned.
 
 *Corrected 14 September.* I wrote here that precision held at 1.00 across 77 correct runs.
-Over all 107 unmodified runs on the current catalogues, in sample and out, the gate
-withholds 3 of 85 correct answers and withdraws 16 of 22 wrong ones. Two withheld answers
+Over all 125 unmodified runs on the current catalogues, in sample and out, the gate
+withholds 3 of 94 correct answers and withdraws 19 of 31 wrong ones. Two withheld answers
 are correct yes-or-no answers that mention a surcharge in passing, "XL +$2.00", which the
 surcharge rule reads as a price; the third is the unearned answer above. The earlier 1.00
 included the runs that had the answers on the page.
@@ -524,6 +528,27 @@ actions has nothing to be divided by, and borrowing a denominator from a differe
 is an error I have already made in three other forms this week. That run is the first thing
 the new credit should buy.
 
+*Added 17 September: the held-out market now has all three arms, twelve runs each, on one
+draw.* The faculty credit bought the two arms it lacked, 31 runs and $9.94, and the policy
+arm was topped up from eight runs to twelve, which were 4 of 4 correct.
+
+| Arm | Correct | Refused | Wrong | No answer | Actions | Cost/run |
+| --- | --- | --- | --- | --- | --- | --- |
+| Unmodified | 3 | 0 | 9 | 0 | 10.2 | $0.137 |
+| Exhaustive | 10 | 0 | 1 | 1 | 28.4 | $0.564 |
+| **Targeting + gate** | **11** | **1** | **0** | 0 | **14.8** | **$0.335** |
+
+The saving therefore holds out of sample, and is larger there than in sample: **48 per cent
+fewer actions and 41 per cent less money than exhaustive retrieval, at better accuracy**,
+11 of 11 answered correctly against exhaustive's 10 of 11.
+
+Two figures moved in the other direction, and both are worth more to the report than the
+saving is. The unmodified baseline falls from 58 per cent on the development market to **25
+per cent here**, because on the development market the cheapest seller happens to sit
+inside the four cards the agent reads. And **exhaustive retrieval is not a ceiling**: one
+run opened all fifteen listings and still quoted an advertised from-price as the price of
+the pack asked about, and one exhausted its 100-step budget at $1.008.
+
 ---
 
 ## 7b. A result I published and withdrew the same day
@@ -567,7 +592,7 @@ answer.
 | B | Scale the catalogue; tasks over search pages where exhaustive retrieval is genuinely costly | 23 Sep | **Done 9 Sep**, two weeks early |
 | C1 | RQ3 first half: the sufficiency check, as a gate and as a retry, validated out of sample | — | **Done 9 Sep** |
 | C2 | RQ3 second half: question-conditioned targeting, against exhaustive and unmodified baselines | 21 Oct | **Done 10 Sep**, six weeks early |
-| C3 | Exhaustive arm on the held-out market, so a saving can be stated there | Late Sep | First call on the new credit |
+| C3 | Exhaustive arm on the held-out market, so a saving can be stated there | Late Sep | **Done 17 Sep**, with the unmodified arm alongside it |
 | C4 | The two generalisation checks: a second model, a second scaffold | Early Oct | Not started |
 | D | Final report and presentation | Early Nov | |
 
