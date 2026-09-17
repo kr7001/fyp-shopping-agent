@@ -1,0 +1,134 @@
+<?php
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ *
+ * Derived from Magento_ConfigurableProduct's template
+ * view/frontend/templates/product/view/type/options/configurable.phtml, which Magento
+ * licenses under OSL-3.0 and AFL-3.0. Its notice above is kept, as both licences require,
+ * and this modified copy is offered under the same licences.
+ *
+ * Variant pricing suppressed, for the interaction-gated retrieval experiments.
+ *
+ * Stock Magento hands the browser every variant price on first load, inside the
+ * x-magento-init block, and the configurable widget then renders each option label with
+ * its surcharge, "2 x 9.5L +$15.01". Both are readable without any interaction, so the
+ * price a shopper asks about is not actually gated in this shop the way it is on the live
+ * marketplace, where the DOM holds exactly one price at a time.
+ *
+ * This template removes both. The price table handed to the widget is flattened to the
+ * base price, so no label carries a surcharge and no variant price appears as a figure in
+ * the page. The real prices travel in an opaque blob and are written into the price box
+ * only for the option actually selected.
+ *
+ * Stated plainly because it matters for what the results mean: an agent that executes
+ * JavaScript of its own could still decode the blob, exactly as an agent on the live
+ * marketplace could call the API that page fetches from. What is removed is the price
+ * being readable in the observation the agent takes before interacting.
+ */
+$_product    = $block->getProduct();
+$_attributes = $block->decorateArray($block->getAllowAttributes());
+
+$config = json_decode($block->getJsonConfig(), true) ?: [];
+$truePrices = $config["optionPrices"] ?? [];
+
+// Flatten every variant to the base price. The widget still functions, the selection
+// still works, and nothing it renders reveals a price difference.
+$basePrice = null;
+foreach ($truePrices as $entry) {
+    $candidate = $entry["basePrice"]["amount"] ?? null;
+    if ($candidate !== null && ($basePrice === null || $candidate < $basePrice)) {
+        $basePrice = $candidate;
+    }
+}
+foreach ($config["optionPrices"] ?? [] as $id => $entry) {
+    foreach (["baseOldPrice", "oldPrice", "basePrice", "finalPrice"] as $key) {
+        if (isset($config["optionPrices"][$id][$key]["amount"])) {
+            $config["optionPrices"][$id][$key]["amount"] = $basePrice;
+        }
+    }
+}
+$hidden = base64_encode(json_encode($truePrices));
+?>
+<?php if ($_product->isSaleable() && count($_attributes)) :?>
+    <div id="igr-variant-store" data-igr="<?= $block->escapeHtmlAttr($hidden) ?>" hidden="hidden"></div>
+    <?php foreach ($_attributes as $_attribute) : ?>
+        <div class="field configurable required">
+            <label class="label" for="attribute<?= $block->escapeHtmlAttr($_attribute->getAttributeId()) ?>">
+                <span><?= $block->escapeHtml($_attribute->getProductAttribute()->getStoreLabel()) ?></span>
+            </label>
+            <div class="control">
+                <select name="super_attribute[<?= $block->escapeHtmlAttr($_attribute->getAttributeId()) ?>]"
+                        data-selector="super_attribute[<?= $block->escapeHtmlAttr($_attribute->getAttributeId()) ?>]"
+                        data-validate="{required:true}"
+                        id="attribute<?= $block->escapeHtmlAttr($_attribute->getAttributeId()) ?>"
+                        class="super-attribute-select">
+                    <option value=""><?= $block->escapeHtml(__("Choose an Option...")) ?></option>
+                </select>
+            </div>
+        </div>
+    <?php endforeach; ?>
+    <script type="text/x-magento-init">
+        {
+            "#product_addtocart_form": {
+                "configurable": {
+                    "spConfig": <?= /* @noEscape */ json_encode($config) ?>,
+                    "gallerySwitchStrategy": "<?= $block->escapeJs($block->getVar(
+                        "gallery_switch_strategy",
+                        "Magento_ConfigurableProduct"
+                    ) ?: "replace"); ?>"
+                }
+            },
+            "*" : {
+                "Magento_ConfigurableProduct/js/catalog-add-to-cart": {}
+            }
+        }
+    </script>
+    <script>
+    (function () {
+        var store = document.getElementById("igr-variant-store");
+        if (!store) { return; }
+        var prices = {};
+        try { prices = JSON.parse(atob(store.getAttribute("data-igr"))) || {}; } catch (e) { return; }
+
+        var config = <?= /* @noEscape */ json_encode(["attributes" => $config["attributes"] ?? []]) ?>;
+
+        function chosenProduct() {
+            var pools = null;
+            var selects = document.querySelectorAll(".super-attribute-select");
+            for (var i = 0; i < selects.length; i++) {
+                var attributeId = selects[i].id.replace("attribute", "");
+                var attribute = config.attributes[attributeId];
+                if (!attribute || !selects[i].value) { return null; }
+                var matched = null;
+                for (var j = 0; j < attribute.options.length; j++) {
+                    if (String(attribute.options[j].id) === String(selects[i].value)) {
+                        matched = attribute.options[j].products || [];
+                    }
+                }
+                if (!matched) { return null; }
+                pools = pools === null ? matched : pools.filter(function (id) {
+                    return matched.indexOf(id) !== -1;
+                });
+            }
+            return pools && pools.length === 1 ? pools[0] : null;
+        }
+
+        function show() {
+            var id = chosenProduct();
+            var boxes = document.querySelectorAll(".price-box .price");
+            if (!id || !prices[id]) { return; }
+            var amount = prices[id].finalPrice ? prices[id].finalPrice.amount : null;
+            if (amount === null) { return; }
+            var text = "$" + Number(amount).toFixed(2);
+            for (var i = 0; i < boxes.length; i++) { boxes[i].textContent = text; }
+        }
+
+        document.addEventListener("change", function (event) {
+            if (event.target && event.target.classList.contains("super-attribute-select")) {
+                setTimeout(show, 60);
+            }
+        }, true);
+    })();
+    </script>
+<?php endif;?>
