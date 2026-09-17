@@ -121,23 +121,50 @@ MARKET_SCOPE = re.compile(
 # is not what makes it sound. The control question is of this shape.
 ON_RESULTS_PAGE = re.compile(r"\b(advertis\w+|on the results page)\b", re.IGNORECASE)
 
-# A product page navigation. Search result pages carry a query string and are excluded,
-# since landing on the results page is not the same as opening a listing.
-PRODUCT_NAV = re.compile(r"page\.goto\('([^']+?\.html)'\)")
+# Which listings a run opened, read from the record of where the browser went.
+#
+# This is the one measure meant to survive a change of agent, and it has been wrong three
+# times, each time because it recognised one URL shape rather than the idea of a product
+# page. It matched `page.goto` only, and missed listings opened by clicking a card. It
+# matched `igr-*.html` only, and read zero for a store view serving Magento's id form. Then
+# the second scaffold followed the site's own links, which are named after the product,
+# `calderwood-still-spring-water-multipack-chandler-direct.html`, and it read zero again.
+#
+# Magento serves product pages as a single path segment ending in .html, or as an id path,
+# and serves nothing else that way: search results carry a query string and live under
+# catalogsearch. So the rule is the shape of the path, not the spelling of the slug, and it
+# is the same rule for every scaffold.
+PAGE_MARKER = re.compile(r"Page URL:\s*(\S+)")
+PRODUCT_NAV = re.compile(r"page\.goto\('([^']+)'\)")
+PRODUCT_PATH = re.compile(r"^/[a-z0-9][a-z0-9-]*\.html$", re.IGNORECASE)
+PRODUCT_BY_ID = re.compile(r"^/catalog/product/view/id/(\d+)")
 
-# A listing is also opened by clicking its card on the results page, which issues no goto.
-# Counting only gotos missed 35 runs, one of them a correct "No" refused as having opened
-# nothing after it had opened three listings by click. Every tool result reports the page it
-# left the browser on, so the landing URL is the record of what was actually visited. Scoped
-# to the authored listings, since those are the only products any question is about.
-PRODUCT_LANDED = re.compile(r"Page URL: https?://[^\s\\'\"]+?/(igr-[a-z0-9-]+)\.html")
 
-# The same listing, reached through a store view that has no pretty URLs of its own. Magento
-# falls back to `catalog/product/view/id/<id>/s/<url-key>/`, which names the same product by
-# the same key. Without this the gated store view reports every run as having opened nothing,
-# which would make the coverage rules refuse all of them and the coverage figures read zero.
-# Found the first time the gated view was measured, before any figure was written down.
-PRODUCT_BY_ID = re.compile(r"/catalog/product/view/id/\d+/s/(igr-[a-z0-9-]+)")
+def _listing_key(url: str) -> str | None:
+    """One listing, however it was addressed, or None when the page is not a listing.
+
+    Magento serves the same product under a SKU slug, a name slug and an id path, and a run
+    may use more than one of them. The id is the only part all three share, so it wins when
+    it is there.
+
+    A product outside the searched market counts as a page opened, because it is one. Runs
+    stay inside the market they were sent to, so in practice this is the market's own
+    listings, and the one exception on record is a naive run that wandered to product id 1.
+    """
+    # Logs escape their content, so a captured URL can carry trailing junk such as `\n-`.
+    url = re.split(r"[\\\s\"'<>]", url)[0].rstrip("/")
+    if "?" in url or "catalogsearch" in url:
+        return None
+    path = url.split("localhost:7770", 1)[-1] if "localhost:7770" in url else url
+    if not path.startswith("/"):
+        return None
+    by_id = PRODUCT_BY_ID.match(path)
+    if by_id:
+        return f"id:{by_id.group(1)}"
+    if PRODUCT_PATH.match(path):
+        return "slug:" + path[1:].removesuffix(".html")
+    return None
+
 
 # Below this, a figure in this catalogue is a per-unit rate rather than a total. Rates
 # are computed by the agent and correctly absent from the page, so the unsupported test
@@ -185,14 +212,18 @@ def evidence(text: str) -> dict[str, set[int]]:
 
 
 def listings_opened(text: str) -> set[str]:
-    """Distinct product pages the run actually landed on, by navigation or by click.
+    """Distinct product pages the run landed on, however it got there.
 
-    Every form is reduced to the listing's url key, so the same listing counts once however
-    it was reached and the count means the same thing on every store view.
+    Reads both the addresses the run navigated to and the addresses its observations report
+    it was at, so a listing opened by clicking a card counts the same as one opened by
+    typing its URL.
     """
-    navigated = {url.rsplit("/", 1)[-1].removesuffix(".html")
-                 for url in PRODUCT_NAV.findall(text) if "?" not in url}
-    return navigated | set(PRODUCT_LANDED.findall(text)) | set(PRODUCT_BY_ID.findall(text))
+    found = set()
+    for url in PRODUCT_NAV.findall(text) + PAGE_MARKER.findall(text):
+        key = _listing_key(url)
+        if key:
+            found.add(key)
+    return found
 
 
 def prices_in(text: str) -> list[int]:
