@@ -147,10 +147,13 @@ def replay(only_suite: str | None = None) -> int:
                          "repeat": row["repeat"], "before": before,
                          "after": after, "flag": check["flag"],
                          "draw": payload.get("draw") or "unrecorded",
-                         # A second model is a second arm. Pooling two models into one
-                         # baseline is the same mistake as pooling two catalogues, and it
-                         # arrived the moment a second model existed.
+                         # A second model is a second arm, and so is a second scaffold.
+                         # Pooling either into one baseline is the same mistake as pooling
+                         # two catalogues, and each arrived the moment the dimension did.
+                         # Three times now, so the key is everything that decides what
+                         # produced the run rather than everything thought of so far.
                          "model": payload.get("model") or "anthropic/claude-haiku-4.5",
+                         "scaffold": payload.get("scaffold") or "openjiuwen",
                          "cost_usd": row.get("cost_usd")})
 
     if not rows:
@@ -173,12 +176,14 @@ def replay(only_suite: str | None = None) -> int:
     # produced by different models, are different measurements. A single pooled figure is
     # the mistake the draw id was introduced to stop, and the same argument applies to the
     # model the moment there is more than one.
-    for draw, model in sorted({(r["draw"], r["model"]) for r in rows}):
-        part = [r for r in rows if r["draw"] == draw and r["model"] == model]
+    for draw, model, scaffold in sorted({(r["draw"], r["model"], r["scaffold"])
+                                         for r in rows}):
+        part = [r for r in rows if r["draw"] == draw and r["model"] == model
+                and r["scaffold"] == scaffold]
         b = collections.Counter(r["before"] for r in part)
         a = collections.Counter(r["after"] for r in part)
         print()
-        print(f"{draw}, {model.split('/')[-1]}, {len(part)} runs")
+        print(f"{draw}, {model.split('/')[-1]}, {scaffold}, {len(part)} runs")
         print(f"{'verdict':12} {'baseline':>9} {'gate':>7}")
         print("-" * 31)
         for verdict in sorted(set(b) | set(a)):
@@ -187,7 +192,7 @@ def replay(only_suite: str | None = None) -> int:
                         and r["before"] in ("wrong", "ambiguous"))
         print(f"wrong withdrawn: {withdrawn} of {b['wrong'] + b['ambiguous']}")
     print()
-    print(f"all draws and models, {len(rows)} runs")
+    print(f"all draws, models and scaffolds, {len(rows)} runs")
     print(f"{'verdict':12} {'baseline':>9} {'gate':>7}")
     print("-" * 31)
     for verdict in sorted(set(before) | set(after)):

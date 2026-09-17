@@ -1,0 +1,56 @@
+{
+  "task": "Go to http://localhost:7770/catalogsearch/result/?q=Calderwood . Does every Calderwood listing stock the 2 x 9.5L pack? Answer yes or no.",
+  "model": "anthropic/claude-haiku-4.5",
+  "scaffold": "naive",
+  "elapsed_s": 174.3,
+  "result": {
+    "final": "No",
+    "ok": true
+  },
+  "error": null,
+  "trace": {
+    "tool_calls_total": 31,
+    "actions": 29,
+    "observations": 1,
+    "by_tool": {
+      "goto": 29,
+      "read_page": 1,
+      "finish": 1
+    },
+    "sequence": [
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "read_page",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "goto",
+      "finish"
+    ]
+  },
+  "cost_usd": 1.412977,
+  "log": "scaled-all-stocked-1.log"
+}
