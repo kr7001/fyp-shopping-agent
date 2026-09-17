@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install the store view whose pages do not hand the browser every variant price.
+"""Make the shop stop handing the browser every variant price, for one browser only.
 
 WebArena's Magento publishes the whole price table on first load. It sits in the page as
 `optionPrices`, and the configurable widget renders each option label with its surcharge,
@@ -9,21 +9,26 @@ the page holds exactly one price at a time. Measured across the recorded runs, t
 selects a pack size in 11 of 122 runs on the fifteen seller markets and adds the surcharge
 to the base price instead in 48 of 290 stored answers.
 
-This installs a second **store view** rather than changing the shop. That distinction is the
-whole point. Every run already recorded was made against store view `default`, and it keeps
-rendering exactly as it did, so no recorded run loses the environment it was measured in.
-The new store view `gated` shows the same products at the same prices through a theme that
-suppresses the price table, and the two together are an A and B with nothing else moving.
+This selects the suppressing theme by **user agent**, which leaves the shop otherwise
+untouched. That is the whole point. Every run already recorded was made with an ordinary
+user agent and still renders exactly as it did, so no recorded run loses the environment it
+was measured in. A run whose browser reports `IGRGated` sees the same products, at the same
+prices, at the same URLs, through a theme that suppresses the price table. The two together
+are an A and B with nothing else moving, not even the address bar.
+
+A second store view was tried first and abandoned. Magento resolves a theme per store view,
+but it carries the store only in the query string or in a URL prefix, and neither survives
+the agent following an ordinary product link, so half the pages in a run rendered the wrong
+way. The user agent travels with every request by construction.
 
     python env/install_gated_theme.py --check     # report what is installed
     python env/install_gated_theme.py --install
     python env/install_gated_theme.py --remove    # put the shop back
 
-After installing, the search index has to be built for the new store view, which this does
-not do for you because it is slow and because two reindexes running at once is how this
-container gets a stuck index:
+Run the gated arm by giving the browser that user agent:
 
-    docker exec webarena-shopping php /var/www/magento2/bin/magento indexer:reindex catalogsearch_fulltext
+    PLAYWRIGHT_MCP_ARGS='-y @playwright/mcp@latest --user-agent "Mozilla/5.0 IGRGated/1.0"' \
+        python experiments/suite.py --tasks experiments/tasks_heldout_gated.json --repeats 3
 """
 
 from __future__ import annotations
@@ -39,7 +44,7 @@ CONTAINER = "webarena-shopping"
 MAGE = "/var/www/magento2"
 THEME_DEST = f"{MAGE}/app/design/frontend/IGR/suppressed"
 THEME_PATH = "IGR/suppressed"
-STORE_CODE = "gated"
+UA_MARKER = "IGRGated"
 
 SQL_INSTALL = f"""
 INSERT INTO theme (parent_id, theme_path, theme_title, is_featured, area, type, code)
@@ -47,31 +52,25 @@ SELECT theme_id, '{THEME_PATH}', 'IGR Suppressed Variant Pricing', 0, 'frontend'
 FROM theme WHERE theme_path='Magento/blank'
   AND NOT EXISTS (SELECT 1 FROM (SELECT * FROM theme) t WHERE t.theme_path='{THEME_PATH}');
 
-INSERT INTO store (code, website_id, group_id, name, sort_order, is_active)
-SELECT '{STORE_CODE}', 1, 1, 'Gated Variant Pricing', 10, 1
-FROM dual WHERE NOT EXISTS (SELECT 1 FROM (SELECT * FROM store) s WHERE s.code='{STORE_CODE}');
+DELETE FROM core_config_data WHERE path='design/theme/ua_regexp';
 
+-- Magento hands this straight to preg_match, so the pattern needs its delimiters, and it
+-- reads the key `regexp`. Getting either wrong takes every page of the shop down with a
+-- 500, which is how both were found.
 INSERT INTO core_config_data (scope, scope_id, path, value)
-SELECT 'stores', s.store_id, 'design/theme/theme_id', t.theme_id
-FROM store s, theme t
-WHERE s.code='{STORE_CODE}' AND t.theme_path='{THEME_PATH}'
-  AND NOT EXISTS (SELECT 1 FROM (SELECT * FROM core_config_data) c
-                  WHERE c.scope='stores' AND c.scope_id=s.store_id
-                    AND c.path='design/theme/theme_id');
+SELECT 'default', 0, 'design/theme/ua_regexp',
+       CONCAT('[{{"regexp":"/{UA_MARKER}/","value":"', theme_id, '"}}]')
+FROM theme WHERE theme_path='{THEME_PATH}';
 """
 
 SQL_REMOVE = f"""
-DELETE FROM core_config_data
- WHERE path='design/theme/theme_id' AND scope='stores'
-   AND scope_id IN (SELECT store_id FROM (SELECT * FROM store) s WHERE s.code='{STORE_CODE}');
-DELETE FROM store WHERE code='{STORE_CODE}';
+DELETE FROM core_config_data WHERE path='design/theme/ua_regexp';
 DELETE FROM theme WHERE theme_path='{THEME_PATH}';
 """
 
 SQL_CHECK = f"""
 SELECT 'theme', theme_id, theme_path FROM theme WHERE theme_path='{THEME_PATH}';
-SELECT 'store', store_id, code FROM store WHERE code='{STORE_CODE}';
-SELECT 'config', scope, scope_id, value FROM core_config_data WHERE path='design/theme/theme_id';
+SELECT 'ua rule', value FROM core_config_data WHERE path='design/theme/ua_regexp';
 """
 
 
@@ -115,16 +114,16 @@ def main() -> int:
         copy_theme()
         print(mysql(SQL_INSTALL) or "  database rows in place")
         flush()
-        print("installed. Now build the search index for the new store view, on its own:")
-        print(f"  docker exec {CONTAINER} php {MAGE}/bin/magento indexer:reindex "
-              f"catalogsearch_fulltext")
+        print(f"installed. Run the gated arm with a browser reporting {UA_MARKER}:")
+        print("  PLAYWRIGHT_MCP_ARGS='-y @playwright/mcp@latest "
+              f"--user-agent \"Mozilla/5.0 {UA_MARKER}/1.0\"'")
         return 0
 
     if args.remove:
         print(mysql(SQL_REMOVE) or "  database rows removed")
         subprocess.run(["docker", "exec", CONTAINER, "rm", "-rf", THEME_DEST], check=False)
         flush()
-        print("removed. The default store view was never touched.")
+        print("removed. Ordinary browsing was never touched.")
         return 0
 
     print(mysql(SQL_CHECK) or "  nothing installed")

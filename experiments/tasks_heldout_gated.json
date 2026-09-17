@@ -1,10 +1,10 @@
 {
   "_about": [
-    "The held-out market seen through a store view whose theme suppresses variant pricing.",
-    "Same products, same prices, same answers as tasks_heldout.json. The only difference is",
-    "that the page no longer hands the browser every variant price on load, and no option",
-    "label carries a surcharge, so the price of a pack size is readable only after selecting",
-    "it. That makes this an A and B against the leaky store view with nothing else moving."
+    "The held-out market seen through a theme that suppresses variant pricing.",
+    "Same products, same prices, same answers and the same URLs as tasks_heldout.json. The",
+    "only difference is the browser's user agent, which selects a theme that does not hand",
+    "the page every variant price. That makes this an A and B against the ordinary shop with",
+    "nothing else moving."
   ],
   "_instance": {
     "target_option": "2 x 9.5L",
@@ -50,7 +50,7 @@
       "family": "scaled",
       "gated": false,
       "note": "Control. The answer is on the search page itself, so a card level probe should settle it in one or two actions. If this fails, the agent cannot read the search page at all and the gated results below mean nothing.",
-      "query": "Go to {base}/catalogsearch/result/?q=Calderwood&___store=gated . Of the Calderwood water listings shown, which one advertises the lowest price on the results page, and what is that price?",
+      "query": "Go to {base}/catalogsearch/result/?q=Calderwood . Of the Calderwood water listings shown, which one advertises the lowest price on the results page, and what is that price?",
       "expect": {
         "kind": "contains",
         "any": [
@@ -64,7 +64,7 @@
       "family": "scaled",
       "gated": true,
       "note": "The headline task. The lowest advertised price belongs to Chandler Direct, but the cheapest 2 x 9.5L is Bramley Trading. Answering from the search page alone gives the wrong seller.",
-      "query": "Go to {base}/catalogsearch/result/?q=Calderwood&___store=gated . Across all the Calderwood listings, which seller is cheapest for the 2 x 9.5L pack, and what is that price?",
+      "query": "Go to {base}/catalogsearch/result/?q=Calderwood . Across all the Calderwood listings, which seller is cheapest for the 2 x 9.5L pack, and what is that price?",
       "expect": {
         "kind": "contains",
         "any": [
@@ -81,7 +81,7 @@
       "family": "scaled",
       "gated": true,
       "note": "Same retrieval, scored on the number rather than the seller name.",
-      "query": "Go to {base}/catalogsearch/result/?q=Calderwood&___store=gated . What is the lowest price anyone charges for the 2 x 9.5L pack of Calderwood water?",
+      "query": "Go to {base}/catalogsearch/result/?q=Calderwood . What is the lowest price anyone charges for the 2 x 9.5L pack of Calderwood water?",
       "expect": {
         "kind": "price",
         "value": 17.36,
@@ -93,7 +93,7 @@
       "family": "scaled",
       "gated": true,
       "note": "5 of 15 listings do not stock the target at all. Answering yes means the agent assumed every search result was comparable without checking.",
-      "query": "Go to {base}/catalogsearch/result/?q=Calderwood&___store=gated . Does every Calderwood listing stock the 2 x 9.5L pack? Answer yes or no.",
+      "query": "Go to {base}/catalogsearch/result/?q=Calderwood . Does every Calderwood listing stock the 2 x 9.5L pack? Answer yes or no.",
       "expect": {
         "kind": "boolean",
         "value": false
@@ -104,7 +104,7 @@
       "family": "scaled",
       "gated": true,
       "note": "Needs every variant of every listing, so it is the most expensive question in the suite and the clearest test of whether the agent budgets its retrieval or simply gives up.",
-      "query": "Go to {base}/catalogsearch/result/?q=Calderwood&___store=gated . Across all the Calderwood listings and all their pack sizes, which seller offers the lowest price per litre?",
+      "query": "Go to {base}/catalogsearch/result/?q=Calderwood . Across all the Calderwood listings and all their pack sizes, which seller offers the lowest price per litre?",
       "expect": {
         "kind": "contains",
         "any": [
@@ -115,12 +115,14 @@
   ],
   "brand": "Calderwood-gated",
   "_environment": [
-    "Store view 'gated', theme IGR/suppressed, created 18 September 2026.",
-    "The configurable options template flattens the price table handed to the browser and",
-    "carries the real prices in an opaque blob, written into the price box only for the",
-    "option actually selected. An agent that runs JavaScript of its own could still decode",
-    "that blob, exactly as an agent on the live marketplace could call the API its page",
-    "fetches from. What is removed is the price being readable in the observation the agent",
-    "takes before interacting."
+    "Theme IGR/suppressed, selected by the user agent rule design/theme/ua_regexp,",
+    "installed 18 September 2026 by env/install_gated_theme.py.",
+    "Run with PLAYWRIGHT_MCP_ARGS carrying --user-agent \"Mozilla/5.0 IGRGated/1.0\".",
+    "The configurable options template flattens the price table handed to the browser, so no",
+    "option label carries a surcharge and the page holds one price. The real prices travel in",
+    "an opaque blob and are written into the price box only for the option actually selected.",
+    "An agent that runs JavaScript of its own could decode that blob, exactly as an agent on",
+    "the live marketplace could call the API its page fetches from. What is removed is the",
+    "price being readable in the observation the agent takes before interacting."
   ]
 }

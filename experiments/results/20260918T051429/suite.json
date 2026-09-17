@@ -1,0 +1,94 @@
+{
+  "ran_at": "2026-09-18T05:16:45",
+  "repeats": 1,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": false,
+  "targeting": false,
+  "targeting_version": null,
+  "rules_version": null,
+  "model": "anthropic/claude-haiku-4.5",
+  "tasks_file": "tasks_heldout_gated.json",
+  "draw": "Calderwood-gated:6927c79dde",
+  "instance": {
+    "target_option": "2 x 9.5L",
+    "listings": 15,
+    "listings_with_target": 10,
+    "winner": {
+      "sku": "IGR-CAL-11",
+      "seller": "Bramley Trading",
+      "price": 17.36
+    },
+    "runner_up_price": 19.75,
+    "winning_margin": 2.39,
+    "cheapest_card": {
+      "sku": "IGR-CAL-04",
+      "seller": "Chandler Direct",
+      "from_price": 5.54
+    },
+    "card_probe_wrong": true,
+    "best_per_litre": {
+      "sku": "IGR-CAL-08",
+      "seller": "Oakfield Pantry",
+      "option": "24 x 350ml",
+      "price_per_litre": 0.8298
+    },
+    "unit_probe_wrong": true,
+    "oracle_min_opens": 11,
+    "prunable_by_bound": 4,
+    "exhaustive_opens": 15,
+    "bound_strength": 0.267,
+    "from_price_range": [
+      5.54,
+      19.67
+    ],
+    "target_price_range": [
+      17.36,
+      64.74
+    ]
+  },
+  "summary": {
+    "by_task": {
+      "scaled-target-price": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 1
+        },
+        "actions": [
+          15
+        ],
+        "tool_calls": [
+          36
+        ],
+        "cost": [
+          0.206826
+        ],
+        "mean_actions": 15.0,
+        "mean_tool_calls": 36.0,
+        "total_cost": 0.2068
+      }
+    },
+    "overall": {
+      "wrong": 1
+    },
+    "total_cost": 0.2068
+  },
+  "rows": [
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "expected 17.36, saw [19.75]",
+      "answer": "The lowest price anyone charges for the 2 x 9.5L pack of Calderwood water is $19.75 from Chandler Direct.",
+      "tool_calls": 36,
+      "actions": 15,
+      "observations": 21,
+      "cost_usd": 0.206826,
+      "elapsed_s": 131.9,
+      "error": null,
+      "log": "scaled-target-price-1.log"
+    }
+  ]
+}
