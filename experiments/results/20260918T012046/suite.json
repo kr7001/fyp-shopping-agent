@@ -1,0 +1,357 @@
+{
+  "ran_at": "2026-09-18T01:40:58",
+  "repeats": 3,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": false,
+  "targeting": false,
+  "targeting_version": null,
+  "rules_version": null,
+  "model": "anthropic/claude-haiku-4.5",
+  "tasks_file": "tasks_heldout_gated.json",
+  "draw": "Calderwood-gated:c0f2bf9e02",
+  "instance": {
+    "target_option": "2 x 9.5L",
+    "listings": 15,
+    "listings_with_target": 10,
+    "winner": {
+      "sku": "IGR-CAL-11",
+      "seller": "Bramley Trading",
+      "price": 17.36
+    },
+    "runner_up_price": 19.75,
+    "winning_margin": 2.39,
+    "cheapest_card": {
+      "sku": "IGR-CAL-04",
+      "seller": "Chandler Direct",
+      "from_price": 5.54
+    },
+    "card_probe_wrong": true,
+    "best_per_litre": {
+      "sku": "IGR-CAL-08",
+      "seller": "Oakfield Pantry",
+      "option": "24 x 350ml",
+      "price_per_litre": 0.8298
+    },
+    "unit_probe_wrong": true,
+    "oracle_min_opens": 11,
+    "prunable_by_bound": 4,
+    "exhaustive_opens": 15,
+    "bound_strength": 0.267,
+    "from_price_range": [
+      5.54,
+      19.67
+    ],
+    "target_price_range": [
+      17.36,
+      64.74
+    ]
+  },
+  "summary": {
+    "by_task": {
+      "scaled-cheapest-target": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 2,
+          "correct": 1
+        },
+        "actions": [
+          6,
+          17,
+          22
+        ],
+        "tool_calls": [
+          18,
+          35,
+          56
+        ],
+        "cost": [
+          0.041022,
+          0.254378,
+          0.499895
+        ],
+        "mean_actions": 15.0,
+        "mean_tool_calls": 36.3,
+        "total_cost": 0.7953
+      },
+      "scaled-target-price": {
+        "gated": true,
+        "verdicts": {
+          "correct": 2,
+          "wrong": 1
+        },
+        "actions": [
+          42,
+          6,
+          14
+        ],
+        "tool_calls": [
+          74,
+          16,
+          30
+        ],
+        "cost": [
+          0.759545,
+          0.117548,
+          0.179543
+        ],
+        "mean_actions": 20.7,
+        "mean_tool_calls": 40.0,
+        "total_cost": 1.0566
+      },
+      "scaled-all-stocked": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 3
+        },
+        "actions": [
+          7,
+          6,
+          6
+        ],
+        "tool_calls": [
+          13,
+          12,
+          12
+        ],
+        "cost": [
+          0.06217,
+          0.061386,
+          0.059581
+        ],
+        "mean_actions": 6.3,
+        "mean_tool_calls": 12.3,
+        "total_cost": 0.1831
+      },
+      "scaled-best-per-litre": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 2,
+          "correct": 1
+        },
+        "actions": [
+          8,
+          7,
+          22
+        ],
+        "tool_calls": [
+          14,
+          12,
+          49
+        ],
+        "cost": [
+          0.055383,
+          0.031249,
+          0.598441
+        ],
+        "mean_actions": 12.3,
+        "mean_tool_calls": 25.0,
+        "total_cost": 0.6851
+      }
+    },
+    "overall": {
+      "wrong": 8,
+      "correct": 4
+    },
+    "total_cost": 2.7201
+  },
+  "rows": [
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "named an excluded option instead",
+      "answer": "The cheapest seller for the 2 x 9.5L Calderwood pack is Chandler Direct at $19.75. This was determined by checking all four Calderwood listings on the search results page and calculating the total price for the 2 x 9.5L pack option for each seller: Kettering Distributors ($48.64), Thornbury Provisio",
+      "tool_calls": 18,
+      "actions": 6,
+      "observations": 12,
+      "cost_usd": 0.041022,
+      "elapsed_s": 55.9,
+      "error": null,
+      "log": "scaled-cheapest-target-1.log"
+    },
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "wrong",
+      "why": "named an excluded option instead",
+      "answer": "The cheapest seller for the 2 x 9.5L Calderwood pack is Chandler Direct at $19.75 (base price $5.54 + $14.21 upgrade for 2 x 9.5L pack).",
+      "tool_calls": 35,
+      "actions": 17,
+      "observations": 18,
+      "cost_usd": 0.254378,
+      "elapsed_s": 116.0,
+      "error": null,
+      "log": "scaled-cheapest-target-2.log"
+    },
+    {
+      "task": "scaled-cheapest-target",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The cheapest seller for the Calderwood 2 x 9.5L pack is Bramley Trading at $17.36 (base price $6.39 + pack surcharge $10.97).",
+      "tool_calls": 56,
+      "actions": 22,
+      "observations": 34,
+      "cost_usd": 0.499895,
+      "elapsed_s": 205.6,
+      "error": null,
+      "log": "scaled-cheapest-target-3.log"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "found 17.36",
+      "answer": "The lowest price anyone charges for the 2 x 9.5L pack of Calderwood water is $17.36 from Bramley Trading.",
+      "tool_calls": 74,
+      "actions": 42,
+      "observations": 32,
+      "cost_usd": 0.759545,
+      "elapsed_s": 257.2,
+      "error": null,
+      "log": "scaled-target-price-1.log"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "wrong",
+      "why": "expected 17.36, saw [19.75]",
+      "answer": "The lowest price anyone charges for the 2 x 9.5L pack of Calderwood water is $19.75 from Chandler Direct.",
+      "tool_calls": 16,
+      "actions": 6,
+      "observations": 10,
+      "cost_usd": 0.117548,
+      "elapsed_s": 47.1,
+      "error": null,
+      "log": "scaled-target-price-2.log"
+    },
+    {
+      "task": "scaled-target-price",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "found 17.36",
+      "answer": "The lowest price anyone charges for the 2 x 9.5L pack of Calderwood water is $17.36 from Bramley Trading.",
+      "tool_calls": 30,
+      "actions": 14,
+      "observations": 16,
+      "cost_usd": 0.179543,
+      "elapsed_s": 97.4,
+      "error": null,
+      "log": "scaled-target-price-3.log"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "answered yes",
+      "answer": "Yes",
+      "tool_calls": 13,
+      "actions": 7,
+      "observations": 6,
+      "cost_usd": 0.06217,
+      "elapsed_s": 42.0,
+      "error": null,
+      "log": "scaled-all-stocked-1.log"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "wrong",
+      "why": "answered yes",
+      "answer": "Yes",
+      "tool_calls": 12,
+      "actions": 6,
+      "observations": 6,
+      "cost_usd": 0.061386,
+      "elapsed_s": 36.5,
+      "error": null,
+      "log": "scaled-all-stocked-2.log"
+    },
+    {
+      "task": "scaled-all-stocked",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "wrong",
+      "why": "answered yes",
+      "answer": "Yes, every Calderwood listing stocks the 2 x 9.5L pack. All 4 Calderwood products found in the search results (Kettering Distributors, Thornbury Provisions, Chandler Direct, and Pembroke Merchants) offer the 2 x 9.5L pack size option.",
+      "tool_calls": 12,
+      "actions": 6,
+      "observations": 6,
+      "cost_usd": 0.059581,
+      "elapsed_s": 36.7,
+      "error": null,
+      "log": "scaled-all-stocked-3.log"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "Chandler Direct offers the lowest price per litre for Calderwood products across all pack sizes. The lowest price per litre is $0.84/L for the 12 x 550ml pack, followed by $0.86/L for the 24 x 350ml pack, $1.04/L for the 2 x 9.5L pack, and $1.15/L for the 6 x 1.25L pack.",
+      "tool_calls": 14,
+      "actions": 8,
+      "observations": 6,
+      "cost_usd": 0.055383,
+      "elapsed_s": 57.4,
+      "error": null,
+      "log": "scaled-best-per-litre-1.log"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "Chandler Direct offers the lowest price per litre at $0.84/L for the 12 x 550ml pack (6.6L total for $5.54). This is significantly lower than all other sellers across all pack sizes.",
+      "tool_calls": 12,
+      "actions": 7,
+      "observations": 5,
+      "cost_usd": 0.031249,
+      "elapsed_s": 45.0,
+      "error": null,
+      "log": "scaled-best-per-litre-2.log"
+    },
+    {
+      "task": "scaled-best-per-litre",
+      "family": "scaled",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "Oakfield Pantry offers the lowest price per litre across all Calderwood listings and pack sizes at $0.83 per litre (24 x 350ml pack: $6.97 for 8.4 litres total).",
+      "tool_calls": 49,
+      "actions": 22,
+      "observations": 27,
+      "cost_usd": 0.598441,
+      "elapsed_s": 186.4,
+      "error": null,
+      "log": "scaled-best-per-litre-3.log"
+    }
+  ],
+  "superseded": {
+    "on": "2026-09-18",
+    "why": "Measured nothing interpretable. The gated theme was selected by a store view, and the store travels only in the query string, so the search page rendered suppressed while every product page the agent opened from it rendered ordinary. Half the run saw one environment and half saw the other. Confirmed afterwards by fetching a product URL with and without the store cookie: both returned all four variant prices. The mechanism was replaced by a user agent rule, which travels with every request, and the arm was re-run.",
+    "cost_usd": 2.7201
+  }
+}

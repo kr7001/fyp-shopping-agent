@@ -130,7 +130,14 @@ PRODUCT_NAV = re.compile(r"page\.goto\('([^']+?\.html)'\)")
 # nothing after it had opened three listings by click. Every tool result reports the page it
 # left the browser on, so the landing URL is the record of what was actually visited. Scoped
 # to the authored listings, since those are the only products any question is about.
-PRODUCT_LANDED = re.compile(r"Page URL: https?://[^\s\\'\"]+?/(igr-[a-z0-9-]+\.html)")
+PRODUCT_LANDED = re.compile(r"Page URL: https?://[^\s\\'\"]+?/(igr-[a-z0-9-]+)\.html")
+
+# The same listing, reached through a store view that has no pretty URLs of its own. Magento
+# falls back to `catalog/product/view/id/<id>/s/<url-key>/`, which names the same product by
+# the same key. Without this the gated store view reports every run as having opened nothing,
+# which would make the coverage rules refuse all of them and the coverage figures read zero.
+# Found the first time the gated view was measured, before any figure was written down.
+PRODUCT_BY_ID = re.compile(r"/catalog/product/view/id/\d+/s/(igr-[a-z0-9-]+)")
 
 # Below this, a figure in this catalogue is a per-unit rate rather than a total. Rates
 # are computed by the agent and correctly absent from the page, so the unsupported test
@@ -168,9 +175,14 @@ def evidence(text: str) -> dict[str, set[int]]:
 
 
 def listings_opened(text: str) -> set[str]:
-    """Distinct product pages the run actually landed on, by navigation or by click."""
-    navigated = {url.rsplit("/", 1)[-1] for url in PRODUCT_NAV.findall(text) if "?" not in url}
-    return navigated | set(PRODUCT_LANDED.findall(text))
+    """Distinct product pages the run actually landed on, by navigation or by click.
+
+    Every form is reduced to the listing's url key, so the same listing counts once however
+    it was reached and the count means the same thing on every store view.
+    """
+    navigated = {url.rsplit("/", 1)[-1].removesuffix(".html")
+                 for url in PRODUCT_NAV.findall(text) if "?" not in url}
+    return navigated | set(PRODUCT_LANDED.findall(text)) | set(PRODUCT_BY_ID.findall(text))
 
 
 def prices_in(text: str) -> list[int]:

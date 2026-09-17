@@ -94,41 +94,65 @@ storefront, and it records exactly which products are mine rather than WebArena'
   triggers an inline fulltext reindex. See the Apple Silicon note in the root README —
   on an M-series Mac without Rosetta enabled this is the step that appears to hang
 
-## The gated store view, added 18 September 2026
+## Suppressed variant pricing, added 18 September 2026
 
 Magento hands the browser every variant price on first load. The page carries an
 `optionPrices` table, and the configurable widget renders each option label with its
-surcharge, `2 x 9.5L +$32.50`. Both are readable in the first observation an agent takes,
-so a variant price is not gated here the way it is on the live marketplace, where the page
-holds exactly one price at a time. The agent noticed before I did: it selects a pack size
-in 11 of 122 runs on the fifteen seller markets, and adds the surcharge to the base price
+surcharge, `2 x 9.5L +$32.50`. Both are readable in the first observation an agent takes, so
+a variant price is not gated here the way it is on the live marketplace, where the page
+holds exactly one price at a time. The agent noticed before I did: it selects a pack size in
+11 of 122 runs on the fifteen seller markets, and adds the surcharge to the base price
 instead in 48 of 290 stored answers.
 
-`install_gated_theme.py` adds a **second store view** rather than changing the shop.
+`install_gated_theme.py` adds a theme that suppresses the price table, and selects it **by
+user agent** so that ordinary browsing is untouched.
 
-| | Store view `default` | Store view `gated` |
+| | Ordinary browser | Browser reporting `IGRGated` |
 | --- | --- | --- |
 | Theme | Magento Blank, untouched | `IGR/suppressed` |
 | Prices in the page on load | all four | the "from" price only |
 | Option labels | `2 x 9.5L +$32.50` | `2 x 9.5L` |
 | Price after selecting the option | $48.64 | $48.64 |
+| URLs | unchanged | unchanged |
 
-Same products, same prices, same answers. Every run already recorded was made against
-`default`, which still renders exactly as it did, so nothing recorded loses the environment
-it was measured in. Reach the gated view by adding `___store=gated` to any URL.
+Same products, same prices, same answers, same addresses. Every run already recorded was
+made with an ordinary user agent and still renders exactly as it did.
 
 ```bash
 python env/install_gated_theme.py --check
 python env/install_gated_theme.py --install
-docker exec webarena-shopping php /var/www/magento2/bin/magento indexer:reindex catalogsearch_fulltext
 python env/install_gated_theme.py --remove
+
+PLAYWRIGHT_MCP_ARGS='-y @playwright/mcp@latest --user-agent "Mozilla/5.0 IGRGated/1.0"' \
+    python experiments/suite.py --tasks experiments/tasks_heldout_gated.json --repeats 3
 ```
 
-Run the reindex **on its own**. Two reindexes at once is how this container ends up with an
-index stuck in `working`, which the root README has the fix for.
+### A store view was tried first, and did not work
 
-**What this does not claim.** The real prices still reach the browser, in an opaque blob
-that the page decodes for the one option actually selected. An agent that runs JavaScript of
-its own could decode it, exactly as an agent on the live marketplace could call the API its
-page fetches from. What is removed is the price being *readable in the observation the agent
-takes before interacting*, which is the property the experiments measure.
+The first attempt put the theme on a second store view. Magento resolves a theme per store
+view, but it carries the store only in the query string or in a URL prefix. The agent
+searched with `___store=gated` and then followed ordinary product links, so the search page
+rendered suppressed and every product page rendered leaky. The store cookie does not carry
+the theme: fetching a product URL with the cookie set returns all four prices. That cost one
+twelve run arm, $2.72, which is recorded as superseded in its own `suite.json` rather than
+deleted.
+
+Enabling the store code in URLs would have fixed the routing and changed every URL in the
+shop, including the ones the recorded markets were measured on. The user agent travels with
+every request and changes nothing else, so that is what it uses.
+
+### Two ways to take the whole shop down, both found the hard way
+
+`design/theme/ua_regexp` is handed straight to `preg_match`, and Magento reads the key
+`regexp`, not `search`. Getting either wrong returns 500 on every page of the shop, product
+pages and search alike. The value has to look exactly like this:
+
+```json
+[{"regexp":"/IGRGated/","value":"4"}]
+```
+
+**What this does not claim.** The real prices still reach the browser, in an opaque blob that
+the page decodes for the one option actually selected. An agent that runs JavaScript of its
+own could decode it, exactly as an agent on the live marketplace could call the API its page
+fetches from. What is removed is the price being *readable in the observation the agent takes
+before interacting*, which is the property the experiments measure.
