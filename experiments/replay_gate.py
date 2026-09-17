@@ -32,17 +32,34 @@ import suite
 
 HERE = pathlib.Path(__file__).resolve().parent
 RESULTS = HERE / "results"
-SPECS = {"tasks.json": HERE / "tasks.json", "tasks_scaled.json": HERE / "tasks_scaled.json"}
+SPECS = {"tasks.json": HERE / "tasks.json",
+         "tasks_scaled.json": HERE / "tasks_scaled.json",
+         "tasks_heldout.json": HERE / "tasks_heldout.json"}
 
 
 def specs() -> list[dict]:
     return [json.loads(path.read_text()) for path in SPECS.values() if path.exists()]
 
 
+def spec_by_file() -> dict[str, dict]:
+    return {name: json.loads(path.read_text())
+            for name, path in SPECS.items() if path.exists()}
+
+
 def task_index() -> dict[str, tuple[dict, dict]]:
-    """Map each task id to its definition and the spec it came from."""
+    """Map each task id to its definition and the spec it came from.
+
+    Only for suites written before `tasks_file` was recorded, which are all on the small
+    and Rivenhall markets, where ids are unique across the two files. The held-out market
+    reuses the Rivenhall ids deliberately, so that it asks the same questions of a
+    different catalogue, and it must never be resolved this way: `scaled-target-price`
+    exists in both and expects a different answer in each. Suites that record their task
+    file are resolved from it instead.
+    """
     index = {}
-    for spec in specs():
+    for name, spec in spec_by_file().items():
+        if name == "tasks_heldout.json":
+            continue
         for task in spec["tasks"]:
             index[task["id"]] = (task, spec)
     return index
@@ -65,6 +82,7 @@ def full_answer(suite_dir: pathlib.Path, row: dict) -> str:
 
 def replay(only_suite: str | None = None) -> int:
     index = task_index()
+    by_file = spec_by_file()
     current = {suite.draw_id(spec) for spec in specs()}
     rows: list[dict] = []
     stale: list[str] = []
@@ -94,12 +112,22 @@ def replay(only_suite: str | None = None) -> int:
         if not only_suite and payload.get("draw") not in current:
             superseded.append(f"{suite_path.parent.name} ({payload.get('draw')})")
             continue
+        # A suite that recorded its task file is resolved from it. Task ids alone are not
+        # unique across markets: the held-out market asks the same questions of a different
+        # catalogue, so resolving by id would score a Calderwood run against Rivenhall's
+        # answer key. Suites older than the field fall back to the id index, which covers
+        # only the two markets whose ids do not collide.
+        named = by_file.get(payload.get("tasks_file") or "")
+        named_tasks = {t["id"]: t for t in named["tasks"]} if named else {}
         for row in payload["rows"]:
             log_path = suite_path.parent / (row.get("log") or "")
-            entry = index.get(row["task"])
-            if not row.get("log") or not log_path.exists() or entry is None:
+            if named:
+                task = named_tasks.get(row["task"])
+                spec = named
+            else:
+                task, spec = index.get(row["task"], (None, None))
+            if not row.get("log") or not log_path.exists() or task is None:
                 continue
-            task, spec = entry
             answer = full_answer(suite_path.parent, row)
 
             # The catalogue is regenerated between rounds, so a run made against an
@@ -118,6 +146,7 @@ def replay(only_suite: str | None = None) -> int:
             rows.append({"suite": suite_path.parent.name, "task": row["task"],
                          "repeat": row["repeat"], "before": before,
                          "after": after, "flag": check["flag"],
+                         "draw": payload.get("draw") or "unrecorded",
                          "cost_usd": row.get("cost_usd")})
 
     if not rows:
@@ -136,7 +165,25 @@ def replay(only_suite: str | None = None) -> int:
     if stale:
         print(f"{len(stale)} skipped, scored against a catalogue that has since been "
               f"regenerated")
+    # One table per draw, because runs scored against different answer keys are different
+    # measurements. A single pooled figure over three markets is the same mistake the draw
+    # id was introduced to stop, and the markets do not behave alike: the gate withdraws a
+    # different share of the wrong answers on each.
+    for draw in sorted({r["draw"] for r in rows}):
+        part = [r for r in rows if r["draw"] == draw]
+        b = collections.Counter(r["before"] for r in part)
+        a = collections.Counter(r["after"] for r in part)
+        print()
+        print(f"{draw}, {len(part)} runs")
+        print(f"{'verdict':12} {'baseline':>9} {'gate':>7}")
+        print("-" * 31)
+        for verdict in sorted(set(b) | set(a)):
+            print(f"{verdict:12} {b[verdict]:>9} {a[verdict]:>7}")
+        withdrawn = sum(1 for r in part if r["before"] != r["after"]
+                        and r["before"] in ("wrong", "ambiguous"))
+        print(f"wrong withdrawn: {withdrawn} of {b['wrong'] + b['ambiguous']}")
     print()
+    print(f"all draws, {len(rows)} runs")
     print(f"{'verdict':12} {'baseline':>9} {'gate':>7}")
     print("-" * 31)
     for verdict in sorted(set(before) | set(after)):
