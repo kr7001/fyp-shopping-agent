@@ -163,7 +163,17 @@ def observed_text(log_path: pathlib.Path) -> str:
             continue
         content = message.get("content")
         parts.append(content if isinstance(content, str) else json.dumps(content))
-    return "\n".join(parts)
+    if parts:
+        return "\n".join(parts)
+
+    # A log that holds no openJiuwen trace belongs to another scaffold, which writes what it
+    # observed as plain text. Reading it whole is right there and wrong for openJiuwen, whose
+    # log also carries the model's own claims, and treating those as evidence would make the
+    # check circular. So this is a fallback rather than the rule.
+    try:
+        return log_path.read_text(errors="replace")
+    except OSError:
+        return ""
 
 
 def evidence(text: str) -> dict[str, set[int]]:

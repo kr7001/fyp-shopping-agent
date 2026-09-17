@@ -33,11 +33,12 @@ HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parent
 AGENT_CORE = REPO / "agent" / "agent-core"
 RUNNER = HERE / "run_browser_task.py"
+NAIVE_RUNNER = HERE / "naive_agent.py"
 RESULTS = HERE / "results"
 
 
 def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
-             query: str | None = None) -> dict:
+             query: str | None = None, scaffold: str = "openjiuwen") -> dict:
     """Execute one task once and return its record, enriched with trace counts.
 
     `query` overrides the task text, which is how a policy retry re-asks the same task
@@ -47,11 +48,19 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
     record_path = out_dir / f"{tag}.json"
     log_path = out_dir / f"{tag}.log"
 
+    # The naive loop is a second scaffold rather than a second setting, so it runs from its
+    # own interpreter with its own browser. Everything after this point is shared: the same
+    # scoring, the same gate, the same draw id, the same records on disk.
+    if scaffold == "naive":
+        command = [str(REPO / ".venv-naive" / "bin" / "python"), str(NAIVE_RUNNER),
+                   query, "--out", str(record_path)]
+        cwd = REPO
+    else:
+        command = ["uv", "run", "python", str(RUNNER), query, "--out", str(record_path)]
+        cwd = AGENT_CORE
+
     with log_path.open("w") as log:
-        subprocess.run(
-            ["uv", "run", "python", str(RUNNER), query, "--out", str(record_path)],
-            cwd=AGENT_CORE, stdout=log, stderr=subprocess.STDOUT, check=False,
-        )
+        subprocess.run(command, cwd=cwd, stdout=log, stderr=subprocess.STDOUT, check=False)
 
     if not record_path.exists():
         return {"error": "runner wrote no record", "log": log_path.name}
@@ -60,7 +69,10 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
     # A per-run file that lacks them is not self-describing, and the whole point of
     # keeping every record is that a result can be re-examined later on its own.
     record = json.loads(record_path.read_text())
-    record["trace"] = trace_stats.stats(log_path)
+    # The naive loop counts its own calls as it makes them, in the same vocabulary. Only
+    # openJiuwen's trace has to be recovered from its log.
+    if not record.get("trace"):
+        record["trace"] = trace_stats.stats(log_path)
     record["log"] = log_path.name
     record_path.write_text(json.dumps(record, indent=2, default=str) + "\n")
     return record
@@ -174,6 +186,10 @@ def main() -> int:
                              "sufficiency check; retry re-asks the whole task with the "
                              "reason; investigate asks the agent to diagnose its own "
                              "error and retrieve only what settles it")
+    parser.add_argument("--scaffold", choices=("openjiuwen", "naive"), default="openjiuwen",
+                        help="which agent answers. naive is the from-scratch loop with no "
+                             "card probe, the control for whether the failure belongs to "
+                             "the agent or to one agent's default")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -207,7 +223,8 @@ def main() -> int:
                 query = policy_module.exhaustive_query(query)
             if args.confidence != "off":
                 query = policy_module.confidence_query(query, args.confidence)
-            record = run_once(task, spec["base_url"], out_dir, tag, query=query)
+            record = run_once(task, spec["base_url"], out_dir, tag, query=query,
+                              scaffold=args.scaffold)
             result = record.get("result") or {}
             answer = str(result.get("final") or "")
             trace = record.get("trace") or {}
@@ -277,6 +294,7 @@ def main() -> int:
                # second arm, and an arm whose suite does not say what produced it cannot be
                # compared with anything.
                "model": os.environ.get("MODEL_NAME") or model_from_records(out_dir),
+               "scaffold": args.scaffold,
                "tasks_file": args.tasks.name,
                "draw": draw_id(spec),
                # The ground truth this suite was scored against. The catalogue is

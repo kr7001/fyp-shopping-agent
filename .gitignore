@@ -13,3 +13,4 @@ CLAUDE.md
 # sequence and counts that matter are folded into each run's JSON record by
 # experiments/trace_stats.py, so the logs are reproducible working files, not results.
 experiments/**/*.log
+.venv-naive/
