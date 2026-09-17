@@ -1059,15 +1059,31 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
     <div class="tablewrap">
       <table>
         <caption>The same four gated questions on the held-out market</caption>
-        <thead><tr><th>Scaffold</th><th class="num">Runs</th><th class="num">Right</th><th class="num">Listings opened</th><th class="num">Actions</th><th class="num">Cost/run</th></tr></thead>
+        <thead><tr><th>Scaffold</th><th class="num">Runs</th><th class="num">Right</th><th class="num">Refused</th><th class="num">Wrong</th><th class="num">Listings opened</th><th class="num">Actions</th><th class="num">Cost/run</th></tr></thead>
         <tbody>
-          <tr><td>openJiuwen</td><td class="num">12</td><td class="num">3</td><td class="num">4 to 15</td><td class="num">10.2</td><td class="num">$0.137</td></tr>
-          <tr class="hi"><td><b>From scratch, no probe</b></td><td class="num">4</td><td class="num">1</td><td class="num"><b>2 to 4</b></td><td class="num">21.0</td><td class="num">$0.859</td></tr>
+          <tr><td>openJiuwen</td><td class="num">12</td><td class="num">3</td><td class="num">0</td><td class="num">9</td><td class="num">6.5</td><td class="num">10.2</td><td class="num">$0.137</td></tr>
+          <tr class="hi"><td><b>From scratch, no probe</b></td><td class="num">12</td><td class="num">4</td><td class="num">1</td><td class="num">7</td><td class="num"><b>3.7</b></td><td class="num">21.6</td><td class="num">$0.871</td></tr>
         </tbody>
       </table>
     </div>
     <p class="claim">The prediction, written down before the run, was that a loop with no probe would under-retrieve less. It under-retrieves more. It spends its actions re-searching, sorting by price, sorting by name, paging and rephrasing the query, and opens two to four listings while taking twenty-one actions.</p>
-    <p class="note">So the four card ceiling is not what makes the agent stop early. A scaffold with no ceiling at all stops sooner, for six times the money. The probe both causes the ceiling and carries the agent further through the market than a bare loop manages. That puts the failure in the model's judgement about when it has looked enough rather than in one agent's default, which is a broader claim than this phase set out to test. Four runs, so it is a signal, and it is recorded here with the prediction it falsified.</p>
+    <p class="note">So the four card ceiling is not what makes the agent stop early. A scaffold with no ceiling at all stops sooner, for six times the money. The probe both causes the ceiling and carries the agent further through the market than a bare loop manages. That puts the failure in the model's judgement about when it has looked enough rather than in one agent's default, which is a broader claim than this phase set out to test.</p>
+
+    <h4 class="sub2">Where the difference actually sits</h4>
+    <div class="tablewrap">
+      <table>
+        <caption>The same twelve runs each, per question</caption>
+        <thead><tr><th>Question</th><th class="num">openJiuwen</th><th class="num">From scratch</th><th class="wide">What the question needs</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="mono">all-stocked</td><td class="num">1 of 3</td><td class="num"><b>3 of 3</b></td><td class="dim wide">One listing that lacks the pack settles it, so two openings is enough evidence and fifteen would be waste</td></tr>
+          <tr><td class="mono">best-per-litre</td><td class="num">0 of 3</td><td class="num">1 of 3</td><td class="dim wide">Every pack of every listing</td></tr>
+          <tr class="warn"><td class="mono">cheapest-target</td><td class="num">0 of 3</td><td class="num">0 of 3</td><td class="dim wide">The market covered, or ruled out by a bound</td></tr>
+          <tr class="warn"><td class="mono">target-price</td><td class="num">2 of 3</td><td class="num">0 of 3</td><td class="dim wide">The same</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">Coverage stops separating the verdicts for this scaffold, and it should. Its right answers opened 2, 2, 3 and 3 listings and its wrong ones opened 2 to 9, because the question it answers well is the one a single counterexample settles and the ones it never answers are the ones that need the market covered. How much retrieval an answer needs is a property of the question rather than of the agent, which is what the policy encodes and what the coverage rule tests per question kind rather than globally.</p>
+    <p class="note">One caveat sits next to that single refusal. This scaffold's prompt says to say so rather than guess when the answer cannot be determined, and openJiuwen's does not, so one refusal in twelve here is not comparable with zero in 125 there. The instruction was written before any of these runs and is left as it is.</p>
 
     <h3 class="sub">K. Environment notes</h3>
     <div class="tablewrap">
