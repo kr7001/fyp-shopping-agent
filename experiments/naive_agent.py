@@ -1,0 +1,254 @@
+#!/usr/bin/env python3
+"""A browser agent with no retrieval policy of its own, as the floor to compare against.
+
+Every failure measured so far was produced by one agent, openJiuwen, whose prompt tells it
+to use the smallest probe available and whose card probe reads the visible window only. At
+1200 x 701 that is one row of four cards, and the agent has no signal that eleven more
+listings exist. So "the agent reads the first screen as the whole market" might be a fact
+about agents, or it might be a fact about that probe.
+
+This is the control for that question. It drives Playwright directly with four tools and no
+advice: go to a URL, read what is on the page, choose an option, answer. There is no probe,
+no compaction, no instruction about how much to look, and nothing that reports a candidate
+count. If the model still stops at the first screen here, the behaviour belongs to the model
+rather than to the scaffold. If it paginates, the finding narrows to openJiuwen's default,
+which is a weaker claim and worth knowing.
+
+The prediction, recorded before the first run: the second model already opened 7 to 10
+listings inside openJiuwen where the first opened 4, so the habit is not the probe alone.
+The naive loop should therefore under-retrieve less than openJiuwen does and still fail on
+the questions whose answer sits outside the first screen.
+
+Deliberately matched to the openJiuwen runs so the two are comparable:
+
+- the same model, through the same account, priced the same way
+- the same step budget, 100 tool calls
+- the same viewport, 1200 x 701, so "the first screen" means the same thing
+- every tool result is prefixed with `Page URL:`, which is what the listing counter reads,
+  so coverage is measured by the same code for both scaffolds
+
+    python experiments/naive_agent.py "Go to http://localhost:7770/... and answer X" --out run.json
+"""
+
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import json
+import os
+import pathlib
+import re
+import time
+
+import requests
+from playwright.sync_api import sync_playwright
+
+HERE = pathlib.Path(__file__).resolve().parent
+REPO = HERE.parent
+RUNS = HERE / "runs"
+ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
+USAGE = "https://openrouter.ai/api/v1/key"
+
+STEP_LIMIT = 100
+VIEWPORT = {"width": 1200, "height": 701}
+# Page text is the whole observation here, and an unbounded one would cost more per step
+# than openJiuwen's compacted snapshot, which would confound cost with scaffold. This is
+# generous enough to hold a full search page of fifteen cards.
+PAGE_LIMIT = 7000
+
+SYSTEM = """You are answering a question about an online shop by browsing it.
+
+You have four tools. Use them as you see fit. Nothing here tells you how much to look,
+because how much to look is your decision.
+
+When you have the answer, call finish with it. If you cannot determine the answer, say so
+in the finish call rather than guessing."""
+
+TOOLS = [
+    {"type": "function", "function": {
+        "name": "goto", "description": "Navigate to a URL and return the page text.",
+        "parameters": {"type": "object", "properties": {"url": {"type": "string"}},
+                       "required": ["url"]}}},
+    {"type": "function", "function": {
+        "name": "read_page", "description": "Return the text of the current page.",
+        "parameters": {"type": "object", "properties": {}}}},
+    {"type": "function", "function": {
+        "name": "select_option",
+        "description": "Choose a value in a dropdown on the current page, then return the "
+                       "page text. Use the option's visible label.",
+        "parameters": {"type": "object", "properties": {"label": {"type": "string"}},
+                       "required": ["label"]}}},
+    {"type": "function", "function": {
+        "name": "finish", "description": "Give the final answer.",
+        "parameters": {"type": "object", "properties": {"answer": {"type": "string"}},
+                       "required": ["answer"]}}},
+]
+
+
+def load_env(name: str, default: str = "") -> str:
+    for line in (REPO / ".env").read_text().splitlines():
+        if line.startswith(f"{name}="):
+            return line.split("=", 1)[1].strip()
+    return os.getenv(name, default)
+
+
+def usage(key: str) -> float | None:
+    try:
+        got = requests.get(USAGE, headers={"Authorization": f"Bearer {key}"}, timeout=20)
+        return float(got.json()["data"]["usage"])
+    except Exception:
+        return None
+
+
+def usage_after(key: str, before: float | None, attempts: int = 12,
+                pause: float = 2.5) -> float | None:
+    """Usage once the account has settled this run's spend.
+
+    The endpoint lags the completion by a few seconds, so reading it straight away returns
+    the pre-run figure and the delta comes out as a false zero. Poll until it moves, and
+    report nothing rather than a zero that is not believed. Same approach as the openJiuwen
+    runner, so the two scaffolds' costs are measured the same way.
+    """
+    if before is None:
+        return None
+    for _ in range(attempts):
+        current = usage(key)
+        if current is not None and current > before:
+            return current
+        time.sleep(pause)
+    return None
+
+
+def page_text(page) -> str:
+    """What is on the page, prefixed with where the browser is.
+
+    The prefix is not decoration. `sufficiency.listings_opened` reads `Page URL:` lines to
+    count which listings a run actually opened, and that is the one measure meant to survive
+    a change of scaffold. Emitting it here means both scaffolds are counted by the same code
+    rather than by two counters that might disagree.
+    """
+    try:
+        body = page.inner_text("body")
+    except Exception as error:  # a navigation mid-read, or a page with no body yet
+        body = f"(could not read the page: {error})"
+    body = re.sub(r"\n{3,}", "\n\n", body).strip()
+    if len(body) > PAGE_LIMIT:
+        body = body[:PAGE_LIMIT] + f"\n... (page text truncated at {PAGE_LIMIT} characters)"
+    return f"Page URL: {page.url}\n\n{body}"
+
+
+def act(page, name: str, args: dict) -> str:
+    if name == "goto":
+        page.goto(args["url"], wait_until="domcontentloaded", timeout=30000)
+        page.wait_for_timeout(700)
+        return page_text(page)
+    if name == "read_page":
+        return page_text(page)
+    if name == "select_option":
+        label = args.get("label", "")
+        try:
+            page.select_option(".super-attribute-select", label=label, timeout=8000)
+        except Exception:
+            try:
+                page.select_option("select", label=label, timeout=8000)
+            except Exception as error:
+                return f"Could not select {label!r}: {error}\n\n{page_text(page)}"
+        page.wait_for_timeout(900)
+        return page_text(page)
+    return f"unknown tool {name}"
+
+
+def run(task: str, model: str, key: str) -> dict:
+    started = time.time()
+    messages = [{"role": "system", "content": SYSTEM},
+                {"role": "user", "content": task}]
+    calls: list[str] = []
+    answer, error = "", None
+
+    with sync_playwright() as driver:
+        browser = driver.chromium.launch()
+        page = browser.new_page(viewport=VIEWPORT)
+        for _ in range(STEP_LIMIT):
+            reply = requests.post(
+                ENDPOINT,
+                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                json={"model": model, "messages": messages, "tools": TOOLS,
+                      "temperature": 0},
+                timeout=180,
+            )
+            if reply.status_code != 200:
+                error = f"{reply.status_code} {reply.text[:200]}"
+                break
+            choice = reply.json()["choices"][0]["message"]
+            messages.append(choice)
+            wanted = choice.get("tool_calls") or []
+            if not wanted:
+                answer = choice.get("content") or ""
+                break
+            for call in wanted:
+                name = call["function"]["name"]
+                try:
+                    args = json.loads(call["function"]["arguments"] or "{}")
+                except json.JSONDecodeError:
+                    args = {}
+                calls.append(name)
+                if name == "finish":
+                    answer = args.get("answer", "")
+                    break
+                observation = act(page, name, args)
+                # Printed as well as kept, because the suite captures stdout as the run's
+                # log and the sufficiency rules read that log to see what the run observed.
+                # Both scaffolds are then judged from the same kind of record.
+                print(f"[tool {name}] {json.dumps(args)}\n{observation}\n", flush=True)
+                messages.append({"role": "tool", "tool_call_id": call["id"],
+                                 "content": observation})
+            if answer:
+                break
+        browser.close()
+
+    # Counted the same way `trace_stats` counts openJiuwen, so the two are comparable: an
+    # action changes the page, an observation only reads it.
+    actions = sum(1 for c in calls if c in ("goto", "select_option"))
+    return {
+        "task": task, "model": model, "scaffold": "naive",
+        "elapsed_s": round(time.time() - started, 1),
+        "result": {"final": answer, "ok": bool(answer) and error is None},
+        "error": error,
+        "trace": {"tool_calls_total": len(calls), "actions": actions,
+                  "observations": sum(1 for c in calls if c == "read_page"),
+                  "by_tool": {name: calls.count(name) for name in set(calls)},
+                  "sequence": calls},
+    }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("task")
+    parser.add_argument("--out", type=pathlib.Path)
+    parser.add_argument("--model", default=None)
+    args = parser.parse_args()
+
+    key = load_env("OPENROUTER_API_KEY")
+    model = args.model or load_env("MODEL_NAME", "anthropic/claude-haiku-4.5")
+    if not key:
+        print("no OPENROUTER_API_KEY in .env")
+        return 1
+
+    before = usage(key)
+    record = run(args.task, model, key)
+    after = usage_after(key, before)
+    record["cost_usd"] = (round(after - before, 6)
+                          if before is not None and after is not None else None)
+
+    stamp = dt.datetime.now().strftime("%Y%m%dT%H%M%S")
+    out = args.out or RUNS / f"{stamp}-naive-{model.replace('/', '_')}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(record, indent=2, default=str) + "\n")
+    print(f"{record['result']['final'][:160]}")
+    print(f"calls={record['trace']['tool_calls_total']} "
+          f"actions={record['trace']['actions']} cost={record['cost_usd']} -> {out}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
