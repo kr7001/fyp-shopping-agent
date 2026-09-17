@@ -17,6 +17,7 @@ import collections
 import datetime as dt
 import hashlib
 import json
+import os
 import pathlib
 import subprocess
 import sys
@@ -63,6 +64,25 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
     record["log"] = log_path.name
     record_path.write_text(json.dumps(record, indent=2, default=str) + "\n")
     return record
+
+
+def model_from_records(out_dir: pathlib.Path) -> str | None:
+    """The model the runner actually used, read back from the first run it wrote.
+
+    `MODEL_NAME` in the environment is the usual way the model is chosen, but it can also
+    come from the repo's .env, in which case the environment says nothing. Reading it back
+    from a record means the suite reports what ran rather than what was requested.
+    """
+    for record in sorted(out_dir.glob("*.json")):
+        if record.name == "suite.json":
+            continue
+        try:
+            model = json.loads(record.read_text()).get("model")
+        except (OSError, json.JSONDecodeError):
+            continue
+        if model:
+            return model
+    return None
 
 
 def draw_id(spec: dict) -> str:
@@ -252,6 +272,11 @@ def main() -> int:
                # what judged it cannot be compared with one scored under different rules,
                # and the rules have now changed once.
                "rules_version": sufficiency.RULES_VERSION if args.policy != "off" else None,
+               # Which model answered. Until now this lived only in the per-run records,
+               # which was enough while every run used the same one. A second model is a
+               # second arm, and an arm whose suite does not say what produced it cannot be
+               # compared with anything.
+               "model": os.environ.get("MODEL_NAME") or model_from_records(out_dir),
                "tasks_file": args.tasks.name,
                "draw": draw_id(spec),
                # The ground truth this suite was scored against. The catalogue is

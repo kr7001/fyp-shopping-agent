@@ -1,0 +1,473 @@
+{
+  "ran_at": "20260918T004345",
+  "model": "anthropic/claude-haiku-4.5",
+  "spend_usd": 0.0141,
+  "planner_version": 1,
+  "rows": [
+    {
+      "condition": "blind",
+      "task": "cheapest-target",
+      "question": "Across all the Rivenhall listings, which seller is cheapest for the 2 x 9.5L pack, and what is that price?",
+      "deterministic_kind": "total_bound",
+      "proposed_kind": "find_cheapest_specific_pack",
+      "quantifier": "argmin",
+      "sound": true,
+      "problems": [],
+      "plan": {
+        "kind": "find_cheapest_specific_pack",
+        "quantifier": "argmin",
+        "population": "all 15 Rivenhall listings across both pages",
+        "enumerate_first": true,
+        "bound": null,
+        "stop_rule": "after all 15 listings have been opened and the 2 x 9.5L pack price (if available) has been checked for each",
+        "evidence_required": {
+          "min_listings_opened": "population",
+          "counterexample": false
+        },
+        "forbidden_claims": [
+          "a listing is cheapest without checking all listings that stock the 2 x 9.5L pack",
+          "a listing does not stock the 2 x 9.5L pack without opening it",
+          "the advertised price is the price for the 2 x 9.5L pack without verifying pack-specific pricing"
+        ]
+      },
+      "raw": "```json\n{\n  \"kind\": \"find_cheapest_specific_pack\",\n  \"quantifier\": \"argmin\",\n  \"population\": \"all 15 Rivenhall listings across both pages\",\n  \"enumerate_first\": true,\n  \"bound\": null,\n  \"stop_rule\": \"after all 15 listings have been opened and the 2 x 9.5L pack price (if available) has been checked for each\",\n  \"evidence_required\": {\n    \"min_listings_opened\": \"population\",\n    \"counterexample\": false\n  },\n  \"forbidden_claims\": [\n    \"a listing is cheapest without checking all listings that stock the 2 x 9.5L pack\",\n    \"a listing does not stock the 2 x 9.5L pack without opening it\",\n    \"the advertised price is the price for the 2 x 9.5L pack without verifying pack-specific pricing\"\n  ]\n}\n```"
+    },
+    {
+      "condition": "blind",
+      "task": "target-price",
+      "question": "What is the lowest price anyone charges for the 2 x 9.5L pack of Rivenhall water?",
+      "deterministic_kind": "total_bound",
+      "proposed_kind": "find_global_minimum",
+      "quantifier": "argmin",
+      "sound": false,
+      "problems": [
+        "the population is bounded over without being enumerated first"
+      ],
+      "plan": {
+        "kind": "find_global_minimum",
+        "quantifier": "argmin",
+        "population": "all 15 listings that sell Rivenhall water in 2 x 9.5L pack size",
+        "enumerate_first": false,
+        "bound": {
+          "field": "advertised_price",
+          "valid_because": "if a listing's advertised price (cheapest option) exceeds the lowest price found so far for the 2 x 9.5L pack, that listing cannot contain the global minimum for this pack size"
+        },
+        "stop_rule": "after opening all listings that could plausibly contain a lower price than the current minimum found, or after confirming a listing does not stock the 2 x 9.5L pack size",
+        "evidence_required": {
+          "min_listings_opened": "oracle_floor",
+          "counterexample": false
+        },
+        "forbidden_claims": [
+          "the lowest advertised price across all listings",
+          "the price of any pack size other than 2 x 9.5L",
+          "a price from a listing that does not stock the 2 x 9.5L pack",
+          "any claim about price without confirming the specific pack size was available at that price"
+        ]
+      },
+      "raw": "```json\n{\n  \"kind\": \"find_global_minimum\",\n  \"quantifier\": \"argmin\",\n  \"population\": \"all 15 listings that sell Rivenhall water in 2 x 9.5L pack size\",\n  \"enumerate_first\": false,\n  \"bound\": {\n    \"field\": \"advertised_price\",\n    \"valid_because\": \"if a listing's advertised price (cheapest option) exceeds the lowest price found so far for the 2 x 9.5L pack, that listing cannot contain the global minimum for this pack size\"\n  },\n  \"stop_rule\": \"after opening all listings that could plausibly contain a lower price than the current minimum found, or after confirming a listing does not stock the 2 x 9.5L pack size\",\n  \"evidence_required\": {\n    \"min_listings_opened\": \"oracle_floor\",\n    \"counterexample\": false\n  },\n  \"forbidden_claims\": [\n    \"the lowest advertised price across all listings\",\n    \"the price of any pack size other than 2 x 9.5L\",\n    \"a price from a listing that does not stock the 2 x 9.5L pack\",\n    \"any claim about price without confirming the specific pack size was available at that price\"\n  ]\n}\n```"
+    },
+    {
+      "condition": "blind",
+      "task": "all-stocked",
+      "question": "Does every Rivenhall listing stock the 2 x 9.5L pack? Answer yes or no.",
+      "deterministic_kind": "refutation",
+      "proposed_kind": "universal_stock_check",
+      "quantifier": "universal",
+      "sound": true,
+      "problems": [],
+      "plan": {
+        "kind": "universal_stock_check",
+        "quantifier": "universal",
+        "population": "all 15 Rivenhall listings across both pages",
+        "enumerate_first": true,
+        "bound": {
+          "field": "pack_size_availability",
+          "valid_because": "if any listing does not stock the 2 x 9.5L pack, the universal claim is false and we can stop"
+        },
+        "stop_rule": "stop after finding the first listing that does not stock 2 x 9.5L pack, or after checking all 15 listings",
+        "evidence_required": {
+          "min_listings_opened": "population",
+          "counterexample": true
+        },
+        "forbidden_claims": [
+          "some listings stock the 2 x 9.5L pack",
+          "most listings stock the 2 x 9.5L pack",
+          "the advertised price includes the 2 x 9.5L pack"
+        ]
+      },
+      "raw": "```json\n{\n  \"kind\": \"universal_stock_check\",\n  \"quantifier\": \"universal\",\n  \"population\": \"all 15 Rivenhall listings across both pages\",\n  \"enumerate_first\": true,\n  \"bound\": {\n    \"field\": \"pack_size_availability\",\n    \"valid_because\": \"if any listing does not stock the 2 x 9.5L pack, the universal claim is false and we can stop\"\n  },\n  \"stop_rule\": \"stop after finding the first listing that does not stock 2 x 9.5L pack, or after checking all 15 listings\",\n  \"evidence_required\": {\n    \"min_listings_opened\": \"population\",\n    \"counterexample\": true\n  },\n  \"forbidden_claims\": [\n    \"some listings stock the 2 x 9.5L pack\",\n    \"most listings stock the 2 x 9.5L pack\",\n    \"the advertised price includes the 2 x 9.5L pack\"\n  ]\n}\n```"
+    },
+    {
+      "condition": "blind",
+      "task": "best-per-litre",
+      "question": "Across all the Rivenhall listings and all their pack sizes, which seller offers the lowest price per litre?",
+      "deterministic_kind": "rate_bound",
+      "proposed_kind": "lowest_price_per_litre_across_all_listings_and_pack_sizes",
+      "quantifier": "argmin",
+      "sound": true,
+      "problems": [],
+      "plan": {
+        "kind": "lowest_price_per_litre_across_all_listings_and_pack_sizes",
+        "quantifier": "argmin",
+        "population": "all (listing, pack_size) pairs across all Rivenhall listings that stock that pack size",
+        "enumerate_first": true,
+        "bound": null,
+        "stop_rule": "after all 15 listings have been opened and all available pack sizes for each listing have been inspected to calculate price per litre for each",
+        "evidence_required": {
+          "min_listings_opened": "population",
+          "counterexample": false
+        },
+        "forbidden_claims": [
+          "the cheapest advertised price is the best deal",
+          "a listing offers the lowest price per litre without checking all its pack sizes",
+          "the answer based on only the first page of results",
+          "any claim about price per litre without opening the listing to see pack size pricing"
+        ]
+      },
+      "raw": "```json\n{\n  \"kind\": \"lowest_price_per_litre_across_all_listings_and_pack_sizes\",\n  \"quantifier\": \"argmin\",\n  \"population\": \"all (listing, pack_size) pairs across all Rivenhall listings that stock that pack size\",\n  \"enumerate_first\": true,\n  \"bound\": null,\n  \"stop_rule\": \"after all 15 listings have been opened and all available pack sizes for each listing have been inspected to calculate price per litre for each\",\n  \"evidence_required\": {\n    \"min_listings_opened\": \"population\",\n    \"counterexample\": false\n  },\n  \"forbidden_claims\": [\n    \"the cheapest advertised price is the best deal\",\n    \"a listing offers the lowest price per litre without checking all its pack sizes\",\n    \"the answer based on only the first page of results\",\n    \"any claim about price per litre without opening the listing to see pack size pricing\"\n  ]\n}\n```"
+    },
+    {
+      "condition": "blind",
+      "task": "headline",
+      "question": "Of the Rivenhall water listings shown, which one advertises the lowest price on the results page, and what is that price?",
+      "deterministic_kind": "total_bound",
+      "proposed_kind": "lowest_advertised_price",
+      "quantifier": "argmin",
+      "sound": false,
+      "problems": [
+        "the best of a population is claimed without requiring coverage"
+      ],
+      "plan": {
+        "kind": "lowest_advertised_price",
+        "quantifier": "argmin",
+        "population": "all Rivenhall water listings shown on the search results pages",
+        "enumerate_first": true,
+        "bound": null,
+        "stop_rule": "after viewing all listings on both pages to identify the minimum advertised price",
+        "evidence_required": {
+          "min_listings_opened": 0,
+          "counterexample": false
+        },
+        "forbidden_claims": [
+          "the lowest price for any specific pack size",
+          "the lowest price after opening listings",
+          "the lowest price across all pack sizes",
+          "claims about availability or stock status"
+        ]
+      },
+      "raw": "```json\n{\n  \"kind\": \"lowest_advertised_price\",\n  \"quantifier\": \"argmin\",\n  \"population\": \"all Rivenhall water listings shown on the search results pages\",\n  \"enumerate_first\": true,\n  \"bound\": null,\n  \"stop_rule\": \"after viewing all listings on both pages to identify the minimum advertised price\",\n  \"evidence_required\": {\n    \"min_listings_opened\": 0,\n    \"counterexample\": false\n  },\n  \"forbidden_claims\": [\n    \"the lowest price for any specific pack size\",\n    \"the lowest price after opening listings\",\n    \"the lowest price across all pack sizes\",\n    \"claims about availability or stock status\"\n  ]\n}\n```"
+    },
+    {
+      "condition": "blind",
+      "task": "threshold",
+      "question": "Is any Rivenhall seller under $20 for the 2 x 9.5L pack?",
+      "deterministic_kind": "survey",
+      "proposed_kind": "existential_search_with_early_stopping",
+      "quantifier": "existential",
+      "sound": false,
+      "problems": [
+        "the population is bounded over without being enumerated first"
+      ],
+      "plan": {
+        "kind": "existential_search_with_early_stopping",
+        "quantifier": "existential",
+        "population": "all 15 Rivenhall listings across both pages",
+        "enumerate_first": false,
+        "bound": {
+          "field": "advertised price",
+          "valid_because": "if advertised price >= $20, the cheapest pack size option cannot be under $20"
+        },
+        "stop_rule": "stop as soon as any listing with advertised price < $20 is opened and confirmed to stock the 2 x 9.5L pack at a price under $20; or after checking all listings with advertised price < $20; or after exhausting all 15 listings",
+        "evidence_required": {
+          "min_listings_opened": "oracle_floor",
+          "counterexample": true
+        },
+        "forbidden_claims": [
+          "all sellers are under $20",
+          "most sellers are under $20",
+          "the average price is under $20",
+          "a specific seller's price without confirming the 2 x 9.5L pack is in stock at that price"
+        ]
+      },
+      "raw": "```json\n{\n  \"kind\": \"existential_search_with_early_stopping\",\n  \"quantifier\": \"existential\",\n  \"population\": \"all 15 Rivenhall listings across both pages\",\n  \"enumerate_first\": false,\n  \"bound\": {\n    \"field\": \"advertised price\",\n    \"valid_because\": \"if advertised price >= $20, the cheapest pack size option cannot be under $20\"\n  },\n  \"stop_rule\": \"stop as soon as any listing with advertised price < $20 is opened and confirmed to stock the 2 x 9.5L pack at a price under $20; or after checking all listings with advertised price < $20; or after exhausting all 15 listings\",\n  \"evidence_required\": {\n    \"min_listings_opened\": \"oracle_floor\",\n    \"counterexample\": true\n  },\n  \"forbidden_claims\": [\n    \"all sellers are under $20\",\n    \"most sellers are under $20\",\n    \"the average price is under $20\",\n    \"a specific seller's price without confirming the 2 x 9.5L pack is in stock at that price\"\n  ]\n}\n```"
+    },
+    {
+      "condition": "blind",
+      "task": "count",
+      "question": "How many of the Rivenhall listings stock the 2 x 9.5L pack?",
+      "deterministic_kind": "survey",
+      "proposed_kind": "pack_size_availability_count",
+      "quantifier": "enumerate",
+      "sound": true,
+      "problems": [],
+      "plan": {
+        "kind": "pack_size_availability_count",
+        "quantifier": "enumerate",
+        "population": "all 15 Rivenhall listings across both pages",
+        "enumerate_first": true,
+        "bound": null,
+        "stop_rule": "after opening all 15 listings to check pack size availability",
+        "evidence_required": {
+          "min_listings_opened": "population",
+          "counterexample": false
+        },
+        "forbidden_claims": [
+          "the 2 x 9.5L pack is the cheapest option",
+          "the advertised price includes the 2 x 9.5L pack",
+          "some listings do not stock the 2 x 9.5L pack"
+        ]
+      },
+      "raw": "```json\n{\n  \"kind\": \"pack_size_availability_count\",\n  \"quantifier\": \"enumerate\",\n  \"population\": \"all 15 Rivenhall listings across both pages\",\n  \"enumerate_first\": true,\n  \"bound\": null,\n  \"stop_rule\": \"after opening all 15 listings to check pack size availability\",\n  \"evidence_required\": {\n    \"min_listings_opened\": \"population\",\n    \"counterexample\": false\n  },\n  \"forbidden_claims\": [\n    \"the 2 x 9.5L pack is the cheapest option\",\n    \"the advertised price includes the 2 x 9.5L pack\",\n    \"some listings do not stock the 2 x 9.5L pack\"\n  ]\n}\n```"
+    },
+    {
+      "condition": "blind",
+      "task": "unanswerable",
+      "question": "Which Rivenhall seller delivers fastest?",
+      "deterministic_kind": "survey",
+      "proposed_kind": "fastest_delivery_search",
+      "quantifier": "argmin",
+      "sound": true,
+      "problems": [],
+      "plan": {
+        "kind": "fastest_delivery_search",
+        "quantifier": "argmin",
+        "population": "all 15 Rivenhall product listings across both pages",
+        "enumerate_first": true,
+        "bound": null,
+        "stop_rule": "after opening all 15 listings to compare delivery times, or after opening enough listings to establish a clear minimum delivery time that cannot be beaten by unopened listings",
+        "evidence_required": {
+          "min_listings_opened": "population",
+          "counterexample": false
+        },
+        "forbidden_claims": [
+          "a seller delivers fastest based only on advertised price",
+          "a seller delivers fastest without checking delivery information across all or sufficient listings",
+          "delivery speed can be determined from search result pages without opening listings"
+        ]
+      },
+      "raw": "```json\n{\n  \"kind\": \"fastest_delivery_search\",\n  \"quantifier\": \"argmin\",\n  \"population\": \"all 15 Rivenhall product listings across both pages\",\n  \"enumerate_first\": true,\n  \"bound\": null,\n  \"stop_rule\": \"after opening all 15 listings to compare delivery times, or after opening enough listings to establish a clear minimum delivery time that cannot be beaten by unopened listings\",\n  \"evidence_required\": {\n    \"min_listings_opened\": \"population\",\n    \"counterexample\": false\n  },\n  \"forbidden_claims\": [\n    \"a seller delivers fastest based only on advertised price\",\n    \"a seller delivers fastest without checking delivery information across all or sufficient listings\",\n    \"delivery speed can be determined from search result pages without opening listings\"\n  ]\n}\n```"
+    },
+    {
+      "condition": "guided",
+      "task": "cheapest-target",
+      "question": "Across all the Rivenhall listings, which seller is cheapest for the 2 x 9.5L pack, and what is that price?",
+      "deterministic_kind": "total_bound",
+      "proposed_kind": "cheapest_specific_pack_size",
+      "quantifier": "argmin",
+      "sound": true,
+      "problems": [],
+      "plan": {
+        "kind": "cheapest_specific_pack_size",
+        "quantifier": "argmin",
+        "population": "all 15 Rivenhall listings across both pages",
+        "enumerate_first": true,
+        "bound": {
+          "field": "advertised price (cheapest option)",
+          "valid_because": "the advertised price is the minimum across all pack sizes for that listing, so if a listing's advertised price exceeds the lowest price found so far for the 2 x 9.5L pack, that listing cannot be cheapest for that specific pack size"
+        },
+        "stop_rule": "after opening all listings that could plausibly be cheapest for the 2 x 9.5L pack (those whose advertised price is at or below the current minimum found for that pack size), or after confirming the 2 x 9.5L pack is not stocked in any remaining unopened listings",
+        "evidence_required": {
+          "min_listings_opened": "population",
+          "counterexample": false
+        },
+        "forbidden_claims": [
+          "any advertised price from a listing",
+          "any price that was used only as a bound to skip candidates"
+        ]
+      },
+      "raw": "```json\n{\n  \"kind\": \"cheapest_specific_pack_size\",\n  \"quantifier\": \"argmin\",\n  \"population\": \"all 15 Rivenhall listings across both pages\",\n  \"enumerate_first\": true,\n  \"bound\": {\n    \"field\": \"advertised price (cheapest option)\",\n    \"valid_because\": \"the advertised price is the minimum across all pack sizes for that listing, so if a listing's advertised price exceeds the lowest price found so far for the 2 x 9.5L pack, that listing cannot be cheapest for that specific pack size\"\n  },\n  \"stop_rule\": \"after opening all listings that could plausibly be cheapest for the 2 x 9.5L pack (those whose advertised price is at or below the current minimum found for that pack size), or after confirming the 2 x 9.5L pack is not stocked in any remaining unopened listings\",\n  \"evidence_required\": {\n    \"min_listings_opened\": \"population\",\n    \"counterexample\": false\n  },\n  \"forbidden_claims\": [\n    \"any advertised price from a listing\",\n    \"any price that was used only as a bound to skip candidates\"\n  ]\n}\n```"
+    },
+    {
+      "condition": "guided",
+      "task": "target-price",
+      "question": "What is the lowest price anyone charges for the 2 x 9.5L pack of Rivenhall water?",
+      "deterministic_kind": "total_bound",
+      "proposed_kind": "lowest_price_search",
+      "quantifier": "argmin",
+      "sound": true,
+      "problems": [],
+      "plan": {
+        "kind": "lowest_price_search",
+        "quantifier": "argmin",
+        "population": "all 15 listings across both pages of search results",
+        "enumerate_first": true,
+        "bound": {
+          "field": "advertised price (cheapest option per listing)",
+          "valid_because": "the advertised price is the minimum price in each listing, so any listing with advertised price >= current lowest found price for the 2 x 9.5L pack cannot contain a lower price for that pack size"
+        },
+        "stop_rule": "after opening all listings that could plausibly have a lower price for the 2 x 9.5L pack than the current minimum found, which requires checking all listings on both pages or until a listing's advertised price exceeds the lowest price found so far for that pack size",
+        "evidence_required": {
+          "min_listings_opened": "population",
+          "counterexample": false
+        },
+        "forbidden_claims": [
+          "the advertised price of any listing",
+          "any bound value used to skip listings",
+          "prices for pack sizes other than 2 x 9.5L"
+        ]
+      },
+      "raw": "```json\n{\n  \"kind\": \"lowest_price_search\",\n  \"quantifier\": \"argmin\",\n  \"population\": \"all 15 listings across both pages of search results\",\n  \"enumerate_first\": true,\n  \"bound\": {\n    \"field\": \"advertised price (cheapest option per listing)\",\n    \"valid_because\": \"the advertised price is the minimum price in each listing, so any listing with advertised price >= current lowest found price for the 2 x 9.5L pack cannot contain a lower price for that pack size\"\n  },\n  \"stop_rule\": \"after opening all listings that could plausibly have a lower price for the 2 x 9.5L pack than the current minimum found, which requires checking all listings on both pages or until a listing's advertised price exceeds the lowest price found so far for that pack size\",\n  \"evidence_required\": {\n    \"min_listings_opened\": \"population\",\n    \"counterexample\": false\n  },\n  \"forbidden_claims\": [\n    \"the advertised price of any listing\",\n    \"any bound value used to skip listings\",\n    \"prices for pack sizes other than 2 x 9.5L\"\n  ]\n}\n```"
+    },
+    {
+      "condition": "guided",
+      "task": "all-stocked",
+      "question": "Does every Rivenhall listing stock the 2 x 9.5L pack? Answer yes or no.",
+      "deterministic_kind": "refutation",
+      "proposed_kind": "universal_with_counterexample",
+      "quantifier": "universal",
+      "sound": true,
+      "problems": [],
+      "plan": {
+        "kind": "universal_with_counterexample",
+        "quantifier": "universal",
+        "population": "all 15 Rivenhall listings across both pages",
+        "enumerate_first": true,
+        "bound": null,
+        "stop_rule": "stop after finding the first listing that does not stock the 2 x 9.5L pack, or after confirming all 15 listings stock it",
+        "evidence_required": {
+          "min_listings_opened": "population",
+          "counterexample": true
+        },
+        "forbidden_claims": []
+      },
+      "raw": "```json\n{\n  \"kind\": \"universal_with_counterexample\",\n  \"quantifier\": \"universal\",\n  \"population\": \"all 15 Rivenhall listings across both pages\",\n  \"enumerate_first\": true,\n  \"bound\": null,\n  \"stop_rule\": \"stop after finding the first listing that does not stock the 2 x 9.5L pack, or after confirming all 15 listings stock it\",\n  \"evidence_required\": {\n    \"min_listings_opened\": \"population\",\n    \"counterexample\": true\n  },\n  \"forbidden_claims\": []\n}\n```"
+    },
+    {
+      "condition": "guided",
+      "task": "best-per-litre",
+      "question": "Across all the Rivenhall listings and all their pack sizes, which seller offers the lowest price per litre?",
+      "deterministic_kind": "rate_bound",
+      "proposed_kind": "exhaustive_comparison_for_minimum",
+      "quantifier": "argmin",
+      "sound": true,
+      "problems": [],
+      "plan": {
+        "kind": "exhaustive_comparison_for_minimum",
+        "quantifier": "argmin",
+        "population": "all (listing, pack_size) pairs across the 15 Rivenhall listings where that pack size is stocked",
+        "enumerate_first": true,
+        "bound": null,
+        "stop_rule": "after opening all 15 listings to discover which pack sizes each stocks, then calculating price per litre for every stocked pack size across all listings",
+        "evidence_required": {
+          "min_listings_opened": 15,
+          "counterexample": false
+        },
+        "forbidden_claims": [
+          "the advertised price is the lowest price per litre",
+          "any price figure derived from the bound (advertised prices used to decide which listings to skip)"
+        ]
+      },
+      "raw": "```json\n{\n  \"kind\": \"exhaustive_comparison_for_minimum\",\n  \"quantifier\": \"argmin\",\n  \"population\": \"all (listing, pack_size) pairs across the 15 Rivenhall listings where that pack size is stocked\",\n  \"enumerate_first\": true,\n  \"bound\": null,\n  \"stop_rule\": \"after opening all 15 listings to discover which pack sizes each stocks, then calculating price per litre for every stocked pack size across all listings\",\n  \"evidence_required\": {\n    \"min_listings_opened\": 15,\n    \"counterexample\": false\n  },\n  \"forbidden_claims\": [\n    \"the advertised price is the lowest price per litre\",\n    \"any price figure derived from the bound (advertised prices used to decide which listings to skip)\"\n  ]\n}\n```"
+    },
+    {
+      "condition": "guided",
+      "task": "headline",
+      "question": "Of the Rivenhall water listings shown, which one advertises the lowest price on the results page, and what is that price?",
+      "deterministic_kind": "total_bound",
+      "proposed_kind": "advertised_price_minimum",
+      "quantifier": "argmin",
+      "sound": true,
+      "problems": [],
+      "plan": {
+        "kind": "advertised_price_minimum",
+        "quantifier": "argmin",
+        "population": "all 15 Rivenhall water listings across both pages of search results",
+        "enumerate_first": true,
+        "bound": null,
+        "stop_rule": "after viewing the advertised price for all 15 listings on both pages",
+        "evidence_required": {
+          "min_listings_opened": "population",
+          "counterexample": false
+        },
+        "forbidden_claims": []
+      },
+      "raw": "```json\n{\n  \"kind\": \"advertised_price_minimum\",\n  \"quantifier\": \"argmin\",\n  \"population\": \"all 15 Rivenhall water listings across both pages of search results\",\n  \"enumerate_first\": true,\n  \"bound\": null,\n  \"stop_rule\": \"after viewing the advertised price for all 15 listings on both pages\",\n  \"evidence_required\": {\n    \"min_listings_opened\": \"population\",\n    \"counterexample\": false\n  },\n  \"forbidden_claims\": []\n}\n```"
+    },
+    {
+      "condition": "guided",
+      "task": "threshold",
+      "question": "Is any Rivenhall seller under $20 for the 2 x 9.5L pack?",
+      "deterministic_kind": "survey",
+      "proposed_kind": "existential_search_with_price_bound",
+      "quantifier": "existential",
+      "sound": true,
+      "problems": [],
+      "plan": {
+        "kind": "existential_search_with_price_bound",
+        "quantifier": "existential",
+        "population": "all 15 Rivenhall listings across both pages",
+        "enumerate_first": true,
+        "bound": {
+          "field": "advertised price",
+          "valid_because": "if a listing's advertised price (cheapest option) is \u2265$20, then all its pack sizes including 2\u00d79.5L must be \u2265$20, so it cannot satisfy the condition"
+        },
+        "stop_rule": "stop after finding one listing under $20 for the 2\u00d79.5L pack (answer yes), or after checking all listings (answer no)",
+        "evidence_required": {
+          "min_listings_opened": "oracle_floor",
+          "counterexample": true
+        },
+        "forbidden_claims": [
+          "any advertised price figure",
+          "any price bound used to skip listings"
+        ]
+      },
+      "raw": "```json\n{\n  \"kind\": \"existential_search_with_price_bound\",\n  \"quantifier\": \"existential\",\n  \"population\": \"all 15 Rivenhall listings across both pages\",\n  \"enumerate_first\": true,\n  \"bound\": {\n    \"field\": \"advertised price\",\n    \"valid_because\": \"if a listing's advertised price (cheapest option) is \u2265$20, then all its pack sizes including 2\u00d79.5L must be \u2265$20, so it cannot satisfy the condition\"\n  },\n  \"stop_rule\": \"stop after finding one listing under $20 for the 2\u00d79.5L pack (answer yes), or after checking all listings (answer no)\",\n  \"evidence_required\": {\n    \"min_listings_opened\": \"oracle_floor\",\n    \"counterexample\": true\n  },\n  \"forbidden_claims\": [\n    \"any advertised price figure\",\n    \"any price bound used to skip listings\"\n  ]\n}\n```"
+    },
+    {
+      "condition": "guided",
+      "task": "count",
+      "question": "How many of the Rivenhall listings stock the 2 x 9.5L pack?",
+      "deterministic_kind": "survey",
+      "proposed_kind": "universal_pack_availability",
+      "quantifier": "universal",
+      "sound": false,
+      "problems": [
+        "a universal claim is answered without requiring a counterexample"
+      ],
+      "plan": {
+        "kind": "universal_pack_availability",
+        "quantifier": "universal",
+        "population": "all 15 Rivenhall listings across both pages",
+        "enumerate_first": true,
+        "bound": null,
+        "stop_rule": "after opening all 15 listings to check pack availability for each",
+        "evidence_required": {
+          "min_listings_opened": "population",
+          "counterexample": false
+        },
+        "forbidden_claims": []
+      },
+      "raw": "```json\n{\n  \"kind\": \"universal_pack_availability\",\n  \"quantifier\": \"universal\",\n  \"population\": \"all 15 Rivenhall listings across both pages\",\n  \"enumerate_first\": true,\n  \"bound\": null,\n  \"stop_rule\": \"after opening all 15 listings to check pack availability for each\",\n  \"evidence_required\": {\n    \"min_listings_opened\": \"population\",\n    \"counterexample\": false\n  },\n  \"forbidden_claims\": []\n}\n```"
+    },
+    {
+      "condition": "guided",
+      "task": "unanswerable",
+      "question": "Which Rivenhall seller delivers fastest?",
+      "deterministic_kind": "survey",
+      "proposed_kind": "fastest_delivery_identification",
+      "quantifier": "argmin",
+      "sound": true,
+      "problems": [],
+      "plan": {
+        "kind": "fastest_delivery_identification",
+        "quantifier": "argmin",
+        "population": "all 15 listings of the product across both pages",
+        "enumerate_first": true,
+        "bound": {
+          "field": "delivery_time",
+          "valid_because": "once a listing's delivery time is known, any listing with longer delivery time can be ruled out as a candidate for fastest"
+        },
+        "stop_rule": "after opening all 15 listings to determine each one's delivery time, or after opening enough listings to establish that the minimum delivery time found cannot be beaten by any remaining unopened listing",
+        "evidence_required": {
+          "min_listings_opened": "population",
+          "counterexample": false
+        },
+        "forbidden_claims": [
+          "the advertised price indicates fastest delivery",
+          "any delivery time derived from a bound rather than from opening a listing"
+        ]
+      },
+      "raw": "```json\n{\n  \"kind\": \"fastest_delivery_identification\",\n  \"quantifier\": \"argmin\",\n  \"population\": \"all 15 listings of the product across both pages\",\n  \"enumerate_first\": true,\n  \"bound\": {\n    \"field\": \"delivery_time\",\n    \"valid_because\": \"once a listing's delivery time is known, any listing with longer delivery time can be ruled out as a candidate for fastest\"\n  },\n  \"stop_rule\": \"after opening all 15 listings to determine each one's delivery time, or after opening enough listings to establish that the minimum delivery time found cannot be beaten by any remaining unopened listing\",\n  \"evidence_required\": {\n    \"min_listings_opened\": \"population\",\n    \"counterexample\": false\n  },\n  \"forbidden_claims\": [\n    \"the advertised price indicates fastest delivery\",\n    \"any delivery time derived from a bound rather than from opening a listing\"\n  ]\n}\n```"
+    }
+  ]
+}
