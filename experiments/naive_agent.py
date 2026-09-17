@@ -55,6 +55,8 @@ VIEWPORT = {"width": 1200, "height": 701}
 # than openJiuwen's compacted snapshot, which would confound cost with scaffold. This is
 # generous enough to hold a full search page of fifteen cards.
 PAGE_LIMIT = 7000
+# Enough for a full search page of fifteen cards plus the site's own navigation.
+LINK_LIMIT = 80
 
 SYSTEM = """You are answering a question about an online shop by browsing it.
 
@@ -120,12 +122,19 @@ def usage_after(key: str, before: float | None, attempts: int = 12,
 
 
 def page_text(page) -> str:
-    """What is on the page, prefixed with where the browser is.
+    """What is on the page, where the browser is, and what can be clicked from here.
 
-    The prefix is not decoration. `sufficiency.listings_opened` reads `Page URL:` lines to
-    count which listings a run actually opened, and that is the one measure meant to survive
-    a change of scaffold. Emitting it here means both scaffolds are counted by the same code
-    rather than by two counters that might disagree.
+    The URL prefix is not decoration. `sufficiency.listings_opened` reads `Page URL:` lines
+    to count which listings a run actually opened, and that is the one measure meant to
+    survive a change of scaffold. Emitting it here means both scaffolds are counted by the
+    same code rather than by two counters that might disagree.
+
+    The links are not an affordance this scaffold is being generous with. Without them the
+    agent cannot browse at all: the first version returned visible text only, and the model
+    spent its whole budget guessing addresses, trying /p/, /catalog/ and /store/ prefixes
+    for a product it could see the name of. Every browser agent can see where a link goes,
+    so withholding that measures the harness rather than the model. What is still withheld
+    is any hint about how much to look, which is the thing under test.
     """
     try:
         body = page.inner_text("body")
@@ -134,7 +143,24 @@ def page_text(page) -> str:
     body = re.sub(r"\n{3,}", "\n\n", body).strip()
     if len(body) > PAGE_LIMIT:
         body = body[:PAGE_LIMIT] + f"\n... (page text truncated at {PAGE_LIMIT} characters)"
-    return f"Page URL: {page.url}\n\n{body}"
+
+    try:
+        anchors = page.eval_on_selector_all(
+            "a[href]",
+            "els => els.map(e => [e.innerText.trim().replace(/\\s+/g, ' ').slice(0, 70),"
+            " e.href]).filter(([t, h]) => t && h.startsWith('http'))")
+    except Exception:
+        anchors = []
+    seen, links = set(), []
+    for label, href in anchors:
+        if href in seen:
+            continue
+        seen.add(href)
+        links.append(f"{label} -> {href}")
+        if len(links) >= LINK_LIMIT:
+            break
+    listed = "\n".join(links) if links else "(no links on this page)"
+    return f"Page URL: {page.url}\n\n{body}\n\nLinks on this page:\n{listed}"
 
 
 def act(page, name: str, args: dict) -> str:
