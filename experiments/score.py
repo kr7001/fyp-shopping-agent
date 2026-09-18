@@ -119,6 +119,20 @@ def score(task: dict, answer: str, ok: bool) -> dict:
         return {"verdict": "wrong", "why": f"answered {'no' if says_no else 'yes'}",
                 "prices": found}
 
+    if kind == "count":
+        # "How many listings stock it" is answered with a number rather than a name or a
+        # price, and the number that matters is the one the answer leads with. An answer
+        # reading "9 of the 15 listings" states its count first and its population second,
+        # which is the shape every observed answer to a counting question has taken.
+        counts = re.findall(r"\b(\d{1,3})\b", answer or "")
+        if not counts:
+            return {"verdict": "ambiguous", "why": "no number given", "prices": found}
+        stated = int(counts[0])
+        if stated == expect["value"]:
+            return {"verdict": "correct", "why": f"counted {stated}", "prices": found}
+        return {"verdict": "wrong",
+                "why": f"counted {stated}, expected {expect['value']}", "prices": found}
+
     if kind == "all_prices":
         wanted = set(expect["values"])
         missing = sorted(wanted - set(found))
