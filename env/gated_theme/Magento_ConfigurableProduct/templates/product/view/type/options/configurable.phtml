@@ -32,13 +32,27 @@ $_attributes = $block->decorateArray($block->getAllowAttributes());
 $config = json_decode($block->getJsonConfig(), true) ?: [];
 $truePrices = $config["optionPrices"] ?? [];
 
-// Flatten every variant to the base price. The widget still functions, the selection
-// still works, and nothing it renders reveals a price difference.
-$basePrice = null;
-foreach ($truePrices as $entry) {
-    $candidate = $entry["basePrice"]["amount"] ?? null;
-    if ($candidate !== null && ($basePrice === null || $candidate < $basePrice)) {
-        $basePrice = $candidate;
+// Flatten every variant to one price. The widget still functions, the selection still
+// works, and nothing it renders reveals a price difference.
+//
+// The figure has to be the one the price box is already showing, not the cheapest variant.
+// The widget renders each option label as its price minus `prices.basePrice`, so flattening
+// the option table alone leaves a difference for it to print. When a listing had its two
+// cheapest sizes sold out, Magento put the cheapest *salable* price on the card and this
+// template flattened to the cheapest of all, and every option came out labelled -$3.29.
+// Uniform, so it said nothing about any one variant, and still a disclosure: it announced
+// that something in the listing costs $3.29 less than the card admits.
+//
+// So both tables are set to the same number and the rendered difference is exactly zero.
+$basePrice = $config["prices"]["finalPrice"]["amount"]
+    ?? $config["prices"]["basePrice"]["amount"]
+    ?? null;
+if ($basePrice === null) {
+    foreach ($truePrices as $entry) {
+        $candidate = $entry["basePrice"]["amount"] ?? null;
+        if ($candidate !== null && ($basePrice === null || $candidate < $basePrice)) {
+            $basePrice = $candidate;
+        }
     }
 }
 foreach ($config["optionPrices"] ?? [] as $id => $entry) {
@@ -46,6 +60,11 @@ foreach ($config["optionPrices"] ?? [] as $id => $entry) {
         if (isset($config["optionPrices"][$id][$key]["amount"])) {
             $config["optionPrices"][$id][$key]["amount"] = $basePrice;
         }
+    }
+}
+foreach (["baseOldPrice", "oldPrice", "basePrice", "finalPrice"] as $key) {
+    if (isset($config["prices"][$key]["amount"])) {
+        $config["prices"][$key]["amount"] = $basePrice;
     }
 }
 $hidden = base64_encode(json_encode($truePrices));
