@@ -120,20 +120,14 @@ INSTANCE_RULES = """Properties every generated clothing instance must satisfy:
                         a correct answer is not rounding luck. A percentage rather than
                         a sum, so clothing and water are held to the same standard
 10. floor_is_real       at least five listings survive pruning and have to be opened
-11. answer_off_first_screen
-                        the winning listing is the eighth or later in the catalogue, so it
-                        does not appear in the first row of search results
-12. trap_on_first_screen
-                        the cheapest advertised listing, which is the wrong answer, is among
-                        the first four, so a glance finds the trap rather than nothing
-13. sold_out_trap       the cheapest listed price for the target size belongs to a listing
+11. sold_out_trap       the cheapest listed price for the target size belongs to a listing
                         that cannot ship it. An agent that compares prices and ignores
                         availability names a seller it cannot buy from, and the page says so
                         only through a disabled option
-14. sold_out_population at least three listings offer the target size and have none of it, so
+12. sold_out_population at least three listings offer the target size and have none of it, so
                         the state is common enough to be worth checking rather than a
                         curiosity
-15. enough_buyable      at least four listings can actually ship the target size, so the
+13. enough_buyable      at least four listings can actually ship the target size, so the
                         question has a real field of candidates.
 
 **Rule 10 is set by what the domain allows, and that is the interesting part.**
@@ -142,8 +136,7 @@ In water the advertised price is a small pack and the question asks about a larg
 the published figure is a weak lower bound on the answer. It prunes about 4 listings of 15
 and the oracle floor is 11. In clothing every size of a garment costs roughly the same, so
 the advertised price is a tight bound and prunes most of the market: sampling 6,000 draws,
-every instance that satisfies the other nine rules has a floor of 3, 4 or 5, and none
-reaches 6.
+every instance that satisfies the other rules has a floor of 3, 4 or 5, and none reaches 6.
 
 A first attempt demanded a floor of eight and found nothing in 20,000 draws. Widening the
 size multipliers until it did would have meant a garment whose M costs twice its L, which no
@@ -156,37 +149,28 @@ rule reads the floor the generator computes rather than a constant, so the quest
 whether it permits that. A rule that demanded eleven everywhere would refuse correct answers
 in this domain, and this is the market that would catch it.
 
-**Rule 11 exists because the first draw of this market was answerable by glancing.**
+**Two rules about page position used to live here and have been removed.**
 
-Nothing in either generator controlled where the answer sits on the results page. The first
-clothing market put its winner at card 4, inside the row of four the agent reads before it
-decides anything, and the agent duly answered the two price questions 3 of 3 while opening
-4 listings of 15, below the floor of 5. Right, and not earned, and the coverage rule flagged
-all six.
+They required the winner to sit late in the catalogue and the cheapest advertised listing to
+sit early, as a way of putting the answer out of reach of a glance and the trap in plain
+sight. Both were written against the catalogue index, and the catalogue index does not decide
+where a listing renders.
 
-This is the same accident that made the first water market look easy: its winner sat at card
-2 and the plain agent scored 58 per cent there against 25 per cent on a market where the
-winner sits further down. Diagnosed once as a property of that market, it is really a gap in
-the design, so it becomes a rule rather than a caveat.
+What does, measured on 18 September 2026 across eight generated markets: **the number of
+variants a listing has.** Magento's fulltext relevance indexes each child, so a listing with
+four sizes carries the brand name four times and outranks one with two. In the market
+measured, every listing rendering in cards 1 to 8 had four sizes, cards 9 to 11 had three,
+and cards 13 to 15 had two.
 
-Rule 12 is rule 11's mirror and was found the same way. With only rule 11, the second
-clothing draw put its cheapest advertised listing at card 11, so an agent reading the first
-screen saw neither the answer nor the trap and simply named the cheapest of the four it could
-see. The control question, which exists so that a failure can be told apart from a broken
-shop, then read 1 of 3 and stopped being a control.
+That interacts badly with the trap. The trap is a listing that does not offer the target
+size, so it has fewer variants by construction, so it renders late by construction. Eight
+consecutive seeds were rejected with the trap at cards 8, 12, 8, 14, 10, 15, 12 and 13, and
+not one landed in the first four. The rule was not unlucky, it was unsatisfiable.
 
-A market is only a trap if the trap is where the glance lands. Rule 11 puts the real answer
-out of reach of a glance and rule 12 puts the wrong answer in plain sight, which together are
-the structure the water markets have by luck: their cheapest advertised listing is visible
-immediately and their winner is not.
-
-Catalogue index is only a proxy for page position, and a weaker one than expected: the
-regenerated market puts its winner at index 15 and Magento renders it at card 5, because
-relevance ordering is its own. So the rule is a filter and the rendered position is checked
-after seeding rather than assumed. Card 5 is outside the four the probe returns, which is
-the condition that actually matters, and it is closer to the edge than is comfortable. A
-generator that could place the answer on the page directly would be better and would mean
-controlling Magento's ordering, which is not worth the environment change today."""
+Requiring the trap to carry all four sizes instead collapses the acceptance rate from 1 in
+1,904 draws to 1 in 40,000, because it contradicts the rules that make it a trap. So the
+generator stops making claims about position altogether, and `env/pick_apparel_market.py`
+checks the rendered page, which it was written to do and can actually observe."""
 
 MIN_MARGIN_REL = 0.08
 # Percentage only, since 18 Sep 2026. There was an absolute floor of $1.50 alongside this,
@@ -393,10 +377,6 @@ def check(listings: list[dict], facts: dict) -> list[str]:
         broken.append("crossover")
     if facts["oracle_min_opens"] < 5:
         broken.append("floor_is_real")
-    if facts["winner_index"] < 8:
-        broken.append("answer_off_first_screen")
-    if facts["cheapest_card_index"] > 4:
-        broken.append("trap_on_first_screen")
     if not facts["sold_out_trap"]:
         broken.append("sold_out_trap")
     if facts["listings_target_sold_out"] < 3:

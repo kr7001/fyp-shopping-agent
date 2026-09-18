@@ -1,24 +1,34 @@
 #!/usr/bin/env python3
 """Seed clothing markets until one lands the right way round on the results page.
 
-A market is only a trap if the trap is where the glance lands. The answer has to sit outside
-the first row of search results, and the wrong answer has to sit inside it, or the questions
-measure something other than retrieval. The clothing market got this wrong twice: the first
-draw put the answer at card 4 and the agent scored 3 of 3 by glancing, and the second put the
-trap at card 11 so a glance found neither and the control question stopped being a control.
+A market is only a trap if the glance is wrong. The answer has to sit outside the first row
+of search results, and something inside that row has to look cheaper than the answer, or the
+questions measure something other than retrieval. The clothing market got this wrong twice:
+the first draw put the answer at card 4 and the agent scored 3 of 3 by glancing, and the
+second put the cheapest listing at card 11 so a glance found nothing misleading at all and
+the control question stopped being a control.
 
-Both times the fix was a rule on the listing's index in the catalogue, and both times that
-failed, because **catalogue index barely predicts page position**. Magento orders search
-results by its own relevance, and the third draw put index 1 at card 12 and index 11 at card
-4. There is no arrangement of the fixture that reliably decides where a listing renders.
+Both times the fix was a rule on the listing's index in the catalogue, and both times it
+failed. **Catalogue index does not decide where a listing renders. Variant count does.**
+Measured on 18 September 2026 across eight generated markets: Magento's fulltext relevance
+indexes every child product, so a listing offering four sizes carries the brand name four
+times and outranks one offering two. In the market measured, every listing in cards 1 to 8
+had four sizes, cards 9 to 11 had three, and cards 13 to 15 had two.
 
-So this stops predicting and starts measuring. It generates a market, seeds it, rebuilds the
-search index, reads the rendered results page, and keeps the market only if the real page has
-the trap in the first four cards and the answer outside them. Otherwise it tries the next
-seed. Nothing here costs money, only time: a cycle is about three minutes, and roughly one
-draw in five lands correctly.
+That made the old condition unsatisfiable rather than merely unlucky. The cheapest advertised
+listing is the one missing the target size, so it has fewer variants by construction, so it
+renders late by construction. Eight consecutive seeds were rejected with it at cards 8, 12,
+8, 14, 10, 15, 12 and 13, never once in the first four.
 
-    python env/pick_apparel_market.py --seeds 11 12 13 14 15 16
+So the condition is now the one that actually matters, and it is weaker in the right way: the
+answer must render outside the first row, and at least one listing inside the first row must
+advertise a price below what the answer costs. A shopper glancing at the first screen then
+sees something that looks like a better deal and is not. Which particular listing plays that
+role does not matter.
+
+Nothing here costs money, only time: a cycle is about five minutes, most of it reindexing.
+
+    python env/pick_apparel_market.py --seeds 201 202 203
     python env/pick_apparel_market.py --check-only     # just measure what is seeded now
 """
 
@@ -67,8 +77,27 @@ def positions(fixture: dict) -> tuple[int | None, int | None, list[str]]:
             place(instance["winner"]["seller"]), order)
 
 
-def usable(trap: int | None, answer: int | None) -> bool:
-    return bool(trap and trap <= FIRST_ROW and answer and answer > FIRST_ROW)
+def first_row_misleads(fixture: dict, order: list[str]) -> list[str]:
+    """Listings in the visible row that advertise less than the real answer costs.
+
+    This replaces asking where one particular listing rendered. What has to be true is
+    that a glance at the first row is actively misleading, and that holds whenever any
+    visible listing advertises a price below what the answer actually costs. Requiring it
+    of the single cheapest listing was both stronger than needed and, as it turned out,
+    unsatisfiable: the cheapest listing is the one missing the target size, which gives it
+    fewer variants, and Magento ranks a listing with fewer variants lower.
+    """
+    instance = fixture["_instance"]
+    answer_price = instance["winner"]["price"]
+    advertised = {f["seller"]: min(v["price"] for v in f["variants"])
+                  for f in fixture["families"]}
+    return [seller for seller in order[:FIRST_ROW]
+            if advertised.get(seller, float("inf")) < answer_price]
+
+
+def usable(answer: int | None, misleading: list[str]) -> bool:
+    """The answer is out of reach of a glance, and a glance is actively wrong."""
+    return bool(answer and answer > FIRST_ROW and misleading)
 
 
 def reindex() -> None:
@@ -93,11 +122,12 @@ def attempt(seed: int) -> tuple[bool, str]:
 
     fixture = json.loads(FIXTURE.read_text())
     trap, answer, order = positions(fixture)
+    misleading = first_row_misleads(fixture, order)
     instance = fixture["_instance"]
-    ok = usable(trap, answer)
-    note = (f"seed {seed}: trap {instance['cheapest_card']['seller']} at card {trap}, "
-            f"answer {instance['winner']['seller']} at card {answer}, "
-            f"floor {instance['oracle_min_opens']}")
+    ok = usable(answer, misleading)
+    note = (f"seed {seed}: answer {instance['winner']['seller']} at card {answer}, "
+            f"{len(misleading)} of the first {FIRST_ROW} cards advertise below "
+            f"${instance['winner']['price']}, floor {instance['oracle_min_opens']}")
     if ok and len(order) < 5:
         return False, note + "  (too few listings rendered)"
     return ok, note
@@ -114,11 +144,13 @@ def main() -> int:
     if args.check_only:
         fixture = json.loads(FIXTURE.read_text())
         trap, answer, order = positions(fixture)
-        print(f"cards 1 to 4: {order[:4]}")
-        print(f"trap   at card {trap}")
-        print(f"answer at card {answer}")
-        print("usable" if usable(trap, answer) else "not usable")
-        return 0 if usable(trap, answer) else 1
+        misleading = first_row_misleads(fixture, order)
+        print(f"cards 1 to {FIRST_ROW}: {order[:FIRST_ROW]}")
+        print(f"answer at card {answer}, costing "
+              f"${fixture['_instance']['winner']['price']}")
+        print(f"misleading in the first row: {misleading}")
+        print("usable" if usable(answer, misleading) else "not usable")
+        return 0 if usable(answer, misleading) else 1
 
     for seed in args.seeds:
         ok, note = attempt(seed)

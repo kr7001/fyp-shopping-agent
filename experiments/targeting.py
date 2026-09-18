@@ -38,7 +38,7 @@ import re
 # under different versions are different policies and must not be pooled, which is the
 # same denominator discipline applied everywhere else. v1 lacked the enumeration step and
 # pruned within whatever the first screen happened to show.
-VERSION = 4
+VERSION = 5
 
 # Ordered, and the order matters. A universal question about stock also contains the word
 # "lowest" in some phrasings, so the coverage test is applied before the price tests.
@@ -49,6 +49,10 @@ UNIVERSAL = re.compile(r"\b(every|all)\b.*\b(stock|carry|offer|have)\b", re.IGNO
 # Checked before the plain cheapest test, since these questions contain "cheapest" too.
 BUYABLE = re.compile(r"\b(buy|bought|buyable|purchas\w+|available|in stock)\b",
                      re.IGNORECASE)
+# Reviews gate by depth rather than by a click, so they need their own strategy. Checked
+# first because a review question can contain almost any other keyword: a buyer may well
+# mention a refund, a leak, or the cheapest place they found it.
+REVIEWS = re.compile(r"\b(buyers?|reviewers?|reviews?)\b", re.IGNORECASE)
 UNIT_RATE = re.compile(r"per\s+(litre|liter|kg|kilogram|unit)|best value", re.IGNORECASE)
 CHEAPEST = re.compile(r"\b(cheapest|lowest price|lowest cost|least expensive)\b",
                       re.IGNORECASE)
@@ -61,6 +65,8 @@ LARGEST_PACK_LITRES = 19
 
 
 def classify(question: str) -> str:
+    if REVIEWS.search(question):
+        return "depth_search"
     if UNIVERSAL.search(question):
         return "refutation"
     if UNIT_RATE.search(question):
@@ -178,6 +184,27 @@ STRATEGIES = {
         "checked the option was available rather than only listed. Say how many listings "
         "you opened, how many you skipped, and how many you rejected for being unavailable."
         + QUARANTINE),
+    "depth_search": (
+        "Note what this question needs, because the two possible answers cost very "
+        "different amounts.\n"
+        "To answer yes you need exactly ONE review saying it. Quote that review and stop. "
+        "Nothing is gained by finding a second.\n"
+        "To answer no you must have read every review there is, and there are many more "
+        "than the page shows.\n"
+        "The reviews are paginated, ten to a page, and there is no way to filter or sort "
+        "them. The first page is not a sample you can generalise from: complaints are a "
+        "minority, so ten consecutive reviews frequently contain none even when several "
+        "exist further in.\n"
+        "So:\n"
+        "1. Read page one and check for the thing asked about.\n"
+        "2. If it is there, quote it, say which page, and stop.\n"
+        "3. Otherwise turn to the next page and repeat. The page parameter is ?p=2, ?p=3 "
+        "and so on.\n"
+        "4. Only after reaching the last page without a single mention may you answer no.\n"
+        "If you run out of budget before the last page, do not answer no. Say how many "
+        "pages of how many you read and that you found no mention in those. An unread page "
+        "is not an absence of evidence, and reporting it as one is the error this is "
+        "written to prevent."),
     "survey": (
         ENUMERATE + "Open every listing in the search results and check the relevant option on each "
         "before answering. Say how many you opened."),
