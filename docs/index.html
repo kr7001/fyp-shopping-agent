@@ -406,6 +406,7 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
           <tr class="hi"><td class="wide">Products whose price varies by option</td><td class="num">0</td><td class="dim wide">The shop cannot exhibit price gating as shipped</td></tr>
           <tr><td class="wide">Option values across the catalogue</td><td class="num">425,384</td><td class="dim wide">Options exist in quantity</td></tr>
           <tr class="hi"><td class="wide">Option values that change the price</td><td class="num">0</td><td class="dim wide">Ten colours of the same item, all at one price. Option variance without price variance</td></tr>
+          <tr class="hi"><td class="wide">Setting that decides whether a sold out option is shown</td><td class="num">was 0</td><td class="dim wide">Magento's default hides out of stock variants, so a sold out size was indistinguishable from one never sold. Set to 1 on 18 Sep 2026, and the option now renders disabled</td></tr>
         </tbody>
       </table>
     </div>
@@ -414,12 +415,13 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
     <p class="lede">Every added product is created through the shop's own admin interface rather than by editing its database, so it passes the same validation a real product would. Every added product carries an <code>IGR-</code> prefix, so seeded rows can always be separated from the shop's own. No existing product was modified.</p>
     <div class="tablewrap">
       <table>
-        <caption>Three fixtures, 34 listings, 124 buyable variants</caption>
+        <caption>Four fixtures, 49 listings, and the three states a variant can be in</caption>
         <thead><tr><th>Fixture</th><th class="num">Listings</th><th class="num">Variants</th><th class="wide">Purpose</th><th>Status</th></tr></thead>
         <tbody>
           <tr><td>Small fixture</td><td class="num">4</td><td class="num">14</td><td class="dim wide">One deliberate trap per listing, so a failure points at a known cause</td><td class="dim">Development</td></tr>
           <tr><td>Rivenhall</td><td class="num">15</td><td class="num">55</td><td class="dim wide">A market where checking everything is genuinely expensive</td><td class="dim">Development</td></tr>
           <tr class="hi"><td>Calderwood</td><td class="num">15</td><td class="num">55</td><td class="dim wide">Generated after the policy was finished, so it could test it</td><td class="dim">Held out until 17 Sep 2026</td></tr>
+          <tr class="hi"><td>Thornwood</td><td class="num">15</td><td class="num">varies</td><td class="dim wide">A second product category, and the first market with all three availability states. A size can be absent, offered and sold out, or buyable</td><td class="dim">Rebuilt 18 Sep 2026</td></tr>
         </tbody>
       </table>
     </div>
@@ -518,6 +520,23 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
       </table>
     </div>
     <p class="note">The other twelve questions belong to the small fixture and are in the <a href="#appendix-tasks">appendix</a>. Each question is asked three or five times, because the same model on the same page answers correctly twice and wrongly on the third attempt.</p>
+
+    <h3 class="sub" id="clothing-questions">The clothing market, which asks two of them twice</h3>
+    <p class="lede">Seven questions rather than five, and the two extra ones are the same question asked with and without an availability constraint. They exist because the shop can now render a size that is offered and cannot be bought, which it could not before 18 September.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>The matched pair, and why an agent that reads only prices answers both the same way</caption>
+        <thead><tr><th>Task</th><th class="wide">Question</th><th class="wide">What it needs</th><th class="wide">Where the two diverge</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">cheapest-target</td><td class="wide">Which seller lists the lowest price for size M, availability aside?</td><td class="dim wide">Price of the size in every listing that offers it</td><td class="dim wide">The answer is a listing that cannot ship it, and that is the correct answer to this question</td></tr>
+          <tr class="hi"><td class="mono">buyable-target</td><td class="wide">Which seller has the cheapest size M that can actually be bought today?</td><td class="dim wide">The same prices, plus the availability of each one</td><td class="dim wide">The cheapest listed price is rejected, and the answer is a more expensive listing further down</td></tr>
+          <tr><td class="mono">count-stocked</td><td class="wide">How many listings offer size M?</td><td class="dim wide">Every listing opened, since counting cannot stop early</td><td class="dim wide">Counts the sold out ones, because they do offer it</td></tr>
+          <tr class="hi"><td class="mono">count-buyable</td><td class="wide">How many listings have size M in stock right now?</td><td class="dim wide">Every listing opened, and the disabled state read on each</td><td class="dim wide">Lower than the count above by exactly the sold out listings</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">An agent that reads the menu and ignores the disabled state gives the same answer to both halves of each pair. That is the measurement: the gap between the two answers is the size of what availability gating costs, and it needs no separate baseline to interpret.</p>
+    <p class="note">A fifth strategy came with them. The three existing bound strategies prune on price alone, which is sound for a question about price and unsound here, because a cheaper listing that cannot ship the size changes nothing and must not become the best candidate. <code>availability_bound</code> prunes on the advertised price exactly as before and adds one test: a listing becomes the best candidate only if the option is both cheaper and available. The planner regression still reproduces all 22 existing questions byte for byte, so the new strategy is an addition rather than a change.</p>
 
     <h3 class="sub">How a run is measured</h3>
     <div class="tablewrap">
@@ -807,7 +826,8 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
           <tr><td class="wide">Strategies are supplied, not enforced</td><td class="dim wide">The policy is text appended to the question. Nothing verifies the agent followed it beyond what its record shows</td></tr>
           <tr><td class="wide">Pruning assumes no vouchers</td><td class="dim wide">Skipping a listing is sound only because nothing inside it can cost less than its advertised price. A voucher breaks that, so the saving holds in the absence of voucher pricing</td></tr>
           <tr><td class="wide">Shipping and vouchers are out of scope</td><td class="dim wide">Stated rather than implied, at the supervisor's suggestion</td></tr>
-          <tr><td class="wide">Gating by absence is not checkable</td><td class="dim wide">When a sold out size is removed from the menu, nothing in the record marks it as missing, so no rule can test a claim about it</td></tr>
+          <tr><td class="wide">Gating by absence is not checkable</td><td class="dim wide">When a size the seller never stocked is not in the menu, nothing in the record marks it as missing, so no rule can test a claim about it. This is narrower than it was: a size that is offered and sold out is now rendered as a disabled option, which a record can carry</td></tr>
+          <tr class="hi"><td class="wide"><b>The availability questions are built and unrun</b></td><td class="dim wide">The third state, the two questions that isolate it and the strategy that handles it were all added on 18 September. Nothing has been measured against them, so this page makes no claim about how an agent does on availability. Building the test and reporting its result are separate, and only the first has happened</td></tr>
         </tbody>
       </table>
     </div>
@@ -825,7 +845,7 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
           <tr class="hi"><td class="idx">1</td><td class="wide"><b>Two cheap probes</b>, done 18 Sep</td><td class="dim wide">Yes to both. The model writes a sound plan 6 of 8 times unaided and 7 of 8 when told the soundness properties, and a second model runs the agent at a fifth of the cost. Details in <a href="#appendix-probes">appendix L</a></td><td class="dim">done</td><td class="num">$0.14</td></tr>
           <tr class="hi"><td class="idx">2</td><td class="wide"><b>A shop that hides variant prices properly</b>, done 18 Sep</td><td class="dim wide">Built as a theme selected by user agent, so nothing else in the shop moves. Measured in <a href="#rq2-gate">section 9</a>: the agent starts selecting sizes, pays 64 per cent more, and is no more right</td><td class="dim">done</td><td class="num">$5.4</td></tr>
           <tr class="hi"><td class="idx">3</td><td class="wide">A second and third agent, <b>first result in</b></td><td class="dim wide">The from-scratch loop opens fewer listings than openJiuwen, not more, which falsified the prediction and moved the finding. See <a href="#appendix-scaffold">appendix M</a>. A widely used open source agent is still to come</td><td class="dim">part done</td><td class="num">$3.4 so far</td></tr>
-          <tr><td class="idx">4</td><td class="wide">More kinds of question and product</td><td class="dim wide">Clothing, where price and stock are both gated, reviews, where the answer is spread across pages, and a question that cannot be answered at all</td><td class="dim">mid Oct</td><td class="num">$13</td></tr>
+          <tr class="hi"><td class="idx">4</td><td class="wide">More kinds of question and product, <b>environment built 18 Sep</b></td><td class="dim wide">Clothing with all three availability states, two questions that differ only in whether the answer must be buyable, and the <code>availability_bound</code> strategy that handles them. Built and not yet run. Reviews, where the answer is spread across pages, and a question that cannot be answered at all, still to come</td><td class="dim">runs mid Oct</td><td class="num">$13</td></tr>
           <tr class="hi"><td class="idx">5</td><td class="wide"><b>Freeze, then one final run</b></td><td class="dim wide">Every number in the report produced under one frozen version</td><td class="dim">late Oct</td><td class="num">$8</td></tr>
         </tbody>
       </table>
