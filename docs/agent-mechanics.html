@@ -1,0 +1,490 @@
+<title>How the Agent Reads a Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+
+<style>
+:root {
+  --ground: #FFFFFF;
+  --soft: #F7F8FA;
+  --ink: #15181D;
+  --muted: #6C7480;
+  --faint: #99A0AB;
+  --line: #E8EAEE;
+  --line-strong: #D3D7DE;
+  --accent: #2359D0;
+  --accent-soft: #EEF3FD;
+  --good: #16704A;
+  --bad: #B3312A;
+  --warn: #8A6100;
+  --warn-soft: #FCF3DF;
+
+  --sans: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  --measure: 72ch;
+}
+
+:root[data-theme="dark"] {
+  --ground: #10141A;
+  --soft: #181D25;
+  --ink: #EAEDF2;
+  --muted: #A6AEBA;
+  --faint: #808895;
+  --line: #262D37;
+  --line-strong: #39424E;
+  --accent: #8FB0F5;
+  --accent-soft: #182339;
+  --good: #74C298;
+  --bad: #E8887B;
+  --warn: #DFB05C;
+  --warn-soft: #2C2514;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16.5px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 { margin: 0; line-height: 1.2; text-wrap: balance; font-weight: 600; letter-spacing: -0.015em; }
+p { margin: 0; }
+a { color: var(--accent); text-underline-offset: 3px; }
+code { font-family: var(--mono); font-weight: 500; font-size: 0.88em; }
+
+.eyebrow {
+  font-family: var(--mono); font-weight: 700; font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint);
+}
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+
+.masthead { border-bottom: 1px solid var(--line); }
+.masthead .wrap {
+  display: flex; flex-wrap: wrap; gap: 24px 40px;
+  align-items: flex-end; justify-content: space-between;
+  padding-top: 52px; padding-bottom: 32px;
+}
+.mast-text { display: flex; flex-direction: column; gap: 12px; max-width: 64ch; }
+.mast-text h1 { font-size: clamp(30px, 4.4vw, 44px); letter-spacing: -0.028em; }
+.mast-text .sub { color: var(--muted); font-size: 17.5px; max-width: 58ch; }
+.mast-meta { display: flex; flex-wrap: wrap; gap: 6px 22px; font-family: var(--mono); font-weight: 500; font-size: 12px; color: var(--muted); }
+
+.themebtn {
+  font-family: var(--mono); font-weight: 700; font-size: 12px;
+  border: 1px solid var(--line-strong); background: transparent; color: var(--muted);
+  padding: 8px 14px; border-radius: 2px; cursor: pointer;
+}
+.themebtn:hover { color: var(--ink); border-color: var(--ink); }
+.themebtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.toc { border-bottom: 1px solid var(--line); background: var(--soft); }
+.toc .wrap { display: flex; flex-wrap: wrap; gap: 4px 24px; padding-top: 14px; padding-bottom: 14px; }
+.toc a { font-family: var(--mono); font-weight: 700; font-size: 11.5px; text-decoration: none; color: var(--muted); letter-spacing: 0.02em; }
+.toc a:hover { color: var(--accent); }
+
+main { padding: 46px 0 90px; display: flex; flex-direction: column; gap: 64px; }
+section { display: flex; flex-direction: column; gap: 18px; scroll-margin-top: 18px; }
+section > h2 { font-size: clamp(22px, 2.8vw, 29px); letter-spacing: -0.022em; }
+h3.sub { font-size: 18px; margin-top: 10px; }
+h4.sub2 { font-size: 13px; margin-top: 6px; color: var(--muted); font-family: var(--mono); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.lede { color: var(--muted); max-width: var(--measure); font-size: 15.5px; }
+.note { color: var(--muted); max-width: var(--measure); font-size: 14.5px; }
+.claim { font-size: 16px; max-width: var(--measure); border-left: 3px solid var(--accent); padding: 2px 0 2px 16px; }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: 24px 32px; padding: 2px 0 6px; }
+.stat { display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: inherit; border-top: 1px solid var(--line-strong); padding-top: 12px; }
+.stat:hover { border-top-color: var(--accent); }
+.stat:hover .l { color: var(--accent); }
+.stat .n { font-size: 29px; font-weight: 600; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.stat .l { font-family: var(--mono); font-weight: 700; font-size: 10.5px; color: var(--muted); letter-spacing: 0.05em; }
+.stat.flag .n { color: var(--bad); }
+.stat.win .n { color: var(--good); }
+
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 620px; }
+th, td { text-align: left; padding: 9px 16px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; border-bottom-color: var(--line-strong); white-space: nowrap; }
+td.num, th.num { font-family: var(--mono); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; padding-right: 0; white-space: nowrap; }
+td.mono { font-family: var(--mono); font-weight: 500; font-size: 12.5px; }
+td.dim { color: var(--muted); }
+td.wide { min-width: 24ch; }
+td.idx, th.idx { font-family: var(--mono); font-weight: 700; text-align: left; width: 40px; white-space: nowrap; color: var(--muted); }
+tr.hi td { background: var(--accent-soft); }
+tr.warn td { background: var(--warn-soft); }
+
+caption { caption-side: top; text-align: left; font-family: var(--mono); font-weight: 700; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding-bottom: 8px; }
+
+.pill { font-family: var(--mono); font-weight: 700; font-size: 11px; white-space: nowrap; }
+.pill.ok { color: var(--good); }
+.pill.no { color: var(--bad); }
+.pill.amb { color: var(--warn); }
+
+.quote {
+  border-left: 2px solid var(--line-strong); padding: 4px 0 4px 18px;
+  font-family: var(--mono); font-weight: 500; font-size: 13px; color: var(--ink);
+  display: flex; flex-direction: column; gap: 7px; max-width: 92ch;
+}
+.quote.bad { border-left-color: var(--bad); }
+.quote.good { border-left-color: var(--good); }
+.quote .who { font-family: var(--sans); font-weight: 400; font-size: 12.5px; color: var(--muted); }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 26px 34px; }
+.card { display: flex; flex-direction: column; gap: 7px; padding-top: 14px; border-top: 1px solid var(--line-strong); }
+.card.risk { border-top-color: var(--bad); }
+.card.done { border-top-color: var(--good); }
+.card h4 { font-size: 16px; }
+.card .when { font-family: var(--mono); font-weight: 700; font-size: 10.5px; color: var(--muted); letter-spacing: 0.08em; }
+.card p { font-size: 14.5px; color: var(--muted); }
+
+.appendix { border-top: 2px solid var(--line-strong); padding-top: 34px; }
+
+footer { border-top: 1px solid var(--line); }
+footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; display: flex; flex-wrap: wrap; gap: 8px 28px; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="mast-text">
+      <span class="eyebrow">Supporting investigation &middot; 18 September 2026 &middot; <a href="index.html">back to the main page</a></span>
+      <h1>How the agent reads a shop</h1>
+      <p class="sub">Everything on this page was checked against the code or measured against a running browser. Every claim names the file and the line it came from. Where something is not proven, it says so.</p>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Contents">
+  <div class="wrap">
+    <a href="#why">Why this page exists</a>
+    <a href="#three">1. The three ways to look</a>
+    <a href="#live">2. Shopee, Lazada, TikTok</a>
+    <a href="#webarena">3. Our shop, and how it compares</a>
+    <a href="#walk">4. One question, start to finish</a>
+    <a href="#claim">5. The Huawei claim, tested</a>
+    <a href="#second">6. The second agent</a>
+    <a href="#verdict">7. What is settled</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <section id="why">
+    <h2>Why this page exists</h2>
+    <p class="lede">Over one conversation I gave three different answers to the same question about how the agent reads a page. Each answer was based on a number I had not fully checked. This page exists to end that, so it is written for someone with no background in the project and every claim carries the code that backs it.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>The four questions this page answers, and the short answer to each</caption>
+        <thead><tr><th class="idx">#</th><th class="wide">Question</th><th class="wide">Short answer</th></tr></thead>
+        <tbody>
+          <tr><td class="idx">1</td><td class="wide">What do Shopee and Lazada look like to an agent?</td><td class="dim wide">Shopee announces a sold out size properly. Lazada announces nothing at all, and to an agent its whole size selector is one line of plain text</td></tr>
+          <tr><td class="idx">2</td><td class="wide">What does our shop look like, and does it match them?</td><td class="dim wide">It matches Shopee closely and Lazada not at all. It is the generous case, and that is a stated limit rather than a flaw</td></tr>
+          <tr class="hi"><td class="idx">3</td><td class="wide">Does openJiuwen really read the page, or only a summary?</td><td class="dim wide"><b>It reads the page. The claim is true.</b> The summary it prefers is itself built by reading the page. The problem is what the summary throws away and never mentions</td></tr>
+          <tr><td class="idx">4</td><td class="wide">How does the second agent differ?</td><td class="dim wide">It reads the visible text of the whole page. No summary, no filtering, and it sees more of the shop as a result</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="three">
+    <h2>1. The three ways to look at a page</h2>
+    <p class="lede">A web page can be handed to a language model in several shapes. Understanding the difference between them is most of this page, so here they are in plain terms.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>What each one is, without jargon</caption>
+        <thead><tr><th>Name</th><th class="wide">What it actually is</th><th class="wide">Rough analogy</th></tr></thead>
+        <tbody>
+          <tr><td><b>Raw HTML</b></td><td class="dim wide">The file the server sent, including every style rule, script and hidden attribute</td><td class="dim wide">The full printing plates for a newspaper, ink specifications included</td></tr>
+          <tr class="hi"><td><b>Accessibility tree</b></td><td class="dim wide">What a screen reader would announce. Only the meaningful parts, each labelled by what it is: a button, a link, a dropdown, an option, and whether it is disabled</td><td class="dim wide">Someone reading the newspaper aloud to you, saying "headline", "photo caption", "advert"</td></tr>
+          <tr class="hi"><td><b>Card probe summary</b></td><td class="dim wide">openJiuwen's own tool. It runs a small program inside the page, finds repeated blocks that look like product cards, and returns them as a list</td><td class="dim wide">Asking an assistant to skim the paper and write out just the classified ads</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The important point, and the one that took longest to establish: <b>the card probe is not an alternative to reading the page. It is a way of reading the page.</b> It reads the same source as everything else and then compresses what it found.</p>
+
+    <h3 class="sub">Code evidence that the probe reads the page</h3>
+    <p class="note">The probe is a piece of JavaScript that openJiuwen sends into the browser to run inside the page itself. Inside it, these lines do the reading:</p>
+    <div class="tablewrap">
+      <table>
+        <caption>From <code>agent/agent-core/openjiuwen/harness/tools/browser_move/playwright_runtime/probes.py</code></caption>
+        <thead><tr><th class="num">Line</th><th class="wide">What the code says</th><th class="wide">What that means</th></tr></thead>
+        <tbody>
+          <tr><td class="num">203</td><td class="mono wide">const matches = Array.from(document.querySelectorAll(selector));</td><td class="dim wide">Ask the live page for every element matching a pattern. This is reading the page directly</td></tr>
+          <tr><td class="num">293</td><td class="mono wide">return normalize(el.innerText || el.textContent || '');</td><td class="dim wide">Take the visible text out of an element</td></tr>
+          <tr><td class="num">277</td><td class="mono wide">if (el.disabled || el.getAttribute('aria-disabled') === 'true') return false;</td><td class="dim wide">Check whether something is switched off. <code>aria-disabled</code> is an accessibility attribute, so the probe reads accessibility information too</td></tr>
+          <tr><td class="num">160</td><td class="mono wide">const explicit = el.getAttribute('role');</td><td class="dim wide">Read the accessibility role of an element, which is what the accessibility tree is built from</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">So the summary is built from the page and from accessibility attributes. Anyone saying openJiuwen "uses a summary instead of the page" is wrong, and I was that person for part of one afternoon.</p>
+
+    <h3 class="sub" id="sizes">What each one costs, measured on the same page</h3>
+    <p class="note">Measured on our shop's search page for the clothing market, fifteen products, window 1200 by 701. Each figure is the actual size of what would be sent to the model. Tokens are the unit models are billed in, roughly four characters each. Nothing here involved paying a model, the page was simply read four ways.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>The same search page, four ways of looking at it</caption>
+        <thead><tr><th class="wide">Way of looking</th><th class="num">Characters</th><th class="num">Approx tokens</th><th class="num">Products it shows</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="wide"><b>Accessibility tree</b></td><td class="num"><b>11,394</b></td><td class="num"><b>2,848</b></td><td class="num"><b>15 of 15</b></td></tr>
+          <tr class="warn"><td class="wide"><b>Card probe, as shipped</b></td><td class="num">31,701</td><td class="num">7,925</td><td class="num"><b>4 of 15</b></td></tr>
+          <tr><td class="wide">Card probe, with the window limit switched off</td><td class="num">88,822</td><td class="num">22,205</td><td class="num">15 of 15</td></tr>
+          <tr><td class="wide">Raw HTML</td><td class="num">252,848</td><td class="num">63,212</td><td class="num">15 of 15</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">Read that middle row twice. <b>The summary the agent is told to prefer is nearly three times bigger than the accessibility tree and shows a quarter as many products.</b> It is not a saving. It is more expensive and less complete, at the same time.</p>
+    <p class="note">How this was measured: openJiuwen's own probe code was loaded straight from its repository and run against our shop through a browser, once with its shipped setting and once with the window limit switched off, changing nothing else. The script is kept out of the repository because it is a one-off, and the numbers above are its output. No model was called, so this cost nothing.</p>
+
+    <h3 class="sub">Why the summary is so large</h3>
+    <p class="note">A quarter of it, 9,095 characters across 129 fields, is addresses describing where each element sits. One real example, sent to the model as part of the reply:</p>
+    <div class="quote">
+      <span class="mono">'title_selector_hint': 'body:nth-of-type(1) &gt; div.page-wrapper:nth-of-type(2) &gt; header.page-header:nth-of-type(1) &gt; div.panel.wrapper:nth-of-type(1) &gt; ul.header.links:nth-of-type(1) &gt; li.item.link ...'</span>
+    </div>
+    <p class="note">280 characters to say where one thing is. That is useful if the agent must click that exact element later, which is the case when filling in a form. It is wasted on fifteen products that the agent reaches by clicking an ordinary link.</p>
+  </section>
+
+  <section id="live">
+    <h2>2. What Shopee, Lazada and TikTok look like to an agent</h2>
+    <p class="lede">All three were read by hand in September as an ordinary shopper, which is the only way this project is allowed to touch a live shop. The saved pages are not kept in the repository because they contain login identifiers. To get the accessibility tree without going near the live site, the size selector was cut out of the saved page into a small standalone file and read offline with all network access blocked.</p>
+
+    <h3 class="sub">Shopee, a water listing with two sizes sold out</h3>
+    <p class="note">The page's own markup. The two sold out sizes carry <code>aria-disabled="true"</code>:</p>
+    <div class="quote">
+      <span class="mono">&lt;button aria-label="24 x 350ml" aria-disabled="true"&gt;24 x 350ml&lt;/button&gt;<br>
+      &lt;button aria-label="12 x 550ml" aria-disabled="false"&gt;12 x 550ml&lt;/button&gt;<br>
+      &lt;button aria-label="6 x 1.25L" aria-disabled="true"&gt;6 x 1.25L&lt;/button&gt;<br>
+      &lt;button aria-label="2 x 9.5L" aria-disabled="false"&gt;2 x 9.5L&lt;/button&gt;</span>
+    </div>
+    <p class="note">And the accessibility tree that produces, generated offline from that fragment:</p>
+    <div class="quote">
+      <span class="mono">- button "24 x 350ml" [disabled]<br>
+      - button "12 x 550ml"<br>
+      - button "6 x 1.25L" [disabled]<br>
+      - button "2 x 9.5L"</span>
+    </div>
+    <p class="claim">This is close to ideal for an agent. Every size is announced, each is a proper button, and the two that cannot be bought say so in a way any tool can read.</p>
+    <p class="note">The prices are a different story. Shopee ships a block of data inside the page listing all four sizes, and every one of them has <code>"price": null</code>. The listing publishes a range, 11.90 to 19.90, and never says which size is which. So on Shopee <b>availability is disclosed and price is withheld.</b></p>
+
+    <h3 class="sub">Lazada, a clothing listing with one size unavailable</h3>
+    <p class="note">The markup. There is no button, no role and no accessibility attribute. The only signal is the word "disabled" inside a class name, which is styling information:</p>
+    <div class="quote">
+      <span class="mono">&lt;div class="sku-variable-name-disabled" title="Int: 20XL(Contact Seller)"&gt;<br>
+      &nbsp;&nbsp;&lt;span class="sku-variable-name-text"&gt;Int: 20XL(Contact Seller)&lt;/span&gt;<br>
+      &lt;/div&gt;<br>
+      &lt;div class="sku-variable-name" title="Int:S"&gt;&lt;span&gt;Int:S&lt;/span&gt;&lt;/div&gt;</span>
+    </div>
+    <p class="note">And the accessibility tree that produces:</p>
+    <div class="quote">
+      <span class="mono">- text: "Int: 20XL(Contact Seller) Int:S Int:M Int:L Int:XL Int:3XL Int:XXL/EU:38A/UK:38B/US:38C/JP:38D"</span>
+    </div>
+    <p class="claim">One line of plain text. Not a list, not buttons, nothing marked unavailable. An agent reading the accessibility tree of a Lazada size selector cannot tell that anything is out of stock, cannot tell where one size ends and the next begins, and has nothing it can obviously click.</p>
+    <p class="note">Lazada also publishes no price at all in its structured data, and its internal data block carries no price for any size. Its stock flag is <code>"disable": false</code>, which appeared 50 times and never once as true, so unavailable combinations seem to be left out rather than marked.</p>
+
+    <h3 class="sub">TikTok Shop, which withholds nothing</h3>
+    <p class="note">TikTok embeds a complete table in the page before any interaction. Each entry has its own price and its own live stock count:</p>
+    <div class="quote">
+      <span class="mono">{"sku_id": "1729734398839391495", "sku_name": "Mix Flavour - 6 btl",<br>
+      &nbsp;"sku_quantity": {"available_quantity": 633}, "sku_stock_status": 1, ...}</span>
+    </div>
+    <p class="claim">Twenty six entries, each with a price and a quantity, all present on load. TikTok Shop does not gate variant information at all.</p>
+
+    <div class="tablewrap">
+      <table>
+        <caption>The three marketplaces side by side</caption>
+        <thead><tr><th>Shop</th><th class="wide">Price of each size</th><th class="wide">Stock of each size</th><th class="wide">How an agent would know something is sold out</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td>Shopee</td><td class="dim wide">Withheld until you click</td><td class="dim wide">Published</td><td class="dim wide">Cleanly. <code>[disabled]</code> on a proper button</td></tr>
+          <tr class="warn"><td>Lazada</td><td class="dim wide">Withheld entirely, no price anywhere</td><td class="dim wide">Not published as a flag</td><td class="dim wide">It would not. Only a styling class name says so</td></tr>
+          <tr><td>TikTok Shop</td><td class="dim wide">All published on load</td><td class="dim wide">All published on load</td><td class="dim wide">Directly from the data, no interaction needed</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">There is no standard here. Three shops, three completely different answers. That is itself the finding for the first research question, and it is why the project builds a retrieval policy rather than a parser for one site's layout.</p>
+  </section>
+
+  <section id="webarena">
+    <h2>3. What our shop looks like, and how it compares</h2>
+    <p class="lede">Our shop is WebArena, a working copy of the Magento shopping platform running on this machine, with products added by this project. Here is the same size selector, on a listing where two sizes are sold out.</p>
+    <p class="note">The accessibility tree, read from the live local page:</p>
+    <div class="quote">
+      <span class="mono">- text: As low as $18.33 Size *<br>
+      - combobox "Size *":<br>
+      &nbsp;&nbsp;- option "Choose an Option..." [selected]<br>
+      &nbsp;&nbsp;- option "S" [disabled]<br>
+      &nbsp;&nbsp;- option "M" [disabled]<br>
+      &nbsp;&nbsp;- option "L"<br>
+      &nbsp;&nbsp;- option "XL"</span>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <caption>Where our shop matches the real ones and where it does not</caption>
+        <thead><tr><th class="wide">Property</th><th class="wide">Our shop</th><th class="wide">Verdict</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="wide">Sold out sizes are visible and marked</td><td class="dim wide">Yes, <code>option "M" [disabled]</code></td><td class="dim wide"><b>Matches Shopee.</b> Different role, a dropdown rather than buttons, same meaning</td></tr>
+          <tr class="hi"><td class="wide">The price of a size is hidden until chosen</td><td class="dim wide">Yes, under the suppressing theme. The box shows a starting price and nothing else</td><td class="dim wide"><b>Matches Shopee and Lazada.</b> Did not match before 18 September, which was a real defect</td></tr>
+          <tr><td class="wide">The price of a sold out size</td><td class="dim wide">Unreachable. A disabled option cannot be chosen, so its price never appears</td><td class="dim wide"><b>Matches both.</b> Neither marketplace publishes a price for a greyed out variant either</td></tr>
+          <tr class="warn"><td class="wide">Sold out variants are hard to detect</td><td class="dim wide">No. Ours are easy to detect, like Shopee's</td><td class="dim wide"><b>Does not match Lazada.</b> Our shop is the generous case. An agent that succeeds here has not been shown to succeed on Lazada</td></tr>
+          <tr><td class="wide">Everything published on load</td><td class="dim wide">Yes, if the suppressing theme is switched off</td><td class="dim wide"><b>Matches TikTok Shop.</b> So the two settings of our shop are two real regimes rather than a bug and its fix</td></tr>
+          <tr><td class="wide">Search results paginate</td><td class="dim wide">Was 12 per page, now 36, so all fifteen show at once</td><td class="dim wide">Deliberately changed so page turning is not confused with not looking</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The honest summary: our shop is a faithful copy of the <b>Shopee</b> case and a poor copy of the <b>Lazada</b> case. Everything measured in this project is therefore a lower bound on how bad the problem is in the wild.</p>
+  </section>
+
+  <section id="walk">
+    <h2>4. One question, start to finish, from a real run</h2>
+    <p class="lede">This is an actual recorded run, not a description of how it might go. The question was "which seller is cheapest for the 2 x 9.5L pack", asked against a market of fifteen sellers. Sixteen steps. Every line below came out of the run's own log.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Run <code>scaled-cheapest-target-2</code>, 9 September 2026</caption>
+        <thead><tr><th class="num">Step</th><th>Tool used</th><th class="wide">What happened, and what the agent could see afterwards</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td class="mono">browser_navigate</td><td class="dim wide">Goes to the search page. <b>The reply contains no page content.</b> It gives the address, the title, and a filename where a full snapshot was saved. The agent is told a snapshot exists and is not given it</td></tr>
+          <tr class="hi"><td class="num">2</td><td class="mono">browser_probe_cards</td><td class="dim wide">Asks for the card summary. Reply is 26,469 characters, says <code>'viewport_only': True</code> and <code>'total_candidates': 4</code>, and names <b>four sellers</b>. Eleven more exist further down the page and the reply does not mention them</td></tr>
+          <tr><td class="num">3</td><td class="mono">browser_click</td><td class="dim wide">Clicks into the first of those four</td></tr>
+          <tr class="hi"><td class="num">5</td><td class="mono">browser_snapshot</td><td class="dim wide">On the product page, asks for the accessibility tree. 9,528 characters. This is where the sizes appear</td></tr>
+          <tr><td class="num">6 to 12</td><td class="mono">navigate, snapshot</td><td class="dim wide">Back to the search page, into three more products, tree read on each</td></tr>
+          <tr><td class="num">13, 15</td><td class="mono">browser_take_screenshot</td><td class="dim wide">Two pictures taken, late, after the reading was done</td></tr>
+          <tr><td class="num">16</td><td class="mono">browser_evaluate</td><td class="dim wide">A small calculation, then the answer</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">Four products opened out of fifteen. The four it opened are the four the summary named.</p>
+
+    <h3 class="sub">What the product page looked like at step 5</h3>
+    <p class="note">This is the accessibility tree the agent received, copied from the run's log. Note that this run predates the price suppressing theme, so the prices are visible:</p>
+    <div class="quote">
+      <span class="mono">- text: As low as<br>
+      - generic: $6.82<br>
+      - generic: Pack Size *<br>
+      - combobox "Pack Size *":<br>
+      &nbsp;&nbsp;- option "Choose an Option..." [selected]<br>
+      &nbsp;&nbsp;- option "24 x 350ml +$1.48"<br>
+      &nbsp;&nbsp;- option "12 x 550ml"<br>
+      &nbsp;&nbsp;- option "6 x 1.25L +$2.13"<br>
+      &nbsp;&nbsp;- option "2 x 9.5L +$10.86"</span>
+    </div>
+    <p class="claim">Every size and its extra cost, sitting in the reply, with nothing clicked. The agent could add 6.82 and 10.86 and report 17.68 without ever selecting the size. That is the price leak this project found on 18 September, and it is why the suppressing theme exists. Under that theme the same menu now reads <code>option "2 x 9.5L"</code> with no figure attached, and the price appears only after the size is chosen.</p>
+
+    <h3 class="sub">What the summary does not carry</h3>
+    <p class="note">Running the same card probe against a <b>product</b> page rather than a search page, on a listing with two sold out sizes, the reply is 18,253 characters and the word "disabled" appears <b>zero</b> times. The size menu is not in the summary at all. The accessibility tree of the same page is 4,499 characters and carries the whole menu with both sold out sizes marked.</p>
+    <p class="claim">So on a product page the summary is four times larger than the accessibility tree and is missing the one thing the question needs. The agent does read the tree on product pages, which is why this has not caused a measured failure. It is a trap waiting rather than a trap sprung.</p>
+  </section>
+
+  <section id="claim">
+    <h2>5. The Huawei claim, tested line by line</h2>
+    <p class="lede">The claim comes from a developer talk deck, <code>OpenJiuwen Web &amp; Coding Agent.pptx</code>, slide 5. Not from the published paper: the paper is about coding agents and contains no instance of the words browser, DOM, accessibility, screenshot or Playwright, which was checked by searching its text.</p>
+    <div class="quote">
+      <span>Slide 5: <b>"Agent reads the control tree (DOM + AX) by default &amp; adds screenshots only when the page is ambiguous"</b></span>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <caption>Each part of the claim against what the code does</caption>
+        <thead><tr><th class="wide">The claim</th><th class="wide">What was found</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">Reads the page structure rather than pictures</td><td class="dim wide">Across 360 recorded runs: 1,656 accessibility tree reads, 1,560 page searches, 421 card summaries, and only 277 screenshots. Roughly thirteen structural reads for every picture</td><td><span class="pill ok">TRUE</span></td></tr>
+          <tr><td class="wide">Uses DOM and accessibility information</td><td class="dim wide">The card summary is JavaScript run inside the page. It calls <code>document.querySelectorAll</code> at line 203, reads <code>aria-disabled</code> at line 277 and <code>role</code> at line 160. The snapshot tool returns the accessibility tree directly</td><td><span class="pill ok">TRUE</span></td></tr>
+          <tr><td class="wide">Screenshots only when the page is ambiguous</td><td class="dim wide">Screenshots are rare and, in the run traced above, taken late and after the reading was done rather than in place of it</td><td><span class="pill ok">CONSISTENT</span></td></tr>
+          <tr class="warn"><td class="wide">By default</td><td class="dim wide">This is where it gets complicated. Navigating gives the agent a <b>filename</b>, not the page. The shipped prompt tells it to prefer the compact summary. So the default first look at a page is the summary, and the summary is limited to the visible window</td><td><span class="pill amb">TRUE BUT INCOMPLETE</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The claim is <b>not false</b>. I want to be plain about that, because the opposite would be an accusation against a real team and the evidence does not support it. They say they read the page and they do read the page.</p>
+
+    <h3 class="sub">What is actually wrong, stated precisely</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>Three facts that compose into the problem, each with its source</caption>
+        <thead><tr><th class="idx">#</th><th class="wide">Fact</th><th class="wide">Where it comes from</th></tr></thead>
+        <tbody>
+          <tr><td class="idx">1</td><td class="wide">The shipped prompt tells the agent to use the card summary first on any page with repeated listings, and to use that summary as its evidence <b>instead of</b> taking snapshots</td><td class="dim wide"><code>agents.py</code> lines 184 to 196. The exact words: "prefer browser_probe_cards first" and "use that compact result as the evidence for extraction and final reporting instead of taking screenshots, snapshots, or running extra DOM scans"</td></tr>
+          <tr class="hi"><td class="idx">2</td><td class="wide">That summary throws away anything below the fold of the window</td><td class="dim wide"><code>probes.py</code> lines 190 to 195. The test is <code>if (rect.top &gt; window.innerHeight) return false;</code>. Our cards start at 671 pixels down and the second row starts at 1128, in a window 701 tall, so the second row onwards is discarded</td></tr>
+          <tr class="warn"><td class="idx">3</td><td class="wide">The reply never says anything was thrown away</td><td class="dim wide">Checked directly in the probe output. There is no field naming a skipped or off screen count. It reports what it returned and stops</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">Put together: the agent is told to use a tool, the tool silently discards most of the page, and the agent has no way to know. It is not being lazy and it is not ignoring the page. It asked a fair question and got an answer with no hole in it.</p>
+
+    <h3 class="sub">Does this actually cause the behaviour</h3>
+    <p class="note">The strongest available evidence, from walking all 195 recorded runs step by step and recording which page the browser was on for every observation:</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th class="wide">Behaviour on the search page</th><th class="num">Runs that opened exactly 4 products</th><th class="num">Runs that opened any other number</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="wide"><b>Ever read the accessibility tree there</b></td><td class="num"><b>2 of 101</b></td><td class="num"><b>84 of 94</b></td></tr>
+          <tr><td class="wide">Reached for the card summary first</td><td class="num">100 of 101</td><td class="dim">-</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">Ninety nine of the hundred and one runs that stopped at four never read the search page properly at all. They did read pages in full later, on the four products they had already chosen, which is what misled me earlier when I counted those reads without checking which page they happened on.</p>
+    <p class="note"><b>What this does not prove.</b> This is a pattern across recorded runs, not a controlled experiment. A model inclined to look less might both skip the tree and stop early for reasons of its own. The test that settles it is to switch the window limit off, change nothing else, and see whether runs still stop at four. That change has been verified to work at the tool level, shown below, and has not yet been run with a model.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>openJiuwen's own probe code, run against our shop, one setting changed</caption>
+        <thead><tr><th>Setting</th><th class="num">Sellers it reports</th><th class="num">Reply size</th></tr></thead>
+        <tbody>
+          <tr><td>As shipped</td><td class="num">4</td><td class="num">31,701 chars</td></tr>
+          <tr class="hi"><td><b>Window limit off</b></td><td class="num"><b>15</b></td><td class="num">88,822 chars</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The fix works and costs about three times as much as the broken version. The accessibility tree shows the same fifteen for 11,394 characters, which is <b>an eighth</b> of the cost of the fixed summary. On this kind of page the best available option is the one the prompt steers away from.</p>
+    <p class="note">The smallest useful change upstream would be for the summary to report how many candidates it discarded. One number. The tool already has the full list in hand before it filters. That would let any agent notice there is more to see, without changing any behaviour by itself.</p>
+  </section>
+
+  <section id="second">
+    <h2>6. The second agent, and why it exists</h2>
+    <p class="lede">If every failure came from one agent, the failure might belong to that agent rather than to agents in general. So a second one was written from scratch, deliberately plain, in <code>experiments/naive_agent.py</code>. It has four tools: go to a web address, read the page, choose an option in a dropdown, and answer.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>How the two differ</caption>
+        <thead><tr><th class="wide">Property</th><th class="wide">openJiuwen</th><th class="wide">The plain loop</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">What it sees on arrival</td><td class="dim wide">A filename. It must then ask for something</td><td class="dim wide">The page text straight away, every time</td></tr>
+          <tr class="hi"><td class="wide">Window limit</td><td class="dim wide">Yes, on the summary, on by default</td><td class="dim wide"><b>None.</b> It reads the whole page regardless of what is on screen</td></tr>
+          <tr><td class="wide">Advice about how much to look</td><td class="dim wide">Detailed. Prefer the summary, avoid extra scans</td><td class="dim wide">None at all, which is the point</td></tr>
+          <tr><td class="wide">Sold out sizes</td><td class="dim wide">Visible in the accessibility tree as <code>[disabled]</code></td><td class="dim wide">Visible as <code>[unavailable]</code>, added 18 September</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">That last row was a defect found this week. The plain loop originally read the page with <code>innerText</code>, which prints a disabled option exactly like an available one, so it could not have answered a stock question at all while openJiuwen could. The two agents would not have been answering the same question, and the difference would have been recorded as a difference between agents. It now emits a short block naming each menu and marking what cannot be chosen:</p>
+    <div class="quote">
+      <span class="mono">Selectable options:<br>Size: Choose an Option..., S [unavailable], M [unavailable], L, XL</span>
+    </div>
+    <p class="claim">The first result from this second agent already changed a conclusion. It opens <b>fewer</b> listings than openJiuwen does, not more, which was the opposite of the recorded prediction. So "agents read the first screen and stop" is not simply a quirk of one tool's default setting.</p>
+  </section>
+
+  <section id="verdict">
+    <h2>7. What is settled and what is not</h2>
+    <div class="tablewrap">
+      <table>
+        <caption>Read this as the summary of the whole page</caption>
+        <thead><tr><th class="wide">Statement</th><th>Status</th><th class="wide">Evidence</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">openJiuwen reads page structure rather than pictures</td><td><span class="pill ok">SETTLED, TRUE</span></td><td class="dim wide">1,656 tree reads against 277 screenshots across 360 runs</td></tr>
+          <tr><td class="wide">Its card summary is itself a way of reading the page</td><td><span class="pill ok">SETTLED, TRUE</span></td><td class="dim wide"><code>probes.py</code> lines 160, 203, 277, 293</td></tr>
+          <tr><td class="wide">The summary discards everything below the window and never says so</td><td><span class="pill ok">SETTLED, TRUE</span></td><td class="dim wide"><code>probes.py</code> lines 190 to 195, plus the probe run both ways: 4 sellers against 15</td></tr>
+          <tr><td class="wide">The summary costs more than the accessibility tree and shows less</td><td><span class="pill ok">SETTLED, TRUE</span></td><td class="dim wide">31,701 characters for 4 products against 11,394 for 15</td></tr>
+          <tr class="hi"><td class="wide">The summary is <b>the cause</b> of runs stopping at four products</td><td><span class="pill amb">STRONGLY SUGGESTED, NOT PROVEN</span></td><td class="dim wide">2 of 101 against 84 of 94. Association across recorded runs, not a controlled test</td></tr>
+          <tr><td class="wide">Our shop is a fair copy of Shopee</td><td><span class="pill ok">SETTLED, TRUE</span></td><td class="dim wide">Both mark sold out variants in the accessibility tree and withhold their prices</td></tr>
+          <tr class="warn"><td class="wide">Our shop is a fair copy of Lazada</td><td><span class="pill warn">SETTLED, FALSE</span></td><td class="dim wide">Lazada's selector is one line of unmarked text. Ours is a labelled dropdown. Ours is much easier</td></tr>
+          <tr><td class="wide">Huawei promoted something untrue</td><td><span class="pill warn">NOT SUPPORTED</span></td><td class="dim wide">Every part of the slide 5 claim checked out. The gap is a design limit in one tool, not a false statement</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The single experiment that would move the fifth row from suggested to settled: run the existing questions with the window limit switched off and nothing else changed. If runs still stop at four, the cause is the model. If they stop stopping, the cause is the tool.</p>
+  </section>
+
+  <footer class="foot">
+    <div class="wrap">
+      <p>Supporting page for <a href="index.html">Ambiguity Without Adversary</a>. Every figure here was measured on 18 September 2026 against the local shop or read out of the repository at the line given. Nothing on this page required paying a model.</p>
+    </div>
+  </footer>
+
+</div>
