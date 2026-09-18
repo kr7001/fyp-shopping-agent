@@ -41,6 +41,80 @@
       "browser_click": 1,
       "browser_find": 1
     },
+    "selections": [
+      "2 x 9.5L +$15.01",
+      "2 x 9.5L +$15.01"
+    ],
+    "opened": [
+      "http://localhost:7770/igr-water-a.html",
+      "http://localhost:7770/igr-water-b.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-water-a.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$15.01"
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$15.01"
+      },
+      {
+        "tool": "browser_click",
+        "target": "combobox \"Pack Size *\" [ref=e89]"
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-water-b.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_snapshot",
@@ -60,5 +134,6 @@
       "browser_take_screenshot"
     ]
   },
-  "log": "water-cross-listing-4.log"
+  "log": "water-cross-listing-4.log",
+  "trace_log": "water-cross-listing-4.log"
 }

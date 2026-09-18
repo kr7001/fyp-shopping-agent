@@ -24,5 +24,96 @@
     "attempt": 1,
     "progress_state": null,
     "failure_summary": null
-  }
+  },
+  "trace": {
+    "tool_calls_total": 13,
+    "actions": 6,
+    "observations": 7,
+    "unclassified_tools": [],
+    "assistant_turns": 13,
+    "by_tool": {
+      "browser_snapshot": 4,
+      "browser_batch_interact": 3,
+      "browser_probe_interactives": 3,
+      "browser_navigate": 2,
+      "browser_select_option": 1
+    },
+    "selections": [
+      "2 x 9.5L +$15.01"
+    ],
+    "opened": [
+      "http://localhost:7770/igr-water-a.html",
+      "http://localhost:7770/igr-water-b.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-water-a.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$15.01"
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-water-b.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_select_option",
+      "browser_batch_interact",
+      "browser_probe_interactives",
+      "browser_probe_interactives",
+      "browser_batch_interact",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_probe_interactives",
+      "browser_batch_interact",
+      "browser_snapshot"
+    ]
+  },
+  "trace_log": "water-cross-listing-5.log"
 }

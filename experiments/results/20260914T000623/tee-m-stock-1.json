@@ -39,6 +39,44 @@
       "browser_probe_interactives": 1,
       "browser_evaluate": 1
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/igr-tee-a.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tee-a.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "e89"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "option \"M\""
+      },
+      {
+        "tool": "browser_find",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_snapshot",
@@ -50,5 +88,6 @@
       "browser_evaluate"
     ]
   },
-  "log": "tee-m-stock-1.log"
+  "log": "tee-m-stock-1.log",
+  "trace_log": "tee-m-stock-1.log"
 }

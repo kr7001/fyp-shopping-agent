@@ -40,6 +40,257 @@
       "browser_navigate_back": 1,
       "browser_take_screenshot": 1
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall",
+      "http://localhost:7770/igr-rvn-03.html",
+      "http://localhost:7770/igr-rvn-04.html",
+      "http://localhost:7770/igr-rvn-05.html",
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall",
+      "http://localhost:7770/igr-rvn-06.html",
+      "http://localhost:7770/igr-rvn-07.html",
+      "http://localhost:7770/igr-rvn-08.html",
+      "http://localhost:7770/igr-rvn-09.html",
+      "http://localhost:7770/igr-rvn-10.html",
+      "http://localhost:7770/igr-rvn-11.html",
+      "http://localhost:7770/igr-rvn-14.html",
+      "http://localhost:7770/igr-rvn-02.html",
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall&p=2",
+      "http://localhost:7770/igr-rvn-12.html",
+      "http://localhost:7770/igr-rvn-13.html",
+      "http://localhost:7770/igr-rvn-15.html",
+      "http://localhost:7770/igr-rvn-03.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "e91"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "e113"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "t_g0_10"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-03.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-04.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-05.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-06.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-07.html"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_find",
+        "target": "As low as"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-08.html"
+      },
+      {
+        "tool": "browser_find",
+        "target": "As low as"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-09.html"
+      },
+      {
+        "tool": "browser_find",
+        "target": "As low as"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-10.html"
+      },
+      {
+        "tool": "browser_find",
+        "target": "As low as"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-11.html"
+      },
+      {
+        "tool": "browser_find",
+        "target": "As low as"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-14.html"
+      },
+      {
+        "tool": "browser_find",
+        "target": "As low as"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-02.html"
+      },
+      {
+        "tool": "browser_find",
+        "target": "As low as"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall&p=2"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-12.html"
+      },
+      {
+        "tool": "browser_find",
+        "target": "As low as"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-13.html"
+      },
+      {
+        "tool": "browser_find",
+        "target": "As low as"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-15.html"
+      },
+      {
+        "tool": "browser_find",
+        "target": "As low as"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-03.html"
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -100,5 +351,6 @@
       "browser_take_screenshot"
     ]
   },
-  "log": "scaled-target-price-2.log"
+  "log": "scaled-target-price-2.log",
+  "trace_log": "scaled-target-price-2.log"
 }

@@ -39,6 +39,231 @@
       "browser_probe_interactives": 3,
       "browser_navigate": 1
     },
+    "selections": [
+      "2333",
+      "2 x 9.5L +$32.50",
+      "2 x 9.5L +$46.39",
+      "2 x 9.5L +$14.21",
+      "2 x 9.5L +$36.18",
+      "2 x 9.5L +$39.15",
+      "2 x 9.5L +$19.86",
+      "2 x 9.5L +$10.97",
+      "2 x 9.5L +$16.60",
+      "2 x 9.5L +$27.61"
+    ],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "#product-item-info_104664 > div.product.details:nth-of-type(1) > strong.product.name:nth-of-type(1) > a:nth-of-type(1)"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2333"
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$32.50"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "#product-item-info_104669 > div.product.details:nth-of-type(1) > strong.product.name:nth-of-type(1) > a:nth-of-type(1)"
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$46.39"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "#product-item-info_104678 > div.product.details:nth-of-type(1) > strong.product.name:nth-of-type(1) > a:nth-of-type(1)"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$14.21"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "#product-item-info_104683 > div.product.details:nth-of-type(1) > strong.product.name:nth-of-type(1) > a:nth-of-type(1)"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$36.18"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "#product-item-info_104688 > div.product.details:nth-of-type(1) > strong.product.name:nth-of-type(1) > a:nth-of-type(1)"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$39.15"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "#product-item-info_104693 > div.product.details:nth-of-type(1) > strong.product.name:nth-of-type(1) > a:nth-of-type(1)"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$19.86"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "#product-item-info_104710 > div.product.details:nth-of-type(1) > strong.product.name:nth-of-type(1) > a:nth-of-type(1)"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$10.97"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "#product-item-info_104715 > div.product.details:nth-of-type(1) > strong.product.name:nth-of-type(1) > a:nth-of-type(1)"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "#product-item-info_104720 > div.product.details:nth-of-type(1) > strong.product.name:nth-of-type(1) > a:nth-of-type(1)"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$16.60"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "#product-item-info_104725 > div.product.details:nth-of-type(1) > strong.product.name:nth-of-type(1) > a:nth-of-type(1)"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$27.61"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -94,5 +319,6 @@
       "browser_probe_cards"
     ]
   },
-  "log": "scaled-cheapest-target-1.log"
+  "log": "scaled-cheapest-target-1.log",
+  "trace_log": "scaled-cheapest-target-1.log"
 }

@@ -37,6 +37,65 @@
       "browser_probe_cards": 1,
       "browser_click": 1
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Thornwood",
+      "http://localhost:7770/igr-app-01.html",
+      "http://localhost:7770/catalogsearch/result/?q=Thornwood",
+      "http://localhost:7770/igr-app-02.html",
+      "http://localhost:7770/igr-app-03.html",
+      "http://localhost:7770/igr-app-04.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Thornwood"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "t_g0_4"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-app-01.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Thornwood"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-app-02.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-app-03.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-app-04.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -52,5 +111,6 @@
       "browser_snapshot"
     ]
   },
-  "log": "apparel-count-stocked-2.log"
+  "log": "apparel-count-stocked-2.log",
+  "trace_log": "apparel-count-stocked-2.log"
 }

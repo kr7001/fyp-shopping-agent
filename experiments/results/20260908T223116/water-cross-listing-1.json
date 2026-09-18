@@ -24,5 +24,81 @@
     "attempt": 1,
     "progress_state": null,
     "failure_summary": null
-  }
+  },
+  "trace": {
+    "tool_calls_total": 10,
+    "actions": 5,
+    "observations": 5,
+    "unclassified_tools": [],
+    "assistant_turns": 10,
+    "by_tool": {
+      "browser_snapshot": 5,
+      "browser_navigate": 2,
+      "browser_select_option": 2,
+      "browser_click": 1
+    },
+    "selections": [
+      "2 x 9.5L +$15.01",
+      "2 x 9.5L +$11.60"
+    ],
+    "opened": [
+      "http://localhost:7770/igr-water-a.html",
+      "http://localhost:7770/igr-water-b.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-water-a.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "e89"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$15.01"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-water-b.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$11.60"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_click",
+      "browser_snapshot",
+      "browser_select_option",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_select_option",
+      "browser_snapshot"
+    ]
+  },
+  "trace_log": "water-cross-listing-1.log"
 }

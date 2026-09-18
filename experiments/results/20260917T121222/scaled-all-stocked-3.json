@@ -40,6 +40,304 @@
       "browser_navigate": 1,
       "browser_probe_interactives": 1
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "http://localhost:7770/igr-cal-01.html"
+      },
+      {
+        "tool": "browser_click",
+        "target": "e97"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "e119"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "f2e119"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Chandler Direct"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f4e141"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pembroke Merchants"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f6e163"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Fenwick Wholesale"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f8e185"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Cellar Pantry"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f10e207"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Bramley Trading"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f12e229"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Stonebridge Cellars"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f14e251"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Redhill Direct"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f16e273"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Verity Direct"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f18e295"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Whitlock Wholesale"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f20e317"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Oakfield Pantry"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f22e339"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Page 2"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f24e361"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "f25e108"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Westmere Pantry"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f27e119"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Marlow Merchants"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f29e141"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -116,5 +414,6 @@
       "browser_snapshot"
     ]
   },
-  "log": "scaled-all-stocked-3.log"
+  "log": "scaled-all-stocked-3.log",
+  "trace_log": "scaled-all-stocked-3.log"
 }

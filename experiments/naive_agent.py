@@ -231,6 +231,10 @@ def run(task: str, model: str, key: str, user_agent: str | None = None) -> dict:
                                             or args.get("answer") or "")[:120]})
                 if name == "finish":
                     answer = args.get("answer", "")
+                    # Printed like every other call so the log is a complete record. Without
+                    # this the log held one fewer call than the runner counted, and a trace
+                    # recomputed from the log disagreed with the one written during the run.
+                    print(f"[tool {name}] {json.dumps(args)}\n", flush=True)
                     break
                 observation = act(page, name, args)
                 # Printed as well as kept, because the suite captures stdout as the run's

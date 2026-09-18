@@ -12,11 +12,126 @@
     "tool_calls_total": 23,
     "actions": 21,
     "observations": 1,
+    "unclassified_tools": [],
     "by_tool": {
       "finish": 1,
       "read_page": 1,
       "goto": 21
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood&p=2",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+2+x+9.5L",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood",
+      "http://localhost:7770/calderwood-still-spring-water-multipack-kettering-distributors.html",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood",
+      "http://localhost:7770/catalog/product/view/id/1",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood&product_list_order=name",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood%202%20x%209.5L",
+      "http://localhost:7770/catalogsearch/result/?q=9.5L",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood&product_list_order=price",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+Oakfield+Pantry",
+      "http://localhost:7770/calderwood-still-spring-water-multipack-oakfield-pantry.html",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood&limit=36",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood&p=2&limit=36",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood%202%20x%209.5L&product_list_order=price",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood&cat=15",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+Chandler",
+      "http://localhost:7770/calderwood-still-spring-water-multipack-chandler-direct.html"
+    ],
+    "steps": [
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood&p=2"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+2+x+9.5L"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/calderwood-still-spring-water-multipack-kettering-distributors.html"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalog/product/view/id/1"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood&product_list_order=name"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood%202%20x%209.5L"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=9.5L"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood&product_list_order=price"
+      },
+      {
+        "tool": "read_page",
+        "target": ""
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+Oakfield+Pantry"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/calderwood-still-spring-water-multipack-oakfield-pantry.html"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood&limit=36"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood&p=2&limit=36"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood%202%20x%209.5L&product_list_order=price"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood&cat=15"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+Chandler"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/calderwood-still-spring-water-multipack-chandler-direct.html"
+      }
+    ],
     "sequence": [
       "goto",
       "goto",
@@ -44,5 +159,6 @@
     ]
   },
   "cost_usd": 0.637027,
-  "log": "scaled-cheapest-target-1.log"
+  "log": "scaled-cheapest-target-1.log",
+  "trace_log": "scaled-cheapest-target-1.log"
 }

@@ -37,6 +37,32 @@
       "browser_probe_cards": 1,
       "browser_snapshot": 1
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/igr-water-b.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-water-b.html"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -45,5 +71,6 @@
       "browser_take_screenshot"
     ]
   },
-  "log": "water-b-9l5-price-5.log"
+  "log": "water-b-9l5-price-5.log",
+  "trace_log": "water-b-9l5-price-5.log"
 }

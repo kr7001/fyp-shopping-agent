@@ -12,11 +12,111 @@
     "tool_calls_total": 20,
     "actions": 18,
     "observations": 1,
+    "unclassified_tools": [],
     "by_tool": {
       "finish": 1,
       "goto": 18,
       "read_page": 1
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood&p=1",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood&p=2",
+      "http://localhost:7770/calderwood-still-spring-water-multipack-kettering-distributors.html",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+2+x+9.5L",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+Kettering",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+Chandler+Direct+2+x+9.5L",
+      "http://localhost:7770/calderwood-still-spring-water-multipack-chandler-direct.html",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood&product_list_order=name",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+Bramley",
+      "http://localhost:7770/calderwood-still-spring-water-multipack-bramley-trading.html",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+Bramley+2+x+9.5L",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood&limit=all",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+Kettering+2+x+9.5L",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+Westmere+2+x+9.5L",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+Thornbury+2+x+9.5L"
+    ],
+    "steps": [
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood&p=1"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood&p=2"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/calderwood-still-spring-water-multipack-kettering-distributors.html"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+2+x+9.5L"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+Kettering"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+Chandler+Direct+2+x+9.5L"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/calderwood-still-spring-water-multipack-chandler-direct.html"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood&product_list_order=name"
+      },
+      {
+        "tool": "read_page",
+        "target": ""
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+Bramley"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/calderwood-still-spring-water-multipack-bramley-trading.html"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+Bramley+2+x+9.5L"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood&limit=all"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+Kettering+2+x+9.5L"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+Westmere+2+x+9.5L"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+Thornbury+2+x+9.5L"
+      }
+    ],
     "sequence": [
       "goto",
       "goto",
@@ -41,5 +141,6 @@
     ]
   },
   "cost_usd": 0.738506,
-  "log": "scaled-all-stocked-2.log"
+  "log": "scaled-all-stocked-2.log",
+  "trace_log": "scaled-all-stocked-2.log"
 }
