@@ -36,9 +36,28 @@ RUNNER = HERE / "run_browser_task.py"
 NAIVE_RUNNER = HERE / "naive_agent.py"
 RESULTS = HERE / "results"
 
+# Which shop a run sees is decided by the browser's user agent, because `env/install_gated_theme.py`
+# selects the price-suppressing theme that way. Nothing in a run record used to say which one it
+# got, so a run launched without this looked identical to one launched with it while measuring a
+# different shop. It is a default rather than a flag for the same reason: the leaky shop should
+# have to be asked for.
+GATED_UA = "Mozilla/5.0 IGRGated/1.0"
+MCP_ARGS_GATED = f'-y @playwright/mcp@latest --user-agent "{GATED_UA}"'
+
+
+def browser_env(shop: str) -> dict:
+    """The environment a runner needs to see the shop this suite says it is measuring."""
+    env = dict(os.environ)
+    if shop == "gated":
+        env["PLAYWRIGHT_MCP_ARGS"] = MCP_ARGS_GATED
+    else:
+        env.pop("PLAYWRIGHT_MCP_ARGS", None)
+    return env
+
 
 def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
-             query: str | None = None, scaffold: str = "openjiuwen") -> dict:
+             query: str | None = None, scaffold: str = "openjiuwen",
+             shop: str = "gated") -> dict:
     """Execute one task once and return its record, enriched with trace counts.
 
     `query` overrides the task text, which is how a policy retry re-asks the same task
@@ -54,13 +73,16 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
     if scaffold == "naive":
         command = [str(REPO / ".venv-naive" / "bin" / "python"), str(NAIVE_RUNNER),
                    query, "--out", str(record_path)]
+        if shop == "gated":
+            command += ["--user-agent", GATED_UA]
         cwd = REPO
     else:
         command = ["uv", "run", "python", str(RUNNER), query, "--out", str(record_path)]
         cwd = AGENT_CORE
 
     with log_path.open("w") as log:
-        subprocess.run(command, cwd=cwd, stdout=log, stderr=subprocess.STDOUT, check=False)
+        subprocess.run(command, cwd=cwd, env=browser_env(shop),
+                       stdout=log, stderr=subprocess.STDOUT, check=False)
 
     if not record_path.exists():
         return {"error": "runner wrote no record", "log": log_path.name}
@@ -74,6 +96,9 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
     if not record.get("trace"):
         record["trace"] = trace_stats.stats(log_path)
     record["log"] = log_path.name
+    # Which shop this run saw. A record without it predates the theme and was measured
+    # against a page that published every variant price on load.
+    record["shop"] = shop
     record_path.write_text(json.dumps(record, indent=2, default=str) + "\n")
     return record
 
@@ -123,7 +148,8 @@ def add(*values) -> float | int | None:
 
 def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
                  out_dir: pathlib.Path, tag: str, confidence: str = "off",
-                 reason: str | None = None) -> tuple:
+                 reason: str | None = None, scaffold: str = "openjiuwen",
+                 shop: str = "gated") -> tuple:
     """Run the sufficiency check and act on it.
 
     Cost and interaction counts are reported for the arm as a whole, both attempts
@@ -145,7 +171,11 @@ def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
     if confidence != "off":
         query = policy_module.confidence_query(query, confidence)
     tag2 = f"{tag}-{mode}"
-    second = run_once(task, spec["base_url"], out_dir, tag2, query=query)
+    # The retry is the same arm and must meet the same shop with the same agent. Before
+    # this it always ran openJiuwen against the default theme, whatever the first attempt
+    # had been, so a naive policy run silently changed both halfway through.
+    second = run_once(task, spec["base_url"], out_dir, tag2, query=query,
+                      scaffold=scaffold, shop=shop)
     result2 = second.get("result") or {}
     answer2 = str(result2.get("final") or "")
     trace2 = second.get("trace") or {}
@@ -190,6 +220,10 @@ def main() -> int:
                         help="which agent answers. naive is the from-scratch loop with no "
                              "card probe, the control for whether the failure belongs to "
                              "the agent or to one agent's default")
+    parser.add_argument("--shop", choices=("gated", "default"), default="gated",
+                        help="gated suppresses the variant prices the stock theme puts in\n"
+                             "the page, which is what the live marketplace does. default is\n"
+                             "the leaky shop every run before 18 Sep 2026 was measured on")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -224,7 +258,7 @@ def main() -> int:
             if args.confidence != "off":
                 query = policy_module.confidence_query(query, args.confidence)
             record = run_once(task, spec["base_url"], out_dir, tag, query=query,
-                              scaffold=args.scaffold)
+                              scaffold=args.scaffold, shop=args.shop)
             result = record.get("result") or {}
             answer = str(result.get("final") or "")
             trace = record.get("trace") or {}
@@ -241,7 +275,8 @@ def main() -> int:
             if args.policy != "off":
                 answer, record, result, trace, check = apply_policy(
                     args.policy, task, spec, answer, record, out_dir, tag,
-                    confidence=args.confidence, reason=reason)
+                    confidence=args.confidence, reason=reason,
+                    scaffold=args.scaffold, shop=args.shop)
 
             verdict = scoring.score(task, answer, bool(result.get("ok")))
             row = {

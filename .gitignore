@@ -14,3 +14,12 @@ CLAUDE.md
 # experiments/trace_stats.py, so the logs are reproducible working files, not results.
 experiments/**/*.log
 .venv-naive/
+
+# Raw marketplace DOM dumps, manual observation only. They carry session identifiers.
+docs/shopee_dom.txt
+docs/*_dom.txt
+*.har
+
+# Presentation decks, mine and the ones I cite. Read in place, not committed.
+docs/Huawei Presentation Deck.pdf
+OpenJiuwen Web & Coding Agent.pptx
