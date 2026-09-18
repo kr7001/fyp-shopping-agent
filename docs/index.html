@@ -171,6 +171,7 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
   <div class="wrap">
     <a href="#failure">1. The failure</a>
     <a href="#gated">2. Gated information</a>
+    <a href="agent-mechanics.html"><b>How the agent reads a shop</b></a>
     <a href="#reading">3. How agents read</a>
     <a href="#questions">4. Research questions</a>
     <a href="#literature">5. Literature</a>
@@ -617,6 +618,8 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
       </table>
     </div>
     <p class="claim">The agent is not being lazy. It asks a reasonable question, gets an answer that looks complete, and has no signal that it is looking at four listings out of fifteen.</p>
+
+    <p class="note"><b>A full investigation of this sits on its own page: <a href="agent-mechanics.html">How the agent reads a shop</a>.</b> It explains, for a reader with no background, what the three ways of reading a page are, what Shopee, Lazada and TikTok look like to an agent, what our shop looks like beside them, a real run traced step by step, and every part of the openJiuwen claim checked against the code with file and line numbers. The short version of its verdict: the claim is true, the summary tool is itself a page reader, and the defect is that the summary discards most of the page and never says so.</p>
 
     <h3 class="sub" id="probe-evidence">Whether the probe is the cause, tested against the runs</h3>
     <p class="lede">The agent can read the whole page tree whenever it likes, and often does. So stopping at four needs more than the probe existing. Walking every stored run step by step, tracking which page the browser was on, and attributing each observation to that page:</p>
