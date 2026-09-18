@@ -618,6 +618,38 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
     </div>
     <p class="claim">The agent is not being lazy. It asks a reasonable question, gets an answer that looks complete, and has no signal that it is looking at four listings out of fifteen.</p>
 
+    <h3 class="sub" id="probe-evidence">Whether the probe is the cause, tested against the runs</h3>
+    <p class="lede">The agent can read the whole page tree whenever it likes, and often does. So stopping at four needs more than the probe existing. Walking every stored run step by step, tracking which page the browser was on, and attributing each observation to that page:</p>
+    <div class="tablewrap">
+      <table>
+        <caption>195 runs that opened at least one listing, split by how many they opened</caption>
+        <thead><tr><th class="wide">Behaviour</th><th class="num">Runs that opened exactly 4</th><th class="num">Runs that opened any other number</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="wide"><b>Read the whole page tree while on the search page</b></td><td class="num"><b>2 of 101</b></td><td class="num"><b>84 of 94</b></td></tr>
+          <tr><td class="wide">Card probe on the search page, per run</td><td class="num">1.09</td><td class="num">1.60</td></tr>
+          <tr><td class="wide">Whole page tree on a product page, per run</td><td class="num">2.69</td><td class="num">6.45</td></tr>
+          <tr><td class="wide">Page searches on a product page, per run</td><td class="num">1.77</td><td class="num">11.69</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">Ninety nine of the hundred and one runs that stopped at four decided which listings exist without ever reading the search page in full. Their whole page reads happened later, on the product pages they had already chosen. The runs that opened more listings did the opposite, 84 of 94 reading the search page in full first.</p>
+    <p class="note">An earlier version of this section said the opposite, on the grounds that both groups read the whole tree a couple of times per run. That figure is real and it was aggregated across every page in the run, which hid the only distinction that matters. Counting observations without asking which page they were made on is the same class of mistake as reading an action count without reading the actions.</p>
+
+    <h3 class="sub" id="probe-cost">What the compact probe costs, measured</h3>
+    <p class="lede">The natural explanation for preferring a summary is that the full page is expensive. On this page it is not, and the direction is the other way round. Both figures are the actual replies from one run, measured as they were sent to the model.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>One search page, two ways of looking at it</caption>
+        <thead><tr><th>Reply</th><th class="num">Characters</th><th class="num">Approx tokens</th><th class="num">Listings it names</th><th class="wide">Says how many it left out</th></tr></thead>
+        <tbody>
+          <tr><td>Whole page tree</td><td class="num">28,484</td><td class="num">7,100</td><td class="num">12</td><td class="dim wide">Nothing is left out</td></tr>
+          <tr class="hi"><td><b>Compact card probe</b></td><td class="num"><b>35,416</b></td><td class="num"><b>8,900</b></td><td class="num"><b>4</b></td><td class="dim wide"><b>No</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The compact summary is a quarter larger than the thing it summarises, and it names a third as many listings. Whatever the agent is economising on when it prefers the probe, it is not tokens.</p>
+    <p class="note">The size comes from selector paths. 26 per cent of the probe reply, 9,095 characters across 129 fields, is CSS selectors describing where each element sits, the longest of them 280 characters for a single field. They exist so the agent can act on an element later without taking another snapshot, which is a sound design for a form and an expensive one for a list of fifteen products the agent will navigate to by link. This is a finding about one tool on one kind of page rather than about the harness, and it is the most directly actionable thing in this document: reporting the count of candidates it skipped would cost one integer.</p>
+
     <p class="note">Until 18 September the shop itself accounted for part of that gap. Magento paginates at twelve by default, so three of the fifteen listings were on a second page and no amount of looking would have found them in one read. The page size is now 36, measured at <code>Items 1-15 of 15</code>, and the cards were measured again in a 1200 by 701 window: fifteen in the document, four intersecting the viewport, the second row starting 427 pixels below the fold. The whole of the loss now sits in the agent rather than partly in the shop, which is what makes the number worth quoting.</p>
 
     <h3 class="sub" id="probe-vs-deck">What the agent is advertised to do, against what it does</h3>
@@ -1057,7 +1089,7 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
     <p class="lede">Every entry changed a number that had already been written down. Most are mistakes in my own instruments rather than problems with the agent, and the record of catching them is part of the work.</p>
     <div class="tablewrap">
       <table>
-        <caption>Fifteen corrections</caption>
+        <caption>Sixteen corrections</caption>
         <thead><tr><th class="wide">What was wrong</th><th class="wide">How it was caught</th><th class="wide">What it changed</th></tr></thead>
         <tbody>
           <tr class="warn"><td class="wide"><b>The product pages carried my own notes, two of which stated the answer</b></td><td class="dim wide">Reading a page the way the agent sees it</td><td class="dim wide">A note was in context in 59 of 60 runs of the first baseline and cited in 26. Removed, and the whole baseline re-run clean. The score moved from 89 to 87 per cent</td></tr>
@@ -1070,6 +1102,7 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
           <tr><td class="wide">The replay script matched questions by name across markets</td><td class="dim wide">Adding a second market that asks the same questions</td><td class="dim wide">Would have marked held-out runs against the development market's answers. Caught before it produced a figure</td></tr>
           <tr class="warn"><td class="wide"><b>I described actions I had never read</b></td><td class="dim wide">Checking a claim in an earlier deck against the tool breakdown</td><td class="dim wide">The first five cross-listing runs were reported as "open A, select the pack, open B, select the pack" at 5.6 actions. The breakdown shows <b>zero selections and zero clicks</b>, and all five had the authoring note in context. The action count was interpreted rather than read. The conclusion survives on the clean re-runs, 10 of 10 at 5.7 actions with 2 to 3 selections each, and this is how the pricing leak stayed invisible for three weeks: five actions looked like open, select, open, select, so nobody asked how a price appeared without a selection</td></tr>
           <tr><td class="wide">The new coverage rule demanded all fifteen listings</td><td class="dim wide">Its first run flagged sound answers</td><td class="dim wide">It ignored the four listings that can be skipped safely. Caught before any figure was written down</td></tr>
+          <tr class="warn"><td class="wide"><b>I withdrew a true claim by aggregating over the wrong thing</b></td><td class="dim wide">Being asked to show the evidence rather than assert the mechanism</td><td class="dim wide">The runs that stop at four do read the whole page tree, about 2.7 times each, so I reported that the probe could not be the cause. Splitting those reads by which page they were made on reverses it: <b>2 of 101</b> such runs ever read the search page in full, against <b>84 of 94</b> of the runs that opened more. The reads were on product pages already chosen. A count taken across every page in a run hid the only distinction that mattered, which is the same class of mistake as reading an action count without reading the actions</td></tr>
           <tr class="warn"><td class="wide"><b>I wrote two questions the shop cannot answer</b></td><td class="dim wide">Trying to reach the answer by hand before running anything against it</td><td class="dim wide">The new availability pair asked for the lowest price anyone lists for the size, including the sold out listings. A disabled option cannot be selected and the gated theme reveals a price only on selection, so a sold out variant's price is unreachable: the listing whose M the fixture records at $15.04 shows <code>As low as $18.33</code>, refuses the selection, and does not contain the string 15.04 anywhere. The shop is right and the questions were wrong, since a greyed out variant on the live marketplaces publishes no price either. Both price questions now ask about what can be bought, and the availability contrast moved to the counting pair, which reads the disabled state and never needs the price behind it</td></tr>
           <tr class="warn"><td class="wide"><b>The fixture recorded a card price the shop never showed</b></td><td class="dim wide">Opening the seeded listing instead of trusting the generator</td><td class="dim wide">The advertised price was computed as the cheapest variant. Magento excludes out of stock children from it, so a listing whose two cheapest sizes were sold out advertised $18.33 while the fixture recorded $15.04. The whole pruning argument rests on the card price being a true lower bound on what the listing can charge, so the oracle floor had been computed for a market that does not exist. The bound is now the cheapest <b>buyable</b> variant, measured on the rendered page</td></tr>
           <tr class="warn"><td class="wide"><b>The price suppressing theme leaked a uniform discount</b></td><td class="dim wide">Reading the option labels on a listing with sold out sizes</td><td class="dim wide">The theme flattened the per variant price table but left the base price the widget compares against, so every option rendered as <code>-$3.29</code>. Uniform, so it said nothing about any one variant, and still a disclosure: it announced that something in the listing costs $3.29 less than the card admits. Both tables are now set to the same figure and the rendered difference is exactly zero. This only appeared once variants could be sold out, which is to say the previous fix was correct for the shop it was written against</td></tr>
