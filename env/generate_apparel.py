@@ -29,11 +29,20 @@ that always saves effort would be wrong here, and the planner has to know that.
 for size L, so an agent that finds one price and generalises is wrong for a reason that has
 nothing to do with how many listings it opened.
 
-**Gating by absence, at scale.** Magento removes a size with no stock from the menu rather
-than showing it greyed out, so a missing size looks exactly like a size that was never sold.
-Five of fifteen listings do not offer the target size. This is the same mechanism the small
-fixture's t-shirt uses, and it is stated plainly rather than described as a second kind of
-gate, because in this shop it is not one.
+**Three availability states rather than two.** A size can be absent from the menu, present
+but sold out, or present and buyable. Until 18 September the shop could only render the first
+and the third, because Magento hides out of stock variants by default, so a sold out size was
+indistinguishable from one never sold. With `cataloginventory/options/show_out_of_stock` set
+to 1 it renders as `<option disabled>`, which an accessibility snapshot prints as
+`option "M" [disabled]`.
+
+That matters because it is what the live marketplace does. Shopee renders a sold out size as
+a button carrying `aria-disabled="true"`, and Lazada as a div whose class name ends
+`-disabled`, both announcing that the variant exists while denying that it can be bought.
+Neither publishes its price. So the middle state is the one real shops actually have, and it
+creates a trap the other two cannot: **a listing can advertise the cheapest price for the size
+and be unable to ship it.** Answering needs availability as well as price, and the page
+carries availability in exactly one place.
 
     python env/generate_apparel.py --report
     python env/generate_apparel.py --out env/fixtures/scaled_apparel.json
@@ -70,9 +79,22 @@ BASE_PRICE_RANGE = (11.00, 38.00)
 # size is the cheapest for all of them, and a single lookup would answer every question.
 SIZE_FACTOR_RANGE = (0.88, 1.24)
 
-# Whether a seller offers a given size at all. Magento drops a size with no stock from the
-# menu, so this is what "out of stock" looks like to a shopper: the option is simply absent.
+# Whether a seller offers a given size at all. A size a seller never stocked is absent from
+# the menu, and nothing on the page marks the absence.
 P_SIZE_MISSING = 0.18
+
+# Whether a size a seller does offer is sold out right now. This is the third state, and it
+# is the one the live marketplace actually renders: Shopee shows a sold out size as a button
+# with `aria-disabled="true"`, so its existence is announced and its availability is denied.
+# WebArena used to collapse this into absence, because Magento hides out of stock variants by
+# default. With `cataloginventory/options/show_out_of_stock` set to 1 it renders them as
+# `<option disabled>`, which Playwright's accessibility snapshot prints as `option "M"
+# [disabled]`. Measured on a probe product on 18 Sep 2026, under both themes.
+#
+# The three states are then distinct in the page, which is what makes them separately
+# answerable: absent says nothing, disabled says "exists, not buyable", and enabled says
+# "buyable, and the price is still one click away".
+P_SIZE_SOLD_OUT = 0.22
 
 INSTANCE_RULES = """Properties every generated clothing instance must satisfy:
 
@@ -91,17 +113,28 @@ INSTANCE_RULES = """Properties every generated clothing instance must satisfy:
                         false
 7. crossover            the cheapest seller for the target size is not the cheapest for the
                         largest size, so a price found for one size cannot be generalised
-8. three_answers        the cheapest advertised listing, the cheapest for the target size
-                        and the cheapest for the largest size are three different sellers
-9. clear_margin         the winner beats the runner up by a visible amount, so a correct
-                        answer is not rounding luck
+8. four_answers         the cheapest advertised listing, the cheapest listed price for the
+                        target size, the cheapest one actually buyable, and the cheapest for
+                        the largest size are four different sellers
+9. clear_margin         the winner is at least 8 per cent cheaper than the runner up, so
+                        a correct answer is not rounding luck. A percentage rather than
+                        a sum, so clothing and water are held to the same standard
 10. floor_is_real       at least five listings survive pruning and have to be opened
 11. answer_off_first_screen
                         the winning listing is the eighth or later in the catalogue, so it
                         does not appear in the first row of search results
 12. trap_on_first_screen
                         the cheapest advertised listing, which is the wrong answer, is among
-                        the first four, so a glance finds the trap rather than nothing.
+                        the first four, so a glance finds the trap rather than nothing
+13. sold_out_trap       the cheapest listed price for the target size belongs to a listing
+                        that cannot ship it. An agent that compares prices and ignores
+                        availability names a seller it cannot buy from, and the page says so
+                        only through a disabled option
+14. sold_out_population at least three listings offer the target size and have none of it, so
+                        the state is common enough to be worth checking rather than a
+                        curiosity
+15. enough_buyable      at least four listings can actually ship the target size, so the
+                        question has a real field of candidates.
 
 **Rule 10 is set by what the domain allows, and that is the interesting part.**
 
@@ -155,8 +188,14 @@ the condition that actually matters, and it is closer to the edge than is comfor
 generator that could place the answer on the page directly would be better and would mean
 controlling Magento's ordering, which is not worth the environment change today."""
 
-MIN_MARGIN_ABS = 1.50
 MIN_MARGIN_REL = 0.08
+# Percentage only, since 18 Sep 2026. There was an absolute floor of $1.50 alongside this,
+# and it was the binding constraint at these price levels while the percentage never was,
+# which made an arbitrary constant load bearing. Measured before removing it: of the draws
+# passing every other rule, percent-only admitted one extra water market in 33, at a margin
+# of $1.47, and no extra clothing market in 17. A scale-free rule states cleanly as "the
+# winner is at least 8 per cent cheaper" and survives a change of currency or category,
+# where the constant would have to be re-argued for every new product.
 
 
 def money(value: float) -> float:
@@ -179,12 +218,19 @@ def build_listing(name: str, index: int, rng: random.Random) -> dict:
 
     variants = []
     for size in offered:
+        sold_out = rng.random() < P_SIZE_SOLD_OUT
         variants.append({
             "option": size,
             "price": money(base * rng.uniform(*SIZE_FACTOR_RANGE)),
-            "qty": rng.randint(12, 140),
+            # Zero means the seeder marks the child out of stock, and Magento then renders
+            # the option disabled rather than dropping it. The price is still real and still
+            # gated, which is the point: a sold out variant can advertise a price it cannot
+            # honour, and only the disabled state says so.
+            "qty": 0 if sold_out else rng.randint(12, 140),
             "units": 1,
         })
+    if all(v["qty"] == 0 for v in variants):   # a shop with nothing to sell is not a market
+        variants[0]["qty"] = rng.randint(12, 140)
 
     return {
         "key": f"apparel-{index:02d}",
@@ -200,14 +246,34 @@ def build_listing(name: str, index: int, rng: random.Random) -> dict:
 
 
 def price_for(listing: dict, size: str) -> float | None:
+    """What this listing charges for the size, whether or not it can ship it."""
     for variant in listing["variants"]:
         if variant["option"] == size:
             return variant["price"]
     return None
 
 
+def buyable_price_for(listing: dict, size: str) -> float | None:
+    """The same price, but only if the size can actually be bought today.
+
+    The separation is the whole of the third gate. A sold out variant still advertises a
+    price, and on the page nothing but the disabled state tells the two apart, so an agent
+    that reads prices and ignores availability answers with a garment it cannot buy.
+    """
+    for variant in listing["variants"]:
+        if variant["option"] == size and variant["qty"] > 0:
+            return variant["price"]
+    return None
+
+
 def from_price(listing: dict) -> float:
-    """What the search page shows without the listing being opened."""
+    """What the search page shows without the listing being opened.
+
+    Magento computes the card's "As low as" from every child it shows, and with out of
+    stock options displayed that includes the sold out ones, so a listing can advertise a
+    price for a variant nobody can buy. Matched here deliberately rather than corrected,
+    because the bound the policy prunes with has to be the bound the page really shows.
+    """
     return min(v["price"] for v in listing["variants"])
 
 
@@ -222,11 +288,23 @@ def hypothetical_target(listing: dict, rng_note: None = None) -> float:
 
 
 def measure(listings: list[dict]) -> dict:
+    # Three populations rather than two, matching the three states the page can render.
+    # `carriers` offer the size in the menu. `buyable` offer it and can ship it. `absent`
+    # never list it at all.
     carriers = [l for l in listings if price_for(l, TARGET_SIZE) is not None]
+    buyable = [l for l in listings if buyable_price_for(l, TARGET_SIZE) is not None]
+    sold_out = [l for l in carriers if buyable_price_for(l, TARGET_SIZE) is None]
     absent = [l for l in listings if price_for(l, TARGET_SIZE) is None]
-    winner = min(carriers, key=lambda l: price_for(l, TARGET_SIZE))
-    best = price_for(winner, TARGET_SIZE)
-    runners = sorted(price_for(l, TARGET_SIZE) for l in carriers)
+
+    # The answer is the cheapest one a shopper can actually buy. The cheapest price on
+    # offer may belong to a listing that cannot ship it, and that is the trap.
+    winner = min(buyable, key=lambda l: buyable_price_for(l, TARGET_SIZE))
+    best = buyable_price_for(winner, TARGET_SIZE)
+    runners = sorted(buyable_price_for(l, TARGET_SIZE) for l in buyable)
+
+    listed_best = min(carriers, key=lambda l: price_for(l, TARGET_SIZE))
+    cheapest_sold_out = (min(sold_out, key=lambda l: price_for(l, TARGET_SIZE))
+                         if sold_out else None)
 
     cheapest_card = min(listings, key=from_price)
     must_open = [l for l in listings if from_price(l) <= best]
@@ -247,6 +325,21 @@ def measure(listings: list[dict]) -> dict:
         "cheapest_card_index": listings.index(cheapest_card) + 1,
         "listings_with_target": len(carriers),
         "listings_without_target": len(absent),
+        "listings_target_buyable": len(buyable),
+        "listings_target_sold_out": len(sold_out),
+        # The sold out trap. `listed_best` is the cheapest price the menus advertise for
+        # the size, and when it belongs to a listing that cannot ship it, an agent reading
+        # prices without reading availability names a seller it cannot buy from.
+        "cheapest_listed": {"sku": listed_best["parent_sku"],
+                            "seller": listed_best["seller"],
+                            "price": price_for(listed_best, TARGET_SIZE)},
+        "cheapest_sold_out": None if cheapest_sold_out is None else {
+            "sku": cheapest_sold_out["parent_sku"],
+            "seller": cheapest_sold_out["seller"],
+            "price": price_for(cheapest_sold_out, TARGET_SIZE),
+        },
+        "sold_out_trap": bool(cheapest_sold_out
+                              and price_for(cheapest_sold_out, TARGET_SIZE) < best),
         "winner": {"sku": winner["parent_sku"], "seller": winner["seller"], "price": best},
         "runner_up_price": runners[1] if len(runners) > 1 else None,
         "winning_margin": money(runners[1] - best) if len(runners) > 1 else None,
@@ -280,8 +373,8 @@ def measure(listings: list[dict]) -> dict:
 
 def check(listings: list[dict], facts: dict) -> list[str]:
     broken = []
-    prices = [price_for(l, TARGET_SIZE) for l in listings
-              if price_for(l, TARGET_SIZE) is not None]
+    prices = [buyable_price_for(l, TARGET_SIZE) for l in listings
+              if buyable_price_for(l, TARGET_SIZE) is not None]
     best = facts["winner"]["price"]
 
     if prices.count(best) != 1:
@@ -304,19 +397,25 @@ def check(listings: list[dict], facts: dict) -> list[str]:
         broken.append("answer_off_first_screen")
     if facts["cheapest_card_index"] > 4:
         broken.append("trap_on_first_screen")
+    if not facts["sold_out_trap"]:
+        broken.append("sold_out_trap")
+    if facts["listings_target_sold_out"] < 3:
+        broken.append("sold_out_population")
+    if facts["listings_target_buyable"] < 4:
+        broken.append("enough_buyable")
 
     answers = {facts["winner"]["sku"], facts["cheapest_card"]["sku"],
-               facts["largest_size_winner"]["sku"]}
-    if len(answers) != 3:
-        broken.append("three_answers")
+               facts["largest_size_winner"]["sku"], facts["cheapest_listed"]["sku"]}
+    if len(answers) != 4:
+        broken.append("four_answers")
 
     runner_up = facts["runner_up_price"]
-    if runner_up is None or runner_up - best < max(MIN_MARGIN_ABS, best * MIN_MARGIN_REL):
+    if runner_up is None or runner_up - best < best * MIN_MARGIN_REL:
         broken.append("clear_margin")
     return broken
 
 
-def generate(count: int, seed: int, attempts: int = 20000) -> tuple[list[dict], dict, int]:
+def generate(count: int, seed: int, attempts: int = 80000) -> tuple[list[dict], dict, int]:
     for attempt in range(attempts):
         # A string rather than one number. `seed * 1000 + attempt` collides: seed 12
         # at attempt 3682 and seed 13 at attempt 2682 are the same stream and produce the
@@ -359,10 +458,16 @@ def report(facts: dict, listings: list[dict]) -> None:
             for s in SIZES)
         print(f"{listing['seller']:34} {from_price(listing):7.2f} {row}")
     print()
-    for key in ("listings", "listings_with_target", "listings_without_target",
+    for key in ("listings", "listings_with_target", "listings_target_buyable",
+                "listings_target_sold_out", "listings_without_target",
                 "oracle_min_opens", "prunable_by_bound", "winning_margin"):
         print(f"  {key:24} {facts[key]}")
-    print(f"  {'winner':24} {facts['winner']['seller']} at ${facts['winner']['price']}")
+    print(f"  {'winner, buyable':24} {facts['winner']['seller']} at ${facts['winner']['price']}")
+    print(f"  {'cheapest listed':24} {facts['cheapest_listed']['seller']} at "
+          f"${facts['cheapest_listed']['price']}")
+    if facts["cheapest_sold_out"]:
+        print(f"  {'trap, sold out':24} {facts['cheapest_sold_out']['seller']} at "
+              f"${facts['cheapest_sold_out']['price']}")
     print(f"  {'cheapest advertised':24} {facts['cheapest_card']['seller']} at "
           f"${facts['cheapest_card']['from_price']}")
     print(f"  {'trap, no target size':24} {facts['cheapest_without_target']['seller']} at "
@@ -386,6 +491,7 @@ def write_tasks(fixture: dict, out: pathlib.Path) -> pathlib.Path:
     brand = fixture["_generated"]["brand"]
     win, card = inst["winner"], inst["cheapest_card"]
     absent, large = inst["cheapest_without_target"], inst["largest_size_winner"]
+    sold_out, listed = inst["cheapest_sold_out"], inst["cheapest_listed"]
     first = lambda name: name.split()[0]
     search = f"Go to {{base}}/catalogsearch/result/?q={brand} ."
 
@@ -403,8 +509,11 @@ def write_tasks(fixture: dict, out: pathlib.Path) -> pathlib.Path:
         "_environment": [
             "Clothing, seeded 18 September 2026 alongside the water markets rather than",
             "replacing them. Sizes rather than pack volumes, so there is no per-unit",
-            "question. A size with no stock is absent from the menu, which is how Magento",
-            f"renders it. The winning listing is index {inst['winner_index']} of "
+            "question. Three availability states, since 18 September 2026: a size can be",
+            "absent from the menu, present but disabled because it is sold out, or present",
+            "and buyable. The middle state needs show_out_of_stock set to 1 in Magento, and",
+            "is what the live marketplaces render.",
+            f"The winning listing is index {inst['winner_index']} of "
             f"{inst['listings']}, so it is not in the first row of search results.",
         ],
         "base_url": "http://localhost:7770",
@@ -419,18 +528,24 @@ def write_tasks(fixture: dict, out: pathlib.Path) -> pathlib.Path:
                         "price": card["from_price"]}},
             {"id": "apparel-target-price", "family": "apparel", "gated": True,
              "note": f"The price of size {inst['target_option']} appears only once that size "
-                     f"is chosen. {inst['listings_without_target']} listings do not offer it.",
+                     f"is chosen. {inst['listings_without_target']} listings do not offer it, "
+                     f"and {inst['listings_target_sold_out']} offer it sold out. This question "
+                     f"asks for the lowest price listed, so a sold out listing counts.",
              "query": f"{search} What is the lowest price anyone charges for size "
                       f"{inst['target_option']} of the {brand} tee?",
-             "expect": {"kind": "price", "value": win["price"]}},
+             "expect": {"kind": "price", "value": inst["cheapest_listed"]["price"]}},
             {"id": "apparel-cheapest-target", "family": "apparel", "gated": True,
              "note": f"The trap this market was built for. The cheapest advertised listing is "
                      f"{absent['seller']} at ${absent['from_price']}, and it does not sell "
-                     f"size {inst['target_option']} at all.",
-             "query": f"{search} Across all the {brand} listings, which seller is cheapest "
-                      f"for size {inst['target_option']}, and what is that price?",
-             "expect": {"kind": "contains", "any": [first(win["seller"])],
-                        "not_any": [first(absent["seller"])], "price": win["price"]}},
+                     f"size {inst['target_option']} at all. Availability is not asked about "
+                     f"here, so the answer is whoever lists it lowest. Paired with "
+                     f"apparel-buyable-target, which asks the same question with the "
+                     f"availability constraint added, and the two answers differ.",
+             "query": f"{search} Which seller lists the lowest price for size "
+                      f"{inst['target_option']} of the {brand} tee, and what is that price? "
+                      f"Availability does not matter for this question.",
+             "expect": {"kind": "contains", "any": [first(listed["seller"])],
+                        "not_any": [first(absent["seller"])], "price": listed["price"]}},
             {"id": "apparel-all-stocked", "family": "apparel", "gated": True,
              "note": f"{inst['listings_without_target']} of {inst['listings']} listings do "
                      f"not offer the size. One counterexample settles it.",
@@ -444,6 +559,27 @@ def write_tasks(fixture: dict, out: pathlib.Path) -> pathlib.Path:
              "query": f"{search} How many of the {brand} listings offer size "
                       f"{inst['target_option']}?",
              "expect": {"kind": "count", "value": inst["listings_with_target"]}},
+            {"id": "apparel-buyable-target", "family": "apparel", "gated": True,
+             "note": f"The third gate. {sold_out['seller']} lists size "
+                     f"{inst['target_option']} at ${sold_out['price']}, which is the lowest "
+                     f"price anyone lists, and cannot ship it. The page says so only by "
+                     f"rendering that option disabled, so an answer needs availability as "
+                     f"well as price. {inst['listings_target_sold_out']} listings are in "
+                     f"this state.",
+             "query": f"{search} Which seller has the cheapest size {inst['target_option']} "
+                      f"{brand} tee that can actually be bought today, and what is that "
+                      f"price? A listing that shows the size as unavailable does not count.",
+             "expect": {"kind": "contains", "any": [first(win["seller"])],
+                        "not_any": [first(sold_out["seller"]), first(absent["seller"])],
+                        "price": win["price"]}},
+            {"id": "apparel-count-buyable", "family": "apparel", "gated": True,
+             "note": "Counting, but over availability rather than existence. Differs from "
+                     "apparel-count-stocked by exactly the sold out listings, so an agent "
+                     "that reads the menu and not the disabled state gives the same answer "
+                     "to both.",
+             "query": f"{search} How many of the {brand} listings have size "
+                      f"{inst['target_option']} in stock and available to buy right now?",
+             "expect": {"kind": "count", "value": inst["listings_target_buyable"]}},
         ],
     }
     out.write_text(json.dumps(spec, indent=2) + "\n")

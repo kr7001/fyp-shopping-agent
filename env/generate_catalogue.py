@@ -115,9 +115,11 @@ INSTANCE_RULES = """Properties every generated instance must satisfy:
                         trivial rather than selective
 5. some_missing_target  at least one listing does not stock the target variant, so
                         "every result is comparable" is a false assumption
-6. clear_margin         the winner beats the runner up by a visible amount. A 50 cent
-                        gap makes the correct answer feel arbitrary and leaves the
-                        verdict sensitive to rounding in the agent's arithmetic
+6. clear_margin         the winner is at least 8 per cent cheaper than the runner up.
+                        A 50 cent gap makes the correct answer feel arbitrary and
+                        leaves the verdict sensitive to rounding in the agent's
+                        arithmetic. Stated as a percentage rather than a sum, so the
+                        rule reads the same on a $9 pack and a $90 one
 7. unit_probe_wrong     the best price per litre belongs to a different seller than the
                         lowest headline price. Added after a pilot run answered the per
                         litre question correctly in 7 actions, far too few to have
@@ -134,8 +136,14 @@ Rule 8 holds in roughly 0.3% of draws, so `generate` searches thousands of insta
 rather than hundreds. That is cheap arithmetic, and far preferable to relaxing a rule
 because the first few hundred tries missed."""
 
-MIN_MARGIN_ABS = 1.50
 MIN_MARGIN_REL = 0.08
+# Percentage only, since 18 Sep 2026. There was an absolute floor of $1.50 alongside this,
+# and it was the binding constraint at these price levels while the percentage never was,
+# which made an arbitrary constant load bearing. Measured before removing it: of the draws
+# passing every other rule, percent-only admitted one extra water market in 33, at a margin
+# of $1.47, and no extra clothing market in 17. A scale-free rule states cleanly as "the
+# winner is at least 8 per cent cheaper" and survives a change of currency or category,
+# where the constant would have to be re-argued for every new product.
 
 
 def money(value: float) -> float:
@@ -295,7 +303,7 @@ def check(listings: list[dict], facts: dict) -> list[str]:
         broken.append("three_answers")
 
     runner_up = facts["runner_up_price"]
-    if runner_up is None or runner_up - best < max(MIN_MARGIN_ABS, best * MIN_MARGIN_REL):
+    if runner_up is None or runner_up - best < best * MIN_MARGIN_REL:
         broken.append("clear_margin")
     return broken
 
