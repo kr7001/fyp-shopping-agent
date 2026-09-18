@@ -38,11 +38,17 @@ import re
 # under different versions are different policies and must not be pooled, which is the
 # same denominator discipline applied everywhere else. v1 lacked the enumeration step and
 # pruned within whatever the first screen happened to show.
-VERSION = 3
+VERSION = 4
 
 # Ordered, and the order matters. A universal question about stock also contains the word
 # "lowest" in some phrasings, so the coverage test is applied before the price tests.
 UNIVERSAL = re.compile(r"\b(every|all)\b.*\b(stock|carry|offer|have)\b", re.IGNORECASE)
+# Added 18 Sep 2026 with the third availability state. A question that constrains the answer
+# to what can actually be bought is a different retrieval problem from one that does not: the
+# price bound still prunes, but the winner has to clear a second test the price never shows.
+# Checked before the plain cheapest test, since these questions contain "cheapest" too.
+BUYABLE = re.compile(r"\b(buy|bought|buyable|purchas\w+|available|in stock)\b",
+                     re.IGNORECASE)
 UNIT_RATE = re.compile(r"per\s+(litre|liter|kg|kilogram|unit)|best value", re.IGNORECASE)
 CHEAPEST = re.compile(r"\b(cheapest|lowest price|lowest cost|least expensive)\b",
                       re.IGNORECASE)
@@ -59,6 +65,8 @@ def classify(question: str) -> str:
         return "refutation"
     if UNIT_RATE.search(question):
         return "rate_bound"
+    if CHEAPEST.search(question) and BUYABLE.search(question):
+        return "availability_bound"
     if CHEAPEST.search(question):
         return "total_bound"
     return "survey"
@@ -150,6 +158,26 @@ STRATEGIES = {
         "4. Stop when no unopened listing can beat your best rate.\n"
         "In your answer, say how many listings you opened, how many you skipped, and why "
         "skipping them was safe." + QUARANTINE),
+    "availability_bound": (
+        ENUMERATE + "Use this retrieval strategy, and follow it rather than opening listings in the "
+        "order they appear.\n"
+        "1. Read the advertised price of every listing from the search results first. That "
+        "price is the cheapest option in that listing, so nothing inside it can cost less.\n"
+        "2. Open listings in ascending order of advertised price. For each one, do two "
+        "separate things. Find the price for the option asked about, and check whether that "
+        "option can actually be bought. An option can be listed and still be unavailable, "
+        "in which case it is shown as disabled or greyed out and cannot be selected. Its "
+        "price is still printed, and that price does not count.\n"
+        "3. A listing only becomes your best candidate if the option is both cheaper and "
+        "available. A cheaper unavailable one changes nothing.\n"
+        "4. Skip every unopened listing whose advertised price is at or above your best "
+        "available total. Such a listing cannot win whatever its stock.\n"
+        "5. Stop when no unopened listing has an advertised price below your best available "
+        "total.\n"
+        "In your answer, name the seller, give the price, and say explicitly that you "
+        "checked the option was available rather than only listed. Say how many listings "
+        "you opened, how many you skipped, and how many you rejected for being unavailable."
+        + QUARANTINE),
     "survey": (
         ENUMERATE + "Open every listing in the search results and check the relevant option on each "
         "before answering. Say how many you opened."),

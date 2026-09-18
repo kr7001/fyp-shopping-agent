@@ -72,8 +72,12 @@ def usable(trap: int | None, answer: int | None) -> bool:
 
 
 def reindex() -> None:
+    # Stock as well as search, since 18 Sep 2026. A market now seeds variants with qty 0 on
+    # purpose, and without the stock index Magento keeps serving the old availability, so a
+    # sold out size still renders as buyable and the draw is measured against a page that
+    # does not exist.
     run(["docker", "exec", CONTAINER, "php", MAGE, "indexer:reindex",
-         "catalogsearch_fulltext"])
+         "catalogsearch_fulltext", "cataloginventory_stock"])
     run(["docker", "exec", CONTAINER, "php", MAGE, "cache:flush"])
 
 

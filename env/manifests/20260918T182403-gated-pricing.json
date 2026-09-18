@@ -1,0 +1,55 @@
+{
+  "seeded_at": "2026-09-18T18:24:03",
+  "base_url": "http://localhost:7770",
+  "fixture": "gated_pricing.json",
+  "parent_skus": [
+    "IGR-STK-01"
+  ],
+  "child_skus": [
+    "IGR-STK-01-S",
+    "IGR-STK-01-M",
+    "IGR-STK-01-L",
+    "IGR-STK-01-XL"
+  ],
+  "ground_truth": {
+    "families": {
+      "stockprobe": {
+        "parent_sku": "IGR-STK-01",
+        "gating": "stock-by-variant",
+        "from_price": 10.0,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-STK-01-S",
+            "price": 10.0,
+            "qty": 25,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-STK-01-M",
+            "price": 12.0,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-STK-01-L",
+            "price": 14.0,
+            "qty": 30,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-STK-01-XL",
+            "price": 16.0,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "XL"
+        ]
+      }
+    },
+    "cross_listing": {}
+  }
+}
