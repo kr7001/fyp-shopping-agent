@@ -358,3 +358,49 @@ the thesis of the project turning up in its own control.*
 
 *Say: the thing I would most like to be challenged on is whether twelve runs is enough to
 claim the saving, because that is where the next money goes.*
+
+---
+
+## If there is time, three things that can be shown live
+
+Run these from the repo with the shop container up. None of the first two costs anything.
+
+### Demo 1, the gate itself, 20 seconds, free
+
+```bash
+python env/demo_gate.py
+```
+
+Two browser windows open on the same product of the same shop. The left one is ordinary and
+its size menu reads `2 x 9.5L +$32.50`, so the price is readable without touching anything.
+The right one is the browser the experiments use and its menu is bare. Choose the size on
+both and they land on the same $48.64.
+
+*Say: this is the environment contribution in one picture. The price is there either way.
+What changes is whether it can be read without asking for it.*
+
+### Demo 2, the check catching failures for nothing, 10 seconds, free
+
+```bash
+python experiments/replay_gate.py --suite 20260917T115725
+```
+
+Prints the fifteen plain-agent runs on the unseen market before and after the check:
+9 wrong answers become 9 refusals, 6 right answers survive, and it says
+`added model cost $0.00` because the check never opens a page.
+
+*Say: this is the half of the method that is free. It reads the record of what the run did
+and compares it against what the answer claims.*
+
+### Demo 3, a live run, 1 to 3 minutes, about $0.15
+
+```bash
+python experiments/suite.py --tasks experiments/tasks_heldout.json --repeats 1 \
+    --only scaled-best-per-litre
+```
+
+A real browser opens and the agent works. Worth showing only if the conversation has time,
+because it is slow and it will probably fail in the ordinary way, opening four listings of
+fifteen. That failure is the point, but it cannot be promised in advance.
+
+*Say: watch how few shops it opens before it answers.*

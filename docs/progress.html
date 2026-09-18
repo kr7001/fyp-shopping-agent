@@ -466,6 +466,18 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         <p>A rule written after seeing a market's failures cannot be tested on that market. The new rule is frozen and the clothing market that will test it does not exist yet.</p>
       </div>
     </div>
+    <h3 class="sub">Three things that can be shown live</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>Run from the repo with the shop container up</caption>
+        <thead><tr><th>Demo</th><th class="mono">Command</th><th class="num">Time</th><th class="num">Cost</th><th class="wide">What it shows</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td><b>The gate itself</b></td><td class="mono">python env/demo_gate.py</td><td class="num">20 s</td><td class="num">free</td><td class="dim wide">Two browser windows on the same product. The left menu reads 2 x 9.5L +$32.50, the right is bare, and choosing the size lands both on $48.64</td></tr>
+          <tr><td>The check working</td><td class="mono">python experiments/replay_gate.py --suite 20260917T115725</td><td class="num">10 s</td><td class="num">free</td><td class="dim wide">Nine wrong answers become nine refusals, six right ones survive, added model cost $0.00</td></tr>
+          <tr><td>A live run</td><td class="mono">python experiments/suite.py --repeats 1 --only scaled-best-per-litre</td><td class="num">1 to 3 min</td><td class="num">$0.15</td><td class="dim wide">A real browser, a real agent. It will probably open four shops of fifteen and answer anyway, which is the point, but that cannot be promised in advance</td></tr>
+        </tbody>
+      </table>
+    </div>
     <p class="note">The slide script for this checkpoint, with every table above written out slide by slide, is in <a href="checkpoint-slides.md">checkpoint-slides.md</a>.</p>
   </section>
 
