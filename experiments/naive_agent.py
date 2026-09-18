@@ -184,16 +184,24 @@ def act(page, name: str, args: dict) -> str:
     return f"unknown tool {name}"
 
 
-def run(task: str, model: str, key: str) -> dict:
+def run(task: str, model: str, key: str, user_agent: str | None = None) -> dict:
     started = time.time()
     messages = [{"role": "system", "content": SYSTEM},
                 {"role": "user", "content": task}]
+    # Name and target together, the same shape `trace_stats` now records for openJiuwen,
+    # so a claim about what either scaffold clicked can be checked rather than inferred.
+    steps: list[dict] = []
     calls: list[str] = []
     answer, error = "", None
 
     with sync_playwright() as driver:
         browser = driver.chromium.launch()
-        page = browser.new_page(viewport=VIEWPORT)
+        # The shop decides which theme to serve from the user agent, so this is how the
+        # naive loop meets the same shop openJiuwen does. Without it the two scaffolds are
+        # not measuring the same page, and nothing in either record would have said so.
+        context = browser.new_context(viewport=VIEWPORT,
+                                      **({"user_agent": user_agent} if user_agent else {}))
+        page = context.new_page()
         for _ in range(STEP_LIMIT):
             reply = requests.post(
                 ENDPOINT,
@@ -218,6 +226,9 @@ def run(task: str, model: str, key: str) -> dict:
                 except json.JSONDecodeError:
                     args = {}
                 calls.append(name)
+                steps.append({"tool": name,
+                              "target": str(args.get("url") or args.get("label")
+                                            or args.get("answer") or "")[:120]})
                 if name == "finish":
                     answer = args.get("answer", "")
                     break
@@ -237,12 +248,16 @@ def run(task: str, model: str, key: str) -> dict:
     actions = sum(1 for c in calls if c in ("goto", "select_option"))
     return {
         "task": task, "model": model, "scaffold": "naive",
+        "user_agent": user_agent,
         "elapsed_s": round(time.time() - started, 1),
         "result": {"final": answer, "ok": bool(answer) and error is None},
         "error": error,
         "trace": {"tool_calls_total": len(calls), "actions": actions,
                   "observations": sum(1 for c in calls if c == "read_page"),
                   "by_tool": {name: calls.count(name) for name in set(calls)},
+                  "selections": [s["target"] for s in steps if s["tool"] == "select_option"],
+                  "opened": [s["target"] for s in steps if s["tool"] == "goto"],
+                  "steps": steps,
                   "sequence": calls},
     }
 
@@ -252,6 +267,8 @@ def main() -> int:
     parser.add_argument("task")
     parser.add_argument("--out", type=pathlib.Path)
     parser.add_argument("--model", default=None)
+    parser.add_argument("--user-agent", default=None,
+                        help="what the browser reports. The gated theme is selected by it")
     args = parser.parse_args()
 
     key = load_env("OPENROUTER_API_KEY")
@@ -261,7 +278,7 @@ def main() -> int:
         return 1
 
     before = usage(key)
-    record = run(args.task, model, key)
+    record = run(args.task, model, key, user_agent=args.user_agent)
     after = usage_after(key, before)
     record["cost_usd"] = (round(after - before, 6)
                           if before is not None and after is not None else None)

@@ -577,6 +577,25 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
     </div>
     <p class="claim">The agent is not being lazy. It asks a reasonable question, gets an answer that looks complete, and has no signal that it is looking at four listings out of fifteen.</p>
 
+    <p class="note">Until 18 September the shop itself accounted for part of that gap. Magento paginates at twelve by default, so three of the fifteen listings were on a second page and no amount of looking would have found them in one read. The page size is now 36, measured at <code>Items 1-15 of 15</code>, and the cards were measured again in a 1200 by 701 window: fifteen in the document, four intersecting the viewport, the second row starting 427 pixels below the fold. The whole of the loss now sits in the agent rather than partly in the shop, which is what makes the number worth quoting.</p>
+
+    <h3 class="sub" id="probe-vs-deck">What the agent is advertised to do, against what it does</h3>
+    <p class="lede">The reason this is a design choice and not an accident is that the design is published. openJiuwen's browser agent was presented at a developer talk, and the deck states the observation policy directly.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Three claims from the openJiuwen Web and Coding Agent deck, and the shipped code that answers each one</caption>
+        <thead><tr><th class="wide">What the deck says</th><th class="wide">What the code does</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="wide">"Agent reads the control tree (DOM + AX) by default and adds screenshots only when the page is ambiguous"</td><td class="dim wide">After a navigation the control tree is written to a file and the model receives a link to it. The tree enters the context only if the agent spends a separate call on it, and the shipped prompt tells it to prefer the compact probes instead</td><td class="dim">Slide 5, against <code>agents.py</code> line 223</td></tr>
+          <tr><td class="wide">"Rule of thumb: structure first as it is cheaper, local screenshots only when info is missing"</td><td class="dim wide">The structure channel is the card probe, and the card probe is bounded by the viewport. What is missing is therefore invisible to the rule that is supposed to detect missing information</td><td class="dim">Slide 6, against <code>probes.py</code> lines 190 to 195</td></tr>
+          <tr><td class="wide">"Object alignment and fusion. Structure versus pixels: consistent? Do not act on unresolved conflicts"</td><td class="dim wide">The safeguard cannot fire here. The eleven unread listings are not a disagreement between structure and pixels. They are absent from both, and an absence raises no conflict</td><td class="dim">Slide 6</td></tr>
+          <tr><td class="wide">"Layer 1, current page, latest snapshot only, overwritten when the page changes. Layer 4, every snapshot and tool call saved to disk but never sent to the model by default"</td><td class="dim wide">Matches exactly. The context processor keeps the last observation and trims earlier ones to a thousand characters, and the snapshot files do sit on disk unread</td><td class="dim">Slide 8, against <code>browser_agent.py</code> lines 451 to 470</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The compact probe is the compressed DOM and accessibility representation the deck describes, so the gap is not that the agent ignores the control tree. The gap is that the compression is bounded by the viewport and says nothing about what it dropped. A reply carrying <code>total_candidates: 4</code> on a page holding fifteen is not wrong, it is silent.</p>
+    <p class="note">Three limits on how far this is pushed. The deck is a promotional talk rather than a peer reviewed paper and is cited as a talk. It may describe an internal system of which the open source <code>agent-core</code> is a subset, and the repository documentation makes no observation claim at all, saying only that the prompt prefers compact probes over snapshots. The harness paper, arXiv 2608.27969, is not the source and has nothing to say here: it contains no instance of the words browser, DOM, accessibility, screenshot or Playwright. The project's working notes had recorded the control tree description as "the published architecture", which invited exactly that misreading, and the correction is recorded in appendix J.</p>
+
     <h3 class="sub" id="why-coverage">What that means run by run</h3>
     <div class="tablewrap">
       <table>
@@ -995,7 +1014,7 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
     <p class="lede">Every entry changed a number that had already been written down. Most are mistakes in my own instruments rather than problems with the agent, and the record of catching them is part of the work.</p>
     <div class="tablewrap">
       <table>
-        <caption>Nine corrections</caption>
+        <caption>Eleven corrections</caption>
         <thead><tr><th class="wide">What was wrong</th><th class="wide">How it was caught</th><th class="wide">What it changed</th></tr></thead>
         <tbody>
           <tr class="warn"><td class="wide"><b>The product pages carried my own notes, two of which stated the answer</b></td><td class="dim wide">Reading a page the way the agent sees it</td><td class="dim wide">A note was in context in 59 of 60 runs of the first baseline and cited in 26. Removed, and the whole baseline re-run clean. The score moved from 89 to 87 per cent</td></tr>
@@ -1008,6 +1027,7 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
           <tr><td class="wide">The replay script matched questions by name across markets</td><td class="dim wide">Adding a second market that asks the same questions</td><td class="dim wide">Would have marked held-out runs against the development market's answers. Caught before it produced a figure</td></tr>
           <tr class="warn"><td class="wide"><b>I described actions I had never read</b></td><td class="dim wide">Checking a claim in an earlier deck against the tool breakdown</td><td class="dim wide">The first five cross-listing runs were reported as "open A, select the pack, open B, select the pack" at 5.6 actions. The breakdown shows <b>zero selections and zero clicks</b>, and all five had the authoring note in context. The action count was interpreted rather than read. The conclusion survives on the clean re-runs, 10 of 10 at 5.7 actions with 2 to 3 selections each, and this is how the pricing leak stayed invisible for three weeks: five actions looked like open, select, open, select, so nobody asked how a price appeared without a selection</td></tr>
           <tr><td class="wide">The new coverage rule demanded all fifteen listings</td><td class="dim wide">Its first run flagged sound answers</td><td class="dim wide">It ignored the four listings that can be skipped safely. Caught before any figure was written down</td></tr>
+          <tr class="warn"><td class="wide"><b>An inference of mine was filed as the agent's published design</b></td><td class="dim wide">The supervisor asked which document the claim came from</td><td class="dim wide">The working notes recorded "openJiuwen reads the control tree, meaning DOM plus accessibility tree" as the published architecture, and the project brief repeated it. The harness paper says no such thing and contains no instance of the word browser. Chasing the source found it in the developer talk deck, slide 5, stated more strongly than the notes had it, so the claim came back stronger than before. It was still being repeated for three weeks without anyone knowing where it came from</td></tr>
         </tbody>
       </table>
     </div>
