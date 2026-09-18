@@ -1,173 +1,9 @@
 <title>Progress Report</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
-
-<style>
-:root {
-  --ground: #FFFFFF;
-  --soft: #F7F8FA;
-  --ink: #15181D;
-  --muted: #6C7480;
-  --faint: #99A0AB;
-  --line: #E8EAEE;
-  --line-strong: #D3D7DE;
-  --accent: #2359D0;
-  --accent-soft: #EEF3FD;
-  --good: #16704A;
-  --bad: #B3312A;
-  --warn: #8A6100;
-
-  --sans: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
-  --mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
-  --measure: 70ch;
-}
-
-/* Dark is chosen on the page rather than inherited from the operating system, so the
-   default stays bright, matching the overview page this one sits beside. */
-:root[data-theme="dark"] {
-  --ground: #10141A;
-  --soft: #181D25;
-  --ink: #EAEDF2;
-  --muted: #A6AEBA;
-  --faint: #808895;
-  --line: #262D37;
-  --line-strong: #39424E;
-  --accent: #8FB0F5;
-  --accent-soft: #182339;
-  --good: #74C298;
-  --bad: #E8887B;
-  --warn: #DFB05C;
-}
-
-* { box-sizing: border-box; }
-
-body {
-  background: var(--ground);
-  color: var(--ink);
-  font-family: var(--sans);
-  font-size: 16.5px;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-}
-
-h1, h2, h3, h4 { margin: 0; line-height: 1.2; text-wrap: balance; font-weight: 600; letter-spacing: -0.015em; }
-p { margin: 0; }
-a { color: var(--accent); text-underline-offset: 3px; }
-code { font-family: var(--mono); font-weight: 500; font-size: 0.88em; }
-
-.eyebrow {
-  font-family: var(--mono); font-weight: 700; font-size: 11px;
-  letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint);
-}
-
-.wrap { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
-
-.masthead { border-bottom: 1px solid var(--line); }
-.masthead .wrap {
-  display: flex; flex-wrap: wrap; gap: 24px 40px;
-  align-items: flex-end; justify-content: space-between;
-  padding-top: 48px; padding-bottom: 30px;
-}
-.mast-text { display: flex; flex-direction: column; gap: 12px; max-width: 62ch; }
-.mast-text h1 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.025em; }
-.mast-text .sub { color: var(--muted); font-size: 17px; max-width: 58ch; }
-.mast-meta { display: flex; flex-wrap: wrap; gap: 6px 22px; font-family: var(--mono); font-weight: 500; font-size: 12px; color: var(--muted); }
-.mast-meta b { color: var(--muted); font-weight: 400; }
-
-.themebtn {
-  font-family: var(--mono); font-weight: 700; font-size: 12px;
-  border: 1px solid var(--line-strong); background: transparent; color: var(--muted);
-  padding: 8px 14px; border-radius: 2px; cursor: pointer;
-}
-.themebtn:hover { color: var(--ink); border-color: var(--ink); }
-.themebtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-/* contents */
-
-.toc { border-bottom: 1px solid var(--line); background: var(--soft); }
-.toc .wrap { display: flex; flex-wrap: wrap; gap: 4px 26px; padding-top: 14px; padding-bottom: 14px; }
-.toc a { font-family: var(--mono); font-weight: 700; font-size: 11.5px; text-decoration: none; color: var(--muted); letter-spacing: 0.02em; }
-.toc a:hover { color: var(--accent); }
-
-main { padding: 46px 0 90px; display: flex; flex-direction: column; gap: 62px; }
-section { display: flex; flex-direction: column; gap: 18px; scroll-margin-top: 18px; }
-section > h2 { font-size: clamp(21px, 2.6vw, 27px); letter-spacing: -0.02em; }
-h3.sub { font-size: 17.5px; margin-top: 8px; }
-.lede { color: var(--muted); max-width: var(--measure); font-size: 15.5px; }
-.note { color: var(--muted); max-width: var(--measure); font-size: 14.5px; }
-
-/* headline figures, each one links to the section that explains it */
-
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 24px 34px; padding: 2px 0 6px; }
-.stat { display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: inherit; border-top: 1px solid var(--line-strong); padding-top: 12px; }
-.stat:hover { border-top-color: var(--accent); }
-.stat:hover .l { color: var(--accent); }
-.stat .n { font-size: 30px; font-weight: 600; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
-.stat .l { font-family: var(--mono); font-weight: 700; font-size: 10.5px; color: var(--muted); letter-spacing: 0.05em; }
-.stat .l::after { content: " \2192"; color: var(--faint); }
-.stat.flag .n { color: var(--bad); }
-.stat.win .n { color: var(--good); }
-
-/* tables. Headers never wrap, so a short header such as "Runs" or "#" cannot be
-   squeezed narrower than its own text, which is what made several columns unreadable. */
-
-.tablewrap { overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 620px; }
-th, td { text-align: left; padding: 9px 16px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
-th { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; border-bottom-color: var(--line-strong); white-space: nowrap; }
-td.num, th.num { font-family: var(--mono); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; padding-right: 0; white-space: nowrap; }
-th.num { padding-right: 0; }
-td.mono { font-family: var(--mono); font-weight: 500; font-size: 12.5px; }
-td.dim { color: var(--muted); }
-td.wide { min-width: 26ch; }
-td.idx, th.idx { font-family: var(--mono); font-weight: 700; text-align: left; width: 34px; white-space: nowrap; color: var(--muted); }
-tr.hi td { background: var(--accent-soft); }
-tr.hi td.mono { font-weight: 700; }
-
-caption { caption-side: top; text-align: left; font-family: var(--mono); font-weight: 700; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding-bottom: 8px; }
-
-.pill { font-family: var(--mono); font-weight: 700; font-size: 11px; white-space: nowrap; }
-.pill.ok { color: var(--good); }
-.pill.no { color: var(--bad); }
-.pill.amb { color: var(--warn); }
-.pill.dim { color: var(--muted); }
-
-.quote {
-  border-left: 2px solid var(--line-strong); padding: 4px 0 4px 18px;
-  font-family: var(--mono); font-weight: 500; font-size: 13px; color: var(--ink);
-  display: flex; flex-direction: column; gap: 7px; max-width: 90ch;
-}
-.quote.bad { border-left-color: var(--bad); }
-.quote.good { border-left-color: var(--good); }
-.quote b { font-weight: 700; }
-.quote .who { font-family: var(--sans); font-weight: 400; font-size: 12.5px; color: var(--muted); }
-
-.rq { display: flex; flex-direction: column; gap: 10px; padding: 18px 0 0; border-top: 2px solid var(--line-strong); }
-.rq.answered { border-top-color: var(--good); }
-.rq.part { border-top-color: var(--warn); }
-.rqgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px 40px; }
-.rq .tagline { font-family: var(--mono); font-weight: 700; font-size: 11px; letter-spacing: 0.08em; color: var(--muted); }
-.rq h3 { font-size: 16.5px; }
-.rq p { font-size: 14.5px; color: var(--muted); }
-.rq .verdict { font-size: 14.5px; color: var(--ink); }
-
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 28px 36px; }
-.card { display: flex; flex-direction: column; gap: 7px; padding-top: 14px; border-top: 1px solid var(--line-strong); }
-.card.risk { border-top-color: var(--bad); }
-.card.risk h4 { color: var(--bad); }
-.card.done { border-top-color: var(--good); }
-.card h4 { font-size: 16px; }
-.card .when { font-family: var(--mono); font-weight: 700; font-size: 10.5px; color: var(--muted); letter-spacing: 0.08em; }
-.card p { font-size: 14.5px; color: var(--muted); }
-
-.backlink { font-family: var(--mono); font-weight: 700; font-size: 12px; }
-
-footer { border-top: 1px solid var(--line); }
-footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; display: flex; flex-wrap: wrap; gap: 8px 28px; }
-
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
-</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
 
 <header class="masthead">
   <div class="wrap">
@@ -180,26 +16,36 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
         <span><a href="checkpoint-slides.md" class="backlink">Slide script for this checkpoint</a></span>
       </div>
     </div>
-    <button class="themebtn" type="button" id="themebtn" aria-pressed="false">Dark mode</button>
+    <div class="mast-actions">
+      <button class="btn" type="button" id="showall" aria-pressed="false">Show all</button>
+      <button class="btn" type="button" id="themebtn" aria-pressed="false">Dark</button>
+    </div>
   </div>
 </header>
 
-<nav class="toc" aria-label="Contents">
-  <div class="wrap">
-    <a href="#recap">1. The project in five lines</a>
-    <a href="#standing">2. What was already standing</a>
-    <a href="#tested">3. What I did this week</a>
-    <a href="#results">4. What came back</a>
-    <a href="#meaning">5. What it means</a>
-    <a href="#wrong">6. What I got wrong</a>
-    <a href="#next">7. Next week</a>
-  </div>
-</nav>
-
 <div class="wrap">
-<main>
+  <div class="shell">
+  <nav class="sidebar" aria-label="Sections">
+    <h2>Sections</h2>
+    <div class="navlist">
+      <a href="#glance"><span class="k"></span><span>This week in one line</span></a>
+      <a href="#recap"><span class="k">1</span><span>The project in five lines</span></a>
+      <a href="#standing"><span class="k">2</span><span>What was already standing before this week</span></a>
+      <a href="#tested"><span class="k">3</span><span>What I did this week</span></a>
+      <a href="#results"><span class="k">4</span><span>What came back</span></a>
+      <a href="#meaning"><span class="k">5</span><span>What it all means</span></a>
+      <a href="#wrong"><span class="k">6</span><span>What I got wrong this week</span></a>
+      <a href="#next"><span class="k">7</span><span>Next week</span></a>
+    </div>
+    <h2 style="margin-top:22px">Also</h2>
+    <div class="navlist">
+      <a href="index.html"><span class="k">&rarr;</span><span>Full project detail</span></a>
+      <a href="agent-mechanics.html"><span class="k">&rarr;</span><span>How the agent reads a shop</span></a>
+    </div>
+  </nav>
 
-  <section id="glance">
+  <main>
+<section id="glance">
     <h2>This week in one line</h2>
     <p class="lede">I ran the missing comparisons on the market my method had never seen, and it held up. The two things I was <i>not</i> testing, the plain agent and the check-everything agent, both came out worse than they looked. That turned out to be the more useful result.</p>
     <div class="stats">
@@ -480,8 +326,8 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
     </div>
     <p class="note">The slide script for this checkpoint, with every table above written out slide by slide, is in <a href="checkpoint-slides.md">checkpoint-slides.md</a>.</p>
   </section>
-
-</main>
+  </main>
+  </div>
 </div>
 
 <footer>
@@ -492,22 +338,4 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
   </div>
 </footer>
 
-<script>
-(function () {
-  var root = document.documentElement;
-  var btn = document.getElementById("themebtn");
-  var stored = null;
-  try { stored = localStorage.getItem("igr-theme"); } catch (e) { stored = null; }
-  function apply(mode) {
-    root.setAttribute("data-theme", mode);
-    btn.setAttribute("aria-pressed", mode === "dark" ? "true" : "false");
-    btn.textContent = mode === "dark" ? "Light mode" : "Dark mode";
-  }
-  apply(stored === "dark" ? "dark" : "light");
-  btn.addEventListener("click", function () {
-    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    apply(next);
-    try { localStorage.setItem("igr-theme", next); } catch (e) {}
-  });
-})();
-</script>
+<script src="app.js"></script>
