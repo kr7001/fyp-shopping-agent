@@ -1,0 +1,436 @@
+{
+  "ran_at": "2026-09-18T11:09:16",
+  "repeats": 3,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": false,
+  "targeting": false,
+  "targeting_version": null,
+  "rules_version": null,
+  "model": "anthropic/claude-haiku-4.5",
+  "scaffold": "openjiuwen",
+  "tasks_file": "tasks_apparel.json",
+  "draw": "Thornwood:e923925b0b",
+  "instance": {
+    "target_option": "M",
+    "listings": 15,
+    "listings_with_target": 9,
+    "listings_without_target": 6,
+    "winner": {
+      "sku": "IGR-APP-04",
+      "seller": "Rookwood Collective",
+      "price": 18.78
+    },
+    "runner_up_price": 20.58,
+    "winning_margin": 1.8,
+    "cheapest_card": {
+      "sku": "IGR-APP-09",
+      "seller": "Marchmont Threads",
+      "from_price": 11.57
+    },
+    "card_probe_wrong": true,
+    "cheapest_without_target": {
+      "sku": "IGR-APP-09",
+      "seller": "Marchmont Threads",
+      "from_price": 11.57
+    },
+    "absent_trap": true,
+    "largest_size": "XL",
+    "largest_size_winner": {
+      "sku": "IGR-APP-13",
+      "seller": "Alderney Clothing Co",
+      "price": 12.56
+    },
+    "crossover": true,
+    "oracle_min_opens": 5,
+    "prunable_by_bound": 10,
+    "exhaustive_opens": 15,
+    "bound_strength": 0.667,
+    "from_price_range": [
+      11.57,
+      31.01
+    ],
+    "target_price_range": [
+      18.78,
+      40.41
+    ]
+  },
+  "summary": {
+    "by_task": {
+      "apparel-headline": {
+        "gated": false,
+        "verdicts": {
+          "correct": 2,
+          "wrong": 1
+        },
+        "actions": [
+          1,
+          1,
+          1
+        ],
+        "tool_calls": [
+          4,
+          4,
+          2
+        ],
+        "cost": [
+          0.013045,
+          0.02318,
+          0.017677
+        ],
+        "mean_actions": 1.0,
+        "mean_tool_calls": 3.3,
+        "total_cost": 0.0539
+      },
+      "apparel-target-price": {
+        "gated": true,
+        "verdicts": {
+          "correct": 3
+        },
+        "actions": [
+          6,
+          7,
+          6
+        ],
+        "tool_calls": [
+          11,
+          13,
+          11
+        ],
+        "cost": [
+          0.053194,
+          0.078375,
+          0.108384
+        ],
+        "mean_actions": 6.3,
+        "mean_tool_calls": 11.7,
+        "total_cost": 0.24
+      },
+      "apparel-cheapest-target": {
+        "gated": true,
+        "verdicts": {
+          "correct": 3
+        },
+        "actions": [
+          10,
+          6,
+          6
+        ],
+        "tool_calls": [
+          23,
+          12,
+          19
+        ],
+        "cost": [
+          0.073972,
+          0.062855,
+          0.080025
+        ],
+        "mean_actions": 7.3,
+        "mean_tool_calls": 18.0,
+        "total_cost": 0.2169
+      },
+      "apparel-all-stocked": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 2,
+          "correct": 1
+        },
+        "actions": [
+          6,
+          21,
+          6
+        ],
+        "tool_calls": [
+          12,
+          45,
+          11
+        ],
+        "cost": [
+          0.058608,
+          0.282878,
+          0.077778
+        ],
+        "mean_actions": 11.0,
+        "mean_tool_calls": 22.7,
+        "total_cost": 0.4193
+      },
+      "apparel-count-stocked": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 3
+        },
+        "actions": [
+          7,
+          7,
+          8
+        ],
+        "tool_calls": [
+          13,
+          12,
+          14
+        ],
+        "cost": [
+          0.065628,
+          0.055939,
+          0.075316
+        ],
+        "mean_actions": 7.3,
+        "mean_tool_calls": 13.0,
+        "total_cost": 0.1969
+      }
+    },
+    "overall": {
+      "correct": 9,
+      "wrong": 6
+    },
+    "total_cost": 1.1269
+  },
+  "rows": [
+    {
+      "task": "apparel-headline",
+      "family": "apparel",
+      "gated": false,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The Thornwood tee with the lowest price on the results page is 'Thornwood Heavyweight Cotton Tee - Marchmont Threads' at $11.57",
+      "tool_calls": 4,
+      "actions": 1,
+      "observations": 3,
+      "cost_usd": 0.013045,
+      "elapsed_s": 23.1,
+      "error": null,
+      "log": "apparel-headline-1.log"
+    },
+    {
+      "task": "apparel-headline",
+      "family": "apparel",
+      "gated": false,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The Thornwood tee listing with the lowest price on the results page is 'Thornwood Heavyweight Cotton Tee - Marchmont Threads' at $11.57",
+      "tool_calls": 4,
+      "actions": 1,
+      "observations": 3,
+      "cost_usd": 0.02318,
+      "elapsed_s": 16.0,
+      "error": null,
+      "log": "apparel-headline-2.log"
+    },
+    {
+      "task": "apparel-headline",
+      "family": "apparel",
+      "gated": false,
+      "repeat": 3,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "The Thornwood tee listing with the lowest price on the results page is 'Thornwood Heavyweight Cotton Tee - Rookwood Collective' at $16.38",
+      "tool_calls": 2,
+      "actions": 1,
+      "observations": 1,
+      "cost_usd": 0.017677,
+      "elapsed_s": 10.6,
+      "error": null,
+      "log": "apparel-headline-3.log"
+    },
+    {
+      "task": "apparel-target-price",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "found 18.78",
+      "answer": "The lowest price anyone charges for size M of the Thornwood tee is $18.78 from Rookwood Collective.",
+      "tool_calls": 11,
+      "actions": 6,
+      "observations": 5,
+      "cost_usd": 0.053194,
+      "elapsed_s": 39.1,
+      "error": null,
+      "log": "apparel-target-price-1.log"
+    },
+    {
+      "task": "apparel-target-price",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "found 18.78",
+      "answer": "The lowest price anyone charges for size M of the Thornwood Heavyweight Cotton Tee is $18.78 from Rookwood Collective (base price $16.38 + $2.40 size M upcharge).",
+      "tool_calls": 13,
+      "actions": 7,
+      "observations": 6,
+      "cost_usd": 0.078375,
+      "elapsed_s": 43.2,
+      "error": null,
+      "log": "apparel-target-price-2.log"
+    },
+    {
+      "task": "apparel-target-price",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "found 18.78",
+      "answer": "The lowest price anyone charges for size M of the Thornwood Heavyweight Cotton Tee is $18.78 from Rookwood Collective.",
+      "tool_calls": 11,
+      "actions": 6,
+      "observations": 5,
+      "cost_usd": 0.108384,
+      "elapsed_s": 35.0,
+      "error": null,
+      "log": "apparel-target-price-3.log"
+    },
+    {
+      "task": "apparel-cheapest-target",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The cheapest seller for Thornwood Heavyweight Cotton Tee in size M is Rookwood Collective at $18.78",
+      "tool_calls": 23,
+      "actions": 10,
+      "observations": 13,
+      "cost_usd": 0.073972,
+      "elapsed_s": 65.7,
+      "error": null,
+      "log": "apparel-cheapest-target-1.log"
+    },
+    {
+      "task": "apparel-cheapest-target",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The cheapest seller for Thornwood Heavyweight Cotton Tee in size M is Rookwood Collective at $18.78. This was determined by checking all four Thornwood listings on the search results page and calculating the size M price for each seller: Quarles Supply ($34.79), Elmsworth Collective ($20.58), Haldan",
+      "tool_calls": 12,
+      "actions": 6,
+      "observations": 6,
+      "cost_usd": 0.062855,
+      "elapsed_s": 43.5,
+      "error": null,
+      "log": "apparel-cheapest-target-2.log"
+    },
+    {
+      "task": "apparel-cheapest-target",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The cheapest seller for Thornwood Heavyweight Cotton Tee in size M is Rookwood Collective at $18.78 ($16.38 base price + $2.40 for size M).",
+      "tool_calls": 19,
+      "actions": 6,
+      "observations": 13,
+      "cost_usd": 0.080025,
+      "elapsed_s": 68.2,
+      "error": null,
+      "log": "apparel-cheapest-target-3.log"
+    },
+    {
+      "task": "apparel-all-stocked",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "answered yes",
+      "answer": "YES - Every Thornwood listing offers size M. All 4 Thornwood Heavyweight Cotton Tee products (Quarles Supply, Elmsworth Collective, Haldane Apparel, and Rookwood Collective) have size M available in their size dropdown options.",
+      "tool_calls": 12,
+      "actions": 6,
+      "observations": 6,
+      "cost_usd": 0.058608,
+      "elapsed_s": 37.5,
+      "error": null,
+      "log": "apparel-all-stocked-1.log"
+    },
+    {
+      "task": "apparel-all-stocked",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "answered no",
+      "answer": "No. Not every Thornwood listing offers size M. The product 'Thornwood Heavyweight Cotton Tee - Marchmont Threads' (igr-app-09.html) only offers sizes S, L, and XL - size M is not available for this product.",
+      "tool_calls": 45,
+      "actions": 21,
+      "observations": 24,
+      "cost_usd": 0.282878,
+      "elapsed_s": 142.3,
+      "error": null,
+      "log": "apparel-all-stocked-2.log"
+    },
+    {
+      "task": "apparel-all-stocked",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "wrong",
+      "why": "answered yes",
+      "answer": "Yes. All 4 Thornwood Heavyweight Cotton Tee listings found in the search results offer size M: (1) Quarles Supply - M +$3.81, (2) Elmsworth Collective - M, (3) Haldane Apparel - M +$0.07, (4) Rookwood Collective - M +$2.40",
+      "tool_calls": 11,
+      "actions": 6,
+      "observations": 5,
+      "cost_usd": 0.077778,
+      "elapsed_s": 37.2,
+      "error": null,
+      "log": "apparel-all-stocked-3.log"
+    },
+    {
+      "task": "apparel-count-stocked",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "counted 4, expected 9",
+      "answer": "All 4 Thornwood listings offer size M. The search results for 'Thornwood' returned 4 products, and each one has size M available in their size dropdown options: (1) Thornwood Heavyweight Cotton Tee - Quarles Supply (M +$3.81), (2) Thornwood Heavyweight Cotton Tee - Elmsworth Collective (M), (3) Thor",
+      "tool_calls": 13,
+      "actions": 7,
+      "observations": 6,
+      "cost_usd": 0.065628,
+      "elapsed_s": 38.7,
+      "error": null,
+      "log": "apparel-count-stocked-1.log"
+    },
+    {
+      "task": "apparel-count-stocked",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "wrong",
+      "why": "counted 4, expected 9",
+      "answer": "All 4 Thornwood listings offer size M. The search results for 'Thornwood' returned 4 products, and each one has size M available in their size dropdown options.",
+      "tool_calls": 12,
+      "actions": 7,
+      "observations": 5,
+      "cost_usd": 0.055939,
+      "elapsed_s": 39.5,
+      "error": null,
+      "log": "apparel-count-stocked-2.log"
+    },
+    {
+      "task": "apparel-count-stocked",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "wrong",
+      "why": "counted 4, expected 9",
+      "answer": "All 4 Thornwood listings offer size M. The listings are: (1) Thornwood Heavyweight Cotton Tee - Quarles Supply, (2) Thornwood Heavyweight Cotton Tee - Elmsworth Collective, (3) Thornwood Heavyweight Cotton Tee - Haldane Apparel, and (4) Thornwood Heavyweight Cotton Tee - Rookwood Collective. Each pr",
+      "tool_calls": 14,
+      "actions": 8,
+      "observations": 6,
+      "cost_usd": 0.075316,
+      "elapsed_s": 44.3,
+      "error": null,
+      "log": "apparel-count-stocked-3.log"
+    }
+  ],
+  "superseded": {
+    "on": "2026-09-18",
+    "why": "Measured a clothing market whose answer sat at card 4, inside the row of four the agent reads before deciding anything, so the two price questions were answerable by glancing and came out 3 of 3 at four listings opened against a floor of five. Right and not earned, which the coverage rule flagged on all six. The generator now requires the winner to sit at index 8 or later and the market was regenerated, so these runs describe a market that no longer exists. Kept because they are the evidence for rule 11 existing.",
+    "cost_usd": 1.1269
+  }
+}

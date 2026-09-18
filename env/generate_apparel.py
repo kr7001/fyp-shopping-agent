@@ -95,7 +95,10 @@ INSTANCE_RULES = """Properties every generated clothing instance must satisfy:
                         and the cheapest for the largest size are three different sellers
 9. clear_margin         the winner beats the runner up by a visible amount, so a correct
                         answer is not rounding luck
-10. floor_is_real       at least five listings survive pruning and have to be opened.
+10. floor_is_real       at least five listings survive pruning and have to be opened
+11. answer_off_first_screen
+                        the winning listing is the eighth or later in the catalogue, so it
+                        does not appear in the first row of search results.
 
 **Rule 10 is set by what the domain allows, and that is the interesting part.**
 
@@ -115,7 +118,28 @@ That makes this market a different test of the coverage rule rather than a weake
 water the rule has to insist on 11 openings. Here a sound answer can come from 5, and the
 rule reads the floor the generator computes rather than a constant, so the question is
 whether it permits that. A rule that demanded eleven everywhere would refuse correct answers
-in this domain, and this is the market that would catch it."""
+in this domain, and this is the market that would catch it.
+
+**Rule 11 exists because the first draw of this market was answerable by glancing.**
+
+Nothing in either generator controlled where the answer sits on the results page. The first
+clothing market put its winner at card 4, inside the row of four the agent reads before it
+decides anything, and the agent duly answered the two price questions 3 of 3 while opening
+4 listings of 15, below the floor of 5. Right, and not earned, and the coverage rule flagged
+all six.
+
+This is the same accident that made the first water market look easy: its winner sat at card
+2 and the plain agent scored 58 per cent there against 25 per cent on a market where the
+winner sits further down. Diagnosed once as a property of that market, it is really a gap in
+the design, so it becomes a rule rather than a caveat.
+
+Catalogue index is only a proxy for page position, and a weaker one than expected: the
+regenerated market puts its winner at index 15 and Magento renders it at card 5, because
+relevance ordering is its own. So the rule is a filter and the rendered position is checked
+after seeding rather than assumed. Card 5 is outside the four the probe returns, which is
+the condition that actually matters, and it is closer to the edge than is comfortable. A
+generator that could place the answer on the page directly would be better and would mean
+controlling Magento's ordering, which is not worth the environment change today."""
 
 MIN_MARGIN_ABS = 1.50
 MIN_MARGIN_REL = 0.08
@@ -202,6 +226,11 @@ def measure(listings: list[dict]) -> dict:
     return {
         "target_option": TARGET_SIZE,
         "listings": len(listings),
+        # Where the answer sits in the catalogue, which is very nearly where it sits on the
+        # results page. A winner inside the first row of four can be found by glancing, and
+        # a market like that measures nothing about retrieval.
+        "winner_index": listings.index(winner) + 1,
+        "cheapest_card_index": listings.index(cheapest_card) + 1,
         "listings_with_target": len(carriers),
         "listings_without_target": len(absent),
         "winner": {"sku": winner["parent_sku"], "seller": winner["seller"], "price": best},
@@ -257,6 +286,8 @@ def check(listings: list[dict], facts: dict) -> list[str]:
         broken.append("crossover")
     if facts["oracle_min_opens"] < 5:
         broken.append("floor_is_real")
+    if facts["winner_index"] < 8:
+        broken.append("answer_off_first_screen")
 
     answers = {facts["winner"]["sku"], facts["cheapest_card"]["sku"],
                facts["largest_size_winner"]["sku"]}
