@@ -41,6 +41,317 @@
       "browser_probe_cards": 1,
       "browser_take_screenshot": 1
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall",
+      "http://localhost:7770/igr-rvn-03.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "e101"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "e124"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "f2e113"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Ashgrove Cellars"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f4e135"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Bramley Pantry"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f6e157"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Larkspur Wholesale"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f8e179"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Thornbury Pantry"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f10e201"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Verity Provisions"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f12e223"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Hillside Wholesale"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f14e245"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Westmere Distributors"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f16e267"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Marlow Cellars"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f18e289"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Chandler Wholesale"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f20e311"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pembroke Trading"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f22e333"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Page 2"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f24e361"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Rivenhall Still Spring Water"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f25e102"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Whitlock Provisions"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f27e113"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Oakfield Wholesale"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f29e135"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-03.html"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_find",
+        "target": "As low as"
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -120,5 +431,6 @@
       "browser_evaluate"
     ]
   },
-  "log": "scaled-cheapest-target-2.log"
+  "log": "scaled-cheapest-target-2.log",
+  "trace_log": "scaled-cheapest-target-2.log"
 }

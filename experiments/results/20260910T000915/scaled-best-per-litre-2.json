@@ -40,6 +40,340 @@
       "browser_navigate": 1,
       "browser_probe_interactives": 1
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "http://localhost:7770/igr-rvn-01.html"
+      },
+      {
+        "tool": "browser_click",
+        "target": "e97"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "e119"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "f2e119"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Ashgrove Cellars"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f4e141"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Bramley Pantry"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f6e163"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Larkspur Wholesale"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f8e185"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Thornbury Pantry"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f10e207"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Verity Provisions"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f12e229"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Hillside Wholesale"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f14e251"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Westmere Distributors"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f16e273"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Marlow Cellars"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f18e295"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Chandler Wholesale"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f20e317"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pembroke Trading"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f22e339"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Page 2"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f24e361"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "f25e108"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Whitlock Provisions"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f27e119"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Oakfield Wholesale"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f29e141"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -125,5 +459,6 @@
       "browser_snapshot"
     ]
   },
-  "log": "scaled-best-per-litre-2.log"
+  "log": "scaled-best-per-litre-2.log",
+  "trace_log": "scaled-best-per-litre-2.log"
 }

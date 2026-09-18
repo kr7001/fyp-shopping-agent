@@ -24,5 +24,119 @@
     "attempt": 1,
     "progress_state": null,
     "failure_summary": null
-  }
+  },
+  "trace": {
+    "tool_calls_total": 17,
+    "actions": 7,
+    "observations": 10,
+    "unclassified_tools": [],
+    "assistant_turns": 17,
+    "by_tool": {
+      "browser_snapshot": 6,
+      "browser_select_option": 4,
+      "browser_wait_for": 4,
+      "browser_navigate": 1,
+      "browser_click": 1,
+      "browser_batch_interact": 1
+    },
+    "selections": [
+      "24 x 350ml +$2.01",
+      "12 x 550ml",
+      "6 x 1.25L +$0.61",
+      "2 x 9.5L +$15.01"
+    ],
+    "opened": [
+      "http://localhost:7770/igr-water-a.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-water-a.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "e89"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "24 x 350ml +$2.01"
+      },
+      {
+        "tool": "browser_wait_for",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "12 x 550ml"
+      },
+      {
+        "tool": "browser_wait_for",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "6 x 1.25L +$0.61"
+      },
+      {
+        "tool": "browser_wait_for",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$15.01"
+      },
+      {
+        "tool": "browser_wait_for",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_click",
+      "browser_snapshot",
+      "browser_batch_interact",
+      "browser_select_option",
+      "browser_wait_for",
+      "browser_snapshot",
+      "browser_select_option",
+      "browser_wait_for",
+      "browser_snapshot",
+      "browser_select_option",
+      "browser_wait_for",
+      "browser_snapshot",
+      "browser_select_option",
+      "browser_wait_for",
+      "browser_snapshot"
+    ]
+  },
+  "trace_log": "water-a-cheapest-per-litre-2.log"
 }

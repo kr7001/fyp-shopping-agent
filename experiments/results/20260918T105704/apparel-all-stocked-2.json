@@ -40,6 +40,192 @@
       "browser_probe_cards": 1,
       "browser_take_screenshot": 1
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Thornwood"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Thornwood"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "t_g0_4"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "e112"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "f2e123"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "f3e106"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Haldane Apparel"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f4e145"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Size"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f5e106"
+      },
+      {
+        "tool": "browser_find",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Rookwood Collective"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f6e167"
+      },
+      {
+        "tool": "browser_find",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Northwick Threads"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f8e189"
+      },
+      {
+        "tool": "browser_find",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Fairhaven Outfitters"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f10e211"
+      },
+      {
+        "tool": "browser_find",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Garrick Collective"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f12e233"
+      },
+      {
+        "tool": "browser_find",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Brindle Garments"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f14e255"
+      },
+      {
+        "tool": "browser_find",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Marchmont Threads"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f16e277"
+      },
+      {
+        "tool": "browser_find",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -88,5 +274,6 @@
       "browser_take_screenshot"
     ]
   },
-  "log": "apparel-all-stocked-2.log"
+  "log": "apparel-all-stocked-2.log",
+  "trace_log": "apparel-all-stocked-2.log"
 }

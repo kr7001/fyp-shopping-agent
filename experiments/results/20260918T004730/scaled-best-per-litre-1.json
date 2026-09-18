@@ -42,6 +42,172 @@
       "browser_find": 1,
       "browser_take_screenshot": 1
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "#product-item-info_104664 > div.product.details:nth-of-type(1) > strong.product.name.product-item-name:nth-of-type(1) > "
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "Pack Size *"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "a[href=\"http://localhost:7770/igr-cal-02.html\"]"
+      },
+      {
+        "tool": "browser_click",
+        "target": "getByText('Calderwood Still Spring Water, Multipack - Thornbury Provisions')"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "getByText('Calderwood Still Spring Water, Multipack - Chandler Direct')"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "getByText('Calderwood Still Spring Water, Multipack - Pembroke Merchants')"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "getByText('Calderwood Still Spring Water, Multipack - Fenwick Wholesale')"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "getByText('Calderwood Still Spring Water, Multipack - Cellar Pantry')"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "getByText('Calderwood Still Spring Water, Multipack - Bramley Trading')"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "getByText('Calderwood Still Spring Water, Multipack - Stonebridge Cellars')"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "getByText('Calderwood Still Spring Water, Multipack - Redhill Direct')"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate_back",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "getByText('Calderwood Still Spring Water, Multipack - Verity Direct')"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -85,5 +251,6 @@
       "browser_evaluate"
     ]
   },
-  "log": "scaled-best-per-litre-1.log"
+  "log": "scaled-best-per-litre-1.log",
+  "trace_log": "scaled-best-per-litre-1.log"
 }

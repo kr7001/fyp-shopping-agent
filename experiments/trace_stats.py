@@ -18,6 +18,7 @@ import argparse
 import collections
 import json
 import pathlib
+import re
 import sys
 
 MCP_PREFIX = "mcp_playwright-official_"
@@ -37,6 +38,13 @@ OBSERVATIONS = {
     "browser_wait_for", "browser_console_messages", "browser_network_requests",
     "browser_list_custom_actions", "browser_generate_locator",
 }
+
+# The naive loop's four tools, in the same two categories, so one counter serves both
+# scaffolds. Its log is a different shape, printed by the loop itself as it runs.
+ACTIONS |= {"goto", "select_option"}
+OBSERVATIONS |= {"read_page"}
+NAIVE_STEP = re.compile(r"^\[tool ([a-z_]+)\] (\{.*\})$", re.MULTILINE)
+NAIVE_KEY_ARG = ("url", "label", "answer")
 
 
 # The argument that says what an action touched. Tool names alone are not evidence:
@@ -113,9 +121,30 @@ def tool_steps(messages: list[dict]) -> list[dict]:
     return steps
 
 
+def naive_steps(log_path: pathlib.Path) -> list[dict]:
+    """The naive loop prints each call as it makes it, so its log is the record.
+
+    Reading it here rather than trusting the runner's own count means a stored naive run
+    can be re-examined the same way an openJiuwen one can. Backfilling without this
+    silently replaced every naive trace with an empty one, because the openJiuwen parser
+    finds no events in a log that has none.
+    """
+    steps = []
+    for name, raw in NAIVE_STEP.findall(log_path.read_text(errors="replace")):
+        try:
+            arguments = json.loads(raw)
+        except json.JSONDecodeError:
+            arguments = {}
+        target = next((str(arguments[k]) for k in NAIVE_KEY_ARG if arguments.get(k)), "")
+        steps.append({"tool": name, "target": target[:120]})
+    return steps
+
+
 def stats(log_path: pathlib.Path) -> dict:
     messages = final_messages(log_path)
     steps = tool_steps(messages)
+    if not steps:
+        steps = naive_steps(log_path)
     sequence = [step["tool"] for step in steps]
     counts = collections.Counter(sequence)
     actions = sum(n for tool, n in counts.items() if tool in ACTIONS)
@@ -130,8 +159,9 @@ def stats(log_path: pathlib.Path) -> dict:
         "by_tool": dict(counts.most_common()),
         # What the run selected, which is the claim that went unchecked for three weeks.
         "selections": [step["target"] for step in steps
-                       if step["tool"] == "browser_select_option"],
-        "opened": [step["target"] for step in steps if step["tool"] == "browser_navigate"],
+                       if step["tool"] in ("browser_select_option", "select_option")],
+        "opened": [step["target"] for step in steps
+                   if step["tool"] in ("browser_navigate", "goto")],
         "steps": steps,
         "sequence": sequence,
     }
@@ -152,7 +182,19 @@ def sibling_json(log_path: pathlib.Path) -> pathlib.Path | None:
         return exact
     stem = log_path.stem
     candidates = sorted(p for p in log_path.parent.glob("*.json") if p.stem[:15] >= stem[:15])
-    return candidates[0] if candidates else None
+    for candidate in candidates:
+        # A record that names its own log is the authority on which log is its own. The
+        # timestamp rule is a guess for the records that predate that field, and it guessed
+        # wrong here: a directory holding two logs and one record had the second log's trace
+        # written into the first run's record, and the record's own `log` field said so.
+        try:
+            named = json.loads(candidate.read_text()).get("log")
+        except (OSError, json.JSONDecodeError):
+            named = None
+        if named and named != log_path.name:
+            continue
+        return candidate
+    return None
 
 
 def main() -> int:

@@ -39,6 +39,88 @@
       "browser_navigate": 1,
       "browser_click": 1
     },
+    "selections": [
+      "11",
+      "13",
+      "14"
+    ],
+    "opened": [
+      "http://localhost:7770/igr-tee-a.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tee-a.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "e89"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "out of stock"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "11"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "13"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "14"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "M"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Medium"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_snapshot",
@@ -60,5 +142,6 @@
       "browser_evaluate"
     ]
   },
-  "log": "tee-all-sizes-stocked-1.log"
+  "log": "tee-all-sizes-stocked-1.log",
+  "trace_log": "tee-all-sizes-stocked-1.log"
 }

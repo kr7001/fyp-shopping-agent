@@ -43,6 +43,138 @@
       "browser_select_option": 1,
       "browser_find": 1
     },
+    "selections": [
+      "250 g"
+    ],
+    "opened": [
+      "http://localhost:7770/igr-coffee-a.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-coffee-a.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "e89"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "250 g"
+      },
+      {
+        "tool": "browser_click",
+        "target": "e89"
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "target": "ArrowDown"
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "target": "Escape"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_wait_for",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "As low as"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_wait_for",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_wait_for",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_snapshot",
@@ -77,5 +209,6 @@
       "browser_evaluate"
     ]
   },
-  "log": "coffee-bulk-check-3.log"
+  "log": "coffee-bulk-check-3.log",
+  "trace_log": "coffee-bulk-check-3.log"
 }

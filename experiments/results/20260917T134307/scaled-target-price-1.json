@@ -42,6 +42,210 @@
       "browser_probe_interactives": 2,
       "browser_close": 1
     },
+    "selections": [
+      "2 x 9.5L +$14.21",
+      "2 x 9.5L +$10.97",
+      "2 x 9.5L +$19.86",
+      "2 x 9.5L +$23.48",
+      "2 x 9.5L +$16.60"
+    ],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood",
+      "http://localhost:7770/catalogsearch/result/index/?p=2&q=Calderwood",
+      "http://localhost:7770/igr-cal-04.html",
+      "http://localhost:7770/igr-cal-08.html",
+      "http://localhost:7770/igr-cal-11.html",
+      "http://localhost:7770/igr-cal-09.html",
+      "http://localhost:7770/igr-cal-03.html",
+      "http://localhost:7770/igr-cal-07.html",
+      "http://localhost:7770/igr-cal-12.html",
+      "http://localhost:7770/igr-cal-13.html",
+      "http://localhost:7770/igr-cal-14.html",
+      "http://localhost:7770/igr-cal-01.html",
+      "http://localhost:7770/igr-cal-06.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/index/?p=2&q=Calderwood"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-04.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$14.21"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-08.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-11.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$10.97"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-09.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-03.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-07.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$19.86"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-12.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$23.48"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-13.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$16.60"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-14.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-01.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-06.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_close",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -90,5 +294,6 @@
       "browser_close"
     ]
   },
-  "log": "scaled-target-price-1.log"
+  "log": "scaled-target-price-1.log",
+  "trace_log": "scaled-target-price-1.log"
 }

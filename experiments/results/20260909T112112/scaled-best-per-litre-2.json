@@ -40,6 +40,101 @@
       "browser_click": 1,
       "browser_snapshot": 1
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall",
+      "http://localhost:7770/igr-rvn-01.html",
+      "http://localhost:7770/igr-rvn-03.html",
+      "http://localhost:7770/igr-rvn-04.html",
+      "http://localhost:7770/igr-rvn-05.html",
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "t_g0_4"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-01.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "litre"
+      },
+      {
+        "tool": "browser_find",
+        "target": "liter"
+      },
+      {
+        "tool": "browser_find",
+        "target": "size"
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-03.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-04.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-05.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -64,5 +159,6 @@
       "browser_take_screenshot"
     ]
   },
-  "log": "scaled-best-per-litre-2.log"
+  "log": "scaled-best-per-litre-2.log",
+  "trace_log": "scaled-best-per-litre-2.log"
 }

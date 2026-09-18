@@ -42,6 +42,96 @@
       "browser_take_screenshot": 1,
       "browser_find": 1
     },
+    "selections": [
+      "2 x 9.5L +$15.01",
+      "2 x 9.5L +$15.01"
+    ],
+    "opened": [
+      "http://localhost:7770/igr-water-a.html",
+      "http://localhost:7770/igr-water-b.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-water-a.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "[ref=e89]"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$15.01"
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$15.01"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_click",
+        "target": "[ref=e89]"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_wait_for",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-water-b.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_wait_for",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_snapshot",
@@ -65,5 +155,6 @@
       "browser_snapshot"
     ]
   },
-  "log": "water-cross-listing-5.log"
+  "log": "water-cross-listing-5.log",
+  "trace_log": "water-cross-listing-5.log"
 }

@@ -41,6 +41,46 @@
       "browser_take_screenshot": 1,
       "browser_close": 1
     },
+    "selections": [
+      "XL +$2.00"
+    ],
+    "opened": [
+      "http://localhost:7770/igr-tee-a.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tee-a.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "e89"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "XL +$2.00"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_close",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_snapshot",
@@ -52,5 +92,6 @@
       "browser_close"
     ]
   },
-  "log": "tee-xl-price-3.log"
+  "log": "tee-xl-price-3.log",
+  "trace_log": "tee-xl-price-3.log"
 }

@@ -39,6 +39,226 @@
       "browser_batch_interact": 2,
       "browser_click": 1
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood&___store=gated",
+      "http://localhost:7770/catalog/product/view/id/104664/s/igr-cal-01/category/2/",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood&___store=gated",
+      "http://localhost:7770/catalog/product/view/id/104669/s/igr-cal-02/category/2/",
+      "http://localhost:7770/catalog/product/view/id/104678/s/igr-cal-04/category/2/",
+      "http://localhost:7770/catalog/product/view/id/104683/s/igr-cal-05/category/2/",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood&___store=gated",
+      "http://localhost:7770/catalog/product/view/id/104688/s/igr-cal-06/category/2/",
+      "http://localhost:7770/catalog/product/view/id/104693/s/igr-cal-07/category/2/",
+      "http://localhost:7770/catalog/product/view/id/104710/s/igr-cal-11/category/2/",
+      "http://localhost:7770/catalog/product/view/id/104715/s/igr-cal-12/category/2/",
+      "http://localhost:7770/catalog/product/view/id/104720/s/igr-cal-13/category/2/",
+      "http://localhost:7770/catalog/product/view/id/104725/s/igr-cal-14/category/2/",
+      "http://localhost:7770/catalogsearch/result/index/?___store=gated&p=2&q=Calderwood",
+      "http://localhost:7770/catalog/product/view/id/104701/s/igr-cal-09/category/2/",
+      "http://localhost:7770/catalog/product/view/id/104705/s/igr-cal-10/category/2/",
+      "http://localhost:7770/catalog/product/view/id/104729/s/igr-cal-15/category/2/",
+      "http://localhost:7770/catalog/product/view/id/104673/s/igr-cal-03/category/2/",
+      "http://localhost:7770/catalog/product/view/id/104697/s/igr-cal-08/category/2/"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood&___store=gated"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "http://localhost:7770/catalog/product/view/id/104664/s/igr-cal-01/category/2/"
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104664/s/igr-cal-01/category/2/"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood&___store=gated"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104669/s/igr-cal-02/category/2/"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104678/s/igr-cal-04/category/2/"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104683/s/igr-cal-05/category/2/"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood&___store=gated"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104688/s/igr-cal-06/category/2/"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104693/s/igr-cal-07/category/2/"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104710/s/igr-cal-11/category/2/"
+      },
+      {
+        "tool": "browser_find",
+        "target": "option.*x.*ml"
+      },
+      {
+        "tool": "browser_find",
+        "target": "24 x 350ml"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104715/s/igr-cal-12/category/2/"
+      },
+      {
+        "tool": "browser_find",
+        "target": "24 x 350ml"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104720/s/igr-cal-13/category/2/"
+      },
+      {
+        "tool": "browser_find",
+        "target": "24 x 350ml"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104725/s/igr-cal-14/category/2/"
+      },
+      {
+        "tool": "browser_find",
+        "target": "24 x 350ml"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/index/?___store=gated&p=2&q=Calderwood"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104701/s/igr-cal-09/category/2/"
+      },
+      {
+        "tool": "browser_find",
+        "target": "24 x 350ml"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104705/s/igr-cal-10/category/2/"
+      },
+      {
+        "tool": "browser_find",
+        "target": "As low as"
+      },
+      {
+        "tool": "browser_find",
+        "target": "24 x 350ml"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104729/s/igr-cal-15/category/2/"
+      },
+      {
+        "tool": "browser_find",
+        "target": "24 x 350ml"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104673/s/igr-cal-03/category/2/"
+      },
+      {
+        "tool": "browser_find",
+        "target": "24 x 350ml"
+      },
+      {
+        "tool": "browser_find",
+        "target": "As low as"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104697/s/igr-cal-08/category/2/"
+      },
+      {
+        "tool": "browser_find",
+        "target": "24 x 350ml"
+      },
+      {
+        "tool": "browser_find",
+        "target": "As low as"
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -91,5 +311,6 @@
       "browser_find"
     ]
   },
-  "log": "scaled-best-per-litre-3.log"
+  "log": "scaled-best-per-litre-3.log",
+  "trace_log": "scaled-best-per-litre-3.log"
 }

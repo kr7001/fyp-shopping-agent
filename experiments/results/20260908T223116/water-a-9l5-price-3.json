@@ -24,5 +24,94 @@
     "attempt": 1,
     "progress_state": null,
     "failure_summary": null
-  }
+  },
+  "trace": {
+    "tool_calls_total": 12,
+    "actions": 5,
+    "observations": 7,
+    "unclassified_tools": [],
+    "assistant_turns": 12,
+    "by_tool": {
+      "browser_snapshot": 3,
+      "browser_batch_interact": 2,
+      "browser_select_option": 2,
+      "browser_navigate": 1,
+      "browser_probe_cards": 1,
+      "browser_find": 1,
+      "browser_evaluate": 1,
+      "browser_take_screenshot": 1
+    },
+    "selections": [
+      "2 x 9.5L +$15.01",
+      "2 x 9.5L +$15.01"
+    ],
+    "opened": [
+      "http://localhost:7770/igr-water-a.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-water-a.html"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$15.01"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$15.01"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_snapshot",
+      "browser_batch_interact",
+      "browser_snapshot",
+      "browser_batch_interact",
+      "browser_find",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_snapshot",
+      "browser_take_screenshot"
+    ]
+  },
+  "trace_log": "water-a-9l5-price-3.log"
 }

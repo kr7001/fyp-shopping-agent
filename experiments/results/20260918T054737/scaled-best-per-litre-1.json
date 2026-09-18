@@ -12,12 +12,113 @@
     "tool_calls_total": 20,
     "actions": 18,
     "observations": 1,
+    "unclassified_tools": [],
     "by_tool": {
       "finish": 1,
       "goto": 17,
       "select_option": 1,
       "read_page": 1
     },
+    "selections": [
+      "2"
+    ],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood&p=2",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood",
+      "http://localhost:7770/calderwood-still-spring-water-multipack-kettering-distributors.html",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+Chandler+Direct",
+      "http://localhost:7770/calderwood-still-spring-water-multipack-chandler-direct.html",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+2+x+9.5L",
+      "http://localhost:7770/product/1",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+Kettering",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+Cellar+2+x+9.5L",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+2+x+9.5L",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood",
+      "http://localhost:7770/calderwood-still-spring-water-multipack-chandler-direct/",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+6",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood+4"
+    ],
+    "steps": [
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "select_option",
+        "target": "2"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood&p=2"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/calderwood-still-spring-water-multipack-kettering-distributors.html"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "read_page",
+        "target": ""
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+Chandler+Direct"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/calderwood-still-spring-water-multipack-chandler-direct.html"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+2+x+9.5L"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/product/1"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+Kettering"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+Cellar+2+x+9.5L"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+2+x+9.5L"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/calderwood-still-spring-water-multipack-chandler-direct/"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+6"
+      },
+      {
+        "tool": "goto",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood+4"
+      }
+    ],
     "sequence": [
       "goto",
       "select_option",
@@ -42,5 +143,6 @@
     ]
   },
   "cost_usd": 0.75395,
-  "log": "scaled-best-per-litre-1.log"
+  "log": "scaled-best-per-litre-1.log",
+  "trace_log": "scaled-best-per-litre-1.log"
 }

@@ -39,6 +39,88 @@
       "browser_click": 1,
       "browser_snapshot": 1
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood&___store=gated",
+      "http://localhost:7770/catalog/product/view/id/104664/s/igr-cal-01/category/2/",
+      "http://localhost:7770/catalog/product/view/id/104669/s/igr-cal-02/category/2/",
+      "http://localhost:7770/catalog/product/view/id/104678/s/igr-cal-04/category/2/",
+      "http://localhost:7770/catalog/product/view/id/104683/s/igr-cal-05/category/2/"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood&___store=gated"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "t_g0_4"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104664/s/igr-cal-01/category/2/"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "9.5L"
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "$16.14"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104669/s/igr-cal-02/category/2/"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_find",
+        "target": "$18.35"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104678/s/igr-cal-04/category/2/"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_find",
+        "target": "$5.54"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalog/product/view/id/104683/s/igr-cal-05/category/2/"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_find",
+        "target": "$19.67"
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -60,5 +142,6 @@
       "browser_take_screenshot"
     ]
   },
-  "log": "scaled-cheapest-target-1.log"
+  "log": "scaled-cheapest-target-1.log",
+  "trace_log": "scaled-cheapest-target-1.log"
 }

@@ -24,5 +24,81 @@
     "attempt": 1,
     "progress_state": null,
     "failure_summary": null
-  }
+  },
+  "trace": {
+    "tool_calls_total": 10,
+    "actions": 5,
+    "observations": 5,
+    "unclassified_tools": [],
+    "assistant_turns": 10,
+    "by_tool": {
+      "browser_snapshot": 5,
+      "browser_select_option": 3,
+      "browser_navigate": 1,
+      "browser_click": 1
+    },
+    "selections": [
+      "250 g",
+      "500 g +$6.40",
+      "1 kg +$23.50"
+    ],
+    "opened": [
+      "http://localhost:7770/igr-coffee-a.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-coffee-a.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "e89"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "250 g"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "500 g +$6.40"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "1 kg +$23.50"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_click",
+      "browser_snapshot",
+      "browser_select_option",
+      "browser_snapshot",
+      "browser_select_option",
+      "browser_snapshot",
+      "browser_select_option",
+      "browser_snapshot"
+    ]
+  },
+  "trace_log": "coffee-best-value-4.log"
 }

@@ -40,6 +40,213 @@
       "browser_probe_cards": 2,
       "browser_probe_interactives": 1
     },
+    "selections": [
+      "2 x 9.5L +$12.82",
+      "2 x 9.5L +$10.86",
+      "2 x 9.5L +$12.94",
+      "2 x 9.5L +$17.26",
+      "2 x 9.5L +$11.58"
+    ],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall",
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall",
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall",
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall",
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall",
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall",
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall",
+      "http://localhost:7770/catalogsearch/result/index/?p=2&q=Rivenhall"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "e361"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_click",
+        "target": "e251"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "f2e251"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "f3e106"
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$12.82"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Redhill Stores"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f4e119"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$10.86"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Thornbury Pantry"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f6e207"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$12.94"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Cellar Distributors"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f8e97"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$17.26"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Westmere Distributors"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f10e273"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "2 x 9.5L +$11.58"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pembroke Trading"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f12e339"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/index/?p=2&q=Rivenhall"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Stonebridge Trading"
+      },
+      {
+        "tool": "browser_click",
+        "target": "f14e97"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -90,5 +297,6 @@
       "browser_snapshot"
     ]
   },
-  "log": "scaled-cheapest-target-3.log"
+  "log": "scaled-cheapest-target-3.log",
+  "trace_log": "scaled-cheapest-target-3.log"
 }

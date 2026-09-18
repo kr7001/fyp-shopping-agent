@@ -41,6 +41,81 @@
       "browser_take_screenshot": 1,
       "browser_close": 1
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall",
+      "http://localhost:7770/igr-rvn-03.html",
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall",
+      "http://localhost:7770/igr-rvn-01.html",
+      "http://localhost:7770/igr-rvn-04.html",
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "t_g0_10"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-03.html"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-01.html"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rvn-04.html"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_close",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -60,5 +135,6 @@
       "browser_close"
     ]
   },
-  "log": "scaled-best-per-litre-1.log"
+  "log": "scaled-best-per-litre-1.log",
+  "trace_log": "scaled-best-per-litre-1.log"
 }

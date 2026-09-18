@@ -40,6 +40,188 @@
       "browser_snapshot": 2,
       "browser_take_screenshot": 1
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood",
+      "http://localhost:7770/catalogsearch/result/index/?p=2&q=Calderwood",
+      "http://localhost:7770/igr-cal-04.html",
+      "http://localhost:7770/igr-cal-11.html",
+      "http://localhost:7770/igr-cal-09.html",
+      "http://localhost:7770/igr-cal-07.html",
+      "http://localhost:7770/igr-cal-12.html",
+      "http://localhost:7770/igr-cal-13.html",
+      "http://localhost:7770/igr-cal-14.html",
+      "http://localhost:7770/igr-cal-01.html",
+      "http://localhost:7770/igr-cal-06.html",
+      "http://localhost:7770/catalogsearch/result/index/?p=2&q=Calderwood",
+      "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "page"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/index/?p=2&q=Calderwood"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Calderwood Still Spring Water, Multipack"
+      },
+      {
+        "tool": "browser_find",
+        "target": "As low as"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-04.html"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-11.html"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-09.html"
+      },
+      {
+        "tool": "browser_find",
+        "target": "2 x 9.5L"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Pack Size"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-07.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-12.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-13.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-14.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-01.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-cal-06.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/index/?p=2&q=Calderwood"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Items"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Calderwood"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Items"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Page 3"
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -84,5 +266,6 @@
       "browser_find"
     ]
   },
-  "log": "scaled-target-price-1.log"
+  "log": "scaled-target-price-1.log",
+  "trace_log": "scaled-target-price-1.log"
 }

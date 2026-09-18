@@ -24,5 +24,111 @@
     "attempt": 1,
     "progress_state": null,
     "failure_summary": null
-  }
+  },
+  "trace": {
+    "tool_calls_total": 16,
+    "actions": 3,
+    "observations": 13,
+    "unclassified_tools": [],
+    "assistant_turns": 16,
+    "by_tool": {
+      "browser_evaluate": 6,
+      "browser_snapshot": 2,
+      "browser_find": 2,
+      "browser_take_screenshot": 2,
+      "browser_navigate": 1,
+      "browser_click": 1,
+      "browser_probe_interactives": 1,
+      "browser_press_key": 1
+    },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/igr-tee-a.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tee-a.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "e89"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Size M"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_press_key",
+        "target": "Escape"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_click",
+      "browser_snapshot",
+      "browser_find",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_take_screenshot",
+      "browser_probe_interactives",
+      "browser_press_key",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_find",
+      "browser_take_screenshot",
+      "browser_evaluate"
+    ]
+  },
+  "trace_log": "tee-all-sizes-stocked-5.log"
 }

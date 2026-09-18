@@ -39,6 +39,52 @@
       "browser_take_screenshot": 1,
       "browser_probe_interactives": 1
     },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "http://localhost:7770/catalogsearch/result/index/?p=2&q=Rivenhall"
+      },
+      {
+        "tool": "browser_click",
+        "target": "e361"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "f1e178"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      }
+    ],
     "sequence": [
       "browser_navigate",
       "browser_probe_cards",
@@ -52,5 +98,6 @@
       "browser_snapshot"
     ]
   },
-  "log": "scaled-headline-2.log"
+  "log": "scaled-headline-2.log",
+  "trace_log": "scaled-headline-2.log"
 }

@@ -24,5 +24,156 @@
     "attempt": 1,
     "progress_state": null,
     "failure_summary": null
-  }
+  },
+  "trace": {
+    "tool_calls_total": 24,
+    "actions": 9,
+    "observations": 15,
+    "unclassified_tools": [],
+    "assistant_turns": 24,
+    "by_tool": {
+      "browser_evaluate": 10,
+      "browser_select_option": 4,
+      "browser_batch_interact": 3,
+      "browser_snapshot": 2,
+      "browser_probe_interactives": 2,
+      "browser_navigate": 1,
+      "browser_click": 1,
+      "browser_take_screenshot": 1
+    },
+    "selections": [
+      "4",
+      "5",
+      "6",
+      "7"
+    ],
+    "opened": [
+      "http://localhost:7770/igr-water-a.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-water-a.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "#attribute137"
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "4"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "5"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "6"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "7"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_batch_interact",
+      "browser_snapshot",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_batch_interact",
+      "browser_probe_interactives",
+      "browser_probe_interactives",
+      "browser_batch_interact",
+      "browser_evaluate",
+      "browser_click",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_take_screenshot",
+      "browser_evaluate",
+      "browser_evaluate"
+    ]
+  },
+  "trace_log": "water-a-cheapest-per-litre-4.log"
 }
