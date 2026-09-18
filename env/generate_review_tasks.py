@@ -52,7 +52,14 @@ PER_PAGE = 10
 
 # Terms that occur rarely enough to be a needle and often enough to find instances of. Taken
 # from the note's sampling rather than invented here.
-TERMS = ("leak", "broke", "refund")
+# The term to match in the review text, and how to ask about it in English. Generating the
+# phrasing from the term produced "does this product brokes", which is the sort of thing an
+# agent could reasonably answer badly for reasons that have nothing to do with retrieval.
+TERMS = {
+    "leak": "leaks or arrives leaking",
+    "broke": "arrives broken or breaks in use",
+    "refund": "left them asking for a refund",
+}
 
 # Enough reviews that page one cannot be the whole story, which is the condition that makes
 # the question gated at all.
@@ -165,8 +172,8 @@ def task_for(item: dict) -> dict:
                f"pages establishes that, so a confident no is unsound however it is "
                f"phrased.")),
         "query": (f"Go to {listing} . Do any buyers report that this product "
-                  f"{item['term']}s, or mention {item['term']}ing? Answer yes or no, and "
-                  f"quote the review you are relying on if the answer is yes."),
+                  f"{TERMS[item['term']]}? Answer yes or no, and quote the review you are "
+                  f"relying on if the answer is yes."),
         "expect": {"kind": "boolean", "value": yes},
         "oracle_pages": floor,
         "total_pages": item["pages"],

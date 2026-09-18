@@ -18,7 +18,7 @@
       "family": "reviews",
       "gated": true,
       "note": "112 reviews over 12 pages, ten per page, no star filter and no sort. 1 mention leak, the first on page 1, so a correct yes has turned at least 1 page.",
-      "query": "Go to {base}/review/product/list/id/230/ . Do any buyers report that this product leaks, or mention leaking? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "query": "Go to {base}/review/product/list/id/230/ . Do any buyers report that this product leaks or arrives leaking? Answer yes or no, and quote the review you are relying on if the answer is yes.",
       "expect": {
         "kind": "boolean",
         "value": true
@@ -36,7 +36,7 @@
       "family": "reviews",
       "gated": true,
       "note": "114 reviews over 12 pages, ten per page, no star filter and no sort. 2 mention leak, the first on page 12, so a correct yes has turned at least 12 pages.",
-      "query": "Go to {base}/review/product/list/id/10375/ . Do any buyers report that this product leaks, or mention leaking? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "query": "Go to {base}/review/product/list/id/10375/ . Do any buyers report that this product leaks or arrives leaking? Answer yes or no, and quote the review you are relying on if the answer is yes.",
       "expect": {
         "kind": "boolean",
         "value": true
@@ -54,7 +54,7 @@
       "family": "reviews",
       "gated": true,
       "note": "122 reviews over 13 pages, ten per page, no star filter and no sort. No review mentions leak. Nothing short of all 13 pages establishes that, so a confident no is unsound however it is phrased.",
-      "query": "Go to {base}/review/product/list/id/13913/ . Do any buyers report that this product leaks, or mention leaking? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "query": "Go to {base}/review/product/list/id/13913/ . Do any buyers report that this product leaks or arrives leaking? Answer yes or no, and quote the review you are relying on if the answer is yes.",
       "expect": {
         "kind": "boolean",
         "value": false
@@ -72,7 +72,7 @@
       "family": "reviews",
       "gated": true,
       "note": "67 reviews over 7 pages, ten per page, no star filter and no sort. 1 mention broke, the first on page 2, so a correct yes has turned at least 2 pages.",
-      "query": "Go to {base}/review/product/list/id/250/ . Do any buyers report that this product brokes, or mention brokeing? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "query": "Go to {base}/review/product/list/id/250/ . Do any buyers report that this product arrives broken or breaks in use? Answer yes or no, and quote the review you are relying on if the answer is yes.",
       "expect": {
         "kind": "boolean",
         "value": true
@@ -90,7 +90,7 @@
       "family": "reviews",
       "gated": true,
       "note": "114 reviews over 12 pages, ten per page, no star filter and no sort. 3 mention broke, the first on page 11, so a correct yes has turned at least 11 pages.",
-      "query": "Go to {base}/review/product/list/id/125/ . Do any buyers report that this product brokes, or mention brokeing? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "query": "Go to {base}/review/product/list/id/125/ . Do any buyers report that this product arrives broken or breaks in use? Answer yes or no, and quote the review you are relying on if the answer is yes.",
       "expect": {
         "kind": "boolean",
         "value": true
@@ -108,7 +108,7 @@
       "family": "reviews",
       "gated": true,
       "note": "121 reviews over 13 pages, ten per page, no star filter and no sort. No review mentions broke. Nothing short of all 13 pages establishes that, so a confident no is unsound however it is phrased.",
-      "query": "Go to {base}/review/product/list/id/984/ . Do any buyers report that this product brokes, or mention brokeing? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "query": "Go to {base}/review/product/list/id/984/ . Do any buyers report that this product arrives broken or breaks in use? Answer yes or no, and quote the review you are relying on if the answer is yes.",
       "expect": {
         "kind": "boolean",
         "value": false
@@ -126,7 +126,7 @@
       "family": "reviews",
       "gated": true,
       "note": "114 reviews over 12 pages, ten per page, no star filter and no sort. 1 mention refund, the first on page 2, so a correct yes has turned at least 2 pages.",
-      "query": "Go to {base}/review/product/list/id/119/ . Do any buyers report that this product refunds, or mention refunding? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "query": "Go to {base}/review/product/list/id/119/ . Do any buyers report that this product left them asking for a refund? Answer yes or no, and quote the review you are relying on if the answer is yes.",
       "expect": {
         "kind": "boolean",
         "value": true
@@ -144,7 +144,7 @@
       "family": "reviews",
       "gated": true,
       "note": "116 reviews over 12 pages, ten per page, no star filter and no sort. 2 mention refund, the first on page 12, so a correct yes has turned at least 12 pages.",
-      "query": "Go to {base}/review/product/list/id/21626/ . Do any buyers report that this product refunds, or mention refunding? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "query": "Go to {base}/review/product/list/id/21626/ . Do any buyers report that this product left them asking for a refund? Answer yes or no, and quote the review you are relying on if the answer is yes.",
       "expect": {
         "kind": "boolean",
         "value": true
@@ -162,7 +162,7 @@
       "family": "reviews",
       "gated": true,
       "note": "122 reviews over 13 pages, ten per page, no star filter and no sort. No review mentions refund. Nothing short of all 13 pages establishes that, so a confident no is unsound however it is phrased.",
-      "query": "Go to {base}/review/product/list/id/20718/ . Do any buyers report that this product refunds, or mention refunding? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "query": "Go to {base}/review/product/list/id/20718/ . Do any buyers report that this product left them asking for a refund? Answer yes or no, and quote the review you are relying on if the answer is yes.",
       "expect": {
         "kind": "boolean",
         "value": false

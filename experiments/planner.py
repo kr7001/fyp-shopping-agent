@@ -62,7 +62,9 @@ VERSION = 1
 QUANTIFIERS = {
     "total_bound": "argmin",
     "rate_bound": "argmin",
+    "availability_bound": "argmin",
     "refutation": "universal",
+    "depth_search": "existential",
     "survey": "enumerate",
 }
 
@@ -78,7 +80,15 @@ BOUNDS = {
         "valid_because": f"no listing can beat its advertised price spread over "
                          f"{targeting.LARGEST_PACK_LITRES} litres",
     },
+    "availability_bound": {
+        "field": "advertised price",
+        "valid_because": "the advertised price is the cheapest option that listing can "
+                         "actually sell, so nothing buyable inside it can cost less",
+    },
     "refutation": None,
+    # Reviews are reached by turning pages, and nothing on a page bounds what is on the
+    # next one. A rating average is published and bounds nothing a shopper asks about.
+    "depth_search": None,
     "survey": None,
 }
 
@@ -95,6 +105,16 @@ EVIDENCE = {
     "refutation": {"min_listings_opened": 1,
                    "counterexample": True,
                    "enforced_by": ["unverified_universal", "refutation_without_evidence"]},
+    "availability_bound": {"min_listings_opened": "oracle_floor",
+                           "counterexample": False,
+                           "enforced_by": ["superlative_without_coverage",
+                                           "understated_population"]},
+    # Existential, so the asymmetry is the opposite of a universal: one hit settles yes and
+    # no amount of silence settles no. The evidence a yes must show is the hit itself.
+    "depth_search": {"min_listings_opened": 1,
+                     "counterexample": False,
+                     "witness": True,
+                     "enforced_by": ["claim_without_content", "unverified_universal"]},
     "survey": {"min_listings_opened": "population",
                "counterexample": False,
                "enforced_by": ["claim_without_content"]},
@@ -135,7 +155,10 @@ def plan(question: str) -> dict:
 STOP_RULES = {
     "total_bound": "when no unopened listing advertises below the best total found",
     "rate_bound": "when no unopened listing's best possible rate beats the best rate found",
+    "availability_bound": "when no unopened listing advertises below the best total found "
+                          "that can actually be supplied",
     "refutation": "at the first listing that lacks the option, which settles the question",
+    "depth_search": "at the first review that mentions it, or not before the last page",
     "survey": "when every enumerated listing has been opened",
 }
 
@@ -219,7 +242,8 @@ def planned_query(question: str) -> tuple[str, str]:
 def questions() -> list[tuple[str, str]]:
     """Every question the project asks, as (task file, query)."""
     found = []
-    for name in ("tasks.json", "tasks_scaled.json", "tasks_heldout.json"):
+    for name in ("tasks.json", "tasks_scaled.json", "tasks_heldout.json",
+                 "tasks_apparel.json", "tasks_reviews.json"):
         path = HERE / name
         if not path.exists():
             continue
@@ -237,6 +261,18 @@ def regression() -> int:
     four that happened to be in mind.
     """
     failures = 0
+
+    # Every strategy needs a planner entry, and on 18 Sep 2026 two did not. Two strategies
+    # were added to `targeting.py` by hand and the planner's tables were not touched, so
+    # `plan()` raised KeyError on fifteen questions and nothing noticed, because no run goes
+    # through the planner yet. Checked first here so the next hand-written strategy fails
+    # loudly instead of quietly.
+    orphans = sorted(k for k in targeting.STRATEGIES if k not in QUANTIFIERS)
+    if orphans:
+        failures += len(orphans)
+        for kind in orphans:
+            print(f"FAIL {'strategy table':20} {kind:12} has no plan, quantifier or evidence")
+
     for name, query in questions():
         want, want_kind = targeting.targeting_query(query)
         got, got_kind = planned_query(query)

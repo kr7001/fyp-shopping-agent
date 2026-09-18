@@ -26,6 +26,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import policy as policy_module
 import sufficiency
 import score as scoring
+import planner as planner_module
 import targeting as targeting_module
 import trace_stats
 
@@ -252,7 +253,14 @@ def main() -> int:
             query = task["query"].format(base=spec["base_url"])
             strategy = None
             if args.targeting:
-                query, strategy = targeting_module.targeting_query(query)
+                # Through the planner rather than straight to the strategy table. The plan
+                # is checked for soundness before the agent ever sees it, and `render`
+                # returns the frozen strategy text unchanged, so a run planned this way
+                # receives the same bytes it would have received before. Verified over every
+                # question by `planner.py --regression`. A plan that fails verification
+                # raises rather than running, because paying a model to execute a plan
+                # already known to be unsound buys nothing.
+                query, strategy = planner_module.planned_query(query)
             if args.exhaustive:
                 query = policy_module.exhaustive_query(query)
             if args.confidence != "off":
@@ -320,6 +328,7 @@ def main() -> int:
                "exhaustive": args.exhaustive,
                "targeting": args.targeting,
                "targeting_version": targeting_module.VERSION if args.targeting else None,
+               "planner_version": planner_module.VERSION if args.targeting else None,
                # Which sufficiency rules judged this suite. A verdict that does not say
                # what judged it cannot be compared with one scored under different rules,
                # and the rules have now changed once.
