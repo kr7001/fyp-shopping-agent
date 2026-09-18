@@ -40,9 +40,21 @@ That matters because it is what the live marketplace does. Shopee renders a sold
 a button carrying `aria-disabled="true"`, and Lazada as a div whose class name ends
 `-disabled`, both announcing that the variant exists while denying that it can be bought.
 Neither publishes its price. So the middle state is the one real shops actually have, and it
-creates a trap the other two cannot: **a listing can advertise the cheapest price for the size
-and be unable to ship it.** Answering needs availability as well as price, and the page
-carries availability in exactly one place.
+creates a trap the other two cannot: **a listing can be the cheapest for the size and be
+unable to ship it.**
+
+**What that state does NOT support, which cost a question to find out.** A disabled option
+cannot be selected, and the gated theme reveals a price only on selection, so **the price of
+a sold out variant is unreachable**. Verified on the seeded market: the listing whose M the
+fixture records at $15.04 shows `As low as $18.33`, refuses the selection, and contains the
+string 15.04 nowhere in the page. Two questions had been written asking for the lowest price
+anyone lists including the sold out ones, and neither had a route to its answer. They are now
+asked over what can be bought.
+
+This is the right behaviour to keep rather than a limitation to fix. It matches the live
+marketplaces, where a greyed out variant publishes no price either, and it means the
+availability contrast has to be carried by the counting questions, which read the disabled
+state directly and never need the price behind it.
 
     python env/generate_apparel.py --report
     python env/generate_apparel.py --out env/fixtures/scaled_apparel.json
@@ -516,24 +528,27 @@ def write_tasks(fixture: dict, out: pathlib.Path) -> pathlib.Path:
                         "price": card["from_price"]}},
             {"id": "apparel-target-price", "family": "apparel", "gated": True,
              "note": f"The price of size {inst['target_option']} appears only once that size "
-                     f"is chosen. {inst['listings_without_target']} listings do not offer it, "
-                     f"and {inst['listings_target_sold_out']} offer it sold out. This question "
-                     f"asks for the lowest price listed, so a sold out listing counts.",
+                     f"is chosen. {inst['listings_without_target']} listings do not offer it "
+                     f"and {inst['listings_target_sold_out']} offer it sold out, and a sold "
+                     f"out size cannot be selected, so its price cannot be reached at all. "
+                     f"The lowest reachable price is therefore the lowest buyable one.",
              "query": f"{search} What is the lowest price anyone charges for size "
-                      f"{inst['target_option']} of the {brand} tee?",
-             "expect": {"kind": "price", "value": inst["cheapest_listed"]["price"]}},
+                      f"{inst['target_option']} of the {brand} tee, among those that can "
+                      f"actually be bought?",
+             "expect": {"kind": "price", "value": win["price"]}},
             {"id": "apparel-cheapest-target", "family": "apparel", "gated": True,
-             "note": f"The trap this market was built for. The cheapest advertised listing is "
-                     f"{absent['seller']} at ${absent['from_price']}, and it does not sell "
-                     f"size {inst['target_option']} at all. Availability is not asked about "
-                     f"here, so the answer is whoever lists it lowest. Paired with "
-                     f"apparel-buyable-target, which asks the same question with the "
-                     f"availability constraint added, and the two answers differ.",
-             "query": f"{search} Which seller lists the lowest price for size "
-                      f"{inst['target_option']} of the {brand} tee, and what is that price? "
-                      f"Availability does not matter for this question.",
-             "expect": {"kind": "contains", "any": [first(listed["seller"])],
-                        "not_any": [first(absent["seller"])], "price": listed["price"]}},
+             "note": f"Two traps in front of the answer. {absent['seller']} advertises "
+                     f"${absent['from_price']} and does not sell size "
+                     f"{inst['target_option']} at all. {sold_out['seller']} does sell it, "
+                     f"lists it at ${sold_out['price']}, and cannot ship it, which the page "
+                     f"says only by rendering that option disabled. Neither can be the "
+                     f"answer and both look cheaper than it.",
+             "query": f"{search} Across the {brand} listings, which seller is cheapest for "
+                      f"size {inst['target_option']}, and what is that price? Only count a "
+                      f"listing that can actually supply that size.",
+             "expect": {"kind": "contains", "any": [first(win["seller"])],
+                        "not_any": [first(absent["seller"]), first(sold_out["seller"])],
+                        "price": win["price"]}},
             {"id": "apparel-all-stocked", "family": "apparel", "gated": True,
              "note": f"{inst['listings_without_target']} of {inst['listings']} listings do "
                      f"not offer the size. One counterexample settles it.",
@@ -547,19 +562,6 @@ def write_tasks(fixture: dict, out: pathlib.Path) -> pathlib.Path:
              "query": f"{search} How many of the {brand} listings offer size "
                       f"{inst['target_option']}?",
              "expect": {"kind": "count", "value": inst["listings_with_target"]}},
-            {"id": "apparel-buyable-target", "family": "apparel", "gated": True,
-             "note": f"The third gate. {sold_out['seller']} lists size "
-                     f"{inst['target_option']} at ${sold_out['price']}, which is the lowest "
-                     f"price anyone lists, and cannot ship it. The page says so only by "
-                     f"rendering that option disabled, so an answer needs availability as "
-                     f"well as price. {inst['listings_target_sold_out']} listings are in "
-                     f"this state.",
-             "query": f"{search} Which seller has the cheapest size {inst['target_option']} "
-                      f"{brand} tee that can actually be bought today, and what is that "
-                      f"price? A listing that shows the size as unavailable does not count.",
-             "expect": {"kind": "contains", "any": [first(win["seller"])],
-                        "not_any": [first(sold_out["seller"]), first(absent["seller"])],
-                        "price": win["price"]}},
             {"id": "apparel-count-buyable", "family": "apparel", "gated": True,
              "note": "Counting, but over availability rather than existence. Differs from "
                      "apparel-count-stocked by exactly the sold out listings, so an agent "
