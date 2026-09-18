@@ -253,12 +253,20 @@ def buyable_price_for(listing: dict, size: str) -> float | None:
 def from_price(listing: dict) -> float:
     """What the search page shows without the listing being opened.
 
-    Magento computes the card's "As low as" from every child it shows, and with out of
-    stock options displayed that includes the sold out ones, so a listing can advertise a
-    price for a variant nobody can buy. Matched here deliberately rather than corrected,
-    because the bound the policy prunes with has to be the bound the page really shows.
+    Minimum over the variants that can actually be bought, because that is what Magento
+    puts on the card. Measured on the rendered page on 18 September 2026 rather than
+    assumed: a listing whose S and M are sold out at $16.22 and $15.04 and whose L and XL
+    are in stock at $18.33 and $18.58 advertises **As low as $18.33**. Out of stock
+    children are excluded from the indexed price.
+
+    An earlier version of this took the minimum over every variant, and a comment here
+    claimed Magento did the same. It does not, and the difference is not cosmetic: the
+    whole pruning argument rests on the card price being a true lower bound on what the
+    listing can charge, so a fixture that records a lower number than the shop displays
+    computes an oracle floor for a market that does not exist.
     """
-    return min(v["price"] for v in listing["variants"])
+    live = [v["price"] for v in listing["variants"] if v["qty"] > 0]
+    return min(live) if live else min(v["price"] for v in listing["variants"])
 
 
 def hypothetical_target(listing: dict, rng_note: None = None) -> float:
