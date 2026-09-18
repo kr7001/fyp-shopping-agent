@@ -160,7 +160,31 @@ def page_text(page) -> str:
         if len(links) >= LINK_LIMIT:
             break
     listed = "\n".join(links) if links else "(no links on this page)"
-    return f"Page URL: {page.url}\n\n{body}\n\nLinks on this page:\n{listed}"
+
+    # Which options can be chosen, which is not in the page's text at all. A sold out size
+    # renders as a disabled option, and `innerText` prints it exactly like an available one,
+    # so without this the naive loop is structurally blind to availability while openJiuwen
+    # reads `[disabled]` straight out of the accessibility tree. That would confound the
+    # scaffold with what the scaffold can perceive. This is the same fact a screen reader
+    # gets, stated in text, and it withholds nothing the other scaffold has.
+    try:
+        menus = page.eval_on_selector_all("select", """
+            els => els.map(e => {
+              const label = e.id ? document.querySelector('label[for="' + e.id + '"]') : null;
+              const name = (label && label.textContent.trim())
+                || e.getAttribute('aria-label') || e.name || 'options';
+              const values = Array.from(e.options).map(
+                o => o.textContent.trim() + (o.disabled && o.value ? ' [unavailable]' : ''));
+              return [name, values];
+            })""")
+    except Exception:
+        menus = []
+    options = "\n".join(f"{name}: " + ", ".join(values)
+                        for name, values in menus if len(values) > 1)
+    menu_text = f"\n\nSelectable options:\n{options}" if options else ""
+
+    return (f"Page URL: {page.url}\n\n{body}{menu_text}"
+            f"\n\nLinks on this page:\n{listed}")
 
 
 def act(page, name: str, args: dict) -> str:
