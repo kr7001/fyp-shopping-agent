@@ -3,10 +3,13 @@
 Slide-by-slide script. Same style as the Huawei deck: one claim per headline, short bullets,
 one table per slide, concrete numbers, the caveat in small text at the bottom.
 
-Twenty-one slides. Part A recaps the project, because it has been a few weeks. Part B is
-what was already standing. Part C is this week. Part D is next week.
+**Running order for the meeting: slides 1 to 17, then straight to slide 20.** Slides 18 and
+19 are written and kept below, but they are being held back until the work they describe is
+confirmed, and they appear on slide 20 as next week's items instead. Part A recaps the
+project, because it has been a few weeks. Part B is what was already standing. Part C is this
+week. Part D is next week.
 
-Suggested timing: A in 5 minutes, B in 5, C in 8, D in 2.
+Suggested timing: A in 5 minutes, B in 5, C in 6, D in 2.
 
 ---
 
@@ -202,12 +205,22 @@ and qwen3.7-flash hit provider rate limits. The model choice is a finding, not a
 | Version | Right | Refused | Wrong | No answer | Actions | Cost/run |
 | --- | --- | --- | --- | --- | --- | --- |
 | Plain agent | 3 | 0 | 9 | 0 | 10.2 | $0.137 |
-| Open everything | 10 | 0 | 1 | 1 | 28.4 | $0.564 |
+| Open everything | 10 | 0 | 1 | **1** | 28.4 | $0.564 |
 | **Targeting + check** | **11** | 1 | **0** | 0 | **14.8** | **$0.335** |
 
 - Twelve runs each, same questions, same prices, same shop
 - **48% fewer actions and 41% less money than opening everything, and more right answers**
 - Out of sample the saving is **larger**, not smaller
+
+**The two columns are different kinds of thing, and he will ask.** *Refused* is a decision my
+check made: the answer existed and was withdrawn as unsupported. Only the third version can
+refuse, so the zeros above it are by construction rather than by confidence. *No answer* is a
+runtime outcome: the run never produced one.
+
+*Say: opening everything failed twice over. One answer quoted an advertised price as the pack
+price, and one run spent 99 of its 100 tool calls and $1.008, including ten size selections,
+then stopped without answering. It failed by being thorough, which is the cost ceiling rather
+than a reasoning error.*
 
 ---
 
@@ -215,15 +228,21 @@ and qwen3.7-flash hit provider rate limits. The model choice is a finding, not a
 
 ### Slide 14, what I did this week
 
-**Five things, $19 spent, and three of them changed a claim I had already made**
+**Five things, and three of them changed a claim I had already made**
 
-| What | Cost |
-| --- | --- |
-| Ran the two missing arms on the held-out market | $10 |
-| Wrote a new refusal rule from principle | $0 |
-| Two cheap probes, can the model plan, does a second model work | $0.14 |
-| Made the shop hide variant prices properly | $5.40 |
-| Built a second agent from scratch and ran it | $10.40 |
+| What | Runs | Cost |
+| --- | --- | --- |
+| Ran the two missing arms on the held-out market | 27 | $8.55 |
+| Wrote a new refusal rule from principle | 0 | $0 |
+| Two cheap probes, can the model plan, does a second model work | 20 | $0.14 |
+| Made the shop hide variant prices properly | 28 | $5.40 |
+| Built a second agent from scratch and ran it | 16 | $10.40 |
+
+- **$33.60 of the $50 faculty credit used, $16.40 left**
+- 102 runs on the faculty credit, 182 runs this week in total
+
+*Small text: logged run costs sum to $29.65 against the account's $33.60, because each logged
+figure rounds to the cent. Logged cost is reported as a lower bound throughout.*
 
 *Say: I will go through the three that changed something, because those are the useful ones.*
 
@@ -274,8 +293,19 @@ question aside. On a market nobody tuned anything against it is unambiguous.*
 | On the held-out market | 3 of 9 | **9 of 9** |
 | Right answers wrongly blocked | 3 of 94 | 5 of 94 |
 
-- Written from the principle, **not** from the runs it catches, and frozen before the market
-  that will test it exists
+**What the denominators are.** 125 runs by the plain agent on the three markets: 65 on the
+small fixture, 45 on Rivenhall, 15 on the held-out one. 94 of them right, 31 wrong. The
+held-out market contributes 9 of those 31 wrong answers, which is why that row says 9 and
+the previous slide says 12: that 12 was runs per version, this 9 is wrong answers.
+
+- **What prompted it.** Nine wrong answers on the held-out market and the old rules caught
+  three. The six that escaped are all one shape: the best seller in the whole market named
+  after opening 4 listings of 15, with no claim about how many were checked
+- Every older rule reads something the answer says **about itself**, so an agent that
+  volunteers less gets checked less. This one reads the question and the trace, so the answer
+  can volunteer nothing
+- Written from the principle, **not** from those six runs, and frozen before the market that
+  will test it exists
 - **It also refuses 4 answers my own method got right.** They opened 9 listings where the
   sound minimum is 11, so the method skips more than its own reasoning licenses
 - Under the new rule the held-out policy arm reads 7 right, 5 refused, 0 wrong, against the
@@ -286,7 +316,7 @@ and a rule found it rather than a score.*
 
 ---
 
-### Slide 18, the shop was giving the answer away
+### Slide 18, HELD BACK this week, the shop was giving the answer away
 
 **Magento writes the surcharge into the size menu, so it reads 2 x 9.5L +$32.50**
 
@@ -305,7 +335,7 @@ and a rule found it rather than a score.*
 
 ---
 
-### Slide 19, a second agent, and my prediction was wrong
+### Slide 19, HELD BACK this week, a second agent, and my prediction was wrong
 
 **I built a browsing loop with no card shortcut, expecting it to look at more**
 
@@ -330,17 +360,22 @@ the thesis of the project turning up in its own control.*
 
 ### Slide 20, next week
 
-**Two builds, then freeze everything and run it once**
+**Two results to confirm, two builds, then freeze everything and run it once**
 
-| | Work | Why |
+| | Work | Why it matters |
 | --- | --- | --- |
-| Next | A clothing market, price and stock both gated | Tests the new rule on ground it has never seen, and asks a question water cannot: cheapest in a size that is actually in stock |
-| Next | Reviews, where the answer is spread over pages | A question one mention settles, and one that needs all of them |
+| Confirm | The shop was giving the answer away in the size menu, and I have closed it | Early runs say the agent starts clicking sizes for the first time, works 64% harder, and is no more right. Confirming before I report it |
+| Confirm | A second agent, written from scratch with no shortcuts | Early runs say it opens **fewer** listings than the shipped agent, not more, which would move the failure from one agent's default into the model's judgement |
+| Build | A clothing market, price and stock both gated | The held-out test for the new rule, and a question water cannot ask: how many sellers stock this size |
+| Build | Reviews, where the answer is spread over pages | One question a single mention settles, one that needs every page. 308,939 real reviews, ten to a page, no filter |
 | Then | Freeze and run the full matrix once | Every number in the report from one frozen version |
 
-- **$20 of the $50 faculty credit left**, which is roughly 60 more runs
+- **$16.40 of the $50 faculty credit left**, roughly 50 more runs
 - Rule I am keeping: **freeze a rule before building the market that tests it**, or that
   market is spent too
+
+*Say: the two confirmations are nearly done and I would rather show them next week with the
+runs behind them than claim them today.*
 
 ---
 
