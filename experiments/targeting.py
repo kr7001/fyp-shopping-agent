@@ -38,7 +38,7 @@ import re
 # under different versions are different policies and must not be pooled, which is the
 # same denominator discipline applied everywhere else. v1 lacked the enumeration step and
 # pruned within whatever the first screen happened to show.
-VERSION = 5
+VERSION = 6
 
 # Ordered, and the order matters. A universal question about stock also contains the word
 # "lowest" in some phrasings, so the coverage test is applied before the price tests.
@@ -47,8 +47,9 @@ UNIVERSAL = re.compile(r"\b(every|all)\b.*\b(stock|carry|offer|have)\b", re.IGNO
 # to what can actually be bought is a different retrieval problem from one that does not: the
 # price bound still prunes, but the winner has to clear a second test the price never shows.
 # Checked before the plain cheapest test, since these questions contain "cheapest" too.
-BUYABLE = re.compile(r"\b(buy|bought|buyable|purchas\w+|available|in stock)\b",
-                     re.IGNORECASE)
+BUYABLE = re.compile(
+    r"\b(buy|bought|buyable|purchas\w+|available|in stock|suppl\w+|ship\w*)\b",
+    re.IGNORECASE)
 # Reviews gate by depth rather than by a click, so they need their own strategy. Checked
 # first because a review question can contain almost any other keyword: a buyer may well
 # mention a refund, a leak, or the cheapest place they found it.
