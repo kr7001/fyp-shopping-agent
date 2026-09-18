@@ -412,17 +412,55 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
     <p class="claim">Put together: the agent is told to use a tool, the tool silently discards most of the page, and the agent has no way to know. It is not being lazy and it is not ignoring the page. It asked a fair question and got an answer with no hole in it.</p>
 
     <h3 class="sub">Does this actually cause the behaviour</h3>
-    <p class="note">The strongest available evidence, from walking all 195 recorded runs step by step and recording which page the browser was on for every observation:</p>
+    <p class="note">The strongest available evidence, from walking every recorded run step by step and noting which page the browser was on for each observation. <b>Split by experimental arm first</b>, because several arms were explicitly told to open more listings and mixing them in would answer the wrong question.</p>
     <div class="tablewrap">
       <table>
-        <thead><tr><th class="wide">Behaviour on the search page</th><th class="num">Runs that opened exactly 4 products</th><th class="num">Runs that opened any other number</th></tr></thead>
+        <caption>Every openJiuwen run that opened at least one listing, 307 in total, grouped by what the agent was told</caption>
+        <thead><tr><th class="wide">Arm</th><th class="num">Opened exactly 4</th><th class="num">Of those, read the search page in full</th><th class="num">Opened another number</th><th class="num">Of those, read the search page in full</th></tr></thead>
         <tbody>
-          <tr class="hi"><td class="wide"><b>Ever read the accessibility tree there</b></td><td class="num"><b>2 of 101</b></td><td class="num"><b>84 of 94</b></td></tr>
-          <tr><td class="wide">Reached for the card summary first</td><td class="num">100 of 101</td><td class="dim">-</td></tr>
+          <tr class="hi"><td class="wide"><b>Unmodified, no instructions at all</b></td><td class="num"><b>74</b></td><td class="num"><b>0</b></td><td class="num"><b>38</b></td><td class="num"><b>30</b></td></tr>
+          <tr><td class="wide">Given a retrieval strategy</td><td class="num">18</td><td class="num">1</td><td class="num">26</td><td class="num">24</td></tr>
+          <tr><td class="wide">Told to open everything</td><td class="num">0</td><td class="num">0</td><td class="num">19</td><td class="num">19</td></tr>
+          <tr><td class="wide">Policy retry</td><td class="num">9</td><td class="num">1</td><td class="num">11</td><td class="num">11</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="claim">Ninety nine of the hundred and one runs that stopped at four never read the search page properly at all. They did read pages in full later, on the four products they had already chosen, which is what misled me earlier when I counted those reads without checking which page they happened on.</p>
+    <p class="claim">Read the first row only, since it is the one with nothing added. <b>Of 74 unmodified runs that opened exactly four listings, not one of them ever read the search page in full.</b> Of the 38 unmodified runs that opened some other number, 30 did. Zero out of 74 against 30 out of 38.</p>
+    <p class="note">The other rows are not noise, they are the confound. "Told to open everything" never stops at four, and all 19 of its runs read the search page, which is what being told to look properly does. An earlier version of this page quoted 2 of 101 against 84 of 94, pooling every arm together. That number was not wrong arithmetic, it was the wrong population: it mixed agents that were told to look harder with agents that were told nothing. Splitting by arm makes the pattern cleaner rather than weaker, and pooling was the mistake.</p>
+
+    <h3 class="sub" id="batches">Where those runs come from</h3>
+    <p class="lede">Every run lives in a dated folder under <code>experiments/results/</code> with its own record. This is all of them that opened at least one listing. Four different markets, two models, four arms. Nothing is pooled across markets when a figure is quoted elsewhere, because the markets have different answers.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Batch by batch, openJiuwen only. The plain loop's runs are counted separately and are not in this table</caption>
+        <thead><tr><th>Date</th><th>Market</th><th class="wide">Arm</th><th class="num">Opened 4</th><th class="num">Other</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td>9 Sep</td><td>Rivenhall</td><td class="wide">unmodified</td><td class="num">2</td><td class="num">2</td></tr>
+          <tr class="hi"><td>9 Sep</td><td>Rivenhall</td><td class="wide">unmodified</td><td class="num">6</td><td class="num">6</td></tr>
+          <tr><td>9 Sep</td><td>Rivenhall</td><td class="wide">policy retry</td><td class="num">1</td><td class="num">1</td></tr>
+          <tr><td>9 Sep</td><td>Rivenhall</td><td class="wide">policy retry</td><td class="num">8</td><td class="num">10</td></tr>
+          <tr class="hi"><td>9 Sep</td><td>Rivenhall</td><td class="wide">unmodified</td><td class="num">4</td><td class="num">8</td></tr>
+          <tr class="hi"><td>9 Sep</td><td>Rivenhall</td><td class="wide">unmodified</td><td class="num">8</td><td class="num">3</td></tr>
+          <tr><td>10 Sep</td><td>Rivenhall</td><td class="wide">told to open everything</td><td class="num">0</td><td class="num">8</td></tr>
+          <tr><td>10 Sep</td><td>Rivenhall</td><td class="wide">strategy given</td><td class="num">6</td><td class="num">2</td></tr>
+          <tr><td>10 Sep</td><td>Rivenhall</td><td class="wide">strategy given</td><td class="num">11</td><td class="num">1</td></tr>
+          <tr><td>10 Sep</td><td>Rivenhall</td><td class="wide">strategy given</td><td class="num">0</td><td class="num">10</td></tr>
+          <tr><td>10 Sep</td><td>Rivenhall</td><td class="wide">strategy given</td><td class="num">0</td><td class="num">2</td></tr>
+          <tr><td>10 Sep</td><td>Calderwood</td><td class="wide">strategy given</td><td class="num">0</td><td class="num">8</td></tr>
+          <tr class="hi"><td>14 Sep</td><td>Rivenhall</td><td class="wide">unmodified</td><td class="num">8</td><td class="num">4</td></tr>
+          <tr class="hi"><td>17 Sep</td><td>Calderwood</td><td class="wide">unmodified</td><td class="num">9</td><td class="num">3</td></tr>
+          <tr><td>17 Sep</td><td>Calderwood</td><td class="wide">told to open everything</td><td class="num">0</td><td class="num">11</td></tr>
+          <tr><td>17 Sep</td><td>Calderwood</td><td class="wide">strategy given</td><td class="num">1</td><td class="num">3</td></tr>
+          <tr class="hi"><td>18 Sep</td><td>Calderwood</td><td class="wide">unmodified, second model</td><td class="num">1</td><td class="num">2</td></tr>
+          <tr class="hi"><td>18 Sep</td><td>Calderwood, prices hidden</td><td class="wide">unmodified</td><td class="num">7</td><td class="num">4</td></tr>
+          <tr class="hi"><td>18 Sep</td><td>Calderwood, prices hidden</td><td class="wide">unmodified</td><td class="num">10</td><td class="num">2</td></tr>
+          <tr class="hi"><td>18 Sep</td><td>Thornwood, clothing</td><td class="wide">unmodified</td><td class="num">11</td><td class="num">0</td></tr>
+          <tr class="hi"><td>18 Sep</td><td>Thornwood, clothing</td><td class="wide">unmodified</td><td class="num">8</td><td class="num">3</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">The highlighted rows are the unmodified ones, and they are the 74 and the 38. They span four markets, two products, both models and both settings of the shop, which is why the pattern is not a property of one market. Note the last two rows, the clothing market seeded on 18 September: 19 of 22 runs there opened exactly four, on a page where all fifteen products render at once with no page turning involved.</p>
+
     <p class="note"><b>What this does not prove.</b> This is a pattern across recorded runs, not a controlled experiment. A model inclined to look less might both skip the tree and stop early for reasons of its own. The test that settles it is to switch the window limit off, change nothing else, and see whether runs still stop at four. That change has been verified to work at the tool level, shown below, and has not yet been run with a model.</p>
     <div class="tablewrap">
       <table>
@@ -471,7 +509,7 @@ footer .wrap { padding: 22px 32px 44px; color: var(--faint); font-size: 13px; di
           <tr><td class="wide">Its card summary is itself a way of reading the page</td><td><span class="pill ok">SETTLED, TRUE</span></td><td class="dim wide"><code>probes.py</code> lines 160, 203, 277, 293</td></tr>
           <tr><td class="wide">The summary discards everything below the window and never says so</td><td><span class="pill ok">SETTLED, TRUE</span></td><td class="dim wide"><code>probes.py</code> lines 190 to 195, plus the probe run both ways: 4 sellers against 15</td></tr>
           <tr><td class="wide">The summary costs more than the accessibility tree and shows less</td><td><span class="pill ok">SETTLED, TRUE</span></td><td class="dim wide">31,701 characters for 4 products against 11,394 for 15</td></tr>
-          <tr class="hi"><td class="wide">The summary is <b>the cause</b> of runs stopping at four products</td><td><span class="pill amb">STRONGLY SUGGESTED, NOT PROVEN</span></td><td class="dim wide">2 of 101 against 84 of 94. Association across recorded runs, not a controlled test</td></tr>
+          <tr class="hi"><td class="wide">The summary is <b>the cause</b> of runs stopping at four products</td><td><span class="pill amb">STRONGLY SUGGESTED, NOT PROVEN</span></td><td class="dim wide">0 of 74 against 30 of 38, on unmodified runs only. Association across recorded runs, not a controlled test</td></tr>
           <tr><td class="wide">Our shop is a fair copy of Shopee</td><td><span class="pill ok">SETTLED, TRUE</span></td><td class="dim wide">Both mark sold out variants in the accessibility tree and withhold their prices</td></tr>
           <tr class="warn"><td class="wide">Our shop is a fair copy of Lazada</td><td><span class="pill warn">SETTLED, FALSE</span></td><td class="dim wide">Lazada's selector is one line of unmarked text. Ours is a labelled dropdown. Ours is much easier</td></tr>
           <tr><td class="wide">Huawei promoted something untrue</td><td><span class="pill warn">NOT SUPPORTED</span></td><td class="dim wide">Every part of the slide 5 claim checked out. The gap is a design limit in one tool, not a false statement</td></tr>
