@@ -309,6 +309,13 @@ def generate(count: int, seed: int, attempts: int = 8000) -> tuple[list[dict], d
     fixture that quietly fails `card_probe_wrong` would measure nothing while looking fine.
     """
     for attempt in range(attempts):
+        # Deliberately left as it is, despite a collision: `seed * 1000 + attempt` means
+        # seed 12 at attempt 3682 and seed 13 at attempt 2682 draw the same market, so a run
+        # of consecutive seeds silently explores one draw. The clothing generator uses a
+        # string key instead. This one is not changed because the two water fixtures on disk
+        # were produced by it and their `_about` promises they can be reproduced from their
+        # seeds, which a change would quietly falsify. Seeds 7 and 41 are far enough apart
+        # that the collision never touched them.
         rng = random.Random(seed * 1000 + attempt)
         names = seller_names(count, rng)
         listings = [build_listing(name, i + 1, rng) for i, name in enumerate(names)]
