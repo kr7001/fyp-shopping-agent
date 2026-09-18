@@ -1,0 +1,568 @@
+{
+  "seeded_at": "2026-09-18T19:10:42",
+  "base_url": "http://localhost:7770",
+  "fixture": "gated_pricing.json",
+  "parent_skus": [
+    "IGR-APP-01",
+    "IGR-APP-02",
+    "IGR-APP-03",
+    "IGR-APP-04",
+    "IGR-APP-05",
+    "IGR-APP-06",
+    "IGR-APP-07",
+    "IGR-APP-08",
+    "IGR-APP-09",
+    "IGR-APP-10",
+    "IGR-APP-11",
+    "IGR-APP-12",
+    "IGR-APP-13",
+    "IGR-APP-14",
+    "IGR-APP-15"
+  ],
+  "child_skus": [
+    "IGR-APP-01-S",
+    "IGR-APP-01-M",
+    "IGR-APP-01-L",
+    "IGR-APP-01-XL",
+    "IGR-APP-02-S",
+    "IGR-APP-02-M",
+    "IGR-APP-02-XL",
+    "IGR-APP-03-S",
+    "IGR-APP-03-M",
+    "IGR-APP-03-L",
+    "IGR-APP-03-XL",
+    "IGR-APP-04-S",
+    "IGR-APP-04-L",
+    "IGR-APP-05-S",
+    "IGR-APP-05-M",
+    "IGR-APP-05-L",
+    "IGR-APP-05-XL",
+    "IGR-APP-06-S",
+    "IGR-APP-06-L",
+    "IGR-APP-06-XL",
+    "IGR-APP-07-S",
+    "IGR-APP-07-L",
+    "IGR-APP-08-S",
+    "IGR-APP-08-M",
+    "IGR-APP-08-L",
+    "IGR-APP-09-S",
+    "IGR-APP-09-M",
+    "IGR-APP-09-L",
+    "IGR-APP-09-XL",
+    "IGR-APP-10-S",
+    "IGR-APP-10-M",
+    "IGR-APP-10-L",
+    "IGR-APP-10-XL",
+    "IGR-APP-11-S",
+    "IGR-APP-11-M",
+    "IGR-APP-11-L",
+    "IGR-APP-11-XL",
+    "IGR-APP-12-S",
+    "IGR-APP-12-M",
+    "IGR-APP-12-L",
+    "IGR-APP-12-XL",
+    "IGR-APP-13-S",
+    "IGR-APP-13-M",
+    "IGR-APP-13-L",
+    "IGR-APP-13-XL",
+    "IGR-APP-14-S",
+    "IGR-APP-14-L",
+    "IGR-APP-15-S",
+    "IGR-APP-15-M",
+    "IGR-APP-15-L",
+    "IGR-APP-15-XL"
+  ],
+  "ground_truth": {
+    "families": {
+      "apparel-01": {
+        "parent_sku": "IGR-APP-01",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 23.85,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-APP-01-S",
+            "price": 26.76,
+            "qty": 49,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-APP-01-M",
+            "price": 23.85,
+            "qty": 31,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-APP-01-L",
+            "price": 31.89,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-APP-01-XL",
+            "price": 26.19,
+            "qty": 111,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "apparel-02": {
+        "parent_sku": "IGR-APP-02",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 22.11,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-APP-02-S",
+            "price": 22.11,
+            "qty": 35,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-APP-02-M",
+            "price": 27.33,
+            "qty": 57,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-APP-02-XL",
+            "price": 22.77,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XL"
+        ]
+      },
+      "apparel-03": {
+        "parent_sku": "IGR-APP-03",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 16.07,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-APP-03-S",
+            "price": 16.07,
+            "qty": 83,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-APP-03-M",
+            "price": 19.07,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-APP-03-L",
+            "price": 18.41,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-APP-03-XL",
+            "price": 18.81,
+            "qty": 84,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "L"
+        ]
+      },
+      "apparel-04": {
+        "parent_sku": "IGR-APP-04",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 10.99,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-APP-04-S",
+            "price": 14.13,
+            "qty": 55,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-APP-04-L",
+            "price": 10.99,
+            "qty": 139,
+            "unit_price": null
+          }
+        }
+      },
+      "apparel-05": {
+        "parent_sku": "IGR-APP-05",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 24.2,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-APP-05-S",
+            "price": 24.2,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-APP-05-M",
+            "price": 25.97,
+            "qty": 103,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-APP-05-L",
+            "price": 29.59,
+            "qty": 14,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-APP-05-XL",
+            "price": 28.02,
+            "qty": 100,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      },
+      "apparel-06": {
+        "parent_sku": "IGR-APP-06",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 13.48,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-APP-06-S",
+            "price": 15.98,
+            "qty": 107,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-APP-06-L",
+            "price": 13.48,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-APP-06-XL",
+            "price": 15.37,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L",
+          "XL"
+        ]
+      },
+      "apparel-07": {
+        "parent_sku": "IGR-APP-07",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 21.83,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-APP-07-S",
+            "price": 21.96,
+            "qty": 40,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-APP-07-L",
+            "price": 21.83,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "apparel-08": {
+        "parent_sku": "IGR-APP-08",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 32.52,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-APP-08-S",
+            "price": 38.14,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-APP-08-M",
+            "price": 34.34,
+            "qty": 102,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-APP-08-L",
+            "price": 32.52,
+            "qty": 20,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      },
+      "apparel-09": {
+        "parent_sku": "IGR-APP-09",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 26.3,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-APP-09-S",
+            "price": 30.32,
+            "qty": 44,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-APP-09-M",
+            "price": 30.69,
+            "qty": 68,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-APP-09-L",
+            "price": 26.3,
+            "qty": 26,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-APP-09-XL",
+            "price": 29.32,
+            "qty": 50,
+            "unit_price": null
+          }
+        }
+      },
+      "apparel-10": {
+        "parent_sku": "IGR-APP-10",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 26.78,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-APP-10-S",
+            "price": 36.22,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-APP-10-M",
+            "price": 26.78,
+            "qty": 29,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-APP-10-L",
+            "price": 33.83,
+            "qty": 38,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-APP-10-XL",
+            "price": 34.61,
+            "qty": 107,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      },
+      "apparel-11": {
+        "parent_sku": "IGR-APP-11",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 30.29,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-APP-11-S",
+            "price": 30.97,
+            "qty": 123,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-APP-11-M",
+            "price": 38.01,
+            "qty": 21,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-APP-11-L",
+            "price": 30.29,
+            "qty": 106,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-APP-11-XL",
+            "price": 34.03,
+            "qty": 83,
+            "unit_price": null
+          }
+        }
+      },
+      "apparel-12": {
+        "parent_sku": "IGR-APP-12",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 16.17,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-APP-12-S",
+            "price": 16.17,
+            "qty": 36,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-APP-12-M",
+            "price": 17.1,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-APP-12-L",
+            "price": 16.77,
+            "qty": 46,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-APP-12-XL",
+            "price": 18.78,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "XL"
+        ]
+      },
+      "apparel-13": {
+        "parent_sku": "IGR-APP-13",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 27.06,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-APP-13-S",
+            "price": 30.44,
+            "qty": 96,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-APP-13-M",
+            "price": 27.18,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-APP-13-L",
+            "price": 27.06,
+            "qty": 65,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-APP-13-XL",
+            "price": 33.47,
+            "qty": 101,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "apparel-14": {
+        "parent_sku": "IGR-APP-14",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 26.19,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-APP-14-S",
+            "price": 26.63,
+            "qty": 95,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-APP-14-L",
+            "price": 26.19,
+            "qty": 99,
+            "unit_price": null
+          }
+        }
+      },
+      "apparel-15": {
+        "parent_sku": "IGR-APP-15",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 21.04,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-APP-15-S",
+            "price": 22.05,
+            "qty": 14,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-APP-15-M",
+            "price": 21.04,
+            "qty": 113,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-APP-15-L",
+            "price": 21.64,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-APP-15-XL",
+            "price": 26.22,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L",
+          "XL"
+        ]
+      }
+    },
+    "cross_listing": {
+      "S": {
+        "cheapest_listing": "apparel-04",
+        "cheapest_price": 14.13,
+        "listing_a_card_probe_would_pick": "apparel-04",
+        "card_probe_wrong": false
+      },
+      "M": {
+        "cheapest_listing": "apparel-12",
+        "cheapest_price": 17.1,
+        "listing_a_card_probe_would_pick": "apparel-03",
+        "card_probe_wrong": true
+      },
+      "L": {
+        "cheapest_listing": "apparel-04",
+        "cheapest_price": 10.99,
+        "listing_a_card_probe_would_pick": "apparel-04",
+        "card_probe_wrong": false
+      },
+      "XL": {
+        "cheapest_listing": "apparel-06",
+        "cheapest_price": 15.37,
+        "listing_a_card_probe_would_pick": "apparel-06",
+        "card_probe_wrong": false
+      }
+    }
+  }
+}
