@@ -1,0 +1,352 @@
+<title>Catch Up, Four Questions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="mast-text">
+      <span class="eyebrow">Catch up after a two week break &middot; 7 October 2026</span>
+      <h1>Four questions, answered from the code</h1>
+      <p class="sub">Every claim here was re-checked today against the repository or the stored run records. Where I could not check something, it says so rather than guessing. Two of these answers correct things I told you before.</p>
+    </div>
+    <div class="mast-actions">
+      <button class="btn" type="button" id="showall" aria-pressed="false">Show all</button>
+      <button class="btn" type="button" id="themebtn" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="shell">
+  <nav class="sidebar" aria-label="Sections">
+    <h2>Sections</h2>
+    <div class="navlist">
+      <a href="#headline"><span class="k">0</span><span>Read this first</span></a>
+      <a href="#leak"><span class="k">1</span><span>The shop shortcut, and whether it is really fixed</span></a>
+      <a href="#apparel"><span class="k">2</span><span>The apparel products, listed</span></a>
+      <a href="#dom"><span class="k">3</span><span>Does openJiuwen use the DOM tree</span></a>
+      <a href="#second"><span class="k">4</span><span>The second agent, and why its runs are void</span></a>
+      <a href="#plan"><span class="k">5</span><span>A controlled experiment, from scratch</span></a>
+    </div>
+    <h2 style="margin-top:22px">Also</h2>
+    <div class="navlist">
+      <a href="index.html"><span class="k">&rarr;</span><span>Full project detail</span></a>
+      <a href="agent-mechanics.html"><span class="k">&rarr;</span><span>How the agent reads a shop</span></a>
+    </div>
+  </nav>
+
+  <main>
+
+  <section id="headline">
+    <h2>Read this first</h2>
+    <p class="lede">Today's check found one thing that was already fine, one thing I had described wrongly and have since corrected, and <b>one new fault that voids a set of results I reported to you as a finding</b>. Taking the bad news first.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>The four questions, each with its honest one line answer</caption>
+        <thead><tr><th class="idx">#</th><th class="wide">Question</th><th class="wide">Answer</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="idx">1</td><td class="wide">Is the shop shortcut fixed?</td><td class="dim wide">The price leak is fixed and was measured. It is <b>not</b> fixed completely, and I can name the three holes. A separate shortcut, the agent reading only four listings, was never fixed and never claimed to be</td><td><span class="pill amb">PARTLY</span></td></tr>
+          <tr><td class="idx">2</td><td class="wide">What apparel products exist?</td><td class="dim wide">Fifteen sellers of one t-shirt, listed in full below with the job each one does</td><td><span class="pill ok">BUILT</span></td></tr>
+          <tr class="warn"><td class="idx">3</td><td class="wide">Does openJiuwen avoid the DOM tree?</td><td class="dim wide"><b>No. I was wrong.</b> It reads the DOM, and it reads accessibility information. The four listing problem has a different cause, and the code shows exactly what it is</td><td><span class="pill no">I WAS WRONG</span></td></tr>
+          <tr class="warn"><td class="idx">4</td><td class="wide">Did the second agent produce usable results?</td><td class="dim wide"><b>No. Found today.</b> In all twelve runs it opened <b>zero</b> real product pages and hit 49 missing page errors. The comparison I reported is void</td><td><span class="pill no">VOID</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The second agent fault is mine, it is in code I wrote, and it is a one line fix. The details are in section 4. Nothing was spent on model runs today.</p>
+    <p class="note">One thing I could not check today: the shop container was not running when this was written and Docker was still starting, so the live verification in section 1 is marked pending rather than claimed. The last live verification was 18 September.</p>
+  </section>
+
+  <section id="leak">
+    <h2>1. The shop shortcut, and whether it is really fixed</h2>
+    <p class="lede">First, which shortcut. There are two completely different ones in this project and they have been muddled in conversation, including by me.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Two shortcuts, two different stories</caption>
+        <thead><tr><th class="wide">Shortcut</th><th class="wide">What it is</th><th>State</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="wide"><b>A. The shop published variant prices</b></td><td class="dim wide">Magento put every size's price in the page on load and wrote the extra cost into each menu option, so the agent could do arithmetic instead of clicking a size</td><td><span class="pill ok">FIXED, MEASURED</span></td></tr>
+          <tr class="warn"><td class="wide"><b>B. The agent reads four listings of fifteen</b></td><td class="dim wide">The card summary reports only what is on screen, so the agent treats four products as the whole market</td><td><span class="pill no">NOT FIXED</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">When I said "solved", I meant A. <b>B has never been fixed and I have never claimed it was.</b> B is the subject of the project, not a bug to be patched, and the open question is whether its cause is the tool or the model.</p>
+
+    <h3 class="sub">What was built for A</h3>
+    <p class="note">A replacement page template that the shop serves only to a browser identifying itself as <code>IGRGated</code>. Ordinary browsing and every run recorded before it are untouched. It does two things to the block of data Magento sends the browser.</p>
+    <figure class="code">
+      <figcaption><span class="path">env/gated_theme/.../configurable.phtml</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="src">$basePrice = $config["prices"]["finalPrice"]["amount"] ?? ... ;</span>
+<span class="src"></span>
+<span class="src">// every size's price is set to the one figure the page already shows</span>
+<span class="src">foreach ($config["optionPrices"] as $id =&gt; $entry) { ...set to $basePrice... }</span>
+<span class="src">foreach (["baseOldPrice","oldPrice","basePrice","finalPrice"] as $key) {</span>
+<span class="src">    $config["prices"][$key]["amount"] = $basePrice;   // so no option shows a difference</span>
+<span class="src">}</span>
+<span class="src"></span>
+<span class="src">$hidden = base64_encode(json_encode($truePrices));  // real prices, revealed on selection</span></pre>
+    </figure>
+
+    <h3 class="sub">The evidence that it worked</h3>
+    <p class="note">Measured on 18 September on the same product page, changing only which browser identity was used.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>The size menu as the agent receives it</caption>
+        <thead><tr><th>Shop</th><th class="wide">Menu options</th><th class="wide">Price box</th></tr></thead>
+        <tbody>
+          <tr class="warn"><td>Ordinary</td><td class="mono wide">24 x 350ml +$7.47, 12 x 550ml, 6 x 1.25L +$6.84, 2 x 9.5L +$32.50</td><td class="dim wide">As low as $16.14</td></tr>
+          <tr class="hi"><td><b>Gated</b></td><td class="mono wide">24 x 350ml, 12 x 550ml, 6 x 1.25L, 2 x 9.5L</td><td class="dim wide">As low as $16.14, then <b>$48.64 after choosing the size</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">And the behaviour change it produced, twelve runs each, the menu being the only difference: the agent went from choosing a size in <b>0 of 12</b> runs to <b>8 of 12</b>, worked 64 per cent harder, and was no more right. It stopped doing arithmetic on the menu in all twelve.</p>
+
+    <h3 class="sub">Why I will not say it is fixed completely</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>Three holes I know about, each one real</caption>
+        <thead><tr><th class="idx">#</th><th class="wide">Hole</th><th class="wide">Why it matters</th></tr></thead>
+        <tbody>
+          <tr><td class="idx">1</td><td class="wide">The true prices are still in the page, base64 encoded in a hidden attribute</td><td class="dim wide">An agent that runs its own JavaScript could decode them without clicking. This is stated in the template's own header comment. It mirrors the live marketplace, where an agent could call the API the page fetches from, so it is a limitation rather than a defect, but it is not airtight</td></tr>
+          <tr><td class="idx">2</td><td class="wide">The gate is chosen by browser identity, so a run that forgets it silently sees the leaky shop</td><td class="dim wide">Now defaulted for both agents and stamped into each run record, so a future run cannot hide it. Runs recorded before 18 September carry no such field, which is itself how you tell</td></tr>
+          <tr class="warn"><td class="idx">3</td><td class="wide">Not verified since the container was restarted</td><td class="dim wide">The theme lives in the shop's database. It should survive a restart and I have not watched it do so. <b>Pending, not claimed</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">So the honest sentence is: <b>the leak that mattered is closed and the closing was measured, the mechanism has a known decodable back door that mirrors the real marketplace, and the live state needs one check before the next run.</b></p>
+  </section>
+
+  <section id="apparel">
+    <h2>2. The apparel products, listed</h2>
+    <p class="lede">One t-shirt sold by fifteen competing sellers, generated on 18 September from seed 203 and accepted on attempt 590 after the generator rejected every draw that failed its rules. Every price below is read from the fixture file, and all fifteen card prices were checked against the rendered shop page on the day it was built.</p>
+    <p class="note">The question the market is built to ask is <b>which seller has the cheapest size M that can actually be bought</b>. Three populations exist, which is the point of the design.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>All fifteen listings, brand Thornwood, SKU prefix IGR-APP</caption>
+        <thead><tr><th class="num">#</th><th>SKU</th><th class="wide">Seller</th><th>Sizes sold</th><th class="num">Size M</th><th>M available?</th><th class="num">Card price</th><th class="wide">Role in the experiment</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td class="mono">IGR-APP-01</td><td class="wide">Elmsworth Clothing Co</td><td class="mono">S M L XL</td><td class="num">28.96</td><td>yes, 129</td><td class="num">24.83</td><td class="dim wide">Ordinary competitor</td></tr>
+          <tr><td class="num">2</td><td class="mono">IGR-APP-02</td><td class="wide">Copperfield Apparel</td><td class="mono">S M L XL</td><td class="num">29.66</td><td>yes, 51</td><td class="num">23.40</td><td class="dim wide">Renders in the first row, advertises below the answer, so a glance is misled</td></tr>
+          <tr class="warn"><td class="num">3</td><td class="mono">IGR-APP-03</td><td class="wide">Rookwood Uniforms</td><td class="mono">S L</td><td class="num">-</td><td>never sold</td><td class="num">11.87</td><td class="dim wide"><b>Trap one.</b> Cheapest advertised price in the whole market and it does not sell size M at all</td></tr>
+          <tr><td class="num">4</td><td class="mono">IGR-APP-04</td><td class="wide">Oakhurst Threads</td><td class="mono">S XL</td><td class="num">-</td><td>never sold</td><td class="num">27.75</td><td class="dim wide">Does not sell M</td></tr>
+          <tr><td class="num">5</td><td class="mono">IGR-APP-05</td><td class="wide">Dunmore Apparel</td><td class="mono">S M L XL</td><td class="num">16.55</td><td>sold out</td><td class="num">20.05</td><td class="dim wide">Lists M cheaply and cannot ship it</td></tr>
+          <tr><td class="num">6</td><td class="mono">IGR-APP-06</td><td class="wide">Marchmont Textiles</td><td class="mono">S M L XL</td><td class="num">33.47</td><td>yes, 130</td><td class="num">30.92</td><td class="dim wide">Ordinary competitor</td></tr>
+          <tr class="warn"><td class="num">7</td><td class="mono">IGR-APP-07</td><td class="wide">Fairhaven Workwear</td><td class="mono">S M L XL</td><td class="num">15.04</td><td><b>sold out</b></td><td class="num">18.33</td><td class="dim wide"><b>Trap two.</b> The lowest listed price for size M of anyone, and it cannot be bought. Renders in the first row</td></tr>
+          <tr><td class="num">8</td><td class="mono">IGR-APP-08</td><td class="wide">Ivybridge Collective</td><td class="mono">S M L XL</td><td class="num">19.31</td><td>sold out</td><td class="num">17.12</td><td class="dim wide">Also the cheapest for size XL, so a price found for one size cannot be generalised</td></tr>
+          <tr><td class="num">9</td><td class="mono">IGR-APP-09</td><td class="wide">Brindle Textiles</td><td class="mono">M L XL</td><td class="num">40.26</td><td>sold out</td><td class="num">30.61</td><td class="dim wide">Sold out, expensive</td></tr>
+          <tr><td class="num">10</td><td class="mono">IGR-APP-10</td><td class="wide">Haldane Supply</td><td class="mono">S M L XL</td><td class="num">35.83</td><td>sold out</td><td class="num">27.13</td><td class="dim wide">Sold out, expensive</td></tr>
+          <tr><td class="num">11</td><td class="mono">IGR-APP-11</td><td class="wide">Northwick Outfitters</td><td class="mono">S M L XL</td><td class="num">32.39</td><td>yes, 73</td><td class="num">25.96</td><td class="dim wide">Buyable but dearer than the answer</td></tr>
+          <tr><td class="num">12</td><td class="mono">IGR-APP-12</td><td class="wide">Pentland Workwear</td><td class="mono">S L XL</td><td class="num">-</td><td>never sold</td><td class="num">36.59</td><td class="dim wide">Does not sell M</td></tr>
+          <tr><td class="num">13</td><td class="mono">IGR-APP-13</td><td class="wide">Jarrow Garments</td><td class="mono">S L</td><td class="num">-</td><td>never sold</td><td class="num">14.90</td><td class="dim wide">Cheap and irrelevant, another way to be wrong</td></tr>
+          <tr class="hi"><td class="num">14</td><td class="mono">IGR-APP-14</td><td class="wide"><b>Alderney Clothing Co</b></td><td class="mono">M L XL</td><td class="num"><b>25.77</b></td><td><b>yes, 123</b></td><td class="num">25.77</td><td class="dim wide"><b>The right answer.</b> Renders at card 12, so a glance never reaches it</td></tr>
+          <tr><td class="num">15</td><td class="mono">IGR-APP-15</td><td class="wide">Lymington Textiles</td><td class="mono">S L XL</td><td class="num">-</td><td>never sold</td><td class="num">28.09</td><td class="dim wide">Does not sell M</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <caption>What the market adds up to</caption>
+        <thead><tr><th class="wide">Property</th><th class="num">Value</th><th class="wide">Why it is set that way</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">Sellers</td><td class="num">15</td><td class="dim wide">Enough that opening all of them is genuinely expensive</td></tr>
+          <tr class="hi"><td class="wide">Can ship size M</td><td class="num">5</td><td class="dim wide">The real field of candidates</td></tr>
+          <tr class="hi"><td class="wide">Offer M, sold out</td><td class="num">5</td><td class="dim wide">Visible in the menu as a disabled option, price unreachable. This is the state real marketplaces have and our shop could not render before 18 September</td></tr>
+          <tr><td class="wide">Never sold M</td><td class="num">5</td><td class="dim wide">Absent from the menu, nothing marks the absence</td></tr>
+          <tr><td class="wide">Fewest listings a correct answer must open</td><td class="num">8</td><td class="dim wide">After ruling out every listing whose advertised price is already above the answer</td></tr>
+          <tr><td class="wide">Winner's margin over the runner up</td><td class="num">$3.19</td><td class="dim wide">At least 8 per cent, so a correct answer is not rounding luck</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">Three different wrong answers sit in front of the right one, and each is wrong for a different reason: Rookwood is cheapest overall and does not sell the size, Fairhaven lists the size lowest and cannot ship it, and Ivybridge is the right answer to a question about a different size.</p>
+    <p class="note"><b>Six questions are written against this market and none has been run.</b> Two batches of runs exist from 18 September, but the market was regenerated after them, so they were scored against an answer key that has since moved. The run records carry a fingerprint of the answer key for exactly this reason, and the fingerprints do not match.</p>
+  </section>
+
+  <section id="dom">
+    <h2>3. Does openJiuwen use the DOM tree</h2>
+    <p class="claim"><b>Yes. It reads the DOM and it reads accessibility information. What I told you earlier was wrong, and this section shows the code.</b></p>
+    <p class="lede">Your follow up is the right one: if it reads the DOM, how can it see only four listings? The answer is that reading the whole page and reporting the whole page are two different steps, and the code does the first then undoes it.</p>
+
+    <h3 class="sub">It reads the page</h3>
+    <p class="note">The card summary is a piece of JavaScript that openJiuwen sends into the browser to run inside the page. These lines are from that script.</p>
+    <figure class="code">
+      <figcaption><span class="path">agent-core/openjiuwen/harness/tools/browser_move/playwright_runtime/probes.py</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="ln">160</span><span class="src">const explicit = el.getAttribute('role');</span>
+<span class="ln">203</span><span class="src">const matches = Array.from(document.querySelectorAll(selector));</span>
+<span class="ln">277</span><span class="src">if (el.disabled || el.getAttribute('aria-disabled') === 'true') return false;</span>
+<span class="ln">293</span><span class="src">return normalize(el.innerText || el.textContent || '');</span></pre>
+    </figure>
+    <p class="note">Line 203 asks the live page for every matching element, which is reading the DOM. Lines 160 and 277 read <code>role</code> and <code>aria-disabled</code>, which are accessibility attributes. So the summary is built out of both the DOM and accessibility information.</p>
+    <p class="note">Separately, when the agent calls for a snapshot it receives the accessibility tree itself, in the format a screen reader would use. From a real run's log, the size menu on a product page arrived like this:</p>
+    <figure class="code">
+      <figcaption><span class="path">run scaled-cheapest-target-2, step 5</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="src">- combobox "Pack Size *":</span>
+<span class="src">    - option "Choose an Option..." [selected]</span>
+<span class="src">    - option "24 x 350ml +$1.48"</span>
+<span class="src">    - option "12 x 550ml"</span>
+<span class="src">    - option "6 x 1.25L +$2.13"</span>
+<span class="src">    - option "2 x 9.5L +$10.86"</span></pre>
+    </figure>
+
+    <h3 class="sub">And then it throws most of it away</h3>
+    <p class="note">This is the part that resolves your question. The script finds elements first, and filters them afterwards. Here is the loop, in order:</p>
+    <figure class="code">
+      <figcaption><span class="path">probes.py, the loop that builds the summary</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="ln">403</span><span class="src">seen.add(el);</span>
+<span class="ln">405</span><span class="src">const rect = el.getBoundingClientRect();     // where is it on the page</span>
+<span class="ln">406</span><span class="src hl">if (!isVisible(el, rect)) continue;           // below the fold, drop it</span></pre>
+    </figure>
+    <p class="note">And <code>isVisible</code> contains the test that does the damage. The card summary has its own copy of it at lines 670 to 688.</p>
+    <figure class="code">
+      <figcaption><span class="path">probes.py lines 679 to 684</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="src">if (viewportOnly) {</span>
+<span class="src">  if (rect.bottom &lt; 0) return false;</span>
+<span class="src">  if (rect.right &lt; 0) return false;</span>
+<span class="src hl">  if (rect.top &gt; window.innerHeight) return false;   // this is the one</span>
+<span class="src">  if (rect.left &gt; window.innerWidth) return false;</span>
+<span class="src">}</span></pre>
+    </figure>
+    <p class="claim">So both things are true at once, and they are not in conflict. <b>It reads the entire DOM. Then it discards every element sitting below the bottom of the window, and the reply it returns never mentions that anything was discarded.</b> Our product cards start 671 pixels down the page and the second row starts at 1128, in a window 701 tall, so everything from the second row onward fails that one test.</p>
+
+    <h3 class="sub">Proved by running their code both ways</h3>
+    <p class="note">On 18 September I loaded openJiuwen's own summary script out of its repository and ran it against our shop twice, changing only that one setting and nothing else.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Same page, same code, one flag</caption>
+        <thead><tr><th>Setting</th><th class="num">Sellers reported</th><th class="num">Reply size</th></tr></thead>
+        <tbody>
+          <tr class="warn"><td>As shipped, window only</td><td class="num">4</td><td class="num">31,701 chars</td></tr>
+          <tr class="hi"><td><b>Window limit off</b></td><td class="num"><b>15</b></td><td class="num">88,822 chars</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">For comparison the accessibility tree of the same page is <b>11,394 characters and names all fifteen</b>. So the summary the agent is told to prefer is nearly three times the size of the accessibility tree and names a quarter as many products. Whatever preferring it saves, it is not tokens.</p>
+    <p class="claim">The correction, stated plainly: <b>openJiuwen's claim that it reads the control tree by default is true.</b> The four listing behaviour is not caused by avoiding the DOM. It is caused by a geometry filter inside a summarising tool, and by that tool not reporting what it dropped.</p>
+    <p class="note"><b>What is still not proven.</b> Whether that filter <i>causes</i> the agent to stop at four, or whether a model inclined to look less would stop there anyway. Across unmodified runs, 74 opened exactly four listings and not one of those had read the search page in full, against 30 of 38 that opened some other number. That is a strong association and it is not a controlled test. The experiment that settles it is in section 5.</p>
+  </section>
+
+  <section id="second">
+    <h2>4. The second agent, and why its runs are void</h2>
+    <p class="lede">It exists, its design is sound, and <b>every run it has produced is unusable</b>. I found that today while checking this answer rather than asserting it. The cause is a bug in code I wrote.</p>
+
+    <h3 class="sub">What it is</h3>
+    <p class="note">A browsing loop written from scratch in <code>experiments/naive_agent.py</code>, deliberately plain. It exists to answer one question: is the four listing behaviour a property of agents, or a property of openJiuwen's summarising tool. If a loop with no such tool still stops early, the behaviour belongs to the model.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>The two agents side by side</caption>
+        <thead><tr><th class="wide">Property</th><th class="wide">openJiuwen</th><th class="wide">The plain loop</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">Tools</td><td class="dim wide">Around two dozen, including navigate, click, type, snapshot, screenshot, run code, and its own card summary and interactive probes</td><td class="dim wide"><b>Four.</b> Go to a web address, read the page, choose a dropdown option, answer</td></tr>
+          <tr class="hi"><td class="wide">Instructions</td><td class="dim wide">A long built in prompt. The browser prompt file is <b>17,937 characters</b>, and it tells the agent which tool to prefer and to use the summary as its evidence rather than taking snapshots</td><td class="dim wide"><b>328 characters</b>, and the operative sentence is "Nothing here tells you how much to look, because how much to look is your decision"</td></tr>
+          <tr class="hi"><td class="wide">What it sees on arrival</td><td class="dim wide">A filename. The page content is written to disk and the agent is given its name, so it must then ask for something</td><td class="dim wide">The page text immediately, every time, with no asking</td></tr>
+          <tr class="hi"><td class="wide">Window limit</td><td class="dim wide">Yes, on the summary, on by default</td><td class="dim wide"><b>None.</b> It reads the whole page regardless of what is on screen</td></tr>
+          <tr><td class="wide">Held constant on purpose</td><td colspan="2" class="dim wide">Same model, same step budget of 100 tool calls, same window size of 1200 by 701, same scoring, and both emit a <code>Page URL:</code> line so one counter measures both</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">What went wrong</h3>
+    <p class="note">The loop reads the page as plain text, which does not tell you where a link goes. So it is also given a list of links. That list is capped:</p>
+    <figure class="code">
+      <figcaption><span class="path">experiments/naive_agent.py lines 58 to 59</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="src"># Enough for a full search page of fifteen cards plus the site's own navigation.</span>
+<span class="src hl">LINK_LIMIT = 80</span></pre>
+    </figure>
+    <p class="note">That comment is wrong, and the links are collected in the order they appear in the page. The shop's header, category menu and account links come first. Checking a real run's observation: <b>80 links were listed and not one of them was a product.</b> The last few were category pages like "Sports and Outdoors, Fan Shop, Footwear".</p>
+    <p class="claim">So the agent was never shown a single product address. It guessed them from the product names, and the guesses were wrong, because the shop addresses these products by their code rather than their name. The real address is <code>/igr-cal-01.html</code> and the agent tried <code>/calderwood-still-spring-water-multipack-kettering-distributors.html</code>.</p>
+    <p class="note">What came back, in full, is the shop's missing page notice:</p>
+    <figure class="code">
+      <figcaption><span class="path">what the agent received for a "product page"</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="src">Page URL: http://localhost:7770/calderwood-still-spring-water-multipack-kettering-distributors.html</span>
+<span class="src"></span>
+<span class="src">Whoops, our bad...</span>
+<span class="src">The page you requested was not found, and we have a fine guess why.</span>
+<span class="src">If you typed the URL directly, please make sure the spelling is correct.</span></pre>
+    </figure>
+
+    <h3 class="sub">How bad it is, across every run</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>All twelve stored runs of the second agent, counted today</caption>
+        <thead><tr><th class="wide">Measure</th><th class="num">Across 12 runs</th></tr></thead>
+        <tbody>
+          <tr class="warn"><td class="wide"><b>Real product pages opened</b></td><td class="num"><b>0</b></td></tr>
+          <tr class="warn"><td class="wide">Missing page errors received</td><td class="num">49</td></tr>
+          <tr><td class="wide">Page loads in total</td><td class="num">271</td></tr>
+          <tr><td class="wide">Times a size menu appeared in its view</td><td class="num">0</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">It answered questions about the price of a pack size while never once having seen a page that contains a pack size. <b>Any score from these runs measures guessing, not retrieval.</b></p>
+    <p class="note"><b>This also corrects a published figure.</b> I reported that the plain loop opens 3.7 listings against openJiuwen's 5.7, and called it a result that falsified my own prediction. The counter that produced 3.7 recognises a product page by the shape of its address, and the missing page it was served has the same shape. So 3.7 is a count of error pages. The real figure is zero, and the comparison does not exist.</p>
+    <p class="note">To your question of whether the comparison is invalid because of openJiuwen's four listing problem: no, that is not the reason. A comparison between an agent that reads four listings and an agent that reads all of them would be a perfectly good experiment, and is one I want. It is invalid because the second agent never reached a listing at all.</p>
+    <p class="claim">The fix is one line, raising or removing the link cap, plus putting product links first. It costs nothing. Until it is fixed and re-run, <b>this project has one agent, not two</b>, and the external validity question is open.</p>
+  </section>
+
+  <section id="plan">
+    <h2>5. A controlled experiment, from scratch</h2>
+    <p class="lede">You are right that the experiments are scattered. Twenty two batches exist across four markets, two models, four arms and two versions of the shop, and they accumulated as each question came up rather than being designed as a set. Here is what I would freeze and run instead.</p>
+
+    <h3 class="sub">First, what gets held constant</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>Fixed for every run in the matrix, so that nothing drifts between cells</caption>
+        <thead><tr><th class="wide">Held constant</th><th class="wide">Value</th><th class="wide">Why</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">Model</td><td class="dim wide">claude-haiku-4.5</td><td class="dim wide">Changing the model is a separate experiment and would confound this one</td></tr>
+          <tr class="hi"><td class="wide">Shop</td><td class="dim wide"><b>Gated</b>, prices hidden until a size is chosen</td><td class="dim wide">Mixing the two shops is what made earlier batches hard to compare. Recorded in every run record</td></tr>
+          <tr><td class="wide">Window</td><td class="dim wide">1200 by 701</td><td class="dim wide">"The first screen" has to mean the same thing everywhere</td></tr>
+          <tr><td class="wide">Step budget</td><td class="dim wide">100 tool calls</td><td class="dim wide">One run hit this limit honestly, so it has to be equal across arms</td></tr>
+          <tr><td class="wide">Repeats</td><td class="dim wide">3 per question</td><td class="dim wide">The same model on the same page has answered correctly twice and wrongly on the third attempt</td></tr>
+          <tr><td class="wide">Scoring and sufficiency rules</td><td class="dim wide">Frozen at today's version, recorded in each run</td><td class="dim wide">A rule changed mid matrix makes the halves incomparable</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Before anything is spent, three free jobs</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>None of these calls a model</caption>
+        <thead><tr><th class="idx">#</th><th class="wide">Job</th><th class="wide">Why it blocks the matrix</th></tr></thead>
+        <tbody>
+          <tr class="warn"><td class="idx">A</td><td class="wide"><b>Fix the link cap in the second agent and prove it reaches a product page</b></td><td class="dim wide">Without this there is no second agent. Verified by a single free browser check, not by a paid run</td></tr>
+          <tr><td class="idx">B</td><td class="wide">Verify the shop after its restart: container up, products present, search index intact, gated theme still serving</td><td class="dim wide">Elasticsearch failing silently on boot is a known trap in this setup, and a market that does not render is a wasted batch</td></tr>
+          <tr><td class="idx">C</td><td class="wide">Build the "see everything" arm, which is openJiuwen with the window limit switched off and nothing else changed</td><td class="dim wide">It is the only arm that answers the mechanism question. The flag is already proven to work at the tool level</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Then the matrix</h3>
+    <p class="note">Two markets, because one market is a measurement of that market: the water market the method has never been developed against, and the clothing market which has never been run at all. Costs below are from the real per run costs of previous batches, not estimates.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Proposed runs, in the order I would run them</caption>
+        <thead><tr><th class="idx">#</th><th class="wide">Cell</th><th>Market</th><th class="num">Runs</th><th class="num">Cost</th><th class="wide">The question it answers</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="idx">1</td><td class="wide"><b>openJiuwen, unmodified</b></td><td>Clothing</td><td class="num">18</td><td class="num">$2.20</td><td class="dim wide">The baseline on a market nothing was built against, and the first measurement of the third availability state</td></tr>
+          <tr class="hi"><td class="idx">2</td><td class="wide"><b>openJiuwen, window limit off</b></td><td>Clothing</td><td class="num">18</td><td class="num">$3.50</td><td class="dim wide"><b>The mechanism question.</b> Same agent, same market, one flag. If it still stops at four, the cause is the model</td></tr>
+          <tr class="hi"><td class="idx">3</td><td class="wide"><b>The second agent, fixed</b></td><td>Clothing</td><td class="num">18</td><td class="num">$4.00</td><td class="dim wide">Whether the behaviour survives a change of agent, which is the external validity claim</td></tr>
+          <tr><td class="idx">4</td><td class="wide">openJiuwen, strategy plus refusal check</td><td>Clothing</td><td class="num">18</td><td class="num">$2.60</td><td class="dim wide">Whether the contribution holds on a second product category</td></tr>
+          <tr><td class="idx">5</td><td class="wide">openJiuwen, told to open everything</td><td>Clothing</td><td class="num">18</td><td class="num">$3.40</td><td class="dim wide">The expensive baseline the contribution is measured against</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">Cells 1 to 3 cost about <b>$9.70</b> and answer three different open questions. Cells 4 and 5 complete the comparison and cost a further $6. The remaining credit is $16.40, so the full set is affordable but leaves nothing spare, which is why I would run 1 to 3 first and decide afterwards.</p>
+    <p class="note"><b>What makes it controlled, where the old batches were not.</b> Every cell is the same six questions, the same market fingerprint, the same shop, the same model, the same window and the same budget. The only thing that changes between cells is the one named in its row. Earlier batches changed the market, the shop and the agent at the same time, which is why they cannot be read against each other.</p>
+    <p class="note">Reviews are deliberately left out. Nine questions exist and have never been run, and page turning makes them the most expensive and least predictable arm. They belong after the matrix, not inside it.</p>
+  </section>
+
+  </main>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>Every figure on this page was re-derived on 7 October 2026 from the repository or the stored run records.</span>
+    <span>No model was called in producing it.</span>
+    <span><a href="index.html">Full project detail</a></span>
+  </div>
+</footer>
+
+<script src="app.js"></script>
