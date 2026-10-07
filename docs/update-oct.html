@@ -1,0 +1,413 @@
+<title>Project Update, October</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+/* This one is a presentation, so it reads top to bottom rather than one section
+   at a time, and the steps are numbered so they can be talked through in order. */
+main > section { display: flex !important; }
+.shell { grid-template-columns: 1fr; }
+.sidebar { display: none; }
+.step { display: flex; align-items: baseline; gap: 14px; }
+.step .num {
+  font-family: var(--sans); font-weight: 600; font-size: 13px;
+  background: var(--accent); color: #fff; border-radius: 999px;
+  min-width: 30px; height: 30px; display: inline-flex;
+  align-items: center; justify-content: center; flex: 0 0 auto;
+}
+.step.done .num { background: var(--good); }
+.step.open .num { background: var(--warn); }
+.big { font-size: 19px; max-width: 70ch; }
+.ask {
+  border: 2px solid var(--accent); background: var(--accent-soft);
+  border-radius: var(--radius); padding: 24px 26px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="mast-text">
+      <span class="eyebrow">Kayleen Lee Kai Rong &middot; FYP update &middot; 7 October 2026</span>
+      <h1>What changed since our last meeting</h1>
+      <p class="sub">Two problems you raised are now fixed and measured. A second product category exists. A second agent exists. Fifty four runs answer the question we could not settle by arguing about it.</p>
+      <div class="mast-meta">
+        <span>A/Prof. Markus Kirchberg</span>
+        <span>NUS Data Science and Analytics</span>
+        <span><a href="index.html">Full project detail</a></span>
+      </div>
+    </div>
+    <div class="mast-actions">
+      <button class="btn" type="button" id="themebtn" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="shell">
+  <main>
+
+  <section id="where">
+    <h2>In one minute</h2>
+    <div class="stats">
+      <a class="stat win" href="#solved1"><span class="n">fixed</span><span class="l">THE SHOP GAVE PRICES AWAY</span></a>
+      <a class="stat win" href="#solved2"><span class="n">explained</span><span class="l">THE AGENT SAW 4 OF 15</span></a>
+      <a class="stat" href="#apparel"><span class="n">15</span><span class="l">NEW CLOTHING LISTINGS</span></a>
+      <a class="stat" href="#second"><span class="n">2</span><span class="l">AGENTS NOW COMPARED</span></a>
+      <a class="stat" href="#results"><span class="n">54</span><span class="l">RUNS THIS WEEK</span></a>
+      <a class="stat flag" href="#next"><span class="n">$3.47</span><span class="l">CREDIT LEFT</span></a>
+    </div>
+    <p class="claim big">The headline: the agent reading only four listings of fifteen is caused by <b>one default setting</b> in the browser agent we build on. Turning that setting off takes it from meeting the evidence standard in 3 runs out of 15 to <b>15 out of 15</b>. A second agent I wrote from scratch, which has no such setting, reaches 12 of 15 without being told anything.</p>
+    <p class="note">That is a smaller claim than "AI shopping agents under retrieve", and a much better supported one. It is a named, reproducible defect in a production agent, shown three different ways.</p>
+  </section>
+
+  <section id="problems">
+    <h2>1. Where we left off, and the two problems in the way</h2>
+    <p class="lede">At the last meeting the project had a result it could not fully trust, because two things in the setup were doing work that should have been done by the agent.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>The two problems</caption>
+        <thead><tr><th class="idx">#</th><th class="wide">Problem</th><th class="wide">Why it mattered</th></tr></thead>
+        <tbody>
+          <tr class="warn"><td class="idx">A</td><td class="wide"><b>The shop was giving the prices away</b><br>Each size in the menu was labelled with its extra cost, like <code>2 x 9.5L +$32.50</code></td><td class="dim wide">The whole project is about prices you can only see <b>after</b> clicking a size. If the shop prints them before you click, there is nothing to study. The agent was adding numbers instead of clicking</td></tr>
+          <tr class="warn"><td class="idx">B</td><td class="wide"><b>The agent was reading 4 listings of 15</b></td><td class="dim wide">We knew it happened. We did not know <b>why</b>. If the cause is the agent's tooling that is one kind of finding. If it is the language model itself that is a much bigger one. We could not tell</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">Both are now settled. A is fixed and the fix is measured. B is explained, and the explanation is the main result of this update.</p>
+  </section>
+
+  <section id="solved1">
+    <h2>2. Solved: the shop no longer gives prices away</h2>
+
+    <div class="step"><span class="num">1</span><p class="lede">What was wrong. Magento, the shop software, sends the browser <b>every size's price when the page loads</b>, and the menu then writes each one as a surcharge.</p></div>
+    <figure class="code">
+      <figcaption><span class="path">the size menu, before</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="src">Pack Size:  24 x 350ml +$7.47</span>
+<span class="src">            12 x 550ml</span>
+<span class="src">            6 x 1.25L  +$6.84</span>
+<span class="src">            2 x 9.5L   +$32.50</span></pre>
+    </figure>
+    <p class="note">So an agent could read <code>$16.14</code> from the page, add <code>$32.50</code> from the label, and report $48.64 without ever selecting the size. Which is exactly what it did: across 290 stored answers, <b>48 showed the agent adding a surcharge instead of clicking</b>.</p>
+
+    <div class="step"><span class="num">2</span><p class="lede">What I built. A replacement page template that flattens the price table the shop hands the browser, so every size reports the same starting price and no label can show a difference. The real prices travel hidden, and are written into the price box only for the size actually chosen.</p></div>
+    <figure class="code">
+      <figcaption><span class="path">the size menu, after</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="src">Pack Size:  24 x 350ml</span>
+<span class="src">            12 x 550ml</span>
+<span class="src">            6 x 1.25L</span>
+<span class="src">            2 x 9.5L          &lt;- click this, and only then the price appears</span></pre>
+    </figure>
+
+    <div class="step done"><span class="num">3</span><p class="lede">How I know it worked. The shop serves this version only to a browser that identifies itself a certain way, so ordinary browsing and every run recorded before it are untouched. That let me run the <b>same twelve runs twice</b>, changing only the menu.</p></div>
+    <div class="tablewrap">
+      <table>
+        <caption>Twelve runs each, the size menu being the only difference</caption>
+        <thead><tr><th>Shop version</th><th class="num">Clicked a size</th><th class="num">Added up the menu instead</th><th class="num">Work done</th><th class="num">Correct</th></tr></thead>
+        <tbody>
+          <tr class="warn"><td>Prices shown in the menu</td><td class="num">0 of 12</td><td class="num">4 of 12</td><td class="num">10.2 actions</td><td class="num">3 of 12</td></tr>
+          <tr class="hi"><td><b>Prices hidden</b></td><td class="num"><b>8 of 12</b></td><td class="num"><b>0 of 12</b></td><td class="num">18.3 actions</td><td class="num">2 of 12</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The agent went from <b>never</b> clicking a size to clicking in two runs out of three, and stopped doing menu arithmetic entirely. It works 64 per cent harder and is no more correct, which is itself the point: the information really was gated, and retrieving it properly is expensive.</p>
+    <p class="note"><b>Where it is not airtight, stated plainly.</b> The true prices are still inside the page, encoded. An agent that ran its own JavaScript could decode them without clicking. That mirrors the live marketplace, where an agent could call the same API the page calls, so it is a limitation of the setting rather than a defect. It is written down as a limitation rather than hidden.</p>
+  </section>
+
+  <section id="solved2">
+    <h2>3. Solved: why the agent only saw 4 listings of 15</h2>
+    <p class="lede">This is the question you pushed on, and the answer took three attempts to get right. I was wrong twice along the way and both corrections are recorded.</p>
+
+    <div class="step"><span class="num">1</span><p class="lede"><b>First, the thing everyone assumes is wrong.</b> The agent does read the page properly. It is not working from screenshots. Across 360 recorded runs it read the page structure 1,656 times and took only 277 screenshots, roughly thirteen to one.</p></div>
+
+    <div class="step"><span class="num">2</span><p class="lede"><b>The page is complete too.</b> All fifteen products are in it. I measured them on one page load.</p></div>
+    <div class="tablewrap">
+      <table>
+        <caption>One search page, measured</caption>
+        <thead><tr><th class="wide">Measure</th><th class="num">Value</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">Product listings present in the page</td><td class="num">15</td></tr>
+          <tr class="hi"><td class="wide">Listings whose top edge is inside the browser window</td><td class="num"><b>4</b></td></tr>
+          <tr><td class="wide">Where the first off screen listing begins</td><td class="num">1008 pixels down</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="step"><span class="num">3</span><p class="lede"><b>So where do the other eleven go?</b> The agent has a tool that summarises the products on a page. That tool has a setting, on by default, that throws away anything below the bottom of the window. It finds all fifteen, then discards eleven.</p></div>
+    <figure class="code">
+      <figcaption><span class="path">openJiuwen, probes.py, the two steps in order</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="ln">403</span><span class="src">// find every element on the page</span>
+<span class="ln">405</span><span class="src">const rect = el.getBoundingClientRect();     // where is it</span>
+<span class="ln">406</span><span class="src hl">if (!isVisible(el, rect)) continue;           // below the fold, drop it</span>
+<span class="src"></span>
+<span class="ln">682</span><span class="src hl">if (rect.top &gt; window.innerHeight) return false;   // this is the line</span></pre>
+    </figure>
+    <p class="claim">And the reply it sends back <b>never says anything was dropped</b>. I checked every field. It reports four and stops. The agent asks a fair question, gets an answer with no hole in it, and moves on.</p>
+
+    <div class="step"><span class="num">4</span><p class="lede"><b>The part that surprised me.</b> You would assume the summary exists to save money. It does the opposite.</p></div>
+    <div class="tablewrap">
+      <table>
+        <caption>The same page, four ways of reading it. Tokens are what models are billed in</caption>
+        <thead><tr><th class="wide">Way of reading</th><th class="num">Size</th><th class="num">Products it names</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="wide"><b>Plain page structure</b></td><td class="num"><b>11,394</b></td><td class="num"><b>15 of 15</b></td></tr>
+          <tr class="warn"><td class="wide"><b>The "compact" summary, as shipped</b></td><td class="num">31,701</td><td class="num"><b>4 of 15</b></td></tr>
+          <tr><td class="wide">The summary with the setting off</td><td class="num">88,822</td><td class="num">15 of 15</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The tool called compact is <b>nearly three times larger</b> than the thing it summarises, and names a quarter as many products. A quarter of its bulk is long technical addresses for each element. Whatever preferring it saves, it is not tokens.</p>
+
+    <div class="step done"><span class="num">5</span><p class="lede"><b>How I fixed it, and why it is a fair test.</b> I did not edit their code. I wrote a small patch in our own repository that flips that one setting and changes <b>nothing else</b>: same instructions, same tools, same model, same budget, same shop. The agent is never told about the change.</p></div>
+    <p class="note">That matters because if I had also reworded the prompt, any difference could be the wording. One setting, one difference, one explanation. The result is in <a href="#results">section 6</a>.</p>
+    <p class="note"><b>One thing I will not claim.</b> openJiuwen's public talk says the agent reads the page by default and uses screenshots only when the page is unclear. That claim is <b>true</b>. I said otherwise at one point and was wrong. The problem is not that they avoid reading the page. It is that their summarising tool quietly drops most of it and does not say so.</p>
+  </section>
+
+  <section id="apparel">
+    <h2>4. New product category: fifteen clothing listings</h2>
+    <p class="lede">Everything until now was bottled water, so every number was a number about one product type. This is the second category, and it adds a kind of gating water does not have.</p>
+
+    <h3 class="sub">The three states a size can be in</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>Why this market is different from the water one</caption>
+        <thead><tr><th class="wide">State</th><th class="num">Listings</th><th class="wide">What the shopper sees</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">Sells size M and can ship it</td><td class="num">5</td><td class="dim wide">A normal, selectable option</td></tr>
+          <tr class="hi"><td class="wide"><b>Sells size M and has none left</b></td><td class="num">5</td><td class="dim wide">The size is listed but greyed out and cannot be chosen, so its price is unreachable</td></tr>
+          <tr><td class="wide">Never sold size M</td><td class="num">5</td><td class="dim wide">The size is simply absent, and nothing marks the absence</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">The middle state is the one real marketplaces have and our shop could not previously render. Shopee shows a sold out size as a greyed button, Lazada as a greyed tile, and neither publishes its price. Getting our shop to do the same took one configuration change plus creating the stock with zero quantity.</p>
+
+    <h3 class="sub">The question, and the three ways to get it wrong</h3>
+    <p class="big">"Which seller is cheapest for size M, counting only listings that can actually supply it?"</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Three wrong answers sit in front of the right one, each wrong differently</caption>
+        <thead><tr><th>Seller</th><th class="num">What it advertises</th><th class="wide">Why it looks right</th><th class="wide">Why it is wrong</th></tr></thead>
+        <tbody>
+          <tr class="warn"><td>Rookwood Uniforms</td><td class="num">$11.87</td><td class="dim wide">Cheapest price in the entire market</td><td class="dim wide">Does not sell size M at all</td></tr>
+          <tr class="warn"><td>Fairhaven Workwear</td><td class="num">$15.04 for M</td><td class="dim wide">The lowest price anyone lists for size M</td><td class="dim wide">Sold out. The page says so only by greying the option</td></tr>
+          <tr class="warn"><td>Ivybridge Collective</td><td class="num">$18.08 for XL</td><td class="dim wide">Cheapest for a different size</td><td class="dim wide">A price found for one size does not transfer</td></tr>
+          <tr class="hi"><td><b>Alderney Clothing Co</b></td><td class="num"><b>$25.77 for M</b></td><td class="dim wide">Does not look cheap at all</td><td class="dim wide"><b>The right answer.</b> Renders twelfth on the page, so a glance never reaches it</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">How the market is generated, and why not by hand</h3>
+    <p class="lede">The market is drawn at random, checked against thirteen properties, and thrown away if it fails any of them. Roughly <b>one draw in 1,900</b> passes, so the generator tries up to 80,000 times. Seed 203 was accepted on attempt 590.</p>
+    <p class="note">Why it has to work this way: a market written by hand would be written by someone who already knows what the agent gets wrong, and would flatter or punish it by accident. A market drawn at random and then filtered can only pass if it has the properties written down <b>in advance</b>.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>The thirteen rules, grouped by the objection each one answers</caption>
+        <thead><tr><th class="wide">Group</th><th class="wide">Rules</th><th class="wide">What a sceptic could otherwise say</th></tr></thead>
+        <tbody>
+          <tr><td class="wide"><b>The answer is unambiguous</b></td><td class="dim wide">exactly one winner, and it beats the runner up by at least 8 per cent</td><td class="dim wide">"The agent was nearly right, you are splitting hairs"</td></tr>
+          <tr class="hi"><td class="wide"><b>A glance is actively wrong</b></td><td class="dim wide">the cheapest advertised listing is not the winner, the cheapest of all does not sell the size, the lowest listed price for the size cannot be shipped, and four different sellers answer four different questions</td><td class="dim wide">"The agent could have guessed from the search page and been right"</td></tr>
+          <tr><td class="wide"><b>The work is real</b></td><td class="dim wide">at least 3 listings can be ruled out without opening, at least 8 must be opened</td><td class="dim wide">"It was answerable by opening one or two"</td></tr>
+          <tr><td class="wide"><b>All three states are well populated</b></td><td class="dim wide">at least 4 never sell it, at least 3 are sold out, at least 4 can ship it</td><td class="dim wide">"Sold out listings are a curiosity, not a real case"</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note"><b>Two rules I had to delete, which is worth a sentence.</b> Two of them tried to control <b>where</b> a listing appears on the results page, by controlling its position in the catalogue. That does not work. What actually decides page position is <b>how many sizes a listing sells</b>, because the shop's search index counts every size separately. Eight seeds in a row were rejected before I measured this. The generator now makes no claim about position, and position is measured on the real rendered page after seeding instead.</p>
+    <p class="note">Everything above was checked against the live shop before any run: all fifteen listings opened in a browser and compared to the specification on price, sizes offered, sizes greyed out, and price leaks. All fifteen agree. All six answers were then re-derived by browsing the shop rather than read from the file. All six match.</p>
+  </section>
+
+  <section id="second">
+    <h2>5. The second agent, and what it is for</h2>
+    <p class="lede">This is the part worth going slowly on, because it is what makes the whole result trustworthy.</p>
+
+    <h3 class="sub">The problem it solves</h3>
+    <p class="big">Every failure measured so far came from <b>one</b> agent. So a reasonable person asks: is this a fact about AI shopping agents, or a fact about <b>this particular piece of software</b>?</p>
+    <p class="note">You cannot answer that from inside one agent, however many times you run it. You need a second one that shares the model and shares nothing else.</p>
+
+    <h3 class="sub">What it is, concretely</h3>
+    <p class="note">A browsing loop I wrote from scratch, about 370 lines. It drives a real browser and has exactly four tools:</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Its entire toolset</caption>
+        <thead><tr><th>Tool</th><th class="wide">What it does</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">goto</td><td class="dim wide">Go to a web address and return the page's text</td></tr>
+          <tr><td class="mono">read_page</td><td class="dim wide">Return the text of the page it is on</td></tr>
+          <tr><td class="mono">select_option</td><td class="dim wide">Choose a value in a dropdown, then return the page text</td></tr>
+          <tr><td class="mono">finish</td><td class="dim wide">Give the final answer</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">And this is its <b>entire</b> instruction, 328 characters. openJiuwen's equivalent file is 17,937 characters.</p>
+    <figure class="code">
+      <figcaption><span class="path">the second agent's complete instructions</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="src">You are answering a question about an online shop by browsing it.</span>
+<span class="src"></span>
+<span class="src">You have four tools. Use them as you see fit. Nothing here tells you</span>
+<span class="src">how much to look, because how much to look is your decision.</span>
+<span class="src"></span>
+<span class="src">When you have the answer, call finish with it. If you cannot determine</span>
+<span class="src">the answer, say so in the finish call rather than guessing.</span></pre>
+    </figure>
+    <p class="claim">The sentence that matters is "<b>nothing here tells you how much to look, because how much to look is your decision</b>". That is deliberate. How much to look is the thing being measured, so the agent must not be told.</p>
+
+    <h3 class="sub">How it differs from openJiuwen, and why each difference is there</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>What differs, on purpose</caption>
+        <thead><tr><th class="wide">Property</th><th class="wide">openJiuwen</th><th class="wide">The second agent</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">Tools</td><td class="dim wide">Around two dozen, including its own summarising tools</td><td class="dim wide">Four</td></tr>
+          <tr><td class="wide">Instructions</td><td class="dim wide">17,937 characters, including which tool to prefer</td><td class="dim wide">328 characters, and no advice about looking</td></tr>
+          <tr class="hi"><td class="wide"><b>Window filter</b></td><td class="dim wide"><b>Yes, on by default</b></td><td class="dim wide"><b>None. It reads the whole page regardless of what is on screen</b></td></tr>
+          <tr><td class="wide">On arriving at a page</td><td class="dim wide">Gets a filename where the page was saved, and must then ask for something</td><td class="dim wide">Gets the page text immediately, every time</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">What is held identical, which is what makes it a fair test</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>Nine fairness checks, all passing, run before the experiment</caption>
+        <thead><tr><th class="wide">Held constant</th><th class="wide">Value</th><th class="wide">What would go wrong otherwise</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">The language model</td><td class="dim wide">claude-haiku-4.5 for both</td><td class="dim wide">A difference could be the model, not the agent</td></tr>
+          <tr class="hi"><td class="wide"><b>Browser window size</b></td><td class="dim wide">1200 by 701 for both</td><td class="dim wide">"What is on screen" has to mean the same thing in both</td></tr>
+          <tr class="hi"><td class="wide"><b>How many steps it may take</b></td><td class="dim wide">100 for both</td><td class="dim wide">One agent could simply be allowed to work longer</td></tr>
+          <tr><td class="wide">Which shop it sees</td><td class="dim wide">The price hiding version for both, recorded in every run</td><td class="dim wide">One could be answering an easier shop</td></tr>
+          <tr><td class="wide">How a listing counts as opened</td><td class="dim wide">One counter reads both agents' records</td><td class="dim wide">Two counters could disagree and nobody would notice</td></tr>
+          <tr><td class="wide">How an answer is marked</td><td class="dim wide">One marker, one cost method</td><td class="dim wide">Same</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">So the two agents differ in their <b>tooling and their instructions</b>, and in nothing else. If both fail the same way, the failure belongs to the model and the claim is about AI shopping agents generally. If only openJiuwen fails, the claim is about openJiuwen.</p>
+
+    <h3 class="sub">A bug in it I found and fixed, reported because it voided results</h3>
+    <p class="note">The second agent's first twelve runs are <b>void and are not cited anywhere</b>. It reads pages as plain text, which does not say where a link goes, so it is also given a list of the page's links. That list was capped at 80, collected in page order, and this shop puts its menus and account links before the products. <b>All eighty slots went to navigation and not one product address was ever shown.</b> The agent guessed addresses from product names, and this shop addresses products by code, so every guess hit a missing page. Across those twelve runs: zero product pages opened, 49 missing page errors.</p>
+    <p class="note">The fix lists content links first and gives navigation a small allowance. Verified afterwards: fifteen product links offered, the first at position three, following it loads a real product page, and a sold out size shows as unavailable in its view. It was then re-run, and that re-run is cell 3 below.</p>
+    <p class="claim">I report this because a figure from those runs had already been given to you: that the plain loop opens 3.7 listings against openJiuwen's 5.7. <b>That figure counted missing-page errors as listings. The real count was zero.</b> It has been withdrawn.</p>
+  </section>
+
+  <section id="results">
+    <h2>6. The three experiments, and what they show</h2>
+    <p class="lede">Fifty four runs on the clothing market, eighteen per group, same six questions, same model, same shop, same step budget. Cells 1 and 2 differ by <b>one setting</b>. Cell 3 swaps the whole agent.</p>
+
+    <div class="tablewrap">
+      <table>
+        <caption>The result</caption>
+        <thead><tr><th class="wide">Group</th><th class="num">Questions right</th><th class="num">Runs that looked at enough to justify an answer</th><th class="num">Listings opened, typical</th><th class="num">Cost</th></tr></thead>
+        <tbody>
+          <tr class="warn"><td class="wide"><b>1. openJiuwen, as shipped</b></td><td class="num">4 of 15</td><td class="num"><b>3 of 15</b></td><td class="num">4</td><td class="num">$2.72</td></tr>
+          <tr class="hi"><td class="wide"><b>2. openJiuwen, window filter off</b></td><td class="num"><b>10 of 15</b></td><td class="num"><b>15 of 15</b></td><td class="num">15</td><td class="num">$7.38</td></tr>
+          <tr class="hi"><td class="wide"><b>3. The second agent</b></td><td class="num"><b>9 of 15</b></td><td class="num"><b>12 of 15</b></td><td class="num">15</td><td class="num"><b>$2.00</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">"Looked at enough" means the run opened at least eight listings, which is the number this market requires before any answer can be justified. The generator computes that number when it builds the market.</p>
+
+    <h3 class="sub">What is settled, and what is only suggested</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>Fisher exact test, two sided</caption>
+        <thead><tr><th class="wide">Comparison</th><th class="num">p</th><th>Reading</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="wide">Turning the filter off makes it look at enough, 15 of 15 against 3 of 15</td><td class="num"><b>0.00001</b></td><td><span class="pill ok">SETTLED</span></td></tr>
+          <tr><td class="wide">And that improves accuracy, 10 of 15 against 4 of 15</td><td class="num">0.066</td><td><span class="pill amb">SUGGESTED</span></td></tr>
+          <tr class="hi"><td class="wide">The second agent looks at enough where openJiuwen does not, 12 of 15 against 3 of 15</td><td class="num"><b>0.003</b></td><td><span class="pill ok">SETTLED</span></td></tr>
+          <tr class="hi"><td class="wide">The second agent against openJiuwen repaired, on accuracy</td><td class="num">1.000</td><td><span class="pill ok">NO DIFFERENCE</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim big">Read the last two rows together. A plain loop with four tools and no window filter <b>opens the market by itself</b> and performs exactly like openJiuwen with its filter removed. It differs sharply from openJiuwen as shipped and not at all from openJiuwen repaired. <b>So the cause is the tool, not the model.</b></p>
+
+    <h3 class="sub">This makes the claim smaller, and much better evidenced</h3>
+    <div class="quote good">
+      <span>Not: "AI shopping agents under retrieve on pages with hidden information."</span>
+      <span>But: "openJiuwen's card summary filters to the browser window by default and does not report what it dropped. On a fifteen listing market that costs it eleven listings, and it meets the evidence standard in 3 runs of 15. Removing that one setting raises it to 15 of 15. A second agent without that setting reaches 12 of 15 unprompted."</span>
+      <span class="who">It could have gone the other way. Had the plain loop also stopped at four, the claim would have been the bigger one. It did not, so the honest finding is the smaller one.</span>
+    </div>
+
+    <h3 class="sub">Two things I did not expect</h3>
+    <div class="cards">
+      <div class="card done">
+        <span class="when">COST</span>
+        <h4>The second agent is the cheapest</h4>
+        <p>Same accuracy as repaired openJiuwen for <b>27 per cent of the cost</b>, $2.00 against $7.38. openJiuwen's expensive path is expensive because its unfiltered summary is 88,822 characters where the plain page structure is 11,394, re-sent at every step.</p>
+      </div>
+      <div class="card risk">
+        <span class="when">WHAT STILL FAILS</span>
+        <h4>The remaining errors moved</h4>
+        <p>Once both agents could see everything, every wrong answer was either the advertised price used as the size's price, or <b>offered</b> confused with <b>buyable</b>. Neither is about how much it looked. The failure moved onto exactly the gate the clothing market was built to create.</p>
+      </div>
+    </div>
+    <p class="note"><b>The sharpest single example.</b> Asked "what is the lowest price anyone charges for size M that can be bought", the second agent answered <b>$25.77, correctly, three times out of three</b>. Asked "which seller is cheapest for size M, counting only listings that can supply it", the same agent on the same market answered <b>Copperfield at $23.40, three times out of three</b>. It holds the right figure and the wrong seller at the same time. That is not a retrieval failure at all, and it is what the next phase has to address.</p>
+  </section>
+
+  <section id="next">
+    <h2>7. What is next, and a request</h2>
+
+    <h3 class="sub">Where the money went</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>The $50 of OpenRouter credit</caption>
+        <thead><tr><th class="wide">Spent on</th><th class="num">Cost</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">Earlier phases: baselines, the policy, the price hiding measurement, two models, the first markets</td><td class="num">$34.43</td></tr>
+          <tr><td class="wide">Cell 1, openJiuwen as shipped, 18 runs</td><td class="num">$2.72</td></tr>
+          <tr><td class="wide">Cell 2, window filter off, 18 runs</td><td class="num">$7.38</td></tr>
+          <tr><td class="wide">Cell 3, the second agent, 18 runs</td><td class="num">$2.00</td></tr>
+          <tr class="warn"><td class="wide"><b>Remaining</b></td><td class="num"><b>$3.47</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Every run records its own cost from the provider's per call charge. That replaced an earlier method based on account balance differences, which I found was billing each run for the previous run's settling spend, once by a factor of 32. The figures above use the corrected method.</p>
+
+    <h3 class="sub">The two experiments that are built and cannot be run</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>Everything they need already exists and is verified</caption>
+        <thead><tr><th class="idx">#</th><th class="wide">Experiment</th><th class="num">Cost</th><th class="wide">The question it answers</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="idx">4</td><td class="wide"><b>My retrieval policy, with its refusal check</b></td><td class="num">$2.60</td><td class="dim wide">Can an agent that reads the question first, decides what to go and look at, and refuses when its evidence is thin, reach the accuracy of opening everything for much less work. <b>This is the contribution the project exists to test</b></td></tr>
+          <tr class="hi"><td class="idx">5</td><td class="wide"><b>Told to open everything</b></td><td class="num">$3.40</td><td class="dim wide">The expensive ceiling the policy is measured against. Without it, "cheaper and as accurate" has nothing to be cheaper than</td></tr>
+          <tr><td class="idx">6</td><td class="wide">Reviews, a second kind of gating</td><td class="num">$5.00</td><td class="dim wide">Nine questions, already written, where the answer sits several pages deep in 308,939 real reviews with no way to filter</td></tr>
+          <tr><td class="idx">7</td><td class="wide">More repeats, to firm up the one suggestive number</td><td class="num">$10.00</td><td class="dim wide">Moves the accuracy comparison from p 0.066 towards significance. The main claim does not need it</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ask">
+      <h3 class="sub" style="border:0;padding:0;margin:0">The request</h3>
+      <p class="big">A further <b>$50</b> of OpenRouter credit, which covers experiments 4, 5 and 6 with reserve.</p>
+      <p class="note">The case for it: the three groups already run are the <b>baselines</b> that experiments 4 and 5 would be measured against, on a market nothing was tuned to. The money already spent is what makes the next $50 worth spending, and without it the project has strong measurements of the problem and no measurement of the proposed solution.</p>
+      <p class="note">The original request was $200 against the $50 in place, so this is a smaller ask than planned, made now because the next two experiments are the ones that test the contribution rather than the setting.</p>
+    </div>
+
+    <h3 class="sub">What I would do with it, in order</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th class="idx">#</th><th class="wide">Step</th><th class="wide">Why in this order</th></tr></thead>
+        <tbody>
+          <tr><td class="idx">1</td><td class="wide">Open everything, on the clothing market</td><td class="dim wide">Establishes the ceiling before anything is compared to it</td></tr>
+          <tr><td class="idx">2</td><td class="wide">The policy with its refusal check, same market</td><td class="dim wide">The contribution, measured against both a cheap baseline and an expensive one</td></tr>
+          <tr><td class="idx">3</td><td class="wide">Reviews</td><td class="dim wide">A second kind of gating, which tests whether the policy generalises past prices</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note"><b>One thing the results have changed about the plan.</b> The second agent reaches good accuracy for $2.00 where repaired openJiuwen needs $7.38. So the policy now has a <b>cheap and strong</b> baseline to beat, not only an expensive one. That makes the contribution harder to demonstrate and the demonstration worth more.</p>
+  </section>
+
+  </main>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>All experiments run against a self hosted shop. No automated access to live commercial sites.</span>
+    <span>Every figure here is from a stored run record or was measured against the running shop on 7 October 2026.</span>
+    <span><a href="index.html">Full project detail</a> &middot; <a href="catch-up.html">Technical write up</a></span>
+  </div>
+</footer>
+
+<script src="app.js"></script>
