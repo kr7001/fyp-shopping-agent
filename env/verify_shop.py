@@ -119,9 +119,15 @@ def main() -> int:
     # reported a healthy shop as broken.
     page = fetch("/catalogsearch/result/?q=Thornwood") or ""
     ranged = re.search(r"Items\s*<[^>]*>\s*\d+\s*</[^>]*>\s*-", page)
-    cards = len(re.findall(r'class="[^"]*product-item-info', page))
-    record("all 15 render on one page", not ranged and cards >= 15,
-           f"{cards} cards in the page, pager {'present' if ranged else 'absent'}")
+    # Count inside the results grid only. Counting every `product-item-info` in the page
+    # gives 16, because Magento also ships an empty Knockout template for the wishlist
+    # sidebar that uses the same class. It is hidden and holds no product, but a count that
+    # includes it is a count that will be wrong by one in some future table.
+    grid = page[page.find('class="products list items product-items"'):]
+    grid = grid[:grid.find("</ol>")] if "</ol>" in grid else grid
+    cards = len(re.findall(r'class="[^"]*product-item-info', grid))
+    record("all 15 render on one page", not ranged and cards == 15,
+           f"{cards} cards in the results grid, pager {'present' if ranged else 'absent'}")
 
     # The suppressing theme. This has to be done in a real browser: the surcharge labels
     # are written into the menu by the page's own JavaScript, so fetching the HTML can

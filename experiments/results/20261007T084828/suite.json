@@ -1,0 +1,118 @@
+{
+  "ran_at": "2026-10-07T08:50:28",
+  "repeats": 1,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": false,
+  "targeting": false,
+  "targeting_version": null,
+  "planner_version": null,
+  "rules_version": null,
+  "model": "anthropic/claude-haiku-4.5",
+  "scaffold": "openjiuwen",
+  "tasks_file": "tasks_apparel.json",
+  "draw": "Thornwood:f9faf835ea",
+  "instance": {
+    "target_option": "M",
+    "listings": 15,
+    "winner_index": 14,
+    "cheapest_card_index": 3,
+    "listings_with_target": 10,
+    "listings_without_target": 5,
+    "listings_target_buyable": 5,
+    "listings_target_sold_out": 5,
+    "cheapest_listed": {
+      "sku": "IGR-APP-07",
+      "seller": "Fairhaven Workwear",
+      "price": 15.04
+    },
+    "cheapest_sold_out": {
+      "sku": "IGR-APP-07",
+      "seller": "Fairhaven Workwear",
+      "price": 15.04
+    },
+    "sold_out_trap": true,
+    "winner": {
+      "sku": "IGR-APP-14",
+      "seller": "Alderney Clothing Co",
+      "price": 25.77
+    },
+    "runner_up_price": 28.96,
+    "winning_margin": 3.19,
+    "cheapest_card": {
+      "sku": "IGR-APP-03",
+      "seller": "Rookwood Uniforms",
+      "from_price": 11.87
+    },
+    "card_probe_wrong": true,
+    "cheapest_without_target": {
+      "sku": "IGR-APP-03",
+      "seller": "Rookwood Uniforms",
+      "from_price": 11.87
+    },
+    "absent_trap": true,
+    "largest_size": "XL",
+    "largest_size_winner": {
+      "sku": "IGR-APP-08",
+      "seller": "Ivybridge Collective",
+      "price": 18.08
+    },
+    "crossover": true,
+    "oracle_min_opens": 8,
+    "prunable_by_bound": 7,
+    "exhaustive_opens": 15,
+    "bound_strength": 0.467,
+    "from_price_range": [
+      11.87,
+      36.59
+    ],
+    "target_price_range": [
+      25.77,
+      33.47
+    ]
+  },
+  "summary": {
+    "by_task": {
+      "apparel-cheapest-target": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 1
+        },
+        "actions": [
+          19
+        ],
+        "tool_calls": [
+          38
+        ],
+        "cost": [
+          0.181058
+        ],
+        "mean_actions": 19.0,
+        "mean_tool_calls": 38.0,
+        "total_cost": 0.1811
+      }
+    },
+    "overall": {
+      "wrong": 1
+    },
+    "total_cost": 0.1811
+  },
+  "rows": [
+    {
+      "task": "apparel-cheapest-target",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "The cheapest seller for Thornwood Heavyweight Cotton Tee in size M is Copperfield Apparel at $23.40",
+      "tool_calls": 38,
+      "actions": 19,
+      "observations": 19,
+      "cost_usd": 0.181058,
+      "elapsed_s": 117.1,
+      "error": null,
+      "log": "apparel-cheapest-target-1.log"
+    }
+  ]
+}

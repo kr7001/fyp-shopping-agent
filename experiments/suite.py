@@ -108,6 +108,10 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
     record["shop"] = shop
     # Which card probe setting this run met. A record without it predates the arm.
     record["probe"] = probe
+    # The naive loop stamps its own scaffold, openJiuwen's runner does not, so a mixed
+    # directory had records where the field was simply absent. Stamped here for both, since
+    # a record that cannot say which agent produced it is how four arms got pooled once.
+    record.setdefault("scaffold", scaffold)
     record_path.write_text(json.dumps(record, indent=2, default=str) + "\n")
     return record
 

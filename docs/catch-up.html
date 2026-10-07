@@ -29,7 +29,8 @@
       <a href="#apparel"><span class="k">2</span><span>The apparel products, listed</span></a>
       <a href="#dom"><span class="k">3</span><span>Does openJiuwen use the DOM tree</span></a>
       <a href="#second"><span class="k">4</span><span>The second agent, and why its runs are void</span></a>
-      <a href="#plan"><span class="k">5</span><span>A controlled experiment, from scratch</span></a>
+      <a href="#verify"><span class="k">5</span><span>Deep verification, and a two run pilot</span></a>
+      <a href="#plan"><span class="k">6</span><span>What I propose to run</span></a>
     </div>
     <h2 style="margin-top:22px">Also</h2>
     <div class="navlist">
@@ -284,8 +285,117 @@
     <p class="claim">The fix is one line, raising or removing the link cap, plus putting product links first. It costs nothing. Until it is fixed and re-run, <b>this project has one agent, not two</b>, and the external validity question is open.</p>
   </section>
 
+  <section id="verify">
+    <h2>5. Deep verification, and a two run pilot</h2>
+    <p class="lede">Before spending anything on the matrix, everything it depends on was checked against the running shop. Nine automated checks, every one of the fifteen clothing listings opened by hand in a browser, all six answers re-derived from the shop rather than read from the fixture, and two paid runs to prove the two changed pieces work end to end. Total spend: <b>$0.42</b>.</p>
+
+    <h3 class="sub">The shop, after a two week break and a restart</h3>
+    <figure class="code">
+      <figcaption><span class="path">python env/verify_shop.py</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="src">  [pass] docker engine running</span>
+<span class="src">  [pass] shop container running      Up About a minute</span>
+<span class="src">  [pass] storefront answers          289,882 bytes</span>
+<span class="src">  [pass] search engine healthy       cluster status yellow</span>
+<span class="src">  [pass] market Rivenhall            15 sellers rendered, shop reports 15, fixture has 15</span>
+<span class="src">  [pass] market Calderwood           15 sellers rendered, shop reports 15, fixture has 15</span>
+<span class="src">  [pass] market Thornwood            15 sellers rendered, shop reports 15, fixture has 15</span>
+<span class="src">  [pass] all 15 render on one page   15 cards in the results grid, pager absent</span>
+<span class="src">  [pass] gated theme serving         ordinary menu shows 3 surcharges, gated shows 0</span>
+<span class="src"></span>
+<span class="src">9 checks, 0 failed</span></pre>
+    </figure>
+    <p class="note"><b>Its first run reported three failures against a healthy shop, and all three were the checker's own fault.</b> Two looked for surcharge labels in fetched HTML, and those labels do not exist in the HTML: they are written into the menu by the page's own JavaScript, so a plain fetch can never see them. The third looked for "Items 1-15 of 15", a string Magento never writes, since it prints a range only when it paginates. Had I trusted that output I would have spent an afternoon repairing a shop that was fine.</p>
+
+    <h3 class="sub">The sixteenth card, explained</h3>
+    <p class="note">The count said sixteen cards where there are fifteen products. The extra one is an empty Knockout template Magento ships for the wishlist sidebar, which reuses the same class name:</p>
+    <figure class="code">
+      <figcaption><span class="path">the sixteenth match, in the page source</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="src">&lt;div id="wishlist-sidebar" data-bind="foreach: wishlist().items"&gt;</span>
+<span class="src">  &lt;li class="product-item"&gt;&lt;div class="product-item-info"&gt;</span></pre>
+    </figure>
+    <p class="note">Hidden, holds no product, and harmless. The check now counts inside the results grid only and reports exactly fifteen. It mattered enough to chase because a count that is wrong by one is a count that turns up in a table later.</p>
+
+    <h3 class="sub">Every clothing listing, opened and compared</h3>
+    <p class="note">All fifteen opened in a browser as the agent sees them, and compared to the fixture on four things each: the advertised price, which sizes the menu offers, which sizes are disabled, and whether any price leaked into a label.</p>
+    <figure class="code">
+      <figcaption><span class="path">15 listings, browser against fixture</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="src">SKU             card    want  menu as the agent sees it              surcharges</span>
+<span class="src">IGR-APP-01     24.83   24.83  S, M, L [X], XL                                 0</span>
+<span class="src">IGR-APP-05     20.05   20.05  S, M [X], L [X], XL                             0</span>
+<span class="src">IGR-APP-07     18.33   18.33  S [X], M [X], L, XL                             0</span>
+<span class="src">IGR-APP-14     25.77   25.77  M, L [X], XL                                    0</span>
+<span class="src">...  all fifteen checked ...</span>
+<span class="src"></span>
+<span class="src">all 15 listings agree with the fixture: card price, sizes offered,</span>
+<span class="src">sizes disabled, no leaks</span></pre>
+    </figure>
+
+    <h3 class="sub">The answer key, re-derived from the shop</h3>
+    <p class="note">Rather than trust the task file, a script browsed the market the way a shopper would: read the results page, open every listing, select size M wherever it could be selected, and work out each answer from what the browser showed. Then it compared.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Six questions, each answer derived independently</caption>
+        <thead><tr><th>Task</th><th class="wide">Browser says</th><th class="wide">Task file says</th><th>Agree</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">apparel-headline</td><td class="dim wide">Rookwood</td><td class="dim wide">Rookwood</td><td><span class="pill ok">yes</span></td></tr>
+          <tr><td class="mono">apparel-target-price</td><td class="dim wide">25.77</td><td class="dim wide">25.77</td><td><span class="pill ok">yes</span></td></tr>
+          <tr><td class="mono">apparel-cheapest-target</td><td class="dim wide">Alderney</td><td class="dim wide">Alderney</td><td><span class="pill ok">yes</span></td></tr>
+          <tr><td class="mono">apparel-all-stocked</td><td class="dim wide">False</td><td class="dim wide">False</td><td><span class="pill ok">yes</span></td></tr>
+          <tr><td class="mono">apparel-count-stocked</td><td class="dim wide">10</td><td class="dim wide">10</td><td><span class="pill ok">yes</span></td></tr>
+          <tr><td class="mono">apparel-count-buyable</td><td class="dim wide">5</td><td class="dim wide">5</td><td><span class="pill ok">yes</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The script selected size M on five listings and read a real price back each time, so <b>selection works and the answer key is sound</b>.</p>
+
+    <h3 class="sub">Confirmed: the dropped cards are in the page</h3>
+    <p class="note">Measured on one page load, three ways, on the clothing market where all fifteen now render without pagination.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>The same search page, measured three ways</caption>
+        <thead><tr><th class="wide">Measure</th><th class="num">Value</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">Product cards present in the page</td><td class="num">15</td></tr>
+          <tr class="hi"><td class="wide">Cards whose top is inside the window</td><td class="num"><b>4</b></td></tr>
+          <tr><td class="wide">Where the first off screen card starts</td><td class="num">1008px</td></tr>
+          <tr class="hi"><td class="wide">Sellers the shipped summary names</td><td class="num"><b>4 of 15</b></td></tr>
+          <tr class="hi"><td class="wide">Sellers it names with the window limit off</td><td class="num"><b>15 of 15</b></td></tr>
+          <tr class="warn"><td class="wide">Fields in the reply saying anything was dropped</td><td class="num">none</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <caption>Where the three landmarks of this market fall</caption>
+        <thead><tr><th class="wide">Listing</th><th>In the page</th><th>Shipped summary</th><th>Window off</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="wide"><b>Alderney, the right answer</b></td><td>yes</td><td><span class="pill no">dropped</span></td><td><span class="pill ok">named</span></td></tr>
+          <tr><td class="wide">Fairhaven, the sold out trap</td><td>yes</td><td><span class="pill ok">named</span></td><td><span class="pill ok">named</span></td></tr>
+          <tr><td class="wide">Rookwood, the cheapest advertised</td><td>yes</td><td><span class="pill no">dropped</span></td><td><span class="pill ok">named</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">So the market behaves as designed: <b>a trap is visible from the first screen and the answer is not</b>, and the eleven missing listings are present in the page the whole time.</p>
+
+    <h3 class="sub">The pilot, two paid runs</h3>
+    <p class="note">Both on the hardest question, "which seller is cheapest for size M, counting only listings that can supply it". One run each, so this is a check that the machinery works, not a result.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Two runs, 7 October</caption>
+        <thead><tr><th class="wide">Run</th><th class="num">Listings opened</th><th class="num">404s</th><th class="num">Size menus seen</th><th class="num">Sizes selected</th><th class="num">Cost</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="wide"><b>Second agent, fixed</b></td><td class="num"><b>15</b></td><td class="num"><b>0</b></td><td class="num">16</td><td class="num">0</td><td class="num">$0.24</td><td><span class="pill no">wrong</span></td></tr>
+          <tr class="hi"><td class="wide"><b>openJiuwen, window limit off</b></td><td class="num"><b>15</b></td><td class="num">0</td><td class="dim">-</td><td class="num">0</td><td class="num">$0.18</td><td><span class="pill no">wrong</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Both changed pieces are proven to work. The second agent went from <b>0 product pages and 49 missing page notices across twelve runs</b> to 15 product pages and zero errors in one. The arm reports <code>card probe: viewport_only defaults to False</code> at startup and every one of its 37 summary replies carries that setting, so the patch reached every call rather than the first.</p>
+    <p class="claim">And both answered <b>wrongly, in the same way</b>. Each named Copperfield Apparel at $23.40, which is Copperfield's advertised card price. Copperfield's size M costs $29.66 and the right answer is Alderney at $25.77. Neither agent selected a single size.</p>
+    <p class="note">That is worth sitting with. These two runs opened <b>every listing in the market</b>, which is the thing the four listing problem was supposed to prevent, and still answered with a price belonging to no size anyone asked about. Seeing everything did not fix it here. One run each is not evidence of anything, and it is the clearest early sign that the matrix is asking the right question: if the full arm reproduces this, the four listing behaviour is a symptom rather than the disease.</p>
+  </section>
+
   <section id="plan">
-    <h2>5. A controlled experiment, from scratch</h2>
+    <h2>6. What I propose to run</h2>
     <p class="lede">You are right that the experiments are scattered. Twenty two batches exist across four markets, two models, four arms and two versions of the shop, and they accumulated as each question came up rather than being designed as a set. Here is what I would freeze and run instead.</p>
 
     <h3 class="sub">First, what gets held constant</h3>
@@ -304,36 +414,37 @@
       </table>
     </div>
 
-    <h3 class="sub">Before anything is spent, three free jobs</h3>
+    <h3 class="sub">The three blocking jobs, now done</h3>
     <div class="tablewrap">
       <table>
-        <caption>None of these calls a model</caption>
-        <thead><tr><th class="idx">#</th><th class="wide">Job</th><th class="wide">Why it blocks the matrix</th></tr></thead>
+        <caption>All three cleared on 7 October, and each one proven rather than assumed</caption>
+        <thead><tr><th class="idx">#</th><th class="wide">Job</th><th class="wide">How it was proven</th><th>State</th></tr></thead>
         <tbody>
-          <tr class="warn"><td class="idx">A</td><td class="wide"><b>Fix the link cap in the second agent and prove it reaches a product page</b></td><td class="dim wide">Without this there is no second agent. Verified by a single free browser check, not by a paid run</td></tr>
-          <tr><td class="idx">B</td><td class="wide">Verify the shop after its restart: container up, products present, search index intact, gated theme still serving</td><td class="dim wide">Elasticsearch failing silently on boot is a known trap in this setup, and a market that does not render is a wasted batch</td></tr>
-          <tr><td class="idx">C</td><td class="wide">Build the "see everything" arm, which is openJiuwen with the window limit switched off and nothing else changed</td><td class="dim wide">It is the only arm that answers the mechanism question. The flag is already proven to work at the tool level</td></tr>
+          <tr><td class="idx">A</td><td class="wide">Fix the second agent's link cap</td><td class="dim wide">150 links listed of which 15 are products, the first at position three where there were previously none at any position. Following it loads a real product page, and on a listing with two sold out sizes the agent reads <code>S [unavailable], M [unavailable], L, XL</code></td><td><span class="pill ok">DONE</span></td></tr>
+          <tr><td class="idx">B</td><td class="wide">Verify the shop after its restart</td><td class="dim wide">Nine checks, zero failures, plus all fifteen listings opened by hand and all six answers re-derived from the browser</td><td><span class="pill ok">DONE</span></td></tr>
+          <tr><td class="idx">C</td><td class="wide">Build the window limit arm</td><td class="dim wide">Self test against the real class, then a paid run in which all 37 summary replies carried the changed setting and the agent opened all fifteen listings</td><td><span class="pill ok">DONE</span></td></tr>
         </tbody>
       </table>
     </div>
 
     <h3 class="sub">Then the matrix</h3>
-    <p class="note">Two markets, because one market is a measurement of that market: the water market the method has never been developed against, and the clothing market which has never been run at all. Costs below are from the real per run costs of previous batches, not estimates.</p>
+    <p class="note">Two cells of this were piloted at one run each, so their costs below are measured rather than guessed. The others use the median of previous batches of the same arm.</p>
     <div class="tablewrap">
       <table>
-        <caption>Proposed runs, in the order I would run them</caption>
-        <thead><tr><th class="idx">#</th><th class="wide">Cell</th><th>Market</th><th class="num">Runs</th><th class="num">Cost</th><th class="wide">The question it answers</th></tr></thead>
+        <caption>Proposed runs, in the order I would run them, 18 runs each</caption>
+        <thead><tr><th class="idx">#</th><th class="wide">Cell</th><th class="wide">The one thing that changes</th><th class="num">Cost</th><th class="wide">What it tells us</th></tr></thead>
         <tbody>
-          <tr class="hi"><td class="idx">1</td><td class="wide"><b>openJiuwen, unmodified</b></td><td>Clothing</td><td class="num">18</td><td class="num">$2.20</td><td class="dim wide">The baseline on a market nothing was built against, and the first measurement of the third availability state</td></tr>
-          <tr class="hi"><td class="idx">2</td><td class="wide"><b>openJiuwen, window limit off</b></td><td>Clothing</td><td class="num">18</td><td class="num">$3.50</td><td class="dim wide"><b>The mechanism question.</b> Same agent, same market, one flag. If it still stops at four, the cause is the model</td></tr>
-          <tr class="hi"><td class="idx">3</td><td class="wide"><b>The second agent, fixed</b></td><td>Clothing</td><td class="num">18</td><td class="num">$4.00</td><td class="dim wide">Whether the behaviour survives a change of agent, which is the external validity claim</td></tr>
-          <tr><td class="idx">4</td><td class="wide">openJiuwen, strategy plus refusal check</td><td>Clothing</td><td class="num">18</td><td class="num">$2.60</td><td class="dim wide">Whether the contribution holds on a second product category</td></tr>
-          <tr><td class="idx">5</td><td class="wide">openJiuwen, told to open everything</td><td>Clothing</td><td class="num">18</td><td class="num">$3.40</td><td class="dim wide">The expensive baseline the contribution is measured against</td></tr>
+          <tr class="hi"><td class="idx">1</td><td class="wide"><b>openJiuwen, unmodified</b></td><td class="dim wide">nothing, this is the reference</td><td class="num">$2.20</td><td class="dim wide">The baseline on a market nothing was built against, and the first measurement of a sold out variant anywhere in this project</td></tr>
+          <tr class="hi"><td class="idx">2</td><td class="wide"><b>openJiuwen, window limit off</b></td><td class="dim wide">one flag in the summary tool</td><td class="num">$3.30</td><td class="dim wide"><b>Tool or model.</b> If it still answers from the first screen's prices while having opened everything, the four listing behaviour is a symptom and not the cause</td></tr>
+          <tr class="hi"><td class="idx">3</td><td class="wide"><b>The second agent</b></td><td class="dim wide">the whole agent, same model</td><td class="num">$4.40</td><td class="dim wide">Whether the failure survives a change of agent, which is the external validity claim the project needs</td></tr>
+          <tr><td class="idx">4</td><td class="wide">openJiuwen, strategy plus refusal check</td><td class="dim wide">text added to the question</td><td class="num">$2.60</td><td class="dim wide">Whether the contribution holds on a second product category and on a question about availability</td></tr>
+          <tr><td class="idx">5</td><td class="wide">openJiuwen, told to open everything</td><td class="dim wide">text added to the question</td><td class="num">$3.40</td><td class="dim wide">The expensive baseline the contribution is measured against</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="claim">Cells 1 to 3 cost about <b>$9.70</b> and answer three different open questions. Cells 4 and 5 complete the comparison and cost a further $6. The remaining credit is $16.40, so the full set is affordable but leaves nothing spare, which is why I would run 1 to 3 first and decide afterwards.</p>
-    <p class="note"><b>What makes it controlled, where the old batches were not.</b> Every cell is the same six questions, the same market fingerprint, the same shop, the same model, the same window and the same budget. The only thing that changes between cells is the one named in its row. Earlier batches changed the market, the shop and the agent at the same time, which is why they cannot be read against each other.</p>
+    <p class="claim">Cells 1 to 3 cost about <b>$9.90</b> and answer three different open questions. Cells 4 and 5 complete the comparison for a further $6. Credit remaining is <b>$15.98</b>, so the full set is affordable and leaves nothing spare, which is why I would run 1 to 3, look at them, and then decide.</p>
+    <p class="note"><b>What makes it controlled, where the twenty two earlier batches were not.</b> Every cell is the same six questions, the same market, the same shop, the same model, the same window and the same step budget, and every run record now carries all of those plus which agent and which summary setting produced it. Earlier batches changed the market, the shop and the agent at once, which is why they cannot be read against each other.</p>
+    <p class="note"><b>What I would stop for.</b> If cell 1 does not reproduce the four listing behaviour on this market, the mechanism question changes shape and cells 2 and 3 should be redesigned before being run. If cell 2 shows the agent answering correctly once it can see everything, that is the headline and cells 4 and 5 become more interesting, not less.</p>
     <p class="note">Reviews are deliberately left out. Nine questions exist and have never been run, and page turning makes them the most expensive and least predictable arm. They belong after the matrix, not inside it.</p>
   </section>
 
