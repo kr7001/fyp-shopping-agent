@@ -28,7 +28,7 @@
       <a href="#leak"><span class="k">1</span><span>The shop shortcut, and whether it is really fixed</span></a>
       <a href="#apparel"><span class="k">2</span><span>The apparel products, listed</span></a>
       <a href="#dom"><span class="k">3</span><span>Does openJiuwen use the DOM tree</span></a>
-      <a href="#second"><span class="k">4</span><span>The second agent, and why its runs are void</span></a>
+      <a href="#second"><span class="k">4</span><span>The second agent, and why its first runs were void</span></a>
       <a href="#rules"><span class="k">5</span><span>How the markets are generated</span></a>
       <a href="#verify"><span class="k">6</span><span>Deep verification, and a two run pilot</span></a>
       <a href="#results"><span class="k">7</span><span>The three cells, and what they settle</span></a>
@@ -45,7 +45,8 @@
 
   <section id="headline">
     <h2>Read this first</h2>
-    <p class="lede">Today's check found one thing that was already fine, one thing I had described wrongly and have since corrected, and <b>one new fault that voids a set of results I reported to you as a finding</b>. Taking the bad news first.</p>
+    <p class="lede">Four questions you asked after the break, answered from the code and the stored runs. Then fifty four new runs that answer the one thing none of it could settle by argument. <b>The headline is in <a href="#results">section 7</a>: the four listing behaviour is caused by one default setting in openJiuwen's card summary, and a second agent without that setting does not share it.</b></p>
+    <p class="note">On the way there this check found one thing that was already fine, one thing I had described wrongly and have since corrected, and one fault of my own that voided a set of results I had reported to you as a finding. Those come first, because they change what the rest is worth.</p>
     <div class="tablewrap">
       <table>
         <caption>The four questions, each with its honest one line answer</caption>
@@ -54,7 +55,7 @@
           <tr><td class="idx">1</td><td class="wide">Is the shop shortcut fixed?</td><td class="dim wide">The price leak is fixed and was measured. It is <b>not</b> fixed completely, and I can name the three holes. A separate shortcut, the agent reading only four listings, was never fixed and never claimed to be</td><td><span class="pill amb">PARTLY</span></td></tr>
           <tr><td class="idx">2</td><td class="wide">What apparel products exist?</td><td class="dim wide">Fifteen sellers of one t-shirt, listed in full below with the job each one does</td><td><span class="pill ok">BUILT</span></td></tr>
           <tr class="warn"><td class="idx">3</td><td class="wide">Does openJiuwen avoid the DOM tree?</td><td class="dim wide"><b>No. I was wrong.</b> It reads the DOM, and it reads accessibility information. The four listing problem has a different cause, and the code shows exactly what it is</td><td><span class="pill no">I WAS WRONG</span></td></tr>
-          <tr class="warn"><td class="idx">4</td><td class="wide">Did the second agent produce usable results?</td><td class="dim wide"><b>No. Found today.</b> In all twelve runs it opened <b>zero</b> real product pages and hit 49 missing page errors. The comparison I reported is void</td><td><span class="pill no">VOID</span></td></tr>
+          <tr class="warn"><td class="idx">4</td><td class="wide">Did the second agent produce usable results?</td><td class="dim wide"><b>Its first twelve runs were void</b>, opening zero real product pages and hitting 49 missing page errors. Found and fixed on 7 October, then re-run: it now opens the whole market and answers 9 of 15 gated questions, which is what narrowed the finding</td><td><span class="pill ok">FIXED AND RUN</span></td></tr>
         </tbody>
       </table>
     </div>
@@ -71,11 +72,12 @@
         <thead><tr><th class="wide">Shortcut</th><th class="wide">What it is</th><th>State</th></tr></thead>
         <tbody>
           <tr class="hi"><td class="wide"><b>A. The shop published variant prices</b></td><td class="dim wide">Magento put every size's price in the page on load and wrote the extra cost into each menu option, so the agent could do arithmetic instead of clicking a size</td><td><span class="pill ok">FIXED, MEASURED</span></td></tr>
-          <tr class="warn"><td class="wide"><b>B. The agent reads four listings of fifteen</b></td><td class="dim wide">The card summary reports only what is on screen, so the agent treats four products as the whole market</td><td><span class="pill no">NOT FIXED</span></td></tr>
+          <tr class="warn"><td class="wide"><b>B. The agent reads four listings of fifteen</b></td><td class="dim wide">The card summary reports only what is on screen, so the agent treats four products as the whole market</td><td><span class="pill amb">CAUSE NOW KNOWN</span></td></tr>
         </tbody>
       </table>
     </div>
-    <p class="claim">When I said "solved", I meant A. <b>B has never been fixed and I have never claimed it was.</b> B is the subject of the project, not a bug to be patched, and the open question is whether its cause is the tool or the model.</p>
+    <p class="claim">When I said "solved", I meant A. <b>B was not fixed and I have never claimed it was.</b> B is the subject of the project rather than a bug to be patched.</p>
+    <p class="note">What has changed since this was written: the open question in B, whether the cause is the tool or the model, <b>is now answered</b>. It is the tool, and the evidence is in <a href="#results">section 7</a>. Removing one setting takes the agent from meeting the evidential floor in 3 runs of 15 to 15 of 15, and a second agent without that setting reaches 12 of 15 unprompted.</p>
 
     <h3 class="sub">What was built for A</h3>
     <p class="note">A replacement page template that the shop serves only to a browser identifying itself as <code>IGRGated</code>. Ordinary browsing and every run recorded before it are untouched. It does two things to the block of data Magento sends the browser.</p>
@@ -230,7 +232,7 @@
   </section>
 
   <section id="second">
-    <h2>4. The second agent, and why its runs are void</h2>
+    <h2>4. The second agent, and why its first runs were void</h2>
     <p class="lede">It exists, its design is sound, and <b>every run it has produced is unusable</b>. I found that today while checking this answer rather than asserting it. The cause is a bug in code I wrote.</p>
 
     <h3 class="sub">What it is</h3>
@@ -284,7 +286,8 @@
     <p class="claim">It answered questions about the price of a pack size while never once having seen a page that contains a pack size. <b>Any score from these runs measures guessing, not retrieval.</b></p>
     <p class="note"><b>This also corrects a published figure.</b> I reported that the plain loop opens 3.7 listings against openJiuwen's 5.7, and called it a result that falsified my own prediction. The counter that produced 3.7 recognises a product page by the shape of its address, and the missing page it was served has the same shape. So 3.7 is a count of error pages. The real figure is zero, and the comparison does not exist.</p>
     <p class="note">To your question of whether the comparison is invalid because of openJiuwen's four listing problem: no, that is not the reason. A comparison between an agent that reads four listings and an agent that reads all of them would be a perfectly good experiment, and is one I want. It is invalid because the second agent never reached a listing at all.</p>
-    <p class="claim">The fix is one line, raising or removing the link cap, plus putting product links first. It costs nothing. Until it is fixed and re-run, <b>this project has one agent, not two</b>, and the external validity question is open.</p>
+    <p class="claim">The fix is one line, raising or removing the link cap, plus putting product links first. It costs nothing.</p>
+    <p class="note"><b>Done, and the agent has since been re-run properly.</b> On the clothing market it now opens the whole market by default and answers 9 of 15 gated questions correctly, which is the result in <a href="#results">section 7</a> and the one that narrowed the whole finding. The twelve runs described above remain void and are not cited anywhere. The figures in this section describe what was wrong, not what is.</p>
   </section>
 
   <section id="rules">
@@ -471,7 +474,8 @@
     </div>
     <p class="note">Both changed pieces are proven to work. The second agent went from <b>0 product pages and 49 missing page notices across twelve runs</b> to 15 product pages and zero errors in one. The arm reports <code>card probe: viewport_only defaults to False</code> at startup and every one of its 37 summary replies carries that setting, so the patch reached every call rather than the first.</p>
     <p class="claim">And both answered <b>wrongly, in the same way</b>. Each named Copperfield Apparel at $23.40, which is Copperfield's advertised card price. Copperfield's size M costs $29.66 and the right answer is Alderney at $25.77. Neither agent selected a single size.</p>
-    <p class="note">That is worth sitting with. These two runs opened <b>every listing in the market</b>, which is the thing the four listing problem was supposed to prevent, and still answered with a price belonging to no size anyone asked about. Seeing everything did not fix it here. One run each is not evidence of anything, and it is the clearest early sign that the matrix is asking the right question: if the full arm reproduces this, the four listing behaviour is a symptom rather than the disease.</p>
+    <p class="note">That is worth sitting with. These two runs opened <b>every listing in the market</b>, which is the thing the four listing problem was supposed to prevent, and still answered with a price belonging to no size anyone asked about. One run each is not evidence of anything, which is why it was labelled that way at the time.</p>
+    <p class="claim"><b>The full arm did not reproduce it, and this guess was wrong.</b> At fifteen runs a side, removing the window limit took accuracy from 4 of 15 to 10 of 15 and floor compliance from 3 of 15 to 15 of 15. Seeing everything largely does fix it. The two run pilot happened to catch two of the five failures that survive, which is what two runs can do. See <a href="#results">section 7</a>.</p>
   </section>
 
   <section id="results">
