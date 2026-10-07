@@ -46,9 +46,19 @@ GATED_UA = "Mozilla/5.0 IGRGated/1.0"
 MCP_ARGS_GATED = f'-y @playwright/mcp@latest --user-agent "{GATED_UA}"'
 
 
-def browser_env(shop: str, probe: str = "viewport") -> dict:
+def browser_env(shop: str, probe: str = "viewport",
+                cache_dir: pathlib.Path | None = None) -> dict:
     """The environment a runner needs to see the shop this suite says it is measuring."""
     env = dict(os.environ)
+    # A fresh selector cache per run. openJiuwen remembers which CSS selectors found cards
+    # on a route and reuses them next time, in a file under the home directory that outlives
+    # every run. That makes run 18 of a batch a different experiment from run 1, through no
+    # property of the question. Observed on 7 Oct 2026: one run's probe reported
+    # `cache_candidate_count: 0` and `selector_source: 'generic'` where a cold probe on the
+    # same page finds eleven candidates. Each run now starts from nothing, which is the only
+    # state that is the same for every run.
+    if cache_dir is not None:
+        env["OPENJIUWEN_BROWSER_SELECTOR_CACHE"] = str(cache_dir / "selector_cache.json")
     if shop == "gated":
         env["PLAYWRIGHT_MCP_ARGS"] = MCP_ARGS_GATED
     else:
@@ -71,6 +81,7 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
     with the reason its first answer was rejected.
     """
     query = query if query is not None else task["query"].format(base=base_url)
+    (out_dir / "caches" / tag).mkdir(parents=True, exist_ok=True)
     record_path = out_dir / f"{tag}.json"
     log_path = out_dir / f"{tag}.log"
 
@@ -88,7 +99,8 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
         cwd = AGENT_CORE
 
     with log_path.open("w") as log:
-        subprocess.run(command, cwd=cwd, env=browser_env(shop, probe),
+        subprocess.run(command, cwd=cwd,
+                       env=browser_env(shop, probe, cache_dir=out_dir / "caches" / tag),
                        stdout=log, stderr=subprocess.STDOUT, check=False)
 
     if not record_path.exists():
