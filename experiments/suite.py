@@ -102,6 +102,13 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
     # openJiuwen's trace has to be recovered from its log.
     if not record.get("trace"):
         record["trace"] = trace_stats.stats(log_path)
+    # openJiuwen's runner has no per call figure of its own, so take the one the provider
+    # printed into the log. The account delta it records lags and bills a run for the
+    # previous run's settling spend, which on 7 Oct 2026 was a factor of 32 on one run.
+    reported = (record["trace"] or {}).get("cost_reported_usd")
+    if reported:
+        record["spend_delta_usd"] = record.get("cost_usd")
+        record["cost_usd"] = reported
     record["log"] = log_path.name
     # Which shop this run saw. A record without it predates the theme and was measured
     # against a page that published every variant price on load.

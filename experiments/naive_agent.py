@@ -65,21 +65,26 @@ VIEWPORT = {"width": 1200, "height": 701}
 # than openJiuwen's compacted snapshot, which would confound cost with scaffold. This is
 # generous enough to hold a full search page of fifteen cards.
 PAGE_LIMIT = 7000
-# Raised from 80 on 7 Oct 2026, and the cap was only half the problem.
+# How many links the observation lists, and this has been wrong in both directions.
 #
-# Links were collected in page order and capped, and a Magento storefront puts its account
-# links, its category menu and its footer in the markup before the products. Eighty slots
-# were consumed by navigation, so on a search page of fifteen products the agent was shown
-# **zero** product addresses. It then guessed them from product names, and this shop
-# addresses products by their code, so every guess returned the shop's missing page notice.
+# It was 80, collected in page order. A Magento storefront puts its account links, category
+# menu and footer in the markup before the products, so all eighty slots went to navigation
+# and no product address was ever shown. The agent guessed addresses from product names and
+# this shop addresses products by code, so every guess returned the missing page notice.
 # Across the twelve stored runs of this scaffold: 0 product pages opened, 49 missing page
-# errors, and no run ever saw a size menu. Every one of those runs is void.
+# errors, no run ever saw a size menu. Every one of those runs is void.
 #
-# So content comes before chrome now, and the cap is high enough to hold a full results
-# page afterwards. "Content first" is a general rule about pages rather than a selector for
-# this shop, and it withholds nothing: the navigation is still listed, just after the thing
-# the agent came for.
-LINK_LIMIT = 150
+# Raising it to 150 fixed that and created a worse problem. This shop carries **316 unique
+# navigation links on every page** and only 17 content links on a search page, 5 on a
+# product page. At 150 the observation became 16,215 characters of which 13,352 were links,
+# so 82 per cent of what the agent read was the same site menu re-sent at every step, and
+# on a product page 91 per cent.
+#
+# So the two are counted separately. Every content link is listed, because there are never
+# many and they are the whole point, and the navigation gets a small fixed allowance so the
+# agent can still reach a category or a next page if it wants one.
+CONTENT_LINK_LIMIT = 60
+CHROME_LINK_LIMIT = 15
 
 SYSTEM = """You are answering a question about an online shop by browsing it.
 
@@ -125,8 +130,8 @@ def usage(key: str) -> float | None:
         return None
 
 
-def usage_after(key: str, before: float | None, attempts: int = 12,
-                pause: float = 2.5) -> float | None:
+def usage_after(key: str, before: float | None, attempts: int = 20,
+                pause: float = 3.0) -> float | None:
     """Usage once the account has settled this run's spend.
 
     The endpoint lags the completion by a few seconds, so reading it straight away returns
@@ -176,22 +181,22 @@ def page_text(page) -> str:
                   e.innerText.trim().replace(/\s+/g, ' ').slice(0, 70),
                   e.href,
                   main && main.contains(e) ? 0 : 1
-                ])
-                .filter(([t, h]) => t && h.startsWith('http'))
-                .map((row, i) => row.concat(i))
-                .sort((a, b) => a[2] - b[2] || a[3] - b[3])
-                .map(row => [row[0], row[1]]);
+                ]).filter(([t, h]) => t && h.startsWith('http'));
             }""")
     except Exception:
         anchors = []
-    seen, links = set(), []
-    for label, href in anchors:
+
+    seen, content, chrome = set(), [], []
+    for label, href, is_chrome in anchors:
         if href in seen:
             continue
         seen.add(href)
-        links.append(f"{label} -> {href}")
-        if len(links) >= LINK_LIMIT:
-            break
+        bucket = chrome if is_chrome else content
+        cap = CHROME_LINK_LIMIT if is_chrome else CONTENT_LINK_LIMIT
+        if len(bucket) < cap:
+            bucket.append(f"{label} -> {href}")
+    links = content + chrome
+
     listed = "\n".join(links) if links else "(no links on this page)"
 
     # Which options can be chosen, which is not in the page's text at all. A sold out size
@@ -249,6 +254,12 @@ def run(task: str, model: str, key: str, user_agent: str | None = None) -> dict:
     # so a claim about what either scaffold clicked can be checked rather than inferred.
     steps: list[dict] = []
     calls: list[str] = []
+    # Token counts come back with every completion. The account endpoint that gives dollars
+    # lags by seconds and sometimes never settles within the poll window, and a run that
+    # cannot say what it used breaks this project's own rule. So tokens are summed here and
+    # the dollar figure is recorded alongside rather than instead.
+    tokens = {"prompt": 0, "completion": 0, "total": 0, "calls": 0}
+    charged = 0.0
     answer, error = "", None
 
     with sync_playwright() as driver:
@@ -263,14 +274,25 @@ def run(task: str, model: str, key: str, user_agent: str | None = None) -> dict:
             reply = requests.post(
                 ENDPOINT,
                 headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                # `usage.include` makes OpenRouter return the exact charge for the call,
+                # caching included. Without it the only cost figure available is a delta on
+                # the account's lifetime spend, which lags and so bills one run for the
+                # previous run's settling spend.
                 json={"model": model, "messages": messages, "tools": TOOLS,
-                      "temperature": 0},
+                      "temperature": 0, "usage": {"include": True}},
                 timeout=180,
             )
             if reply.status_code != 200:
                 error = f"{reply.status_code} {reply.text[:200]}"
                 break
-            choice = reply.json()["choices"][0]["message"]
+            body = reply.json()
+            used = body.get("usage") or {}
+            tokens["prompt"] += used.get("prompt_tokens", 0)
+            tokens["completion"] += used.get("completion_tokens", 0)
+            tokens["total"] += used.get("total_tokens", 0)
+            tokens["calls"] += 1
+            charged += float(used.get("cost") or 0)
+            choice = body["choices"][0]["message"]
             messages.append(choice)
             wanted = choice.get("tool_calls") or []
             if not wanted:
@@ -310,6 +332,8 @@ def run(task: str, model: str, key: str, user_agent: str | None = None) -> dict:
     return {
         "task": task, "model": model, "scaffold": "naive",
         "user_agent": user_agent,
+        "tokens": tokens,
+        "cost_reported_usd": round(charged, 6) if charged else None,
         "elapsed_s": round(time.time() - started, 1),
         "result": {"final": answer, "ok": bool(answer) and error is None},
         "error": error,
@@ -341,8 +365,19 @@ def main() -> int:
     before = usage(key)
     record = run(args.task, model, key, user_agent=args.user_agent)
     after = usage_after(key, before)
-    record["cost_usd"] = (round(after - before, 6)
-                          if before is not None and after is not None else None)
+    record["spend_before_usd"] = before
+    record["spend_after_usd"] = after
+    # Prefer what the provider charged for this run's own calls. The account delta is kept
+    # beside it as a cross check, and is only used when the provider reported nothing.
+    delta = (round(after - before, 6)
+             if before is not None and after is not None else None)
+    record["spend_delta_usd"] = delta
+    record["cost_usd"] = record.get("cost_reported_usd") or delta
+    if record["cost_usd"] is None:
+        record["cost_note"] = ("the account usage endpoint did not settle within the poll "
+                               "window, so the dollar figure is unknown for this run. The "
+                               "token counts in `tokens` are exact and come from the "
+                               "completions themselves.")
 
     stamp = dt.datetime.now().strftime("%Y%m%dT%H%M%S")
     out = args.out or RUNS / f"{stamp}-naive-{model.replace('/', '_')}.json"

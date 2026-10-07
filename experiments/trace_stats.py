@@ -46,6 +46,44 @@ OBSERVATIONS |= {"read_page"}
 NAIVE_STEP = re.compile(r"^\[tool ([a-z_]+)\] (\{.*\})$", re.MULTILINE)
 NAIVE_KEY_ARG = ("url", "label", "answer")
 
+# What a run cost, and how that is worked out. OpenRouter reports the exact charge for every
+# completion, caching included, and the runtime prints it, so the honest figure is the sum of
+# those. Two other methods are in this repository's history and both are wrong here:
+#
+#   the account delta   a before and after reading of lifetime spend. It lags, so a run is
+#                       charged for the previous run's settling spend. On 7 Oct 2026 a run of
+#                       4,158 tokens was billed $0.1936 this way against $0.0060 of its own
+#                       tokens, a factor of 32
+#   tokens times price  ignores prompt caching, which this agent leans on heavily. The same
+#                       run priced at $2.15 from its 2.1 million prompt tokens against the
+#                       $0.30 actually charged, because nearly all of them were cache reads
+#
+# Token counts are still recorded, because they describe the work done rather than its price.
+USAGE = re.compile(
+    r"CompletionUsage\(completion_tokens=(\d+),\s*prompt_tokens=(\d+),\s*total_tokens=(\d+)")
+# Anchored on the field that follows it in the provider's response, because a bare
+# `cost=` also matches the runner's own summary line, and matching that made a run look
+# as though it had reported a figure it had only echoed.
+COST_FIELD = re.compile(r"(?<![\w_])cost=([0-9.]+),\s*is_byok")
+
+
+def tokens_used(text: str) -> dict:
+    """Every completion's token counts, summed."""
+    out = {"prompt": 0, "completion": 0, "total": 0, "calls": 0}
+    for completion, prompt, total in USAGE.findall(text):
+        out["completion"] += int(completion)
+        out["prompt"] += int(prompt)
+        out["total"] += int(total)
+        out["calls"] += 1
+    return out
+
+
+def cost_reported(text: str) -> float | None:
+    """What the provider says this run cost, summed over its completions."""
+    charges = [float(x) for x in COST_FIELD.findall(text)]
+    return round(sum(charges), 6) if charges else None
+
+
 
 # The argument that says what an action touched. Tool names alone are not evidence:
 # a run of five actions was once described as "open A, select the pack, open B, select
@@ -145,6 +183,7 @@ def stats(log_path: pathlib.Path) -> dict:
     steps = tool_steps(messages)
     if not steps:
         steps = naive_steps(log_path)
+    text = log_path.read_text(errors="replace")
     sequence = [step["tool"] for step in steps]
     counts = collections.Counter(sequence)
     actions = sum(n for tool, n in counts.items() if tool in ACTIONS)
@@ -164,6 +203,8 @@ def stats(log_path: pathlib.Path) -> dict:
                    if step["tool"] in ("browser_navigate", "goto")],
         "steps": steps,
         "sequence": sequence,
+        "tokens": tokens_used(text),
+        "cost_reported_usd": cost_reported(text),
     }
 
 
