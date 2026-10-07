@@ -19,6 +19,16 @@ listings inside openJiuwen where the first opened 4, so the habit is not the pro
 The naive loop should therefore under-retrieve less than openJiuwen does and still fail on
 the questions whose answer sits outside the first screen.
 
+**The first twelve runs of this scaffold are void and must not be cited.** Checked on
+7 Oct 2026: across all twelve, 0 real product pages were opened, 49 missing page notices
+were received, and no run ever saw a size menu. The link list was capped at 80 and
+collected in page order, so the shop's own navigation filled every slot and no product
+address was ever shown. The agent guessed addresses from product names and this shop
+addresses products by code. The figure reported from those runs, 3.7 listings opened, is a
+count of error pages, because the listing counter recognises a product page by the shape of
+its address and the missing page shares that shape. Fixed below, and nothing from before
+that fix is comparable to anything.
+
 Deliberately matched to the openJiuwen runs so the two are comparable:
 
 - the same model, through the same account, priced the same way
@@ -55,8 +65,21 @@ VIEWPORT = {"width": 1200, "height": 701}
 # than openJiuwen's compacted snapshot, which would confound cost with scaffold. This is
 # generous enough to hold a full search page of fifteen cards.
 PAGE_LIMIT = 7000
-# Enough for a full search page of fifteen cards plus the site's own navigation.
-LINK_LIMIT = 80
+# Raised from 80 on 7 Oct 2026, and the cap was only half the problem.
+#
+# Links were collected in page order and capped, and a Magento storefront puts its account
+# links, its category menu and its footer in the markup before the products. Eighty slots
+# were consumed by navigation, so on a search page of fifteen products the agent was shown
+# **zero** product addresses. It then guessed them from product names, and this shop
+# addresses products by their code, so every guess returned the shop's missing page notice.
+# Across the twelve stored runs of this scaffold: 0 product pages opened, 49 missing page
+# errors, and no run ever saw a size menu. Every one of those runs is void.
+#
+# So content comes before chrome now, and the cap is high enough to hold a full results
+# page afterwards. "Content first" is a general rule about pages rather than a selector for
+# this shop, and it withholds nothing: the navigation is still listed, just after the thing
+# the agent came for.
+LINK_LIMIT = 150
 
 SYSTEM = """You are answering a question about an online shop by browsing it.
 
@@ -145,10 +168,20 @@ def page_text(page) -> str:
         body = body[:PAGE_LIMIT] + f"\n... (page text truncated at {PAGE_LIMIT} characters)"
 
     try:
-        anchors = page.eval_on_selector_all(
-            "a[href]",
-            "els => els.map(e => [e.innerText.trim().replace(/\\s+/g, ' ').slice(0, 70),"
-            " e.href]).filter(([t, h]) => t && h.startsWith('http'))")
+        anchors = page.eval_on_selector_all("a[href]", """
+            els => {
+              const main = document.querySelector(
+                'main, #maincontent, .column.main, [role=main]');
+              return els.map(e => [
+                  e.innerText.trim().replace(/\s+/g, ' ').slice(0, 70),
+                  e.href,
+                  main && main.contains(e) ? 0 : 1
+                ])
+                .filter(([t, h]) => t && h.startsWith('http'))
+                .map((row, i) => row.concat(i))
+                .sort((a, b) => a[2] - b[2] || a[3] - b[3])
+                .map(row => [row[0], row[1]]);
+            }""")
     except Exception:
         anchors = []
     seen, links = set(), []

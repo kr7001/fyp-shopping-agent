@@ -35,6 +35,13 @@ from openjiuwen.harness.tools.browser_move.playwright_runtime.runtime import (
     BrowserAgentRuntime,
 )
 
+# The "see everything" arm, applied before the agent is built so the patched tool is the one
+# the agent is handed. Off unless IGR_SEE_EVERYTHING is set, and recorded in the run record
+# either way, so a run can never be mistaken for the other arm.
+import sys as _sys
+_sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import see_everything as _see
+
 RUNS = pathlib.Path(__file__).resolve().parent / "runs"
 OPENROUTER_KEY_URL = "https://openrouter.ai/api/v1/key"
 
@@ -104,6 +111,9 @@ async def run(args: argparse.Namespace) -> int:
     settings = build_runtime_settings()
     if not settings.api_key:
         raise SystemExit(MISSING_API_KEY_MESSAGE)
+
+    probe_setting = _see.apply()
+    print(f"card probe: {probe_setting}")
 
     runtime = BrowserAgentRuntime(
         provider=settings.provider,

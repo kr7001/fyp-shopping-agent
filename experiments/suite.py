@@ -46,19 +46,25 @@ GATED_UA = "Mozilla/5.0 IGRGated/1.0"
 MCP_ARGS_GATED = f'-y @playwright/mcp@latest --user-agent "{GATED_UA}"'
 
 
-def browser_env(shop: str) -> dict:
+def browser_env(shop: str, probe: str = "viewport") -> dict:
     """The environment a runner needs to see the shop this suite says it is measuring."""
     env = dict(os.environ)
     if shop == "gated":
         env["PLAYWRIGHT_MCP_ARGS"] = MCP_ARGS_GATED
     else:
         env.pop("PLAYWRIGHT_MCP_ARGS", None)
+    # The "see everything" arm. One setting, applied by `see_everything.py` inside the
+    # runner, with the prompt and every other setting held constant.
+    if probe == "whole-page":
+        env["IGR_SEE_EVERYTHING"] = "1"
+    else:
+        env.pop("IGR_SEE_EVERYTHING", None)
     return env
 
 
 def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
              query: str | None = None, scaffold: str = "openjiuwen",
-             shop: str = "gated") -> dict:
+             shop: str = "gated", probe: str = "viewport") -> dict:
     """Execute one task once and return its record, enriched with trace counts.
 
     `query` overrides the task text, which is how a policy retry re-asks the same task
@@ -82,7 +88,7 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
         cwd = AGENT_CORE
 
     with log_path.open("w") as log:
-        subprocess.run(command, cwd=cwd, env=browser_env(shop),
+        subprocess.run(command, cwd=cwd, env=browser_env(shop, probe),
                        stdout=log, stderr=subprocess.STDOUT, check=False)
 
     if not record_path.exists():
@@ -100,6 +106,8 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
     # Which shop this run saw. A record without it predates the theme and was measured
     # against a page that published every variant price on load.
     record["shop"] = shop
+    # Which card probe setting this run met. A record without it predates the arm.
+    record["probe"] = probe
     record_path.write_text(json.dumps(record, indent=2, default=str) + "\n")
     return record
 
@@ -150,7 +158,7 @@ def add(*values) -> float | int | None:
 def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
                  out_dir: pathlib.Path, tag: str, confidence: str = "off",
                  reason: str | None = None, scaffold: str = "openjiuwen",
-                 shop: str = "gated") -> tuple:
+                 shop: str = "gated", probe: str = "viewport") -> tuple:
     """Run the sufficiency check and act on it.
 
     Cost and interaction counts are reported for the arm as a whole, both attempts
@@ -176,7 +184,7 @@ def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
     # this it always ran openJiuwen against the default theme, whatever the first attempt
     # had been, so a naive policy run silently changed both halfway through.
     second = run_once(task, spec["base_url"], out_dir, tag2, query=query,
-                      scaffold=scaffold, shop=shop)
+                      scaffold=scaffold, shop=shop, probe=probe)
     result2 = second.get("result") or {}
     answer2 = str(result2.get("final") or "")
     trace2 = second.get("trace") or {}
@@ -225,6 +233,11 @@ def main() -> int:
                         help="gated suppresses the variant prices the stock theme puts in\n"
                              "the page, which is what the live marketplace does. default is\n"
                              "the leaky shop every run before 18 Sep 2026 was measured on")
+    parser.add_argument("--probe", choices=("viewport", "whole-page"), default="viewport",
+                        help="viewport is openJiuwen's shipped card probe, which reports "
+                             "only what is on screen. whole-page flips that one setting and "
+                             "changes nothing else, which is the arm that separates the tool "
+                             "from the model as the cause of stopping at four listings")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -266,7 +279,7 @@ def main() -> int:
             if args.confidence != "off":
                 query = policy_module.confidence_query(query, args.confidence)
             record = run_once(task, spec["base_url"], out_dir, tag, query=query,
-                              scaffold=args.scaffold, shop=args.shop)
+                              scaffold=args.scaffold, shop=args.shop, probe=args.probe)
             result = record.get("result") or {}
             answer = str(result.get("final") or "")
             trace = record.get("trace") or {}
@@ -284,7 +297,7 @@ def main() -> int:
                 answer, record, result, trace, check = apply_policy(
                     args.policy, task, spec, answer, record, out_dir, tag,
                     confidence=args.confidence, reason=reason,
-                    scaffold=args.scaffold, shop=args.shop)
+                    scaffold=args.scaffold, shop=args.shop, probe=args.probe)
 
             verdict = scoring.score(task, answer, bool(result.get("ok")))
             row = {
