@@ -113,29 +113,45 @@ def main() -> int:
         record(f"market {brand}", found == want and total == want, detail)
 
     # All fifteen on one page, which is what makes "the agent read four" a clean claim.
+    # Magento prints "Items 1-12 of 15" when it paginates and a bare "15 Items" when it
+    # does not, so the absence of a range is the thing to look for. An earlier version of
+    # this check looked for "Items 1-15 of 15", a string the shop never produces, and
+    # reported a healthy shop as broken.
     page = fetch("/catalogsearch/result/?q=Thornwood") or ""
-    one_page = bool(re.search(r"Items\s+1-15 of 15", page))
-    record("all 15 render on one page", one_page,
-           "page size is 36" if one_page else "page size may have reset to 12")
+    ranged = re.search(r"Items\s*<[^>]*>\s*\d+\s*</[^>]*>\s*-", page)
+    cards = len(re.findall(r'class="[^"]*product-item-info', page))
+    record("all 15 render on one page", not ranged and cards >= 15,
+           f"{cards} cards in the page, pager {'present' if ranged else 'absent'}")
 
-    # The suppressing theme, asked for the way a run asks for it.
-    product = "/igr-app-07.html"
-    plain = fetch(product) or ""
-    gated = fetch(product, ua=GATED_UA) or ""
-    if not plain or not gated:
-        record("gated theme serving", False, "product page did not answer")
-    else:
-        leak = re.findall(r"\+\$\d+\.\d\d", plain)
-        sealed = re.findall(r"\+\$\d+\.\d\d", gated)
-        # The ordinary shop should leak and the gated one should not. If neither leaks the
-        # theme cannot be told apart from a broken page, so that is a failure too.
-        record("ordinary shop still leaks, as expected", bool(leak),
-               f"{len(leak)} surcharge labels in the plain page")
-        record("gated shop hides the surcharge", bool(leak) and not sealed,
-               f"{len(sealed)} surcharge labels under {GATED_UA}")
+    # The suppressing theme. This has to be done in a real browser: the surcharge labels
+    # are written into the menu by the page's own JavaScript, so fetching the HTML can
+    # never see them. The first version of this check used a plain fetch, found nothing in
+    # either shop, and called a working theme broken.
+    record(*theme_check())
 
     report()
     return 0 if all(r[0] != FAIL for r in results) else 1
+
+
+def theme_check() -> tuple[str, bool | None, str]:
+    """Open one product page twice in a real browser and compare the size menu."""
+    script = REPO / "env" / "_theme_probe.py"
+    venv = REPO / ".venv-naive" / "bin" / "python"
+    if not venv.exists():
+        return ("gated theme serving", None, "no browser environment, skipped")
+    out = subprocess.run([str(venv), str(script)], capture_output=True, text=True,
+                         cwd=str(REPO))
+    if out.returncode or not out.stdout.strip():
+        return ("gated theme serving", False,
+                (out.stderr or out.stdout).strip().splitlines()[-1][:120] if (out.stderr or out.stdout) else "probe failed")
+    try:
+        data = json.loads(out.stdout.strip().splitlines()[-1])
+    except json.JSONDecodeError:
+        return ("gated theme serving", False, "probe output unreadable")
+    leaks, sealed = data["plain"], data["gated"]
+    ok = leaks > 0 and sealed == 0
+    return ("gated theme serving", ok,
+            f"ordinary menu shows {leaks} surcharges, gated shows {sealed}")
 
 
 def report() -> None:
