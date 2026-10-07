@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "records": [
+    {
+      "domain": "localhost",
+      "route_signature": "/catalogsearch/result",
+      "kind": "card_probe",
+      "selectors": {
+        "card_container_selectors": [
+          "#product-item-info_106262",
+          "#product-item-info_106273",
+          "#product-item-info_106278",
+          "#product-item-info_106283",
+          "div.panel.wrapper",
+          "div.nested",
+          "dd.item"
+        ],
+        "title_selectors": [
+          "a.action.towishlist",
+          "div.actions-secondary > a.action.towishlist",
+          "div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_106262 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_106273 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_106278 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_106283 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "a.action.compare",
+          "li.item.link > a.action.compare",
+          "a.action.advanced",
+          "dd.item > a",
+          "dl.block > dd.item > a",
+          "main > div.columns > div.column.main > div.search.results > dl.block > dd.item > a"
+        ],
+        "price_selectors": [
+          "div.price-box.price-final_price",
+          "div.product.details > div.price-box.price-final_price",
+          "#product-item-info_106262 > div.product.details > div.price-box.price-final_price",
+          "#product-item-info_106273 > div.product.details > div.price-box.price-final_price",
+          "#product-item-info_106278 > div.product.details > div.price-box.price-final_price",
+          "#product-item-info_106283 > div.product.details > div.price-box.price-final_price"
+        ],
+        "author_selectors": [
+          "li.link.authorization-link"
+        ],
+        "summary_selectors": [
+          "a.action.skip.contentarea"
+        ],
+        "primary_link_selectors": [
+          "a.action.towishlist",
+          "div.actions-secondary > a.action.towishlist",
+          "div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_106262 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_106273 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_106278 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_106283 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#idZ1APOBAG",
+          "a.action.advanced",
+          "dd.item > a",
+          "dl.block > dd.item > a",
+          "main > div.columns > div.column.main > div.search.results > dl.block > dd.item > a"
+        ],
+        "button_selectors": [
+          "#idZ1APOBAG",
+          "li.link.wishlist > a",
+          "li.link.authorization-link > a",
+          "#idHDgXQ7Td",
+          "a.action.advanced",
+          "dd.item > a",
+          "dl.block > dd.item > a",
+          "main > div.columns > div.column.main > div.search.results > dl.block > dd.item > a"
+        ]
+      },
+      "success_count": 1,
+      "failure_count": 0,
+      "last_success_at": 1791343391.801339,
+      "quality_score": 0.832857142857143,
+      "sample_card_count": 7
+    }
+  ]
+}
