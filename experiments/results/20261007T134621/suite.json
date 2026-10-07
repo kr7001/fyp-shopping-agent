@@ -1,0 +1,517 @@
+{
+  "ran_at": "2026-10-07T14:08:56",
+  "repeats": 3,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": false,
+  "targeting": false,
+  "targeting_version": null,
+  "planner_version": null,
+  "rules_version": null,
+  "model": "anthropic/claude-haiku-4.5",
+  "scaffold": "naive",
+  "tasks_file": "tasks_apparel.json",
+  "draw": "Thornwood:f9faf835ea",
+  "instance": {
+    "target_option": "M",
+    "listings": 15,
+    "winner_index": 14,
+    "cheapest_card_index": 3,
+    "listings_with_target": 10,
+    "listings_without_target": 5,
+    "listings_target_buyable": 5,
+    "listings_target_sold_out": 5,
+    "cheapest_listed": {
+      "sku": "IGR-APP-07",
+      "seller": "Fairhaven Workwear",
+      "price": 15.04
+    },
+    "cheapest_sold_out": {
+      "sku": "IGR-APP-07",
+      "seller": "Fairhaven Workwear",
+      "price": 15.04
+    },
+    "sold_out_trap": true,
+    "winner": {
+      "sku": "IGR-APP-14",
+      "seller": "Alderney Clothing Co",
+      "price": 25.77
+    },
+    "runner_up_price": 28.96,
+    "winning_margin": 3.19,
+    "cheapest_card": {
+      "sku": "IGR-APP-03",
+      "seller": "Rookwood Uniforms",
+      "from_price": 11.87
+    },
+    "card_probe_wrong": true,
+    "cheapest_without_target": {
+      "sku": "IGR-APP-03",
+      "seller": "Rookwood Uniforms",
+      "from_price": 11.87
+    },
+    "absent_trap": true,
+    "largest_size": "XL",
+    "largest_size_winner": {
+      "sku": "IGR-APP-08",
+      "seller": "Ivybridge Collective",
+      "price": 18.08
+    },
+    "crossover": true,
+    "oracle_min_opens": 8,
+    "prunable_by_bound": 7,
+    "exhaustive_opens": 15,
+    "bound_strength": 0.467,
+    "from_price_range": [
+      11.87,
+      36.59
+    ],
+    "target_price_range": [
+      25.77,
+      33.47
+    ]
+  },
+  "summary": {
+    "by_task": {
+      "apparel-headline": {
+        "gated": false,
+        "verdicts": {
+          "correct": 3
+        },
+        "actions": [
+          1,
+          1,
+          1
+        ],
+        "tool_calls": [
+          2,
+          2,
+          2
+        ],
+        "cost": [
+          0.005966,
+          0.005966,
+          0.005966
+        ],
+        "mean_actions": 1.0,
+        "mean_tool_calls": 2.0,
+        "total_cost": 0.0179
+      },
+      "apparel-target-price": {
+        "gated": true,
+        "verdicts": {
+          "correct": 3
+        },
+        "actions": [
+          27,
+          27,
+          27
+        ],
+        "tool_calls": [
+          28,
+          28,
+          28
+        ],
+        "cost": [
+          0.328092,
+          0.328092,
+          0.328092
+        ],
+        "mean_actions": 27.0,
+        "mean_tool_calls": 28.0,
+        "total_cost": 0.9843
+      },
+      "apparel-cheapest-target": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 3
+        },
+        "actions": [
+          16,
+          16,
+          16
+        ],
+        "tool_calls": [
+          17,
+          17,
+          17
+        ],
+        "cost": [
+          0.048219,
+          0.048219,
+          0.048219
+        ],
+        "mean_actions": 16.0,
+        "mean_tool_calls": 17.0,
+        "total_cost": 0.1447
+      },
+      "apparel-all-stocked": {
+        "gated": true,
+        "verdicts": {
+          "correct": 3
+        },
+        "actions": [
+          5,
+          6,
+          5
+        ],
+        "tool_calls": [
+          7,
+          7,
+          6
+        ],
+        "cost": [
+          0.025999,
+          0.018545,
+          0.017423
+        ],
+        "mean_actions": 5.3,
+        "mean_tool_calls": 6.7,
+        "total_cost": 0.062
+      },
+      "apparel-count-stocked": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 3
+        },
+        "actions": [
+          16,
+          16,
+          16
+        ],
+        "tool_calls": [
+          17,
+          17,
+          17
+        ],
+        "cost": [
+          0.068995,
+          0.068995,
+          0.068995
+        ],
+        "mean_actions": 16.0,
+        "mean_tool_calls": 17.0,
+        "total_cost": 0.207
+      },
+      "apparel-count-buyable": {
+        "gated": true,
+        "verdicts": {
+          "correct": 3
+        },
+        "actions": [
+          17,
+          17,
+          17
+        ],
+        "tool_calls": [
+          18,
+          18,
+          18
+        ],
+        "cost": [
+          0.193596,
+          0.193596,
+          0.193596
+        ],
+        "mean_actions": 17.0,
+        "mean_tool_calls": 18.0,
+        "total_cost": 0.5808
+      }
+    },
+    "overall": {
+      "correct": 12,
+      "wrong": 6
+    },
+    "total_cost": 1.9966
+  },
+  "rows": [
+    {
+      "task": "apparel-headline",
+      "family": "apparel",
+      "gated": false,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "Thornwood Heavyweight Cotton Tee - Rookwood Uniforms; $11.87",
+      "tool_calls": 2,
+      "actions": 1,
+      "observations": 0,
+      "cost_usd": 0.005966,
+      "elapsed_s": 6.5,
+      "error": null,
+      "log": "apparel-headline-1.log"
+    },
+    {
+      "task": "apparel-headline",
+      "family": "apparel",
+      "gated": false,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "Thornwood Heavyweight Cotton Tee - Rookwood Uniforms; $11.87",
+      "tool_calls": 2,
+      "actions": 1,
+      "observations": 0,
+      "cost_usd": 0.005966,
+      "elapsed_s": 9.2,
+      "error": null,
+      "log": "apparel-headline-2.log"
+    },
+    {
+      "task": "apparel-headline",
+      "family": "apparel",
+      "gated": false,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "Thornwood Heavyweight Cotton Tee - Rookwood Uniforms; $11.87",
+      "tool_calls": 2,
+      "actions": 1,
+      "observations": 0,
+      "cost_usd": 0.005966,
+      "elapsed_s": 7.2,
+      "error": null,
+      "log": "apparel-headline-3.log"
+    },
+    {
+      "task": "apparel-target-price",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "found 25.77",
+      "answer": "$25.77",
+      "tool_calls": 28,
+      "actions": 27,
+      "observations": 0,
+      "cost_usd": 0.328092,
+      "elapsed_s": 85.1,
+      "error": null,
+      "log": "apparel-target-price-1.log"
+    },
+    {
+      "task": "apparel-target-price",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "found 25.77",
+      "answer": "$25.77",
+      "tool_calls": 28,
+      "actions": 27,
+      "observations": 0,
+      "cost_usd": 0.328092,
+      "elapsed_s": 80.3,
+      "error": null,
+      "log": "apparel-target-price-2.log"
+    },
+    {
+      "task": "apparel-target-price",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "found 25.77",
+      "answer": "$25.77",
+      "tool_calls": 28,
+      "actions": 27,
+      "observations": 0,
+      "cost_usd": 0.328092,
+      "elapsed_s": 76.3,
+      "error": null,
+      "log": "apparel-target-price-3.log"
+    },
+    {
+      "task": "apparel-cheapest-target",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "Copperfield Apparel is the cheapest seller for size M at $23.40",
+      "tool_calls": 17,
+      "actions": 16,
+      "observations": 0,
+      "cost_usd": 0.048219,
+      "elapsed_s": 28.2,
+      "error": null,
+      "log": "apparel-cheapest-target-1.log"
+    },
+    {
+      "task": "apparel-cheapest-target",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "Copperfield Apparel is the cheapest seller for size M at $23.40",
+      "tool_calls": 17,
+      "actions": 16,
+      "observations": 0,
+      "cost_usd": 0.048219,
+      "elapsed_s": 28.0,
+      "error": null,
+      "log": "apparel-cheapest-target-2.log"
+    },
+    {
+      "task": "apparel-cheapest-target",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "wrong",
+      "why": "expected option not named",
+      "answer": "Copperfield Apparel is the cheapest seller for size M at $23.40",
+      "tool_calls": 17,
+      "actions": 16,
+      "observations": 0,
+      "cost_usd": 0.048219,
+      "elapsed_s": 28.0,
+      "error": null,
+      "log": "apparel-cheapest-target-3.log"
+    },
+    {
+      "task": "apparel-all-stocked",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "answered no",
+      "answer": "No",
+      "tool_calls": 7,
+      "actions": 5,
+      "observations": 1,
+      "cost_usd": 0.025999,
+      "elapsed_s": 22.0,
+      "error": null,
+      "log": "apparel-all-stocked-1.log"
+    },
+    {
+      "task": "apparel-all-stocked",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "answered no",
+      "answer": "No",
+      "tool_calls": 7,
+      "actions": 6,
+      "observations": 0,
+      "cost_usd": 0.018545,
+      "elapsed_s": 14.6,
+      "error": null,
+      "log": "apparel-all-stocked-2.log"
+    },
+    {
+      "task": "apparel-all-stocked",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "answered no",
+      "answer": "No",
+      "tool_calls": 6,
+      "actions": 5,
+      "observations": 0,
+      "cost_usd": 0.017423,
+      "elapsed_s": 15.7,
+      "error": null,
+      "log": "apparel-all-stocked-3.log"
+    },
+    {
+      "task": "apparel-count-stocked",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "counted 5, expected 10",
+      "answer": "5",
+      "tool_calls": 17,
+      "actions": 16,
+      "observations": 0,
+      "cost_usd": 0.068995,
+      "elapsed_s": 35.3,
+      "error": null,
+      "log": "apparel-count-stocked-1.log"
+    },
+    {
+      "task": "apparel-count-stocked",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "wrong",
+      "why": "counted 5, expected 10",
+      "answer": "5",
+      "tool_calls": 17,
+      "actions": 16,
+      "observations": 0,
+      "cost_usd": 0.068995,
+      "elapsed_s": 35.2,
+      "error": null,
+      "log": "apparel-count-stocked-2.log"
+    },
+    {
+      "task": "apparel-count-stocked",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "wrong",
+      "why": "counted 5, expected 10",
+      "answer": "5",
+      "tool_calls": 17,
+      "actions": 16,
+      "observations": 0,
+      "cost_usd": 0.068995,
+      "elapsed_s": 35.5,
+      "error": null,
+      "log": "apparel-count-stocked-3.log"
+    },
+    {
+      "task": "apparel-count-buyable",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "counted 5",
+      "answer": "5",
+      "tool_calls": 18,
+      "actions": 17,
+      "observations": 0,
+      "cost_usd": 0.193596,
+      "elapsed_s": 62.0,
+      "error": null,
+      "log": "apparel-count-buyable-1.log"
+    },
+    {
+      "task": "apparel-count-buyable",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "counted 5",
+      "answer": "5",
+      "tool_calls": 18,
+      "actions": 17,
+      "observations": 0,
+      "cost_usd": 0.193596,
+      "elapsed_s": 60.5,
+      "error": null,
+      "log": "apparel-count-buyable-2.log"
+    },
+    {
+      "task": "apparel-count-buyable",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "correct",
+      "why": "counted 5",
+      "answer": "5",
+      "tool_calls": 18,
+      "actions": 17,
+      "observations": 0,
+      "cost_usd": 0.193596,
+      "elapsed_s": 64.2,
+      "error": null,
+      "log": "apparel-count-buyable-3.log"
+    }
+  ]
+}
