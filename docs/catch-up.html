@@ -29,8 +29,10 @@
       <a href="#apparel"><span class="k">2</span><span>The apparel products, listed</span></a>
       <a href="#dom"><span class="k">3</span><span>Does openJiuwen use the DOM tree</span></a>
       <a href="#second"><span class="k">4</span><span>The second agent, and why its runs are void</span></a>
-      <a href="#verify"><span class="k">5</span><span>Deep verification, and a two run pilot</span></a>
-      <a href="#plan"><span class="k">6</span><span>What I propose to run</span></a>
+      <a href="#rules"><span class="k">5</span><span>How the markets are generated</span></a>
+      <a href="#verify"><span class="k">6</span><span>Deep verification, and a two run pilot</span></a>
+      <a href="#results"><span class="k">7</span><span>Cells 1 and 2, the result</span></a>
+      <a href="#plan"><span class="k">8</span><span>What to run next</span></a>
     </div>
     <h2 style="margin-top:22px">Also</h2>
     <div class="navlist">
@@ -285,8 +287,86 @@
     <p class="claim">The fix is one line, raising or removing the link cap, plus putting product links first. It costs nothing. Until it is fixed and re-run, <b>this project has one agent, not two</b>, and the external validity question is open.</p>
   </section>
 
+  <section id="rules">
+    <h2>5. How the markets are generated</h2>
+    <p class="lede">The markets are not written by hand. A market is drawn at random, checked against a list of properties, and thrown away if it fails any of them. That is rejection sampling, and it is the reason a market can be trusted to test what it claims to test.</p>
+    <p class="note">Why it has to work this way: a market written by hand would be written by someone who already knows what the agent does wrong, and would flatter or punish it by accident. A market drawn at random and then filtered can only pass if it has the properties stated in advance, and those properties are in the file before any run.</p>
+
+    <h3 class="sub">The clothing market, thirteen rules</h3>
+    <p class="note">Seed 203, accepted on attempt <b>590</b>. Each group below answers a different objection a reader could raise.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Group one, the answer must be unambiguous</caption>
+        <thead><tr><th>Rule</th><th class="wide">What it requires</th><th class="wide">This market</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">unique_winner</td><td class="dim wide">exactly one listing is cheapest for size M among those that can supply it</td><td class="dim wide">Alderney, alone</td></tr>
+          <tr><td class="mono">clear_margin</td><td class="dim wide">the winner is at least 8 per cent cheaper than the runner up, so a correct answer is not rounding luck</td><td class="dim wide"><b>12.4 per cent</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <caption>Group two, a glance must be wrong, in several different ways</caption>
+        <thead><tr><th>Rule</th><th class="wide">What it requires</th><th class="wide">This market</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="mono">card_probe_wrong</td><td class="dim wide">the lowest advertised price is not the winner</td><td class="dim wide">Rookwood advertises $11.87, Alderney wins</td></tr>
+          <tr class="hi"><td class="mono">absent_trap</td><td class="dim wide">the cheapest listing of all does not sell the size at any price</td><td class="dim wide">Rookwood sells S and L only</td></tr>
+          <tr class="hi"><td class="mono">sold_out_trap</td><td class="dim wide">the lowest listed price for the size belongs to a listing that cannot ship it</td><td class="dim wide">Fairhaven lists M at $15.04, sold out</td></tr>
+          <tr><td class="mono">crossover</td><td class="dim wide">the cheapest for the target size is not the cheapest for the largest size, so one price cannot be generalised</td><td class="dim wide">Ivybridge wins XL, Alderney wins M</td></tr>
+          <tr><td class="mono">four_answers</td><td class="dim wide">cheapest advertised, cheapest listed for M, cheapest buyable for M, and cheapest for XL are four different sellers</td><td class="dim wide">Rookwood, Fairhaven, Alderney, Ivybridge</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <caption>Group three, the work must be real but not unbounded</caption>
+        <thead><tr><th>Rule</th><th class="wide">Threshold</th><th class="num">This market</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">bound_is_useful</td><td class="dim wide">at least 3 listings can be ruled out on their advertised price alone</td><td class="num">7</td></tr>
+          <tr><td class="mono">bound_not_sufficient</td><td class="dim wide">at least 3 survive that pruning and must be opened</td><td class="num">8</td></tr>
+          <tr class="hi"><td class="mono">floor_is_real</td><td class="dim wide">at least 5 must be opened, so no shortcut answers it</td><td class="num"><b>8</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <caption>Group four, all three availability states must be well populated</caption>
+        <thead><tr><th>Rule</th><th class="wide">Threshold</th><th class="num">This market</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">some_missing_target</td><td class="dim wide">at least 4 never sell the size</td><td class="num">5</td></tr>
+          <tr><td class="mono">sold_out_population</td><td class="dim wide">at least 3 sell it and have none</td><td class="num">5</td></tr>
+          <tr><td class="mono">enough_buyable</td><td class="dim wide">at least 4 can actually ship it</td><td class="num">5</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">A clean five, five and five. The thirteen rules together are satisfied by roughly <b>one draw in 1,900</b>, which is why the generator tries up to 80,000 times per seed and why these markets cannot be written by hand. Most of the properties fight each other.</p>
+
+    <h3 class="sub">Two rules that were removed, and why that matters</h3>
+    <p class="note">There were fifteen. Two required the winner to sit late in the catalogue and the cheapest advertised listing to sit early, as a way of keeping the answer off the first screen and the trap on it. Both were written against the listing's position in the catalogue, and <b>catalogue position does not decide where a listing renders</b>.</p>
+    <p class="note">What does, measured across eight generated markets: <b>the number of sizes a listing sells</b>. Magento indexes every child product, so a listing offering four sizes carries the brand name four times in the search index and outranks one offering two. In the market measured, every listing rendering in cards 1 to 8 had four sizes and cards 13 to 15 had two.</p>
+    <p class="claim">That made the rule unsatisfiable rather than strict. The trap is by construction a listing missing a size, so it has fewer sizes, so it renders late. <b>Eight consecutive seeds were rejected with the trap at cards 8, 12, 8, 14, 10, 15, 12 and 13, never once in the first four.</b> Requiring the trap to carry all four sizes instead drops the acceptance rate from 1 in 1,900 to 1 in 40,000, because it contradicts what makes it a trap.</p>
+    <p class="note">So the generator stopped claiming anything about position, and position is now <b>measured on the rendered page</b> after seeding. A draw is kept only if the answer renders outside the first row and something inside the first row advertises below it. Seed 203 passed: the answer renders at card 12, and three of the first four cards advertise below $25.77.</p>
+
+    <h3 class="sub">The water market, for comparison</h3>
+    <p class="note">Eight rules rather than thirteen, because water has a question clothing cannot ask and lacks a state clothing has.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>What differs between the two generators</caption>
+        <thead><tr><th class="wide">Property</th><th class="wide">Water</th><th class="wide">Clothing</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">The extra question</td><td class="dim wide">best value per litre, since a pack has a volume</td><td class="dim wide">none, a size has no denominator</td></tr>
+          <tr><td class="wide">The extra rule it needs</td><td class="dim wide"><code>unit_probe_wrong</code>, added after a pilot answered the per litre question in 7 actions because the two answers happened to coincide</td><td class="dim wide">not applicable</td></tr>
+          <tr class="hi"><td class="wide">Sold out variants</td><td class="dim wide">none, every stocked pack can be bought</td><td class="dim wide"><b>five of fifteen</b>, which is the state real marketplaces have</td></tr>
+          <tr><td class="wide">How many listings a correct answer must open</td><td class="dim wide">11 of 15, because the advertised price is a small pack and the question asks a large one, so the bound is weak</td><td class="dim wide">8 of 15, because all sizes of a garment cost about the same, so the bound is tight</td></tr>
+          <tr><td class="wide">Hardest rule</td><td class="dim wide"><code>three_answers</code>, satisfied by about 0.3 per cent of draws</td><td class="dim wide"><code>four_answers</code> with the two sold out rules, about 0.05 per cent</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The difference in floor is the useful part. A rule that demanded eleven openings everywhere would refuse correct answers in clothing, where a sound answer can come from eight. So the sufficiency check reads the floor the generator computed for that market rather than a constant, and the clothing market is the one that would catch it if it did not.</p>
+  </section>
+
   <section id="verify">
-    <h2>5. Deep verification, and a two run pilot</h2>
+    <h2>6. Deep verification, and a two run pilot</h2>
     <p class="lede">Before spending anything on the matrix, everything it depends on was checked against the running shop. Nine automated checks, every one of the fifteen clothing listings opened by hand in a browser, all six answers re-derived from the shop rather than read from the fixture, and two paid runs to prove the two changed pieces work end to end. Total spend: <b>$0.42</b>.</p>
 
     <h3 class="sub">The shop, after a two week break and a restart</h3>
@@ -394,8 +474,73 @@
     <p class="note">That is worth sitting with. These two runs opened <b>every listing in the market</b>, which is the thing the four listing problem was supposed to prevent, and still answered with a price belonging to no size anyone asked about. Seeing everything did not fix it here. One run each is not evidence of anything, and it is the clearest early sign that the matrix is asking the right question: if the full arm reproduces this, the four listing behaviour is a symptom rather than the disease.</p>
   </section>
 
+  <section id="results">
+    <h2>7. Cells 1 and 2, the result</h2>
+    <p class="lede">Thirty six runs on the clothing market, eighteen each, on the same six questions against the same shop with the same model and the same budget. <b>One setting differs between them</b>, the card summary's window limit, and the agent is never told about the change.</p>
+
+    <div class="stats">
+      <a class="stat flag" href="#results"><span class="n">4 / 15</span><span class="l">GATED CORRECT, LIMIT ON</span></a>
+      <a class="stat win" href="#results"><span class="n">10 / 15</span><span class="l">GATED CORRECT, LIMIT OFF</span></a>
+      <a class="stat flag" href="#results"><span class="n">3 / 15</span><span class="l">MET THE FLOOR, LIMIT ON</span></a>
+      <a class="stat win" href="#results"><span class="n">15 / 15</span><span class="l">MET THE FLOOR, LIMIT OFF</span></a>
+      <a class="stat" href="#results"><span class="n">2.7&times;</span><span class="l">WHAT THE FIX COSTS</span></a>
+    </div>
+
+    <h3 class="sub">Side by side</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>Everything held constant except the window limit</caption>
+        <thead><tr><th class="wide">Measure</th><th class="num">Limit on, as shipped</th><th class="num">Limit off</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="wide"><b>Gated questions answered correctly</b></td><td class="num">4 of 15</td><td class="num"><b>10 of 15</b></td></tr>
+          <tr class="hi"><td class="wide"><b>Runs that opened enough listings to justify an answer</b></td><td class="num">3 of 15</td><td class="num"><b>15 of 15</b></td></tr>
+          <tr><td class="wide">Runs that opened exactly four listings</td><td class="num">11 of 15</td><td class="num">0 of 15</td></tr>
+          <tr><td class="wide">Runs that opened all fifteen</td><td class="num">3 of 15</td><td class="num">14 of 15</td></tr>
+          <tr><td class="wide">Cost of the batch</td><td class="num">$2.72</td><td class="num">$7.38</td></tr>
+          <tr><td class="wide">The control question, answerable from the results page</td><td class="num">2 of 3</td><td class="num">3 of 3</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Two claims, and they are not equally strong</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>Fisher exact test, two sided, on the gated runs</caption>
+        <thead><tr><th class="wide">Claim</th><th class="wide">Evidence</th><th class="num">p</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="wide"><b>The window limit causes the agent to under retrieve</b></td><td class="dim wide">15 of 15 met the floor against 3 of 15</td><td class="num"><b>0.00001</b></td><td><span class="pill ok">SETTLED</span></td></tr>
+          <tr><td class="wide">And that under retrieval costs accuracy</td><td class="dim wide">10 of 15 correct against 4 of 15</td><td class="num">0.066</td><td><span class="pill amb">SUGGESTIVE</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">So the mechanism question is answered. <b>The cause is the tool, not the model.</b> The agent is not disinclined to look: when the filter is lifted it opens the market in every single run, on a market nothing was tuned against. What remains uncertain is only how much accuracy that buys, and fifteen runs a side cannot pin that down.</p>
+
+    <h3 class="sub">A prediction of mine that was wrong</h3>
+    <p class="note">After the two run pilot, where both runs opened all fifteen listings and both still answered wrongly, I suggested that seeing everything might not fix the problem and that the four listing behaviour could be a symptom rather than the cause. <b>At fifteen runs a side it largely is the cause.</b> The pilot was two runs and was labelled at the time as proving nothing, which is the only reason that guess did no damage.</p>
+
+    <h3 class="sub">What still fails once the agent can see everything</h3>
+    <p class="note">The five gated runs that did not come out correct in cell 2 fail differently from cell 1, and the difference is the interesting part.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Cell 2's remaining failures, from the run records</caption>
+        <thead><tr><th>Question</th><th class="wide">What it answered</th><th class="wide">What that is</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">target-price</td><td class="dim wide">$23.40 where the answer is $25.77</td><td class="dim wide">Copperfield's advertised card price, used as though it were the price of size M</td></tr>
+          <tr class="hi"><td class="mono">count-stocked</td><td class="dim wide">counted 5, twice, where the answer is 10</td><td class="dim wide">Counted the listings that can <b>sell</b> the size, where the question asked how many <b>offer</b> it. The sold out ones were missed</td></tr>
+          <tr class="hi"><td class="mono">count-buyable</td><td class="dim wide">counted 15 where the answer is 5</td><td class="dim wide">Counted the whole market, ignoring availability entirely</td></tr>
+          <tr><td class="mono">target-price</td><td class="dim wide">no answer at all</td><td class="dim wide">The run ended without producing one</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">Three of the four are the <b>availability</b> distinction, not the window one. The agent now looks at every listing and then confuses a size being offered with a size being buyable, which is precisely the gate the sold out state was built to create. Fixing what it can see moved the failure rather than removing it, and moved it onto the thing this market was designed to test.</p>
+
+    <h3 class="sub">What the fix costs</h3>
+    <p class="note">Lifting the limit costs <b>2.7 times</b> as much, because the summary grows from four cards to fifteen and is re-sent at every step. That is the whole argument for a retrieval policy rather than a bigger window: the aim is cell two's accuracy at something closer to cell one's bill. Measured per run from the provider's own charge, not from an account balance.</p>
+    <p class="note"><b>Honest limits on this result.</b> One market, one model, one agent, fifteen gated runs a side. The accuracy difference is suggestive rather than established. And the comparison says nothing yet about whether any of this generalises beyond openJiuwen, which is what the second agent exists to answer and has not yet been run on this market.</p>
+  </section>
+
   <section id="plan">
-    <h2>6. What I propose to run</h2>
+    <h2>8. What to run next</h2>
     <p class="lede">You are right that the experiments are scattered. Twenty two batches exist across four markets, two models, four arms and two versions of the shop, and they accumulated as each question came up rather than being designed as a set. Here is what I would freeze and run instead.</p>
 
     <h3 class="sub">First, what gets held constant</h3>
@@ -427,24 +572,20 @@
       </table>
     </div>
 
-    <h3 class="sub">Then the matrix</h3>
-    <p class="note">Two cells of this were piloted at one run each, so their costs below are measured rather than guessed. The others use the median of previous batches of the same arm.</p>
+    <h3 class="sub">What is left, and what it costs</h3>
+    <p class="note">Cells 1 and 2 are done. Credit remaining is about <b>$5.30</b> of the original $50, and the two candidates for it cannot both be afforded.</p>
     <div class="tablewrap">
       <table>
-        <caption>Proposed runs, in the order I would run them, 18 runs each</caption>
-        <thead><tr><th class="idx">#</th><th class="wide">Cell</th><th class="wide">The one thing that changes</th><th class="num">Cost</th><th class="wide">What it tells us</th></tr></thead>
+        <caption>The choice</caption>
+        <thead><tr><th class="wide">Option</th><th class="num">Cost</th><th class="wide">What it buys</th><th class="wide">What it does not</th></tr></thead>
         <tbody>
-          <tr class="hi"><td class="idx">1</td><td class="wide"><b>openJiuwen, unmodified</b></td><td class="dim wide">nothing, this is the reference</td><td class="num">$2.20</td><td class="dim wide">The baseline on a market nothing was built against, and the first measurement of a sold out variant anywhere in this project</td></tr>
-          <tr class="hi"><td class="idx">2</td><td class="wide"><b>openJiuwen, window limit off</b></td><td class="dim wide">one flag in the summary tool</td><td class="num">$3.30</td><td class="dim wide"><b>Tool or model.</b> If it still answers from the first screen's prices while having opened everything, the four listing behaviour is a symptom and not the cause</td></tr>
-          <tr class="hi"><td class="idx">3</td><td class="wide"><b>The second agent</b></td><td class="dim wide">the whole agent, same model</td><td class="num">$4.40</td><td class="dim wide">Whether the failure survives a change of agent, which is the external validity claim the project needs</td></tr>
-          <tr><td class="idx">4</td><td class="wide">openJiuwen, strategy plus refusal check</td><td class="dim wide">text added to the question</td><td class="num">$2.60</td><td class="dim wide">Whether the contribution holds on a second product category and on a question about availability</td></tr>
-          <tr><td class="idx">5</td><td class="wide">openJiuwen, told to open everything</td><td class="dim wide">text added to the question</td><td class="num">$3.40</td><td class="dim wide">The expensive baseline the contribution is measured against</td></tr>
+          <tr class="hi"><td class="wide"><b>Cell 3, the second agent</b></td><td class="num">$4.40</td><td class="dim wide">Whether any of this is true of agents in general or only of openJiuwen. Nothing else in the project can answer that, and it is the first thing a reader will ask</td><td class="dim wide">Does not strengthen the accuracy number</td></tr>
+          <tr><td class="wide">More repeats of cells 1 and 2</td><td class="num">$10+</td><td class="dim wide">Would move the accuracy comparison from p 0.066 towards significance</td><td class="dim wide">Cannot be afforded, and adds nothing to the mechanism claim, which is already at p 0.00001</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="claim">Cells 1 to 3 cost about <b>$9.90</b> and answer three different open questions. Cells 4 and 5 complete the comparison for a further $6. Credit remaining is <b>$15.98</b>, so the full set is affordable and leaves nothing spare, which is why I would run 1 to 3, look at them, and then decide.</p>
-    <p class="note"><b>What makes it controlled, where the twenty two earlier batches were not.</b> Every cell is the same six questions, the same market, the same shop, the same model, the same window and the same step budget, and every run record now carries all of those plus which agent and which summary setting produced it. Earlier batches changed the market, the shop and the agent at once, which is why they cannot be read against each other.</p>
-    <p class="note"><b>What I would stop for.</b> If cell 1 does not reproduce the four listing behaviour on this market, the mechanism question changes shape and cells 2 and 3 should be redesigned before being run. If cell 2 shows the agent answering correctly once it can see everything, that is the headline and cells 4 and 5 become more interesting, not less.</p>
+    <p class="claim">Cell 3, on the grounds that the claim more repeats would strengthen is the <b>second</b> claim, and the first one is already settled. The retrieval result does not need more runs. The accuracy result is honestly reportable as suggestive. Neither is improved by discovering that the whole thing is a property of one open source project.</p>
+    <p class="note">The cells that complete the policy comparison, the strategy with its refusal check and the told to open everything baseline, are about $6 together and do not fit in what is left. They are the first thing to run if the credit is topped up. The original request to the supervisor was $200 against the $50 in place, so that is worth raising.</p>
     <p class="note">Reviews are deliberately left out. Nine questions exist and have never been run, and page turning makes them the most expensive and least predictable arm. They belong after the matrix, not inside it.</p>
   </section>
 

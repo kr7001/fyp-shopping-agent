@@ -1,0 +1,126 @@
+{
+  "ran_at": "2026-10-07T11:35:26",
+  "provider": "openrouter",
+  "model": "anthropic/claude-haiku-4.5",
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Does every Thornwood listing offer size M? Answer yes or no.",
+  "elapsed_s": 39.8,
+  "cost_usd": 0.084903,
+  "cost_note": "OpenRouter usage did not settle within the poll window",
+  "spend_before_usd": 35.85842791,
+  "spend_after_usd": null,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "c57c201fa9934b72b58843dd58e015e8",
+    "final": "No. Not every Thornwood listing offers size M. Of the 4 Thornwood products found: 2 offer size M (Copperfield Apparel and Marchmont Textiles), while 2 do not offer size M as it is disabled (Dunmore Apparel and Fairhaven Workwear).",
+    "page": {
+      "url": "http://localhost:7770/catalogsearch/result/?q=Thornwood",
+      "title": "Search results for: 'Thornwood'"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 12,
+    "actions": 6,
+    "observations": 6,
+    "unclassified_tools": [],
+    "assistant_turns": 12,
+    "by_tool": {
+      "browser_navigate": 5,
+      "browser_snapshot": 4,
+      "browser_probe_cards": 1,
+      "browser_click": 1,
+      "browser_probe_interactives": 1
+    },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Thornwood",
+      "http://localhost:7770/igr-app-02.html",
+      "http://localhost:7770/igr-app-05.html",
+      "http://localhost:7770/igr-app-06.html",
+      "http://localhost:7770/igr-app-07.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Thornwood"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "t_g0_4"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-app-02.html"
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-app-05.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-app-06.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-app-07.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_click",
+      "browser_navigate",
+      "browser_probe_interactives",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_snapshot"
+    ],
+    "tokens": {
+      "prompt": 339659,
+      "completion": 1676,
+      "total": 341335,
+      "calls": 13
+    },
+    "cost_reported_usd": 0.084903
+  },
+  "spend_delta_usd": null,
+  "log": "apparel-all-stocked-3.log",
+  "shop": "gated",
+  "probe": "viewport",
+  "scaffold": "openjiuwen"
+}

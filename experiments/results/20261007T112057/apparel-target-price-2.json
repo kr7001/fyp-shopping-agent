@@ -1,0 +1,137 @@
+{
+  "ran_at": "2026-10-07T11:25:09",
+  "provider": "openrouter",
+  "model": "anthropic/claude-haiku-4.5",
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . What is the lowest price anyone charges for size M of the Thornwood tee, among those that can actually be bought?",
+  "elapsed_s": 49.1,
+  "cost_usd": 0.101043,
+  "cost_note": "OpenRouter usage did not settle within the poll window",
+  "spend_before_usd": 34.53041751,
+  "spend_after_usd": null,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "e3f89e0062d542f59e2b7289c89e63bf",
+    "final": "The lowest price anyone charges for size M of the Thornwood tee, among those that can actually be bought, is $23.40 from Copperfield Apparel.",
+    "page": {
+      "url": "http://localhost:7770/catalogsearch/result/?q=Thornwood",
+      "title": "Search results for: 'Thornwood'"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 14,
+    "actions": 8,
+    "observations": 6,
+    "unclassified_tools": [],
+    "assistant_turns": 14,
+    "by_tool": {
+      "browser_navigate": 6,
+      "browser_snapshot": 5,
+      "browser_probe_cards": 1,
+      "browser_click": 1,
+      "browser_batch_interact": 1
+    },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Thornwood",
+      "http://localhost:7770/igr-app-02.html",
+      "http://localhost:7770/catalogsearch/result/?q=Thornwood",
+      "http://localhost:7770/igr-app-05.html",
+      "http://localhost:7770/igr-app-06.html",
+      "http://localhost:7770/igr-app-07.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Thornwood"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "t_g0_4"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-app-02.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Thornwood"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-app-05.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-app-06.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-app-07.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_click",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_batch_interact",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_snapshot"
+    ],
+    "tokens": {
+      "prompt": 462033,
+      "completion": 2064,
+      "total": 464097,
+      "calls": 15
+    },
+    "cost_reported_usd": 0.101043
+  },
+  "spend_delta_usd": null,
+  "log": "apparel-target-price-2.log",
+  "shop": "gated",
+  "probe": "viewport",
+  "scaffold": "openjiuwen"
+}
