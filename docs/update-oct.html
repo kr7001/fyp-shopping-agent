@@ -100,7 +100,7 @@ main > section { display: flex !important; }
     <h2>3. Solved: why the agent only saw 4 listings of 15</h2>
     <p class="lede">This is the question you asked last week, and the answer took three attempts to figure out.</p>
 
-    <div class="step"><span class="num">1</span><p class="lede">The agent does read the page properly. It is not working from screenshots. Across 360 recorded runs it read the page structure 1,656 times and took only 277 screenshots as a fallback, roughly thirteen to one.</p></div>
+    <div class="step"><span class="num">1</span><p class="lede">The agent does read the page properly. It is not working from screenshots. Across 361 recorded runs it read the page structure 3,645 times, as 1,662 page snapshots, 1,561 searches of the page and 422 card summaries, and took only 278 screenshots as a fallback, roughly thirteen to one.</p></div>
 
     <div class="step"><span class="num">2</span><p class="lede"><b>The page is complete too.</b> All fifteen products are in it. I measured them on one page load.</p></div>
     <div class="tablewrap">
@@ -207,11 +207,11 @@ main > section { display: flex !important; }
         <thead><tr><th class="wide">Group</th><th class="num">Questions right</th><th class="num">Runs that looked at enough to justify an answer</th><th class="num">Listings opened, typical</th><th class="num">Cost</th></tr></thead>
         <tbody>
           <tr class="warn"><td class="wide"><b>1. openJiuwen, as shipped</b></td><td class="num">4 of 15</td><td class="num"><b>3 of 15</b></td><td class="num">4</td><td class="num">$2.72</td></tr>
-          <tr class="hi"><td class="wide"><b>2. openJiuwen, window filter off</b></td><td class="num"><b>10 of 15</b></td><td class="num"><b>15 of 15</b></td><td class="num">15</td><td class="num">$7.38</td></tr>
+          <tr class="hi"><td class="wide"><b>2. openJiuwen, window filter off</b></td><td class="num"><b>11 of 15</b></td><td class="num"><b>15 of 15</b></td><td class="num">15</td><td class="num">$7.38</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">"Looked at enough" means the run opened at least eight listings, which is the number this market requires before any answer can be justified. The generator computes that number when it builds the market.</p>
+    <p class="note">"Looked at enough" means the run opened every listing its question needs: the eight that cannot be ruled out for the two best price questions, all fifteen for the two counting questions, and one listing without size M for "does every listing offer M". The generator computes the eight when it builds the market. Group 2's 11 of 15 was first reported as 10, before a scoring error was found that had marked one correct answer wrong.</p>
   </section>
 
   <section id="next">
