@@ -3960,6 +3960,10 @@ window.SITE = {
   "intro": "<p>Problems that are known and not yet fixed, most important first. Solved ones are the lessons in <code>LESSONS.md</code>, each with the rule it produced. Side ideas are in <code>PARKED.md</code>. When one of these is fixed, move it into the decision log with the date, and take it off this list.</p>",
   "sections": [
    {
+    "title": "The openJiuwen paper is still inside unpushed commits",
+    "html": "<p><code>openjiuwen.pdf</code> was committed on 9 September and is no longer tracked, but every commit since then still holds it, and the repository is public. arXiv's licence lets only arXiv distribute the paper, so pushing this branch as it stands would publish it. Three ways out: rewrite the unpushed commits without it, which changes their hashes, make the repository private, or keep the branch local. Until one is chosen, <code>dev</code> is not pushed. Check with <code>git log --oneline -- openjiuwen.pdf</code>. <em>Now.</em></p>"
+   },
+   {
     "title": "The raw logs exist only on this laptop",
     "html": "<p>452 run logs, about 1.7 GB, are gitignored because each one replays the whole conversation at every step. Every \"opened what the answer needs\" figure is computed from them, so losing the laptop loses the evidence. Back them up privately, to a drive or a private cloud folder. Not to GitHub: the repository is public. Count them with <code>find experiments/results -name '*.log' | wc -l</code>. <em>Week 1.</em></p>"
    },
@@ -4280,7 +4284,7 @@ window.SITE = {
   "source": "README decision log, 8 October 2026"
  },
  "built": {
-  "commit": "2264fa2",
+  "commit": "b339ff5",
   "date": "2026-10-09",
   "branch": "dev",
   "dirty": true,
@@ -4290,7 +4294,7 @@ window.SITE = {
    "2026-08-24": 1,
    "2026-09-07": 44,
    "2026-09-14": 49,
-   "2026-10-05": 18
+   "2026-10-05": 23
   }
  }
 };
