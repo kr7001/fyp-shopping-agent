@@ -23,3 +23,6 @@ docs/*_dom.txt
 # Presentation decks, mine and the ones I cite. Read in place, not committed.
 docs/Huawei Presentation Deck.pdf
 OpenJiuwen Web & Coding Agent.pptx
+
+# The verifier's stamp and the spend ledger. Local state that describes one checkout, not results.
+.verification/

@@ -1,0 +1,6 @@
+{
+  "name": "igr-workbench",
+  "version": "0.1.0",
+  "description": "Keeps the research objective in front of every turn, and refuses paid model runs until they are verified, declared, kept awake and approved",
+  "author": { "name": "Lee Kai Rong" }
+}

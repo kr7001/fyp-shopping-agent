@@ -1,0 +1,12 @@
+{
+  "name": "igr-local",
+  "description": "This repository's own research tools",
+  "owner": { "name": "Lee Kai Rong" },
+  "plugins": [
+    {
+      "name": "igr-workbench",
+      "source": "./igr-workbench",
+      "description": "Objective keeper and spend guard for this project"
+    }
+  ]
+}
