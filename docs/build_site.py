@@ -515,7 +515,8 @@ def built() -> dict:
         counts[(date - dt.timedelta(days=date.weekday())).isoformat()] += 1
     remote = git("remote", "get-url", "origin")
     repo = re.sub(r"^git@github\.com:|^https://github\.com/", "", remote).removesuffix(".git")
-    dirty = [line for line in git("status", "--porcelain").splitlines()
+    # The submodule always carries the local patch, so it never counts as a change here.
+    dirty = [line for line in git("status", "--porcelain", "--ignore-submodules").splitlines()
              if not line.endswith("docs/site-data.js")]
     return {"commit": git("rev-parse", "--short", "HEAD"), "date": dt.date.today().isoformat(),
             "branch": git("branch", "--show-current"), "dirty": bool(dirty),
