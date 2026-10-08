@@ -1,0 +1,137 @@
+{
+  "ran_at": "2026-10-08T14:45:58",
+  "repeats": 2,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": true,
+  "targeting": false,
+  "targeting_version": null,
+  "planner_version": null,
+  "rules_version": null,
+  "model": "anthropic/claude-haiku-4.5",
+  "scaffold": "openjiuwen",
+  "tasks_file": "tasks_apparel.json",
+  "draw": "Thornwood:f9faf835ea",
+  "instance": {
+    "target_option": "M",
+    "listings": 15,
+    "winner_index": 14,
+    "cheapest_card_index": 3,
+    "listings_with_target": 10,
+    "listings_without_target": 5,
+    "listings_target_buyable": 5,
+    "listings_target_sold_out": 5,
+    "cheapest_listed": {
+      "sku": "IGR-APP-07",
+      "seller": "Fairhaven Workwear",
+      "price": 15.04
+    },
+    "cheapest_sold_out": {
+      "sku": "IGR-APP-07",
+      "seller": "Fairhaven Workwear",
+      "price": 15.04
+    },
+    "sold_out_trap": true,
+    "winner": {
+      "sku": "IGR-APP-14",
+      "seller": "Alderney Clothing Co",
+      "price": 25.77
+    },
+    "runner_up_price": 28.96,
+    "winning_margin": 3.19,
+    "cheapest_card": {
+      "sku": "IGR-APP-03",
+      "seller": "Rookwood Uniforms",
+      "from_price": 11.87
+    },
+    "card_probe_wrong": true,
+    "cheapest_without_target": {
+      "sku": "IGR-APP-03",
+      "seller": "Rookwood Uniforms",
+      "from_price": 11.87
+    },
+    "absent_trap": true,
+    "largest_size": "XL",
+    "largest_size_winner": {
+      "sku": "IGR-APP-08",
+      "seller": "Ivybridge Collective",
+      "price": 18.08
+    },
+    "crossover": true,
+    "oracle_min_opens": 8,
+    "prunable_by_bound": 7,
+    "exhaustive_opens": 15,
+    "bound_strength": 0.467,
+    "from_price_range": [
+      11.87,
+      36.59
+    ],
+    "target_price_range": [
+      25.77,
+      33.47
+    ]
+  },
+  "summary": {
+    "by_task": {
+      "apparel-target-price": {
+        "gated": true,
+        "verdicts": {
+          "correct": 2
+        },
+        "actions": [
+          37,
+          38
+        ],
+        "tool_calls": [
+          75,
+          79
+        ],
+        "cost": [
+          0.794485,
+          0.829897
+        ],
+        "mean_actions": 37.5,
+        "mean_tool_calls": 77.0,
+        "total_cost": 1.6244
+      }
+    },
+    "overall": {
+      "correct": 2
+    },
+    "total_cost": 1.6244
+  },
+  "rows": [
+    {
+      "task": "apparel-target-price",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "found 25.77",
+      "answer": "The lowest price anyone charges for size M of the Thornwood tee, among those that can actually be bought, is $25.77 from Alderney Clothing Co. I opened and checked all 15 listings in the search results. Of these, 5 listings had size M available and purchasable: Copperfield Apparel ($29.66), Marchmon",
+      "tool_calls": 75,
+      "actions": 37,
+      "observations": 38,
+      "cost_usd": 0.794485,
+      "elapsed_s": 247.3,
+      "error": null,
+      "log": "apparel-target-price-1.log"
+    },
+    {
+      "task": "apparel-target-price",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "found 25.77",
+      "answer": "The lowest price anyone charges for size M of the Thornwood tee among those that can actually be bought is $25.77 from Alderney Clothing Co. I opened all 15 listings in the search results.",
+      "tool_calls": 79,
+      "actions": 38,
+      "observations": 41,
+      "cost_usd": 0.829897,
+      "elapsed_s": 260.1,
+      "error": null,
+      "log": "apparel-target-price-2.log"
+    }
+  ]
+}
