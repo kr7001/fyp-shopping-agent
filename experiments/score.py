@@ -31,6 +31,12 @@ POSITIVE_MARKERS = ("yes", "in stock", "available")
 # inside "(no pagination)". The same test also matched "not", "cannot" and "know".
 LEADING_ANSWER = re.compile(r"^[\W_]*(yes|no)\b")
 
+# A number that says how much was examined rather than how many qualified: "all 15",
+# "of the 15", "out of 15", "across 15". Used by the count rule to skip past it.
+COVERAGE_NUMBER = re.compile(
+    r"\b(?:all|of|out of|across|among|checking|checked|opened|examined)\s+(?:the\s+)?"
+    r"(\d{1,3})\b", re.IGNORECASE)
+
 
 def has_marker(text: str, markers: tuple[str, ...]) -> bool:
     return any(re.search(rf"\b{re.escape(m)}\b", text) for m in markers)
@@ -121,13 +127,19 @@ def score(task: dict, answer: str, ok: bool) -> dict:
 
     if kind == "count":
         # "How many listings stock it" is answered with a number rather than a name or a
-        # price, and the number that matters is the one the answer leads with. An answer
-        # reading "9 of the 15 listings" states its count first and its population second,
-        # which is the shape every observed answer to a counting question has taken.
-        counts = re.findall(r"\b(\d{1,3})\b", answer or "")
-        if not counts:
+        # price. The rule was once "the number the answer leads with", on the grounds that
+        # "9 of the 15 listings" states its count first. The first answer to break that
+        # read "After checking all 15 listings, I found that 5 products have size M", which
+        # is right and was scored as a count of 15. So a number stating how many were looked
+        # at, "all 15", "of the 15", "out of 15", is not the count, and neither are the
+        # digits inside a price. If that leaves nothing, the first number is used after all,
+        # since "All 15 listings offer it" is a count of 15.
+        numbers = list(re.finditer(r"(?<![\d.$])(\d{1,3})(?![\d.])", answer or ""))
+        if not numbers:
             return {"verdict": "ambiguous", "why": "no number given", "prices": found}
-        stated = int(counts[0])
+        coverage = {m.start(1) for m in COVERAGE_NUMBER.finditer(answer or "")}
+        kept = [m for m in numbers if m.start(1) not in coverage]
+        stated = int((kept or numbers)[0].group(1))
         if stated == expect["value"]:
             return {"verdict": "correct", "why": f"counted {stated}", "prices": found}
         return {"verdict": "wrong",
