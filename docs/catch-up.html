@@ -8,7 +8,7 @@
 <header class="masthead">
   <div class="wrap">
     <div class="mast-text">
-      <span class="eyebrow">Catch up after a two week break &middot; 7 October 2026</span>
+      <span class="eyebrow">Catch up after a two week break &middot; 7 October 2026, checked again 8 October</span>
       <h1>Four questions, answered from the code</h1>
       <p class="sub">Every claim here was re-checked today against the repository or the stored run records. Where I could not check something, it says so rather than guessing. Two of these answers correct things I told you before.</p>
     </div>
@@ -31,8 +31,11 @@
       <a href="#second"><span class="k">4</span><span>The second agent, and why its first runs were void</span></a>
       <a href="#rules"><span class="k">5</span><span>How the markets are generated</span></a>
       <a href="#verify"><span class="k">6</span><span>Deep verification, and a two run pilot</span></a>
-      <a href="#results"><span class="k">7</span><span>The three cells, and what they settle</span></a>
-      <a href="#plan"><span class="k">8</span><span>What to run next</span></a>
+      <a href="#results"><span class="k">7</span><span>The three cells, corrected</span></a>
+      <a href="#check"><span class="k">8</span><span>Every number in cells 1 to 3, checked again</span></a>
+      <a href="#exhaustive"><span class="k">9</span><span>Cell 5: told to open everything</span></a>
+      <a href="#analysis"><span class="k">10</span><span>What fails, and what changes for cell 4</span></a>
+      <a href="#plan"><span class="k">11</span><span>What to run next</span></a>
     </div>
     <h2 style="margin-top:22px">Also</h2>
     <div class="navlist">
@@ -46,7 +49,8 @@
 
   <section id="headline">
     <h2>Read this first</h2>
-    <p class="lede">Four questions you asked after the break, answered from the code and the stored runs. Then fifty four new runs that answer the one thing none of it could settle by argument. <b>The headline is in <a href="#results">section 7</a>: the four listing behaviour is caused by one default setting in openJiuwen's card summary, and a second agent without that setting does not share it.</b></p>
+    <p class="lede">Four questions you asked after the break, answered from the code and the stored runs. Then fifty four new runs on 7 October, and fifteen more on 8 October, that answer the one thing none of it could settle by argument. <b>The headline is in <a href="#results">section 7</a>: the four listing behaviour is caused by one default setting in openJiuwen's card summary, and a second agent without that setting does not share it.</b></p>
+    <p class="claim"><b>Updated 8 October.</b> Every number from the three cells was checked again from the raw files, and three were wrong: a scoring error, a floor counted the same for every question, and the second agent's repeats being copies of each other. Corrected in <a href="#check">section 8</a>. The corrected numbers make the main result stronger, not weaker. The "open everything" ceiling ran in <a href="#exhaustive">section 9</a>, and <a href="#analysis">section 10</a> sorts every remaining error and lists the changes for cell 4, which has not run yet.</p>
     <p class="note">On the way there this check found one thing that was already fine, one thing I had described wrongly and have since corrected, and one fault of my own that voided a set of results I had reported to you as a finding. Those come first, because they change what the rest is worth.</p>
     <div class="tablewrap">
       <table>
@@ -56,12 +60,12 @@
           <tr><td class="idx">1</td><td class="wide">Is the shop shortcut fixed?</td><td class="dim wide">The price leak is fixed and was measured. It is <b>not</b> fixed completely, and I can name the three holes. A separate shortcut, the agent reading only four listings, was never fixed and never claimed to be</td><td><span class="pill amb">PARTLY</span></td></tr>
           <tr><td class="idx">2</td><td class="wide">What apparel products exist?</td><td class="dim wide">Fifteen sellers of one t-shirt, listed in full below with the job each one does</td><td><span class="pill ok">BUILT</span></td></tr>
           <tr class="warn"><td class="idx">3</td><td class="wide">Does openJiuwen avoid the DOM tree?</td><td class="dim wide"><b>No. I was wrong.</b> It reads the DOM, and it reads accessibility information. The four listing problem has a different cause, and the code shows exactly what it is</td><td><span class="pill no">I WAS WRONG</span></td></tr>
-          <tr class="warn"><td class="idx">4</td><td class="wide">Did the second agent produce usable results?</td><td class="dim wide"><b>Its first twelve runs were void</b>, opening zero real product pages and hitting 49 missing page errors. Found and fixed on 7 October, then re-run: it now opens the whole market and answers 9 of 15 gated questions, which is what narrowed the finding</td><td><span class="pill ok">FIXED AND RUN</span></td></tr>
+          <tr class="warn"><td class="idx">4</td><td class="wide">Did the second agent produce usable results?</td><td class="dim wide"><b>Its first twelve runs were void</b>, opening zero real product pages and hitting 49 missing page errors. Found and fixed on 7 October, then re-run: it now opens the whole market and answers 9 of 15 gated questions, which is what narrowed the finding. Those fifteen are only seven different runs, see section 8</td><td><span class="pill ok">FIXED AND RUN</span></td></tr>
         </tbody>
       </table>
     </div>
-    <p class="claim">The second agent fault is mine, it is in code I wrote, and it is a one line fix. The details are in section 4. Nothing was spent on model runs today.</p>
-    <p class="note">One thing I could not check today: the shop container was not running when this was written and Docker was still starting, so the live verification in section 1 is marked pending rather than claimed. The last live verification was 18 September.</p>
+    <p class="claim">The second agent fault is mine, it is in code I wrote, and it is a one line fix. The details are in section 4. Nothing was spent on model runs on 7 October before the cells.</p>
+    <p class="note">The shop was checked live on 7 October and again on 8 October, 9 checks and 0 failures both times.</p>
   </section>
 
   <section id="leak">
@@ -476,129 +480,406 @@
     <p class="note">Both changed pieces are proven to work. The second agent went from <b>0 product pages and 49 missing page notices across twelve runs</b> to 15 product pages and zero errors in one. The arm reports <code>card probe: viewport_only defaults to False</code> at startup and every one of its 37 summary replies carries that setting, so the patch reached every call rather than the first.</p>
     <p class="claim">And both answered <b>wrongly, in the same way</b>. Each named Copperfield Apparel at $23.40, which is Copperfield's advertised card price. Copperfield's size M costs $29.66 and the right answer is Alderney at $25.77. Neither agent selected a single size.</p>
     <p class="note">That is worth sitting with. These two runs opened <b>every listing in the market</b>, which is the thing the four listing problem was supposed to prevent, and still answered with a price belonging to no size anyone asked about. One run each is not evidence of anything, which is why it was labelled that way at the time.</p>
-    <p class="claim"><b>The full arm did not reproduce it, and this guess was wrong.</b> At fifteen runs a side, removing the window limit took accuracy from 4 of 15 to 10 of 15 and floor compliance from 3 of 15 to 15 of 15. Seeing everything largely does fix it. The two run pilot happened to catch two of the five failures that survive, which is what two runs can do. See <a href="#results">section 7</a>.</p>
+    <p class="claim"><b>The full arm did not reproduce it, and this guess was wrong.</b> At fifteen runs a side, removing the window limit took accuracy from 4 of 15 to 11 of 15 and opening what the answer needs from 3 of 15 to 15 of 15. Seeing everything largely does fix it. The two run pilot happened to catch two of the five failures that survive, which is what two runs can do. See <a href="#results">section 7</a>.</p>
   </section>
 
   <section id="results">
-    <h2>7. The three cells, and what they settle</h2>
-    <p class="lede">Fifty four runs on the clothing market, eighteen per cell, on the same six questions against the same shop with the same model and the same budget. Cells one and two differ by a single setting, the card summary's window limit, and the agent is never told about the change. Cell three swaps the whole agent for a plain loop with four tools.</p>
+    <h2>7. The three cells, corrected</h2>
+    <p class="lede">Fifty four runs on the clothing market, eighteen per cell, on the same six questions against the same shop with the same model. Cells one and two differ by a single setting, the card summary's window limit. Cell three swaps the whole agent for a plain loop with four tools. <b>On 8 October every figure here was re-derived from the raw run files, and three things I told you on 7 October were wrong.</b> They are corrected below. <a href="#check">Section 8</a> shows how each figure was checked.</p>
 
     <div class="stats">
       <a class="stat flag" href="#results"><span class="n">4 / 15</span><span class="l">GATED CORRECT, LIMIT ON</span></a>
-      <a class="stat win" href="#results"><span class="n">10 / 15</span><span class="l">GATED CORRECT, LIMIT OFF</span></a>
-      <a class="stat flag" href="#results"><span class="n">3 / 15</span><span class="l">MET THE FLOOR, LIMIT ON</span></a>
-      <a class="stat win" href="#results"><span class="n">15 / 15</span><span class="l">MET THE FLOOR, LIMIT OFF</span></a>
-      <a class="stat win" href="#results"><span class="n">9 / 15</span><span class="l">GATED CORRECT, SECOND AGENT</span></a>
+      <a class="stat win" href="#results"><span class="n">11 / 15</span><span class="l">GATED CORRECT, LIMIT OFF</span></a>
+      <a class="stat flag" href="#results"><span class="n">3 / 15</span><span class="l">OPENED WHAT THE ANSWER NEEDS, LIMIT ON</span></a>
+      <a class="stat win" href="#results"><span class="n">15 / 15</span><span class="l">OPENED WHAT THE ANSWER NEEDS, LIMIT OFF</span></a>
+      <a class="stat" href="#check"><span class="n">7 / 15</span><span class="l">SECOND AGENT RUNS THAT ARE DIFFERENT</span></a>
       <a class="stat" href="#results"><span class="n">2.7&times;</span><span class="l">WHAT THE FIX COSTS OPENJIUWEN</span></a>
     </div>
 
     <h3 class="sub">Side by side</h3>
     <div class="tablewrap">
       <table>
-        <caption>Same market, same questions, same model, same budget, same shop</caption>
+        <caption>Same market, same questions, same model, same shop. Changed figures say what they were</caption>
         <thead><tr><th class="wide">Measure</th><th class="num">1. openJiuwen, limit on</th><th class="num">2. openJiuwen, limit off</th><th class="num">3. second agent</th></tr></thead>
         <tbody>
-          <tr class="hi"><td class="wide"><b>Gated questions correct</b></td><td class="num">4 of 15</td><td class="num"><b>10 of 15</b></td><td class="num"><b>9 of 15</b></td></tr>
-          <tr class="hi"><td class="wide"><b>Runs that opened enough to justify an answer</b></td><td class="num">3 of 15</td><td class="num"><b>15 of 15</b></td><td class="num"><b>12 of 15</b></td></tr>
+          <tr class="hi"><td class="wide"><b>Gated questions correct</b></td><td class="num">4 of 15</td><td class="num"><b>11 of 15</b><br><span class="dim">was 10</span></td><td class="num">9 of 15</td></tr>
+          <tr class="hi"><td class="wide"><b>Opened every listing the answer needs</b></td><td class="num">3 of 15</td><td class="num"><b>15 of 15</b></td><td class="num">12 of 15</td></tr>
           <tr><td class="wide">Listings opened, median</td><td class="num">4</td><td class="num">15</td><td class="num">15</td></tr>
-          <tr class="warn"><td class="wide"><b>Cost of the batch</b></td><td class="num">$2.72</td><td class="num">$7.38</td><td class="num"><b>$2.00</b></td></tr>
+          <tr class="warn"><td class="wide"><b>Runs that are genuinely different</b></td><td class="num">15 of 15</td><td class="num">15 of 15</td><td class="num"><b>7 of 15</b><br><span class="dim">new</span></td></tr>
+          <tr><td class="wide">Cost of the batch</td><td class="num">$2.72</td><td class="num">$7.38</td><td class="num">$2.00</td></tr>
           <tr><td class="wide">The control, answerable from the results page</td><td class="num">2 of 3</td><td class="num">3 of 3</td><td class="num">3 of 3</td></tr>
         </tbody>
       </table>
     </div>
+    <p class="note">"Opened every listing the answer needs" replaces "met the floor". For the two best price questions that means the eight listings whose advertised price is at or below the answer, since none of them can be ruled out unopened. For the two counting questions it means all fifteen. For "does every listing offer M" it means at least one listing that lacks M. The old measure used eight for every question. It lands on the same numbers here by coincidence, explained in section 8.</p>
 
     <h3 class="sub">What each comparison establishes</h3>
     <div class="tablewrap">
       <table>
-        <caption>Fisher exact test, two sided, on the fifteen gated runs per cell</caption>
-        <thead><tr><th class="wide">Comparison</th><th class="wide">On what</th><th class="num">p</th><th>Reading</th></tr></thead>
+        <caption>Two sided exact tests. "Pooled" counts the fifteen runs together, as on 7 October. "By question" compares the cells one question at a time and then combines</caption>
+        <thead><tr><th class="wide">Comparison</th><th class="wide">On what</th><th class="num">7 October</th><th class="num">Now</th><th>Reading</th></tr></thead>
         <tbody>
-          <tr class="hi"><td class="wide"><b>Limit off against limit on</b></td><td class="dim wide">met the floor, 15 of 15 against 3 of 15</td><td class="num"><b>0.00001</b></td><td><span class="pill ok">SETTLED</span></td></tr>
-          <tr><td class="wide">Limit off against limit on</td><td class="dim wide">accuracy, 10 of 15 against 4 of 15</td><td class="num">0.066</td><td><span class="pill amb">SUGGESTIVE</span></td></tr>
-          <tr class="hi"><td class="wide"><b>Second agent against limit on</b></td><td class="dim wide">met the floor, 12 of 15 against 3 of 15</td><td class="num"><b>0.003</b></td><td><span class="pill ok">SETTLED</span></td></tr>
-          <tr class="hi"><td class="wide"><b>Second agent against limit off</b></td><td class="dim wide">accuracy, 9 of 15 against 10 of 15</td><td class="num">1.000</td><td><span class="pill ok">INDISTINGUISHABLE</span></td></tr>
-          <tr><td class="wide">Second agent against limit off</td><td class="dim wide">met the floor, 12 of 15 against 15 of 15</td><td class="num">0.224</td><td><span class="pill ok">INDISTINGUISHABLE</span></td></tr>
+          <tr class="hi"><td class="wide"><b>Limit off against limit on</b></td><td class="dim wide">opened what the answer needs, 15 against 3</td><td class="num">0.00001</td><td class="num"><b>0.00004</b><br><span class="dim">pooled 0.00001</span></td><td><span class="pill ok">SETTLED</span></td></tr>
+          <tr class="hi"><td class="wide"><b>Limit off against limit on</b></td><td class="dim wide">correct, 11 against 4</td><td class="num">0.066<br><span class="dim">10 against 4</span></td><td class="num"><b>0.005</b><br><span class="dim">pooled 0.027</span></td><td><span class="pill ok">NOW CLEAR</span></td></tr>
+          <tr class="warn"><td class="wide">Second agent against limit on</td><td class="dim wide">opened what the answer needs, 4 of its 7 different runs against 3 of 15</td><td class="num">0.003<br><span class="dim">12 against 3</span></td><td class="num"><b>0.031</b></td><td><span class="pill amb">WEAKER</span></td></tr>
+          <tr><td class="wide">Second agent against limit on</td><td class="dim wide">correct, 5 of 7 against 4 of 15</td><td class="num">not tested</td><td class="num">0.125</td><td><span class="pill amb">NOT SHOWN</span></td></tr>
+          <tr><td class="wide">Second agent against limit off</td><td class="dim wide">correct, 5 of 7 against 11 of 15</td><td class="num">1.000</td><td class="num">1.000</td><td><span class="pill amb">NO DIFFERENCE SEEN</span></td></tr>
         </tbody>
       </table>
     </div>
-    <p class="claim">Read the last three rows together. <b>A second agent, written from scratch with four tools and no window filter, opens the market by default and performs like openJiuwen with its filter removed.</b> It differs sharply from openJiuwen as shipped and not at all from openJiuwen repaired.</p>
+    <p class="note"><b>Why "by question".</b> Each cell asked the same five gated questions three times, and the questions differ hugely in difficulty. Every cell answered all-stocked correctly every time. Almost nothing answered count-stocked correctly. Pooling treats an easy question and a hard one as the same thing. Comparing within each question first and then combining removes that. It is the standard exact test for this layout, and it is used because of the layout, not because of the answer it gives. Both columns are shown so you can see the difference.</p>
+    <p class="claim"><b>The mechanism result is stronger than I said.</b> With the scoring error fixed, removing the window limit raised accuracy from 4 of 15 to 11 of 15. That holds under either test, p 0.027 pooled and 0.005 by question. On 7 October I called it suggestive. It is now a result.</p>
+    <p class="claim"><b>The second agent result is weaker than I said.</b> Its fifteen gated runs are seven different runs, because it samples at temperature zero and replays itself exactly. Counted honestly it still opens more than openJiuwen as shipped, at p 0.031, but that is one comparison near the line, not "settled".</p>
 
-    <h3 class="sub">So the claim gets smaller, and much better evidenced</h3>
-    <p class="note">Before these runs the claim was that agents under retrieve on gated pages. That is not what the evidence supports. What it supports is narrower:</p>
     <div class="quote good">
-      <span>openJiuwen's card summary filters to the browser window by default and does not report what it dropped. On a fifteen listing market this costs it eleven listings, and it meets the evidential floor in 3 runs of 15. Removing that one filter raises it to 15 of 15. A second agent with no such filter reaches 12 of 15 without being told anything. <b>The failure is this tool's default, not the model's inclination.</b></span>
-      <span class="who">Three cells, fifty four runs, one market, one model. The second agent is what rules out the broader claim, which is why it was worth the money.</span>
+      <span>openJiuwen's card summary filters to the browser window by default and does not report what it dropped. On a fifteen listing market it opens what the answer needs in 3 runs of 15. Removing that one filter raises this to 15 of 15, and raises accuracy from 4 to 11 of 15. A second agent with no such filter opens the whole market without being told to. <b>The failure is this tool's default, not the model's inclination.</b></span>
+      <span class="who">The claim as it now stands. One market, one model. The middle sentence is the strong one.</span>
     </div>
-    <p class="note">This is the result the scaffold axis was put in the design to produce. It could have gone the other way, and had the plain loop also stopped at four the claim would have been about agents in general. It did not, so the honest finding is the smaller one.</p>
 
-    <h3 class="sub">The cost result, which was not predicted</h3>
+    <h3 class="sub">The cost result</h3>
     <div class="tablewrap">
       <table>
-        <caption>Equivalent accuracy, very different bills</caption>
+        <caption>Similar accuracy, very different bills</caption>
         <thead><tr><th class="wide">Version</th><th class="num">Gated correct</th><th class="num">Cost</th><th class="wide">Why</th></tr></thead>
         <tbody>
-          <tr><td class="wide">openJiuwen, limit off</td><td class="num">10 of 15</td><td class="num">$7.38</td><td class="dim wide">Its unfiltered summary is 88,822 characters where the accessibility tree of the same page is 11,394, and it is re-sent at every step</td></tr>
-          <tr class="hi"><td class="wide"><b>Second agent</b></td><td class="num"><b>9 of 15</b></td><td class="num"><b>$2.00</b></td><td class="dim wide">Reads the page text and a short list of links, about 5,600 characters on the same page</td></tr>
+          <tr><td class="wide">openJiuwen, limit off</td><td class="num">11 of 15</td><td class="num">$7.38</td><td class="dim wide">Its unfiltered summary is 88,822 characters where the accessibility tree of the same page is 11,394, and it is re-sent at every step</td></tr>
+          <tr class="hi"><td class="wide"><b>Second agent</b></td><td class="num"><b>9 of 15</b><br><span class="dim">5 of 7 different runs</span></td><td class="num"><b>$2.00</b></td><td class="dim wide">Reads the page text and a short list of links, about 5,600 characters on the same page</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="claim">Indistinguishable accuracy at <b>27 per cent of the cost</b>. The expensive path is expensive because the tool called compact is nearly three times the size of the thing it summarises while naming a quarter as many products, which was measured before any of these runs.</p>
+    <p class="claim">27 per cent of the cost, with no accuracy difference shown. That last part now rests on seven runs rather than fifteen, so read it as "no difference visible yet", not as "the same".</p>
 
     <h3 class="sub">A prediction of mine that was wrong</h3>
-    <p class="note">After the two run pilot, where both runs opened all fifteen listings and both still answered wrongly, I suggested that seeing everything might not fix the problem and that the four listing behaviour could be a symptom rather than the cause. <b>At fifteen runs a side it largely is the cause.</b> The pilot was two runs and was labelled at the time as proving nothing, which is the only reason that guess did no damage.</p>
+    <p class="note">After the two run pilot, where both runs opened all fifteen listings and both still answered wrongly, I suggested that seeing everything might not fix the problem. <b>At fifteen runs a side it largely does.</b> The pilot was two runs and was labelled at the time as proving nothing, which is the only reason that guess did no damage.</p>
 
     <h3 class="sub">What still fails once the agent can see the whole market</h3>
-    <p class="note">Both repaired cells leave a residue, and it is the same residue. It is not the window gate.</p>
     <div class="tablewrap">
       <table>
-        <caption>Every wrong answer in cells 2 and 3</caption>
+        <caption>Every wrong or missing answer in cells 2 and 3, re-read on 8 October</caption>
         <thead><tr><th>Question</th><th>Cell</th><th class="wide">What it answered</th><th class="wide">What kind of error that is</th></tr></thead>
         <tbody>
-          <tr class="hi"><td class="mono">cheapest-target</td><td>3, all three runs</td><td class="dim wide">Copperfield Apparel at $23.40</td><td class="dim wide">Copperfield's advertised card price, used as the price of size M. Its M actually costs $29.66 and the answer is Alderney at $25.77</td></tr>
-          <tr><td class="mono">target-price</td><td>2</td><td class="dim wide">$23.40</td><td class="dim wide">The same mistake, from the other agent</td></tr>
-          <tr class="hi"><td class="mono">count-stocked</td><td>2 twice, 3 all three</td><td class="dim wide">counted 5 where the answer is 10</td><td class="dim wide">Counted the listings that can <b>sell</b> the size, where the question asked how many <b>offer</b> it. The five sold out ones were missed</td></tr>
-          <tr><td class="mono">count-buyable</td><td>2</td><td class="dim wide">counted 15</td><td class="dim wide">Counted the whole market, ignoring availability entirely</td></tr>
-          <tr><td class="mono">target-price</td><td>2</td><td class="dim wide">no answer</td><td class="dim wide">The run ended without producing one</td></tr>
+          <tr class="hi"><td class="mono">target-price</td><td>2, run 3</td><td class="dim wide">$23.40</td><td class="dim wide">Copperfield's price with no size chosen. Its M is $29.66. This run read the price with a script of its own that changed the size and read the price in the same instant, before the page had updated, see below</td></tr>
+          <tr class="hi"><td class="mono">cheapest-target</td><td>3, one run, replayed three times</td><td class="dim wide">Copperfield at $23.40</td><td class="dim wide">The same price, read without choosing M on any listing</td></tr>
+          <tr><td class="mono">count-stocked</td><td>2, runs 1 and 2. 3, one run replayed</td><td class="dim wide">5, where the key says 10</td><td class="dim wide">The "can sell it now" reading of the word offer. Under that reading 5 is right. See section 8</td></tr>
+          <tr><td class="mono">target-price</td><td>2, run 1</td><td class="dim wide">no answer</td><td class="dim wide">Used all 100 steps after opening all fifteen listings</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="claim">Every one of these is the <b>advertised price</b> or the <b>availability</b> distinction. Neither is about how much the agent looked. Fixing what it can see moved the failure onto the two gates this market was built to create.</p>
-    <p class="note">The sharpest single piece of evidence sits inside cell 3. Asked <i>what is the lowest price anyone charges for size M that can be bought</i>, it answered <b>$25.77 three times out of three, correctly</b>. Asked <i>which seller is cheapest for size M, counting only listings that can supply it</i>, the same agent on the same market answered <b>Copperfield at $23.40 three times out of three</b>. It holds the right figure and the wrong seller at once, which is not a retrieval failure at all.</p>
+    <p class="note">One row from 7 October is gone. I listed cell 2's count-buyable run 3 as "counted 15, ignoring availability entirely". It actually answered 5, correctly. That was a scoring error, explained in section 8.</p>
+    <p class="claim">Two kinds of error remain, and neither is about how much the agent looked. <b>One is the gated price itself</b>: the agent reads the price before the page has revealed it, either without choosing the size at all or too soon after choosing it. <b>The other is the word offer.</b></p>
+
+    <p class="note"><b>The clearest case of the first kind, and it is partly the shop's doing.</b> In cell 2, target-price run 3, openJiuwen chose size M on Copperfield's page and its next snapshot showed <b>$29.66</b>, the right figure. It then checked the other listings with a script it wrote itself, which changes the size and reads the price in one go:</p>
+    <figure class="code">
+      <figcaption><span class="path">the agent's own script, cell 2, target-price run 3 (shortened)</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="src">sizeSelect.value = mOption.value;</span>
+<span class="src">sizeSelect.dispatchEvent(new Event('change', { bubbles: true }));</span>
+<span class="src">const price = document.querySelector('[data-price-type="finalPrice"]').textContent;</span>
+<span class="src">return { available: true, price: price };</span></pre>
+    </figure>
+    <p class="note">At the end it reopened Copperfield, ran the same script, got <b>$23.40</b>, and reported that. Reproduced on the live shop on 8 October with the agent's exact script:</p>
+    <div class="tablewrap">
+      <table>
+        <caption>The agent's script against the price box one second later</caption>
+        <thead><tr><th class="wide">Listing</th><th class="num">Script returns</th><th class="num">Same price box, 1 second later</th><th class="num">True price of M</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">Copperfield</td><td class="num">$23.40</td><td class="num">$29.66</td><td class="num">$29.66</td></tr>
+          <tr><td class="wide">Elmsworth</td><td class="num">$24.83</td><td class="num">$28.96</td><td class="num">$28.96</td></tr>
+          <tr><td class="wide">Northwick</td><td class="num">$25.96</td><td class="num">$32.39</td><td class="num">$32.39</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The script reads too early. <b>The delay is ours.</b> The gated theme writes the real price 60 milliseconds after a size changes (<code>setTimeout(show, 60)</code> in <code>env/gated_theme/.../configurable.phtml</code>), so that Magento's own script, which redraws the price box first, cannot overwrite it. Stock Magento has no such delay, so the same script there would probably have read the right price.</p>
+    <p class="note">How much this matters: only two of the 51 openJiuwen runs in cells 1, 2 and 5 wrote scripts like this. One is this run, where it decided the answer. The other, cell 1 cheapest-target run 2, was wrong for other reasons as well, since it claimed all fifteen sellers offer M. Live marketplaces also update a price after the selection rather than during it, so a delay is realistic, but it is a property of this shop and it is stated as one. The shop is not changed for the remaining cell, so that every cell meets the same page.</p>
+    <p class="note">The plainer version of the same failure is in cell 1. Target-price run 2 chose M inside a batch step, whose reply carries no page content, and never looked at the page again. It reported Copperfield's $23.40.</p>
+    <p class="note">The second agent shows the same thing from the other side. Asked for the lowest price of M that can be bought, it answered $25.77, which is right. Asked which seller is cheapest for M, it answered Copperfield at $23.40. Each of those is one run, replayed identically three times, so this is one example, not three.</p>
 
     <h3 class="sub">What the fix costs</h3>
-    <p class="note">Lifting the limit costs <b>2.7 times</b> as much, because the summary grows from four cards to fifteen and is re-sent at every step. That is the whole argument for a retrieval policy rather than a bigger window: the aim is cell two's accuracy at something closer to cell one's bill. Measured per run from the provider's own charge, not from an account balance.</p>
-    <p class="note"><b>Honest limits on this result.</b> One market, one model, one agent, fifteen gated runs a side. The accuracy difference is suggestive rather than established. And the comparison says nothing yet about whether any of this generalises beyond openJiuwen, which is what the second agent exists to answer and has not yet been run on this market.</p>
+    <p class="note">Lifting the limit costs <b>2.7 times</b> as much, because the summary grows from four cards to fifteen and is re-sent at every step. That is the argument for a retrieval policy rather than a bigger window: the aim is cell two's accuracy at something closer to cell one's bill. Costs are the provider's own charge per call, and section 8 shows they match the account to the cent.</p>
+    <p class="note"><b>Honest limits on this result.</b> One market, one model. The second agent's evidence is seven runs, not fifteen. The two agents sample differently, 0.2 against 0, and only openJiuwen has a ten minute clock limit, which section 8 explains. The gated shop reveals a price 60 milliseconds after a size changes, which decided one run. Two of the five gated questions turn on an ambiguous word. None of these touch the cell 1 against cell 2 comparison, which is the same agent with one setting changed.</p>
+  </section>
+
+  <section id="check">
+    <h2>8. Every number in cells 1 to 3, checked again</h2>
+    <p class="lede">Before spending anything more, every figure from the three cells was re-derived from the raw files each run left behind, without trusting the summary the suite wrote at the time. Most of it held. Three things did not, and one of them changes a conclusion in your favour.</p>
+    <figure class="code">
+      <figcaption><span class="path">both scripts are free to re-run, they only read files on disk</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="src">python experiments/verify_cells.py experiments/results/20261007T112057 \</span>
+<span class="src">    experiments/results/20261007T115021 experiments/results/20261007T134621 --answers</span>
+<span class="src">python experiments/compare_cells.py</span></pre>
+    </figure>
+
+    <h3 class="sub">What was checked, for all 54 runs</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>Each check, how it was done, and what it found</caption>
+        <thead><tr><th class="wide">Check</th><th class="wide">How</th><th class="wide">Result</th><th>State</th></tr></thead>
+        <tbody>
+          <tr class="warn"><td class="wide">Each answer re-scored</td><td class="dim wide">The full answer from each run's own record, through the scorer again</td><td class="dim wide">53 of 54 agree. One was a scoring error</td><td><span class="pill no">1 WRONG</span></td></tr>
+          <tr><td class="wide">Each answer read by a person</td><td class="dim wide">All 54 printed in full and read, not just their verdicts</td><td class="dim wide">Found the scoring error and the problem with the word offer</td><td><span class="pill amb">2 FOUND</span></td></tr>
+          <tr><td class="wide">Listings opened</td><td class="dim wide">Counted from the run log, and again from only what the browser sent back</td><td class="dim wide">The two counts agree in all 54 runs. No run opened a page outside the market</td><td><span class="pill ok">HELD</span></td></tr>
+          <tr><td class="wide">No missing pages</td><td class="dim wide">Searched everything the agent saw for the shop's 404 page</td><td class="dim wide">None in any run</td><td><span class="pill ok">HELD</span></td></tr>
+          <tr><td class="wide">Prices stayed hidden</td><td class="dim wide">Searched everything the agent saw for a size label with a price on it, like <code>+$32.50</code></td><td class="dim wide">None in any run, so every run saw the gated shop</td><td><span class="pill ok">HELD</span></td></tr>
+          <tr><td class="wide">Each cell had its setting</td><td class="dim wide">Read from the card summary's own replies, not from the run settings</td><td class="dim wide">Cell 1: limit on in all 19 replies. Cell 2: off in all 18. The "on" flags that also appear in cell 2 come from a different tool that was never patched, and it is the same in both cells</td><td><span class="pill ok">HELD</span></td></tr>
+          <tr><td class="wide">Window size</td><td class="dim wide">Reported by openJiuwen's own tool in its replies</td><td class="dim wide">1200 by 701 in every reply</td><td><span class="pill ok">HELD</span></td></tr>
+          <tr><td class="wide">Cost</td><td class="dim wide">Re-summed from the provider's charge on every model call, then compared with the account's own balance</td><td class="dim wide">Cells 2 and 3 match the account to the cent. Cell 1 is $0.026 higher, which is exactly the late charge of the pilot run just before it</td><td><span class="pill ok">HELD</span></td></tr>
+          <tr><td class="wide">Every model call has a charge</td><td class="dim wide">Counted calls and charges in each openJiuwen log</td><td class="dim wide">Equal in every run, so nothing went unbilled in the totals</td><td><span class="pill ok">HELD</span></td></tr>
+          <tr><td class="wide">Fresh cache per run</td><td class="dim wide">Checked on disk</td><td class="dim wide">All 54 runs had their own</td><td><span class="pill ok">HELD</span></td></tr>
+          <tr><td class="wide">The browser tool did not change between cells</td><td class="dim wide">openJiuwen fetches it as "latest" on every run. Checked the installed copy and the release dates</td><td class="dim wide">Version 0.0.83, installed 7 October 08:48 before cell 1, and still the newest release on 8 October</td><td><span class="pill ok">HELD</span></td></tr>
+          <tr><td class="wide">Shop health today</td><td class="dim wide"><code>env/verify_shop.py</code></td><td class="dim wide">9 checks, 0 failed</td><td><span class="pill ok">HELD</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Proof the checks can fail</h3>
+    <p class="note">A check that never fires proves nothing unless it is able to fire. Each one was run on old batches where I know the fault happened.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>The same checks, on runs known to be bad</caption>
+        <thead><tr><th class="wide">Check</th><th class="wide">Known bad batch</th><th class="wide">What it found</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">No missing pages</td><td class="dim wide">The twelve void second agent runs from 18 September</td><td class="dim wide">49 missing pages, the number reported at the time</td></tr>
+          <tr><td class="wide">Prices stayed hidden</td><td class="dim wide">A 17 September run on the old shop</td><td class="dim wide">Leaked prices in every run, for example <code>+$7.47</code> and <code>+$32.50</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Wrong 1: a scoring error</h3>
+    <p class="note">Cell 2, count-buyable, run 3. The question asks how many listings have size M in stock. The answer is 5. The run said:</p>
+    <div class="quote good">
+      <span>"After checking all 15 Thornwood Heavyweight Cotton Tee listings on the search results page, I found that 5 products have size M in stock and available to buy right now."</span>
+      <span class="who">Correct. The scorer marked it wrong.</span>
+    </div>
+    <p class="note">The scorer took the <b>first</b> number in the answer as the count, which here is the 15 from "all 15". I then described this run to you as "counted 15, ignoring availability entirely". That was wrong twice over. The scorer now skips numbers that say how many were looked at, "all 15", "of the 15", "out of 15", and the digits inside prices. Ten test phrasings pass. <b>Re-scoring every run on this market with the fix changes exactly this one verdict.</b> The old verdicts are kept beside the new ones in each suite file, so the change is visible.</p>
+
+    <h3 class="sub">Wrong 2: the floor was the same for every question</h3>
+    <p class="note">"Met the floor" was counted as "opened at least 8 listings", for every question. But 8 is the floor for the two best price questions only. Each question has its own:</p>
+    <div class="tablewrap">
+      <table>
+        <caption>What each question needs before its answer is supported</caption>
+        <thead><tr><th>Question</th><th class="wide">Needs</th><th class="wide">Why</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">target-price, cheapest-target</td><td class="dim wide">the 8 listings advertised at or below $25.77</td><td class="dim wide">An advertised price is the cheapest thing in a listing, so those 8 cannot be ruled out without opening them. The other 7 can</td></tr>
+          <tr><td class="mono">count-stocked, count-buyable</td><td class="dim wide">all 15</td><td class="dim wide">A count cannot be bounded or settled early</td></tr>
+          <tr><td class="mono">all-stocked</td><td class="dim wide">1 listing that lacks M</td><td class="dim wide">One counterexample settles "does every listing offer M"</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Re-counted with each question's own need, and requiring the <b>right</b> listings rather than enough of them, the result is 3, 15 and 12 of 15, <b>the same numbers as before</b>. That is a coincidence, not a confirmation. The old rule failed the three all-stocked runs in cells 1 and 3 for opening fewer than 8. The correct rule fails them because none of the four or five listings they opened lacks M. Same verdict, different reason, and the next item shows why even that depends on a word.</p>
+
+    <h3 class="sub">Wrong 3: the second agent's repeats are copies</h3>
+    <p class="note">The second agent asks the model at temperature 0, and nothing in the shop's pages changes between runs. So on five of its six questions it made the same run three times: same tokens, same answer, same cost to the millionth of a dollar. Its fifteen gated runs are <b>seven different runs</b>. openJiuwen asks at temperature 0.2 with top_p 0.1, which is its own shipped default, and all 36 of its runs differ.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Different runs among each question's three repeats</caption>
+        <thead><tr><th class="wide">Cell</th><th class="num">headline</th><th class="num">target-price</th><th class="num">cheapest-target</th><th class="num">all-stocked</th><th class="num">count-stocked</th><th class="num">count-buyable</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">1. openJiuwen, limit on</td><td class="num">3</td><td class="num">3</td><td class="num">3</td><td class="num">3</td><td class="num">3</td><td class="num">3</td></tr>
+          <tr><td class="wide">2. openJiuwen, limit off</td><td class="num">3</td><td class="num">3</td><td class="num">3</td><td class="num">3</td><td class="num">3</td><td class="num">3</td></tr>
+          <tr class="warn"><td class="wide"><b>3. second agent</b></td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">3</td><td class="num">1</td><td class="num">1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">This means the tests I reported for the second agent counted each of its runs three times. They are recomputed in section 7 on its seven different runs. It also means my fairness audit on 7 October missed two differences between the agents. It held the model, window, step budget and shop constant, but not the sampling setting, and not the clock: openJiuwen runs stop after ten minutes, its own default, while the second agent has no clock limit. Neither mattered in cells 1 to 3, since no run came near ten minutes, but both should be equal in any future comparison.</p>
+
+    <h3 class="sub">Not wrong, but ambiguous: the word "offer"</h3>
+    <p class="note">Two questions use it. "Does every listing offer size M" and "how many listings offer size M". The answer key, fixed before any run, counts a sold out size as offered, because it is still on the menu. So the count is 10. <b>Every run that explained its count read "offer" as "can sell it now"</b>, which makes the count 5. One run answered 10 without saying why. The clearest evidence is a cell 2 run that got every fact right and still answered 5:</p>
+    <div class="quote bad">
+      <span>"5 Thornwood listings offer size M ... These 5 products have size M available (not disabled) for purchase. Additionally, 5 other Thornwood listings have size M as an option but it is disabled (not available), and 5 listings do not have size M as an option at all."</span>
+      <span class="who">Cell 2, count-stocked, run 2. Scored wrong. It found all three groups exactly. This is a reading of a word, not a retrieval failure.</span>
+    </div>
+    <p class="note">The same reading explains all-stocked. In cells 1 and 3 the agent answered "No" after opening only the first four or five listings, none of which lacks M. Where it gave a reason, the reason was "2 do not offer size M as it is disabled". Under the key that is not a counterexample. Under the agent's own reading it is. So the results are reported under the key as the main figures, and under the other reading as a check:</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Both readings of "offer", gated questions</caption>
+        <thead><tr><th class="wide">Measure</th><th class="num">1. limit on</th><th class="num">2. limit off</th><th class="num">3. second agent</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">Correct, the key's reading</td><td class="num">4 of 15</td><td class="num">11 of 15</td><td class="num">9 of 15</td></tr>
+          <tr><td class="wide">Correct, the "can sell it now" reading</td><td class="num">5 of 15</td><td class="num">12 of 15</td><td class="num">12 of 15</td></tr>
+          <tr><td class="wide">Opened what the answer needs, the key's reading</td><td class="num">3 of 15</td><td class="num">15 of 15</td><td class="num">12 of 15</td></tr>
+          <tr><td class="wide">Opened what the answer needs, the other reading</td><td class="num">6 of 15</td><td class="num">15 of 15</td><td class="num">15 of 15</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The cell 1 against cell 2 result holds under both readings: accuracy p 0.005 or 0.012 by question, and opening what the answer needs p 0.00004 or 0.0008. What the ambiguity does change is the floor for the second agent, which is 12 or 15 of 15 depending only on this word.</p>
+    <p class="note">The wording is kept as it is for the remaining cells, so that all five cells answer exactly the same questions. Changing it now would make the new cells incomparable with the old ones. The fix belongs in the next market, where both words can be written unambiguously from the start.</p>
+
+    <h3 class="sub">One more thing to state plainly</h3>
+    <p class="note">"openJiuwen as shipped" means as shipped plus one fix of ours, made on 8 September and recorded in the README. Its card summary reported an empty result, "no cards on this page", as a parse error, which sent the agent into pointless retries. Every openJiuwen run in the project has this fix, so it is the same in every cell, but it should be said wherever "as shipped" is said.</p>
+  </section>
+
+  <section id="exhaustive">
+    <h2>9. Cell 5: told to open everything</h2>
+    <p class="lede">The ceiling for the contribution to be measured against. openJiuwen exactly as in cell 1, window limit on, with one paragraph added to each question. Run on 8 October, after every check below passed. Fifteen runs, the five gated questions three times. The control question was skipped, because there is nothing on its page to open.</p>
+    <div class="quote good">
+      <span>"Before answering, open every listing in the search results, including any on later pages, and check the relevant option on each one. Do not stop early because a listing looks unpromising from its search-result price. Base the answer only on listings you have opened, and say how many you opened."</span>
+      <span class="who">The whole of the change from cell 1. Unchanged since it was written on 10 September for the water markets.</span>
+    </div>
+
+    <h3 class="sub">Checked before it ran</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>Every condition that could make this cell differ from cell 1 for a reason other than the paragraph</caption>
+        <thead><tr><th class="wide">Condition</th><th class="wide">How it was checked</th><th>State</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">Shop healthy and gated</td><td class="dim wide"><code>env/verify_shop.py</code>, 9 checks, 0 failed. Afterwards, no price label leaked in any run</td><td><span class="pill ok">HELD</span></td></tr>
+          <tr><td class="wide">openJiuwen unchanged since cells 1 to 3</td><td class="dim wide">No file in it modified since cell 1 began. Its only local change is the 8 September parse fix</td><td><span class="pill ok">HELD</span></td></tr>
+          <tr><td class="wide">Browser tool unchanged</td><td class="dim wide">0.0.83 before and after the batch</td><td><span class="pill ok">HELD</span></td></tr>
+          <tr><td class="wide">Window limit on, as in cell 1</td><td class="dim wide">Every run printed <code>card probe: off</code>, meaning the shipped default</td><td><span class="pill ok">HELD</span></td></tr>
+          <tr><td class="wide">The exact text sent</td><td class="dim wide">Printed and read before running. The paragraph is added once, with no strategy text</td><td><span class="pill ok">HELD</span></td></tr>
+          <tr><td class="wide">Model, window, step budget, fresh cache per run</td><td class="dim wide">Same as cell 1, checked in the records</td><td><span class="pill ok">HELD</span></td></tr>
+          <tr class="warn"><td class="wide">The ten minute clock</td><td class="dim wide"><b>Not checked before running</b>, because no earlier run had come near it. See below</td><td><span class="pill no">MISSED</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">What went wrong while it ran: the laptop went to sleep</h3>
+    <p class="note">The batch started at 03:44 on battery, and the machine slept, waking only briefly, until about 07:44. From then until 08:29 it ran in short bursts, about 45 seconds awake and 8 asleep, and the runs in that window came through with normal timing and no errors. It slept again from 08:29 until the power button was pressed at 09:41. The system's own power log records every sleep and wake. Three runs were caught in it. openJiuwen's ten minute clock kept counting while the machine slept, so two of them were stopped as "exceeded 600s" having used only 74 and 54 of their 100 steps. One finished after waking.</p>
+    <p class="note">The rule for leaving a run out has to be objective, so it is this: <b>a run whose log goes silent for more than 60 seconds was suspended, and is void.</b> openJiuwen logs a heartbeat every 30 seconds while a run is alive.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Longest silence in any run's log</caption>
+        <thead><tr><th class="wide">Batch</th><th class="num">Longest silence, any run</th><th class="wide">Runs over 60 seconds</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">Cell 1</td><td class="num">31 s</td><td class="dim wide">none</td></tr>
+          <tr><td class="wide">Cell 2</td><td class="num">31 s</td><td class="dim wide">none</td></tr>
+          <tr class="warn"><td class="wide">Cell 5</td><td class="num">3,018 s</td><td class="dim wide">exactly three: target-price runs 1 and 2, 50 and 18 minutes. count-buyable run 2, 49 minutes</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">The void run that finished had the right answer, and it is still left out, because the rule was set before its answer was looked at and a rule that bends to answers is not a rule. The other twelve runs ran at the normal 3.4 to 4.7 seconds a step, the same as cell 2, and contain no timeout or connection errors. The checker now applies this rule to every batch, and the machine is kept awake during runs from now on.</p>
+    <p class="note">Cost of the mistake: <b>$2.18</b> spent on the three void runs. The account also moved $0.05 more than the runs' own charges add up to, and that is explained too. In the two runs the clock stopped, the last thing in the log is a model call that started and never finished. The provider billed those two calls, and the log never received their charge.</p>
+
+    <h3 class="sub">Results, twelve valid runs</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>Each answer was read by a person as well as scored</caption>
+        <thead><tr><th>Question</th><th class="num">Valid runs</th><th class="num">Correct</th><th class="wide">What the runs did</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="mono">cheapest-target</td><td class="num">3</td><td class="num"><b>3</b></td><td class="dim wide">Alderney at $25.77 every time, each listing the five sellers that can supply M with their correct prices</td></tr>
+          <tr class="hi"><td class="mono">target-price</td><td class="num">1</td><td class="num"><b>1</b></td><td class="dim wide">$25.77. The other two runs are void</td></tr>
+          <tr><td class="mono">all-stocked</td><td class="num">3</td><td class="num">3</td><td class="dim wide">No, after opening all fifteen. One run named all three groups exactly</td></tr>
+          <tr><td class="mono">count-buyable</td><td class="num">2</td><td class="num">1</td><td class="dim wide">One said 5, correct. One ran out of its 100 steps after choosing size M eleven times to check stock the menu already showed</td></tr>
+          <tr class="warn"><td class="mono">count-stocked</td><td class="num">3</td><td class="num">0</td><td class="dim wide">5 every time, with the facts right: "offer size M (with the option enabled)". The word offer again</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">Every run opened all fifteen listings, and <b>every valid price answer was right and showed it had seen the revealed prices</b>. The only errors left are the word offer, three times, and one run out of steps. Under the other reading of offer the cell scores 11 of 12.</p>
+    <p class="note"><b>A finding nobody asked for.</b> In 3 of these 15 runs the agent switched its own window limit off, by passing <code>viewport_only: false</code> to the card summary itself. The tool always allowed this. In cell 1, without the instruction to open everything, it never did, in 18 runs. So the setting that causes the four listing behaviour can be overridden by the agent, and only gets overridden when the agent is told to be thorough.</p>
+
+    <h3 class="sub">Where it sits against the other cells</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>Gated questions only. Cost and steps are means per run, from the provider's own charges</caption>
+        <thead><tr><th class="wide">Cell</th><th class="num">Correct, the key</th><th class="num">Correct, other reading</th><th class="num">Opened what the answer needs</th><th class="num">Tool calls a run</th><th class="num">Cost a run</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">1. openJiuwen as shipped</td><td class="num">4 of 15</td><td class="num">5 of 15</td><td class="num">3 of 15</td><td class="num">23</td><td class="num">$0.18</td></tr>
+          <tr><td class="wide">2. window limit off</td><td class="num">11 of 15</td><td class="num">12 of 15</td><td class="num">15 of 15</td><td class="num">51</td><td class="num">$0.49</td></tr>
+          <tr><td class="wide">3. second agent</td><td class="num">9 of 15</td><td class="num">12 of 15</td><td class="num">12 of 15</td><td class="num">17</td><td class="num">$0.13</td></tr>
+          <tr class="hi"><td class="wide"><b>5. told to open everything</b></td><td class="num"><b>8 of 12</b></td><td class="num"><b>11 of 12</b></td><td class="num"><b>12 of 12</b></td><td class="num">53</td><td class="num">$0.49</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <caption>Exact tests by question, two sided, the key's reading</caption>
+        <thead><tr><th class="wide">Comparison</th><th class="wide">On what</th><th class="num">p</th><th>Reading</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="wide"><b>Open everything against as shipped</b></td><td class="dim wide">opened what the answer needs, 12 of 12 against 3 of 15</td><td class="num"><b>0.0003</b></td><td><span class="pill ok">CLEAR</span></td></tr>
+          <tr class="hi"><td class="wide"><b>Open everything against as shipped</b></td><td class="dim wide">correct, 8 of 12 against 4 of 15</td><td class="num"><b>0.035</b></td><td><span class="pill ok">SIGNIFICANT</span></td></tr>
+          <tr><td class="wide">Open everything against limit off</td><td class="dim wide">correct, 8 of 12 against 11 of 15</td><td class="num">0.60</td><td><span class="pill amb">NO DIFFERENCE SEEN</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">Two ways of making openJiuwen look at the whole market, one by instruction and one by changing a setting, land in the same place: <b>the same accuracy and the same $0.49 a run</b>, against $0.18 for the shipped agent. That is the gap cell 4 has to close, the ceiling's accuracy for less than the ceiling's bill.</p>
+  </section>
+
+  <section id="analysis">
+    <h2>10. What fails, and what changes for cell 4</h2>
+    <p class="lede">Every wrong or missing answer in cells 1, 2, 3 and 5, sorted by what actually went wrong. Built only after every number above was checked, so that nothing below rests on a scoring error.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Kinds of error, gated runs. In cell 1 one run can have two kinds. Cell 3 counts different runs only</caption>
+        <thead><tr><th class="wide">What went wrong</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">5</th><th class="wide">What it looks like</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="wide"><b>Did not open what the answer needs</b></td><td class="num"><b>9</b></td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="dim wide">Stopped at the first screen's four listings</td></tr>
+          <tr class="hi"><td class="wide"><b>Read the price before the page revealed it</b></td><td class="num"><b>5</b></td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="dim wide">Copperfield at $23.40, its price with no size chosen. Either never chose M, or read too soon after choosing it</td></tr>
+          <tr><td class="wide">Read "offer" as "can sell it now"</td><td class="num">3</td><td class="num">2</td><td class="num">1</td><td class="num">3</td><td class="dim wide">5 for count-stocked, where the key says 10</td></tr>
+          <tr><td class="wide">Said a size was on sale when it is not</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="dim wide">"All 15 sellers have size M available", naming Rookwood, which sells no M at all</td></tr>
+          <tr><td class="wide">Ran out of its 100 steps</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="dim wide">Opened everything, kept going, never answered</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">Once the agent looks at the whole market, <b>coverage errors vanish and two kinds remain</b>: reading the price before it is revealed, and the word offer. In cell 5 none of the four valid price answers made the price error. Each chose the size on every listing that sells it, and saw the revealed prices.</p>
+
+    <h3 class="sub">What the refusal check can catch</h3>
+    <p class="note">Cell 4 adds the refusal check to the strategy. Applying the check to the runs that already exist costs nothing and shows what it can do, since it takes no browser action.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>The refusal check, replayed over finished runs</caption>
+        <thead><tr><th class="wide">Cell</th><th class="num">Wrong or none</th><th class="num">Refused</th><th class="num">Correct, refused</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">1. as shipped</td><td class="num">11</td><td class="num"><b>9</b></td><td class="num">0 of 4</td></tr>
+          <tr><td class="wide">2. limit off</td><td class="num">4</td><td class="num">0</td><td class="num">0 of 11</td></tr>
+          <tr><td class="wide">5. open everything</td><td class="num">4</td><td class="num">0</td><td class="num">0 of 8</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim">The check is a coverage check, and a good one: the 9 it refuses in cell 1 are exactly the 9 coverage failures, and it refuses none of 23 correct answers. <b>It cannot see the other two kinds</b>, because those runs did open everything. So in cell 4 the strategy text has to prevent the price error, because the check will not catch it.</p>
+
+    <h3 class="sub">The changes, each traced to a recorded failure</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>Strategy version 7 and planner version 2, 8 October. Free to check, nothing has been run with them</caption>
+        <thead><tr><th class="wide">Change</th><th class="wide">The failure behind it</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td class="wide"><b>Choose the size, then look at the page again before reading the price.</b> The price shown before choosing is the cheapest option, and the reply to choosing does not show the new price</td><td class="dim wide">The second row of the table above, 7 runs. The old text also said a disabled option's "price is still printed", which was true of the old shop and is false of the gated one</td></tr>
+          <tr><td class="wide">Never report a price unless it was seen while that option was chosen</td><td class="dim wide">The same failure, stated as a rule on the answer</td></tr>
+          <tr><td class="wide">"The search results may run to more than one page", instead of "are paginated"</td><td class="dim wide">No current market is paginated since the shop shows 36 a page, so the old sentence was false</td></tr>
+          <tr><td class="wide">For counting questions: whether an option can be chosen is shown in the menu, so there is no need to choose it to find out</td><td class="dim wide">A cell 5 run chose M eleven times to check stock and ran out of steps</td></tr>
+          <tr><td class="wide">A question answerable from the results page gets its own strategy, which opens nothing</td><td class="dim wide">The control question was being sent the price bound strategy, which tells the agent to open listings</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figure class="code">
+      <figcaption><span class="path">checked before anything runs</span><button class="copybtn" type="button">Copy</button></figcaption>
+      <pre><span class="src">python experiments/planner.py --regression     # 37 questions, 0 failures</span>
+<span class="src">                                               # planner v2, strategies v7</span></pre>
+    </figure>
+
+    <h3 class="sub">Deliberately not changed</h3>
+    <div class="tablewrap">
+      <table>
+        <caption>Things the analysis points at, and why each is left alone</caption>
+        <thead><tr><th class="wide">Left alone</th><th class="wide">Why</th></tr></thead>
+        <tbody>
+          <tr><td class="wide">The word offer in the questions</td><td class="dim wide">Changing a question mid matrix makes cell 4 incomparable with cells 1 to 5. Telling the agent what offer means would be teaching it the answer key. Reported under both readings instead</td></tr>
+          <tr><td class="wide">The refusal check's rules</td><td class="dim wide">Frozen on 18 September before this market existed. A rule written now would be fitted to these runs</td></tr>
+          <tr><td class="wide">The shop, including its 60 millisecond delay</td><td class="dim wide">Every cell has to meet the same page</td></tr>
+          <tr><td class="wide">The control question in cell 4</td><td class="dim wide">Skipped, as in cell 5. With its own strategy it is the same question as in cell 1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="claim"><b>One honest limit on cell 4 before it runs.</b> These changes were written after studying failures on this market, so cell 4 on this market is no longer a clean test of the policy. It will show whether the changes work where they were designed. Whether they work in general needs a market they were not designed on. The generator can draw one for free, and section 11 prices that.</p>
   </section>
 
   <section id="plan">
-    <h2>8. What to run next</h2>
-    <p class="lede">You are right that the experiments are scattered. Twenty two batches exist across four markets, two models, four arms and two versions of the shop, and they accumulated as each question came up rather than being designed as a set. Here is what I would freeze and run instead.</p>
+    <h2>11. What to run next</h2>
+    <p class="lede">Cells 1, 2, 3 and 5 are done and checked. Two paid steps remain for this market, and both wait for your go ahead.</p>
 
-    <h3 class="sub">First, what gets held constant</h3>
+    <h3 class="sub">Held constant across every cell</h3>
     <div class="tablewrap">
       <table>
-        <caption>Fixed for every run in the matrix, so that nothing drifts between cells</caption>
-        <thead><tr><th class="wide">Held constant</th><th class="wide">Value</th><th class="wide">Why</th></tr></thead>
+        <caption>Fixed for every run, so nothing drifts between cells. Two rows were added on 8 October</caption>
+        <thead><tr><th class="wide">Held constant</th><th class="wide">Value</th></tr></thead>
         <tbody>
-          <tr><td class="wide">Model</td><td class="dim wide">claude-haiku-4.5</td><td class="dim wide">Changing the model is a separate experiment and would confound this one</td></tr>
-          <tr class="hi"><td class="wide">Shop</td><td class="dim wide"><b>Gated</b>, prices hidden until a size is chosen</td><td class="dim wide">Mixing the two shops is what made earlier batches hard to compare. Recorded in every run record</td></tr>
-          <tr><td class="wide">Window</td><td class="dim wide">1200 by 701</td><td class="dim wide">"The first screen" has to mean the same thing everywhere</td></tr>
-          <tr><td class="wide">Step budget</td><td class="dim wide">100 tool calls</td><td class="dim wide">One run hit this limit honestly, so it has to be equal across arms</td></tr>
-          <tr><td class="wide">Repeats</td><td class="dim wide">3 per question</td><td class="dim wide">The same model on the same page has answered correctly twice and wrongly on the third attempt</td></tr>
-          <tr><td class="wide">Scoring and sufficiency rules</td><td class="dim wide">Frozen at today's version, recorded in each run</td><td class="dim wide">A rule changed mid matrix makes the halves incomparable</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h3 class="sub">The three blocking jobs, now done</h3>
-    <div class="tablewrap">
-      <table>
-        <caption>All three cleared on 7 October, and each one proven rather than assumed</caption>
-        <thead><tr><th class="idx">#</th><th class="wide">Job</th><th class="wide">How it was proven</th><th>State</th></tr></thead>
-        <tbody>
-          <tr><td class="idx">A</td><td class="wide">Fix the second agent's link cap</td><td class="dim wide">150 links listed of which 15 are products, the first at position three where there were previously none at any position. Following it loads a real product page, and on a listing with two sold out sizes the agent reads <code>S [unavailable], M [unavailable], L, XL</code></td><td><span class="pill ok">DONE</span></td></tr>
-          <tr><td class="idx">B</td><td class="wide">Verify the shop after its restart</td><td class="dim wide">Nine checks, zero failures, plus all fifteen listings opened by hand and all six answers re-derived from the browser</td><td><span class="pill ok">DONE</span></td></tr>
-          <tr><td class="idx">C</td><td class="wide">Build the window limit arm</td><td class="dim wide">Self test against the real class, then a paid run in which all 37 summary replies carried the changed setting and the agent opened all fifteen listings</td><td><span class="pill ok">DONE</span></td></tr>
+          <tr><td class="wide">Model</td><td class="dim wide">claude-haiku-4.5</td></tr>
+          <tr><td class="wide">Shop</td><td class="dim wide">Gated, prices hidden until a size is chosen, the same 60 millisecond reveal</td></tr>
+          <tr><td class="wide">Window</td><td class="dim wide">1200 by 701</td></tr>
+          <tr><td class="wide">Step budget</td><td class="dim wide">100</td></tr>
+          <tr><td class="wide">Repeats</td><td class="dim wide">3 per question</td></tr>
+          <tr><td class="wide">Questions and answer key</td><td class="dim wide">Unchanged since the market was drawn on 18 September</td></tr>
+          <tr class="hi"><td class="wide"><b>Clock</b></td><td class="dim wide"><b>Ten minutes for openJiuwen, and the machine kept awake while it runs</b></td></tr>
+          <tr class="hi"><td class="wide"><b>Browser tool version</b></td><td class="dim wide"><b>0.0.83, checked before and after each batch</b></td></tr>
         </tbody>
       </table>
     </div>
@@ -606,21 +887,21 @@
     <h3 class="sub">Where the budget went, and what is left</h3>
     <div class="tablewrap">
       <table>
-        <caption>The matrix, as actually run on 7 October</caption>
+        <caption>The matrix, from the provider's own charges</caption>
         <thead><tr><th class="idx">#</th><th class="wide">Cell</th><th class="num">Runs</th><th class="num">Cost</th><th>State</th></tr></thead>
         <tbody>
-          <tr><td class="idx">1</td><td class="wide">openJiuwen, as shipped</td><td class="num">18</td><td class="num">$2.72</td><td><span class="pill ok">DONE</span></td></tr>
-          <tr><td class="idx">2</td><td class="wide">openJiuwen, window limit off</td><td class="num">18</td><td class="num">$7.38</td><td><span class="pill ok">DONE</span></td></tr>
-          <tr><td class="idx">3</td><td class="wide">The second agent</td><td class="num">18</td><td class="num">$2.00</td><td><span class="pill ok">DONE</span></td></tr>
-          <tr class="warn"><td class="idx">4</td><td class="wide"><b>Strategy with the refusal check</b></td><td class="num">18</td><td class="num">$2.60</td><td><span class="pill amb">NO CREDIT</span></td></tr>
-          <tr class="warn"><td class="idx">5</td><td class="wide"><b>Told to open everything</b></td><td class="num">18</td><td class="num">$3.40</td><td><span class="pill amb">NO CREDIT</span></td></tr>
+          <tr><td class="idx">1</td><td class="wide">openJiuwen, as shipped</td><td class="num">18</td><td class="num">$2.72</td><td><span class="pill ok">DONE, CHECKED</span></td></tr>
+          <tr><td class="idx">2</td><td class="wide">openJiuwen, window limit off</td><td class="num">18</td><td class="num">$7.38</td><td><span class="pill ok">DONE, CHECKED</span></td></tr>
+          <tr><td class="idx">3</td><td class="wide">The second agent</td><td class="num">18</td><td class="num">$2.00</td><td><span class="pill ok">DONE, CHECKED</span></td></tr>
+          <tr><td class="idx">5</td><td class="wide">openJiuwen, told to open everything</td><td class="num">15</td><td class="num">$8.06</td><td><span class="pill amb">12 VALID, 3 VOID</span></td></tr>
+          <tr class="warn"><td class="idx">5</td><td class="wide"><b>Re-run the three void runs</b></td><td class="num">3</td><td class="num">about $2</td><td><span class="pill amb">WAITING FOR YOU</span></td></tr>
+          <tr class="warn"><td class="idx">4</td><td class="wide"><b>Strategy version 7 with the refusal check</b></td><td class="num">15</td><td class="num">$5 to $7.50</td><td><span class="pill amb">WAITING FOR YOU</span></td></tr>
         </tbody>
       </table>
     </div>
-    <p class="claim">About <b>$3.67 remains</b> of the $50, and cells 4 and 5 need roughly $6 together. <b>Those two are the ones that measure the contribution</b>, so they are the thing to ask the supervisor for. Everything they need is built, verified and waiting: the market, the questions, the strategy, the refusal check, the planner they now run through, and a shop checker that refuses to start if anything has drifted.</p>
-    <p class="note">The original request was $200 against the $50 in place. The case for the rest is now easy to make, because the three cells already run give the baselines those two cells would be measured against, on a market nothing was tuned to.</p>
-    <p class="note"><b>What they would answer.</b> Cell 5 is the expensive ceiling: open everything, pay for everything. Cell 4 asks whether reading the question first and refusing when the evidence is thin can reach that ceiling for less. The second agent has made that question sharper rather than softer, since it already reaches cell 2's accuracy for 27 per cent of the cost, so the policy now has a cheap and strong baseline to beat rather than only an expensive one.</p>
-    <p class="note">Reviews are deliberately left out. Nine questions exist and have never been run, and page turning makes them the most expensive and least predictable arm. They belong after the matrix, not inside it.</p>
+    <p class="claim">Credit left on 8 October: <b>$45.37</b> of $100. The two waiting steps together come to about $7 to $10, and at worst about $14 if many runs use their whole step budget.</p>
+    <p class="note"><b>After that, the clean test.</b> Draw a fresh clothing market with the generator, which is free, and run cells 1, 4 and 5 on it. That is the only way to say the cell 4 changes work beyond the market they were written on. At this market's prices that is about $15 to $18 for 45 runs, which fits in what is left.</p>
+    <p class="note">Reviews are still left out. Nine questions exist and have never been run, and page turning makes them the most expensive and least predictable arm. They belong after the matrix, not inside it.</p>
   </section>
 
   </main>
@@ -629,7 +910,7 @@
 
 <footer>
   <div class="wrap">
-    <span>Every figure on this page was re-derived on 7 October 2026 from the repository or the stored run records.</span>
+    <span>Every figure on this page was re-derived on 7 October 2026, and those in sections 7 and 8 again on 8 October, from the repository or the stored run records.</span>
     <span>No model was called in producing it.</span>
     <span><a href="index.html">Full project detail</a></span>
   </div>
