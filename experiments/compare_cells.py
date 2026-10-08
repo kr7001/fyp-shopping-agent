@@ -41,11 +41,15 @@ _spec = importlib.util.spec_from_file_location("verify_cells", HERE / "verify_ce
 verify_cells = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(verify_cells)
 
+# Each cell is one batch, except where runs had to be replaced. Cell 5's first batch lost
+# three runs to the laptop sleeping, see `verify_cells.SUSPENDED_AFTER_S`. Those three were
+# re-run on the same day with byte-identical question text into batches of their own, and
+# the suspended originals are left out by the same rule that found them, never by hand.
 CELLS = {
-    "1 openJiuwen, limit on": "20261007T112057",
-    "2 openJiuwen, limit off": "20261007T115021",
-    "3 second agent": "20261007T134621",
-    "5 openJiuwen, open everything": "20261008T034455",
+    "1 openJiuwen, limit on": ["20261007T112057"],
+    "2 openJiuwen, limit off": ["20261007T115021"],
+    "3 second agent": ["20261007T134621"],
+    "5 openJiuwen, open everything": ["20261008T034455", "20261008T143724", "20261008T144558"],
 }
 
 # "Does every listing offer size M" and "how many listings offer size M" both turn on the
@@ -108,16 +112,23 @@ def stratified_exact(strata: list[tuple[int, int, int, int]]) -> float:
     return sum(p for p in dist.values() if p <= p_obs * (1 + 1e-9))
 
 
+def load_batch(batch: str) -> list[dict]:
+    """Every run in one batch, checked, with its token counts and its batch attached."""
+    _, found = verify_cells.verify_batch(RESULTS / batch)
+    for run in found:
+        record = json.loads((RESULTS / batch / f"{run['task']}-{run['repeat']}.json")
+                            .read_text())
+        tokens = record.get("tokens") or (record.get("trace") or {}).get("tokens") or {}
+        run["tokens"] = (tokens.get("prompt"), tokens.get("completion"))
+        run["batch"] = batch
+    return found
+
+
 def load() -> tuple[dict, dict]:
     truth = verify_cells.ground_truth()
     cells = {}
-    for name, batch in CELLS.items():
-        _, runs = verify_cells.verify_batch(RESULTS / batch)
-        for run in runs:
-            record = json.loads((RESULTS / batch / f"{run['task']}-{run['repeat']}.json")
-                                .read_text())
-            tokens = record.get("tokens") or (record.get("trace") or {}).get("tokens") or {}
-            run["tokens"] = (tokens.get("prompt"), tokens.get("completion"))
+    for name, batches in CELLS.items():
+        runs = [run for batch in batches for run in load_batch(batch)]
         # A run the laptop slept through measures the machine, not the agent, and is left
         # out rather than counted as a failure. See `verify_cells.SUSPENDED_AFTER_S`.
         void = [r for r in runs if r["longest_silence_s"] > verify_cells.SUSPENDED_AFTER_S]
