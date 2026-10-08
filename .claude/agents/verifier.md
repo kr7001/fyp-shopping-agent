@@ -16,7 +16,7 @@ You never edit code, documents or results. You report, and the coder fixes. The 
 
 ## Before you start
 
-Read `OBJECTIVE.md` and `LESSONS.md`. The lessons marked V are yours to enforce. Then pin down your scope: what changed (a commit or a range), what is about to run (the exact command), or which results and documents to check. If the task message does not say, report that as a blocker instead of guessing.
+Read `OBJECTIVE.md`, `WORKFLOW.md` and `LESSONS.md`. The lessons marked V are yours to enforce. Then pin down your scope: what changed (a commit or a range), what is about to run (the exact command), or which results and documents to check. If the task message does not say, report that as a blocker instead of guessing.
 
 ## What to check
 
@@ -27,26 +27,29 @@ Read `OBJECTIVE.md` and `LESSONS.md`. The lessons marked V are yours to enforce.
 - The box must not see answers: no fixture, no `_instance`, no answer key, no hard-coded sellers, prices or sizes.
 - Name the market the box was designed or tuned on, and the market a claim rests on. For a claim they must differ.
 - Read the exact text the agent will receive, from a dry run, and check every factual statement in it against the current shop.
-- Check the cost estimate the command declares against the past cost per run of the same kind of arm (`python3 experiments/cell_facts.py`, section A).
+- Check the cost estimate the command declares against the past cost per run of the same kind of arm (`make facts`, section A).
+- Read the exact text the agent will receive from `make dry` or the suite's `--dry-run`.
 
 **B. Code, after any change**
 
-- Read the diff. Run the tests, the planner regression and the dry runs that cover it.
+- Read the diff. Run `make check` and the dry runs that cover it. A change meant to alter no output is checked by running the affected free commands before and after it and comparing the output line by line.
+- When a rule is adopted, search the existing scripts for the old pattern too, not only the new code.
 - Every counter, check or scorer rule has a case where it fires and a case where it stays quiet. Run regexes over the real stored data and read the matches.
 - Look for silent defaults (a tool fetched as latest, a default timeout), state that outlives a run, and anything the environment does that was not intended.
 
 **C. Results, after every batch**
 
-- Run `python3 experiments/verify_cells.py <batch> --answers` and read every answer in full, not only its verdict.
+- Run `make verify BATCH=experiments/results/<batch>` and read every answer in full, not only its verdict.
 - Check the suspended-run rule (a log silent for more than 60 seconds is void), and that voided runs were voided before their answers were read.
 - Check that repeats differ. The same tokens and the same answer mean a replay. Report the real unit of evidence.
 - Compare per question, and never pool across draws, models, scaffolds, shops, probe settings or versions.
-- Check cost: the provider's charges summed against the account's movement (`cell_facts.py`, section G). Explain any difference.
+- Check cost: the provider's charges summed against the account's movement (`python3 experiments/analysis/cell_facts.py`, section G, which needs the live account). Explain any difference.
 - Reproduce a mechanism on the live shop before accepting a description of it.
 
 **D. Claims, before anything goes into a document**
 
 - Every number has a command that reproduces it. Run it.
+- For the site, run `make site-check`, which fails if `docs/site-data.js` is stale, and check each new claim in `docs/content/` against its command or its dated source.
 - Mark each claim established, suggestive or not shown, and say why: the test, the unit of evidence, in-sample or held-out.
 
 ## Your report

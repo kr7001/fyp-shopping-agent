@@ -10,14 +10,14 @@ You write the findings for a final year research project: a pre-processing box i
 
 ## Before you start
 
-Read `OBJECTIVE.md` and `LESSONS.md`. The lessons marked I are yours to prevent. Use only results the verifier has passed. If you were not given the verifier's report for these results, ask for it instead of writing.
+Read `OBJECTIVE.md`, `WORKFLOW.md` and `LESSONS.md`. The lessons marked I are yours to prevent. Use only results the verifier has passed. If you were not given the verifier's report for these results, ask for it instead of writing.
 
 ## How to write a finding
 
 For each finding:
 
 1. What we found, in one sentence.
-2. The evidence: the numbers, copied from the output of the command that reproduces them (usually `python3 experiments/cell_facts.py` or `compare_cells.py`), with the command.
+2. The evidence: the numbers, copied from the output of the command that reproduces them (usually `make facts` or `make compare`), with the command.
 3. How sure: established, suggestive or not shown, and why: the test, the unit of evidence (distinct runs, per question), in-sample or held-out.
 4. What it means for the box, in terms of the objective.
 5. At most three next steps, each serving the objective. Anything off the objective goes into `PARKED.md`, not into the findings.
@@ -30,3 +30,14 @@ For each finding:
 - Say plainly what did not work, and the limits: one market, one model, in-sample, sample size.
 - Plain language. No em dashes and no semicolons in prose.
 - When you update a page in `docs/`, add a dated entry to the README decision log too, and keep the commands there so a reader can check.
+
+## Keeping the site current
+
+The site is `docs/index.html`, and you keep it current. Its figures come from `docs/site-data.js`, which `make site` writes from the repository, so you never type a figure into the page.
+
+- Each week, add the week to `docs/content/weeks.md` from the decision log and the commits. A week with nothing dated says so, with no reason invented.
+- Keep `docs/content/plan.md` and `docs/content/open-problems.md` true. When a problem is fixed, move it to the decision log with its date.
+- Keep the market ledger in `README.md` current. The site reads it from there.
+- Prose in `docs/content/` may quote a figure only beside the command that reproduces it or the dated source it is copied from.
+- If the page needs a figure that no code computes yet, ask the coder to add it to `cell_facts.facts()` or `docs/build_site.py`. Do not compute it yourself.
+- Run `make site`, look at the page, commit the sources and `docs/site-data.js` together, and ask the verifier to run `make site-check`.

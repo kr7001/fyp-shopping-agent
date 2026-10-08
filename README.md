@@ -3,7 +3,31 @@
 FYP, NUS Data Science and Analytics, Aug to Nov 2026.
 Student: Kayleen Lee Kai Rong. Supervisor: Prof. Markus Kirchberg.
 
-See [CLAUDE.md](CLAUDE.md) for the full problem statement, research questions and method sketch.
+**Start with the project site, [`docs/index.html`](docs/index.html).** Open it in a browser. It
+holds the objective, every verified result with the test behind it, every experiment, the
+markets, the problems solved and open, a week by week record, the plan to the final
+presentation, and the commands to check any figure yourself. Its figures are generated from
+the run files by `make site`, never typed.
+
+| File | What it holds |
+| --- | --- |
+| [OBJECTIVE.md](OBJECTIVE.md) | The north star and the current milestone |
+| [WORKFLOW.md](WORKFLOW.md) | How the work is done: five modules, one job each, and the spend guard |
+| [LESSONS.md](LESSONS.md) | Every mistake that cost time, money or a wrong claim, and the rule it produced |
+| [PARKED.md](PARKED.md) | Side ideas saved instead of pursued |
+| [experiments/README.md](experiments/README.md) | The code, folder by folder, and which scripts cost money |
+| [env/README.md](env/README.md) | The shop: generators, the seeder, the gated theme |
+| [agent/README.md](agent/README.md) | openJiuwen, pinned, and the one local patch to it |
+
+A check that everything works, all of it free:
+
+```bash
+make check     # unit tests, the planner regression, the mod's tests
+make facts     # every figure on the results page, recomputed from the raw runs
+```
+
+Below are the environment setup and the decision log, the dated record of what was
+considered and why.
 
 ---
 
@@ -197,8 +221,9 @@ Keep this table current. It is the only record of which market may still test wh
 | small fixture | 4 | **Development.** Authoring notes removed 13 Sep 2026, everything before that is a different environment | RQ2 baseline. Not a held-out test for anything |
 | Rivenhall | 15 | **Development.** The targeting strategies were written and twice corrected against its failures | Cost and action comparisons. Not a held-out test |
 | Calderwood | 15 | **Spent 17 Sep 2026.** Held out until then, and its nine failures have now been read, which is what produced the coverage rule | Reporting the held-out result already measured. It cannot test rules version 2 |
-| Apparel | planned | **Reserved.** Generated after rules version 2 is frozen, so it can test it | The held-out test for the coverage rule, and the first market with two gates at once |
-| Calderwood-S | planned | **Reserved.** Calderwood's prices with the variant prices suppressed in the DOM | Measuring what the Magento price leak was worth, with answers held identical |
+| Thornwood, clothing | 15 | **Development since 8 Oct 2026.** Generated on 18 Sep, after the coverage rule was frozen. Cells 1 to 5 were measured on it on 7 and 8 Oct, and strategy v7 and planner v2 were then written from its failures | Reporting cells 1 to 5, and developing box v1. Not a held-out test for the box |
+| Calderwood-S | 15 | **Measured 18 Sep 2026** as `Calderwood-gated`, Calderwood's prices with the variant prices suppressed. Its first batch went through a store view, measured two shops at once and is superseded | Reporting the 18 Sep result: hiding the prices changed what the agent did, not whether it was right |
+| Fresh clothing market | 15 | **Reserved.** To be generated with a new seed after box v1 is frozen, week 2 of the plan | The held-out test for box v1, the claim |
 
 Two rules follow from the table and are worth stating separately, because both have already
 been broken once.
@@ -227,6 +252,10 @@ per-scaffold detail.
 
 ## Decision log
 
+Entries before 9 October 2026 name scripts by their old paths, from before the code moved into
+folders. [experiments/README.md](experiments/README.md) maps each old path to its new one, and
+the pages they mention are in [docs/archive/](docs/archive/).
+
 ### 2026-08-28
 - WebArena-Verified shopping site running locally via Docker (amd64 under emulation on M-series)
 - Catalogue: 104,368 products, all `type_id = simple`. No configurable products
@@ -240,6 +269,17 @@ per-scaffold detail.
 - Catalogue audit extended from product types to option pricing. 425,384 select-type option values and 68,584 non-select options, **none** carrying a non-zero price delta. Confirms the environment has option variance but no price variance, from the database rather than by inspection
 - `env/` now holds `seed_variants.py`, which authors configurable products with per-variant pricing over the Magento REST API and writes a ground-truth manifest per run. See [env/README.md](env/README.md)
 - Seeded and verified: 4 configurable parents and 14 variant children, all prefixed `IGR-`, plus 3 new attributes on attribute set 4. No existing WebArena product was modified. The environment now has interaction-gated pricing it did not have before
+
+### 2026-10-09
+- **The code is in folders by job, and nothing it prints changed.** `experiments/` was 23 scripts and 6 question files in one folder. It is now `box/` (targeting, planner, sufficiency, policy), `runners/` (everything that can spend money), `analysis/` (scoring, checking, the figure scripts), `water/` (the September study), `tasks/` and `tests/`, with every location in `experiments/paths.py`. Before the move 34 free commands were run and their output saved: every figure script, every dry run, the planner regression, the catalogue generators and the mod's tests. After it all 34 matched line for line, apart from the clock times in openJiuwen's own start-up log. `suite.py` still accepts an old `--tasks experiments/tasks_*.json` path, and `experiments/README.md` maps every old path to its new one
+- **36 unit tests and a Makefile.** They cover the scorer's count, price, yes or no and refusal rules, the suspended run rule, selection counting, repeat detection and the stratified test, each on the fault it was written for and on a case it must leave alone. The published clothing figures are pinned, so a change to any of them fails a test. The three generated markets and their three generated question files are regenerated and compared byte for byte. `make check` runs them with the planner regression and the mod's 21 tests. The Makefile has no paid target, because the spend guard reads the command line
+- **One site replaces five pages.** `docs/index.html` covers the objective, the results, every experiment, the markets, the problems, the tests, the architecture, the workflow, a week by week record and the plan to the final presentation. Its figures, tables and code excerpts are generated from the repository by `docs/build_site.py` (`make site`), and `make site-check` fails if the page is stale. `cell_facts.py` was split into one function that computes every figure and a printer, so the command and the site are the same computation, and its output is unchanged. The old pages and the supervisor updates are in `docs/archive/`
+- **Four problems found while reorganising, recorded and not yet fixed**, because the reorganisation was not allowed to change any output. `water/arms.py` and `water/headline.py` put 4 DeepSeek runs and 12 void second agent runs into the Calderwood "unmodified" row, 28 runs and 9 correct, where like for like it is 3 of 12, the figure this log quoted on 17 September. The browser tool is still fetched as `@playwright/mcp@latest`. The raw logs, about 1.7 GB, exist only on this laptop. And of the two local openJiuwen fixes this log names on 8 September, only one is in the submodule's working tree. All four are on the site's Problems page with what to do about each
+- **openJiuwen can be rebuilt from a fresh clone.** The submodule now has a `.gitmodules` entry, pinned at `18d45d6`, and its one local change is kept as `agent/openjiuwen-local.patch`, described in `agent/README.md`
+- **The openJiuwen paper is cited, not redistributed.** arXiv distributes 2608.27969 under its non-exclusive licence, which gives no one else the right to redistribute it, and this repository is public. The PDF was removed from the unpushed history before this branch was first pushed. It stays on the laptop, ignored by git
+- openJiuwen's own `logs/` folder, start-up logs written whenever it is imported from the repository root, is no longer tracked
+- An invalid escape sequence in the second agent's page script was fixed. The string sent to the browser is byte for byte the same, checked by comparing every constant in the file before and after
+- The market ledger above now says what happened to the clothing market and Calderwood-S, and reserves the fresh clothing market the box must be tested on
 
 ### 2026-10-08, later
 - **A step back, and a narrower objective.** The experiments had run for weeks without a decisive result, so the project now has one written objective, in `OBJECTIVE.md`: build and prove a pre-processing box that reads the user's question and the first page, hands openJiuwen a retrieval plan, and asks the user back when the question is ambiguous. The ambiguous "offer" question is kept as a test case rather than reworded, because catching it is the box's job. Nothing was re-run for it
