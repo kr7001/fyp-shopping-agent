@@ -1,0 +1,5 @@
+# The suite driver and every free analysis script, run with the system python3.
+# Versions checked on 8 October 2026: requests 2.32.4, scipy 1.15.3.
+# The second agent has its own environment, .venv-naive (see docs, "Run it yourself").
+requests>=2.31
+scipy>=1.11
