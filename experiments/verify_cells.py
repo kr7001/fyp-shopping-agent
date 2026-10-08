@@ -228,6 +228,7 @@ def verify_run(record_path: pathlib.Path, task: dict, instance: dict, truth: dic
         "user_agent": record.get("user_agent"),
         "own_cache": (record_path.parent / "caches" / record_path.stem).is_dir(),
         "longest_silence_s": longest_silence(log),
+        "elapsed_s": record.get("elapsed_s"),
     }
 
 
