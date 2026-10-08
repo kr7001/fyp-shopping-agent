@@ -4,6 +4,15 @@ Problems that are known and not yet fixed, most important first. Solved ones are
 in `LESSONS.md`, each with the rule it produced. Side ideas are in `PARKED.md`. When one of
 these is fixed, move it into the decision log with the date, and take it off this list.
 
+## The openJiuwen paper is still inside unpushed commits
+
+`openjiuwen.pdf` was committed on 9 September and is no longer tracked, but every commit since
+then still holds it, and the repository is public. arXiv's licence lets only arXiv distribute
+the paper, so pushing this branch as it stands would publish it. Three ways out: rewrite the
+unpushed commits without it, which changes their hashes, make the repository private, or keep
+the branch local. Until one is chosen, `dev` is not pushed. Check with
+`git log --oneline -- openjiuwen.pdf`. *Now.*
+
 ## The raw logs exist only on this laptop
 
 452 run logs, about 1.7 GB, are gitignored because each one replays the whole conversation at
