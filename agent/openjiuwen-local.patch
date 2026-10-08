@@ -1,0 +1,73 @@
+diff --git a/openjiuwen/harness/tools/browser_move/playwright_runtime/runtime.py b/openjiuwen/harness/tools/browser_move/playwright_runtime/runtime.py
+index abc17b21..c46fbca7 100644
+--- a/openjiuwen/harness/tools/browser_move/playwright_runtime/runtime.py
++++ b/openjiuwen/harness/tools/browser_move/playwright_runtime/runtime.py
+@@ -28,7 +28,7 @@ from openjiuwen.harness.prompts.prompt_attachment_manager import (
+ )
+ 
+ from ..controllers import ActionController, BaseController, validate_batch_steps
+-from ..utils.parsing import extract_json_object
++from ..utils.parsing import extract_json_object, parse_json_object
+ from .browser_capabilities import (
+     CORE_BROWSER_TOOL_NAMES,
+ )
+@@ -1344,8 +1344,11 @@ class BrowserAgentRuntime:
+                 "page_state": self.export_page_state(),
+             }
+ 
+-        parsed = extract_json_object(raw)
+-        if not parsed:
++        # None means the payload was unparseable. An empty dict is a valid
++        # answer meaning the page had no elements, and must not be reported as a
++        # parse error, or the agent retries the probe instead of moving on.
++        parsed = parse_json_object(raw)
++        if parsed is None:
+             return {
+                 "ok": False,
+                 "error": "Could not parse browser_probe_interactives result JSON",
+@@ -1408,8 +1411,11 @@ class BrowserAgentRuntime:
+                 "page_state": self.export_page_state(),
+             }
+ 
+-        parsed = extract_json_object(raw)
+-        if not parsed:
++        # None means the payload was unparseable. An empty dict is a valid
++        # answer meaning the page had no cards, and must not be reported as a
++        # parse error, or the agent retries the probe instead of moving on.
++        parsed = parse_json_object(raw)
++        if parsed is None:
+             return {
+                 "ok": False,
+                 "error": "Could not parse browser_probe_cards result JSON",
+diff --git a/openjiuwen/harness/tools/browser_move/utils/parsing.py b/openjiuwen/harness/tools/browser_move/utils/parsing.py
+index 17740886..d6ae61f1 100644
+--- a/openjiuwen/harness/tools/browser_move/utils/parsing.py
++++ b/openjiuwen/harness/tools/browser_move/utils/parsing.py
+@@ -52,6 +52,27 @@ def sanitize_json_schema(schema: Any) -> Any:
+     return cleaned
+ 
+ 
++def parse_json_object(text: Any) -> dict[str, Any] | None:
++    """Same extraction as ``extract_json_object``, but ``None`` means failure.
++
++    ``extract_json_object`` returns ``{}`` both for text it could not parse and
++    for a payload that really was an empty object, so a caller cannot tell a
++    broken result from an empty one. Probes need that distinction: "no cards on
++    this page" is a valid answer, while "this is not JSON" is a fault, and
++    reporting the first as the second sends the agent into a pointless retry.
++    """
++    parsed = extract_json_object(text)
++    if parsed:
++        return parsed
++    if isinstance(text, dict):
++        return text
++    try:
++        value = json.loads(str(text or "").strip())
++    except (json.JSONDecodeError, TypeError):
++        return None
++    return value if isinstance(value, dict) else None
++
++
+ def extract_json_object(text: Any) -> dict[str, Any]:
+     """Best-effort JSON extraction from model or tool text."""
+     if isinstance(text, dict):

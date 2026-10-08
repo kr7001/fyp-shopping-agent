@@ -11,7 +11,7 @@ CLAUDE.md
 # Raw agent traces. Each log replays the whole conversation every turn, so a single
 # run is hundreds of KB and the results directory reaches hundreds of MB. The tool
 # sequence and counts that matter are folded into each run's JSON record by
-# experiments/trace_stats.py, so the logs are reproducible working files, not results.
+# experiments/analysis/trace_stats.py, so the logs are reproducible working files, not results.
 experiments/**/*.log
 .venv-naive/
 
@@ -23,6 +23,12 @@ docs/*_dom.txt
 # Presentation decks, mine and the ones I cite. Read in place, not committed.
 docs/Huawei Presentation Deck.pdf
 OpenJiuwen Web & Coding Agent.pptx
+# The openJiuwen paper, arXiv 2608.27969. arXiv's licence lets only arXiv distribute it, so it
+# is cited by its id and kept on the laptop.
+openjiuwen.pdf
 
 # The verifier's stamp and the spend ledger. Local state that describes one checkout, not results.
 .verification/
+
+# openJiuwen writes its own logs to ./logs whenever it is imported, wherever that happens.
+/logs/

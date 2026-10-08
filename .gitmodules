@@ -1,0 +1,4 @@
+[submodule "agent/agent-core"]
+	path = agent/agent-core
+	url = https://github.com/openJiuwen-ai/agent-core.git
+	branch = develop
