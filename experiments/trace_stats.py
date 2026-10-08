@@ -145,6 +145,45 @@ def final_messages(log_path: pathlib.Path) -> list[dict]:
     return best
 
 
+SELECT_OPS = ("select_option", "select_visible_text")
+
+
+def batch_ops(raw_arguments) -> list[dict]:
+    """The operations inside one `browser_batch_interact` call, as op and target.
+
+    A batch is one tool call that can hold up to 25 steps, and openJiuwen uses it to choose
+    sizes as well as to navigate. Counting selections from `browser_select_option` alone
+    missed every size chosen inside a batch: 17 of them in cell 2 on 7 October 2026, so a
+    run reported as "selected 0" had chosen eleven. The model sometimes sends the step list
+    as a JSON string rather than a list, so both are read.
+    """
+    try:
+        arguments = (json.loads(raw_arguments or "{}") if isinstance(raw_arguments, str)
+                     else raw_arguments or {})
+    except json.JSONDecodeError:
+        return []
+    steps = arguments.get("steps") if isinstance(arguments, dict) else None
+    if isinstance(steps, str):
+        try:
+            steps = json.loads(steps)
+        except json.JSONDecodeError:
+            return []
+    out = []
+    for step in steps if isinstance(steps, list) else []:
+        if isinstance(step, str):
+            try:
+                step = json.loads(step)
+            except json.JSONDecodeError:
+                continue
+        if not isinstance(step, dict):
+            continue
+        value = next((step[k] for k in ("option_text", "choose_text", "value", "values",
+                                        "url", "ref", "selector") if step.get(k)), "")
+        target = ", ".join(map(str, value)) if isinstance(value, list) else str(value)
+        out.append({"op": str(step.get("op") or ""), "target": target[:120]})
+    return out
+
+
 def tool_steps(messages: list[dict]) -> list[dict]:
     """Every tool call in order, with the argument that says what it touched."""
     steps = []
@@ -155,8 +194,21 @@ def tool_steps(messages: list[dict]) -> list[dict]:
             if not name:
                 continue
             name = normalise(name)
-            steps.append({"tool": name, "target": target_of(name, function.get("arguments"))})
+            step = {"tool": name, "target": target_of(name, function.get("arguments"))}
+            if name == "browser_batch_interact":
+                step["batch"] = batch_ops(function.get("arguments"))
+            steps.append(step)
     return steps
+
+
+def selections(steps: list[dict]) -> list[str]:
+    """Every option the run chose, in order, whether alone or inside a batch."""
+    chosen = []
+    for step in steps:
+        if step["tool"] in ("browser_select_option", "select_option"):
+            chosen.append(step["target"])
+        chosen.extend(op["target"] for op in step.get("batch", []) if op["op"] in SELECT_OPS)
+    return chosen
 
 
 def naive_steps(log_path: pathlib.Path) -> list[dict]:
@@ -197,8 +249,7 @@ def stats(log_path: pathlib.Path) -> dict:
         "assistant_turns": sum(1 for m in messages if m.get("role") == "assistant"),
         "by_tool": dict(counts.most_common()),
         # What the run selected, which is the claim that went unchecked for three weeks.
-        "selections": [step["target"] for step in steps
-                       if step["tool"] in ("browser_select_option", "select_option")],
+        "selections": selections(steps),
         "opened": [step["target"] for step in steps
                    if step["tool"] in ("browser_navigate", "goto")],
         "steps": steps,

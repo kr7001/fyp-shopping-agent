@@ -515,5 +515,12 @@
       "error": null,
       "log": "apparel-count-buyable-3.log"
     }
+  ],
+  "rescored": [
+    {
+      "on": "2026-10-08",
+      "reason": "count rule no longer reads 'all 15' as the count, 8 Oct 2026",
+      "changed": []
+    }
   ]
 }

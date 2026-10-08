@@ -199,8 +199,7 @@
       "apparel-count-buyable": {
         "gated": true,
         "verdicts": {
-          "correct": 2,
-          "wrong": 1
+          "correct": 3
         },
         "actions": [
           22,
@@ -223,9 +222,9 @@
       }
     },
     "overall": {
-      "correct": 13,
+      "correct": 14,
       "failed": 1,
-      "wrong": 4
+      "wrong": 3
     },
     "total_cost": 7.38
   },
@@ -507,8 +506,8 @@
       "family": "apparel",
       "gated": true,
       "repeat": 3,
-      "verdict": "wrong",
-      "why": "counted 15, expected 5",
+      "verdict": "correct",
+      "why": "counted 5",
       "answer": "After checking all 15 Thornwood Heavyweight Cotton Tee listings on the search results page, I found that 5 products have size M in stock and available to buy right now. These are: 1) Copperfield Apparel, 2) Marchmont Textiles, 3) Northwick Outfitters, 4) Elmsworth Clothing Co, and 5) Alderney Clothi",
       "tool_calls": 66,
       "actions": 32,
@@ -516,7 +515,22 @@
       "cost_usd": 0.615866,
       "elapsed_s": 206.7,
       "error": null,
-      "log": "apparel-count-buyable-3.log"
+      "log": "apparel-count-buyable-3.log",
+      "previous_verdict": "wrong"
+    }
+  ],
+  "rescored": [
+    {
+      "on": "2026-10-08",
+      "reason": "count rule no longer reads 'all 15' as the count, 8 Oct 2026",
+      "changed": [
+        {
+          "task": "apparel-count-buyable",
+          "repeat": 3,
+          "from": "wrong",
+          "to": "correct"
+        }
+      ]
     }
   ]
 }
