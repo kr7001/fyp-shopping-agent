@@ -6,8 +6,8 @@ answering correctly twice and fabricating a price on the third attempt, so a sin
 sample would have recorded that task as solved. This runs each task `--repeats`
 times and reports the distribution.
 
-    python experiments/suite.py --repeats 5
-    python experiments/suite.py --repeats 1 --only water-a-9l5-price
+    python experiments/runners/suite.py --repeats 5
+    python experiments/runners/suite.py --repeats 1 --only water-a-9l5-price
 """
 
 from __future__ import annotations
@@ -22,7 +22,8 @@ import pathlib
 import subprocess
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import policy as policy_module
 import sufficiency
 import score as scoring
@@ -31,11 +32,11 @@ import targeting as targeting_module
 import trace_stats
 
 HERE = pathlib.Path(__file__).resolve().parent
-REPO = HERE.parent
-AGENT_CORE = REPO / "agent" / "agent-core"
+REPO = paths.REPO
+AGENT_CORE = paths.AGENT_CORE
 RUNNER = HERE / "run_browser_task.py"
 NAIVE_RUNNER = HERE / "naive_agent.py"
-RESULTS = HERE / "results"
+RESULTS = paths.RESULTS
 
 # Which shop a run sees is decided by the browser's user agent, because `env/install_gated_theme.py`
 # selects the price-suppressing theme that way. Nothing in a run record used to say which one it
@@ -228,7 +229,7 @@ def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repeats", type=int, default=5)
-    parser.add_argument("--tasks", type=pathlib.Path, default=HERE / "tasks.json")
+    parser.add_argument("--tasks", type=pathlib.Path, default=paths.TASKS / "tasks.json")
     parser.add_argument("--only", nargs="*", help="task ids to run, default all")
     parser.add_argument("--targeting", action="store_true",
                         help="choose a retrieval strategy from the question before "
@@ -264,6 +265,11 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
+    # Task files moved into experiments/tasks/ on 8 Oct 2026. Commands in the decision log
+    # still name the old place, so a missing path falls back to the same file name there.
+    if not args.tasks.exists() and (paths.TASKS / args.tasks.name).exists():
+        print(f"note: {args.tasks} has moved, reading {paths.TASKS / args.tasks.name}")
+        args.tasks = paths.TASKS / args.tasks.name
     spec = json.loads(args.tasks.read_text())
     tasks = [t for t in spec["tasks"] if not args.only or t["id"] in args.only]
     if not tasks:

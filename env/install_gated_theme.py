@@ -28,7 +28,7 @@ way. The user agent travels with every request by construction.
 Run the gated arm by giving the browser that user agent:
 
     PLAYWRIGHT_MCP_ARGS='-y @playwright/mcp@latest --user-agent "Mozilla/5.0 IGRGated/1.0"' \
-        python experiments/suite.py --tasks experiments/tasks_heldout_gated.json --repeats 3
+        python experiments/runners/suite.py --tasks experiments/tasks/tasks_heldout_gated.json --repeats 3
 """
 
 from __future__ import annotations

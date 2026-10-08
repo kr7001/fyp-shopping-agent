@@ -16,8 +16,8 @@ Three ways a draw is decided, in order of strength:
 Seeding times come from `catalog_product_entity.created_at` (UTC), converted to local time
 to match the suite directory stamps, which are local.
 
-    python experiments/backfill_draw.py          # show what would be written
-    python experiments/backfill_draw.py --write
+    python experiments/water/backfill_draw.py          # show what would be written
+    python experiments/water/backfill_draw.py --write
 """
 
 from __future__ import annotations
@@ -27,10 +27,9 @@ import json
 import pathlib
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import suite
-
-HERE = pathlib.Path(__file__).resolve().parent
 
 # The current Rivenhall draw was seeded at 2026-09-08 18:01:59 UTC. The pilot suite at
 # 01:50 local named Yarrow Merchants at $16.84 as the winner; neither exists in the current
@@ -43,7 +42,7 @@ SMALL_NOTES_REMOVED = "20260913T233028"
 
 
 def spec(name: str) -> dict:
-    return json.loads((HERE / name).read_text())
+    return json.loads((paths.TASKS / name).read_text())
 
 
 def assign(stamp: str, payload: dict) -> tuple[str, str]:

@@ -45,7 +45,7 @@ import urllib.request
 HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parent
 FIXTURE = HERE / "fixtures" / "scaled_apparel.json"
-TASKS = REPO / "experiments" / "tasks_apparel.json"
+TASKS = REPO / "experiments" / "tasks" / "tasks_apparel.json"
 CONTAINER = "webarena-shopping"
 MAGE = "/var/www/magento2/bin/magento"
 FIRST_ROW = 4

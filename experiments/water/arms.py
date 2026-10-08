@@ -12,7 +12,7 @@ unmodified agent is the lower bound, cheap and sometimes wrong. Any policy worth
 lives between them, and the gap between those two points is the space this project has to
 work in.
 
-    python experiments/arms.py
+    python experiments/water/arms.py
 """
 
 from __future__ import annotations
@@ -23,13 +23,13 @@ import pathlib
 import statistics
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import policy as policy_module
 import suite
 import score as scoring
 
-HERE = pathlib.Path(__file__).resolve().parent
-RESULTS = HERE / "results"
+RESULTS = paths.RESULTS
 
 # The gated questions of the scaled fixture. The control is excluded because its answer is
 # on the results page, so an exhaustive arm has nothing to be exhaustive about and would
@@ -40,8 +40,8 @@ GATED = ("scaled-cheapest-target", "scaled-target-price",
 
 # The draws each question set is currently scored against. A suite on any other draw was
 # scored against answers that no longer describe the shop, so it is labelled, never pooled.
-DEV_DRAW = suite.draw_id(json.loads((HERE / "tasks_scaled.json").read_text()))
-HELDOUT_DRAW = suite.draw_id(json.loads((HERE / "tasks_heldout.json").read_text()))
+DEV_DRAW = suite.draw_id(json.loads((paths.TASKS / "tasks_scaled.json").read_text()))
+HELDOUT_DRAW = suite.draw_id(json.loads((paths.TASKS / "tasks_heldout.json").read_text()))
 
 
 def draw_suffix(payload: dict) -> str:
@@ -100,7 +100,7 @@ def replayed_gate(arms: dict[str, list[dict]]) -> list[dict]:
     belongs in this table at the unmodified arm's cost, which is the point: it is the only
     arm that changes the outcome without changing the spend.
     """
-    spec = json.loads((HERE / "tasks_scaled.json").read_text())
+    spec = json.loads((paths.TASKS / "tasks_scaled.json").read_text())
     tasks = {t["id"]: t for t in spec["tasks"]}
     out = []
     for suite_path in sorted(RESULTS.glob("*/suite.json")):

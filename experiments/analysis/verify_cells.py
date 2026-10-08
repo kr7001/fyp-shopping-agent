@@ -13,8 +13,8 @@ listings for every gated question, but eight is the floor for the two best-price
 only. A count over fifteen listings needs all fifteen, and a "does every listing" question
 is settled by one counterexample. Each question is now held to its own floor.
 
-    python experiments/verify_cells.py experiments/results/<batch> [...]
-    python experiments/verify_cells.py <batches> --answers     # every answer, in full
+    python experiments/analysis/verify_cells.py experiments/results/<batch> [...]
+    python experiments/analysis/verify_cells.py <batches> --answers     # every answer, in full
 """
 
 from __future__ import annotations
@@ -28,13 +28,13 @@ import re
 import statistics
 import sys
 
-HERE = pathlib.Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import score as scoring  # noqa: E402
 import sufficiency  # noqa: E402
 import trace_stats  # noqa: E402
 
-FIXTURE = HERE.parent / "env" / "fixtures" / "scaled_apparel.json"
+FIXTURE = paths.FIXTURES / "scaled_apparel.json"
 
 # Magento's own 404 page. A listing that was navigated to and answered with this was not
 # opened, and the naive scaffold's first runs counted exactly such pages as listings.
@@ -234,7 +234,7 @@ def verify_run(record_path: pathlib.Path, task: dict, instance: dict, truth: dic
 
 def verify_batch(batch: pathlib.Path) -> tuple[dict, list[dict]]:
     suite = json.loads((batch / "suite.json").read_text())
-    spec = json.loads((HERE / suite["tasks_file"]).read_text())
+    spec = json.loads((paths.TASKS / suite["tasks_file"]).read_text())
     tasks = {t["id"]: t for t in spec["tasks"]}
     truth = ground_truth()
     stored = {(row["task"], row["repeat"]): row for row in suite["rows"]}

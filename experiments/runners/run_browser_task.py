@@ -10,7 +10,7 @@ runtime logs every tool call to stdout, which is the only record of what the
 agent actually retrieved, so never pipe this through `tail` or the trace is lost:
 
     cd agent/agent-core
-    uv run python ../../experiments/run_browser_task.py "your question" \
+    uv run python ../../experiments/runners/run_browser_task.py "your question" \
         2>&1 | tee ../../experiments/runs/$(date +%Y%m%dT%H%M%S).log
 """
 
@@ -42,7 +42,7 @@ import sys as _sys
 _sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import see_everything as _see
 
-RUNS = pathlib.Path(__file__).resolve().parent / "runs"
+RUNS = pathlib.Path(__file__).resolve().parents[1] / "runs"
 OPENROUTER_KEY_URL = "https://openrouter.ai/api/v1/key"
 
 

@@ -36,7 +36,8 @@ import pathlib
 import re
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402,F401  (puts box/, runners/, analysis/, water/ on the path)
 import sufficiency
 
 # Wording matters here in a way it usually does not. The scorer classifies an answer as

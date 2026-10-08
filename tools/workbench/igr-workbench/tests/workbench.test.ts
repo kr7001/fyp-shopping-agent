@@ -45,7 +45,7 @@ function shop(on: any, opts: Opts = {}) {
   return written
 }
 
-const PAID = 'IGR_ESTIMATE_USD=3.11 caffeinate -i python3 experiments/suite.py --tasks experiments/tasks_apparel.json --repeats 3'
+const PAID = 'IGR_ESTIMATE_USD=3.11 caffeinate -i python3 experiments/runners/suite.py --tasks experiments/tasks/tasks_apparel.json --repeats 3'
 
 test('an ordinary command passes untouched', async ($, on) => {
   shop(on)
@@ -55,33 +55,33 @@ test('an ordinary command passes untouched', async ($, on) => {
 
 test('reading or searching a paid script is not running it', async ($, on) => {
   shop(on)
-  for (const command of ['grep -n dry-run experiments/suite.py', 'cat experiments/run.sh', 'sed -n 1,5p experiments/naive_agent.py']) {
+  for (const command of ['grep -n dry-run experiments/runners/suite.py', 'cat experiments/runners/run.sh', 'sed -n 1,5p experiments/runners/naive_agent.py']) {
     expect(await $.tool.call({ tool: 'Bash', command })).toEqual({ result: 'ran' })
   }
 })
 
 test('a dry run is free', async ($, on) => {
   shop(on)
-  const out = await $.tool.call({ tool: 'Bash', command: 'python3 experiments/suite.py --tasks experiments/tasks_apparel.json --exhaustive --dry-run | head -3' })
+  const out = await $.tool.call({ tool: 'Bash', command: 'python3 experiments/runners/suite.py --tasks experiments/tasks/tasks_apparel.json --exhaustive --dry-run | head -3' })
   expect(out).toEqual({ result: 'ran' })
 })
 
 test('a free invocation cannot carry a paid one through', async ($, on) => {
   shop(on)
-  const out = await $.tool.call({ tool: 'Bash', command: 'python3 experiments/suite.py --dry-run; python3 experiments/suite.py --repeats 3' })
+  const out = await $.tool.call({ tool: 'Bash', command: 'python3 experiments/runners/suite.py --dry-run; python3 experiments/runners/suite.py --repeats 3' })
   expect(out.deny).toMatch(/no cost is declared/)
 })
 
 test('every paid script is recognised', async ($, on) => {
   shop(on)
   for (const command of [
-    'python3 experiments/suite.py --repeats 1',
-    'uv run python /Users/x/repo/experiments/run_browser_task.py "a task"',
-    '.venv-naive/bin/python experiments/naive_agent.py "a task"',
-    'python3 experiments/plan_probe.py',
-    'bash experiments/run.sh "a task"',
-    './experiments/run.sh "a task"',
-    'caffeinate -i sh -c "python3 -u experiments/suite.py --only x > out.log 2>&1"',
+    'python3 experiments/runners/suite.py --repeats 1',
+    'uv run python /Users/x/repo/experiments/runners/run_browser_task.py "a task"',
+    '.venv-naive/bin/python experiments/runners/naive_agent.py "a task"',
+    'python3 experiments/runners/plan_probe.py',
+    'bash experiments/runners/run.sh "a task"',
+    './experiments/runners/run.sh "a task"',
+    'caffeinate -i sh -c "python3 -u experiments/runners/suite.py --only x > out.log 2>&1"',
   ]) {
     const out = await $.tool.call({ tool: 'Bash', command })
     expect(out.deny).toMatch(/no cost is declared/)
@@ -90,7 +90,7 @@ test('every paid script is recognised', async ($, on) => {
 
 test('a paid run must be kept awake', async ($, on) => {
   shop(on)
-  const out = await $.tool.call({ tool: 'Bash', command: 'IGR_ESTIMATE_USD=3 python3 experiments/suite.py --repeats 3' })
+  const out = await $.tool.call({ tool: 'Bash', command: 'IGR_ESTIMATE_USD=3 python3 experiments/runners/suite.py --repeats 3' })
   expect(out.deny).toMatch(/caffeinate -i/)
 })
 
@@ -113,9 +113,9 @@ test('a failed verification does not count', async ($, on) => {
 })
 
 test('uncommitted experiment code does not count', async ($, on) => {
-  shop(on, { dirty: ' M experiments/targeting.py', files: { '.verification/latest.json': PASS_STAMP } })
+  shop(on, { dirty: ' M experiments/box/targeting.py', files: { '.verification/latest.json': PASS_STAMP } })
   const out = await $.tool.call({ tool: 'Bash', command: PAID })
-  expect(out.deny).toMatch(/uncommitted changes: M experiments\/targeting.py/)
+  expect(out.deny).toMatch(/uncommitted changes: M experiments\/box\/targeting.py/)
 })
 
 test('a verified, declared, awake run still waits for the user, and is logged', async ($, on) => {
@@ -213,7 +213,7 @@ test('/park saves the idea with the date', async ($, on) => {
 })
 
 test('/guard says why a paid run would be refused', async ($, on) => {
-  shop(on, { dirty: ' M experiments/planner.py' })
+  shop(on, { dirty: ' M experiments/box/planner.py' })
   const out = await $.command.run({ command: 'guard', args: '' })
   expect(out.text).toMatch(/A paid run would be refused: no verifier stamp exists; experiment code has uncommitted changes/)
 })

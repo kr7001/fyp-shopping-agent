@@ -23,8 +23,8 @@ Eight questions. Five are the ones already measured, so the model's choice can b
 against the deterministic classifier. Three are kinds the strategy table does not cover,
 which is the case the whole idea exists for.
 
-    python experiments/plan_probe.py --dry-run
-    python experiments/plan_probe.py
+    python experiments/runners/plan_probe.py --dry-run
+    python experiments/runners/plan_probe.py
 """
 
 from __future__ import annotations
@@ -39,13 +39,13 @@ import sys
 
 import requests
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import planner
 import targeting
 
-HERE = pathlib.Path(__file__).resolve().parent
-REPO = HERE.parent
-RESULTS = HERE / "results"
+REPO = paths.REPO
+RESULTS = paths.RESULTS
 ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
 USAGE = "https://openrouter.ai/api/v1/key"
 
