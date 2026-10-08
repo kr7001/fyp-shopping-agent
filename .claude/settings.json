@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "igr-local": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/tools/workbench"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "igr-workbench@igr-local": true
+  }
+}

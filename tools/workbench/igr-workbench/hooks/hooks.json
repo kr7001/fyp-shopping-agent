@@ -1,0 +1,4 @@
+{
+  "description": "The igr-workbench hooks module",
+  "modules": ["./register.js"]
+}
