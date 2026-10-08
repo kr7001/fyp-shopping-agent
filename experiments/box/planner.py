@@ -30,8 +30,8 @@ plan can come from the model, and `verify` is what makes that safe: a proposed p
 executed only if it passes, and the frozen strategy is the fallback if it does not. That is
 the next step and it is not taken here.
 
-    python experiments/planner.py --regression
-    python experiments/planner.py --show "Across all the listings, which seller is cheapest"
+    python experiments/box/planner.py --regression
+    python experiments/box/planner.py --show "Across all the listings, which seller is cheapest"
 """
 
 from __future__ import annotations
@@ -41,10 +41,9 @@ import json
 import pathlib
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import targeting
-
-HERE = pathlib.Path(__file__).resolve().parent
 
 # Bumped when a plan's meaning changes, not when its wording does. Runs made under
 # different versions are different policies and are not pooled, the same discipline the
@@ -254,7 +253,7 @@ def questions() -> list[tuple[str, str]]:
     found = []
     for name in ("tasks.json", "tasks_scaled.json", "tasks_heldout.json",
                  "tasks_apparel.json", "tasks_reviews.json"):
-        path = HERE / name
+        path = paths.TASKS / name
         if not path.exists():
             continue
         spec = json.loads(path.read_text())

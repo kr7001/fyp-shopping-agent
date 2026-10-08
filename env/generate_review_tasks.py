@@ -30,7 +30,7 @@ An agent that reads page one and answers confidently is right on a shallow needl
 a deep one, and unsound on both absent instances. That is the measurement.
 
     python env/generate_review_tasks.py --report
-    python env/generate_review_tasks.py --out experiments/tasks_reviews.json
+    python env/generate_review_tasks.py --out experiments/tasks/tasks_reviews.json
 """
 
 from __future__ import annotations
@@ -42,7 +42,7 @@ import subprocess
 
 HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parent
-DEFAULT_OUT = REPO / "experiments" / "tasks_reviews.json"
+DEFAULT_OUT = REPO / "experiments" / "tasks" / "tasks_reviews.json"
 CONTAINER = "webarena-shopping"
 
 # The review listing serves ten rows per page and ignores any limit parameter, so page count

@@ -582,7 +582,7 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=11)
     parser.add_argument("--out", type=pathlib.Path, default=DEFAULT_OUT)
     parser.add_argument("--tasks", type=pathlib.Path,
-                        default=HERE.parent / "experiments" / "tasks_apparel.json",
+                        default=HERE.parent / "experiments" / "tasks" / "tasks_apparel.json",
                         help="task file, written from the same fixture so they cannot drift")
     parser.add_argument("--report", action="store_true",
                         help="print the instance and write nothing")

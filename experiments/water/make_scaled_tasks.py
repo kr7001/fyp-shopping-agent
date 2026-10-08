@@ -11,7 +11,7 @@ scaling: the RQ2 cross-listing task scored 5/5 precisely because both addresses 
 handed over, making the comparison cheap. Here the agent has to decide which of fifteen
 results are worth opening.
 
-    python experiments/make_scaled_tasks.py
+    python experiments/water/make_scaled_tasks.py
 """
 
 from __future__ import annotations
@@ -19,10 +19,13 @@ from __future__ import annotations
 import argparse
 import json
 import pathlib
+import sys
 
-HERE = pathlib.Path(__file__).resolve().parent
-FIXTURE = HERE.parent / "env" / "fixtures" / "scaled_water.json"
-OUT = HERE / "tasks_scaled.json"
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402
+
+FIXTURE = paths.FIXTURES / "scaled_water.json"
+OUT = paths.TASKS / "tasks_scaled.json"
 SEARCH = "{base}/catalogsearch/result/?q=Rivenhall"
 
 

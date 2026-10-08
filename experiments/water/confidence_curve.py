@@ -10,7 +10,7 @@ advance, every threshold is swept and the baseline is credited with its own best
 chosen after seeing the answers. A method allowed to pick its threshold with hindsight and
 still losing has lost properly.
 
-    python experiments/confidence_curve.py --suite <results dir>
+    python experiments/water/confidence_curve.py --suite <results dir>
 
 Reported for each threshold: how many runs still get answered (coverage), and how many of
 those are right (selective accuracy). A useful confidence signal raises accuracy as
@@ -26,17 +26,17 @@ import pathlib
 import statistics
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import policy as policy_module
 import sufficiency
 
-HERE = pathlib.Path(__file__).resolve().parent
-RESULTS = HERE / "results"
+RESULTS = paths.RESULTS
 
 
 def load(suite_dir: pathlib.Path) -> tuple[list[dict], dict]:
     payload = json.loads((suite_dir / "suite.json").read_text())
-    spec_path = HERE / payload.get("tasks_file", "tasks.json")
+    spec_path = paths.TASKS / payload.get("tasks_file", "tasks.json")
     spec = json.loads(spec_path.read_text())
     tasks = {t["id"]: t for t in spec["tasks"]}
 
@@ -272,7 +272,7 @@ def main() -> int:
                       if json.loads(p.read_text()).get("confidence", "off") != "off"]
         if not candidates:
             print("no suite has confidence recorded. Run:\n"
-                  "  python experiments/suite.py --tasks experiments/tasks_scaled.json "
+                  "  python experiments/runners/suite.py --tasks experiments/tasks/tasks_scaled.json "
                   "--confidence plain --repeats 3")
             return 1
         suite_dir = candidates[-1]

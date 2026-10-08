@@ -12,7 +12,7 @@ verdict the corrected checker would have given, at no cost. A retry or investiga
 cannot be rescored: its second attempt was a new browser run that a corrected checker might
 never have triggered, and no replay can undo a run that happened.
 
-    python experiments/rescore.py experiments/results/<stamp> --reason "why"
+    python experiments/analysis/rescore.py experiments/results/<stamp> --reason "why"
 """
 
 from __future__ import annotations
@@ -23,12 +23,11 @@ import json
 import pathlib
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import policy as policy_module
 import score as scoring
 import suite
-
-HERE = pathlib.Path(__file__).resolve().parent
 
 
 def main() -> int:
@@ -46,7 +45,7 @@ def main() -> int:
         print(f"refusing: a {policy} suite made second runs that rescoring cannot undo")
         return 1
 
-    tasks_path = args.tasks or HERE / (payload.get("tasks_file") or "tasks.json")
+    tasks_path = args.tasks or paths.TASKS / (payload.get("tasks_file") or "tasks.json")
     spec = json.loads(tasks_path.read_text())
     tasks = {t["id"]: t for t in spec["tasks"]}
     confidence = payload.get("confidence") or "off"

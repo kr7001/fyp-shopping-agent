@@ -9,8 +9,8 @@ Only the retry arm needs new runs, because only the retry arm changes what the a
 does. Keeping the two separate is the point. It says how much of the effect comes from
 being allowed to refuse, and how much from being told why and trying again.
 
-    python experiments/replay_gate.py
-    python experiments/replay_gate.py --suite 20260909T120000
+    python experiments/water/replay_gate.py
+    python experiments/water/replay_gate.py --suite 20260909T120000
 
 `--suite` restricts the replay to one results directory. That is how a held-out
 measurement is taken: freeze the rules, run a fresh baseline, and replay only that
@@ -25,16 +25,16 @@ import json
 import pathlib
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import policy as policy_module
 import score as scoring
 import suite
 
-HERE = pathlib.Path(__file__).resolve().parent
-RESULTS = HERE / "results"
-SPECS = {"tasks.json": HERE / "tasks.json",
-         "tasks_scaled.json": HERE / "tasks_scaled.json",
-         "tasks_heldout.json": HERE / "tasks_heldout.json"}
+RESULTS = paths.RESULTS
+SPECS = {"tasks.json": paths.TASKS / "tasks.json",
+         "tasks_scaled.json": paths.TASKS / "tasks_scaled.json",
+         "tasks_heldout.json": paths.TASKS / "tasks_heldout.json"}
 
 
 def specs() -> list[dict]:

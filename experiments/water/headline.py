@@ -8,7 +8,7 @@ how that happens: a figure gets quoted once, the population grows, and the figur
 The fix is not to pick one. It is to stop writing them by hand. Every headline number in
 the report and on the pages should come from here, with its denominator attached.
 
-    python experiments/headline.py
+    python experiments/water/headline.py
 
 Only unmodified runs count towards the baseline. A run whose prompt was altered to request
 a confidence figure is a different condition and is excluded, even though the agent and
@@ -27,18 +27,18 @@ import json
 import pathlib
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import arms
 import suite
 
-HERE = pathlib.Path(__file__).resolve().parent
-RESULTS = HERE / "results"
+RESULTS = paths.RESULTS
 
 
 def tasks() -> dict[str, dict]:
     out = {}
     for name in ("tasks.json", "tasks_scaled.json"):
-        path = HERE / name
+        path = paths.TASKS / name
         if path.exists():
             for task in json.loads(path.read_text())["tasks"]:
                 out[task["id"]] = task
@@ -46,9 +46,9 @@ def tasks() -> dict[str, dict]:
 
 
 def current_draws() -> dict[str, str]:
-    return {suite.draw_id(json.loads((HERE / name).read_text())): name
+    return {suite.draw_id(json.loads((paths.TASKS / name).read_text())): name
             for name in ("tasks.json", "tasks_scaled.json", "tasks_heldout.json")
-            if (HERE / name).exists()}
+            if (paths.TASKS / name).exists()}
 
 
 def baseline_rows() -> list[dict]:

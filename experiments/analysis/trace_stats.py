@@ -8,8 +8,8 @@ tool-call history, and that is what this reads.
 The RQ3 metric is interactions spent per correct answer, so tool calls are split
 into actions that change page state and observations that only read it.
 
-    python experiments/trace_stats.py experiments/runs/<stamp>.log
-    python experiments/trace_stats.py experiments/runs/*.log --update-json
+    python experiments/analysis/trace_stats.py experiments/runs/<stamp>.log
+    python experiments/analysis/trace_stats.py experiments/runs/*.log --update-json
 """
 
 from __future__ import annotations

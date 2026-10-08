@@ -11,7 +11,7 @@ agent's script reads before that, and gets the price shown with no size chosen.
 This runs the agent's exact script on three listings, then reads the same price box a
 second later. Local shop only, no model calls, no cost.
 
-    .venv-naive/bin/python experiments/reveal_race.py
+    .venv-naive/bin/python experiments/analysis/reveal_race.py
 """
 
 from playwright.sync_api import sync_playwright

@@ -124,7 +124,7 @@ python env/install_gated_theme.py --install
 python env/install_gated_theme.py --remove
 
 PLAYWRIGHT_MCP_ARGS='-y @playwright/mcp@latest --user-agent "Mozilla/5.0 IGRGated/1.0"' \
-    python experiments/suite.py --tasks experiments/tasks_heldout_gated.json --repeats 3
+    python experiments/runners/suite.py --tasks experiments/tasks/tasks_heldout_gated.json --repeats 3
 ```
 
 ### A store view was tried first, and did not work

@@ -21,8 +21,8 @@ This module is deliberately evaluated offline first. Running it over the existin
 says how many failures it would catch and how many correct answers it would wrongly
 block, before any of it is wired into the agent and paid for.
 
-    python experiments/sufficiency.py --evaluate
-    python experiments/sufficiency.py --log experiments/results/<dir>/<run>.log --answer "..."
+    python experiments/box/sufficiency.py --evaluate
+    python experiments/box/sufficiency.py --log experiments/results/<dir>/<run>.log --answer "..."
 """
 
 from __future__ import annotations
@@ -34,10 +34,11 @@ import pathlib
 import re
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import trace_stats
 
-RESULTS = pathlib.Path(__file__).resolve().parent / "results"
+RESULTS = paths.RESULTS
 
 # Which rule set scored a run. Bumped when a rule is added or its decision changes, so a
 # recorded verdict says what judged it rather than leaving it to be inferred from a date.
@@ -420,7 +421,7 @@ def evaluate() -> int:
     tasks: dict[str, dict] = {}
     populations: dict[str, int] = {}
     floors: dict[str, int] = {}
-    for spec_path in (RESULTS.parent / "tasks.json", RESULTS.parent / "tasks_scaled.json"):
+    for spec_path in (paths.TASKS / "tasks.json", paths.TASKS / "tasks_scaled.json"):
         if not spec_path.exists():
             continue
         spec = json.loads(spec_path.read_text())

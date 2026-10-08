@@ -21,25 +21,24 @@ The answer key is the one fixed before any run. A second key is printed beside i
 two questions whose wording turned out to be ambiguous, see `READINGS`, as a sensitivity
 check rather than a replacement.
 
-    python experiments/compare_cells.py
+    python experiments/analysis/compare_cells.py
 """
 
 from __future__ import annotations
 
 import collections
-import importlib.util
 import json
 import pathlib
+import sys
 from math import comb
 
 from scipy.stats import fisher_exact
 
-HERE = pathlib.Path(__file__).resolve().parent
-RESULTS = HERE / "results"
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
+import verify_cells  # noqa: E402
 
-_spec = importlib.util.spec_from_file_location("verify_cells", HERE / "verify_cells.py")
-verify_cells = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(verify_cells)
+RESULTS = paths.RESULTS
 
 # Each cell is one batch, except where runs had to be replaced. Cell 5's first batch lost
 # three runs to the laptop sleeping, see `verify_cells.SUSPENDED_AFTER_S`. Those three were

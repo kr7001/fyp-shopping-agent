@@ -37,7 +37,7 @@ Deliberately matched to the openJiuwen runs so the two are comparable:
 - every tool result is prefixed with `Page URL:`, which is what the listing counter reads,
   so coverage is measured by the same code for both scaffolds
 
-    python experiments/naive_agent.py "Go to http://localhost:7770/... and answer X" --out run.json
+    python experiments/runners/naive_agent.py "Go to http://localhost:7770/... and answer X" --out run.json
 """
 
 from __future__ import annotations
@@ -53,9 +53,9 @@ import time
 import requests
 from playwright.sync_api import sync_playwright
 
-HERE = pathlib.Path(__file__).resolve().parent
-REPO = HERE.parent
-RUNS = HERE / "runs"
+EXPERIMENTS = pathlib.Path(__file__).resolve().parents[1]
+REPO = EXPERIMENTS.parent
+RUNS = EXPERIMENTS / "runs"
 ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
 USAGE = "https://openrouter.ai/api/v1/key"
 
@@ -178,7 +178,7 @@ def page_text(page) -> str:
               const main = document.querySelector(
                 'main, #maincontent, .column.main, [role=main]');
               return els.map(e => [
-                  e.innerText.trim().replace(/\s+/g, ' ').slice(0, 70),
+                  e.innerText.trim().replace(/\\s+/g, ' ').slice(0, 70),
                   e.href,
                   main && main.contains(e) ? 0 : 1
                 ]).filter(([t, h]) => t && h.startsWith('http'));
