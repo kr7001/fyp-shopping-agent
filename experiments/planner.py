@@ -49,7 +49,10 @@ HERE = pathlib.Path(__file__).resolve().parent
 # Bumped when a plan's meaning changes, not when its wording does. Runs made under
 # different versions are different policies and are not pooled, the same discipline the
 # draw id applies to catalogues and `targeting.VERSION` applies to strategy text.
-VERSION = 1
+#
+# v2, 8 October 2026: a question answerable from the results page has its own kind, so its
+# plan says the evidence is on the results page and asks for no coverage of listing pages.
+VERSION = 2
 
 # What a quantifier costs to settle. This is the table the whole policy rests on, and it is
 # a statement about logic rather than about this catalogue.
@@ -66,6 +69,7 @@ QUANTIFIERS = {
     "refutation": "universal",
     "depth_search": "existential",
     "survey": "enumerate",
+    "results_page": "argmin",
 }
 
 # Which bound may be used to skip a member of the population, and why it is valid.
@@ -90,6 +94,7 @@ BOUNDS = {
     # next one. A rating average is published and bounds nothing a shopper asks about.
     "depth_search": None,
     "survey": None,
+    "results_page": None,
 }
 
 # What the answer has to be able to show, in the same vocabulary the sufficiency rules use.
@@ -118,6 +123,10 @@ EVIDENCE = {
     "survey": {"min_listings_opened": "population",
                "counterexample": False,
                "enforced_by": ["claim_without_content"]},
+    # The advertised prices are all on the results page, so nothing has to be opened.
+    "results_page": {"min_listings_opened": 0,
+                     "counterexample": False,
+                     "enforced_by": []},
 }
 
 # A figure produced by a bound is a device for deciding what to skip. It is not a price, and
@@ -143,7 +152,7 @@ def plan(question: str) -> dict:
         # Where the attribute being compared actually lives. On the results page it can be
         # compared without opening anything, which is what makes the control question a
         # control. Everything the policy is measured on is gated behind a listing page.
-        "evidence_source": "listing pages",
+        "evidence_source": "results page" if kind == "results_page" else "listing pages",
         "enumerate_first": True,
         "bound": BOUNDS[kind],
         "stop_rule": STOP_RULES[kind],
@@ -160,6 +169,7 @@ STOP_RULES = {
     "refutation": "at the first listing that lacks the option, which settles the question",
     "depth_search": "at the first review that mentions it, or not before the last page",
     "survey": "when every enumerated listing has been opened",
+    "results_page": "once every listing on the results page has been read",
 }
 
 

@@ -38,7 +38,23 @@ import re
 # under different versions are different policies and must not be pooled, which is the
 # same denominator discipline applied everywhere else. v1 lacked the enumeration step and
 # pruned within whatever the first screen happened to show.
-VERSION = 6
+#
+# v7, 8 October 2026, from the error analysis of the clothing cells. Three changes, each
+# traced to a recorded failure rather than to a wish:
+#   - the availability strategy said a disabled option's "price is still printed". That was
+#     true of the old shop, which wrote a surcharge on every size, and is false of the gated
+#     one, whose menu shows no prices at all. It now says to choose the size and then look
+#     again, because openJiuwen's reply to choosing a size is a snapshot file name, not the
+#     page. One cell 2 run chose M on Copperfield, never opened that file, and reported the
+#     $23.40 it had read before the click. Copperfield's M is $29.66
+#   - the enumeration step said "the search results are paginated". Since the shop shows 36
+#     a page, no current market is. A false statement in an instruction is a confound
+#   - a question answerable from the results page was sent the price bound strategy, which
+#     tells the agent to open listings it does not need. It now gets its own strategy
+#   - the survey strategy now says availability can be read from the option menu. One
+#     exhaustive run chose size M eleven times to check stock the menu already showed, and
+#     ran out of its 100 steps
+VERSION = 7
 
 # Ordered, and the order matters. A universal question about stock also contains the word
 # "lowest" in some phrasings, so the coverage test is applied before the price tests.
@@ -54,6 +70,9 @@ BUYABLE = re.compile(
 # first because a review question can contain almost any other keyword: a buyer may well
 # mention a refund, a leak, or the cheapest place they found it.
 REVIEWS = re.compile(r"\b(buyers?|reviewers?|reviews?)\b", re.IGNORECASE)
+# The control question asks what the results page advertises, so nothing needs opening. The
+# same pattern the sufficiency rules use to exempt it from coverage, so the two agree.
+RESULTS_PAGE = re.compile(r"\b(advertis\w+|on the results page)\b", re.IGNORECASE)
 UNIT_RATE = re.compile(r"per\s+(litre|liter|kg|kilogram|unit)|best value", re.IGNORECASE)
 CHEAPEST = re.compile(r"\b(cheapest|lowest price|lowest cost|least expensive)\b",
                       re.IGNORECASE)
@@ -66,6 +85,8 @@ LARGEST_PACK_LITRES = 19
 
 
 def classify(question: str) -> str:
+    if RESULTS_PAGE.search(question):
+        return "results_page"
     if REVIEWS.search(question):
         return "depth_search"
     if UNIVERSAL.search(question):
@@ -102,9 +123,9 @@ def classify(question: str) -> str:
 # bounding over.
 ENUMERATE = (
     "First, establish the complete candidate set before opening anything.\n"
-    "The search results are paginated. Go through every page and list every listing "
-    "together with its advertised price. State how many listings exist in total, and do "
-    "not assume the first screen is all of them.\n"
+    "The search results may run to more than one page. Go through every page there is and "
+    "list every listing together with its advertised price. State how many listings exist "
+    "in total, and do not assume the first screen is all of them.\n"
     "You may only skip a listing you have enumerated. A bound cannot rule out something "
     "you never knew was there.\n\n"
     "Then use this retrieval strategy.\n")
@@ -112,9 +133,9 @@ ENUMERATE = (
 QUARANTINE = (
     "\nImportant: the figure this bound produces is a limit used only to decide what to "
     "skip. It is not a real price and must never appear in your answer. Only report a "
-    "price you read from a listing you opened, attached to the exact pack size it was "
-    "shown against. Never pair an advertised price with a pack size unless you opened the "
-    "listing and saw that price shown for that pack.")
+    "price you read from a listing you opened, for the exact option asked about, read "
+    "after that option was chosen. Never pair an advertised price with an option unless "
+    "you saw that price shown while that option was chosen.")
 
 STRATEGIES = {
     "total_bound": (
@@ -171,10 +192,13 @@ STRATEGIES = {
         "1. Read the advertised price of every listing from the search results first. That "
         "price is the cheapest option in that listing, so nothing inside it can cost less.\n"
         "2. Open listings in ascending order of advertised price. For each one, do two "
-        "separate things. Find the price for the option asked about, and check whether that "
-        "option can actually be bought. An option can be listed and still be unavailable, "
-        "in which case it is shown as disabled or greyed out and cannot be selected. Its "
-        "price is still printed, and that price does not count.\n"
+        "separate things. First, choose the option asked about, then look at the page again "
+        "and read the price it now shows. The price a listing shows before you choose is "
+        "its cheapest option, not the one asked about, and the reply to choosing an option "
+        "does not show the new price. Second, check whether that option can actually be "
+        "bought. An option can be listed and still be unavailable, in which case it is "
+        "shown as disabled or greyed out and cannot be chosen, so it has no price you can "
+        "use.\n"
         "3. A listing only becomes your best candidate if the option is both cheaper and "
         "available. A cheaper unavailable one changes nothing.\n"
         "4. Skip every unopened listing whose advertised price is at or above your best "
@@ -206,9 +230,15 @@ STRATEGIES = {
         "pages of how many you read and that you found no mention in those. An unread page "
         "is not an absence of evidence, and reporting it as one is the error this is "
         "written to prevent."),
+    "results_page": (
+        "This can be answered from the search results page alone, from the price each "
+        "listing advertises there. Read the whole results page, not only the first screen, "
+        "and do not open any listing."),
     "survey": (
         ENUMERATE + "Open every listing in the search results and check the relevant option on each "
-        "before answering. Say how many you opened."),
+        "before answering. Whether an option can be chosen is shown in the option menu "
+        "itself, so there is no need to choose it to find that out. Say how many you "
+        "opened."),
 }
 
 
