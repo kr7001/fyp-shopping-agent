@@ -8,8 +8,10 @@ pass, a declared cost, the laptop kept awake, and your yes.
 ## Week 1, 9 to 15 October: box v1, specified and built
 
 - **Day 1: a one page spec for your approval.** Input: the question and the first results page. Output: a plan handed to openJiuwen, or a question back to the user. Two question types: the cheapest size M that can be bought, and the ambiguous "offer" questions. It lists what the box may never read: the fixture, the answer keys, `_instance`
+- **Decide how to publish.** The paper PDF sits in unpushed commits, so `dev` waits for your choice: rewrite them, make the repository private, or keep the branch local
 - **Protect the evidence before spending anything.** Pin the browser tool to the version the runs used instead of `@latest`. Back up the raw logs privately. Fix the two September scripts that pool across model and scaffold. All free
-- **Coder builds the box**, with a dry run that prints the exact text openJiuwen will receive, and a test where each rule must fire and one where it must stay quiet
+- **Make the free checks show the truth.** `--dry-run` prints the exact text each arm sends, from the same code path the paid loop uses
+- **Coder builds the box**, with a dry run that prints the exact text openJiuwen will receive, and a test where each rule must fire and one where it must stay quiet. Its refusal check takes the market size and the floor from the page, never from the answer key
 - **The scripted user.** When the box asks back, a scripted reply picks one reading, and the final answer is scored against that reading's key. Clear questions are the control: the box should not ask on them
 - **Verifier pass**, then the stamp
 - *Done when:* the spec is approved, the box is committed with its tests, and the verifier has passed it
@@ -19,6 +21,7 @@ pass, a declared cost, the laptop kept awake, and your yes.
 - **A small paid test on Thornwood.** Box runs only, since cells 1 and 5 already measured the same questions on the same market. This is development: Thornwood is in sample for the box, so nothing here is a claim
 - **Fix what it shows, then freeze the box** at a version number
 - **Generate a fresh clothing market** with a new seed, after the freeze, so the box was never tuned on it. Seed it, verify it in a real browser, and write its question file with every reading of "offer" stated before any run
+- **Point `verify_cells.py` at each batch's own market**, so the claim run is not scored against Thornwood's answers
 - *Done when:* the box version is frozen, the new market is seeded and verified, and the verifier has passed the claim run's plan
 
 ## Week 3, 23 to 29 October: the claim run, verified

@@ -3545,8 +3545,8 @@ window.SITE = {
    {
     "market": "Thornwood, clothing",
     "listings": "15",
-    "status": "<strong>Development since 8 Oct 2026.</strong> Generated on 18 Sep, after the coverage rule was frozen. Cells 1 to 5 were measured on it on 7 and 8 Oct, and strategy v7 and planner v2 were then written from its failures",
-    "use": "Reporting cells 1 to 5, and developing box v1. Not a held-out test for the box"
+    "status": "<strong>Development since 8 Oct 2026.</strong> Generated on 18 Sep, after the coverage rule was frozen. Cells 1, 2, 3 and 5 were measured on it on 7 and 8 Oct, and strategy v7 and planner v2 were then written from its failures",
+    "use": "Reporting cells 1, 2, 3 and 5, and developing box v1. Not a held-out test for the box"
    },
    {
     "market": "Calderwood-S",
@@ -3850,6 +3850,24 @@ window.SITE = {
        "C",
        "M"
       ]
+     },
+     {
+      "n": 31,
+      "what": "A test was named for a fault it could not catch: with the scorer's price exclusion removed, all three count tests still passed. Another check for answer key reads missed four of five planted reads",
+      "rule": "Before claiming a test catches a fault, plant the fault and watch the test fail",
+      "who": [
+       "C",
+       "V"
+      ]
+     },
+     {
+      "n": 32,
+      "what": "The refusal check was presented as part of the box, but it reads the market size and the fewest sound openings from the answer key. Without them it refused none of the nine failures it was credited with",
+      "rule": "Before calling a component part of the box, list every input it reads and check each is visible to the agent",
+      "who": [
+       "V",
+       "I"
+      ]
      }
     ]
    }
@@ -3932,11 +3950,11 @@ window.SITE = {
   "sections": [
    {
     "title": "Week 1, 9 to 15 October: box v1, specified and built",
-    "html": "<ul><li><strong>Day 1: a one page spec for your approval.</strong> Input: the question and the first results page. Output: a plan handed to openJiuwen, or a question back to the user. Two question types: the cheapest size M that can be bought, and the ambiguous \"offer\" questions. It lists what the box may never read: the fixture, the answer keys, <code>_instance</code></li><li><strong>Protect the evidence before spending anything.</strong> Pin the browser tool to the version the runs used instead of <code>@latest</code>. Back up the raw logs privately. Fix the two September scripts that pool across model and scaffold. All free</li><li><strong>Coder builds the box</strong>, with a dry run that prints the exact text openJiuwen will receive, and a test where each rule must fire and one where it must stay quiet</li><li><strong>The scripted user.</strong> When the box asks back, a scripted reply picks one reading, and the final answer is scored against that reading's key. Clear questions are the control: the box should not ask on them</li><li><strong>Verifier pass</strong>, then the stamp</li><li><em>Done when:</em> the spec is approved, the box is committed with its tests, and the verifier has passed it</li></ul>"
+    "html": "<ul><li><strong>Day 1: a one page spec for your approval.</strong> Input: the question and the first results page. Output: a plan handed to openJiuwen, or a question back to the user. Two question types: the cheapest size M that can be bought, and the ambiguous \"offer\" questions. It lists what the box may never read: the fixture, the answer keys, <code>_instance</code></li><li><strong>Decide how to publish.</strong> The paper PDF sits in unpushed commits, so <code>dev</code> waits for your choice: rewrite them, make the repository private, or keep the branch local</li><li><strong>Protect the evidence before spending anything.</strong> Pin the browser tool to the version the runs used instead of <code>@latest</code>. Back up the raw logs privately. Fix the two September scripts that pool across model and scaffold. All free</li><li><strong>Make the free checks show the truth.</strong> <code>--dry-run</code> prints the exact text each arm sends, from the same code path the paid loop uses</li><li><strong>Coder builds the box</strong>, with a dry run that prints the exact text openJiuwen will receive, and a test where each rule must fire and one where it must stay quiet. Its refusal check takes the market size and the floor from the page, never from the answer key</li><li><strong>The scripted user.</strong> When the box asks back, a scripted reply picks one reading, and the final answer is scored against that reading's key. Clear questions are the control: the box should not ask on them</li><li><strong>Verifier pass</strong>, then the stamp</li><li><em>Done when:</em> the spec is approved, the box is committed with its tests, and the verifier has passed it</li></ul>"
    },
    {
     "title": "Week 2, 16 to 22 October: first measurement, then a fresh market",
-    "html": "<ul><li><strong>A small paid test on Thornwood.</strong> Box runs only, since cells 1 and 5 already measured the same questions on the same market. This is development: Thornwood is in sample for the box, so nothing here is a claim</li><li><strong>Fix what it shows, then freeze the box</strong> at a version number</li><li><strong>Generate a fresh clothing market</strong> with a new seed, after the freeze, so the box was never tuned on it. Seed it, verify it in a real browser, and write its question file with every reading of \"offer\" stated before any run</li><li><em>Done when:</em> the box version is frozen, the new market is seeded and verified, and the verifier has passed the claim run's plan</li></ul>"
+    "html": "<ul><li><strong>A small paid test on Thornwood.</strong> Box runs only, since cells 1 and 5 already measured the same questions on the same market. This is development: Thornwood is in sample for the box, so nothing here is a claim</li><li><strong>Fix what it shows, then freeze the box</strong> at a version number</li><li><strong>Generate a fresh clothing market</strong> with a new seed, after the freeze, so the box was never tuned on it. Seed it, verify it in a real browser, and write its question file with every reading of \"offer\" stated before any run</li><li><strong>Point <code>verify_cells.py</code> at each batch's own market</strong>, so the claim run is not scored against Thornwood's answers</li><li><em>Done when:</em> the box version is frozen, the new market is seeded and verified, and the verifier has passed the claim run's plan</li></ul>"
    },
    {
     "title": "Week 3, 23 to 29 October: the claim run, verified",
@@ -3961,7 +3979,19 @@ window.SITE = {
   "sections": [
    {
     "title": "The openJiuwen paper is still inside unpushed commits",
-    "html": "<p><code>openjiuwen.pdf</code> was committed on 9 September and is no longer tracked, but every commit since then still holds it, and the repository is public. arXiv's licence lets only arXiv distribute the paper, so pushing this branch as it stands would publish it. Three ways out: rewrite the unpushed commits without it, which changes their hashes, make the repository private, or keep the branch local. Until one is chosen, <code>dev</code> is not pushed. Check with <code>git log --oneline -- openjiuwen.pdf</code>. <em>Now.</em></p>"
+    "html": "<p><code>openjiuwen.pdf</code> was committed on 9 September and is no longer tracked, but the 101 unpushed commits from <code>af7dc77</code> to <code>8957f07</code> still hold it, and the repository is public. arXiv's licence lets only arXiv distribute the paper, so pushing this branch as it stands would publish it. Three ways out: rewrite those commits without it, which changes their hashes, make the repository private, or keep the branch local. Until one is chosen, <code>dev</code> is not pushed. Check with <code>git log --oneline -- openjiuwen.pdf</code>. <em>Now.</em></p>\n<p>Two more things a push would publish for the first time, both worth deciding on purpose. The gated theme's template is derived from Magento's own, under OSL-3.0 and AFL-3.0, and the commits from 18 September carry it without Magento's notice. The notice was restored on 9 October, and a rewrite could fold it into the older commits too. And <code>docs/archive/updates/</code> holds the supervisor's inline replies to the updates, which have never been on GitHub.</p>"
+   },
+   {
+    "title": "The refusal check reads the answer key",
+    "html": "<p><code>policy.gate</code> passes two numbers from the market's <code>_instance</code> to the sufficiency check: how many listings the market has, and the fewest a sound answer must open. With them, the replay over the clothing cells refuses all 9 coverage failures in cell 1. Without them it refuses none (checked 9 October). The September gate arms ran the same way. So the check, as built, is an evaluation tool that knows the answer, not yet part of the box. Box v1 must read both numbers from the page: the results page shows how many listings there are, and the advertised prices bound how many cannot be ruled out. <em>Week 1.</em></p>"
+   },
+   {
+    "title": "`--dry-run` lists the tasks, not what the agent receives",
+    "html": "<p><code>suite.py --dry-run</code> prints each task's id and answer kind. The strategy, plan, \"open everything\" and confidence wrappers are added only inside the paid loop, so no free command shows the exact text an agent will receive (LESSONS 17). Build one path that both the dry run and the paid loop use. <em>Week 1.</em></p>"
+   },
+   {
+    "title": "`verify_cells.py` reads Thornwood's answers by name",
+    "html": "<p><code>experiments/analysis/verify_cells.py</code> loads <code>env/fixtures/scaled_apparel.json</code> directly. Run on a batch from the fresh clothing market, it would score against Thornwood's answers. It must take the fixture from the batch's own question file before the claim run. <em>Week 2.</em></p>"
    },
    {
     "title": "The raw logs exist only on this laptop",
@@ -3989,7 +4019,7 @@ window.SITE = {
    },
    {
     "title": "One local openJiuwen fix may be missing",
-    "html": "<p>The decision log for 8 September says two upstream bugs were patched locally. The submodule's working tree holds only one of them, saved in <code>agent/openjiuwen-local.patch</code>. The other, the worker's <code>ok: false</code> not reaching the run result, is not there. Either it was lost or never applied. Check whether any scored run depended on it.</p>"
+    "html": "<p>The decision log for 8 September says two upstream bugs were patched locally. The submodule's working tree holds only one of them, saved in <code>agent/openjiuwen-local.patch</code>. The other, the worker's <code>ok: false</code> not reaching the run result, is not there. The submodule's reflog holds a commit made inside it by mistake on 9 September and since reset, and its change is the same as today's patch, so the fix was not in the tree then either. \"Never applied\" is the likelier reading. Check whether any scored run depended on it.</p>"
    },
    {
     "title": "Smaller items",
@@ -4020,9 +4050,12 @@ window.SITE = {
      },
      {
       "name": "NoAnswerKey",
-      "doc": "The box decides from the question alone. It must never read what the answer is.",
+      "doc": "The parts of the box that run before the agent decide from the question alone.",
       "tests": [
-       "box code reads no answers"
+       "reads no answer key or fixture",
+       "copies no seller or price",
+       "the checks catch a planted read",
+       "only the answer checks read the answer key"
       ]
      }
     ]
@@ -4082,18 +4115,20 @@ window.SITE = {
    },
    {
     "file": "experiments/tests/test_figures.py",
-    "doc": "The clothing-cell figures the site reports, recomputed from the raw runs.",
+    "doc": "Every clothing-cell figure the site shows, recomputed from the raw runs.",
     "classes": [
      {
       "name": "CellFigures",
       "doc": "",
       "tests": [
-       "fifteen valid gated runs in every cell",
-       "correct under the key fixed before the runs",
-       "correct under the can sell reading",
-       "covered",
-       "second agent repeats",
-       "the tests quoted on the site"
+       "section a",
+       "control question",
+       "section b each question",
+       "section c the tests",
+       "section d kinds of error",
+       "section e refusal replay",
+       "section f how runs were checked",
+       "section g charges"
       ]
      }
     ]
@@ -4212,14 +4247,14 @@ window.SITE = {
   },
   "flatten": {
    "file": "env/gated_theme/Magento_ConfigurableProduct/templates/product/view/type/options/configurable.phtml",
-   "start": 50,
-   "end": 56,
+   "start": 59,
+   "end": 65,
    "code": "foreach ($config[\"optionPrices\"] ?? [] as $id => $entry) {\n    foreach ([\"baseOldPrice\", \"oldPrice\", \"basePrice\", \"finalPrice\"] as $key) {\n        if (isset($config[\"optionPrices\"][$id][$key][\"amount\"])) {\n            $config[\"optionPrices\"][$id][$key][\"amount\"] = $basePrice;\n        }\n    }\n}"
   },
   "reveal": {
    "file": "env/gated_theme/Magento_ConfigurableProduct/templates/product/view/type/options/configurable.phtml",
-   "start": 128,
-   "end": 142,
+   "start": 137,
+   "end": 151,
    "code": "        function show() {\n            var id = chosenProduct();\n            var boxes = document.querySelectorAll(\".price-box .price\");\n            if (!id || !prices[id]) { return; }\n            var amount = prices[id].finalPrice ? prices[id].finalPrice.amount : null;\n            if (amount === null) { return; }\n            var text = \"$\" + Number(amount).toFixed(2);\n            for (var i = 0; i < boxes.length; i++) { boxes[i].textContent = text; }\n        }\n\n        document.addEventListener(\"change\", function (event) {\n            if (event.target && event.target.classList.contains(\"super-attribute-select\")) {\n                setTimeout(show, 60);\n            }\n        }, true);"
   },
   "naive_settings": {
@@ -4284,17 +4319,17 @@ window.SITE = {
   "source": "README decision log, 8 October 2026"
  },
  "built": {
-  "commit": "c35e89f",
+  "commit": "2c12800",
   "date": "2026-10-09",
   "branch": "dev",
-  "dirty": false,
+  "dirty": true,
   "repo": "https://github.com/kr7001/fyp-shopping-agent",
   "agent_core": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
   "commits_by_week": {
    "2026-08-24": 1,
    "2026-09-07": 44,
    "2026-09-14": 49,
-   "2026-10-05": 26
+   "2026-10-05": 27
   }
  }
 };

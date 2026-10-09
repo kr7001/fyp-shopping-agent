@@ -33,7 +33,7 @@ and nothing reaches a paid model, a document or the site without passing the one
 make check                     # unit tests, planner regression, the mod's tests. Free
 make facts                     # every published figure, from the raw runs. Free
 make verify BATCH=experiments/results/<stamp>   # one batch re-derived, every answer printed
-make dry TASKS=tasks_apparel.json               # what a batch would send, sending nothing
+make dry TASKS=tasks_apparel.json               # the tasks a batch would run, running nothing
 make site                      # rebuild docs/site-data.js from the repository
 make site-check                # fail if the site is stale
 ```
@@ -49,7 +49,8 @@ IGR_ESTIMATE_USD=<dollars> caffeinate -i python3 experiments/runners/suite.py \
 ## Keeping the site current
 
 The site is `docs/index.html`. Its numbers, tables and code excerpts come from
-`docs/site-data.js`, which `docs/build_site.py` writes. Nobody edits figures in the page.
+`docs/site-data.js`, which `docs/build_site.py` writes. Nobody types a computed figure into the
+page. The few historical figures it quotes from the decision log carry their date.
 
 | To change | Edit | Then |
 | --- | --- | --- |

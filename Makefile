@@ -12,13 +12,13 @@ TASKS ?= tasks_apparel.json
 
 help:
 	@echo "make check        everything below that checks code: test, regression, mod"
-	@echo "make test         unit tests (about 25 s; the figure tests need the local logs)"
+	@echo "make test         unit tests, about a minute. The figure tests need the local logs"
 	@echo "make regression   the planner renders every question the same as targeting.py"
 	@echo "make mod          the workbench mod's own tests (needs the claude CLI)"
-	@echo "make facts        every figure on the results page, from the raw runs"
+	@echo "make facts        every clothing-cell figure on the results page, from the raw runs"
 	@echo "make compare      the cell comparisons, with both readings of 'offer'"
 	@echo "make verify BATCH=experiments/results/<stamp>   re-derive one batch, every answer in full"
-	@echo "make dry TASKS=tasks_apparel.json                what a suite would send, without sending it"
+	@echo "make dry TASKS=tasks_apparel.json                the tasks a suite would run, running nothing"
 	@echo "make site         rebuild docs/site-data.js from the run files"
 	@echo "make site-check   fail if docs/site-data.js is stale"
 

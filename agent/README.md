@@ -6,7 +6,8 @@ https://github.com/openJiuwen-ai/agent-core, pinned as a git submodule at commit
 `agent-core/openjiuwen/harness/tools/browser_move/`.
 
 Nothing inside `agent-core/` is committed to this repository. The one change made to it is
-kept here as a patch instead, so a fresh clone can rebuild exactly what the runs used.
+kept here as a patch instead, so a fresh clone can rebuild the openJiuwen code the runs used.
+The browser, Playwright MCP, is still fetched as `@latest`, see the site's Problems page.
 
 ## Set up from a fresh clone
 
@@ -35,5 +36,6 @@ upstream contribution is claimed unless a pull request is merged.
 
 The decision log for 8 September also names a second local fix, for the worker's
 `ok: false` not reaching the run result. That change is not in the submodule's working tree
-today, so either it was lost or it was never applied there. It is listed as an open problem
-on the project site rather than assumed.
+today. The submodule's reflog holds a commit made inside it by mistake on 9 September and since
+reset, whose change is the same as today's patch, so it was not there then either. "Never
+applied" is the likelier reading. It is listed as an open problem on the project site.

@@ -64,7 +64,7 @@
   </div>
 
   <div class="block">
-    <div class="head"><h2>Where the project stands</h2><span class="small">Every figure on this site is rebuilt from the run files. Last built <span data-f="built.date"></span>.</span></div>
+    <div class="head"><h2>Where the project stands</h2><span class="small">Computed figures are rebuilt from the run files, quoted ones carry their date. Last built <span data-f="built.date"></span>.</span></div>
     <div class="stats">
       <div class="stat"><b data-f="runs.cells"></b><span>verified runs, four ways of running the agent, one clothing market</span></div>
       <div class="stat"><b><span data-f="c1.opened"></span> to <span data-f="c2.opened"></span></b><span>runs of 15 that opened every listing the answer needs, before and after one default changed</span></div>
@@ -88,7 +88,7 @@
   <div class="block prose">
     <h2>What we know</h2>
     <ol>
-      <li><strong>The failure is retrieval, not reasoning.</strong> As shipped, openJiuwen opened every listing the answer needed in <span data-f="c1.opened"></span> of 15 runs. Its card probe reports only the cards inside the browser window, four of fifteen. Turning that one default off took it to <span data-f="c2.opened"></span> of 15, and correct answers from <span data-f="c1.right"></span> to <span data-f="c2.right"></span> (p = <span data-f="p.correct.2v1"></span>, compared within each question).</li>
+      <li><strong>The failure is retrieval, not reasoning.</strong> As shipped, openJiuwen opened every listing the answer needed in <span data-f="c1.opened"></span> of 15 runs. Its card probe reports only the cards inside the browser window, one row of four at this window size (decision log, 14 September). Turning that one default off took it to <span data-f="c2.opened"></span> of 15, and correct answers from <span data-f="c1.right"></span> to <span data-f="c2.right"></span> (p = <span data-f="p.correct.2v1"></span>, compared within each question).</li>
       <li><strong>Opening everything works, and it costs.</strong> Told to open every listing, the shipped agent got <span data-f="c5.right"></span> of 15 right at <span data-f="c5.cost"></span> a run, <span data-f="ratio51"></span> times the shipped agent's <span data-f="c1.cost"></span>.</li>
       <li><strong>Once everything is opened, the errors change kind.</strong> In the two cells that opened everything, <span data-f="err25.unopened"></span> of the <span data-f="err25.wrong"></span> wrong answers left a listing unopened. <span data-f="err25.offer"></span> read "offer" as "can sell it now", <span data-f="err25.steps"></span> ran out of steps, and <span data-f="err25.reveal"></span> read a price before the page revealed it.</li>
       <li><strong>The goal now:</strong> openJiuwen with the box should be as accurate as opening everything, cost less, and ask back on the ambiguous questions instead of guessing, on a market the box was never tuned on.</li>
@@ -129,8 +129,8 @@
       <thead><tr><th>Question</th><th>Where it stands</th></tr></thead>
       <tbody>
         <tr><td><b>RQ1.</b> How often does gating occur in a realistic shopping environment, and in what forms?</td><td>Forms catalogued by hand on three live marketplaces. Two are built into the local shop: a size's price shown only once chosen, and stock shown only in the size menu. Reviews behind pagination are measured and their questions written, not yet run.</td></tr>
-        <tr><td><b>RQ2.</b> When a task needs gated information, does the agent retrieve it, and does it say when it has not?</td><td>Measured. Often it does not retrieve it, and it never says so: none of 125 unmodified runs on the September markets abstained. On clothing, the shipped agent opened what the answer needs in <span data-f="c1.opened"></span> of 15 runs.</td></tr>
-        <tr><td><b>RQ3.</b> Can a question-conditioned retrieval policy reach correct answers with fewer interactions than exhaustive exploration?</td><td>Shown once, on the water markets in September: strategy text plus a refusal check matched "open everything" on accuracy for fewer actions and less money, including on a held-out market. Box v1 is the next test, on clothing.</td></tr>
+        <tr><td><b>RQ2.</b> When a task needs gated information, does the agent retrieve it, and does it say when it has not?</td><td>Measured. Often it does not retrieve it, and it never says so: none of 125 unmodified runs on the September markets abstained (decision log, 17 September). On clothing, the shipped agent opened what the answer needs in <span data-f="c1.opened"></span> of 15 runs.</td></tr>
+        <tr><td><b>RQ3.</b> Can a question-conditioned retrieval policy reach correct answers with fewer interactions than exhaustive exploration?</td><td><span class="chip warn">suggestive</span> On the September water markets, strategy text plus a refusal check matched "open everything" on accuracy for fewer actions and less money, held-out market included. Twelve runs per arm and no test, and the refusal check read two numbers from the answer key. Box v1 is the next test, on clothing.</td></tr>
       </tbody>
     </table></div>
     <p class="note">RQ3 is the contribution. RQ1 and RQ2 set the baseline it is measured against.</p>
@@ -167,7 +167,7 @@
   <div class="page-head">
     <span class="eyebrow">Evidence</span>
     <h1>Results</h1>
-    <p class="lede">Four ways of running an agent on the same clothing market, the same five questions, three runs each. Every figure below is recomputed from the raw run files by <code>make facts</code>, and the page cannot show a figure that command does not print.</p>
+    <p class="lede">Four ways of running an agent on the same clothing market, the same five questions, three runs each. Every clothing figure below is recomputed from the raw run files by <code>make facts</code>, and a unit test pins each one. The September table is built from the batches it names. Figures quoted from the decision log say so and carry their date.</p>
   </div>
 
   <div class="block prose">
@@ -213,7 +213,7 @@
       <li><span class="chip good">established</span> <strong>And it answers correctly more often.</strong> <span data-f="c1.right"></span> to <span data-f="c2.right"></span> of 15, p = <span data-f="p.correct.2v1"></span> by question, and the same holds under the other reading of "offer".</li>
       <li><span class="chip warn">suggestive</span> <strong>Telling the agent to open everything does as well as turning the limit off</strong>, <span data-f="c5.right"></span> against <span data-f="c2.right"></span>, p = <span data-f="p.correct.5v2"></span>. No difference was found, which is not the same as showing there is none. In <span data-f="window.c5"></span> of <span data-f="window.c5.of"></span> runs it turned the limit off itself.</li>
       <li><span class="chip warn">suggestive</span> <strong>The second agent opens more than shipped openJiuwen</strong>, p = <span data-f="p.opened.3v1"></span> on its distinct runs only.</li>
-      <li><span class="chip warn">suggestive</span> <strong>The refusal check catches exactly the coverage failures.</strong> Replayed over finished runs it refused <span data-f="refusal.c1.refused"></span> of the <span data-f="refusal.c1.wrong"></span> wrong answers in cell 1 and <span data-f="refusal.right_refused"></span> of <span data-f="refusal.right"></span> correct answers across cells 1, 2 and 5. In sample, since the rule existed before this market but was checked on it once.</li>
+      <li><span class="chip warn">suggestive</span> <strong>The refusal check catches the coverage failures, but only with the answer key's help.</strong> Replayed over finished runs it refused <span data-f="refusal.c1.refused"></span> of the <span data-f="refusal.c1.wrong"></span> wrong answers in cell 1, exactly the runs that did not open what they needed, and <span data-f="refusal.right_refused"></span> of <span data-f="refusal.right"></span> correct answers across cells 1, 2 and 5. To do it, <code>policy.gate</code> reads two numbers from the answer key: how many listings the market has, and the fewest a sound answer must open. Without them it refuses none of the nine (checked 9 October). Box v1 has to take both from the page.</li>
     </ul>
   </div>
 
@@ -225,7 +225,7 @@
 
   <div class="block">
     <h2>The refusal check, replayed</h2>
-    <p class="note">The check never touches the browser, so replaying it over a finished run gives exactly the verdict it would have given live, at no cost.</p>
+    <p class="note">The check never touches the browser, so replaying it over a finished run gives exactly the verdict it would have given live, at no cost. It reads the market size and the floor from the answer key, as the list above says.</p>
     <div data-render="refusalTable"></div>
   </div>
 
@@ -243,7 +243,8 @@
 
   <div class="block">
     <h2>The September study, on the water markets</h2>
-    <p class="prose">Before clothing, the same question was asked on two water markets: Rivenhall, used to write and correct the strategies, and Calderwood, generated afterwards to test them. Each row is one arm on one market, one model and one agent. On Calderwood, the arm that was never tuned on it had <span data-f="w.cal.s"></span>, with <span data-f="w.cal.actions_cut"></span> per cent fewer actions and <span data-f="w.cal.cost_cut"></span> per cent less cost than opening everything, which got <span data-f="w.cal.e"></span>. The shipped agent got <span data-f="w.cal.u"></span>.</p>
+    <p class="prose">Before clothing, the same question was asked on two water markets: Rivenhall, used to write and correct the strategies, and Calderwood, generated afterwards to test them. Each row is one arm on one market, one model and one agent. On Calderwood, generated after the strategies were written, the strategy arm had <span data-f="w.cal.s"></span>, with <span data-f="w.cal.actions_cut"></span> per cent fewer actions and <span data-f="w.cal.cost_cut"></span> per cent less cost than opening everything, which got <span data-f="w.cal.e"></span>. The shipped agent got <span data-f="w.cal.u"></span>.</p>
+    <p class="prose"><span class="chip warn">suggestive</span> Three cautions. Its refusal check read the answer key's market size and floor, like the clothing replay above. Its first Calderwood batch was re-scored on 13 September, after a checker fix, which turned two refusals into correct answers. And it rests on twelve runs per arm with no test.</p>
     <div data-render="waterTable"></div>
     <p class="note">Built per model and agent by <code>docs/build_site.py</code>. <code>experiments/water/arms.py</code> prints the same Rivenhall rows, and pools its Calderwood row across models and agents, see Problems.</p>
   </div>
@@ -256,7 +257,7 @@
       <li><strong>10 September.</strong> A strategy that read the first four listings as the whole market was reported as a success and withdrawn the same day. The sufficiency check caught it.</li>
       <li><strong>14 September.</strong> On the small four listing fixture, the baseline was right on 48 of 55 gated runs with no answer key on the page.</li>
       <li><strong>18 September.</strong> Hiding each size's price until it is chosen made the agent select a size in 8 of 12 runs instead of 0 of 12, cost 64 per cent more, and did not change accuracy: 2 of 12 against 3 of 12.</li>
-      <li><strong>18 September.</strong> A second model, DeepSeek V4 Flash, on the held-out water market: 2 correct of 4 at $0.028 a run. The run that opened only 4 listings was the one that was wrong.</li>
+      <li><strong>18 September.</strong> A second model, DeepSeek V4 Flash, on the held-out water market: 2 correct of 4 at $0.028 a run. The run that opened only 4 listings was one of the two wrong ones. The decision log said it was the only one, and was corrected on 9 October from the raw logs.</li>
     </ul>
   </div>
 </section>
@@ -346,6 +347,7 @@
   <div class="block prose">
     <h2>The reorganisation check, 8 to 9 October</h2>
     <p>Before the code was moved into folders, 34 free commands were run and their output saved: every figure script, every dry run, the planner regression, the catalogue generators and the mod tests. After the move the same 34 were run again and compared line by line. All matched except the clock times in openJiuwen's own start-up log. The split of <code>cell_facts.py</code> into a function and a printer was checked the same way.</p>
+    <p>The verifier then repeated the comparison on its own, from a copy of the old commit, and got the same result. It also broke the code on purpose to see which tests would notice. One count test could not fail on the fault it was named for, and the answer key check missed four of five planted reads. Both were rewritten on 9 October and now fail when the fault is planted.</p>
   </div>
   <div class="block">
     <h2>The two rules behind the strictest checks</h2>
@@ -416,7 +418,7 @@
   <div class="panel" data-panel="arch:openjiuwen">
     <div class="block">
       <h2>Why openJiuwen stops at four listings</h2>
-      <p class="prose">openJiuwen's prompt tells it to use the smallest probe that fits, and on a listing page to call <code>browser_probe_cards</code> and trust what it returns. By default that probe reports only the cards inside the browser window. At 1200 × 701 the window holds one row of four cards, and nothing in the reply says eleven more exist.</p>
+      <p class="prose">openJiuwen's prompt tells it to use the smallest probe that fits, and on a listing page to call <code>browser_probe_cards</code> and trust what it returns. By default that probe reports only the cards inside the browser window. At 1200 × 701 the window holds one row of four cards, and nothing in the reply says eleven more exist (decision log, 14 September).</p>
       <div class="flow">
         <div class="node"><b>The question</b><span>"which seller is cheapest for size M"</span></div><div class="arrow"></div>
         <div class="node theirs"><b>The prompt</b><span>smallest probe first, trust the card probe</span></div><div class="arrow"></div>
@@ -516,10 +518,10 @@
       </div>
       <div class="flow-label">After the agent answers</div>
       <div class="flow">
-        <div class="node ours"><b>Refusal check</b><span><code>sufficiency</code> and <code>policy</code>: is the answer supported by what was opened</span></div><div class="arrow"></div>
+        <div class="node ours todo"><b>Refusal check</b><span><code>sufficiency</code> and <code>policy</code>: is the answer supported by what was opened. Today it reads the market size and floor from the answer key</span></div><div class="arrow"></div>
         <div class="node"><b>An answer, or a stated refusal</b><span>never a confident guess</span></div>
       </div>
-      <p class="note">Strategy v<span data-f="v.targeting"></span> and planner v<span data-f="v.planner"></span> are the current versions. Neither has been run yet. The box must never read a market file, an answer key or <code>_instance</code>, and a unit test checks its code for them.</p>
+      <p class="note">Strategy v<span data-f="v.targeting"></span> and planner v<span data-f="v.planner"></span> are the current versions. Neither has been run yet. <code>targeting.py</code> and <code>planner.py</code> never read a market file, an answer key or <code>_instance</code>, and a unit test checks their code, with planted reads to prove it can fail. <code>sufficiency.py</code> and <code>policy.py</code> do read the answer key's market size and floor today, so they are evaluation tools until box v1 takes both from the page, and the same test keeps any other file from joining them.</p>
     </div>
     <div class="block">
       <h2>The kinds of question it knows today</h2>
@@ -585,7 +587,7 @@
     <h2>Updating this site</h2>
     <ol>
       <li>Edit the source, never the page: <code>docs/content/weeks.md</code>, <code>plan.md</code> or <code>open-problems.md</code> for prose, <code>OBJECTIVE.md</code>, <code>LESSONS.md</code>, <code>PARKED.md</code> or the README's market ledger for those sections. Figures come from the run files, and a new cell goes into <code>compare_cells.CELLS</code>.</li>
-      <li>Run <code>make site</code>. It recomputes every figure and rewrites <code>docs/site-data.js</code>.</li>
+      <li>Run <code>make site</code>. It recomputes every figure that comes from the runs and rewrites <code>docs/site-data.js</code>.</li>
       <li>The verifier runs <code>make site-check</code>, which fails if the page is stale, and checks any new claim against its command.</li>
       <li>Commit the source and <code>docs/site-data.js</code> together, with a dated entry in the README decision log.</li>
     </ol>
@@ -638,7 +640,7 @@
   <div class="page-head">
     <span class="eyebrow">Do</span>
     <h1>Run it yourself</h1>
-    <p class="lede">Everything needed to set up the project, reproduce every figure, and check any claim on this site. All of it is free except the last step.</p>
+    <p class="lede">Everything needed to set up the project, reproduce every computed figure, and check any claim on this site. All of it is free except the last step.</p>
   </div>
 
   <div class="block">
@@ -677,15 +679,16 @@ python3 env/verify_shop.py</pre></div>
         <div class="cmd"><pre>make check</pre></div>
         <p class="note">Unit tests, the planner regression and the mod's tests. The mod's tests need the <code>claude</code> command.</p>
       </div>
-      <div class="step"><h3>Print every figure on the Results page</h3>
+      <div class="step"><h3>Print every clothing figure on the Results page</h3>
         <div class="cmd"><pre>make facts
 make compare</pre></div>
       </div>
       <div class="step"><h3>Re-derive one batch and read every answer</h3>
         <div class="cmd"><pre>make verify BATCH=experiments/results/20261007T112057</pre></div>
       </div>
-      <div class="step"><h3>See exactly what a batch would send, without sending it</h3>
+      <div class="step"><h3>See which tasks a batch would run, without running it</h3>
         <div class="cmd"><pre>make dry TASKS=tasks_apparel.json</pre></div>
+        <p class="note">It lists each task and its answer kind. It does not yet print the exact text the agent receives, which is a week 1 task.</p>
       </div>
       <div class="step"><h3>Reproduce the 60 ms reveal on the local shop</h3>
         <div class="cmd"><pre>.venv-naive/bin/python experiments/analysis/reveal_race.py</pre></div>

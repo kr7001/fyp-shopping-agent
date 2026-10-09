@@ -6,12 +6,41 @@ these is fixed, move it into the decision log with the date, and take it off thi
 
 ## The openJiuwen paper is still inside unpushed commits
 
-`openjiuwen.pdf` was committed on 9 September and is no longer tracked, but every commit since
-then still holds it, and the repository is public. arXiv's licence lets only arXiv distribute
-the paper, so pushing this branch as it stands would publish it. Three ways out: rewrite the
-unpushed commits without it, which changes their hashes, make the repository private, or keep
-the branch local. Until one is chosen, `dev` is not pushed. Check with
+`openjiuwen.pdf` was committed on 9 September and is no longer tracked, but the 101 unpushed
+commits from `af7dc77` to `8957f07` still hold it, and the repository is public. arXiv's licence
+lets only arXiv distribute the paper, so pushing this branch as it stands would publish it. Three
+ways out: rewrite those commits without it, which changes their hashes, make the repository
+private, or keep the branch local. Until one is chosen, `dev` is not pushed. Check with
 `git log --oneline -- openjiuwen.pdf`. *Now.*
+
+Two more things a push would publish for the first time, both worth deciding on purpose. The gated
+theme's template is derived from Magento's own, under OSL-3.0 and AFL-3.0, and the commits from
+18 September carry it without Magento's notice. The notice was restored on 9 October, and a
+rewrite could fold it into the older commits too. And `docs/archive/updates/` holds the
+supervisor's inline replies to the updates, which have never been on GitHub.
+
+## The refusal check reads the answer key
+
+`policy.gate` passes two numbers from the market's `_instance` to the sufficiency check: how many
+listings the market has, and the fewest a sound answer must open. With them, the replay over the
+clothing cells refuses all 9 coverage failures in cell 1. Without them it refuses none (checked 9
+October). The September gate arms ran the same way. So the check, as built, is an evaluation tool
+that knows the answer, not yet part of the box. Box v1 must read both numbers from the page: the
+results page shows how many listings there are, and the advertised prices bound how many cannot
+be ruled out. *Week 1.*
+
+## `--dry-run` lists the tasks, not what the agent receives
+
+`suite.py --dry-run` prints each task's id and answer kind. The strategy, plan, "open everything"
+and confidence wrappers are added only inside the paid loop, so no free command shows the exact
+text an agent will receive (LESSONS 17). Build one path that both the dry run and the paid loop
+use. *Week 1.*
+
+## `verify_cells.py` reads Thornwood's answers by name
+
+`experiments/analysis/verify_cells.py` loads `env/fixtures/scaled_apparel.json` directly. Run on a
+batch from the fresh clothing market, it would score against Thornwood's answers. It must take
+the fixture from the batch's own question file before the claim run. *Week 2.*
 
 ## The raw logs exist only on this laptop
 
@@ -60,8 +89,10 @@ environment.
 
 The decision log for 8 September says two upstream bugs were patched locally. The submodule's
 working tree holds only one of them, saved in `agent/openjiuwen-local.patch`. The other, the
-worker's `ok: false` not reaching the run result, is not there. Either it was lost or never
-applied. Check whether any scored run depended on it.
+worker's `ok: false` not reaching the run result, is not there. The submodule's reflog holds a
+commit made inside it by mistake on 9 September and since reset, and its change is the same as
+today's patch, so the fix was not in the tree then either. "Never applied" is the likelier
+reading. Check whether any scored run depended on it.
 
 ## Smaller items
 

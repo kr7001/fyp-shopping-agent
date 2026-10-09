@@ -5,7 +5,7 @@ folder has one job, and one rule about money.
 
 | Folder | What is in it | Costs money? |
 | --- | --- | --- |
-| `box/` | The pre-processing box: what to retrieve, decided from the question before any page is opened (`targeting.py`, `planner.py`), and whether a finished answer is supported by what the run saw (`sufficiency.py`, `policy.py`) | Never. No model calls |
+| `box/` | The pre-processing box. `targeting.py` and `planner.py` decide what to retrieve from the question, before any page is opened, and never read an answer key. `sufficiency.py` and `policy.py` judge whether a finished answer is supported by what the run saw, and today read the answer key's market size and floor, so they are evaluation tools until box v1 takes both from the page | Never. No model calls |
 | `runners/` | What drives an agent: `suite.py` runs a task file several times and scores it, `run_browser_task.py` runs openJiuwen once, `naive_agent.py` is the second agent, `see_everything.py` is the one-setting patch for cell 2, `plan_probe.py` asks a model for a plan, `run.sh` runs one question | **Yes**, every script here, unless given `--dry-run` or `--help`. The spend guard refuses them without a verifier pass, a declared cost and your yes |
 | `analysis/` | Reading results back: `score.py` and `trace_stats.py` (used live by the suite too), `verify_cells.py` re-derives a batch from its raw files, `compare_cells.py` and `cell_facts.py` print every published figure, `rescore.py` re-applies a corrected scorer, `reveal_race.py` reproduces the 60 ms reveal on the local shop | Never |
 | `water/` | The first study, September 2026, on the small fixture and the two water-bottle markets (Rivenhall, Calderwood): arm comparisons, the confidence baseline, the gate replay, and the task generator for those markets. Kept so those results reproduce | Never |
@@ -30,7 +30,7 @@ not import it.
 
 ```bash
 make check                                    # unit tests, planner regression, mod tests
-make facts                                    # every figure on the results page
+make facts                                    # every clothing-cell figure on the results page
 python3 experiments/analysis/verify_cells.py experiments/results/<batch> --answers
 python3 experiments/runners/suite.py --tasks experiments/tasks/tasks_apparel.json --repeats 3 --dry-run
 ```
