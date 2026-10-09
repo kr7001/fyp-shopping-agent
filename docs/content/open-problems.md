@@ -24,7 +24,9 @@ supervisor's inline replies to the updates, which have never been on GitHub.
 `policy.gate` passes two numbers from the market's `_instance` to the sufficiency check: how many
 listings the market has, and the fewest a sound answer must open. With them, the replay over the
 clothing cells refuses all 9 coverage failures in cell 1. Without them it refuses none (checked 9
-October). The September gate arms ran the same way. So the check, as built, is an evaluation tool
+October). The September gate arms ran on the version of 10 September, which read the market
+size from the answer key but not yet the floor, added on 18 September. So the check, as built, is
+an evaluation tool
 that knows the answer, not yet part of the box. Box v1 must read both numbers from the page: the
 results page shows how many listings there are, and the advertised prices bound how many cannot
 be ruled out. *Week 1.*
