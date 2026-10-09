@@ -3983,7 +3983,7 @@ window.SITE = {
    },
    {
     "title": "The refusal check reads the answer key",
-    "html": "<p><code>policy.gate</code> passes two numbers from the market's <code>_instance</code> to the sufficiency check: how many listings the market has, and the fewest a sound answer must open. With them, the replay over the clothing cells refuses all 9 coverage failures in cell 1. Without them it refuses none (checked 9 October). The September gate arms ran on the version of 10 September, which read the market size from the answer key but not yet the floor, added on 18 September. So the check, as built, is an evaluation tool that knows the answer, not yet part of the box. Box v1 must read both numbers from the page: the results page shows how many listings there are, and the advertised prices bound how many cannot be ruled out. <em>Week 1.</em></p>"
+    "html": "<p><code>policy.gate</code> passes two numbers from the market's <code>_instance</code> to the sufficiency check: how many listings the market has, and the fewest a sound answer must open. With them, the replay over the clothing cells refuses all 9 coverage failures in cell 1. Without them it refuses none (checked 9 October). The September gate arms ran on the version of 10 September, which read the market size from the answer key but not yet the floor, added on 18 September. So the check, as built, is an evaluation tool that knows the answer, not yet part of the box. The market size alone does most of the work: given only that, the replay still refuses all 9, and refuses one correct answer in cell 2 that the floor would have spared. The floor alone refuses 5. Box v1 must read what it needs from the page: the results page shows how many listings there are, and the advertised prices bound how many cannot be ruled out. <em>Week 1.</em></p>"
    },
    {
     "title": "`--dry-run` lists the tasks, not what the agent receives",
@@ -4124,7 +4124,7 @@ window.SITE = {
        "section a",
        "control question",
        "section b each question",
-       "section c the tests",
+       "section c every comparison",
        "section d kinds of error",
        "section e refusal replay",
        "section f how runs were checked",
@@ -4319,17 +4319,17 @@ window.SITE = {
   "source": "README decision log, 8 October 2026"
  },
  "built": {
-  "commit": "266a7f3",
+  "commit": "b603636",
   "date": "2026-10-09",
   "branch": "dev",
-  "dirty": false,
+  "dirty": true,
   "repo": "https://github.com/kr7001/fyp-shopping-agent",
   "agent_core": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
   "commits_by_week": {
    "2026-08-24": 1,
    "2026-09-07": 44,
    "2026-09-14": 49,
-   "2026-10-05": 32
+   "2026-10-05": 33
   }
  }
 };

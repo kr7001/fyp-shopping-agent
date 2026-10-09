@@ -59,9 +59,10 @@ class Planner(unittest.TestCase):
                 self.assertNotEqual(planner.verify(broken), [])
 
 
-# What a piece of code can read an answer through: the keys of a task's answer and of a
-# market's instance, and the fixture files themselves.
-ANSWER_KEYS = {"_instance", "expect", "oracle_min_opens"}
+# What a piece of code can read an answer through: the keys of a task's answer, of a market's
+# instance and of the seeder's manifests, and the fixture and manifest files themselves. Not
+# covered: a bare number such as the market's size, which no test can tell from any other 15.
+ANSWER_KEYS = {"_instance", "expect", "oracle_min_opens", "ground_truth"}
 BEFORE_THE_AGENT = ("targeting.py", "planner.py")
 
 
@@ -87,7 +88,8 @@ def code_values(source: str) -> tuple[list[str], list[float], set[str]]:
 
 def answer_reads(source: str) -> list[str]:
     strings, _, names = code_values(source)
-    found = [s for s in strings if s in ANSWER_KEYS or "fixtures" in s.lower()]
+    found = [s for s in strings if s in ANSWER_KEYS or "fixtures" in s.lower()
+             or "manifest" in s.lower()]
     return found + sorted(n for n in names if n == "FIXTURES")
 
 
@@ -139,6 +141,7 @@ class NoAnswerKey(unittest.TestCase):
             "x = task['expect']": answer_reads,
             'x = task.get("expect")': answer_reads,
             'x = paths.FIXTURES / "scaled_apparel.json"': answer_reads,
+            'x = json.load(open("env/manifests/run.json"))["ground_truth"]': answer_reads,
             f'x = "{seller}"': copied_facts,
             "x = 25.77": copied_facts,
         }
