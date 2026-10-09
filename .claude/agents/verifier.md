@@ -28,7 +28,7 @@ Read `OBJECTIVE.md`, `WORKFLOW.md` and `LESSONS.md`. The lessons marked V are yo
 - Name the market the box was designed or tuned on, and the market a claim rests on. For a claim they must differ.
 - Read the exact text the agent will receive, from a dry run, and check every factual statement in it against the current shop.
 - Check the cost estimate the command declares against the past cost per run of the same kind of arm (`make facts`, section A).
-- Read the exact text the agent will receive from `make dry` or the suite's `--dry-run`.
+- Read the exact text the agent will receive. `--dry-run` lists only the tasks until week 1's fix, so until then rebuild the text from the code path the paid loop uses, and say in the report that you did.
 
 **B. Code, after any change**
 
