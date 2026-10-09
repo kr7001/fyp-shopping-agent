@@ -54,6 +54,32 @@ TESTS = [
     ("buyable", "opened", "5", "2", False, "15 of 15 against 15 of 15", 1.0, 1.0),
 ]
 
+# Every row of the site's error table: each kind of error and the runs it was found in.
+ERRORS = {
+    "1": {OPEN: ["cheapest-target-1", "cheapest-target-3", "count-buyable-1", "count-buyable-3",
+                 "count-stocked-1", "count-stocked-3", "target-price-1", "target-price-2",
+                 "target-price-3"],
+          SELLER: ["cheapest-target-2"],
+          OFFER: ["count-stocked-1", "count-stocked-2", "count-stocked-3"],
+          REVEAL: ["cheapest-target-1", "cheapest-target-3", "target-price-1", "target-price-2",
+                   "target-price-3"]},
+    "2": {STEPS: ["target-price-1"], OFFER: ["count-stocked-1", "count-stocked-2"],
+          REVEAL: ["target-price-3"]},
+    "3": {OFFER: ["count-stocked-1"], REVEAL: ["cheapest-target-1"]},
+    "5": {STEPS: ["count-buyable-3"], OFFER: ["count-stocked-1", "count-stocked-2", "count-stocked-3"]},
+}
+
+# The checks block: runs in each cell's batches, and which of them set the window limit
+# themselves, or wrote a script that changes a size and reads the price in one go (with how
+# many such scripts).
+WINDOW = {"1": (18, []), "2": (18, []), "3": (18, []),
+          "5": (18, ["all-stocked-1", "cheapest-target-3", "count-stocked-3", "count-buyable-1"])}
+SAME_INSTANT = {"1": (18, [["cheapest-target-2", 11]]), "2": (18, [["target-price-3", 13]]),
+                "3": (18, []), "5": (18, [])}
+RESCORED = [{"batch": "20261007T115021", "run": "apparel-count-buyable-3", "from": "wrong",
+             "to": "correct",
+             "reason": "count rule no longer reads 'all 15' as the count, 8 Oct 2026"}]
+
 # Every row of the site's silence table: the longest silence in each batch's logs in seconds,
 # 0 where the log has no timestamps, the longest whole run there, and the suspended runs.
 SILENCE = {
@@ -117,6 +143,7 @@ class CellFigures(unittest.TestCase):
             got = {q.replace("apparel-", ""): (v["correct"], v["covered"]) for q, v in per.items()}
             with self.subTest(cell=label):
                 self.assertEqual(got, questions)
+                self.assertEqual({v["of"] for v in per.values()}, {3})
 
     def test_section_c_every_comparison(self):
         got = [(t["reading"], t["measure"], t["a"], t["b"], t["distinct"], t["text"],
@@ -124,12 +151,8 @@ class CellFigures(unittest.TestCase):
         self.assertEqual(got, TESTS)
 
     def test_section_d_kinds_of_error(self):
-        want = {"1": {OPEN: 9, SELLER: 1, OFFER: 3, REVEAL: 5},
-                "2": {STEPS: 1, OFFER: 2, REVEAL: 1},
-                "3": {OFFER: 1, REVEAL: 1},
-                "5": {STEPS: 1, OFFER: 3}}
-        for label, kinds in want.items():
-            got = {kind: len(runs) for kind, runs in self.f["errors"][self.name[label]]}
+        for label, kinds in ERRORS.items():
+            got = {kind: runs for kind, runs in self.f["errors"][self.name[label]]}
             with self.subTest(cell=label):
                 self.assertEqual(got, kinds)
 
@@ -142,12 +165,16 @@ class CellFigures(unittest.TestCase):
                                   got["right_refused"]), (wrong, refused, right, right_refused))
 
     def test_section_f_how_runs_were_checked(self):
-        window = [len(self.f["agent_window"][self.name[label]]["runs"]) for label in "1235"]
-        self.assertEqual(window, [0, 0, 0, 4])
+        for label in "1235":
+            name = self.name[label]
+            with self.subTest(cell=label):
+                window = self.f["agent_window"][name]
+                self.assertEqual((window["of"], window["runs"]), WINDOW[label])
+                scripts = self.f["same_instant"][name]
+                self.assertEqual((scripts["of"], scripts["runs"]), SAME_INSTANT[label])
         self.assertEqual([self.f["batch_selections"][self.name[label]] for label in "1235"],
                          [5, 17, 0, 8])
-        self.assertEqual([len(self.f["same_instant"][self.name[label]]["runs"]) for label in "1235"],
-                         [1, 1, 0, 0])
+        self.assertEqual(self.f["rescored"], RESCORED)
         got = {s["batch"]: (round(s["longest_silence_s"]),
                             None if s["longest_silence_s"] else round(s["longest_run_s"]),
                             [[run, round(x)] for run, x in s["suspended"]])
