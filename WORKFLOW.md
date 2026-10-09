@@ -31,7 +31,7 @@ and nothing reaches a paid model, a document or the site without passing the one
 
 ```bash
 make check                     # unit tests, planner regression, the mod's tests. Free
-make facts                     # every published figure, from the raw runs. Free
+make facts                     # every clothing-cell figure on the results page, from the raw runs. Free
 make verify BATCH=experiments/results/<stamp>   # one batch re-derived, every answer printed
 make dry TASKS=tasks_apparel.json               # the tasks a batch would run, running nothing
 make site                      # rebuild docs/site-data.js from the repository

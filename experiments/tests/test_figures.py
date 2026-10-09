@@ -29,6 +29,43 @@ OFFER = 'read "offer" as "can sell it now"'
 REVEAL = "read the price before the page revealed it"
 STEPS = "ran out of its 100 steps"
 
+# Every comparison the site's tests table shows: reading of "offer", measure, cell a, cell b,
+# distinct runs only, the counts, p by question, p pooled.
+TESTS = [
+    ("menu", "correct", "2", "1", False, "11 of 15 against 4 of 15", 0.005, 0.02684),
+    ("menu", "correct", "3", "1", True, "5 of 7 against 4 of 15", 0.125, 0.0743),
+    ("menu", "correct", "3", "2", True, "5 of 7 against 11 of 15", 1.0, 1.0),
+    ("menu", "correct", "5", "1", False, "11 of 15 against 4 of 15", 0.007, 0.02684),
+    ("menu", "correct", "5", "2", False, "11 of 15 against 11 of 15", 1.0, 1.0),
+    ("menu", "opened", "2", "1", False, "15 of 15 against 3 of 15", 0.00004, 0.00001),
+    ("menu", "opened", "3", "1", True, "4 of 7 against 3 of 15", 0.03125, 0.14466),
+    ("menu", "opened", "3", "2", True, "4 of 7 against 15 of 15", 0.1, 0.02273),
+    ("menu", "opened", "5", "1", False, "15 of 15 against 3 of 15", 0.00004, 0.00001),
+    ("menu", "opened", "5", "2", False, "15 of 15 against 15 of 15", 1.0, 1.0),
+    ("buyable", "correct", "2", "1", False, "12 of 15 against 5 of 15", 0.0115, 0.02533),
+    ("buyable", "correct", "3", "1", True, "6 of 7 against 5 of 15", 0.0625, 0.06347),
+    ("buyable", "correct", "3", "2", True, "6 of 7 against 12 of 15", 1.0, 1.0),
+    ("buyable", "correct", "5", "1", False, "14 of 15 against 5 of 15", 0.00155, 0.0017),
+    ("buyable", "correct", "5", "2", False, "14 of 15 against 12 of 15", 0.6, 0.5977),
+    ("buyable", "opened", "2", "1", False, "15 of 15 against 6 of 15", 0.0008, 0.0007),
+    ("buyable", "opened", "3", "1", True, "7 of 7 against 6 of 15", 0.03125, 0.01668),
+    ("buyable", "opened", "3", "2", True, "7 of 7 against 15 of 15", 1.0, 1.0),
+    ("buyable", "opened", "5", "1", False, "15 of 15 against 6 of 15", 0.0008, 0.0007),
+    ("buyable", "opened", "5", "2", False, "15 of 15 against 15 of 15", 1.0, 1.0),
+]
+
+# Every row of the site's silence table: the longest silence in each batch's logs in seconds,
+# 0 where the log has no timestamps, the longest whole run there, and the suspended runs.
+SILENCE = {
+    "20261007T112057": (31, None, []),
+    "20261007T115021": (31, None, []),
+    "20261007T134621": (0, 85, []),
+    "20261008T034455": (3018, None, [["count-buyable-2", 2962], ["target-price-1", 3018],
+                                     ["target-price-2", 1056]]),
+    "20261008T143724": (6, None, []),
+    "20261008T144558": (6, None, []),
+}
+
 
 @unittest.skipUnless(HAVE_LOGS, "the raw logs live on the laptop, not in git")
 class CellFigures(unittest.TestCase):
@@ -81,15 +118,10 @@ class CellFigures(unittest.TestCase):
             with self.subTest(cell=label):
                 self.assertEqual(got, questions)
 
-    def test_section_c_the_tests(self):
-        self.assertEqual(self.p("2", "1", "correct"), 0.005)
-        self.assertEqual(self.p("5", "1", "correct"), 0.007)
-        self.assertEqual(self.p("5", "2", "correct"), 1.0)
-        self.assertEqual(self.p("2", "1", "opened"), 0.00004)
-        self.assertEqual(self.p("5", "1", "opened"), 0.00004)
-        self.assertEqual(self.p("3", "1", "opened", distinct=True), 0.03125)
-        self.assertEqual(self.p("2", "1", "correct", "buyable"), 0.0115)
-        self.assertEqual(self.p("5", "1", "correct", "buyable"), 0.00155)
+    def test_section_c_every_comparison(self):
+        got = [(t["reading"], t["measure"], t["a"], t["b"], t["distinct"], t["text"],
+                round(t["p_question"], 5), round(t["p_pooled"], 5)) for t in self.f["tests"]]
+        self.assertEqual(got, TESTS)
 
     def test_section_d_kinds_of_error(self):
         want = {"1": {OPEN: 9, SELLER: 1, OFFER: 3, REVEAL: 5},
@@ -116,10 +148,11 @@ class CellFigures(unittest.TestCase):
                          [5, 17, 0, 8])
         self.assertEqual([len(self.f["same_instant"][self.name[label]]["runs"]) for label in "1235"],
                          [1, 1, 0, 0])
-        suspended = {s["batch"]: [run for run, _ in s["suspended"]] for s in self.f["silence"]}
-        self.assertEqual(suspended["20261008T034455"],
-                         ["count-buyable-2", "target-price-1", "target-price-2"])
-        self.assertEqual(sum(len(v) for v in suspended.values()), 3)
+        got = {s["batch"]: (round(s["longest_silence_s"]),
+                            None if s["longest_silence_s"] else round(s["longest_run_s"]),
+                            [[run, round(x)] for run, x in s["suspended"]])
+               for s in self.f["silence"]}
+        self.assertEqual(got, SILENCE)
 
     def test_section_g_charges(self):
         charges = {c["batch"]: round(c["charges"], 4) for c in self.f["cost"]}
