@@ -30,7 +30,10 @@ class CountRule(unittest.TestCase):
                          "correct")
 
     def test_digits_inside_a_price_are_not_a_count(self):
-        answer = "3 listings have it, the cheapest at $12.50."
+        # The price comes first on purpose. With it last, a scorer that read a price's digits
+        # as the count would still meet the 3 first and pass, so the test could not fail.
+        # Found on 9 Oct 2026 by removing the exclusion and running the tests again.
+        answer = "The cheapest is $12.50, and 3 listings have it."
         self.assertEqual(verdict({"kind": "count", "value": 3}, answer), "correct")
 
 
