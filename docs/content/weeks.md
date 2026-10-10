@@ -70,4 +70,5 @@ No commits, notes or updates are dated in this week.
 - Re-derived every figure from the raw run files the next day, found three figures from 7 October were wrong, and corrected them
 - Ran cell 5, openJiuwen told to open everything. The laptop slept mid-batch, so three runs were voided by rule and re-run
 - Stepped back. Wrote `OBJECTIVE.md`, `LESSONS.md` and `PARKED.md`, and set up the workbench mod and three subagents, so the work stays on the objective and nothing is spent without a check
-- Reorganised the code into folders, added unit tests, and replaced five pages with this site
+- Reorganised the code into folders, added unit tests, and replaced five pages with this site. The verifier failed it four times on claims stronger than the evidence, and passed it on the fifth
+- Rewrote the history not yet on GitHub, so it could be published: the openJiuwen paper out of every commit, and Magento's licence notice into every copy of the gated theme's template
