@@ -4315,17 +4315,17 @@ window.SITE = {
   "source": "README decision log, 8 October 2026"
  },
  "built": {
-  "commit": "b0df146",
+  "commit": "0028edb",
   "date": "2026-10-10",
   "branch": "dev",
-  "dirty": true,
+  "dirty": false,
   "repo": "https://github.com/kr7001/fyp-shopping-agent",
   "agent_core": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
   "commits_by_week": {
    "2026-08-24": 1,
    "2026-09-07": 44,
    "2026-09-14": 49,
-   "2026-10-05": 41
+   "2026-10-05": 42
   }
  }
 };
