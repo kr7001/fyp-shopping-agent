@@ -1,9 +1,11 @@
 # Commit ids before and after the history rewrite of 10 October 2026
 #
-# The 122 commits made from 9 September 2026 onward were rebuilt to remove openjiuwen.pdf,
-# which arXiv's licence does not let this repository redistribute, and to add Magento's
-# licence notice to the gated theme's template. Nothing else in any commit changed. A commit
-# id quoted in an archived page, a note or an older log entry is the old id: look it up here.
+# The 122 commits from af7dc77 on, the commit that added the paper and is now 5f5a698, were
+# rebuilt to remove openjiuwen.pdf, which arXiv's licence does not let this repository
+# redistribute, and to add Magento's licence notice to the gated theme's template. Nothing
+# else in any commit changed. The archived pages, such as update 3, and four run records, the
+# suite.json files of 20260910T015857, T101847, T131504 and T133605, still quote old ids.
+# Look them up here.
 #
 # old      new      date       subject
 af7dc77  5f5a698  2026-09-09 fix: close four holes in the sufficiency check, correct the baseline figures
