@@ -4,7 +4,7 @@
 `experiments/results/`, or the live Magento database. Nothing is from memory. Where
 something could not be verified, the answer says so.
 
-Repository state: commit `b3ca9ab` on `dev`. Database timestamps are UTC; times below are
+Repository state: commit `8fc761a` on `dev`. Database timestamps are UTC; times below are
 converted to Singapore time (UTC+8) unless marked.
 
 ---
@@ -12,7 +12,7 @@ converted to Singapore time (UTC+8) unless marked.
 ## Update, 14 September, later
 
 - **Third unmodified batch** on the current Rivenhall draw, 12 gated runs, $2.15 logged: 6 correct, 6 wrong. Unmodified arm over three batches: **36 runs, 21 correct, 15 wrong, 58.3%**. Gate replayed over the same 36: 20 correct, 12 refused, 4 wrong.
-- **The gate rules are not at the `7771e24` freeze**: `refutation_without_evidence` added, the units fix, and click-opened listings counted. The literal frozen code reproduces the recorded batch 2 result, and the current rules decide identically on every run in batches 2 and 3.
+- **The gate rules are not at the `0f2b791` freeze**: `refutation_without_evidence` added, the units fix, and click-opened listings counted. The literal frozen code reproduces the recorded batch 2 result, and the current rules decide identically on every run in batches 2 and 3.
 - **Frozen gate, out of sample:** batch 3 alone 3 of 6 wrong withdrawn, 1 of 6 correct withheld; batches 2 and 3 together **6 of 10 withdrawn, 1 of 14 withheld**. Batch 2's 3 of 4 overstated recall.
 - Over all 107 unmodified runs on current draws: 16 of 22 wrong withdrawn, 3 of 85 correct withheld.
 - Coverage on the two comparison tasks over three batches: correct answers opened 4, 4, 14, 15, 15, 15, 15, 15, 15; wrong answers 4 nine times. A floor at 11 blocks two correct answers. The per-litre question is 0 of 9 on the current draw, so the "one correct answer on identical evidence" example came from the superseded pilot; the current-draw example is the two correct cheapest-pack answers at 4 of 15.

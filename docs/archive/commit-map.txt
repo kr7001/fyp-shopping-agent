@@ -1,0 +1,130 @@
+# Commit ids before and after the history rewrite of 10 October 2026
+#
+# The 122 commits made from 9 September 2026 onward were rebuilt to remove openjiuwen.pdf,
+# which arXiv's licence does not let this repository redistribute, and to add Magento's
+# licence notice to the gated theme's template. Nothing else in any commit changed. A commit
+# id quoted in an archived page, a note or an older log entry is the old id: look it up here.
+#
+# old      new      date       subject
+af7dc77  5f5a698  2026-09-09 fix: close four holes in the sufficiency check, correct the baseline figures
+b124eec  d2306ed  2026-09-09 feat(rq3): coverage rule, and separate soundness from correctness
+722da02  10e7263  2026-09-09 feat(rq3): gate and retry arms, with the gate measured for free
+7771e24  0f2b791  2026-09-09 feat(rq3): retry arm measured, and two faults it exposed in the check
+6071b7e  2563a03  2026-09-09 feat(rq3): held-out validation of the gate, and the overview page
+b7e6d12  f2ba630  2026-09-09 docs: bring the update documents and the overview page up to today
+69ce096  d4411c5  2026-09-09 docs: add a progress report subpage, and correct the spend figure
+4218d4d  f5ab8f4  2026-09-09 feat(env): one command to start the shop, and prove it is usable
+7d4dafd  139917b  2026-09-09 docs: rebuild the progress page around the questions, and unblock the budget
+b119e59  2450e2a  2026-09-09 docs: position the work against the abstention and self-verification literature
+07a39fa  63584d7  2026-09-09 docs: record the project's lineage, and the four forms of gating
+ef27c11  0253b77  2026-09-09 feat(rq3): the verbalised-confidence baseline, and how it will be judged
+54a0098  ac728de  2026-09-09 feat(rq3): measure whether the stated confidence responds to the evidence
+93f7de4  1aedcfb  2026-09-09 feat(rq3): anchor the confidence scale, and ask the agent to justify it
+bdadf16  49b51b1  2026-09-09 docs: record that a live listing prices differently on reload
+0fb29ba  a47a90a  2026-09-09 feat(rq3): measure the verbalised-confidence baseline, and it fails
+5e5bc74  0e32e27  2026-09-09 feat(rq3): retry using the agent's own words, and rule out the reload guardrail
+a7610a0  279faa9  2026-09-09 feat(rq3): add an investigate arm, and scope price instability out
+c1ca5b5  c0b4e1c  2026-09-09 docs: lock the headline figures, and name what RQ3 does not yet claim
+cb28a23  f994591  2026-09-10 docs: replace the literature survey with five works read properly
+ee970e0  ce9f7a9  2026-09-10 feat(rq3): measure the exhaustive upper bound, and build the cost axis
+4cea4a3  a685339  2026-09-10 feat(rq3): targeting arm, one strategy of three works and the others teach something
+a9b4072  0b6769a  2026-09-10 fix(rq3): a bound cannot prune what was never enumerated
+76f2404  784f572  2026-09-10 feat(rq3): targeting v2 matches the exhaustive bound for a third less
+2d434d1  cc3d380  2026-09-10 docs: bring both pages up to the finished RQ3 result
+d78e017  cc3076e  2026-09-10 feat(rq3): sharpen refutation, and close the mirror of the coverage rule
+f9d15b8  fe5c67c  2026-09-10 feat(rq3): held-out test on a second market, and a units bug in my own checker
+4e95518  822287b  2026-09-10 docs: full inventory of what was built and tested, and fix table alignment
+4ceb52e  222d9ff  2026-09-11 docs: bring index.html fully current, three blocks were stale
+9d3b6f9  1307f2a  2026-09-11 docs: bring the update documents up to the finished result
+3eeab9c  838fd66  2026-09-11 fix: the gate does not save money, and two markets are not one arm
+b3ca9ab  8fc761a  2026-09-11 fix: the coffee trap is the middle size, not the smallest
+5d1238f  5e0e20f  2026-09-14 docs: review pagination as a second gating form, and name fixtures by brand
+76a48e3  3763f9d  2026-09-14 fix(env): stop the seeder putting the answer key on product pages
+f046675  dfb2ff5  2026-09-14 fix(experiments): count click-opened listings, and never pool across draws
+a928e7b  fd64031  2026-09-14 docs: record the leak, the checker fix and the corrected figures
+7a47f22  ee4e621  2026-09-14 fix(experiments): score yes/no by the leading answer, and re-run RQ2 clean
+ccfdde0  5f89b10  2026-09-14 docs: replace figures built on the leak, the undercount and pooled draws
+e2adee7  e7632ea  2026-09-14 data: third unmodified batch, and the frozen gate replayed out of sample
+dd38cf5  58ad2cf  2026-09-14 docs: bring every page to three unmodified batches and two held-out tests
+73aa14c  5438742  2026-09-14 data: control question for the third batch
+c8af56e  c5569c0  2026-09-14 docs: explain why the per-litre question is never answered correctly
+c2444be  2cedea9  2026-09-17 fix: resolve replayed tasks by their task file, not by id
+81d7a9e  5522657  2026-09-17 data: two runs recorded live while screen-capturing the agent
+4c29a2e  26cb1db  2026-09-17 data: the held-out market's other two arms, and a matching denominator
+e2f8e3c  4ff33a9  2026-09-17 docs: the held-out market gets a baseline, a ceiling and a denominator
+a017ccf  d8cbdc7  2026-09-18 feat: a coverage rule written from the principle, and plans instead of paragraphs
+4339c23  6e7c663  2026-09-18 docs: rebuild both pages around the results, and retire the dual register
+09d4ab6  0e8ab46  2026-09-18 feat: phase 1, two probes that decide what to build next
+118f895  3b8c784  2026-09-18 feat: a store view where a variant price is actually gated
+da1b528  397f585  2026-09-18 fix: select the suppressing theme by user agent, not by store view
+57a2acf  4a71abe  2026-09-18 fix: do not pool two models into one baseline
+d80c6e8  c98b29b  2026-09-18 feat: a second scaffold, written from scratch with no card probe
+c990fd7  d194acd  2026-09-18 data: the variant price gate closed, and the agent starts clicking
+6dff135  f72c1eb  2026-09-18 docs: record what closing the variant gate actually did
+4358b94  593fa60  2026-09-18 fix: let the naive scaffold see where links go
+a35667f  901d70b  2026-09-18 data: the naive scaffold opens fewer listings, not more, and the prediction was wrong
+1e84275  a5b809c  2026-09-18 docs: record the scaffold result and the prediction it falsified
+4f45ec1  369cc9b  2026-09-18 data: the naive scaffold at twelve runs, and coverage stops separating the verdicts
+91ee09a  4c0ec25  2026-09-18 docs: the scaffold comparison at twelve runs each
+9d9e2a4  ae44ef7  2026-09-18 docs: a progress report written to be presented, and a slide script for the checkpoint
+eb52238  e8e365f  2026-09-18 feat: a twenty second demo of the gate, in two browser windows
+2ab3e8e  151ff49  2026-09-18 feat: a clothing market, a counting question, and the rule that goes with it
+1018eda  1c15736  2026-09-18 fix: the answer must not sit on the first screen, and the first clothing market did
+a67cf95  cb805bd  2026-09-18 fix: measure where the answer lands on the page, and stop predicting it
+98d3998  0fc66c8  2026-09-18 docs: correct the spend figures and answer the questions the deck invited
+a84c736  7e98f81  2026-09-18 docs: a tenth correction, describing actions I had never read
+62e3075  f183b46  2026-09-18 feat: record what a run clicked, and which shop it clicked it in
+3961920  049e4a1  2026-09-18 fix: backfill every stored run with what it actually clicked
+ecd57e5  c1597d4  2026-09-18 feat: a third availability state, offered and not buyable
+a43cdc6  bbc0ce9  2026-09-18 docs: three marketplaces read by hand, and the third gate written down
+6c22aba  4d8ce17  2026-09-18 fix: the naive loop could not see that an option was unavailable
+c9c7bf0  e57e3fa  2026-09-18 feat: review questions with answers read out of the shop's database
+2354fe9  a010c88  2026-09-18 fix: page position is decided by variant count, not catalogue index
+bc0dc36  1d17a56  2026-09-18 fix: the fixture and the shop disagreed about the advertised price
+72828dd  c0ed440  2026-09-18 feat: the clothing market, seeded, verified against the shop it runs on
+6954263  900de58  2026-09-18 feat: runs now go through the planner, and the drift it was built to catch
+a51fb0a  5d04b31  2026-09-18 docs: test whether the probe is the cause, instead of asserting it
+9af721f  45e8126  2026-09-18 docs: a subpage that settles how the agent reads a shop
+e9d6fbf  7fc3ec4  2026-09-18 docs: split the run counts by arm, because pooling them compared the wrong things
+421e774  6a6450c  2026-09-18 docs: rebuild all three pages on one design system
+2c0bdca  02f1bd1  2026-10-07 docs: catch up after two weeks, and void the second agent's results
+267ce85  bf7cf95  2026-10-07 fix: the second agent could not reach a product, and build the see-everything arm
+5613e45  ebe9e7e  2026-10-07 fix: the verifier was testing the wrong things, and the three jobs are now proven
+150804c  8011243  2026-10-07 verify: deep check before the matrix, and a two run pilot
+53e920e  273a0eb  2026-10-07 fix: cost accounting was wrong in both directions, and the link fix was too greedy
+d5c6794  5390f40  2026-10-07 fix: isolate the selector cache per run, and record why the probe sometimes finds nothing
+77c6b9d  65b19a5  2026-10-07 feat: cells 1 and 2, and the mechanism question is answered
+76d08d7  fa73f9d  2026-10-07 feat: cell 3 narrows the finding, and the second agent is the cheapest arm
+6a6a41c  437d7cb  2026-10-07 docs: bring the earlier sections up to date with what the runs settled
+c2dd3a9  efbe84d  2026-10-07 docs: a presentation for the supervisor covering the last two weeks
+701ddbb  1929fbb  2026-10-08 fix: re-derive cells 1 to 3 from the raw runs, and correct what that found
+539f14f  7efd83f  2026-10-08 feat: cell 5, openJiuwen as shipped told to open everything
+f91694d  f4c76eb  2026-10-08 feat: strategy v7 and planner v2, from the error analysis of the clothing cells
+f5ccf22  4b5aea5  2026-10-08 docs: verification of cells 1 to 3, cell 5, and the error analysis
+509687e  ed5e155  2026-10-08 feat: re-run the three cell 5 runs the laptop slept through
+b0effe2  79f58f7  2026-10-08 feat: one command that prints every figure on the results page
+7660036  a63ee28  2026-10-08 docs: results sections generated from the run files, and deck corrections
+2264fa2  7d76c48  2026-10-08 feat: a workbench that keeps the objective in view and guards spending
+575707c  6291b48  2026-10-09 refactor: experiments in folders by job, with every location in one place
+8957f07  11c1b55  2026-10-09 test: the scorer, the checks, the box, the catalogues and the published figures
+32e1999  bfa96c9  2026-10-09 chore: openJiuwen rebuildable from a clone, and untrack what should not be shared
+dfffcea  4039830  2026-10-09 docs: one site in place of five pages, generated from the repository
+b339ff5  d878813  2026-10-09 docs: how the five modules work together, and the README brought to the new layout
+f5fca8d  ce75c31  2026-10-09 docs: the paper is still inside unpushed commits, so the branch waits
+03c0b40  4369c42  2026-10-09 docs: rebuild the site at a clean checkout
+c35e89f  161277d  2026-10-09 fix: the site's change check ignores the submodule's own patch
+2c12800  b5094ff  2026-10-09 docs: rebuild the site at a clean checkout
+ed472e5  16164ba  2026-10-09 fix: tests that fail on the faults they name, and every clothing figure pinned
+da0fd1e  fc88409  2026-10-09 fix: Magento's licence notice restored to the gated theme's template
+29f983d  5ab777d  2026-10-09 docs: correct what the verifier found overstated
+07a672b  4de5d6e  2026-10-09 docs: rebuild the site at a clean checkout
+266a7f3  a75afe8  2026-10-09 docs: the September gate read the market size from the answer key, not the floor
+b603636  e90623b  2026-10-09 docs: rebuild the site at a clean checkout
+312ee42  1f8100e  2026-10-09 fix: pin every comparison and silence the site shows, and narrow what the docs claim
+f23fc78  5a7031d  2026-10-09 docs: rebuild the site at a clean checkout
+23ea453  630816e  2026-10-09 fix: pin the denominators and run names the site shows
+29a77aa  6a64398  2026-10-09 docs: rebuild the site at a clean checkout
+ce5eba8  4415491  2026-10-09 docs: scope the pinned-figures sentence to the Results page
+b00f9b9  6b5f1e9  2026-10-09 docs: rebuild the site at a clean checkout
+5f08654  9b606d2  2026-10-09 docs: the last three lines that claimed more than the scripts print
+6d255b8  b0df146  2026-10-09 docs: rebuild the site at a clean checkout

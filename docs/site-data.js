@@ -3940,7 +3940,7 @@ window.SITE = {
    },
    {
     "title": "Week of 5 October",
-    "html": "<ul><li>Found the second agent's first 12 runs were void. A link cap of mine meant it never reached a product page. Fixed, and its cell re-run</li><li>Gave each openJiuwen run its own selector cache, and switched cost to the provider's charge per call</li><li>Ran cells 1, 2 and 3 on the clothing market. The four listing behaviour comes from one default in openJiuwen's card probe, which reports only the cards inside the browser window</li><li>Wrote the 7 October update deck for the supervisor</li><li>Re-derived every figure from the raw run files the next day, found three figures from 7 October were wrong, and corrected them</li><li>Ran cell 5, openJiuwen told to open everything. The laptop slept mid-batch, so three runs were voided by rule and re-run</li><li>Stepped back. Wrote <code>OBJECTIVE.md</code>, <code>LESSONS.md</code> and <code>PARKED.md</code>, and set up the workbench mod and three subagents, so the work stays on the objective and nothing is spent without a check</li><li>Reorganised the code into folders, added unit tests, and replaced five pages with this site</li></ul>",
+    "html": "<ul><li>Found the second agent's first 12 runs were void. A link cap of mine meant it never reached a product page. Fixed, and its cell re-run</li><li>Gave each openJiuwen run its own selector cache, and switched cost to the provider's charge per call</li><li>Ran cells 1, 2 and 3 on the clothing market. The four listing behaviour comes from one default in openJiuwen's card probe, which reports only the cards inside the browser window</li><li>Wrote the 7 October update deck for the supervisor</li><li>Re-derived every figure from the raw run files the next day, found three figures from 7 October were wrong, and corrected them</li><li>Ran cell 5, openJiuwen told to open everything. The laptop slept mid-batch, so three runs were voided by rule and re-run</li><li>Stepped back. Wrote <code>OBJECTIVE.md</code>, <code>LESSONS.md</code> and <code>PARKED.md</code>, and set up the workbench mod and three subagents, so the work stays on the objective and nothing is spent without a check</li><li>Reorganised the code into folders, added unit tests, and replaced five pages with this site. The verifier failed it four times on claims stronger than the evidence, and passed it on the fifth</li><li>Rewrote the history not yet on GitHub, so it could be published: the openJiuwen paper out of every commit, and Magento's licence notice into every copy of the gated theme's template</li></ul>",
     "monday": "2026-10-05"
    }
   ]
@@ -3950,7 +3950,7 @@ window.SITE = {
   "sections": [
    {
     "title": "Week 1, 9 to 15 October: box v1, specified and built",
-    "html": "<ul><li><strong>Day 1: a one page spec for your approval.</strong> Input: the question and the first results page. Output: a plan handed to openJiuwen, or a question back to the user. Two question types: the cheapest size M that can be bought, and the ambiguous \"offer\" questions. It lists what the box may never read: the fixture, the answer keys, <code>_instance</code></li><li><strong>Decide how to publish.</strong> The paper PDF sits in unpushed commits, so <code>dev</code> waits for your choice: rewrite them, make the repository private, or keep the branch local</li><li><strong>Protect the evidence before spending anything.</strong> Pin the browser tool to the version the runs used instead of <code>@latest</code>. Back up the raw logs privately. Fix the two September scripts that pool across model and scaffold. All free</li><li><strong>Make the free checks show the truth.</strong> <code>--dry-run</code> prints the exact text each arm sends, from the same code path the paid loop uses</li><li><strong>Coder builds the box</strong>, with a dry run that prints the exact text openJiuwen will receive, and a test where each rule must fire and one where it must stay quiet. Its refusal check takes the market size and the floor from the page, never from the answer key</li><li><strong>The scripted user.</strong> When the box asks back, a scripted reply picks one reading, and the final answer is scored against that reading's key. Clear questions are the control: the box should not ask on them</li><li><strong>Verifier pass</strong>, then the stamp</li><li><em>Done when:</em> the spec is approved, the box is committed with its tests, and the verifier has passed it</li></ul>"
+    "html": "<ul><li><strong>Day 1: a one page spec for your approval.</strong> Input: the question and the first results page. Output: a plan handed to openJiuwen, or a question back to the user. Two question types: the cheapest size M that can be bought, and the ambiguous \"offer\" questions. It lists what the box may never read: the fixture, the answer keys, <code>_instance</code></li><li><strong>Protect the evidence before spending anything.</strong> Pin the browser tool to the version the runs used instead of <code>@latest</code>. Back up the raw logs privately. Fix the two September scripts that pool across model and scaffold. All free</li><li><strong>Make the free checks show the truth.</strong> <code>--dry-run</code> prints the exact text each arm sends, from the same code path the paid loop uses</li><li><strong>Coder builds the box</strong>, with a dry run that prints the exact text openJiuwen will receive, and a test where each rule must fire and one where it must stay quiet. Its refusal check takes the market size and the floor from the page, never from the answer key</li><li><strong>The scripted user.</strong> When the box asks back, a scripted reply picks one reading, and the final answer is scored against that reading's key. Clear questions are the control: the box should not ask on them</li><li><strong>Verifier pass</strong>, then the stamp</li><li><em>Done when:</em> the spec is approved, the box is committed with its tests, and the verifier has passed it</li></ul>"
    },
    {
     "title": "Week 2, 16 to 22 October: first measurement, then a fresh market",
@@ -3977,10 +3977,6 @@ window.SITE = {
  "open": {
   "intro": "<p>Problems that are known and not yet fixed, most important first. Solved ones are the lessons in <code>LESSONS.md</code>, each with the rule it produced. Side ideas are in <code>PARKED.md</code>. When one of these is fixed, move it into the decision log with the date, and take it off this list.</p>",
   "sections": [
-   {
-    "title": "The openJiuwen paper is still inside unpushed commits",
-    "html": "<p><code>openjiuwen.pdf</code> was committed on 9 September and is no longer tracked, but the 101 unpushed commits from <code>af7dc77</code> to <code>8957f07</code> still hold it, and the repository is public. arXiv's licence lets only arXiv distribute the paper, so pushing this branch as it stands would publish it. Three ways out: rewrite those commits without it, which changes their hashes, make the repository private, or keep the branch local. Until one is chosen, <code>dev</code> is not pushed. Check with <code>git log --oneline -- openjiuwen.pdf</code>. <em>Now.</em></p>\n<p>Two more things a push would publish for the first time, both worth deciding on purpose. The gated theme's template is derived from Magento's own, under OSL-3.0 and AFL-3.0, and the commits from 18 September carry it without Magento's notice. The notice was restored on 9 October, and a rewrite could fold it into the older commits too. And <code>docs/archive/updates/</code> holds the supervisor's inline replies to the updates, which have never been on GitHub.</p>"
-   },
    {
     "title": "The refusal check reads the answer key",
     "html": "<p><code>policy.gate</code> passes two numbers from the market's <code>_instance</code> to the sufficiency check: how many listings the market has, and the fewest a sound answer must open. With them, the replay over the clothing cells refuses all 9 coverage failures in cell 1. Without them it refuses none (checked 9 October). The September gate arms ran on the version of 10 September, which read the market size from the answer key but not yet the floor, added on 18 September. So the check, as built, is an evaluation tool that knows the answer, not yet part of the box. The market size alone does most of the work: given only that, the replay still refuses all 9, and refuses one correct answer in cell 2 that the floor would have spared. The floor alone refuses 5. Box v1 must read what it needs from the page: the results page shows how many listings there are, and the advertised prices bound how many cannot be ruled out. <em>Week 1.</em></p>"
@@ -4247,14 +4243,14 @@ window.SITE = {
   },
   "flatten": {
    "file": "env/gated_theme/Magento_ConfigurableProduct/templates/product/view/type/options/configurable.phtml",
-   "start": 59,
-   "end": 65,
+   "start": 60,
+   "end": 66,
    "code": "foreach ($config[\"optionPrices\"] ?? [] as $id => $entry) {\n    foreach ([\"baseOldPrice\", \"oldPrice\", \"basePrice\", \"finalPrice\"] as $key) {\n        if (isset($config[\"optionPrices\"][$id][$key][\"amount\"])) {\n            $config[\"optionPrices\"][$id][$key][\"amount\"] = $basePrice;\n        }\n    }\n}"
   },
   "reveal": {
    "file": "env/gated_theme/Magento_ConfigurableProduct/templates/product/view/type/options/configurable.phtml",
-   "start": 137,
-   "end": 151,
+   "start": 138,
+   "end": 152,
    "code": "        function show() {\n            var id = chosenProduct();\n            var boxes = document.querySelectorAll(\".price-box .price\");\n            if (!id || !prices[id]) { return; }\n            var amount = prices[id].finalPrice ? prices[id].finalPrice.amount : null;\n            if (amount === null) { return; }\n            var text = \"$\" + Number(amount).toFixed(2);\n            for (var i = 0; i < boxes.length; i++) { boxes[i].textContent = text; }\n        }\n\n        document.addEventListener(\"change\", function (event) {\n            if (event.target && event.target.classList.contains(\"super-attribute-select\")) {\n                setTimeout(show, 60);\n            }\n        }, true);"
   },
   "naive_settings": {
@@ -4319,17 +4315,17 @@ window.SITE = {
   "source": "README decision log, 8 October 2026"
  },
  "built": {
-  "commit": "5f08654",
-  "date": "2026-10-09",
+  "commit": "b0df146",
+  "date": "2026-10-10",
   "branch": "dev",
-  "dirty": false,
+  "dirty": true,
   "repo": "https://github.com/kr7001/fyp-shopping-agent",
   "agent_core": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
   "commits_by_week": {
    "2026-08-24": 1,
    "2026-09-07": 44,
    "2026-09-14": 49,
-   "2026-10-05": 40
+   "2026-10-05": 41
   }
  }
 };

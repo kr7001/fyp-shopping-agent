@@ -8,7 +8,6 @@ pass, a declared cost, the laptop kept awake, and your yes.
 ## Week 1, 9 to 15 October: box v1, specified and built
 
 - **Day 1: a one page spec for your approval.** Input: the question and the first results page. Output: a plan handed to openJiuwen, or a question back to the user. Two question types: the cheapest size M that can be bought, and the ambiguous "offer" questions. It lists what the box may never read: the fixture, the answer keys, `_instance`
-- **Decide how to publish.** The paper PDF sits in unpushed commits, so `dev` waits for your choice: rewrite them, make the repository private, or keep the branch local
 - **Protect the evidence before spending anything.** Pin the browser tool to the version the runs used instead of `@latest`. Back up the raw logs privately. Fix the two September scripts that pool across model and scaffold. All free
 - **Make the free checks show the truth.** `--dry-run` prints the exact text each arm sends, from the same code path the paid loop uses
 - **Coder builds the box**, with a dry run that prints the exact text openJiuwen will receive, and a test where each rule must fire and one where it must stay quiet. Its refusal check takes the market size and the floor from the page, never from the answer key
