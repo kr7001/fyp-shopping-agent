@@ -431,6 +431,12 @@
     }).join('') + '</div>';
   };
 
+  R.sections = (el) => {
+    const src = S[el.dataset.source];
+    el.innerHTML = (src ? src.sections : []).map((s) => '<div class="block prose"><h2>' + esc(s.title) + '</h2>' +
+      s.html + '</div>').join('');
+  };
+
   R.planSections = (el) => {
     el.innerHTML = S.plan.sections.filter((s) => s.title !== 'Budget').map((s) => '<div class="block prose"><h2>' +
       esc(s.title) + '</h2>' + s.html + '</div>').join('');

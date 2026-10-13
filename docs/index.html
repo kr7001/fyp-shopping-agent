@@ -33,6 +33,9 @@
     <a href="#overview">Overview</a>
     <a href="#objective">The objective</a>
     <a href="#plan">The next five weeks</a>
+    <a href="#today">Today, 14 October</a>
+    <a href="#spec">Box v1 spec</a>
+    <a href="#report">Report 4, draft</a>
   </div>
   <div class="group"><span class="eyebrow">Evidence</span>
     <a href="#results">Results</a>
@@ -160,6 +163,39 @@
   </div>
   <div data-render="planSections"></div>
   <div class="block"><h2>Budget</h2><div data-render="budget"></div></div>
+</section>
+
+<!-- ===================================================================== TODAY -->
+<section class="page" id="p-today" data-title="Today, 14 October">
+  <div class="page-head">
+    <span class="eyebrow">Project</span>
+    <h1>Week 1 review, and the plan for 14 October</h1>
+    <p class="lede">Where last week's plan stands, what the free tests settled, the direction chosen and why, and the hour by hour plan for the meeting day.</p>
+  </div>
+  <div class="block prose" data-html="today.intro"></div>
+  <div data-render="sections" data-source="today"></div>
+</section>
+
+<!-- ====================================================================== SPEC -->
+<section class="page" id="p-spec" data-title="Box v1 spec">
+  <div class="page-head">
+    <span class="eyebrow">System</span>
+    <h1>Box v1, the specification</h1>
+    <p class="lede">What the box is, what it may read, the eight decisions with the evidence each rests on, how it is measured, and the files that make it.</p>
+  </div>
+  <div class="block prose" data-html="spec.intro"></div>
+  <div data-render="sections" data-source="spec"></div>
+</section>
+
+<!-- ==================================================================== REPORT -->
+<section class="page" id="p-report" data-title="Report 4, draft">
+  <div class="page-head">
+    <span class="eyebrow">Record</span>
+    <h1>Progress report 4, 14 October</h1>
+    <p class="lede">The supervisor update, written during the day from verified figures. A blank in square brackets is filled only after the verifier has passed the batch it refers to.</p>
+  </div>
+  <div class="block prose" data-html="report.intro"></div>
+  <div data-render="sections" data-source="report"></div>
 </section>
 
 <!-- =================================================================== RESULTS -->
@@ -503,25 +539,26 @@
   <div class="panel" data-panel="arch:box">
     <div class="block">
       <h2>The box, version 1</h2>
-      <p class="prose">The box sits in front of openJiuwen. It reads the question and the first results page, and before any listing is opened it does one of two things: hands openJiuwen a plan, or asks the user what they meant. Dashed parts are not built yet.</p>
+      <p class="prose">The box sits in front of openJiuwen. It reads the question and the first results page, and before any listing is opened it does one of two things: hands openJiuwen a plan, or asks the user what they meant. Built on 14 October as box v1, see the spec page. Dashed parts are not built yet.</p>
       <div class="flow-label">Before the agent starts</div>
       <div class="flow">
-        <div class="node"><b>Question and first page</b><span>only what the agent itself can see</span></div><div class="arrow"></div>
-        <div class="node ours"><b>Classify</b><span><code>targeting.classify</code>: what kind of answer is needed</span></div><div class="arrow"></div>
-        <div class="node ours todo"><b>Is it ambiguous?</b><span>"offer": in the menu, or can sell now</span></div><div class="arrow"></div>
-        <div class="node ours todo"><b>Ask the user back</b><span>scored with a scripted reply</span></div>
+        <div class="node"><b>Question and first page</b><span><code>page.fetch</code>: the listings and their advertised prices, read over HTTP</span></div><div class="arrow"></div>
+        <div class="node ours"><b>Is it ambiguous?</b><span><code>ambiguity.ask</code>: a verb that does not say which availability it means</span></div><div class="arrow"></div>
+        <div class="node ours"><b>Ask the user back</b><span>in a batch, a scripted reply, <code>--reading</code></span></div><div class="arrow"></div>
+        <div class="node ours"><b>Classify</b><span><code>targeting.classify</code>: what kind of answer is needed</span></div>
       </div>
       <div class="flow">
         <div class="node ours"><b>Plan</b><span><code>planner.plan</code>: what to open, when to stop, what counts as evidence</span></div><div class="arrow"></div>
         <div class="node ours"><b>Check the plan</b><span><code>planner.verify</code>: four soundness rules</span></div><div class="arrow"></div>
+        <div class="node ours"><b>Render</b><span><code>box.decide</code>: the listing count, the listings by advertised price with URLs, then the strategy</span></div><div class="arrow"></div>
         <div class="node theirs"><b>openJiuwen</b><span>runs with the plan</span></div>
       </div>
       <div class="flow-label">After the agent answers</div>
       <div class="flow">
-        <div class="node ours todo"><b>Refusal check</b><span><code>sufficiency</code> and <code>policy</code>: is the answer supported by what was opened. Today it reads the market size and floor from the answer key</span></div><div class="arrow"></div>
+        <div class="node ours"><b>Refusal check</b><span><code>policy.gate_from_page</code>: is the answer supported by what was opened, with the market size and the floor read from the page</span></div><div class="arrow"></div>
         <div class="node"><b>An answer, or a stated refusal</b><span>never a confident guess</span></div>
       </div>
-      <p class="note">Strategy v<span data-f="v.targeting"></span> and planner v<span data-f="v.planner"></span> are the current versions. Neither has been run yet. <code>targeting.py</code> and <code>planner.py</code> never read a market file, an answer key or <code>_instance</code>, and a unit test checks their code, with planted reads to prove it can fail. <code>sufficiency.py</code> and <code>policy.py</code> do read the answer key's market size and floor today, so they are evaluation tools until box v1 takes both from the page, and the same test keeps any other file from joining them.</p>
+      <p class="note">Box v1, strategy v<span data-f="v.targeting"></span> and planner v<span data-f="v.planner"></span> are the current versions. None has had a paid run yet. <code>page.py</code>, <code>ambiguity.py</code>, <code>box.py</code>, <code>targeting.py</code> and <code>planner.py</code> never read a market file, an answer key, a manifest or <code>_instance</code>, and a unit test checks their code, with planted reads to prove it can fail. The older <code>policy.gate</code> still reads the answer key's numbers for the September replays, and the same test keeps any other file from joining it.</p>
     </div>
     <div class="block">
       <h2>The kinds of question it knows today</h2>
@@ -686,9 +723,11 @@ make compare</pre></div>
       <div class="step"><h3>Re-derive one batch and read every answer</h3>
         <div class="cmd"><pre>make verify BATCH=experiments/results/20261007T112057</pre></div>
       </div>
-      <div class="step"><h3>See which tasks a batch would run, without running it</h3>
+      <div class="step"><h3>See the exact text a batch would send, without sending it</h3>
         <div class="cmd"><pre>make dry TASKS=tasks_apparel.json</pre></div>
-        <p class="note">It lists each task and its answer kind. It does not yet print the exact text the agent receives, which is a week 1 task.</p>
+        <div class="cmd"><pre>python3 experiments/runners/suite.py --tasks experiments/tasks/tasks_apparel.json \
+    --repeats 1 --box --reading buyable --dry-run</pre></div>
+        <p class="note">The second prints what the box hands the agent: the listing count, the listings by advertised price, and the strategy. Without <code>--reading</code> it prints the question the box would ask on the two ambiguous tasks.</p>
       </div>
       <div class="step"><h3>Reproduce the 60 ms reveal on the local shop</h3>
         <div class="cmd"><pre>.venv-naive/bin/python experiments/analysis/reveal_race.py</pre></div>

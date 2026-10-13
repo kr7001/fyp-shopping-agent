@@ -170,11 +170,22 @@ def inline(text: str) -> str:
     return out
 
 
+def table(rows: list[str]) -> str:
+    """A markdown pipe table as HTML. The second row is the separator and is skipped."""
+    cells = [[c.strip() for c in r.strip().strip("|").split("|")] for r in rows]
+    head = "".join(f"<th>{inline(c)}</th>" for c in cells[0])
+    body = "".join("<tr>" + "".join(f"<td>{inline(c)}</td>" for c in r) + "</tr>"
+                   for r in cells[2:])
+    return (f'<div class="table-wrap"><table><thead><tr>{head}</tr></thead>'
+            f"<tbody>{body}</tbody></table></div>")
+
+
 def render(md: str) -> str:
-    """Paragraphs, bullet and numbered lists, and ### headings. Enough for these files."""
+    """Paragraphs, bullet and numbered lists, pipe tables and ### headings."""
     out: list[str] = []
     para: list[str] = []
     items: list[str] = []
+    rows: list[str] = []
     kind = ""
 
     def end_para():
@@ -192,6 +203,14 @@ def render(md: str) -> str:
 
     for line in md.splitlines():
         text = line.strip()
+        if text.startswith("|"):
+            end_para()
+            end_list()
+            rows.append(text)
+            continue
+        if rows:
+            out.append(table(rows))
+            rows = []
         if not text:
             end_para()
             end_list()
@@ -217,6 +236,8 @@ def render(md: str) -> str:
             para.append(text)
     end_para()
     end_list()
+    if rows:
+        out.append(table(rows))
     return "\n".join(out)
 
 
@@ -548,6 +569,9 @@ def build() -> dict:
         "parked": parked(),
         "weeks": weeks,
         "plan": content("plan"),
+        "today": content("today"),
+        "spec": content("box-v1-spec"),
+        "report": content("report"),
         "open": content("open-problems"),
         "tests": {"unit": unit_tests(), "mod": mod_tests(),
                   "regression_questions": len(planner.questions()),

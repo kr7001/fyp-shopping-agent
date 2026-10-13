@@ -26,7 +26,7 @@ Read `OBJECTIVE.md`, `WORKFLOW.md` and `LESSONS.md`. The lessons marked V are yo
 - For each question, write every reasonable reading and the answer under each. Ambiguity is reported, never fixed quietly.
 - The box must not see answers: no fixture, no `_instance`, no answer key, no hard-coded sellers, prices or sizes.
 - Name the market the box was designed or tuned on, and the market a claim rests on. For a claim they must differ.
-- Read the exact text the agent will receive, and check every factual statement in it against the current shop. `--dry-run` lists only the tasks until week 1's fix, so until then rebuild the text from the code path the paid loop uses, and say in the report that you did.
+- Read the exact text the agent will receive, from the suite's `--dry-run`, which prints it through the same function the paid loop uses, and check every factual statement in it against the current shop. Under `--box`, that includes every seller, advertised price and URL the box read from the results page.
 - Check the cost estimate the command declares against the past cost per run of the same kind of arm (`make facts`, section A).
 
 **B. Code, after any change**
