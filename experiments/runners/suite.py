@@ -165,6 +165,41 @@ def model_from_records(out_dir: pathlib.Path) -> str | None:
     return None
 
 
+def agent_code_identity(git: str = "git", where: pathlib.Path = AGENT_CORE) -> dict:
+    """Which openJiuwen code a batch runs: the submodule's commit, and a digest of the
+    uncommitted patch on top of it.
+
+    The agent is `agent/agent-core`, pinned at a commit but carrying the local patch
+    `agent/openjiuwen-local.patch` (see `agent/README.md`). The spend guard's CODE_PATHS
+    leave `agent/` out, so an edit there would reach a paid run unverified, and until
+    14 Oct 2026 no batch record said which agent code ran. The verifier found the patch
+    present in every clothing cell: a held-constant condition that no record named
+    (LESSONS 10, 12). `agent_core_patch` is the sha1 of the bytes `git diff` prints, so an
+    empty diff gives the sha1 of nothing. Git being unavailable never fails a batch: both
+    fields read "unknown" and a warning is printed. `git` and `where` are parameters so a
+    test can take both paths.
+    """
+    try:
+        # `--show-toplevel` with HEAD, because git answers for the nearest enclosing
+        # repository: an empty, uninitialised submodule folder would otherwise be recorded
+        # as this repository's own commit without a word.
+        toplevel, commit = _git(git, where, "rev-parse", "--show-toplevel", "HEAD").decode().split()
+        if pathlib.Path(toplevel).resolve() != where.resolve():
+            raise LookupError(f"{where} is not its own repository, git answered for {toplevel}")
+        patch = hashlib.sha1(_git(git, where, "diff")).hexdigest()
+    except (OSError, subprocess.CalledProcessError, LookupError) as error:
+        print(f"warning: the agent code's identity could not be read, recording it as "
+              f"unknown: {error}", file=sys.stderr)
+        commit = patch = "unknown"
+    return {"agent_core_commit": commit, "agent_core_patch": patch}
+
+
+def _git(git: str, where: pathlib.Path, *args: str) -> bytes:
+    """What git prints for `args` inside `where`, as bytes. Raises when git fails."""
+    return subprocess.run([git, "-C", str(where), *args], capture_output=True,
+                          check=True).stdout
+
+
 def draw_id(spec: dict) -> str:
     """Which catalogue, in which state, a task file's answers belong to.
 
@@ -244,6 +279,17 @@ def asked_row(task: dict, repeat: int, box_record: dict) -> dict:
             "tool_calls": None, "actions": None, "observations": None,
             "cost_usd": 0, "elapsed_s": 0, "error": None, "log": None,
             "box": box_record, "reading": None}
+
+
+def box_fields(box_record: dict, reading: str | None) -> dict:
+    """What a run under the box records about it: the box's own record, and the reading
+    only where the box asked. A reading is the scripted user's reply to the box's
+    question, so on a question the box never asked it is not a condition of the run.
+    Until 14 Oct 2026 every row under `--reading menu` said `reading: "menu"`, the clear
+    questions included (verifier finding). The scorer is unchanged: it takes the reading
+    from the flag, and a question the sidecar has no key for is scored on its own key
+    either way."""
+    return {"box": box_record, "reading": reading if box_record["asked"] else None}
 
 
 def gate_for(task: dict, spec: dict, answer: str, log_path: pathlib.Path,
@@ -386,10 +432,16 @@ def main() -> int:
     # `--reading`. Empty when the task file has no sidecar.
     readings = scoring.readings_for(args.tasks)
 
+    # Which agent code answers, read once before anything runs and printed in the header
+    # so the dry run shows it too. Only openJiuwen lives in the submodule.
+    agent_code = (agent_code_identity() if args.scaffold == "openjiuwen"
+                  else {"agent_core_commit": None, "agent_core_patch": None})
+
     stamp = dt.datetime.now().strftime("%Y%m%dT%H%M%S")
     out_dir = RESULTS / stamp
     total = len(tasks) * args.repeats
     print(f"{len(tasks)} tasks x {args.repeats} repeats = {total} runs -> {out_dir}")
+    print("agent code: " + " ".join(f"{key}={value}" for key, value in agent_code.items()))
 
     if args.dry_run:
         # The exact text, through the same function the paid loop uses, so what is read
@@ -458,10 +510,9 @@ def main() -> int:
             if strategy:
                 row["strategy"] = strategy
             if args.box:
-                # The page the box read, whether it asked, the reading and the exact
-                # query, so a run under the box says what produced it.
-                row["box"] = applied["box"]
-                row["reading"] = args.reading
+                # The page the box read, whether it asked, the reading where it did, and
+                # the exact query, so a run under the box says what produced it.
+                row.update(box_fields(applied["box"], args.reading))
             if args.confidence != "off":
                 row["confidence"] = confidence
                 row["confidence_reason"] = reason
@@ -516,6 +567,10 @@ def main() -> int:
                # compared with anything.
                "model": os.environ.get("MODEL_NAME") or model_from_records(out_dir),
                "scaffold": args.scaffold,
+               # Which openJiuwen code answered: the submodule's commit and the sha1 of
+               # its uncommitted patch, see `agent_code_identity`. None for the naive loop.
+               "agent_core_commit": agent_code["agent_core_commit"],
+               "agent_core_patch": agent_code["agent_core_patch"],
                "tasks_file": args.tasks.name,
                "draw": draw_id(spec),
                # The ground truth this suite was scored against. The catalogue is

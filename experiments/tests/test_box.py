@@ -10,6 +10,7 @@ fire and one where it must stay quiet (LESSONS 24 and 31).
 import argparse
 import ast
 import contextlib
+import hashlib
 import io
 import json
 import pathlib
@@ -455,6 +456,19 @@ class SuiteQuery(unittest.TestCase):
         self.assertEqual(row["answer"], Ambiguity.ASK)
         self.assertEqual(row["box"], record)
 
+    def test_the_reading_is_recorded_only_on_a_row_the_box_asked_on(self):
+        # Verifier finding, 14 Oct 2026: under --reading menu every row said "menu", the
+        # four clear questions included, where the box had asked nothing.
+        args = self.args(box=True, reading="menu")
+        for task in self.spec["tasks"]:
+            with self.subTest(task=task["id"]):
+                query, applied = suite.build_query(task, self.spec, args)
+                self.assertIsNotNone(query)
+                fields = suite.box_fields(applied["box"], args.reading)
+                asked = task["id"] in Decide.AMBIGUOUS
+                self.assertEqual(fields["box"]["asked"], asked)
+                self.assertEqual(fields["reading"], "menu" if asked else None)
+
     def test_the_box_and_a_strategy_flag_are_refused(self):
         run = subprocess.run(
             [sys.executable, str(paths.EXPERIMENTS / "runners" / "suite.py"),
@@ -468,6 +482,43 @@ class SuiteQuery(unittest.TestCase):
         self.assertNotIn("latest", suite.MCP_ARGS_GATED)
         self.assertIn(page.GATED_UA, suite.MCP_ARGS_GATED)
         self.assertIs(suite.GATED_UA, page.GATED_UA)
+
+
+class AgentCode(unittest.TestCase):
+    """Every batch says which openJiuwen code answered: the submodule's commit and the
+    sha1 of the uncommitted patch on it (verifier finding, 14 Oct 2026: the patch was a
+    held-constant condition that no record named)."""
+
+    HEX40 = r"^[0-9a-f]{40}$"
+
+    @staticmethod
+    def git(*args: str) -> bytes:
+        return subprocess.run(["git", "-C", str(paths.AGENT_CORE), *args],
+                              capture_output=True, check=True).stdout
+
+    def test_this_checkout_gives_the_commit_and_the_patch_digest(self):
+        identity = suite.agent_code_identity()
+        self.assertRegex(identity["agent_core_commit"], self.HEX40)
+        self.assertRegex(identity["agent_core_patch"], self.HEX40)
+        # The same two figures taken independently: the digest is of the bytes git prints,
+        # so an empty diff would give the sha1 of nothing.
+        self.assertEqual(identity["agent_core_commit"], self.git("rev-parse", "HEAD").decode().strip())
+        self.assertEqual(identity["agent_core_patch"], hashlib.sha1(self.git("diff")).hexdigest())
+
+    def test_without_git_the_batch_records_unknown_and_warns(self):
+        with contextlib.redirect_stderr(io.StringIO()) as err:
+            identity = suite.agent_code_identity(git="/nonexistent/git")
+        self.assertEqual(identity, {"agent_core_commit": "unknown", "agent_core_patch": "unknown"})
+        self.assertIn("warning", err.getvalue())
+        self.assertIn("unknown", err.getvalue())
+
+    def test_a_folder_that_is_not_its_own_repository_is_unknown_not_the_parents_commit(self):
+        # An uninitialised submodule is an empty folder, and git answers for the nearest
+        # repository around it: this one. That must read as unknown, not as our commit.
+        with contextlib.redirect_stderr(io.StringIO()) as err:
+            identity = suite.agent_code_identity(where=paths.EXPERIMENTS)
+        self.assertEqual(identity["agent_core_commit"], "unknown")
+        self.assertIn("not its own repository", err.getvalue())
 
 
 # What a piece of code can read an answer through: the keys of a task's answer, of a market's
