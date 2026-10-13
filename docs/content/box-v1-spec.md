@@ -58,8 +58,12 @@ out or not, or listings that can sell size M now?"* *Evidence, free:* over the s
 questions the rule asks on exactly the two "offer" questions and on none of the four clear ones.
 Over all 37 questions it also fires on the two water questions that say "stock the pack", which
 carry the same ambiguity; the water market never had a sold-out pack, so the two readings agreed
-there and no run could have shown it. The first draft of the rule matched "seller" through
-"sell"; the rule matches whole verbs only. *Why not a model:* a model call per question costs
+there and no run could have shown it. Two drafts of the rule were wrong before this one: the first
+matched "seller" through "sell", and the first build fired on "which seller offers the lowest
+price per litre", where "offers" is about a price. The rule now matches whole verbs only, and
+the verb must govern the variant phrase: the variant word follows the verb within six words,
+with no punctuation between, so "offer size M" and "stock the 2 x 9.5L pack" match and a
+variant word before the verb does not count. Over the 37 questions it fires on exactly four. *Why not a model:* a model call per question costs
 about a tenth of a cent and generalises further, but varies run to run; it is the v2 comparison.
 *Why ask before the agent starts:* openJiuwen has an `ask_user` tool, and routing the ask
 through it would make the ask part of the agent's run. v1 asks first, so the ask and the run can
