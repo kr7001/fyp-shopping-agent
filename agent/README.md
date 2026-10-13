@@ -7,7 +7,7 @@ https://github.com/openJiuwen-ai/agent-core, pinned as a git submodule at commit
 
 Nothing inside `agent-core/` is committed to this repository. The one change made to it is
 kept here as a patch instead, so a fresh clone can rebuild the openJiuwen code the runs used.
-The browser, Playwright MCP, is still fetched as `@latest`, see the site's Problems page.
+The browser, Playwright MCP, is pinned at 0.0.83 by `experiments/runners/suite.py` since 14 October 2026, the version every clothing cell ran on. Each batch records the submodule's commit and a digest of the local patch as `agent_core_commit` and `agent_core_patch`.
 
 ## Set up from a fresh clone
 

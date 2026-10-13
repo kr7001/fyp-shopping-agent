@@ -10,6 +10,16 @@ Box v1 is built and tested, and every figure about it is a replay or a predictio
 development batch on Thornwood is proposed on the Today page with its estimate. Until it runs
 and is verified, nothing about the box is a result. *Today, with the student's yes.*
 
+## One sentence of the frozen strategy text is strictly false
+
+The availability strategy tells the agent that a listing's advertised price "is the cheapest
+option in that listing, so nothing inside it can cost less". Magento's "As low as" price is the
+cheapest option that can be bought. Fairhaven's sold-out size M costs $15.04 under the default
+theme, below its advertised $18.33. In the gated shop the agent cannot see that price and the
+bound over buyable options stays sound, so the pilot runs on the frozen v7 text. Reword it to
+"the cheapest option that can be bought" in strategy v8, after the development batch, so the
+batch and the cells share one text. Found by the verifier on 14 October. *Week 2.*
+
 ## The refusal check's one blind spot
 
 With the market size and the floor read from the page, the check refuses 8 of the 9 coverage

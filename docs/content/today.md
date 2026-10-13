@@ -77,7 +77,7 @@ The proposed runs:
 
 | Run | Runs | Estimate | Basis |
 | --- | --- | --- | --- |
-| Pilot: one price question, one count question, under `--reading menu` | 2 | $1.05 | cell 5's cost a run, the dearest arm |
+| Pilot: one price question, one count question, under `--reading menu` | 2 | $1.05 | cell 5's mean cost a run. The verifier's note: these two questions were cell 5's dearer ones, $0.59 and $0.54 a run, so expect about $1.13, up to $1.30 at cell 5's maxima, and about $1.90 if both runs hit the 100 step cap |
 | Development batch: the six questions, 3 repeats, `--reading menu` | 18 | $9.45 | the same |
 | The two ambiguous questions, 3 repeats, `--reading buyable` | 6 | $3.15 | the same |
 | **Today** | **26** | **$13.65** at cell 5's cost, about $6.50 at the regression's | |
@@ -102,6 +102,15 @@ IGR_ESTIMATE_USD=3.15 caffeinate -i python3 experiments/runners/suite.py \
 `--policy gate` switches the box's refusal check on. It adds no browser action and no cost,
 and every raw answer stays in the run record, so the batch can be compared with cells 1 and 5
 on raw answers and still show what the box would have refused.
+
+The verifier passed the pilot command at the committed code on 14 October at 3 am, with the
+held-constant table against cells 1 and 5 built and every intended difference named: the box
+hands the agent the listings' URLs and advertised prices, the v7 strategy text, the refusal check
+with rules v3, one repeat, and Thornwood is the market the box was designed on, so the pilot is
+in sample. After each batch, before any figure is read: `make verify BATCH=experiments/results/<stamp>`
+with both answers read in full, the 60 second silence rule, the stored page record against the
+live shop, and cost against the account (`python3 experiments/analysis/cell_facts.py`, section G).
+Watch the pilot log for the agent trusting its own four card probe over the preamble's fifteen.
 
 **Open point 2: what to freeze.** If the pilot shows the agent follows the plan, the batch runs
 as is. If it shows a defect in the plan's wording, fix it, bump `box.VERSION`, and run the batch
