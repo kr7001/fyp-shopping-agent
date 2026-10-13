@@ -8,9 +8,14 @@ that explained its count took the second (LESSONS 16). The box's job is to notic
 before anything is spent, and ask.
 
 A small lexicon rather than a model: it costs nothing, repeats exactly and can be read. A
-question is ambiguous when it names a variant (a size, pack, colour or option) with a verb
-that does not say which availability it means, and nothing in it settles the reading. The
-first draft matched "seller" through "sell", so every pattern here is a whole word.
+question is ambiguous when a verb that does not say which availability it means governs a
+variant (a size, pack, colour or option), and nothing in it settles the reading. Two drafts
+were wrong before this one, both found by running the rule over every question in the
+project. The first matched "seller" through "sell", so every pattern here is a whole word.
+The second asked whenever a verb and a variant word both occurred, and so asked on "across
+all their pack sizes, which seller offers the lowest price per litre", where "offers" takes
+a price and the question is clear (14 October 2026). So the variant word has to follow the
+verb within a few words, and a variant word before the verb is not the verb's object.
 
     python experiments/box/ambiguity.py "Does every listing carry the 500 g pack?"
 """
@@ -46,13 +51,15 @@ def whole_words(phrases: tuple[str, ...]) -> re.Pattern:
 
 
 VERB = whole_words(VERBS)
-VARIANT = whole_words(VARIANTS)
 CLEAR = whole_words(BUYABLE + MENU)
 
-# The words a verb governs: up to the variant word within a few words of it, and one value
-# after it, so "offer size M" and "carry the 500 g pack" are quoted back in the user's own
-# words, whatever the size or pack is called. Punctuation ends the phrase.
-GOVERNED = re.compile(r"((?:\s+[\w.]+){0,4}?\s+(?:" + "|".join(VARIANTS) + r"))\b",
+# The words a verb governs: the variant word after it, with at most WINDOW words between
+# ("offer size M" has none, "stock the 2 x 9.5L pack" has four), and one value after the
+# variant word, so the phrase is quoted back in the user's own words whatever the size or
+# pack is called. Punctuation ends the phrase, and a variant word before the verb is not
+# its object.
+WINDOW = 6
+GOVERNED = re.compile(r"((?:\s+[\w.]+){0,%d}?\s+(?:%s))\b" % (WINDOW, "|".join(VARIANTS)),
                       re.IGNORECASE)
 VALUE = re.compile(r"\s+([A-Z]{1,4}|\d[\w.]*)\b")
 
@@ -83,28 +90,27 @@ class Ask:
     readings: dict[str, Reading]    # keyed "menu" and "buyable"
 
 
-def phrase(question: str) -> tuple[str, str]:
-    """The verb and the words it governs, as the question wrote them: ("offer", "size M").
-
-    When no variant word follows any verb closely, the first verb and the first variant
-    word stand on their own.
-    """
-    verbs = list(VERB.finditer(question))
-    for verb in verbs:
+def phrase(question: str) -> tuple[str, str] | None:
+    """The first ambiguous verb that governs a variant, and the words it governs, as the
+    question wrote them: ("offer", "size M"). None when no verb governs one."""
+    for verb in VERB.finditer(question):
         tail = question[verb.end():]
         governed = GOVERNED.match(tail)
         if governed:
             value = VALUE.match(tail[governed.end():])
             words = governed.group(1).split() + ([value.group(1)] if value else [])
             return verb.group(0), " ".join(words)
-    return verbs[0].group(0), VARIANT.search(question).group(0)
+    return None
 
 
 def ask(question: str) -> Ask | None:
     """The question to put to the user, or None when the question settles its own reading."""
-    if not VARIANT.search(question) or not VERB.search(question) or CLEAR.search(question):
+    if CLEAR.search(question):
         return None
-    verb, governed = phrase(question)
+    found = phrase(question)
+    if found is None:
+        return None
+    verb, governed = found
     quoted = f"{verb} {governed}"
     return Ask(verb=verb, text=ASK.format(verb=verb),
                readings={key: Reading(label, sentence.format(phrase=quoted))
