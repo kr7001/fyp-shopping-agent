@@ -10,6 +10,8 @@ outcome: a policy that says "I could not determine this" has not misled anyone.
 
 from __future__ import annotations
 
+import json
+import pathlib
 import re
 
 # Phrases that mean the agent declined rather than answered. Kept narrow on
@@ -50,6 +52,26 @@ def prices_in(text: str) -> list[float]:
 def abstained(text: str) -> bool:
     low = (text or "").lower()
     return any(marker in low for marker in ABSTENTION_MARKERS)
+
+
+def readings_for(tasks_path: pathlib.Path) -> dict:
+    """The scripted user's other readings of a task file's ambiguous questions.
+
+    Read from the sidecar beside the task file, `readings_apparel.json` beside
+    `tasks_apparel.json`, keyed by reading and then task id. Empty when there is none. The
+    "menu" reading is the task's own key, so it never appears here.
+    """
+    sidecar = tasks_path.with_name(tasks_path.name.replace("tasks_", "readings_", 1))
+    if sidecar == tasks_path or not sidecar.exists():
+        return {}
+    return json.loads(sidecar.read_text()).get("readings", {})
+
+
+def under_reading(task: dict, reading: str | None, readings: dict) -> dict:
+    """The task with the answer key for this reading, or its own key when the reading has
+    none for it, so a question that was never ambiguous is scored as before."""
+    expect = (readings.get(reading) or {}).get(task["id"]) if reading else None
+    return {**task, "expect": expect} if expect else task
 
 
 def score(task: dict, answer: str, ok: bool) -> dict:

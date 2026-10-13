@@ -145,8 +145,22 @@ def tool_replies(log_path: pathlib.Path) -> dict[str, tuple[str, str]]:
             for key, text in replies.items()}
 
 
+def rescore(task: dict, answer: str, ok: bool, row: dict, suite: dict,
+            readings: dict) -> dict:
+    """Score against the key the batch was scored against.
+
+    A batch run with `--reading buyable` scores its ambiguous questions against the
+    sidecar key for that reading, so re-scoring against the task's own key would report
+    every such run as a mismatch. The row's reading wins, then the batch's, and a reading
+    the sidecar has no entry for falls back to the task's own key, as the suite does.
+    """
+    reading = row.get("reading") or suite.get("reading")
+    return scoring.score(scoring.under_reading(task, reading, readings), answer, ok)
+
+
 def verify_run(record_path: pathlib.Path, task: dict, instance: dict, truth: dict,
-               stored: dict) -> dict:
+               stored: dict, suite: dict | None = None,
+               readings: dict | None = None) -> dict:
     record = json.loads(record_path.read_text())
     log_path = record_path.with_suffix(".log")
     log = log_path.read_text(errors="replace")
@@ -187,7 +201,7 @@ def verify_run(record_path: pathlib.Path, task: dict, instance: dict, truth: dic
     probe_line = next((line for line in log.splitlines() if line.startswith("card probe:")),
                       None)
     trace = record.get("trace") or {}
-    rescored = scoring.score(task, answer, ok)
+    rescored = rescore(task, answer, ok, stored, suite or {}, readings or {})
     without_m = [s for s in skus if truth.get(s, {}).get("m") is None and s in truth]
     needed = must_open(task, instance, truth)
     universal = task["gated"] and not needed
@@ -237,6 +251,7 @@ def verify_batch(batch: pathlib.Path) -> tuple[dict, list[dict]]:
     spec = json.loads((paths.TASKS / suite["tasks_file"]).read_text())
     tasks = {t["id"]: t for t in spec["tasks"]}
     truth = ground_truth()
+    readings = scoring.readings_for(paths.TASKS / suite["tasks_file"])
     stored = {(row["task"], row["repeat"]): row for row in suite["rows"]}
     runs = []
     for record_path in sorted(batch.glob("*.json")):
@@ -244,7 +259,8 @@ def verify_batch(batch: pathlib.Path) -> tuple[dict, list[dict]]:
             continue
         task_id, repeat = record_path.stem.rsplit("-", 1)
         runs.append(verify_run(record_path, tasks[task_id], spec["_instance"], truth,
-                               stored.get((task_id, int(repeat)), {})))
+                               stored.get((task_id, int(repeat)), {}),
+                               suite=suite, readings=readings))
     return suite, runs
 
 
@@ -300,11 +316,19 @@ def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: boo
 
     cost = sum(r["cost"] or 0 for r in runs)
     before = [r["spend_before"] for r in runs if r["spend_before"] is not None]
+    # The reading the batch was scored under, shown only when it had one, so the output
+    # for every batch before the box stays as it was.
+    reading = f"  reading={suite['reading']}" if suite.get("reading") else ""
     print(f"\n=== {batch.name}  scaffold={suite.get('scaffold')}  "
-          f"model={suite.get('model')}  draw={suite.get('draw')}")
+          f"model={suite.get('model')}  draw={suite.get('draw')}{reading}")
     print(f"runs {len(runs)}  settings: shop={sorted({r['shop'] for r in runs})} "
           f"probe={sorted({str(r['probe']) for r in runs})} "
           f"probe line={sorted({str(r['probe_line']) for r in runs})}")
+    # A slot the box answered with a question has no run record to re-derive, so it is
+    # counted here rather than silently missing from the runs above.
+    asked = [row for row in suite["rows"] if row.get("verdict") == "asked"]
+    if asked:
+        print(f"asked           {len(asked)} rows: the box asked the user and no agent ran")
     print(f"gated correct   stored {correct(gated, 'stored')} of {len(gated)}, "
           f"re-scored {correct(gated, 'rescored')} of {len(gated)}")
     print(f"control correct stored {correct(control, 'stored')} of {len(control)}, "

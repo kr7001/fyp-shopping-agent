@@ -9,8 +9,9 @@ import sys
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-import paths  # noqa: E402,F401
+import paths  # noqa: E402
 import compare_cells  # noqa: E402
+import score  # noqa: E402
 import trace_stats  # noqa: E402
 import verify_cells  # noqa: E402
 from scipy.stats import fisher_exact  # noqa: E402
@@ -81,6 +82,32 @@ class StratifiedTest(unittest.TestCase):
     def test_a_consistent_difference_is_detected(self):
         # Five questions, three runs each, one arm always right and the other always wrong.
         self.assertLess(compare_cells.stratified_exact([(3, 3, 0, 3)] * 5), 0.001)
+
+
+class ReadingKey(unittest.TestCase):
+    """A batch scored under the scripted user's second reading is re-scored under it too,
+    otherwise every such run would be reported as a stored-against-re-scored mismatch."""
+
+    def setUp(self):
+        spec = json.loads((paths.TASKS / "tasks_apparel.json").read_text())
+        self.task = next(t for t in spec["tasks"] if t["id"] == "apparel-count-stocked")
+        self.readings = score.readings_for(paths.TASKS / "tasks_apparel.json")
+
+    def verdict(self, answer: str, row: dict, suite: dict) -> str:
+        return verify_cells.rescore(self.task, answer, True, row, suite, self.readings)["verdict"]
+
+    def test_the_rows_reading_uses_the_sidecar_key(self):
+        self.assertEqual(self.verdict("5 listings", {"reading": "buyable"}, {}), "correct")
+        self.assertEqual(self.verdict("10 listings", {"reading": "buyable"}, {}), "wrong")
+
+    def test_without_a_reading_the_tasks_own_key_stands(self):
+        self.assertEqual(self.verdict("10 listings", {}, {}), "correct")
+        self.assertEqual(self.verdict("5 listings", {}, {}), "wrong")
+
+    def test_the_batch_reading_applies_when_the_row_has_none(self):
+        self.assertEqual(self.verdict("5 listings", {}, {"reading": "buyable"}), "correct")
+        # The menu reading is the task's own key.
+        self.assertEqual(self.verdict("10 listings", {"reading": "menu"}, {}), "correct")
 
 
 if __name__ == "__main__":
