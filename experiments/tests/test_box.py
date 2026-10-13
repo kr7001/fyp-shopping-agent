@@ -143,6 +143,27 @@ class Ambiguity(unittest.TestCase):
     def test_in_stock_settles_it(self):
         self.assertIsNone(ambiguity.ask("Is size M in stock?"))
 
+    def test_the_verb_must_govern_the_variant(self):
+        # Found 14 Oct 2026: "offers" here takes a price, and the second draft asked on it.
+        self.assertIsNone(ambiguity.ask("Across all their pack sizes, which seller offers "
+                                        "the lowest price?"))
+        self.assertIsNone(ambiguity.ask("Across all the Rivenhall listings and all their pack "
+                                        "sizes, which seller offers the lowest price per litre?"))
+        # The variant word must follow the verb within WINDOW words. Punctuation ends it.
+        self.assertIsNone(ambiguity.ask("Do they offer, for anyone who asks and wants one in "
+                                        "a hurry, size M?"))
+        self.assertIsNone(ambiguity.ask("Do they offer to anyone who asks and wants one "
+                                        "size M?"))                       # seven words between
+        asked = ambiguity.ask("Do they offer anyone who asks and wants one size M?")  # six
+        self.assertEqual((asked.verb, asked.readings["menu"].sentence.split("'")[1]),
+                         ("offer", "offer anyone who asks and wants one size M"))
+        asked = ambiguity.ask("Does every Rivenhall listing stock the 2 x 9.5L pack?")
+        self.assertEqual((asked.verb, asked.readings["menu"].sentence.split("'")[1]),
+                         ("stock", "stock the 2 x 9.5L pack"))
+        # The governing verb is the one quoted, not the first verb in the question.
+        asked = ambiguity.ask("Listings that have reviews: does every one offer size M?")
+        self.assertEqual(asked.verb, "offer")
+
     def test_every_clear_phrase_silences_an_ask(self):
         base = "Does every listing offer size M"
         self.assertIsNotNone(ambiguity.ask(base + "?"))
@@ -170,9 +191,9 @@ class Ambiguity(unittest.TestCase):
             ambiguity.with_reading(q, asked, "maybe")
 
     def test_over_every_question_the_project_asks(self):
-        # Controls included (LESSONS 18). The two clothing "offer" questions, the two water
-        # "stock the pack" questions, and the two water "which seller offers the lowest
-        # price per litre" questions ask. The other 31 do not.
+        # Controls included (LESSONS 18). The two clothing "offer size M" questions and the
+        # two water "stock the 2 x 9.5L pack" questions ask. The other 33 do not, the two
+        # "which seller offers the lowest price per litre" questions among them.
         asking, total = [], 0
         for name in ("tasks.json", "tasks_scaled.json", "tasks_heldout.json",
                      "tasks_apparel.json", "tasks_reviews.json"):
@@ -181,9 +202,7 @@ class Ambiguity(unittest.TestCase):
             asking += [(name, t["id"]) for t in spec["tasks"] if ambiguity.ask(t["query"])]
         self.assertEqual(total, 37)
         self.assertEqual(asking, [("tasks_scaled.json", "scaled-all-stocked"),
-                                  ("tasks_scaled.json", "scaled-best-per-litre"),
                                   ("tasks_heldout.json", "scaled-all-stocked"),
-                                  ("tasks_heldout.json", "scaled-best-per-litre"),
                                   ("tasks_apparel.json", "apparel-all-stocked"),
                                   ("tasks_apparel.json", "apparel-count-stocked")])
 
