@@ -38,6 +38,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402,F401  (puts box/, runners/, analysis/, water/ on the path)
+import score as scoring
 import sufficiency
 
 # Wording matters here in a way it usually does not. The scorer classifies an answer as
@@ -98,6 +99,54 @@ def gate(task: dict, spec: dict, answer: str, log_path: pathlib.Path) -> dict:
     )
     return {**verdict, "opened": len(opened), "population": inst.get("listings"),
             "floor": inst.get("oracle_min_opens")}
+
+
+def page_floor(question: str, page, answer: str) -> int | None:
+    """The fewest listings a sound answer to this question had to open, from the page.
+
+    For the best of a market: every listing advertised at or below the price the answer
+    names could have beaten it, so each had to be opened, and the one named is among them,
+    so at least one. An answer that names no price gets no benefit of the doubt and owes
+    the whole page. Any other question has no floor of this kind: a count needs the
+    population, which `sufficiency.check` applies on its own, and a universal needs one
+    counterexample.
+    """
+    if not sufficiency.superlative_over_population(question):
+        return None
+    named = scoring.prices_in(answer)
+    if not named:
+        return len(page.listings)
+    # Within half a cent: the page's price is a float and the answer's is parsed text.
+    return max(1, sum(1 for item in page.listings if item.advertised <= named[0] + 0.005))
+
+
+def gate_from_page(question: str, page, answer: str, log_path: pathlib.Path) -> dict:
+    """`gate`, with the market size and the floor read from the results page the box
+    fetched instead of from the answer key, so the check uses only what the agent could
+    see (LESSONS 32). `gate` stays as the evaluation tool it was.
+
+    Replayed over cells 1, 2 and 5 on 14 October 2026, before any run under the box: with
+    these page-derived numbers the check refused 8 of the 9 answers that did not open what
+    they needed and 0 of the 26 correct answers, against 9 and 0 with the answer key's. The
+    one it misses, cell 1 cheapest-target run 3, opened every listing its bound required
+    and misread an advertised price as the size's price. No check that reads only the page
+    can tell that from a correct answer. The plan's "choose the size, then look again" step
+    is what targets it.
+    """
+    text = sufficiency.observed_text(log_path)
+    opened = sufficiency.listings_opened(text)
+    population = len(page.listings)
+    floor = page_floor(question, page, answer)
+    verdict = sufficiency.check(
+        answer,
+        sufficiency.evidence(text),
+        question=question,
+        population=population,
+        opened=len(opened),
+        floor=floor,
+    )
+    return {**verdict, "opened": len(opened), "population": population, "floor": floor,
+            "floor_from": "page"}
 
 
 def abstention_for(verdict: dict) -> str:

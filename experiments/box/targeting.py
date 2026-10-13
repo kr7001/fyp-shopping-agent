@@ -137,9 +137,14 @@ QUARANTINE = (
     "after that option was chosen. Never pair an advertised price with an option unless "
     "you saw that price shown while that option was chosen.")
 
-STRATEGIES = {
+# The strategy text without the enumeration step. Box v1 (14 October 2026) reads the
+# results page itself and hands the agent the listings, so it sends the body alone, with
+# its own account of the market in front. The five enumerating kinds are listed below and
+# `STRATEGIES` is built from these, so the text a run received before the box is the same
+# bytes it receives from `targeting_query` today.
+BODIES = {
     "total_bound": (
-        ENUMERATE + "Use this retrieval strategy, and follow it rather than opening listings in the "
+        "Use this retrieval strategy, and follow it rather than opening listings in the "
         "order they appear.\n"
         "1. Read the advertised price of every listing from the search results first. "
         "That price is the cheapest option in that listing, so nothing inside it can cost "
@@ -154,7 +159,7 @@ STRATEGIES = {
         "In your answer, say how many listings you opened, how many you skipped, and why "
         "skipping them was safe." + QUARANTINE),
     "refutation": (
-        ENUMERATE + "Note what the question actually requires, because the two possible "
+        "Note what the question actually requires, because the two possible "
         "answers need very different amounts of work.\n"
         "To answer No you need exactly ONE listing that lacks the option. Nothing more. "
         "One counterexample settles a claim about every listing.\n"
@@ -173,7 +178,7 @@ STRATEGIES = {
         "not to its point: the agent enumerated and then opened ten listings when the "
         "first counterexample had already settled the question."),
     "rate_bound": (
-        ENUMERATE + "Use this retrieval strategy, and follow it rather than opening listings in the "
+        "Use this retrieval strategy, and follow it rather than opening listings in the "
         "order they appear.\n"
         f"1. The largest pack any listing offers is {LARGEST_PACK_LITRES} litres, so a "
         "listing's best possible price per litre is its advertised price divided by "
@@ -187,7 +192,7 @@ STRATEGIES = {
         "In your answer, say how many listings you opened, how many you skipped, and why "
         "skipping them was safe." + QUARANTINE),
     "availability_bound": (
-        ENUMERATE + "Use this retrieval strategy, and follow it rather than opening listings in the "
+        "Use this retrieval strategy, and follow it rather than opening listings in the "
         "order they appear.\n"
         "1. Read the advertised price of every listing from the search results first. That "
         "price is the cheapest option in that listing, so nothing inside it can cost less.\n"
@@ -235,11 +240,19 @@ STRATEGIES = {
         "listing advertises there. Read the whole results page, not only the first screen, "
         "and do not open any listing."),
     "survey": (
-        ENUMERATE + "Open every listing in the search results and check the relevant option on each "
+        "Open every listing in the search results and check the relevant option on each "
         "before answering. Whether an option can be chosen is shown in the option menu "
         "itself, so there is no need to choose it to find that out. Say how many you "
         "opened."),
 }
+
+# The kinds whose strategy opens with the enumeration step. The review strategy turns
+# pages rather than listings, and the results page strategy opens nothing, so neither
+# enumerates.
+ENUMERATED = ("total_bound", "refutation", "rate_bound", "availability_bound", "survey")
+
+STRATEGIES = {kind: (ENUMERATE + body if kind in ENUMERATED else body)
+              for kind, body in BODIES.items()}
 
 
 def targeting_query(question: str) -> tuple[str, str]:

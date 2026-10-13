@@ -24,12 +24,15 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
+import box as box_module
+import page as page_module
 import policy as policy_module
 import sufficiency
 import score as scoring
 import planner as planner_module
 import targeting as targeting_module
 import trace_stats
+from page import GATED_UA  # one definition, shared with the box's own fetch
 
 HERE = pathlib.Path(__file__).resolve().parent
 REPO = paths.REPO
@@ -42,9 +45,16 @@ RESULTS = paths.RESULTS
 # selects the price-suppressing theme that way. Nothing in a run record used to say which one it
 # got, so a run launched without this looked identical to one launched with it while measuring a
 # different shop. It is a default rather than a flag for the same reason: the leaky shop should
-# have to be asked for.
-GATED_UA = "Mozilla/5.0 IGRGated/1.0"
-MCP_ARGS_GATED = f'-y @playwright/mcp@latest --user-agent "{GATED_UA}"'
+# have to be asked for. The user agent itself lives in `box/page.py`, because the box fetches
+# the results page with it too.
+#
+# The browser tool is pinned. It was fetched as "latest" on every run until 14 October 2026
+# (LESSONS 12), when npm's latest `@playwright/mcp` was 0.0.83 and every clothing cell had run
+# on 0.0.83, so the pin changes nothing now and stops a release changing the tool between the
+# box's runs and the cells they are compared with. Recorded in every suite payload as
+# `browser_tool`.
+BROWSER_TOOL = "0.0.83"
+MCP_ARGS_GATED = f'-y @playwright/mcp@{BROWSER_TOOL} --user-agent "{GATED_UA}"'
 
 
 def browser_env(shop: str, probe: str = "viewport",
@@ -179,19 +189,91 @@ def add(*values) -> float | int | None:
     return sum(present) if present else None
 
 
+# The results page the box reads, fetched once per batch and reused by every task and
+# repeat, so one page record describes what the whole batch planned from.
+PAGES: dict[str, page_module.Page] = {}
+
+
+def results_page(url: str) -> page_module.Page:
+    if url not in PAGES:
+        PAGES[url] = page_module.fetch(url)
+    return PAGES[url]
+
+
+def build_query(task: dict, spec: dict, args) -> tuple[str | None, dict]:
+    """The exact text the agent receives, and what produced it.
+
+    One function for the dry run and the paid loop, so the text the verifier reads is the
+    text the agent gets (LESSONS 17). Applied in order: the box, targeting, the exhaustive
+    instruction, the confidence prompt. The text is None when the box asked and no
+    `--reading` answered it. The dict holds the strategy kind, the box's record and the
+    page it read, each None when not used.
+    """
+    query = task["query"].format(base=spec["base_url"])
+    applied = {"strategy": None, "box": None, "page": None}
+    if args.box:
+        page = results_page(box_module.results_url(query))
+        decision = box_module.decide(query, page, reply=args.reading)
+        applied.update(strategy=decision.kind, box=decision.record(), page=page)
+        if decision.query is None:
+            return None, applied
+        query = decision.query
+    if args.targeting:
+        # Through the planner rather than straight to the strategy table. The plan is
+        # checked for soundness before the agent ever sees it, and `render` returns the
+        # frozen strategy text unchanged, so a run planned this way receives the same
+        # bytes it would have received before. Verified over every question by
+        # `planner.py --regression`. A plan that fails verification raises rather than
+        # running, because paying a model to execute a plan already known to be unsound
+        # buys nothing.
+        query, applied["strategy"] = planner_module.planned_query(query)
+    if args.exhaustive:
+        query = policy_module.exhaustive_query(query)
+    if args.confidence != "off":
+        query = policy_module.confidence_query(query, args.confidence)
+    return query, applied
+
+
+def asked_row(task: dict, repeat: int, box_record: dict) -> dict:
+    """A run slot the box answered with a question to the user instead of running the
+    agent. Nothing was spent, so the cost is zero rather than unknown."""
+    return {"task": task["id"], "family": task["family"], "gated": task["gated"],
+            "repeat": repeat, "verdict": "asked",
+            "why": "the box asked the user and no --reading answered it",
+            "answer": box_record["ask"][:300],
+            "tool_calls": None, "actions": None, "observations": None,
+            "cost_usd": 0, "elapsed_s": 0, "error": None, "log": None,
+            "box": box_record, "reading": None}
+
+
+def gate_for(task: dict, spec: dict, answer: str, log_path: pathlib.Path,
+             page: page_module.Page | None) -> dict:
+    """The refusal check. Under the box it reads the market size and the floor from the
+    page the box fetched. Without the box it is the evaluation tool it was, reading both
+    from the answer key."""
+    if page is not None:
+        question = task["query"].format(base=spec["base_url"])
+        return policy_module.gate_from_page(question, page, answer, log_path)
+    return policy_module.gate(task, spec, answer, log_path)
+
+
 def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
                  out_dir: pathlib.Path, tag: str, confidence: str = "off",
                  reason: str | None = None, scaffold: str = "openjiuwen",
-                 shop: str = "gated", probe: str = "viewport") -> tuple:
+                 shop: str = "gated", probe: str = "viewport",
+                 page: page_module.Page | None = None) -> tuple:
     """Run the sufficiency check and act on it.
 
     Cost and interaction counts are reported for the arm as a whole, both attempts
     included. A policy that buys accuracy with a second full run has to be charged for
     it, or the comparison against the baseline is not a comparison.
+
+    `page` is the results page the box read, when it ran, and makes the check read the
+    market from the page rather than from the answer key.
     """
     result = record.get("result") or {}
     trace = record.get("trace") or {}
-    check = policy_module.gate(task, spec, answer, out_dir / f"{tag}.log")
+    check = gate_for(task, spec, answer, out_dir / f"{tag}.log", page)
 
     if check["ok"] or mode == "gate":
         if not check["ok"]:
@@ -212,7 +294,7 @@ def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
     result2 = second.get("result") or {}
     answer2 = str(result2.get("final") or "")
     trace2 = second.get("trace") or {}
-    check2 = policy_module.gate(task, spec, answer2, out_dir / f"{tag2}.log")
+    check2 = gate_for(task, spec, answer2, out_dir / f"{tag2}.log", page)
 
     # Still unverified after being told why: abstain rather than emit it a second time.
     final_answer = answer2 if check2["ok"] else policy_module.abstention_for(check2)
@@ -262,8 +344,33 @@ def main() -> int:
                              "only what is on screen. whole-page flips that one setting and "
                              "changes nothing else, which is the arm that separates the tool "
                              "from the model as the cause of stopping at four listings")
-    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--box", action="store_true",
+                        help="run the box first: it reads the results page, asks back on an "
+                             "ambiguous question, and otherwise plans the retrieval. The "
+                             "contribution. Excludes --targeting and --exhaustive")
+    parser.add_argument("--reading", choices=("menu", "buyable"),
+                        help="the scripted user's reply when the box asks. menu: a size in "
+                             "the listing's menu counts, sold out or not, which is the "
+                             "task's own key. buyable: only a size that can be sold now, "
+                             "the key in tasks/readings_<market>.json. Without it a box "
+                             "that asks records the ask, runs no agent and spends nothing")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="print the exact text each task would send, and run nothing")
     args = parser.parse_args()
+
+    # The box plans the retrieval itself, so a second strategy on top of it would measure
+    # a mixture. A reading is a reply to the box's question, so it means nothing without
+    # the box. The retry arms rebuild the query from the task text, without the box's
+    # plan, so under the box only the gate is supported in v1.
+    if args.box and (args.targeting or args.exhaustive):
+        parser.error("--box cannot be combined with --targeting or --exhaustive: the box "
+                     "plans the retrieval itself")
+    if args.reading and not args.box:
+        parser.error("--reading is the scripted reply to the box's question, so it needs "
+                     "--box")
+    if args.box and args.policy in ("retry", "investigate"):
+        parser.error("--box supports --policy off or gate only in v1: the retry arms "
+                     "rebuild the query without the box's plan")
 
     # Task files moved into experiments/tasks/ on 8 Oct 2026. Commands in the decision log
     # still name the old place, so a missing path falls back to the same file name there.
@@ -275,6 +382,9 @@ def main() -> int:
     if not tasks:
         print("no matching tasks")
         return 1
+    # The scripted user's other readings of the ambiguous questions, for scoring under
+    # `--reading`. Empty when the task file has no sidecar.
+    readings = scoring.readings_for(args.tasks)
 
     stamp = dt.datetime.now().strftime("%Y%m%dT%H%M%S")
     out_dir = RESULTS / stamp
@@ -282,8 +392,13 @@ def main() -> int:
     print(f"{len(tasks)} tasks x {args.repeats} repeats = {total} runs -> {out_dir}")
 
     if args.dry_run:
+        # The exact text, through the same function the paid loop uses, so what is read
+        # here is what the agent gets (LESSONS 17). An ask is printed as the box's question.
         for task in tasks:
             print(f"  {task['id']:26} gated={task['gated']}  {task['expect']['kind']}")
+            query, applied = build_query(task, spec, args)
+            print(f"ASKS: {applied['box']['ask']}" if query is None else query)
+            print()
         return 0
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -292,21 +407,15 @@ def main() -> int:
         for repeat in range(1, args.repeats + 1):
             done += 1
             tag = f"{task['id']}-{repeat}"
-            query = task["query"].format(base=spec["base_url"])
-            strategy = None
-            if args.targeting:
-                # Through the planner rather than straight to the strategy table. The plan
-                # is checked for soundness before the agent ever sees it, and `render`
-                # returns the frozen strategy text unchanged, so a run planned this way
-                # receives the same bytes it would have received before. Verified over every
-                # question by `planner.py --regression`. A plan that fails verification
-                # raises rather than running, because paying a model to execute a plan
-                # already known to be unsound buys nothing.
-                query, strategy = planner_module.planned_query(query)
-            if args.exhaustive:
-                query = policy_module.exhaustive_query(query)
-            if args.confidence != "off":
-                query = policy_module.confidence_query(query, args.confidence)
+            query, applied = build_query(task, spec, args)
+            strategy = applied["strategy"]
+            if query is None:
+                # The box asked and no scripted reply was given. The ask is the outcome:
+                # no agent runs and nothing is spent.
+                row = asked_row(task, repeat, applied["box"])
+                rows.append(row)
+                print(f"[{done}/{total}] {tag:32} {row['verdict']:10} the box asked")
+                continue
             record = run_once(task, spec["base_url"], out_dir, tag, query=query,
                               scaffold=args.scaffold, shop=args.shop, probe=args.probe)
             result = record.get("result") or {}
@@ -326,9 +435,13 @@ def main() -> int:
                 answer, record, result, trace, check = apply_policy(
                     args.policy, task, spec, answer, record, out_dir, tag,
                     confidence=args.confidence, reason=reason,
-                    scaffold=args.scaffold, shop=args.shop, probe=args.probe)
+                    scaffold=args.scaffold, shop=args.shop, probe=args.probe,
+                    page=applied["page"])
 
-            verdict = scoring.score(task, answer, bool(result.get("ok")))
+            # Scored against the key for the reading the scripted user chose, when the
+            # sidecar has one for this task, and against the task's own key otherwise.
+            verdict = scoring.score(scoring.under_reading(task, args.reading, readings),
+                                    answer, bool(result.get("ok")))
             row = {
                 "task": task["id"], "family": task["family"], "gated": task["gated"],
                 "repeat": repeat,
@@ -344,6 +457,11 @@ def main() -> int:
             }
             if strategy:
                 row["strategy"] = strategy
+            if args.box:
+                # The page the box read, whether it asked, the reading and the exact
+                # query, so a run under the box says what produced it.
+                row["box"] = applied["box"]
+                row["reading"] = args.reading
             if args.confidence != "off":
                 row["confidence"] = confidence
                 row["confidence_reason"] = reason
@@ -352,6 +470,11 @@ def main() -> int:
                 row.update({"policy": args.policy, "flag": check.get("flag"),
                             "flag_why": check.get("why"),
                             "opened": check.get("opened"),
+                            # The market size and floor the check used, and where they
+                            # came from: the page under the box, the answer key otherwise.
+                            "population": check.get("population"),
+                            "floor": check.get("floor"),
+                            "floor_from": check.get("floor_from", "answer key"),
                             "retried": bool(check.get("retried")),
                             "first_flag": check.get("first_flag"),
                             "first_why": check.get("first_why"),
@@ -369,8 +492,20 @@ def main() -> int:
                "confidence": args.confidence,
                "exhaustive": args.exhaustive,
                "targeting": args.targeting,
-               "targeting_version": targeting_module.VERSION if args.targeting else None,
-               "planner_version": planner_module.VERSION if args.targeting else None,
+               # The box plans through the same classifier and planner, so both versions
+               # are recorded under it too.
+               "targeting_version": (targeting_module.VERSION
+                                     if args.targeting or args.box else None),
+               "planner_version": (planner_module.VERSION
+                                   if args.targeting or args.box else None),
+               "box": args.box,
+               "box_version": box_module.VERSION if args.box else None,
+               "reading": args.reading,
+               # The pinned browser tool, which only openJiuwen on the gated shop gets:
+               # the naive loop drives its own browser, and the default shop leaves
+               # openJiuwen's own "latest" in place.
+               "browser_tool": (BROWSER_TOOL if args.scaffold == "openjiuwen"
+                                and args.shop == "gated" else None),
                # Which sufficiency rules judged this suite. A verdict that does not say
                # what judged it cannot be compared with one scored under different rules,
                # and the rules have now changed once.

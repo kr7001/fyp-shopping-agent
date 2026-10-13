@@ -1,0 +1,27 @@
+{
+  "_about": [
+    "The scripted user's second reading of the two ambiguous clothing questions, used by",
+    "suite.py --reading buyable and by verify_cells.py when a batch records that reading.",
+    "The word \"offer\" in apparel-all-stocked and apparel-count-stocked has two reasonable",
+    "readings on this shop, where a size can be in a listing's menu and sold out. The",
+    "task's own expect is the menu reading, fixed before any run: a sold out size counts",
+    "as offered. This file holds the buyable reading, derived on 8 October 2026 from the",
+    "same catalogue (README decision log, 2026-10-08, \"The word offer is ambiguous\"):",
+    "5 listings can sell size M now, which is _instance.listings_target_buyable, and",
+    "\"does every listing offer M\" is No under both readings, since under buyable a sold",
+    "out size is a counterexample too. Hand written, not generated, and checked against",
+    "the task file by tests/test_box.py."
+  ],
+  "readings": {
+    "buyable": {
+      "apparel-count-stocked": {
+        "kind": "count",
+        "value": 5
+      },
+      "apparel-all-stocked": {
+        "kind": "boolean",
+        "value": false
+      }
+    }
+  }
+}
