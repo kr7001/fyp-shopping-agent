@@ -3950,7 +3950,7 @@ window.SITE = {
   "sections": [
    {
     "title": "Week 1, 9 to 15 October: box v1, specified and built",
-    "html": "<ul><li><strong>Day 1: a one page spec for your approval.</strong> Input: the question and the first results page. Output: a plan handed to openJiuwen, or a question back to the user. Two question types: the cheapest size M that can be bought, and the ambiguous \"offer\" questions. It lists what the box may never read: the fixture, the answer keys, <code>_instance</code></li><li><strong>Protect the evidence before spending anything.</strong> Pin the browser tool to the version the runs used instead of <code>@latest</code>. Back up the raw logs privately. Fix the two September scripts that pool across model and scaffold. All free</li><li><strong>Make the free checks show the truth.</strong> <code>--dry-run</code> prints the exact text each arm sends, from the same code path the paid loop uses</li><li><strong>Coder builds the box</strong>, with a dry run that prints the exact text openJiuwen will receive, and a test where each rule must fire and one where it must stay quiet. Its refusal check takes the market size and the floor from the page, never from the answer key</li><li><strong>The scripted user.</strong> When the box asks back, a scripted reply picks one reading, and the final answer is scored against that reading's key. Clear questions are the control: the box should not ask on them</li><li><strong>Verifier pass</strong>, then the stamp</li><li><em>Done when:</em> the spec is approved, the box is committed with its tests, and the verifier has passed it</li></ul>"
+    "html": "<ul><li><strong>Day 1: a one page spec for your approval.</strong> Input: the question and the first results page. Output: a plan handed to openJiuwen, or a question back to the user. Two question types: the cheapest size M that can be bought, and the ambiguous \"offer\" questions. It lists what the box may never read: the fixture, the answer keys, <code>_instance</code></li><li><strong>Protect the evidence before spending anything.</strong> Pin the browser tool to the version the runs used instead of <code>@latest</code>. Back up the raw logs privately. Fix the two September scripts that pool across model and scaffold. All free</li><li><strong>Make the free checks show the truth.</strong> <code>--dry-run</code> prints the exact text each arm sends, from the same code path the paid loop uses. Done 14 October</li><li><strong>Coder builds the box</strong>, with a dry run that prints the exact text openJiuwen will receive, and a test where each rule must fire and one where it must stay quiet. Its refusal check takes the market size and the floor from the page, never from the answer key</li><li><strong>The scripted user.</strong> When the box asks back, a scripted reply picks one reading, and the final answer is scored against that reading's key. Clear questions are the control: the box should not ask on them</li><li><strong>Verifier pass</strong>, then the stamp</li><li><em>Done when:</em> the spec is approved, the box is committed with its tests, and the verifier has passed it</li></ul>"
    },
    {
     "title": "Week 2, 16 to 22 October: first measurement, then a fresh market",
@@ -3974,16 +3974,111 @@ window.SITE = {
    }
   ]
  },
+ "today": {
+  "intro": "<p>Written overnight on 13 to 14 October for the student's 6 am review, before the 4 pm supervisor meeting. Everything below that cost nothing has been done. Everything that costs money waits for the student's yes at 7 am. Figures in this page come from commands named beside them.</p>",
+  "sections": [
+   {
+    "title": "Where week 1 stands",
+    "html": "<p>Last week's plan for week 1 (9 to 15 October) had seven items. Status at 2 am on 14 October:</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Planned</th><th>Done</th><th>Evidence</th></tr></thead><tbody><tr><td>A one page spec for the box, for approval</td><td><strong>Drafted</strong>, with the evidence for each of its eight decisions</td><td><code>docs/content/box-v1-spec.md</code>, the \"Box v1 spec\" page</td></tr><tr><td>Pin the browser tool</td><td><strong>Done</strong>, at 0.0.83. npm's latest is still 0.0.83, the version every cell used, so nothing changes today and nothing can change mid-study</td><td><code>npm view @playwright/mcp version</code></td></tr><tr><td>Back up the raw logs privately</td><td><strong>Not done.</strong> Needs a drive or a private folder the student chooses. 452 logs, 1.7 GB</td><td><code>find experiments/results -name '*.log'</code> lists 452 files</td></tr><tr><td>Fix the two September scripts that pool across model and agent</td><td><strong>Not done.</strong> Deferred behind the box. The site's September table is built per model and agent already</td><td>Problems page</td></tr><tr><td><code>--dry-run</code> prints the exact text</td><td><strong>Done</strong></td><td><code>make dry TASKS=tasks_apparel.json</code></td></tr><tr><td>The coder builds the box, with tests</td><td><strong>Built</strong> overnight from the spec, 90 tests pass, the frozen strategy text proven byte-identical</td><td>commits <code>5cac414</code> and <code>45b4425</code></td></tr><tr><td>The scripted user</td><td><strong>Done</strong>: <code>--reading menu</code> or <code>--reading buyable</code></td><td>the spec, decision 4</td></tr><tr><td>Verifier pass, then the stamp</td><td><strong>Pending</strong> the build</td><td></td></tr></tbody></table></div>\n<p>Honest summary for the supervisor: the box is specified and built with 90 passing tests, but no paid run of it exists yet. That is one week behind the plan's week 2 start, with two days of the week left. The reasons are recorded: 8 to 10 October went on re-deriving every published figure, rebuilding the repository and the site, and five verifier passes that found and fixed real overclaims. That work is what makes the box's measurement trustworthy.</p>"
+   },
+   {
+    "title": "What the free tests settled",
+    "html": "<p>Each decision in the spec was tested before being written down. The results that matter most:</p>\n<ol><li><strong>The box can read what the agent reads.</strong> The results page fetched over HTTP, with the agent's user agent, has the same 15 sellers at the same advertised prices in the same order as the agent's own whole-page card probe in a cell 2 log.</li><li><strong>The refusal check works from the page.</strong> Replayed over cells 1, 2 and 5 with the market size and the floor taken from the page instead of the answer key, it refuses 8 of the 9 answers that did not open what they needed, and none of the 26 correct answers. The answer key's numbers refuse 9. The miss is a misread advertised price, which the plan's \"choose the size, then look again\" step targets, not the check.</li><li><strong>The ambiguity rule asks on the right questions.</strong> On the six clothing questions it asks on the two \"offer\" questions and none of the clear four.</li><li><strong>A plan that opens 8 listings should cost about half of opening 15.</strong> Across the 45 openJiuwen runs on this market, each listing opened costs about 3.6 tool calls and $0.035. The regression predicts $0.25 a run at 8 opened and $0.50 at 15 (cell 5 measured $0.52). Only one run opened 7 and one opened 14, so the line is drawn mostly between the clusters at 4 and 15.</li></ol>\n<p>The commands: the replay and the regression are in the box's tests and in <code>experiments/analysis/cell_facts.py</code> after the build. The probe comparison reads <code>experiments/results/20261007T115021/apparel-target-price-1.log</code>.</p>"
+   },
+   {
+    "title": "The direction, and why",
+    "html": "<p><strong>Build the box as a pre-processing step with written rules, measure it on Thornwood today, and freeze it tomorrow for a fresh market.</strong> Three directions were considered:</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Direction</th><th>For</th><th>Against</th><th>Decision</th></tr></thead><tbody><tr><td>Rules read the page and plan (the spec)</td><td>Free, repeatable, auditable, every rule already tested on the stored runs</td><td>Each new question kind needs a rule</td><td><strong>v1</strong></td></tr><tr><td>A model writes the plan from the page</td><td>Generalises to question kinds the rules do not know</td><td>Costs per plan, varies between repeats, and on 18 September wrote one sound-looking plan to compare something the shop does not publish</td><td>v2, measured against v1</td></tr><tr><td>The ask-back goes through openJiuwen's own <code>ask_user</code> tool</td><td>Closest to how a product would behave</td><td>Makes the ask part of the agent's run, so the ask and the run cannot be scored separately</td><td>v2</td></tr></tbody></table></div>\n<p>Reviews stay out until next week: they gate by depth, the questions exist and have never run, and the box's first measurement should not mix two gating mechanisms.</p>"
+   },
+   {
+    "title": "The day",
+    "html": "<div class=\"table-wrap\"><table><thead><tr><th>Time</th><th>What</th><th>Who</th></tr></thead><tbody><tr><td>6 to 7 am</td><td>Review this page, the spec and the build. Decide the two open points below</td><td>student, with me</td></tr><tr><td>7 to 10 am</td><td>The verifier stamps the exact command. Pilot, then the development batch</td><td>the guard asks for each yes</td></tr><tr><td>10 to 12</td><td>Verify the batch from its raw files, every answer read. Figures into the site through <code>make site</code></td><td>verifier, then insights</td></tr><tr><td>12 to 4 pm</td><td>The report, from the skeleton on the \"Report\" page, filling the blanks from verified figures only</td><td>student, with me</td></tr></tbody></table></div>\n<p><strong>Open point 1: the budget.</strong> $43.39 is left on the key (read from the account on 14 October). The proposed runs:</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Run</th><th>Runs</th><th>Estimate</th><th>Basis</th></tr></thead><tbody><tr><td>Pilot: one price question, one count question, under <code>--reading menu</code></td><td>2</td><td>$1.05</td><td>cell 5's cost a run, the dearest arm</td></tr><tr><td>Development batch: the six questions, 3 repeats, <code>--reading menu</code></td><td>18</td><td>$9.45</td><td>the same</td></tr><tr><td>The two ambiguous questions, 3 repeats, <code>--reading buyable</code></td><td>6</td><td>$3.15</td><td>the same</td></tr><tr><td><strong>Today</strong></td><td><strong>26</strong></td><td><strong>$13.65</strong> at cell 5's cost, about $6.50 at the regression's</td><td></td></tr><tr><td>Week 2 and 3 claim run on a fresh market, three arms</td><td>60</td><td>$20 to $31</td><td>the plan's budget table</td></tr></tbody></table></div>\n<p>The exact commands, in the order they run. Each needs the verifier's stamp at the committed code, and the guard asks for a yes before anything is spent:</p>\n<p>``` IGR_ESTIMATE_USD=1.05 caffeinate -i python3 experiments/runners/suite.py \\ --tasks experiments/tasks/tasks_apparel.json --repeats 1 --box --reading menu \\ --policy gate --only apparel-cheapest-target apparel-count-buyable</p>\n<p>IGR_ESTIMATE_USD=9.45 caffeinate -i python3 experiments/runners/suite.py \\ --tasks experiments/tasks/tasks_apparel.json --repeats 3 --box --reading menu --policy gate</p>\n<p>IGR_ESTIMATE_USD=3.15 caffeinate -i python3 experiments/runners/suite.py \\ --tasks experiments/tasks/tasks_apparel.json --repeats 3 --box --reading buyable \\ --policy gate --only apparel-all-stocked apparel-count-stocked ```</p>\n<p><code>--policy gate</code> switches the box's refusal check on. It adds no browser action and no cost, and every raw answer stays in the run record, so the batch can be compared with cells 1 and 5 on raw answers and still show what the box would have refused.</p>\n<p><strong>Open point 2: what to freeze.</strong> If the pilot shows the agent follows the plan, the batch runs as is. If it shows a defect in the plan's wording, fix it, bump <code>box.VERSION</code>, and run the batch on the fixed version. Either way the box is frozen at the end of today, and Thornwood is spent for it.</p>"
+   },
+   {
+    "title": "What is not yet done, in plain terms",
+    "html": "<ul><li>No paid run of the box has happened. Every figure about the box is a prediction or a replay.</li><li>The raw logs still live only on this laptop.</li><li>The fresh clothing market is not generated. It is tomorrow's first task after the freeze.</li><li>The September pooling scripts still print their pooled row.</li></ul>"
+   }
+  ]
+ },
+ "spec": {
+  "intro": "<p>Status: <strong>draft, for the student's approval on 14 October 2026.</strong> Written after the free tests listed under each decision. Nothing paid has run for it. Once approved, the coder builds exactly this, the verifier checks the build against it, and only then does a paid run start.</p>",
+  "sections": [
+   {
+    "title": "What the box is",
+    "html": "<p>A step that runs before openJiuwen. It reads the user's question and the first results page, and does one of two things:</p>\n<ol><li>hands openJiuwen a plan: how many listings there are, which to open and in what order, when to stop, and what counts as evidence, or</li><li>asks the user back, when the question has two reasonable readings and the readings give different answers.</li></ol>\n<p>After openJiuwen answers, the box's refusal check decides whether the answer is supported by what the run opened, using only numbers it read from the page.</p>"
+   },
+   {
+    "title": "What it may read, and what it never reads",
+    "html": "<div class=\"table-wrap\"><table><thead><tr><th>May read</th><th>Never reads</th></tr></thead><tbody><tr><td>The question text</td><td>A fixture in <code>env/fixtures/</code></td></tr><tr><td>The first results page, fetched over HTTP with the same user agent the agent's browser uses: how many listings, each seller, its advertised price, its URL, whether there is a next page</td><td>An answer key: a task's <code>expect</code>, a market's <code>_instance</code>, a manifest's <code>ground_truth</code></td></tr><tr><td>The scripted user's reply to its own question</td><td>A hard-coded seller, price or market size</td></tr><tr><td>After the run, the agent's answer and its log</td><td></td></tr></tbody></table></div>\n<p><code>experiments/tests/test_box.py</code> checks the box's files for every one of these, and plants each kind of read to prove the check can fail.</p>"
+   },
+   {
+    "title": "The eight decisions, with the evidence each rests on",
+    "html": "<p><strong>1. The box fetches the results page itself.</strong> One HTTP request with the gated user agent, parsed without a browser. <em>Evidence:</em> the fetched page holds 15 product cards, each with a seller, an \"As low as\" price and a URL, on one page with no pager. The agent's own whole-page card probe in a cell 2 log (<code>20261007T115021/apparel-target-price-1.log</code>) returns the same 15 prices in the same order. <em>Alternatives:</em> waiting for openJiuwen's first look needs a hook inside its runtime and, as shipped, sees four cards. A browser fetch adds nothing on a page Magento renders on the server. <em>Limit:</em> a shop that draws its cards with JavaScript would need the browser fetch.</p>\n<p><strong>2. Written rules, not a model, decide the plan.</strong> <code>targeting.classify</code> chooses the kind of answer the question needs and <code>planner.plan</code> builds the plan. <em>Evidence:</em> the planner regression renders every one of the 37 questions in the project correctly and passes its own soundness check (37 questions, 0 failures). On 18 September a model asked to write plans was sound in 7 of 8 with guidance, and its one miss was a plan no check could catch: comparing a delivery time the shop does not publish. Rules cost nothing, repeat exactly, and can be read. <em>Deferred to v2:</em> a model-written plan, measured against the rules' plan.</p>\n<p><strong>3. Ambiguity is found by a small lexicon, and the box asks before the agent starts.</strong> A question is ambiguous when it asks about a variant (size, pack, colour, option) with a verb that does not say which availability it means, \"offer\", \"carry\", \"stock\", \"have\", \"sell\", and nothing in it settles the reading, such as \"in stock\", \"available to buy\", \"can be bought\", \"can supply\", or \"listed\", \"in the menu\", \"even if sold out\". The box then asks: <em>\"On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists size M, sold out or not, or listings that can sell size M now?\"</em> <em>Evidence, free:</em> over the six clothing questions the rule asks on exactly the two \"offer\" questions and on none of the four clear ones. Over all 37 questions it also fires on the two water questions that say \"stock the pack\", which carry the same ambiguity; the water market never had a sold-out pack, so the two readings agreed there and no run could have shown it. The first draft of the rule matched \"seller\" through \"sell\"; the rule matches whole verbs only. <em>Why not a model:</em> a model call per question costs about a tenth of a cent and generalises further, but varies run to run; it is the v2 comparison. <em>Why ask before the agent starts:</em> openJiuwen has an <code>ask_user</code> tool, and routing the ask through it would make the ask part of the agent's run. v1 asks first, so the ask and the run can be scored separately. Routing it through the agent is v2.</p>\n<p><strong>4. The scripted user, and how an ask is scored.</strong> In a batch the scripted user is a flag, <code>--reading menu</code> or <code>--reading buyable</code>. When the box asks, the reply picks that reading and the box adds one sentence to the question before planning, so the agent sees no ambiguity: <em>\"By offer size M, I mean listings whose size menu includes M, whether or not it is sold out.\"</em> or <em>\"By offer size M, I mean listings that can sell size M now, so a sold-out M does not count.\"</em> The answer is then scored against that reading's key: the task's own key for <code>menu</code>, and a sidecar file, <code>experiments/tasks/readings_apparel.json</code>, for <code>buyable</code>, which holds the answers the project already derived for that reading on 8 October (count 5 instead of 10; \"every listing offers M\" is No under both, with a sold-out size also a counterexample). Without a <code>--reading</code>, a box that asks records the ask as the outcome, runs no agent and spends nothing. Two things are measured: whether the box asks on the right questions, which is a property of the box and costs nothing, and whether the final answer is right under each reading, which needs runs.</p>\n<p><strong>5. The plan gives the agent the listings.</strong> The box renders, in this order: the market size as read from the page (\"The results page lists 15 listings on one page; there is no next page\"), the listings with seller, advertised price and URL, sorted by advertised price, then the strategy text for the question's kind, the frozen v7 text minus its \"enumerate first\" preamble, which the box has now done. <em>Evidence that the order matters:</em> across the 45 openJiuwen runs on the clothing market, each extra listing opened costs about 3.6 tool calls and $0.035, and the bound lets a sound answer stop after the listings advertised at or below the best buyable price found. The regression over those runs predicts about $0.25 a run at 8 listings opened against $0.50 at 15 (cell 5 measured $0.52). <em>A fairness note:</em> the box hands the agent the URLs it read from the page. Cells 1 and 5 had to find them. That is the box's work, and it is stated as such.</p>\n<p><strong>6. The refusal check reads the page, not the answer key.</strong> The market size is the number of cards on the page. The floor for a \"cheapest\" answer is the number of listings advertised at or below the price the answer names, because every one of them could have beaten it and so must have been opened. A count must have opened every listing; a \"does every\" answer of No needs one counterexample. <em>Evidence, free replay over cells 1, 2 and 5:</em> with the page's numbers the check refuses 8 of the 9 answers that did not open what they needed, and 0 of the 26 correct answers. With the answer key's numbers it refuses 9 and 0. The one it misses (<code>cell 1, cheapest-target-3</code>) opened every listing its bound required and misread Copperfield's advertised $23.40 as its size-M price. No check that reads only the page can tell that from a correct answer, and it is the plan's \"choose the size, then look again\" step that targets it.</p>\n<p><strong>7. The browser tool is pinned at 0.0.83.</strong> <em>Evidence:</em> npm's latest <code>@playwright/mcp</code> is 0.0.83 today, and every clothing cell ran on 0.0.83. Pinning changes nothing now and stops a release changing the tool between the box's runs and the cells it is compared with.</p>\n<p><strong>8. A dry run prints the exact text the agent will receive.</strong> One function builds the final query for both the dry run and the paid loop, so what the verifier reads is what the agent gets (LESSONS 17).</p>"
+   },
+   {
+    "title": "The box's record",
+    "html": "<p>Every run under the box stores, beside the usual record: <code>box_version</code>, the kind the question was classified as, the page the box read (listing count, each seller, advertised price and URL), whether it asked and which reading was chosen, and the exact query sent. The verifier checks the stored page against the live shop.</p>"
+   },
+   {
+    "title": "How it is measured",
+    "html": "<div class=\"table-wrap\"><table><thead><tr><th>Stage</th><th>Where</th><th>Runs</th><th>Compared with</th></tr></thead><tbody><tr><td>Development</td><td>Thornwood, in sample for the box</td><td>the six questions, 3 repeats, the two ambiguous ones under both readings: 24 runs</td><td>cells 1 and 5, already measured on the same questions</td></tr><tr><td>The claim</td><td>a fresh clothing market, generated after the box is frozen</td><td>box, shipped and open-everything, same questions, 3 repeats</td><td>each other, within each question</td></tr></tbody></table></div>\n<p>Success, from <code>OBJECTIVE.md</code>: on the fresh market the box is more accurate than openJiuwen as shipped, costs less than opening everything, asks on the ambiguous questions and not on the clear ones. Tests are exact and stratified by question, as on the Results page. Development figures are reported as development figures.</p>"
+   },
+   {
+    "title": "Out of scope for v1",
+    "html": "<p>Review questions (they gate by depth, not by a click; the next week). Price-per-unit questions (water only). The ask routed through openJiuwen's own <code>ask_user</code>. Model-written plans. The second agent (a stretch goal in week 3). Shipping cost and combined discounts.</p>"
+   },
+   {
+    "title": "Files",
+    "html": "<div class=\"table-wrap\"><table><thead><tr><th>File</th><th>Holds</th></tr></thead><tbody><tr><td><code>experiments/box/page.py</code></td><td>Fetching and parsing the results page. Reads HTTP only</td></tr><tr><td><code>experiments/box/ambiguity.py</code></td><td>The lexicon, the question to the user, the rewritten questions</td></tr><tr><td><code>experiments/box/box.py</code></td><td><code>decide(question, page, reply=None)</code>: an ask or a plan, the final query, the record. <code>VERSION = 1</code></td></tr><tr><td><code>experiments/box/policy.py</code></td><td><code>gate_from_page(question, page, answer, log_path)</code> beside the existing <code>gate</code></td></tr><tr><td><code>experiments/runners/suite.py</code></td><td><code>--box</code>, <code>--reading</code>, the dry run that prints the text, the pinned browser tool</td></tr><tr><td><code>experiments/tasks/readings_apparel.json</code></td><td>The <code>buyable</code> reading's answers for the two ambiguous questions</td></tr><tr><td><code>experiments/tests/test_box.py</code></td><td>Every rule above, fired and quiet, and the never-reads check over every box file</td></tr></tbody></table></div>"
+   }
+  ]
+ },
+ "report": {
+  "intro": "<p>Status: <strong>skeleton, to be filled on 14 October from verified figures only.</strong> A blank in square brackets is filled after the verifier has passed the batch it refers to. Sections without blanks are complete.</p>",
+  "sections": [
+   {
+    "title": "Summary",
+    "html": "<p>[Three sentences: what the box is, what today's runs showed, what is next.]</p>"
+   },
+   {
+    "title": "1. Where we left off on 7 October",
+    "html": "<p>Three cells had been run on the clothing market: openJiuwen as shipped, openJiuwen with its card probe's window limit off, and the second agent. The finding was that the four listing behaviour comes from one default in the card probe, and that turning it off takes the agent from opening what the answer needs in 3 of 15 runs to 15 of 15.</p>"
+   },
+   {
+    "title": "2. What was re-derived and corrected, 8 to 10 October",
+    "html": "<ul><li>Every figure from cells 1 to 3 was recomputed from the raw run files. Three figures reported on 7 October were wrong and are corrected: one scorer rule, one definition, and the second agent's repeats, which at temperature 0 are 7 distinct runs of 15.</li><li>Cell 5, openJiuwen told to open everything: 11 of 15 correct under the key, all 15 opened what the answer needs, $0.52 a run, three times the shipped agent's cost.</li><li>The project now has one written objective, a lessons file of 32 entries, a workbench that refuses any paid command without a verifier pass and a declared cost, and three modules with one job each: coder, verifier, insights.</li><li>An independent verifier failed the first write-up four times and passed it on the fifth. What it found: the refusal check's replay only worked with two numbers from the answer key, the September result was stronger on the page than in the runs, and one quoted figure was wrong. All corrected, with the record kept.</li><li>The repository was reorganised, 41 unit tests added, and one site now holds every verified figure, generated from the run files.</li></ul>"
+   },
+   {
+    "title": "3. The pre-processing box",
+    "html": "<p><strong>The idea.</strong> A step before the agent reads the question and the first results page. It hands the agent a plan, or asks the user back when the question is ambiguous. After the run, its refusal check decides from the page alone whether the answer is supported.</p>\n<p><strong>What each error kind gets.</strong> From the 8 October error analysis (<code>make facts</code>, section D, cells 1, 2 and 5, distinct runs):</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Error kind in cells 1, 2, 5</th><th>Runs</th><th>The box's answer</th></tr></thead><tbody><tr><td>Did not open what the answer needs</td><td>9</td><td>The plan lists every listing and its advertised price, and says which to open</td></tr><tr><td>Read \"offer\" as \"can sell it now\"</td><td>8</td><td>The box asks the user which reading they mean</td></tr><tr><td>Read the price before the page revealed it</td><td>6</td><td>The plan says choose the size, then look again</td></tr><tr><td>Ran out of 100 steps</td><td>2</td><td>The plan skips listings the advertised price rules out</td></tr><tr><td>Named a seller that cannot sell M</td><td>1</td><td>The plan says check the size can be chosen</td></tr></tbody></table></div>\n<p><strong>Decisions, each with its evidence.</strong> See the \"Box v1 spec\" page for the eight decisions. The three that matter most: the page fetched over HTTP shows the same 15 prices the agent's own probe shows; the refusal check with page-derived numbers refuses 8 of the 9 coverage failures and no correct answer; the ambiguity rule asks on exactly the two \"offer\" questions.</p>"
+   },
+   {
+    "title": "4. The box on Thornwood, development runs",
+    "html": "<p>[Table: cell 1, cell 5 and the box, the five gated questions: correct under the key, opened what it needs, median listings opened, tool calls a run, cost a run. From <code>make facts</code> after the batch is verified.]</p>\n<p>[The ambiguous questions under each reading: asked, then correct against that reading's key.]</p>\n<p>[Tests by question against cell 1 and cell 5, p by question.]</p>\n<p>[What went wrong, run by run, from section D of <code>make facts</code>.]</p>\n<p>[Cost: the batch's charges against the account.]</p>\n<p>This is development: the box was designed on this market, so these are not the claim.</p>"
+   },
+   {
+    "title": "5. What did not work, and limits",
+    "html": "<p>[From the verified batch: any plan the agent did not follow, any refusal of a correct answer, anything the page could not tell.]</p>\n<p>Standing limits: one market family, one model, our shop's 60 ms price reveal, the two agents' different sampling and clocks, the refusal check's one blind spot (a misread advertised price), shipping cost and combined discounts out of scope.</p>"
+   },
+   {
+    "title": "6. Next week",
+    "html": "<ul><li>Freeze box v1. Generate a fresh clothing market with a new seed, seed it, verify it in a browser, write its question file with both readings stated before any run.</li><li>The claim run: shipped, open everything, and the box, on the fresh market, 3 repeats.</li><li>Then the review questions, which gate by depth and have never run.</li></ul>"
+   },
+   {
+    "title": "7. Spend",
+    "html": "<p>[Spend today, and the balance, from the account.] Before today: $56.61 of the $100 key used, $43.39 left.</p>"
+   }
+  ]
+ },
  "open": {
   "intro": "<p>Problems that are known and not yet fixed, most important first. Solved ones are the lessons in <code>LESSONS.md</code>, each with the rule it produced. Side ideas are in <code>PARKED.md</code>. When one of these is fixed, move it into the decision log with the date, and take it off this list.</p>",
   "sections": [
    {
-    "title": "The refusal check reads the answer key",
-    "html": "<p><code>policy.gate</code> passes two numbers from the market's <code>_instance</code> to the sufficiency check: how many listings the market has, and the fewest a sound answer must open. With them, the replay over the clothing cells refuses all 9 coverage failures in cell 1. Without them it refuses none (checked 9 October). The September gate arms ran on the version of 10 September, which read the market size from the answer key but not yet the floor, added on 18 September. So the check, as built, is an evaluation tool that knows the answer, not yet part of the box. The market size alone does most of the work: given only that, the replay still refuses all 9, and refuses one correct answer in cell 2 that the floor would have spared. The floor alone refuses 5. Box v1 must read what it needs from the page: the results page shows how many listings there are, and the advertised prices bound how many cannot be ruled out. <em>Week 1.</em></p>"
+    "title": "The box has not had a paid run",
+    "html": "<p>Box v1 is built and tested, and every figure about it is a replay or a prediction. The development batch on Thornwood is proposed on the Today page with its estimate. Until it runs and is verified, nothing about the box is a result. <em>Today, with the student's yes.</em></p>"
    },
    {
-    "title": "`--dry-run` lists the tasks, not what the agent receives",
-    "html": "<p><code>suite.py --dry-run</code> prints each task's id and answer kind. The strategy, plan, \"open everything\" and confidence wrappers are added only inside the paid loop, so no free command shows the exact text an agent will receive (LESSONS 17). Build one path that both the dry run and the paid loop use. <em>Week 1.</em></p>"
+    "title": "The refusal check's one blind spot",
+    "html": "<p>With the market size and the floor read from the page, the check refuses 8 of the 9 coverage failures in cell 1 and no correct answer. The ninth opened every listing its bound required and misread an advertised price as the size's price, which no check that reads only the page can tell from a correct answer. The plan's \"choose the size, then look again\" step targets it, and the development batch will show whether it works. <em>Measured today.</em></p>"
    },
    {
     "title": "`verify_cells.py` reads Thornwood's answers by name",
@@ -4027,7 +4122,7 @@ window.SITE = {
   "unit": [
    {
     "file": "experiments/tests/test_box.py",
-    "doc": "The box's front half: the question classifier and the planner.",
+    "doc": "The box: the question classifier, the planner, the ambiguity lexicon, the decision, the page-derived refusal check, and the suite's one query builder.",
     "classes": [
      {
       "name": "Classifier",
@@ -4045,12 +4140,82 @@ window.SITE = {
       ]
      },
      {
+      "name": "Bodies",
+      "doc": "The box sends the strategy without its enumeration step, and the strategy table the\nrecorded runs received is built from the same bodies, so neither can drift.",
+      "tests": [
+       "strategies are the bodies with the enumeration step where it belongs"
+      ]
+     },
+     {
+      "name": "Ambiguity",
+      "doc": "LESSONS 16: the two readings of \"offer\" are caught before anything is spent.",
+      "tests": [
+       "asks on the two offer questions and on none of the four clear ones",
+       "the verb and the users own phrase are quoted back",
+       "seller is not sell",
+       "a question without a variant word is clear",
+       "carry the pack asks",
+       "in stock settles it",
+       "the verb must govern the variant",
+       "every clear phrase silences an ask",
+       "every verb and variant word fires and only as a whole word",
+       "with reading appends the sentence and refuses an unknown one",
+       "over every question the project asks"
+      ]
+     },
+     {
+      "name": "Decide",
+      "doc": "",
+      "tests": [
+       "the synthetic market is nobodys",
+       "clear questions plan and ambiguous ones ask",
+       "a reply plans the ambiguous questions under that reading",
+       "the query states the market and lists sellers by advertised price",
+       "a next page is told to the agent",
+       "an unknown reply raises",
+       "a reply to a clear question is ignored",
+       "the record carries the versions and the page",
+       "results url is the first url in the question"
+      ]
+     },
+     {
+      "name": "GateFromPage",
+      "doc": "LESSONS 32: the refusal check reads the market size and the floor from the page.",
+      "tests": [
+       "a cheapest answer with too few opened is refused",
+       "a cheapest answer that covered its bound passes",
+       "a count without the whole page is refused",
+       "a count over the whole page passes",
+       "the floor counts listings advertised at or below the price named"
+      ]
+     },
+     {
+      "name": "ReadingsSidecar",
+      "doc": "The scripted user's second reading: real tasks, valid keys, the catalogue's own count.",
+      "tests": [
+       "the sidecar names real tasks with keys the scorer accepts",
+       "under reading uses the sidecar key and falls back to the tasks own"
+      ]
+     },
+     {
+      "name": "SuiteQuery",
+      "doc": "LESSONS 17: the dry run and the paid loop build the text through one function.",
+      "tests": [
+       "the box asks without a reading and plans with one",
+       "without the box the text is as before",
+       "an asked row spends nothing and runs nothing",
+       "the box and a strategy flag are refused",
+       "the browser tool is pinned and the user agent defined once"
+      ]
+     },
+     {
       "name": "NoAnswerKey",
-      "doc": "The parts of the box that run before the agent decide from the question alone.",
+      "doc": "The parts of the box that run before the agent decide from the question and the page.",
       "tests": [
        "reads no answer key or fixture",
        "copies no seller or price",
        "the checks catch a planted read",
+       "only the page module fetches",
        "only the answer checks read the answer key"
       ]
      }
@@ -4106,6 +4271,15 @@ window.SITE = {
        "no difference anywhere gives one",
        "a consistent difference is detected"
       ]
+     },
+     {
+      "name": "ReadingKey",
+      "doc": "A batch scored under the scripted user's second reading is re-scored under it too,\notherwise every such run would be reported as a stored-against-re-scored mismatch.",
+      "tests": [
+       "the rows reading uses the sidecar key",
+       "without a reading the tasks own key stands",
+       "the batch reading applies when the row has none"
+      ]
      }
     ]
    },
@@ -4142,6 +4316,36 @@ window.SITE = {
        "every named path exists",
        "the path check catches an old path",
        "every batch finds its task file"
+      ]
+     }
+    ]
+   },
+   {
+    "file": "experiments/tests/test_page.py",
+    "doc": "The box's one look at the shop: the results page parser, on markup it must read, markup it must refuse, and the live shop when it is up.",
+    "classes": [
+     {
+      "name": "Parser",
+      "doc": "",
+      "tests": [
+       "the synthetic market is nobodys",
+       "three cards parse in order",
+       "the sidebar link is not a card",
+       "a next link is seen and the total is the last toolbar number",
+       "a card without a price is refused",
+       "a page without cards is refused",
+       "a toolbar count the cards do not add up to is refused",
+       "a page without a toolbar has no total",
+       "the seller is the name after the last dash",
+       "by price sorts by price then seller",
+       "the record holds what the verifier checks"
+      ]
+     },
+     {
+      "name": "LiveShop",
+      "doc": "",
+      "tests": [
+       "the clothing results page reads whole"
       ]
      }
     ]
@@ -4285,8 +4489,8 @@ window.SITE = {
   },
   "count_rule": {
    "file": "experiments/analysis/score.py",
-   "start": 137,
-   "end": 142,
+   "start": 159,
+   "end": 164,
    "code": "        numbers = list(re.finditer(r\"(?<![\\d.$])(\\d{1,3})(?![\\d.])\", answer or \"\"))\n        if not numbers:\n            return {\"verdict\": \"ambiguous\", \"why\": \"no number given\", \"prices\": found}\n        coverage = {m.start(1) for m in COVERAGE_NUMBER.finditer(answer or \"\")}\n        kept = [m for m in numbers if m.start(1) not in coverage]\n        stated = int((kept or numbers)[0].group(1))"
   },
   "stratified": {
@@ -4315,17 +4519,18 @@ window.SITE = {
   "source": "README decision log, 8 October 2026"
  },
  "built": {
-  "commit": "81f520d",
-  "date": "2026-10-10",
+  "commit": "45b4425",
+  "date": "2026-10-14",
   "branch": "dev",
-  "dirty": false,
+  "dirty": true,
   "repo": "https://github.com/kr7001/fyp-shopping-agent",
   "agent_core": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
   "commits_by_week": {
    "2026-08-24": 1,
    "2026-09-07": 44,
    "2026-09-14": 49,
-   "2026-10-05": 44
+   "2026-10-05": 45,
+   "2026-10-12": 2
   }
  }
 };

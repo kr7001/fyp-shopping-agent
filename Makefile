@@ -18,7 +18,7 @@ help:
 	@echo "make facts        every clothing-cell figure on the results page, from the raw runs"
 	@echo "make compare      the cell comparisons, with both readings of 'offer'"
 	@echo "make verify BATCH=experiments/results/<stamp>   re-derive one batch, every answer in full"
-	@echo "make dry TASKS=tasks_apparel.json                the tasks a suite would run, running nothing"
+	@echo "make dry TASKS=tasks_apparel.json                the exact text each task would send, sending nothing"
 	@echo "make site         rebuild docs/site-data.js from the run files"
 	@echo "make site-check   fail if docs/site-data.js is stale"
 

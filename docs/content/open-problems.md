@@ -4,25 +4,19 @@ Problems that are known and not yet fixed, most important first. Solved ones are
 in `LESSONS.md`, each with the rule it produced. Side ideas are in `PARKED.md`. When one of
 these is fixed, move it into the decision log with the date, and take it off this list.
 
-## The refusal check reads the answer key
+## The box has not had a paid run
 
-`policy.gate` passes two numbers from the market's `_instance` to the sufficiency check: how many
-listings the market has, and the fewest a sound answer must open. With them, the replay over the
-clothing cells refuses all 9 coverage failures in cell 1. Without them it refuses none (checked 9
-October). The September gate arms ran on the version of 10 September, which read the market
-size from the answer key but not yet the floor, added on 18 September. So the check, as built, is
-an evaluation tool that knows the answer, not yet part of the box. The market size alone does most
-of the work: given only that, the replay still refuses all 9, and refuses one correct answer in
-cell 2 that the floor would have spared. The floor alone refuses 5. Box v1 must read what it
-needs from the page: the results page shows how many listings there are, and the advertised
-prices bound how many cannot be ruled out. *Week 1.*
+Box v1 is built and tested, and every figure about it is a replay or a prediction. The
+development batch on Thornwood is proposed on the Today page with its estimate. Until it runs
+and is verified, nothing about the box is a result. *Today, with the student's yes.*
 
-## `--dry-run` lists the tasks, not what the agent receives
+## The refusal check's one blind spot
 
-`suite.py --dry-run` prints each task's id and answer kind. The strategy, plan, "open everything"
-and confidence wrappers are added only inside the paid loop, so no free command shows the exact
-text an agent will receive (LESSONS 17). Build one path that both the dry run and the paid loop
-use. *Week 1.*
+With the market size and the floor read from the page, the check refuses 8 of the 9 coverage
+failures in cell 1 and no correct answer. The ninth opened every listing its bound required and
+misread an advertised price as the size's price, which no check that reads only the page can
+tell from a correct answer. The plan's "choose the size, then look again" step targets it, and
+the development batch will show whether it works. *Measured today.*
 
 ## `verify_cells.py` reads Thornwood's answers by name
 
