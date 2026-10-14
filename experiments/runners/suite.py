@@ -483,6 +483,13 @@ def main() -> int:
         print(f"note: {args.tasks} has moved, reading {paths.TASKS / args.tasks.name}")
         args.tasks = paths.TASKS / args.tasks.name
     spec = json.loads(args.tasks.read_text())
+    # An id that names no task is an error, by name. Until 14 Oct 2026 it was dropped
+    # without a word, so a misspelt --only ran the rest as if nothing were missing
+    # (verifier finding at 7d2ec2e).
+    known = {t["id"] for t in spec["tasks"]}
+    unknown = [task_id for task_id in args.only or [] if task_id not in known]
+    if unknown:
+        parser.error(f"--only names a task that is not in {args.tasks.name}: {', '.join(unknown)}")
     tasks = [t for t in spec["tasks"] if not args.only or t["id"] in args.only]
     if not tasks:
         print("no matching tasks")

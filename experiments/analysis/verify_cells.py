@@ -32,6 +32,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import score as scoring  # noqa: E402
 import sufficiency  # noqa: E402
+import suite as suite_module  # noqa: E402  (for box_counts, the one rule for the box's counts)
 import trace_stats  # noqa: E402
 
 FIXTURE = paths.FIXTURES / "scaled_apparel.json"
@@ -314,6 +315,19 @@ def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: boo
     def correct(rows, key):
         return sum(1 for r in rows if r[key] == "correct")
 
+    # A run with no answer key is read by hand, never judged: score.py v2's "none" kind,
+    # a question the box is expected to ask on, refuse or bypass, that ran anyway. It is
+    # counted on its own line and kept out of every correct-of ratio, which until 14 Oct
+    # 2026 showed it as 0 of 1 correct (verifier finding at 7d2ec2e). The floor and
+    # coverage lines still count it, since what it opened is a fact whatever its key.
+    def keyed(rows):
+        return [r for r in rows if r["rescored"] != "unscored"]
+
+    def ratio(rows):
+        scored = keyed(rows)
+        return f"{correct(scored, 'rescored')}/{len(scored)}" if scored else "unscored"
+
+    unscored = [r for r in runs if r["rescored"] == "unscored"]
     cost = sum(r["cost"] or 0 for r in runs)
     before = [r["spend_before"] for r in runs if r["spend_before"] is not None]
     # The reading the batch was scored under, shown only when it had one, so the output
@@ -324,15 +338,26 @@ def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: boo
     print(f"runs {len(runs)}  settings: shop={sorted({r['shop'] for r in runs})} "
           f"probe={sorted({str(r['probe']) for r in runs})} "
           f"probe line={sorted({str(r['probe_line']) for r in runs})}")
-    # A slot the box answered with a question has no run record to re-derive, so it is
-    # counted here rather than silently missing from the runs above.
-    asked = [row for row in suite["rows"] if row.get("verdict") == "asked"]
-    if asked:
-        print(f"asked           {len(asked)} rows: the box asked the user and no agent ran")
-    print(f"gated correct   stored {correct(gated, 'stored')} of {len(gated)}, "
-          f"re-scored {correct(gated, 'rescored')} of {len(gated)}")
-    print(f"control correct stored {correct(control, 'stored')} of {len(control)}, "
-          f"re-scored {correct(control, 'rescored')} of {len(control)}")
+    # A slot the box closed without running the agent has no run record to re-derive, so
+    # it is listed here rather than silently missing from the runs above: the box asked
+    # the user, or (box v2) refused because the shop does not show what the question
+    # needs. Each row with its text, since the text is the whole outcome. Refused rows
+    # went unmentioned until 14 Oct 2026 (verifier finding at 7d2ec2e).
+    for verdict, what in (("asked", "the box asked the user and no agent ran"),
+                          ("refused", "the box refused and no agent ran")):
+        closed = [row for row in suite["rows"] if row.get("verdict") == verdict]
+        if closed:
+            print(f"{verdict:16}{len(closed)} rows: {what}")
+            for row in closed:
+                print(f"  {row['task']}-{row['repeat']}: {row['answer']}")
+    if unscored:
+        tags = ", ".join(f"{r['task']}-{r['repeat']}" for r in unscored)
+        print(f"unscored        {len(unscored)} runs: no answer key, read by hand with "
+              f"--answers: {tags}")
+    print(f"gated correct   stored {correct(gated, 'stored')} of {len(keyed(gated))}, "
+          f"re-scored {correct(gated, 'rescored')} of {len(keyed(gated))}")
+    print(f"control correct stored {correct(control, 'stored')} of {len(keyed(control))}, "
+          f"re-scored {correct(control, 'rescored')} of {len(keyed(control))}")
     print(f"met own floor   {count(gated, 'met_floor')} of {len(gated)}   "
           f"(old measure, eight for every question: {count(gated, 'met_eight')} of "
           f"{len(gated)})")
@@ -345,11 +370,23 @@ def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: boo
     if before:
         print(f"account spend   before the first run ${min(before):.4f}")
     print(f"runs with an error: {[(r['task'], r['repeat'], r['error']) for r in runs if r['error']] or 'none'}")
+    # What the box did over the batch, as the payload counted it (box v2, 14 Oct 2026),
+    # checked against the rows it was counted from with the suite's own rule. A batch
+    # before the counts, or without the box, has none and prints nothing here.
+    counts = (suite.get("summary") or {}).get("box")
+    if counts:
+        derived = suite_module.box_counts(suite["rows"])
+        line = f"box             {box_line(counts)}"
+        if derived != counts:
+            line += f"   (the rows say {box_line(derived)})"
+            problem(f"box counts in the payload, {box_line(counts)}, differ from the rows, "
+                    f"{box_line(derived)}")
+        print(line)
     print("\nper question     own floor  met  covered  correct  opened")
     for task_id in dict.fromkeys(r["task"] for r in runs):
         rows = [r for r in runs if r["task"] == task_id]
         print(f"  {task_id:26} {rows[0]['floor']:>3}  {count(rows, 'met_floor')}/{len(rows)}  "
-              f"{count(rows, 'covered')}/{len(rows)}      {correct(rows, 'rescored')}/{len(rows)}"
+              f"{count(rows, 'covered')}/{len(rows)}      {ratio(rows)}"
               f"      {[r['opened'] for r in rows]}")
     print(f"\nproblems found: {len(problems)}")
     for text in problems:
@@ -363,6 +400,12 @@ def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: boo
                   f"{r['selections'][:6]}, ${r['cost']}")
             print("  " + (r["answer"] or "(no answer)").replace("\n", "\n  "))
     return {"batch": batch.name, "runs": runs, "problems": problems, "cost": cost}
+
+
+def box_line(counts: dict) -> str:
+    """The box's four counts in the order the suite prints them."""
+    return (f"asked {counts['asked']}, refused {counts['refused']}, "
+            f"bypassed {counts['bypassed']}, fallback {counts['fallback']}")
 
 
 def main() -> int:
