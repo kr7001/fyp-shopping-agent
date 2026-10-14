@@ -1,0 +1,81 @@
+{
+  "ran_at": "2026-10-14T22:19:56",
+  "provider": "openrouter",
+  "model": "anthropic/claude-haiku-4.5",
+  "query": "What is the capital of Portugal?",
+  "elapsed_s": 14.0,
+  "cost_usd": 0.008516,
+  "cost_note": null,
+  "spend_before_usd": 63.46312666,
+  "spend_after_usd": 63.54616896,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "d5df8deed374441fbf9a8e2b14ff40a1",
+    "final": "The capital of Portugal is Lisbon.",
+    "page": {
+      "url": "about:blank",
+      "title": ""
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 4,
+    "actions": 3,
+    "observations": 1,
+    "unclassified_tools": [],
+    "assistant_turns": 4,
+    "by_tool": {
+      "browser_navigate": 3,
+      "browser_take_screenshot": 1
+    },
+    "selections": [],
+    "opened": [
+      "https://www.google.com",
+      "https://www.bing.com",
+      "https://en.wikipedia.org/wiki/Portugal"
+    ],
+    "steps": [
+      {
+        "tool": "browser_take_screenshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "https://www.google.com"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "https://www.bing.com"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "https://en.wikipedia.org/wiki/Portugal"
+      }
+    ],
+    "sequence": [
+      "browser_take_screenshot",
+      "browser_navigate",
+      "browser_navigate",
+      "browser_navigate"
+    ],
+    "tokens": {
+      "prompt": 45279,
+      "completion": 528,
+      "total": 45807,
+      "calls": 5
+    },
+    "cost_reported_usd": 0.008516
+  },
+  "spend_delta_usd": 0.083042,
+  "log": "bypass-capital-1.log",
+  "shop": "gated",
+  "probe": "viewport",
+  "scaffold": "openjiuwen"
+}
