@@ -169,7 +169,11 @@ class NewForms(unittest.TestCase):
         for question, k in ((GO + "Which are the three cheapest sellers for size M?", 3),
                             (GO + "List the top 3 sellers by price for size M.", 3),
                             (GO + "Name the cheapest three sellers for size M.", 3),
-                            (GO + "Which are the 5 cheapest sellers for size L?", 5)):
+                            (GO + "Which are the 5 cheapest sellers for size L?", 5),
+                            # The count before "sellers" and the superlative elsewhere.
+                            # Parsed as the single cheapest until 14 Oct 2026 (verifier).
+                            (GO + "Which three sellers offer size M cheapest?", 3),
+                            (GO + "Which 3 sellers are cheapest for size M?", 3)):
             with self.subTest(question=question):
                 parsed = form.from_rules(question)
                 self.assertEqual((parsed.quantifier, parsed.objective, parsed.k, parsed.kind()),
@@ -179,6 +183,12 @@ class NewForms(unittest.TestCase):
         self.assertEqual(form.from_rules(GO + "Name three listings that have size M in stock.").quantifier,
                          "aggregate")
         self.assertEqual(form.from_rules(CHEAPEST_M).quantifier, "argmin")
+        # A count after "the" or "these" names the population, not a k.
+        for question in (GO + "Of the three listings, which is cheapest?",
+                         GO + "Among these three sellers, which is cheapest for size M?"):
+            with self.subTest(question=question):
+                parsed = form.from_rules(question)
+                self.assertEqual((parsed.quantifier, parsed.k), ("argmin", None))
 
     def test_a_named_comparison(self):
         two_urls = (f"Two sellers list it: {BASE}/example-tee-01.html (Seller A) and "
@@ -413,6 +423,24 @@ class Checks(unittest.TestCase):
         self.assertTrue(self.check(exists, no, self.observed("Seller A", "Seller B", "Seller C",
                                                              "Seller D", "Seller E"))["ok"])
 
+    def test_witness_named_without_a_yes(self):
+        # Verifier finding, 14 Oct 2026: an answer that names its witness without the word
+        # "yes" passed with nothing opened. It is an affirmation and owes the same coverage.
+        exists = GO + "Is there any seller under $20 for size M?"
+        named = "Seller C sells size M at $12.15, so there is a seller under $20.00."
+        self.assertEqual(self.check(exists, named, self.observed("Seller A", "Seller B"))["flag"],
+                         "witness_not_opened")
+        self.assertEqual(self.check(exists, named, "")["flag"], "witness_not_opened")
+        self.assertTrue(self.check(exists, named, self.observed("Seller C"))["ok"])
+        self.assertTrue(self.check(exists, named, self.all_but())["ok"])
+        # A no that names a listing is still a no, held to the limit's coverage.
+        no = "No. The cheapest is Seller K at $20.15, above the limit."
+        self.assertEqual(self.check(exists, no, self.observed("Seller K"))["flag"],
+                         "existence_denied_without_coverage")
+        # Neither yes, no nor a listing: the plan cannot check it, so it is not believed.
+        unclear = self.check(exists, "The cheapest size M is $21.00, over the limit.", self.all_but())
+        self.assertEqual((unclear["ok"], unclear["flag"]), (False, "answer_unclear"))
+
     def test_bound_and_prune_for_the_k_cheapest(self):
         top3 = GO + "Which are the three cheapest sellers for size M?"
         answer = "1. Seller A $12.00, 2. Seller B $13.00, 3. Seller C $16.00."
@@ -458,6 +486,41 @@ class Checks(unittest.TestCase):
         self.assertEqual(self.check(every, "Yes, all of them.", self.all_but("Seller D"))["flag"],
                          "unverified_universal")
         self.assertTrue(self.check(every, "Yes, all of them.", self.all_but())["ok"])
+
+    def test_counterexample_named_without_a_no(self):
+        # Verifier finding, 14 Oct 2026: an answer with neither yes nor no passed with nothing
+        # opened. Naming a listing could be a counterexample or an example, so it is held to
+        # what a yes needs, every listing; naming nothing is unclear.
+        every = GO + "Does every listing have size M in stock? Answer yes or no."
+        for answer in ("Seller D lacks size M.", "All of them have it, Seller D included."):
+            with self.subTest(answer=answer):
+                self.assertEqual(self.check(every, answer, self.observed("Seller D"))["flag"],
+                                 "unverified_universal")
+                self.assertEqual(self.check(every, answer, "")["flag"], "unverified_universal")
+                self.assertTrue(self.check(every, answer, self.all_but())["ok"])
+        unclear = self.check(every, "Availability varies between listings.", self.all_but())
+        self.assertEqual((unclear["ok"], unclear["flag"]), (False, "answer_unclear"))
+
+    def test_bound_and_prune_counts_a_tie_at_the_answer_once(self):
+        # Verifier finding, 14 Oct 2026: two listings advertised at the answer's price. The
+        # text says to skip a listing advertised at or above the best total, so a run that
+        # followed it opened three; the old floor of four refused it.
+        tie = synthetic_page([10.15, 11.15, 12.15, 12.15, 13.15])
+        by_seller = {item.seller: item for item in tie.listings}
+        opened = "\n".join(f"Page URL: {by_seller[s].url}" for s in ("Seller A", "Seller B", "Seller C"))
+        answer = "Seller C is cheapest at $12.15 for size M."
+        verdict = primitives.check(form.from_rules(CHEAPEST_M, tie), tie, answer, opened)
+        self.assertEqual((verdict["ok"], verdict["opened"]), (True, 3))
+        two = "\n".join(f"Page URL: {by_seller[s].url}" for s in ("Seller A", "Seller B"))
+        self.assertEqual(primitives.check(form.from_rules(CHEAPEST_M, tie), tie, answer, two)["flag"],
+                         "superlative_without_coverage")
+        # The same tie under the k cheapest: the second's price is the tied one.
+        top2 = GO + "Which are the two cheapest sellers for size M?"
+        self.assertTrue(primitives.check(form.from_rules(top2, tie), tie,
+                                         "1. Seller A $10.15, 2. Seller C $12.15.", opened)["ok"])
+        self.assertEqual(primitives.check(form.from_rules(top2, tie), tie,
+                                          "1. Seller A $10.15, 2. Seller C $12.15.", two)["flag"],
+                         "superlative_without_coverage")
 
     def test_exhaust(self):
         count = GO + "How many listings have size M in stock?"

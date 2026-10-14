@@ -44,7 +44,11 @@ import targeting
 #      a missing price limit, refuses an attribute the shop does not show, composes the
 #      plan from a primitive, and checks the answer by the plan. The six clothing
 #      questions render the same bytes as v1
-VERSION = 2
+#   3  14 October 2026. The check changes, the text does not: the floor from the page
+#      counts a tie at the answer's price once (`policy.bound_floor`), and the witness
+#      and counterexample checks refuse an answer with neither yes nor no (primitives
+#      v2). On Thornwood every stored floor is the same, so the pilot stands
+VERSION = 3
 
 # The results page the question sends the agent to: the first URL in it.
 URL = re.compile(r"https?://\S+")

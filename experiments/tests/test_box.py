@@ -24,18 +24,22 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402
 import ambiguity  # noqa: E402
 import box  # noqa: E402
+import compare_cells  # noqa: E402
 import form as form_module  # noqa: E402
 import page  # noqa: E402
 import planner  # noqa: E402
 import policy  # noqa: E402
 import primitives  # noqa: E402
 import score  # noqa: E402
+import sufficiency  # noqa: E402
 import suite  # noqa: E402
 import targeting  # noqa: E402
 
 BASE = "http://localhost:7770"
 RESULTS_URL = f"{BASE}/catalogsearch/result/?q=Example"
 FIXTURES = pathlib.Path(__file__).resolve().parent / "fixtures"
+# The box v1 pilot, the one stored batch whose rows carry the page the box read.
+PILOT = paths.RESULTS / "20261014T084322" / "suite.json"
 
 
 def clothing_questions() -> dict[str, str]:
@@ -297,7 +301,7 @@ class Decide(unittest.TestCase):
         decision = box.decide(self.questions["apparel-target-price"], self.page)
         record = decision.record()
         self.assertEqual((record["box_version"], record["form_version"], record["primitives_version"]),
-                         (2, form_module.VERSION, primitives.VERSION))
+                         (box.VERSION, form_module.VERSION, primitives.VERSION))
         self.assertEqual(record["page"], self.page.record())
         self.assertEqual(record["kind"], "availability_bound")
         self.assertEqual(record["form"], decision.form.record())
@@ -513,8 +517,8 @@ class GateFromPage(unittest.TestCase):
                                         self.log(15))
         self.assertTrue(verdict["ok"])
 
-    def test_the_floor_counts_listings_advertised_at_or_below_the_price_named(self):
-        # Six at or below, the equal one included.
+    def test_the_floor_is_the_listings_advertised_below_the_price_named_plus_its_own(self):
+        # Five below, plus the listing advertised at the price itself: six.
         self.assertEqual(policy.page_floor(self.CHEAPEST, self.page, "$15.15"), 6)
         # The first price named is the one that counts.
         self.assertEqual(policy.page_floor(self.CHEAPEST, self.page, "$12.15, not $24.15"), 3)
@@ -524,6 +528,68 @@ class GateFromPage(unittest.TestCase):
         self.assertEqual(policy.page_floor(self.CHEAPEST, self.page, "Seller F, I think"), 15)
         # Not a superlative over the market: no floor of this kind.
         self.assertIsNone(policy.page_floor(self.COUNT, self.page, "$15.15"))
+        # A price no card advertises: the answer's own listing is among those below it, so
+        # nothing is added. Three are advertised below $12.50.
+        self.assertEqual(policy.page_floor(self.CHEAPEST, self.page, "$12.50"), 3)
+
+    def test_a_tie_at_the_price_named_is_counted_once(self):
+        # Verifier finding, 14 Oct 2026: two listings advertised at the answer's price. The
+        # text says to skip a listing advertised at or above the best total, so a run that
+        # followed it opened the three advertised at or below it and skipped the other at
+        # that price. The old floor of four refused it.
+        tie = synthetic_page([10.15, 11.15, 12.15, 12.15, 13.15])
+        self.assertEqual(policy.page_floor(self.CHEAPEST, tie, "Seller C at $12.15"), 3)
+        self.assertEqual(policy.bound_floor(tie, 12.15), 3)
+        self.assertEqual(policy.bound_floor(tie, 12.50), 4)
+        answer = "Seller C is cheapest at $12.15 for size M."
+        three = openjiuwen_log(self.tmp.name, "tie-3", [i.url for i in tie.listings[:3]], "Price: $12.15")
+        verdict = policy.gate_from_page(self.CHEAPEST, tie, answer, three)
+        self.assertEqual((verdict["ok"], verdict["floor"], verdict["opened"]), (True, 3, 3))
+        two = openjiuwen_log(self.tmp.name, "tie-2", [i.url for i in tie.listings[:2]], "Price: $12.15")
+        self.assertEqual(policy.gate_from_page(self.CHEAPEST, tie, answer, two)["flag"],
+                         "superlative_without_coverage")
+
+
+def thornwood_page() -> page.Page:
+    """The Thornwood results page as the box recorded it in the pilot: what the box read
+    from the shop, never the answer key."""
+    record = json.loads(PILOT.read_text())["rows"][0]["box"]["page"]
+    listings = [page.Listing(seller=item["seller"], title=item["seller"], url=item["url"],
+                             advertised=item["advertised"]) for item in record["listings"]]
+    return page.Page(url=record["url"], listings=listings, total=record["total"],
+                     next_page=record["next_page"])
+
+
+@unittest.skipUnless(PILOT.exists(), "the pilot batch's record is not here")
+class FloorOnStoredBatches(unittest.TestCase):
+    """The floor from the page counts a tie at the answer's price once (14 Oct 2026). On
+    Thornwood, whose fifteen advertised prices are distinct, that is the old figure, every
+    listing advertised at or below the answer, for every stored answer: so the pilot's
+    recorded floor and the refusal replays over cells 1, 2 and 5 stand."""
+
+    def test_every_stored_superlative_row_keeps_its_floor(self):
+        page_ = thornwood_page()
+        prices = [item.advertised for item in page_.listings]
+        self.assertEqual((len(prices), len(set(prices))), (15, 15))
+        spec = json.loads((paths.TASKS / "tasks_apparel.json").read_text())
+        questions = {t["id"]: t["query"].format(base=spec["base_url"]) for t in spec["tasks"]}
+        batches = [b for cell in compare_cells.CELLS.values() for b in cell] + [PILOT.parent.name]
+        rows = 0
+        for batch in batches:
+            for row in json.loads((paths.RESULTS / batch / "suite.json").read_text())["rows"]:
+                question = questions[row["task"]]
+                if not sufficiency.superlative_over_population(question):
+                    continue
+                rows += 1
+                named = score.prices_in(row["answer"])
+                old = (len(prices) if not named
+                       else max(1, sum(1 for p in prices if p <= named[0] + 0.005)))
+                with self.subTest(batch=batch, run=f"{row['task']}-{row['repeat']}"):
+                    self.assertEqual(policy.page_floor(question, page_, row["answer"]), old)
+        self.assertEqual(rows, 27)
+        pilot = json.loads(PILOT.read_text())["rows"][0]
+        self.assertEqual(policy.page_floor(questions[pilot["task"]], page_, pilot["answer"]),
+                         pilot["floor"])
 
 
 class ReadingsSidecar(unittest.TestCase):
