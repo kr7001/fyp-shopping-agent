@@ -4292,8 +4292,40 @@ window.SITE = {
        "a next page is told to the agent",
        "an unknown reply raises",
        "a reply to a clear question is ignored",
-       "the record carries the versions and the page",
+       "the record carries the versions the page the form and the plan",
        "results url is the first url in the question"
+      ]
+     },
+     {
+      "name": "V1Bytes",
+      "doc": "The six clothing questions render byte for byte what box v1 rendered, frozen in\n`fixtures/v1_clothing_queries.json` from the v1 code before box.py changed, under no\nreading and under each scripted reading. So the pilot measured under v1 is a\nmeasurement of the text v2 sends.",
+      "tests": [
+       "every frozen entry is reproduced",
+       "the fixture is the v1 text and not a copy of v2s"
+      ]
+     },
+     {
+      "name": "NumericalAsk",
+      "doc": "Box v2: a price word with no figure asks for the threshold, and nothing is planned.",
+      "tests": [
+       "a cheap tee asks for a limit",
+       "a figure settles it"
+      ]
+     },
+     {
+      "name": "Refusal",
+      "doc": "Box v2: a question needing an attribute the shop does not show gets no plan and no\nagent run. The box says what is missing.",
+      "tests": [
+       "delivery and shipping are refused",
+       "a question the shop can answer is not refused"
+      ]
+     },
+     {
+      "name": "BoxCheck",
+      "doc": "Box v2's answer check: v1's page-derived check for a v1 kind, then the plan's own.",
+      "tests": [
+       "a v1 kind keeps v1s verdict and adds the primitives",
+       "a new kind exempts the questions own figure and runs its primitive"
       ]
      },
      {
@@ -4322,6 +4354,7 @@ window.SITE = {
        "the box asks without a reading and plans with one",
        "without the box the text is as before",
        "an asked row spends nothing and runs nothing",
+       "a refused row spends nothing and says what was missing",
        "the reading is recorded only on a row the box asked on",
        "the box and a strategy flag are refused",
        "the browser tool is pinned and the user agent defined once"
@@ -4427,6 +4460,97 @@ window.SITE = {
        "section e refusal replay",
        "section f how runs were checked",
        "section g charges"
+      ]
+     }
+    ]
+   },
+   {
+    "file": "experiments/tests/test_form.py",
+    "doc": "The logical form, box v2: the record, the rules parser held to v1's classifier and to the new forms, the five properties, the primitives' choice, text and answer checks, and the model parser on a fake call.",
+    "classes": [
+     {
+      "name": "Vocabulary",
+      "doc": "",
+      "tests": [
+       "a form outside the vocabulary is refused",
+       "the record round trips"
+      ]
+     },
+     {
+      "name": "RulesAgainstV1",
+      "doc": "`from_rules` keeps every v1 kind. The eight single-listing questions in tasks.json\nare the exception, and a pinned one: v1 only ever reached them through its fallback,\n\"survey\", which tells the agent to open every listing in a search it was never sent\nto. v2 reads them as what they are, a lookup on the one listing the URL names.",
+      "tests": [
+       "every question keeps its v1 kind or is a single listing lookup",
+       "the plan dict is the planners own plan",
+       "every census question verifies and needs nothing the shop lacks",
+       "the six clothing forms",
+       "the reading is read back from the sentence the box wrote",
+       "evidence names the words that chose each field"
+      ]
+     },
+     {
+      "name": "NewForms",
+      "doc": "Each form v1 lacked, from two phrasings, with a near miss that stays quiet.",
+      "tests": [
+       "existence under a limit",
+       "the k cheapest",
+       "a named comparison",
+       "a filtered cheapest",
+       "a single listing lookup",
+       "the dearest",
+       "a price word with no figure is an unknown",
+       "a review question carries its mention"
+      ]
+     },
+     {
+      "name": "Shown",
+      "doc": "Property 5: what the shop shows, and a refusal for what it does not.",
+      "tests": [
+       "what the shop shows",
+       "an attribute the shop does not show fires",
+       "a sold out size has no price",
+       "the refusal names what is missing and what is shown"
+      ]
+     },
+     {
+      "name": "Verify",
+      "doc": "",
+      "tests": [
+       "the four properties still fire through the planner",
+       "the new kinds have sound plans",
+       "a combination no primitive plans is refused"
+      ]
+     },
+     {
+      "name": "Compose",
+      "doc": "",
+      "tests": [
+       "the quantifier chooses the primitive",
+       "v1 kinds render their v7 bodies under the preamble",
+       "the new texts carry their stop rule and the quarantine",
+       "candidates follow the primitive"
+      ]
+     },
+     {
+      "name": "Checks",
+      "doc": "Each primitive's answer check on a fault it exists to find, and on a case it must\nleave alone. The page: 15 listings at $10.15, $11.15 ... $24.15, Seller A the cheapest.",
+      "tests": [
+       "witness",
+       "bound and prune for the k cheapest",
+       "bound and prune for the cheapest and the dearest",
+       "lookup",
+       "counterexample",
+       "exhaust",
+       "the filter holds the answer to the limit",
+       "depth defers to the sufficiency rules"
+      ]
+     },
+     {
+      "name": "ModelParser",
+      "doc": "",
+      "tests": [
+       "a fake call returns the models form",
+       "a malformed reply raises with the fault named"
       ]
      }
     ]
@@ -4605,8 +4729,8 @@ window.SITE = {
   },
   "plan": {
    "file": "experiments/box/planner.py",
-   "start": 137,
-   "end": 160,
+   "start": 172,
+   "end": 195,
    "code": "def plan(question: str) -> dict:\n    \"\"\"The retrieval plan for one question.\n\n    Classification reads the question text, never the task id, for the same reason\n    `targeting.py` does: keying off the id would make the policy look like it works while\n    doing nothing, since the id encodes the answer the experiment exists to test for.\n    \"\"\"\n    kind = targeting.classify(question)\n    return {\n        \"planner_version\": VERSION,\n        \"strategy_version\": targeting.VERSION,\n        \"kind\": kind,\n        \"quantifier\": QUANTIFIERS[kind],\n        \"population\": \"every listing in the search results, including later pages\",\n        # Where the attribute being compared actually lives. On the results page it can be\n        # compared without opening anything, which is what makes the control question a\n        # control. Everything the policy is measured on is gated behind a listing page.\n        \"evidence_source\": \"results page\" if kind == \"results_page\" else \"listing pages\",\n        \"enumerate_first\": True,\n        \"bound\": BOUNDS[kind],\n        \"stop_rule\": STOP_RULES[kind],\n        \"evidence_required\": EVIDENCE[kind],\n        \"forbidden_claims\": FORBIDDEN_WITH_BOUND if BOUNDS[kind] else [],\n    }"
   },
   "suspended": {
@@ -4647,7 +4771,7 @@ window.SITE = {
   "source": "README decision log, 8 October 2026"
  },
  "built": {
-  "commit": "38747f6",
+  "commit": "70556af",
   "date": "2026-10-14",
   "branch": "dev",
   "dirty": true,
@@ -4658,7 +4782,7 @@ window.SITE = {
    "2026-09-07": 44,
    "2026-09-14": 49,
    "2026-10-05": 45,
-   "2026-10-12": 11
+   "2026-10-12": 15
   }
  }
 };
