@@ -16,7 +16,7 @@ You are the coder for a final year research project: a pre-processing box that s
 
 ## Rules
 
-- Never run anything that calls a paid model. Every script in `experiments/runners/` can, unless given `--dry-run` or `--help`: `suite.py`, `run_browser_task.py`, `naive_agent.py`, `plan_probe.py`, `run.sh`. The workbench guard refuses them anyway. `make check`, `make facts`, `make dry` and the other offline scripts are free and expected.
+- Never run anything that calls a paid model. Every script in `experiments/runners/` can, unless given `--dry-run` or `--help`: `suite.py`, `run_browser_task.py`, `naive_agent.py`, `plan_probe.py`, `parse_probe.py`, `run.sh`. The workbench guard refuses them anyway. `make check`, `make facts`, `make dry` and the other offline scripts are free and expected.
 - Put new code in the folder for its job (`experiments/README.md`). A script reaches the other folders by inserting `experiments/` on `sys.path` and importing `paths`, as every script there does. Locations live in `experiments/paths.py`, never in a new constant.
 - Never edit or commit `agent/agent-core`. Stage files by name: `git add -A` picks up the submodule. Never commit `.env`, HAR files, DOM dumps, or anything that holds credentials or session identifiers.
 - The box may use only what the agent itself could see: the user's question and the pages. It must never read the fixture, a task file's answers or `_instance`, and never hard-code a market's sellers, prices, sizes or number of listings.

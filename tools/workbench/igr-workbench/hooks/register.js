@@ -21,7 +21,7 @@ const CODE_PATHS = ['experiments', 'env', 'tools', ':(exclude)experiments/result
 // Running one of these scripts calls a paid model through OpenRouter. Matched where a script
 // is executed, so reading or searching the file is not mistaken for running it. The text after
 // the script, up to the next separator, is that invocation's arguments.
-const PAID_RUN = /(?:python[0-9.]*|\bsh|\bbash)\s+(?:-u\s+)?(?:\S*\/)?(suite\.py|run_browser_task\.py|naive_agent\.py|plan_probe\.py|run\.sh)\b([^;&|\n"']*)/g
+const PAID_RUN = /(?:python[0-9.]*|\bsh|\bbash)\s+(?:-u\s+)?(?:\S*\/)?(suite\.py|run_browser_task\.py|naive_agent\.py|plan_probe\.py|parse_probe\.py|run\.sh)\b([^;&|\n"']*)/g
 const PAID_DIRECT = /(?:^|[;&|(]\s*)(?:caffeinate\s+(?:-\w+\s+)*)?(?:nohup\s+)?(?:\.\/)?(?:\S*\/)?run\.sh\b([^;&|\n"']*)/g
 // A dry run or a help page calls no model. Checked per invocation, so a free invocation
 // cannot carry a paid one through in the same command.
