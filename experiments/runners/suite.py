@@ -243,13 +243,17 @@ def build_query(task: dict, spec: dict, args) -> tuple[str | None, dict]:
     One function for the dry run and the paid loop, so the text the verifier reads is the
     text the agent gets (LESSONS 17). Applied in order: the box, targeting, the exhaustive
     instruction, the confidence prompt. The text is None when the box asked and no
-    `--reading` answered it, or when it refused. The dict holds the strategy kind, the
+    `--reading` answered it, or when it refused. A question the box bypasses comes back as
+    its own text, which is what the agent then gets. The dict holds the strategy kind, the
     box's record, the page it read and its decision, each None when not used.
     """
     query = task["query"].format(base=spec["base_url"])
     applied = {"strategy": None, "box": None, "page": None, "decision": None}
     if args.box:
-        page = results_page(box_module.results_url(query))
+        # A question with no URL names no page to read. The box decides whether that is
+        # because it is not about the shop (a bypass) or an error.
+        url = box_module.results_url(query, required=False)
+        page = results_page(url) if url else None
         decision = box_module.decide(query, page, reply=args.reading)
         applied.update(strategy=decision.kind, box=decision.record(), page=page,
                        decision=decision)
@@ -302,10 +306,11 @@ def gate_for(task: dict, spec: dict, answer: str, log_path: pathlib.Path,
              page: page_module.Page | None,
              decision: box_module.Decision | None = None) -> dict:
     """The refusal check. Under box v2 it is the box's own: v1's page-derived rules, then
-    the plan's primitive check. Under v1 it read the market size and the floor from the
-    page the box fetched. Without the box it is the evaluation tool it was, reading both
-    from the answer key."""
-    if decision is not None and decision.plan is not None:
+    the plan's primitive check, and for a bypassed question the figure rules alone, since
+    the box read no page and made no plan to hold the answer to. Under v1 it read the
+    market size and the floor from the page the box fetched. Without the box it is the
+    evaluation tool it was, reading both from the answer key."""
+    if decision is not None and (decision.plan is not None or decision.bypass):
         return box_module.check(decision, answer, log_path)
     if page is not None:
         question = task["query"].format(base=spec["base_url"])
@@ -462,7 +467,9 @@ def main() -> int:
         for task in tasks:
             print(f"  {task['id']:26} gated={task['gated']}  {task['expect']['kind']}")
             query, applied = build_query(task, spec, args)
-            if query is not None:
+            if query is not None and applied["box"] and applied["box"]["bypassed"]:
+                print(f"BYPASS: {query}")
+            elif query is not None:
                 print(query)
             elif applied["box"]["refuse"]:
                 print(f"REFUSES: {applied['box']['refuse']}")
@@ -551,6 +558,7 @@ def main() -> int:
             rows.append(row)
             conf = f" conf={row.get('confidence')}" if args.confidence != "off" else ""
             conf += f" [{strategy}]" if strategy else ""
+            conf += " [bypass]" if args.box and applied["box"]["bypassed"] else ""
             print(f"[{done}/{total}] {tag:32} {row['verdict']:10} "
                   f"calls={row['tool_calls']} act={row['actions']}{conf} "
                   f"${row['cost_usd']} {row['elapsed_s']}s")
@@ -627,7 +635,22 @@ def summarise(rows: list[dict]) -> dict:
 
     overall = collections.Counter(row["verdict"] for row in rows)
     return {"by_task": by_task, "overall": dict(overall),
-            "total_cost": round(sum(r["cost_usd"] for r in rows if r["cost_usd"]), 4)}
+            "total_cost": round(sum(r["cost_usd"] for r in rows if r["cost_usd"]), 4),
+            "box": box_counts(rows)}
+
+
+def box_counts(rows: list[dict]) -> dict | None:
+    """How many rows the box asked on, refused, bypassed and planned by its fallback, so
+    the rate at which questions get past it is a figure of the batch (14 Oct 2026). Asked
+    counts every row the box put its question on, whether or not a `--reading` answered
+    it: the verdicts say which. None when no row went through the box."""
+    records = [row["box"] for row in rows if row.get("box")]
+    if not records:
+        return None
+    return {"asked": sum(1 for r in records if r.get("asked")),
+            "refused": sum(1 for r in records if r.get("refuse")),
+            "bypassed": sum(1 for r in records if r.get("bypassed")),
+            "fallback": sum(1 for r in records if r.get("fallback"))}
 
 
 def mean(values: list) -> float | None:
@@ -644,6 +667,10 @@ def print_summary(summary: dict, rows: list[dict]) -> None:
               f"{str(entry['mean_actions']):>5} {str(entry['mean_tool_calls']):>6}")
     print("-" * 78)
     print("overall:", summary["overall"])
+    if summary.get("box"):
+        counts = summary["box"]
+        print(f"box: asked {counts['asked']}, refused {counts['refused']}, "
+              f"bypassed {counts['bypassed']}, fallback {counts['fallback']}")
     print("total cost: $", summary["total_cost"])
 
     gated = [r for r in rows if r["gated"] and r["actions"] is not None]

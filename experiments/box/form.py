@@ -46,17 +46,24 @@ import targeting
 #      model parser's prompt
 #   2  14 October 2026. A count before "sellers" or "listings" with "cheapest" anywhere is
 #      a top-k, so "which three sellers offer size M cheapest" keeps its k
-VERSION = 2
+#   3  14 October 2026. A question with no recognised shape and no shopping signal parses
+#      to the quantifier "unknown", which the box bypasses. One with a signal keeps the
+#      survey fallback and says so in its evidence
+VERSION = 3
 
 # The vocabulary. A form outside it is refused when it is built, so a model's reply cannot
-# smuggle in a quantifier nothing knows how to plan.
-QUANTIFIERS = ("lookup", "exists", "forall", "argmin", "argmax", "topk", "count", "aggregate")
+# smuggle in a quantifier nothing knows how to plan. "unknown" is the rules' answer to a
+# question that is not about the shop at all (14 October 2026): no primitive plans it, and
+# the box hands the question to the agent unchanged.
+QUANTIFIERS = ("lookup", "exists", "forall", "argmin", "argmax", "topk", "count", "aggregate",
+               "unknown")
 POPULATIONS = ("listing", "results", "reviews")
 # "advertised price" is the one the results page prints, the cheapest option a listing can
 # sell. "price" is the price of the option asked about, shown only after it is chosen. The
 # control question compares the first and is answered without opening anything, so the two
-# have to be told apart. Any other attribute is "attribute:<name>".
-OBJECTIVES = ("price", "advertised price", "rate", "availability", "size", "mention")
+# have to be told apart. Any other attribute is "attribute:<name>". "none" goes with the
+# quantifier "unknown" and with nothing else.
+OBJECTIVES = ("price", "advertised price", "rate", "availability", "size", "mention", "none")
 OPS = ("=", "<=", ">=", "in", "contains")
 SOURCES = ("rules", "model")
 
@@ -64,7 +71,7 @@ SOURCES = ("rules", "model")
 # found in a review's text.
 NEEDS = {"price": ("price",), "advertised price": ("advertised price",),
          "rate": ("price", "size"), "availability": ("availability",), "size": ("size",),
-         "mention": ("review text",)}
+         "mention": ("review text",), "none": ()}
 
 # What a product page of this shop shows, checked on 14 October 2026 against the gated
 # Thornwood listings (igr-app-02.html among them): a Size menu filled from the page's
@@ -128,6 +135,9 @@ class Form:
         if (self.quantifier == "topk") != (self.k is not None):
             raise ValueError(f"k is {self.k!r} for quantifier {self.quantifier!r}: topk takes "
                              f"a k and nothing else does")
+        if (self.quantifier == "unknown") != (self.objective == "none"):
+            raise ValueError(f"objective {self.objective!r} with quantifier {self.quantifier!r}: "
+                             f"an unknown question has the objective 'none' and nothing else has")
         if self.k is not None and (not isinstance(self.k, int) or self.k < 1):
             raise ValueError(f"k must be a whole number of at least 1, got {self.k!r}")
         if not all(isinstance(f, Filter) for f in self.filters):
@@ -147,8 +157,10 @@ class Form:
         "depth_search". A form v1 had no strategy for gets a new name: "exists_price",
         "topk_price", "named_lookup", "argmax_price". A combination no primitive plans,
         such as an existence question about a rate, gets a name the planner has no row
-        for, and `verify` refuses it.
+        for, and `verify` refuses it. An unknown question is "unknown", which no row plans.
         """
+        if self.quantifier == "unknown":
+            return "unknown"
         if self.population == "reviews":
             return "depth_search"
         if self.quantifier == "lookup":
@@ -169,8 +181,15 @@ class Form:
 
     def attributes(self) -> set[str]:
         """Every attribute the form compares or filters on, for the fifth property."""
-        needed = NEEDS.get(self.objective) or (self.objective.removeprefix("attribute:"),)
+        needed = NEEDS[self.objective] if self.objective in NEEDS \
+            else (self.objective.removeprefix("attribute:"),)
         return set(needed) | {f.attribute for f in self.filters}
+
+    @property
+    def fallback(self) -> bool:
+        """Whether the rules found a shopping signal but no shape, and fell back to listing
+        everything. Recorded in the evidence by `from_rules`, so a record keeps it."""
+        return "fallback" in self.evidence
 
     def record(self) -> dict:
         return {"form_version": VERSION, "kind": self.kind(), "quantifier": self.quantifier,
@@ -362,6 +381,36 @@ BUYABLE_WORDS = ambiguity.whole_words(ambiguity.BUYABLE)
 # The sentence the box writes into a question when the user chooses a reading, without the
 # user's own phrase, so the reading can be read back out of the question.
 READING_MARKS = {key: sentence.split("' ", 1)[1] for key, (_, sentence) in ambiguity.READINGS.items()}
+# What makes a question one about this shop when none of the shapes above fits: a URL into
+# it, a word for what the market holds, a word for what the shop shows (a price, a variant,
+# whether it can be bought, its reviews), an attribute the shop lacks, or a filter the words
+# chose. "Write a short poem about shoes" has none of these, so the box has nothing to plan
+# and hands it to the agent unchanged (14 October 2026, at the student's request). Built
+# from the patterns the parser already reads, so this list and the parser cannot drift.
+MARKET_WORDS = ambiguity.whole_words(("listing", "listings", "seller", "sellers", "offer",
+                                      "offers", "offered", "offering", "product", "products",
+                                      "item", "items", "shop", "store", "vendor", "vendors",
+                                      "merchant", "merchants"))
+PRICE_WORDS = ambiguity.whole_words(("price", "prices", "priced", "cost", "costs", "stock",
+                                     "stocked", "sold out"))
+SIGNALS = (("a URL", URL), ("a market word", MARKET_WORDS), ("a price word", PRICE_WORDS),
+           ("a price word", VAGUE_PRICE), ("a superlative of price", targeting.CHEAPEST),
+           ("a superlative of price", ARGMAX), ("a variant word", VARIANT),
+           ("an availability word", targeting.BUYABLE), ("a review word", targeting.REVIEWS))
+
+
+def shopping_signal(question: str, filters: list[Filter]) -> str | None:
+    """The words that make an unrecognised question one about this shop, or None."""
+    for what, pattern in SIGNALS:
+        found = pattern.search(question)
+        if found:
+            return f"{what}: {found.group(0)}"
+    other = other_attribute(question)
+    if other:
+        return f"an attribute word: {other[1]}"
+    if filters:
+        return f"a filter: {filters[0].attribute}"
+    return None
 
 
 def number(word: str) -> int:
@@ -565,6 +614,17 @@ def from_rules(question: str, page: page_module.Page | None = None) -> Form:
     filters = filters_in(question, reading, evidence)
     named = named_listings(question, page, urls, evidence) if population != "reviews" else None
     quantifier, objective, k = shape_of(question, filters, named, evidence)
+    # "aggregate" is only ever the fallback, reached when no shape fits. With a shopping
+    # signal the question is still planned, as a survey, and the record says it was a
+    # fallback. Without one the box has nothing to plan: the question is unknown.
+    if quantifier == "aggregate":
+        signal = shopping_signal(question, filters)
+        if signal is None:
+            evidence = {"quantifier": "no shape and no shopping signal",
+                        "objective": "nothing of the shop is asked about",
+                        "population": evidence["population"]}
+            return Form(quantifier="unknown", objective="none", source="rules", evidence=evidence)
+        evidence["fallback"] = f"no recognised quantifier, kept in the shop by {signal}"
     if quantifier == "lookup":
         filters.insert(0, named)
     if population == "reviews":
