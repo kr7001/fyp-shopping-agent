@@ -68,8 +68,8 @@ and the box's first measurement should not mix two gating mechanisms.
 | Time | What | Who |
 | --- | --- | --- |
 | 6 to 7 am | Review this page, the spec and the build. Decide the two open points below | student, with me |
-| 7 to 10 am | The verifier stamps the exact command. Pilot, then the development batch | the guard asks for each yes |
-| 10 to 12 | Verify the batch from its raw files, every answer read. Figures into the site through `make site` | verifier, then insights |
+| 7 to 10 am | The pilot ran at 08:43 (two runs, both correct, below). The student asked for a deeper design before spending more, so the 18 run batch is on hold and the morning went to research and the v2 design instead | done |
+| 10 to 12 | The coder builds v2 (the logical form, the primitives, the model parser behind the guard), the verifier checks it. One small paid test proposed: the model parses the 42 census questions, about $0.20 | the guard asks for the yes |
 | 12 to 4 pm | The report, from the skeleton on the "Report" page, filling the blanks from verified figures only | student, with me |
 
 **Open point 1: the budget.** $43.39 is left on the key (read from the account on 14 October).
@@ -112,10 +112,11 @@ with both answers read in full, the 60 second silence rule, the stored page reco
 live shop, and cost against the account (`python3 experiments/analysis/cell_facts.py`, section G).
 Watch the pilot log for the agent trusting its own four card probe over the preamble's fifteen.
 
-**Open point 2: what to freeze.** If the pilot shows the agent follows the plan, the batch runs
-as is. If it shows a defect in the plan's wording, fix it, bump `box.VERSION`, and run the batch
-on the fixed version. Either way the box is frozen at the end of today, and Thornwood is spent
-for it.
+**Open point 2, decided at 9 am: v1 is the floor, v2 is the product.** The pilot showed the
+agent follows the plan. Rather than spend $13 measuring v1 on all six questions, the budget
+waits for v2, which handles every form in the research census, so the development batch
+measures the thing the project claims. Thornwood stays the development market; the claim market
+is generated after v2 is frozen.
 
 ## The pilot ran, 08:43 to 08:48
 

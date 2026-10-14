@@ -81,6 +81,26 @@ run. From `make facts` after the batch is verified.]
 
 This is development: the box was designed on this market, so these are not the claim.
 
+## 4a. Box v2, the strategist
+
+v1 is the floor: four fixed strategies for four kinds of question. v2 is what the project
+claims to build, designed on 14 October after the research (the "Research" and "Box v2" pages):
+
+- Every question parses into a logical form: a quantifier (exists, every, cheapest, top-k,
+  count, lookup), the attribute compared, the filters, and the population. The research census
+  shows the shopping benchmarks' reading tasks all have one of these forms.
+- A model does the parsing, because that is judgement. Rules do everything after: the plan is
+  composed from seven retrieval primitives whose stop rules are theorems (a bound prunes, one
+  counterexample refutes, one witness proves, a count needs everything), verified by five
+  properties, the fifth being that every attribute the question needs is shown on this shop.
+- The box asks only when the form is underdetermined on this page: which reading of a word,
+  which entity, what threshold, or that the shop does not show the attribute at all.
+
+[Free census test, after the build: of the 42 questions, how many the rules and the model parse
+the same, which fail verification and why, which raise an ask. Each read by hand.]
+
+[If run: the model parser's cost per question.]
+
 ## 4b. Is this only an openJiuwen problem? The second agent and the second model
 
 The question has two parts, and the two agents answer them differently (`make facts`, sections
