@@ -3,11 +3,14 @@
 Each one was added after a measurement went wrong without it (LESSONS.md 3, 9 and 15), so
 each is tested on the fault it exists to find and on a case it must leave alone.
 """
+from __future__ import annotations
+
 import contextlib
 import io
 import json
 import pathlib
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -21,8 +24,13 @@ import trace_stats  # noqa: E402
 import verify_cells  # noqa: E402
 from scipy.stats import fisher_exact  # noqa: E402
 
+sys.path.insert(0, str(paths.REPO / "env"))
+import generate_apparel as apparel  # noqa: E402
+import generate_apparel_v2_tasks as v2  # noqa: E402
+
 PILOT = paths.RESULTS / "20261014T084322"
 V2 = paths.TASKS / "tasks_apparel_v2.json"
+FIXTURE = paths.FIXTURES / "scaled_apparel.json"
 
 
 class SuspendedRun(unittest.TestCase):
@@ -262,6 +270,145 @@ class BoxRowsInTheReport(unittest.TestCase):
         text, result = self.report(without)
         self.assertNotIn("box             ", text)
         self.assertEqual(result["problems"], [])
+
+    def test_a_run_with_no_floor_rule_is_a_problem_not_a_crash(self):
+        # A gated question no rule covers gets no floor, and the report says so by task
+        # rather than raising, which it did until 14 Oct 2026 on four v2 questions.
+        runs = json.loads(json.dumps(self.runs))
+        runs[0].update(task="argmax-question", floor=None, met_floor=False)
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            result = verify_cells.report(self.batch, self.suite, runs, False)
+        self.assertEqual(result["problems"], ["argmax-question-1: no floor rule for argmax-question"])
+        self.assertIn("  argmax-question              -  0/1", out.getvalue())
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(verify_cells.report(self.batch, self.suite, self.runs, False)["problems"], [])
+
+
+class OwnFloor(unittest.TestCase):
+    """The coverage floor of each v2 question shape, written down in `verify_cells.own_floor`
+    on 14 Oct 2026 (LESSONS 5) after the verifier found the four new shapes raised. Every
+    expected figure here is recomputed from the fixture with the generator's own helpers,
+    never typed, and each rule has a case where it must fire and one where it must stay
+    quiet: the six v1 questions keep their floors, and a wrong set of listings is not
+    covered even when it is the right size."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.spec = json.loads(V2.read_text())
+        cls.fixture = json.loads(FIXTURE.read_text())
+        cls.instance = cls.fixture["_instance"]
+        cls.listings = cls.fixture["families"]
+        cls.truth = verify_cells.ground_truth()
+        cls.tasks = {t["id"]: t for t in cls.spec["tasks"]}
+
+    def floor(self, task_id: str) -> verify_cells.Floor:
+        return verify_cells.own_floor(self.tasks[task_id], self.truth)
+
+    def sku(self, listing: dict) -> str:
+        return listing["parent_sku"].lower()
+
+    def advertised_at_or_below(self, price: float) -> frozenset[str]:
+        return frozenset(self.sku(l) for l in self.listings if apparel.from_price(l) <= price)
+
+    def test_the_truth_is_the_fixture_read_with_the_generators_helpers(self):
+        for listing in self.listings:
+            entry = self.truth[self.sku(listing)]
+            self.assertEqual(entry["from"], apparel.from_price(listing))
+            for size in apparel.SIZES:
+                self.assertEqual(entry["sizes"].get(size), apparel.price_for(listing, size))
+                self.assertEqual(entry["buyable"].get(size), apparel.buyable_price_for(listing, size))
+
+    def test_the_six_v1_floors_are_unchanged(self):
+        # 0, 8, 8, 1, 15, 15 on Thornwood, as every stored clothing batch was verified with.
+        inst = self.instance
+        expected = {"apparel-headline": 0, "apparel-target-price": inst["oracle_min_opens"],
+                    "apparel-cheapest-target": inst["oracle_min_opens"], "apparel-all-stocked": 1,
+                    "apparel-count-stocked": inst["listings"], "apparel-count-buyable": inst["listings"]}
+        self.assertEqual({task_id: self.floor(task_id).count for task_id in expected}, expected)
+        self.assertEqual(self.floor("apparel-count-buyable").all_of, frozenset(self.truth))
+        self.assertEqual(self.floor("apparel-all-stocked").one_of,
+                         frozenset(s for s, t in self.truth.items() if t["m"] is None))
+
+    def test_cheapest_for_a_size_reads_the_size_from_the_question(self):
+        for_m = self.floor("apparel-cheapest-target")
+        self.assertEqual(for_m.all_of, self.advertised_at_or_below(self.instance["winner"]["price"]))
+        self.assertEqual(for_m.count, self.instance["oracle_min_opens"])
+        # Size XL: the XL winner's price, which `_instance` records as the largest size's,
+        # and the listings advertised at or below it. Until 14 Oct 2026 this returned the
+        # M floor, read from `_instance` rather than from the question.
+        winner = min((apparel.buyable_price_for(l, "XL") for l in self.listings
+                      if apparel.buyable_price_for(l, "XL") is not None))
+        self.assertEqual(winner, self.instance["largest_size_winner"]["price"])
+        for_xl = self.floor("apparel-cheapest-xl")
+        self.assertEqual(for_xl.all_of, self.advertised_at_or_below(winner))
+        self.assertEqual(for_xl.count, len(for_xl.all_of))
+        self.assertNotEqual(for_xl.count, for_m.count)
+        self.assertIn("igr-app-08", for_xl.all_of)      # Ivybridge, the XL winner
+
+    def test_exists_with_a_witness_needs_the_witness_itself(self):
+        witnesses = frozenset(self.sku(l) for l in v2.witnesses(self.listings, "M", v2.LIMIT_YES))
+        floor = self.floor("apparel-exists-under-27")
+        self.assertEqual((floor.count, floor.all_of, floor.one_of), (1, frozenset(), witnesses))
+        self.assertEqual(len(witnesses), 1)
+        witness = next(iter(witnesses))
+        other = next(s for s in self.truth if s != witness)
+        self.assertTrue(verify_cells.covered(floor, {witness}))
+        self.assertFalse(verify_cells.covered(floor, {other}))          # one listing, not the one
+        self.assertTrue(verify_cells.covered(floor, {other, witness}))
+
+    def test_exists_without_a_witness_needs_every_listing_under_the_limit(self):
+        self.assertEqual(v2.witnesses(self.listings, "M", v2.LIMIT_NO), [])
+        under = frozenset(self.sku(l) for l in self.listings if apparel.from_price(l) < v2.LIMIT_NO)
+        floor = self.floor("apparel-exists-under-25")
+        self.assertEqual((floor.count, floor.all_of, floor.one_of), (len(under), under, frozenset()))
+        self.assertGreater(floor.count, 0)
+        self.assertNotIn("igr-app-14", under)    # Alderney, advertised above the limit
+        self.assertTrue(verify_cells.covered(floor, set(under)))
+        short = set(under) - {next(iter(under))}
+        self.assertFalse(verify_cells.covered(floor, short | {"igr-app-14"}))  # right size, wrong set
+
+    def test_top_k_needs_every_listing_at_or_below_the_kth_price(self):
+        able = v2.buyable(self.listings, "M")
+        kth = apparel.buyable_price_for(able[v2.TOP_K - 1], "M")
+        floor = self.floor("apparel-top-3")
+        self.assertEqual(floor.all_of, self.advertised_at_or_below(kth))
+        self.assertEqual((floor.count, floor.one_of), (len(floor.all_of), frozenset()))
+        self.assertGreater(floor.count, self.floor("apparel-cheapest-target").count)
+        self.assertLess(floor.count, len(self.truth))
+
+    def test_a_named_pair_needs_both_named_listings(self):
+        low, high = v2.comparison_pair(self.listings, "M")
+        pair = frozenset((self.sku(low), self.sku(high)))
+        floor = self.floor("apparel-named-pair")
+        self.assertEqual((floor.count, floor.all_of, floor.one_of), (2, pair, frozenset()))
+        self.assertTrue(verify_cells.covered(floor, set(pair)))
+        self.assertFalse(verify_cells.covered(floor, {self.sku(low), "igr-app-14"}))
+
+    def test_a_shape_with_no_rule_gets_none_rather_than_raising(self):
+        task = {**self.tasks["apparel-cheapest-target"], "id": "argmax-question",
+                "query": "Go to {base}/catalogsearch/result/?q=Thornwood . Which Thornwood seller "
+                         "is the most expensive for size M?"}
+        floor = verify_cells.own_floor(task, self.truth)
+        self.assertEqual((floor.count, floor.all_of, floor.one_of, floor.rule),
+                         (None, frozenset(), frozenset(), "none"))
+        self.assertFalse(verify_cells.covered(floor, set(self.truth)))
+
+    def test_every_v2_task_has_a_floor_or_is_not_gated(self):
+        for task in self.spec["tasks"]:
+            with self.subTest(task=task["id"]):
+                floor = verify_cells.own_floor(task, self.truth)
+                if task["gated"]:
+                    self.assertIsNotNone(floor.count)
+                else:
+                    self.assertEqual((floor.count, floor.rule), (0, "not gated"))
+
+    def test_the_floor_table_prints_every_task(self):
+        run = subprocess.run([sys.executable, str(paths.EXPERIMENTS / "analysis" / "verify_cells.py"),
+                              "--floors", str(V2)], capture_output=True, text=True)
+        self.assertEqual(run.returncode, 0, run.stderr)
+        for task in self.spec["tasks"]:
+            self.assertIn(task["id"], run.stdout)
+        self.assertIn("apparel-exists-under-27", run.stdout)
 
 
 if __name__ == "__main__":

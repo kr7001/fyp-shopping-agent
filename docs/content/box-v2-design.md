@@ -147,6 +147,33 @@ nothing in the box reads an answer key. v1's four strategies become four of the 
 3. **The claim, on a fresh clothing market** generated after v2 is frozen, three arms.
 4. **Next**, the review questions, through the depth primitive.
 
+### The coverage floors
+
+"Met own floor" and "covered" in `verify_cells.py` hold each run to the listings its answer
+depends on. The floor is read from the question, from the advertised prices the box read from
+the page and from the fixture's variants, never from the agent's answer, the same way as the
+existing cheapest rule: every listing advertised at or below the winning price for the size.
+Written down on 14 October 2026, before being coded (LESSONS 5), when the verifier found the
+tool raised on the four shapes the v2 batch adds. The definitions live in the docstring of
+`verify_cells.own_floor`, and `python3 experiments/analysis/verify_cells.py --floors
+experiments/tasks/tasks_apparel_v2.json` prints every v2 question's floor from the fixture.
+
+1. **Exists under a limit, with a witness** (the key says yes): the answer depends on the
+   witness only, so the floor is 1, and covered means a witness listing itself was opened, not
+   any one listing.
+2. **Exists under a limit, no witness** (the key says no): a sound no needs every listing the
+   limit does not rule out, every listing advertised strictly under the limit, since the
+   question says "under". Computed from the page and the limit.
+3. **Top-k**: every listing advertised at or below the k-th cheapest price any listing can sell
+   the size for.
+4. **A named pair**: the two named listings, floor 2, and covered means both were opened.
+5. **Cheapest for a size other than M**: every listing advertised at or below that size's
+   winning price, not the M floor. Until this was written the tool read size M's floor from
+   `_instance` whatever size the question named.
+
+A gated question none of these rules covers gets no floor, and the report lists it as a problem,
+"no floor rule for <id>", rather than a figure.
+
 ## The build, in order
 
 1. `experiments/box/form.py`: the record, `from_rules`, verification with the fifth property,
