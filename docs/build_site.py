@@ -572,6 +572,8 @@ def build() -> dict:
         "today": content("today"),
         "spec": content("box-v1-spec"),
         "report": content("report"),
+        "research": content("research"),
+        "v2": content("box-v2-design"),
         "open": content("open-problems"),
         "tests": {"unit": unit_tests(), "mod": mod_tests(),
                   "regression_questions": len(planner.questions()),
