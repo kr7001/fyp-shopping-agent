@@ -24,15 +24,18 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402
 import ambiguity  # noqa: E402
 import box  # noqa: E402
+import form as form_module  # noqa: E402
 import page  # noqa: E402
 import planner  # noqa: E402
 import policy  # noqa: E402
+import primitives  # noqa: E402
 import score  # noqa: E402
 import suite  # noqa: E402
 import targeting  # noqa: E402
 
 BASE = "http://localhost:7770"
 RESULTS_URL = f"{BASE}/catalogsearch/result/?q=Example"
+FIXTURES = pathlib.Path(__file__).resolve().parent / "fixtures"
 
 
 def clothing_questions() -> dict[str, str]:
@@ -235,9 +238,11 @@ class Decide(unittest.TestCase):
                 else:
                     self.assertEqual(decision.kind, targeting.classify(q))
                     self.assertIsNone(decision.ask)
-                    self.assertEqual(planner.verify(decision.plan), [])
+                    self.assertEqual(form_module.verify(decision.form, self.page), [])
+                    self.assertEqual(decision.plan.kind, decision.kind)
                     self.assertTrue(decision.query.startswith(q + "\n\n"))
                     self.assertEqual(decision.record()["asked"], False)
+                    self.assertIsNone(decision.refuse)
 
     def test_a_reply_plans_the_ambiguous_questions_under_that_reading(self):
         for task_id in self.AMBIGUOUS:
@@ -288,13 +293,22 @@ class Decide(unittest.TestCase):
         self.assertIsNone(decision.reading)
         self.assertEqual(decision.query, box.decide(q, self.page).query)
 
-    def test_the_record_carries_the_versions_and_the_page(self):
+    def test_the_record_carries_the_versions_the_page_the_form_and_the_plan(self):
         decision = box.decide(self.questions["apparel-target-price"], self.page)
         record = decision.record()
-        self.assertEqual(record["box_version"], box.VERSION)
+        self.assertEqual((record["box_version"], record["form_version"], record["primitives_version"]),
+                         (2, form_module.VERSION, primitives.VERSION))
         self.assertEqual(record["page"], self.page.record())
         self.assertEqual(record["kind"], "availability_bound")
-        self.assertEqual((decision.plan["planner_version"], decision.plan["strategy_version"]),
+        self.assertEqual(record["form"], decision.form.record())
+        self.assertEqual((record["form"]["kind"], record["form"]["quantifier"], record["form"]["source"]),
+                         ("availability_bound", "argmin", "rules"))
+        self.assertEqual(record["plan"], decision.plan.record())
+        self.assertEqual(record["plan"]["primitive"], "bound_prune")
+        self.assertIsNone(record["refuse"])
+        # The plan the form composes to is the planner's, at the planner's versions.
+        plan = form_module.plan_dict(decision.form)
+        self.assertEqual((plan["planner_version"], plan["strategy_version"]),
                          (planner.VERSION, targeting.VERSION))
 
     def test_results_url_is_the_first_url_in_the_question(self):
@@ -303,6 +317,150 @@ class Decide(unittest.TestCase):
         self.assertEqual(box.results_url(f"See {BASE}/a.html."), f"{BASE}/a.html")
         with self.assertRaises(ValueError):
             box.results_url("Which seller is cheapest for size M?")
+
+
+class V1Bytes(unittest.TestCase):
+    """The six clothing questions render byte for byte what box v1 rendered, frozen in
+    `fixtures/v1_clothing_queries.json` from the v1 code before box.py changed, under no
+    reading and under each scripted reading. So the pilot measured under v1 is a
+    measurement of the text v2 sends."""
+
+    def test_every_frozen_entry_is_reproduced(self):
+        frozen = json.loads((FIXTURES / "v1_clothing_queries.json").read_text())
+        self.assertIn("box.VERSION 1", " ".join(frozen["_about"]))
+        questions = clothing_questions()
+        page_ = synthetic_page([31.40, 12.25, 19.50])
+        self.assertEqual(len(frozen["queries"]), 18)
+        self.assertEqual({row["task"] for row in frozen["queries"]}, set(questions))
+        for row in frozen["queries"]:
+            with self.subTest(task=row["task"], reading=row["reading"]):
+                decision = box.decide(questions[row["task"]], page_, reply=row["reading"])
+                self.assertEqual(decision.query, row["query"])
+                self.assertEqual(decision.ask.text if decision.ask else None, row["ask"])
+
+    def test_the_fixture_is_the_v1_text_and_not_a_copy_of_v2s(self):
+        # The entries are the question, the preamble and the v7 body, nothing else.
+        frozen = json.loads((FIXTURES / "v1_clothing_queries.json").read_text())
+        page_ = synthetic_page([31.40, 12.25, 19.50])
+        for row in frozen["queries"]:
+            if row["query"] is None:
+                continue
+            with self.subTest(task=row["task"], reading=row["reading"]):
+                body = row["query"].split(f"\n\n{box.preamble(page_)}\n\n", 1)[1]
+                self.assertIn(body, targeting.BODIES.values())
+
+
+class NumericalAsk(unittest.TestCase):
+    """Box v2: a price word with no figure asks for the threshold, and nothing is planned."""
+
+    def setUp(self):
+        self.page = synthetic_page([31.40, 12.25, 19.50])
+        self.go = f"Go to {RESULTS_URL} . "
+
+    def test_a_cheap_tee_asks_for_a_limit(self):
+        decision = box.decide(self.go + "Which seller has a cheap tee in M?", self.page)
+        self.assertIsNotNone(decision.ask)
+        self.assertEqual(decision.ask.verb, "cheap")
+        self.assertEqual(decision.ask.readings, {})
+        self.assertIn("gives no figure", decision.ask.text)
+        self.assertEqual((decision.query, decision.plan, decision.kind), (None, None, None))
+        record = decision.record()
+        self.assertEqual((record["asked"], record["query"], record["form"]["unknowns"]),
+                         (True, None, ["price limit"]))
+        # A scripted reading cannot answer a threshold, so the ask stands.
+        self.assertIsNone(box.decide(self.go + "Which seller has a cheap tee in M?", self.page,
+                                     reply="menu").query)
+
+    def test_a_figure_settles_it(self):
+        for question in (self.go + "Is there any seller under $20 for size M?",
+                         self.go + "Which seller is cheapest for size M?"):
+            with self.subTest(question=question):
+                decision = box.decide(question, self.page)
+                self.assertIsNone(decision.ask)
+                self.assertIsNotNone(decision.query)
+
+
+class Refusal(unittest.TestCase):
+    """Box v2: a question needing an attribute the shop does not show gets no plan and no
+    agent run. The box says what is missing."""
+
+    def setUp(self):
+        self.page = synthetic_page([31.40, 12.25, 19.50])
+        self.go = f"Go to {RESULTS_URL} . "
+
+    def test_delivery_and_shipping_are_refused(self):
+        for question, missing in ((self.go + "Which seller delivers fastest?", "delivery time"),
+                                  (self.go + "Which seller is cheapest for size M with free shipping?",
+                                   "shipping cost")):
+            with self.subTest(question=question):
+                decision = box.decide(question, self.page)
+                self.assertTrue(decision.refuse.startswith(f"The shop does not show {missing}"))
+                self.assertEqual((decision.query, decision.plan, decision.kind, decision.ask),
+                                 (None, None, None, None))
+                record = decision.record()
+                self.assertEqual((record["refuse"], record["asked"], record["query"]),
+                                 (decision.refuse, False, None))
+                self.assertIsNotNone(record["form"])
+
+    def test_a_question_the_shop_can_answer_is_not_refused(self):
+        for q in clothing_questions().values():
+            with self.subTest(question=q[:60]):
+                decision = box.decide(q, self.page, reply="menu")
+                self.assertIsNone(decision.refuse)
+                self.assertIsNotNone(decision.query)
+
+
+def openjiuwen_log(folder: str, name: str, urls: list[str], seen: str = "") -> pathlib.Path:
+    """A log whose tool replies report landing on these URLs, in the form
+    `sufficiency.observed_text` and `listings_opened` read."""
+    messages = [{"role": "user", "content": "the task"}]
+    messages += [{"role": "tool", "tool_call_id": "c", "content": f"Page URL: {url}\n{seen}"}
+                 for url in urls]
+    path = pathlib.Path(folder) / f"{name}.log"
+    path.write_text(json.dumps({"event_id": "e1", "messages": messages}) + "\n")
+    return path
+
+
+class BoxCheck(unittest.TestCase):
+    """Box v2's answer check: v1's page-derived check for a v1 kind, then the plan's own."""
+
+    def setUp(self):
+        self.page = synthetic_page([round(10.15 + n, 2) for n in range(15)])
+        self.go = f"Go to {RESULTS_URL} . "
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+
+    def urls(self, n: int) -> list[str]:
+        return [item.url for item in self.page.by_price()[:n]]
+
+    def test_a_v1_kind_keeps_v1s_verdict_and_adds_the_primitives(self):
+        question = self.go + ("Across all the listings, which seller is cheapest for size M, and "
+                              "what is that price? Only count a listing that can actually supply it.")
+        decision = box.decide(question, self.page)
+        answer = "Seller F is cheapest at $15.15 for size M."
+        few = box.check(decision, answer, openjiuwen_log(self.tmp.name, "few", self.urls(3), "Price: $15.15"))
+        self.assertEqual((few["flag"], few["floor"], few["opened"], few["floor_from"]),
+                         ("superlative_without_coverage", 6, 3, "page"))
+        self.assertEqual(few, policy.gate_from_page(question, self.page, answer,
+                                                    openjiuwen_log(self.tmp.name, "few2", self.urls(3),
+                                                                   "Price: $15.15")))
+        enough = box.check(decision, answer, openjiuwen_log(self.tmp.name, "enough", self.urls(6), "Price: $15.15"))
+        self.assertEqual((enough["ok"], enough["primitive"]), (True, "bound_prune"))
+
+    def test_a_new_kind_exempts_the_questions_own_figure_and_runs_its_primitive(self):
+        question = self.go + "Is there any seller under $20.00 for size M?"
+        decision = box.decide(question, self.page)
+        self.assertEqual(decision.kind, "exists_price")
+        answer = "No. No seller is under $20.00 for size M."
+        # Ten listings advertise at or below $20.00, and the $20.00 is the question's own.
+        covered = box.check(decision, answer, openjiuwen_log(self.tmp.name, "covered", self.urls(10)))
+        self.assertEqual((covered["ok"], covered["primitive"], covered["opened"]), (True, "witness", 10))
+        short = box.check(decision, answer, openjiuwen_log(self.tmp.name, "short", self.urls(3)))
+        self.assertEqual(short["flag"], "existence_denied_without_coverage")
+        # A figure that is neither the question's nor on any page is still unsupported.
+        invented = box.check(decision, "No. The cheapest M is $21.00.",
+                             openjiuwen_log(self.tmp.name, "invented", self.urls(10)))
+        self.assertEqual(invented["flag"], "unsupported_number")
 
 
 class GateFromPage(unittest.TestCase):
@@ -425,7 +583,7 @@ class SuiteQuery(unittest.TestCase):
                 decision = box.decide(q, self.page)
                 self.assertEqual(query, decision.query)
                 self.assertEqual(applied, {"strategy": decision.kind, "box": decision.record(),
-                                           "page": self.page})
+                                           "page": self.page, "decision": decision})
                 query, applied = suite.build_query(task, self.spec, self.args(box=True, reading="menu"))
                 self.assertEqual(query, box.decide(q, self.page, reply="menu").query)
                 self.assertIsNotNone(query)
@@ -434,10 +592,10 @@ class SuiteQuery(unittest.TestCase):
         task = next(t for t in self.spec["tasks"] if t["id"] == "apparel-all-stocked")
         q = self.question(task)
         self.assertEqual(suite.build_query(task, self.spec, self.args()),
-                         (q, {"strategy": None, "box": None, "page": None}))
+                         (q, {"strategy": None, "box": None, "page": None, "decision": None}))
         self.assertEqual(suite.build_query(task, self.spec, self.args(targeting=True)),
                          (planner.planned_query(q)[0],
-                          {"strategy": "refutation", "box": None, "page": None}))
+                          {"strategy": "refutation", "box": None, "page": None, "decision": None}))
         self.assertEqual(suite.build_query(task, self.spec, self.args(exhaustive=True))[0],
                          policy.exhaustive_query(q))
         self.assertEqual(suite.build_query(task, self.spec, self.args(confidence="plain"))[0],
@@ -455,6 +613,14 @@ class SuiteQuery(unittest.TestCase):
                          ("apparel-all-stocked", 2, "asked", 0, None, None))
         self.assertEqual(row["answer"], Ambiguity.ASK)
         self.assertEqual(row["box"], record)
+
+    def test_a_refused_row_spends_nothing_and_says_what_was_missing(self):
+        task = next(t for t in self.spec["tasks"] if t["id"] == "apparel-headline")
+        decision = box.decide(f"Go to {RESULTS_URL} . Which seller delivers fastest?", self.page)
+        row = suite.asked_row(task, 1, decision.record())
+        self.assertEqual((row["verdict"], row["cost_usd"], row["log"]), ("refused", 0, None))
+        self.assertTrue(row["answer"].startswith("The shop does not show delivery time"))
+        self.assertIn("refused", row["why"])
 
     def test_the_reading_is_recorded_only_on_a_row_the_box_asked_on(self):
         # Verifier finding, 14 Oct 2026: under --reading menu every row said "menu", the
@@ -525,7 +691,8 @@ class AgentCode(unittest.TestCase):
 # instance and of the seeder's manifests, and the fixture and manifest files themselves. Not
 # covered: a bare number such as the market's size, which no test can tell from any other 15.
 ANSWER_KEYS = {"_instance", "expect", "oracle_min_opens", "ground_truth"}
-BEFORE_THE_AGENT = ("targeting.py", "planner.py", "page.py", "ambiguity.py", "box.py")
+BEFORE_THE_AGENT = ("targeting.py", "planner.py", "page.py", "ambiguity.py", "box.py",
+                    "form.py", "primitives.py")
 
 
 def code_values(source: str) -> tuple[list[str], list[float], set[str]]:
@@ -616,7 +783,7 @@ class NoAnswerKey(unittest.TestCase):
         # decision modules read nothing at all. (`planner.py` is not held to this: its
         # `--regression` reads every task file's questions, and `answer_reads` above checks
         # that it reads none of their answers.)
-        for name in ("page.py", "ambiguity.py", "box.py", "targeting.py"):
+        for name in ("page.py", "ambiguity.py", "box.py", "targeting.py", "form.py", "primitives.py"):
             with self.subTest(file=name):
                 _, _, names = code_values(self.source(name))
                 if name == "page.py":
