@@ -1,0 +1,669 @@
+#!/usr/bin/env python3
+"""The logical form of a shopping question: what is asked, over what, under which conditions.
+
+Box v1 chose one of seven strategies by keyword and sent that strategy's text. That covers
+the questions the project had met and nothing past them. The form is the record those
+strategies approximated: a quantifier (the best of a market, one witness, every member, a
+count), the attribute compared, the conditions a candidate must meet, the population ranged
+over, and what the question leaves unsaid. The plan is composed from it (`primitives.py`),
+the soundness check reads it (`verify`), and the run record stores it, so every plan can be
+reproduced and a verifier can see what the box believed.
+
+Two parsers produce it. `from_rules` is deterministic, built on `targeting.py`'s patterns so
+every question the project has run keeps the kind v1 gave it, and extended for the forms the
+research census found v1 lacked: existence under a price limit, the k cheapest, a comparison
+of named listings, a filtered cheapest, a lookup on one listing. `from_model` asks a model
+through a `call` the caller injects, so this module does no I/O and the tests use a fake. A
+real call goes through the spend guard (`runners/parse_probe.py`).
+
+It reads the question, and the page only for the sellers named on it. Never a task file's
+answers, a market's instance record or a fixture: `tests/test_box.py` checks that.
+
+    python experiments/box/form.py "Is there any seller under $20 for size M?"
+"""
+
+from __future__ import annotations
+
+import argparse
+import dataclasses
+import json
+import pathlib
+import re
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402,F401  (puts box/, runners/, analysis/, water/ on the path)
+import ambiguity
+import page as page_module
+import planner
+import sufficiency
+import targeting
+
+# Bumped when the vocabulary or a rule changes what a question parses to. Runs made under
+# different versions are different boxes and are never pooled.
+#
+#   1  14 October 2026. The record, the rules parser, the five-property check and the
+#      model parser's prompt
+VERSION = 1
+
+# The vocabulary. A form outside it is refused when it is built, so a model's reply cannot
+# smuggle in a quantifier nothing knows how to plan.
+QUANTIFIERS = ("lookup", "exists", "forall", "argmin", "argmax", "topk", "count", "aggregate")
+POPULATIONS = ("listing", "results", "reviews")
+# "advertised price" is the one the results page prints, the cheapest option a listing can
+# sell. "price" is the price of the option asked about, shown only after it is chosen. The
+# control question compares the first and is answered without opening anything, so the two
+# have to be told apart. Any other attribute is "attribute:<name>".
+OBJECTIVES = ("price", "advertised price", "rate", "availability", "size", "mention")
+OPS = ("=", "<=", ">=", "in", "contains")
+SOURCES = ("rules", "model")
+
+# What an objective needs to read. A rate is a price over a pack size, and a mention is
+# found in a review's text.
+NEEDS = {"price": ("price",), "advertised price": ("advertised price",),
+         "rate": ("price", "size"), "availability": ("availability",), "size": ("size",),
+         "mention": ("review text",)}
+
+# What a product page of this shop shows, checked on 14 October 2026 against the gated
+# Thornwood listings (igr-app-02.html among them): a Size menu filled from the page's
+# spConfig (S, M, L, XL), the price of the chosen size written into the price box 60 ms
+# after it is chosen (env/gated_theme), and whether a size can be bought, since the
+# configurable widget lists a size with no salable product as a disabled option. Not shown:
+# delivery time, shipping cost, warranty, stock quantity (the "Only N left" block is an
+# unfilled template), a seller rating, a rating summary (printed only for a product with
+# reviews, which no generated listing has) and, on the Thornwood listings, any description
+# block at all (the Rivenhall ones print a one-line generated note), so none of those is
+# an attribute a plan may rely on.
+LISTING_PAGE_SHOWS = frozenset({"size", "price", "availability"})
+# What a review page shows, checked the same day on /review/product/list/id/230/: the text
+# of each review, a rating per review, and the page number, ten reviews to a page.
+REVIEW_PAGE_SHOWS = frozenset({"review text", "review rating", "review page"})
+# The results page's attributes are whatever `page.py` reads for every card, named here
+# the way a question names them.
+RESULTS_PAGE_NAMES = {"advertised": "advertised price"}
+
+
+@dataclasses.dataclass(frozen=True)
+class Filter:
+    """One condition a candidate must meet: size = M, price <= 20, seller in (A, B)."""
+    attribute: str
+    op: str
+    value: str | float | tuple[str, ...]
+
+    def __post_init__(self):
+        if self.op not in OPS:
+            raise ValueError(f"filter op {self.op!r} is not one of {OPS}")
+        if (self.op == "in") != isinstance(self.value, tuple):
+            raise ValueError(f"filter {self.attribute} {self.op}: 'in' takes a tuple of values "
+                             f"and nothing else does, got {self.value!r}")
+
+    def record(self) -> dict:
+        value = list(self.value) if isinstance(self.value, tuple) else self.value
+        return {"attribute": self.attribute, "op": self.op, "value": value}
+
+
+@dataclasses.dataclass(frozen=True)
+class Form:
+    quantifier: str
+    objective: str
+    filters: tuple[Filter, ...] = ()
+    population: str = "results"
+    k: int | None = None                 # for topk
+    reading: str | None = None           # which reading of an ambiguous word was chosen
+    unknowns: tuple[str, ...] = ()       # what the question leaves unsaid or the page lacks
+    source: str = "rules"
+    evidence: dict = dataclasses.field(default_factory=dict)   # field -> the words that chose it
+
+    def __post_init__(self):
+        if self.quantifier not in QUANTIFIERS:
+            raise ValueError(f"quantifier {self.quantifier!r} is not one of {QUANTIFIERS}")
+        if self.population not in POPULATIONS:
+            raise ValueError(f"population {self.population!r} is not one of {POPULATIONS}")
+        if self.objective not in OBJECTIVES and not (
+                self.objective.startswith("attribute:") and len(self.objective) > len("attribute:")):
+            raise ValueError(f"objective {self.objective!r} is not one of {OBJECTIVES} or "
+                             f"'attribute:<name>'")
+        if (self.quantifier == "topk") != (self.k is not None):
+            raise ValueError(f"k is {self.k!r} for quantifier {self.quantifier!r}: topk takes "
+                             f"a k and nothing else does")
+        if self.k is not None and (not isinstance(self.k, int) or self.k < 1):
+            raise ValueError(f"k must be a whole number of at least 1, got {self.k!r}")
+        if not all(isinstance(f, Filter) for f in self.filters):
+            raise ValueError("filters must be Filter records")
+        if self.source not in SOURCES:
+            raise ValueError(f"source {self.source!r} is not one of {SOURCES}")
+
+    def filter(self, attribute: str) -> Filter | None:
+        return next((f for f in self.filters if f.attribute == attribute), None)
+
+    def kind(self) -> str:
+        """The name of the plan this form composes to.
+
+        The seven v1 names keep their meaning, so the planner regression and every run
+        recorded under them stay comparable: a universal is "refutation" whatever it
+        checks, a count or a listing of everything is "survey", a review question is
+        "depth_search". A form v1 had no strategy for gets a new name: "exists_price",
+        "topk_price", "named_lookup", "argmax_price". A combination no primitive plans,
+        such as an existence question about a rate, gets a name the planner has no row
+        for, and `verify` refuses it.
+        """
+        if self.population == "reviews":
+            return "depth_search"
+        if self.quantifier == "lookup":
+            return "named_lookup"
+        if self.quantifier == "forall":
+            return "refutation"
+        if self.quantifier in ("count", "aggregate"):
+            return "survey"
+        if self.quantifier == "argmin":
+            if self.objective == "advertised price":
+                return "results_page"
+            if self.objective == "rate":
+                return "rate_bound"
+            if self.objective == "price":
+                return "availability_bound" if self.filter("availability") else "total_bound"
+        word = self.objective.removeprefix("attribute:").replace(" ", "_")
+        return f"{self.quantifier}_{word}"
+
+    def attributes(self) -> set[str]:
+        """Every attribute the form compares or filters on, for the fifth property."""
+        needed = NEEDS.get(self.objective) or (self.objective.removeprefix("attribute:"),)
+        return set(needed) | {f.attribute for f in self.filters}
+
+    def record(self) -> dict:
+        return {"form_version": VERSION, "kind": self.kind(), "quantifier": self.quantifier,
+                "objective": self.objective, "filters": [f.record() for f in self.filters],
+                "population": self.population, "k": self.k, "reading": self.reading,
+                "unknowns": list(self.unknowns), "source": self.source,
+                "evidence": dict(self.evidence)}
+
+
+def from_record(data: dict, source: str) -> Form:
+    """A form from its record, or from a model's reply, refused with the field named when a
+    value is outside the vocabulary."""
+    if not isinstance(data, dict):
+        raise ValueError(f"a form is a JSON object, got {type(data).__name__}")
+    missing = [key for key in ("quantifier", "objective", "population") if key not in data]
+    if missing:
+        raise ValueError(f"the form lacks {', '.join(missing)}")
+    filters = []
+    for entry in data.get("filters") or []:
+        if not isinstance(entry, dict) or not {"attribute", "op", "value"} <= set(entry):
+            raise ValueError(f"a filter needs attribute, op and value, got {entry!r}")
+        value = tuple(str(v) for v in entry["value"]) if isinstance(entry["value"], list) \
+            else entry["value"]
+        filters.append(Filter(str(entry["attribute"]), str(entry["op"]), value))
+    k = data.get("k")
+    if isinstance(k, float) and k.is_integer():
+        k = int(k)
+    evidence = data.get("evidence") or {}
+    if not isinstance(evidence, dict):
+        raise ValueError(f"evidence must map each field to the words that chose it, got {evidence!r}")
+    return Form(quantifier=str(data["quantifier"]), objective=str(data["objective"]),
+                filters=tuple(filters), population=str(data["population"]), k=k,
+                reading=data.get("reading") or None,
+                unknowns=tuple(str(u) for u in data.get("unknowns") or []), source=source,
+                evidence={str(key): str(words) for key, words in evidence.items()})
+
+
+# ---------------------------------------------------------------------------
+# What the shop shows, and the five properties
+
+def attributes_shown(page: page_module.Page | None = None) -> set[str]:
+    """Every attribute a plan may compare or filter on: what the results page the box read
+    prints for each listing (the parser's own fields, so a field added to `page.py` is shown
+    here too), plus the two short lists above of what a listing page and a review page show.
+    """
+    listing = type(page.listings[0]) if page is not None and page.listings else page_module.Listing
+    results = {RESULTS_PAGE_NAMES.get(f.name, f.name) for f in dataclasses.fields(listing)}
+    return results | set(LISTING_PAGE_SHOWS) | set(REVIEW_PAGE_SHOWS)
+
+
+def not_shown(form: Form, page: page_module.Page | None = None) -> list[str]:
+    """Property 5: the attributes the form needs that this shop does not show, in order."""
+    missing = form.attributes() - attributes_shown(page)
+    # A size in the menu that cannot be bought has no price on this shop: the gated page
+    # writes a price only for the chosen size, and a disabled size cannot be chosen. So a
+    # price question under the menu reading asks for a figure the page never prints.
+    availability = form.filter("availability")
+    if availability is not None and availability.value == "listed" and (
+            form.objective in ("price", "rate") or form.filter("price") is not None):
+        missing.add("the price of a sold-out size")
+    return sorted(missing)
+
+
+def refusal(missing: list[str]) -> str:
+    """What the box says instead of planning: what is missing, and what the shop does show."""
+    return (f"The shop does not show {', '.join(missing)}, so this question cannot be answered "
+            "from it. What it shows: on the results page, each listing's seller, title, URL and "
+            "advertised price. On a listing, its size menu, the price of a size once chosen and "
+            "whether a size can be bought. On a review page, the text, rating and page of each "
+            "review.")
+
+
+def plan_dict(form: Form) -> dict | None:
+    """The planner's plan for this form, assembled from `planner.py`'s tables, which stay the
+    one source of truth for the four v1 properties. None when no row plans the form's kind.
+
+    The same shape `planner.plan` builds for a question. Here the kind is the form's rather
+    than the keyword classifier's, and `tests/test_form.py` checks the two agree on every
+    question v1 classified.
+    """
+    kind = form.kind()
+    if kind not in planner.QUANTIFIERS:
+        return None
+    return {
+        "planner_version": planner.VERSION,
+        "strategy_version": targeting.VERSION,
+        "kind": kind,
+        "quantifier": planner.QUANTIFIERS[kind],
+        "population": "every listing in the search results, including later pages",
+        "evidence_source": "results page" if kind == "results_page" else "listing pages",
+        "enumerate_first": True,
+        "bound": planner.BOUNDS[kind],
+        "stop_rule": planner.STOP_RULES[kind],
+        "evidence_required": planner.EVIDENCE[kind],
+        "forbidden_claims": planner.FORBIDDEN_WITH_BOUND if planner.BOUNDS[kind] else [],
+    }
+
+
+def verify(form: Form, page: page_module.Page | None = None) -> list[str]:
+    """Why this form must not be planned, empty when it may be.
+
+    The planner's four properties, read from the plan the form composes to, and the fifth:
+    every attribute compared or filtered on is one the shop shows. The 18 September probe's
+    one unsound plan compared a delivery time the shop does not publish, and only a check
+    against the page catches that.
+    """
+    plan = plan_dict(form)
+    problems = ([f"no plan exists for kind {form.kind()!r}"] if plan is None
+                else planner.properties(plan))
+    if form.quantifier == "lookup" and not (form.filter("url") or form.filter("seller")):
+        problems.append("a lookup names no listing")
+    problems += [f"the shop does not show {attribute}" for attribute in not_shown(form, page)]
+    return problems
+
+
+# ---------------------------------------------------------------------------
+# The rules parser
+
+URL = re.compile(r"https?://\S+")
+RESULTS_URL = re.compile(r"catalogsearch")
+
+# The k of a top-k question: "three cheapest", "the cheapest three", "top 3". "three
+# listings" is not one, and "cheapest" alone is the best of the market.
+NUMBER_WORDS = {w: i for i, w in enumerate(
+    "zero one two three four five six seven eight nine ten".split())}
+COUNT_WORD = r"(?:two|three|four|five|six|seven|eight|nine|ten|\d{1,2})"
+TOPK = re.compile(rf"\b(?:(?P<before>{COUNT_WORD})\s+cheapest|cheapest\s+(?P<after>{COUNT_WORD})"
+                  rf"|top\s+(?P<top>{COUNT_WORD}))\b", re.IGNORECASE)
+# An existence question. "anyone" in "the lowest price anyone charges" is a superlative, so
+# `targeting.CHEAPEST` is checked first and wins.
+EXISTS = re.compile(r"\b(?:is|are)\s+there\s+(?:any|a|an|one)\b"
+                    r"|\b(?:does|do|is|are|can|could|will|would)\s+any(?:one|body)?\b"
+                    r"|\banyone\b", re.IGNORECASE)
+# A price limit, read as "at or below". "$20 or less" and "under $20" both give 20.
+CEILING = re.compile(r"\b(?:under|below|less than|at most|no more than|not more than|cheaper "
+                     r"than|up to|within)\s*\$?\s*(?P<a>\d+(?:\.\d{1,2})?)\b"
+                     r"|\$?(?P<b>\d+(?:\.\d{1,2})?)\s+or\s+(?:less|under|below|cheaper)\b",
+                     re.IGNORECASE)
+RATING = re.compile(r"\brat(?:ing|ed)\s+(?:of\s+)?(?:at\s+least|above|over|no\s+less\s+than)\s+"
+                    r"(?P<a>\d(?:\.\d)?)\b"
+                    r"|\brated\s+(?P<b>\d(?:\.\d)?)\s+or\s+(?:higher|more|better|above)\b"
+                    r"|\b(?P<c>\d(?:\.\d)?)\s+stars?\s+(?:or\s+(?:more|higher|better|above)|and\s+up)\b"
+                    r"|\bat\s+least\s+(?P<d>\d(?:\.\d)?)\s+stars?\b", re.IGNORECASE)
+COLOUR = re.compile(r"\bin\s+(white|black|blue|red|green|grey|gray|navy|yellow|pink|purple|"
+                    r"orange|brown|beige|cream)\b", re.IGNORECASE)
+FREE_SHIPPING = re.compile(r"\bfree\s+(?:shipping|delivery|postage)\b", re.IGNORECASE)
+# The variant asked about: "size M", "size XL", "in M", "the 2 x 9.5L pack", "the 1 kg size".
+SIZE = re.compile(r"\bsize\s+([A-Z]{1,4}|\d[\w.]*)\b")
+SIZE_IN = re.compile(r"\bin\s+(XXS|XS|S|M|L|XL|XXL|XXXL)\b")
+PACK = re.compile(r"\bthe\s+((?:\d[\w.]*\s*x\s*)?\d[\w.]*\s*(?:ml|l|g|kg|litres?|liters?)?)"
+                  r"\s+(?:pack|size|bottle|carton|bag)\b", re.IGNORECASE)
+ARGMAX = re.compile(r"\b(?:most expensive|dearest|highest price|priciest)\b", re.IGNORECASE)
+# A price word with no figure anywhere in the question (URLs aside) asks for a threshold.
+VAGUE_PRICE = re.compile(r"\b(?:cheap|affordable|inexpensive|budget|low[- ]cost|bargain)\b",
+                         re.IGNORECASE)
+FIGURE = re.compile(r"\d")
+# What a review question asks the buyers about: "report that this product leaks or arrives
+# leaking" gives "leaks or arrives leaking".
+MENTION = re.compile(r"\b(?:report|say|mention|complain)(?:s|ed)?\s+(?:that\s+)?(?:this\s+product|it|"
+                     r"they|the\s+product)\s+(.+?)(?=[?.]|\s+Answer\b)", re.IGNORECASE)
+# Two named listings in a comparison frame: "Of A and B, which", "between A and B". A name
+# is a run of capitalised words, so "Of the Thornwood tee listings" is not one.
+NAME = r"[A-Z][\w&'-]*(?:\s+(?:[A-Z][\w&'-]*|&))*"
+NAMED_PAIR = re.compile(rf"\b(?:[Bb]etween|[Oo]f)\s+(?P<a>{NAME})\s+(?:and|or)\s+(?P<b>{NAME})"
+                        rf"(?=\s*[,:?]|\s+which\b)")
+# Attributes a question can ask for that this shop does not show. Recognised so the form
+# names what is missing rather than planning around it (property 5).
+OTHER_ATTRIBUTES = (
+    ("delivery time", re.compile(r"\bdeliver\w*\b", re.IGNORECASE)),
+    ("shipping cost", re.compile(r"\b(?:shipping|postage)\b", re.IGNORECASE)),
+    ("warranty", re.compile(r"\bwarrant\w*\b|\bguarantee\w*\b", re.IGNORECASE)),
+    ("stock quantity", re.compile(r"\b(?:how\s+many|units|items|pieces)\s+(?:are\s+)?left\b"
+                                  r"|\bstock\s+(?:level|quantity|count)\b", re.IGNORECASE)),
+    ("rating", re.compile(r"\brat(?:ing|ings|ed)\b|\bstars?\b", re.IGNORECASE)),
+)
+ARGMAX_WORDS = re.compile(r"\b(?:highest|most|longest|best|slowest)\b", re.IGNORECASE)
+SUPERLATIVE = re.compile(r"\b(?:fastest|quickest|soonest|slowest|longest|shortest|best|"
+                         r"highest|lowest|most|least)\b", re.IGNORECASE)
+VARIANT = ambiguity.whole_words(ambiguity.VARIANTS)
+MENU_WORDS = ambiguity.whole_words(ambiguity.MENU)
+BUYABLE_WORDS = ambiguity.whole_words(ambiguity.BUYABLE)
+# The sentence the box writes into a question when the user chooses a reading, without the
+# user's own phrase, so the reading can be read back out of the question.
+READING_MARKS = {key: sentence.split("' ", 1)[1] for key, (_, sentence) in ambiguity.READINGS.items()}
+
+
+def number(word: str) -> int:
+    return int(word) if word.isdigit() else NUMBER_WORDS[word.lower()]
+
+
+def population_of(question: str, evidence: dict) -> tuple[str, tuple[str, ...]]:
+    """Reviews when the question is about buyers, one or more listings when it names product
+    pages and no results page, otherwise the results page. The product URLs come back too."""
+    found = targeting.REVIEWS.search(question)
+    if found:
+        evidence["population"] = found.group(0)
+        return "reviews", ()
+    urls = [url.rstrip(".,;:)") for url in URL.findall(question)]
+    listings = tuple(url for url in urls if sufficiency.listing_key(url))
+    if listings and not any(RESULTS_URL.search(url) for url in urls):
+        evidence["population"] = f"{len(listings)} product URL{'s' if len(listings) > 1 else ''}"
+        return "listing", listings
+    evidence["population"] = "the results URL" if urls else "no URL, so the results page"
+    return "results", ()
+
+
+def reading_in(question: str, evidence: dict) -> str | None:
+    """The reading the user chose, read back from the sentence the box wrote in."""
+    for key, mark in READING_MARKS.items():
+        if mark in question:
+            evidence["reading"] = mark
+            return key
+    return None
+
+
+def filters_in(question: str, reading: str | None, evidence: dict) -> list[Filter]:
+    filters = []
+    size = SIZE.search(question) or SIZE_IN.search(question)
+    pack = PACK.search(question)
+    if size:
+        filters.append(Filter("size", "=", size.group(1)))
+        evidence["filter:size"] = size.group(0)
+    elif pack:
+        filters.append(Filter("size", "=", " ".join(pack.group(1).split())))
+        evidence["filter:size"] = pack.group(0)
+    # Buyable when the question says so or the user chose that reading. In the menu when
+    # the user chose the menu reading.
+    buyable = targeting.BUYABLE.search(question) or BUYABLE_WORDS.search(question)
+    if reading == "menu" or (reading is None and MENU_WORDS.search(question)):
+        filters.append(Filter("availability", "=", "listed"))
+        evidence["filter:availability"] = evidence.get("reading") or MENU_WORDS.search(question).group(0)
+    elif reading == "buyable" or buyable:
+        filters.append(Filter("availability", "=", "buyable"))
+        evidence["filter:availability"] = evidence.get("reading") if reading == "buyable" \
+            else buyable.group(0)
+    ceiling = CEILING.search(question)
+    if ceiling:
+        filters.append(Filter("price", "<=", float(ceiling.group("a") or ceiling.group("b"))))
+        evidence["filter:price"] = ceiling.group(0)
+    rating = RATING.search(question)
+    if rating:
+        value = next(v for v in rating.groups() if v)
+        filters.append(Filter("rating", ">=", float(value)))
+        evidence["filter:rating"] = rating.group(0)
+    colour = COLOUR.search(question)
+    if colour:
+        filters.append(Filter("colour", "=", colour.group(1).lower()))
+        evidence["filter:colour"] = colour.group(0)
+    shipping = FREE_SHIPPING.search(question)
+    if shipping:
+        filters.append(Filter("shipping cost", "=", "free"))
+        evidence["filter:shipping cost"] = shipping.group(0)
+    return filters
+
+
+def named_listings(question: str, page: page_module.Page | None, urls: tuple[str, ...],
+                   evidence: dict) -> Filter | None:
+    """The listings a question names: by product URL, by a seller on the page the box read,
+    or by two capitalised names in a comparison frame when there is no page."""
+    if urls:
+        evidence["filter:url"] = evidence["population"]
+        return Filter("url", "in", urls)
+    if page is not None:
+        low = question.lower()
+        sellers = tuple(item.seller for item in page.listings if item.seller.lower() in low)
+        if sellers:
+            evidence["filter:seller"] = ", ".join(sellers)
+            return Filter("seller", "in", sellers)
+    pair = NAMED_PAIR.search(question)
+    if pair:
+        evidence["filter:seller"] = pair.group(0)
+        return Filter("seller", "in", (pair.group("a"), pair.group("b")))
+    return None
+
+
+def other_attribute(question: str) -> tuple[str, str] | None:
+    """An attribute asked for that the shop does not show, with the words that asked."""
+    for attribute, pattern in OTHER_ATTRIBUTES:
+        found = pattern.search(question)
+        if found:
+            return attribute, found.group(0)
+    return None
+
+
+def what_is_checked(question: str) -> str:
+    """For a count, a universal or a listing of everything: the option's availability when
+    the question is about a variant or about buying, otherwise the price."""
+    if VARIANT.search(question) or targeting.BUYABLE.search(question):
+        return "availability"
+    return "price"
+
+
+def shape_of(question: str, filters: list[Filter], named: Filter | None,
+             evidence: dict) -> tuple[str, str, int | None]:
+    """Quantifier, objective and k, by the patterns in `targeting.classify`'s order with the
+    new forms slotted where they must be read first: a top-k before the plain cheapest, an
+    existence question before the cheapest as well but only when "cheapest" is absent, and
+    the named lookups after every pattern v1 had, so a cheapest question that happens to
+    name a seller is still the best of the market."""
+    def chosen(field: str, found: re.Match) -> None:
+        evidence[field] = found.group(0)
+
+    found = targeting.RESULTS_PAGE.search(question)
+    if found:
+        chosen("quantifier", found)
+        chosen("objective", found)
+        return "argmin", "advertised price", None
+    found = targeting.REVIEWS.search(question)
+    if found:
+        chosen("quantifier", found)
+        evidence["objective"] = found.group(0)
+        return "exists", "mention", None
+    found = targeting.UNIVERSAL.search(question)
+    if found:
+        chosen("quantifier", found)
+        evidence["objective"] = found.group(2)
+        return "forall", "availability", None
+    found = TOPK.search(question)
+    if found:
+        k = number(found.group("before") or found.group("after") or found.group("top"))
+        if k >= 2:
+            chosen("quantifier", found)
+            chosen("objective", found)
+            chosen("k", found)
+            return "topk", "price", k
+    found = EXISTS.search(question)
+    if found and any(f.attribute == "price" for f in filters) \
+            and not targeting.CHEAPEST.search(question):
+        chosen("quantifier", found)
+        evidence["objective"] = evidence["filter:price"]
+        return "exists", "price", None
+    found = targeting.UNIT_RATE.search(question)
+    if found:
+        chosen("quantifier", found)
+        chosen("objective", found)
+        return "argmin", "rate", None
+    found = targeting.CHEAPEST.search(question)
+    if found:
+        chosen("quantifier", found)
+        chosen("objective", found)
+        return "argmin", "price", None
+    found = ARGMAX.search(question)
+    if found:
+        chosen("quantifier", found)
+        chosen("objective", found)
+        return "argmax", "price", None
+    if named is not None:
+        evidence["quantifier"] = evidence.get("filter:url") or evidence.get("filter:seller")
+        objective = "availability" if targeting.BUYABLE.search(question) else "price"
+        evidence["objective"] = (targeting.BUYABLE.search(question).group(0)
+                                 if objective == "availability" else "a price is asked for")
+        return "lookup", objective, None
+    other = other_attribute(question)
+    superlative = SUPERLATIVE.search(question)
+    if other and superlative:
+        attribute, words = other
+        evidence["quantifier"] = superlative.group(0)
+        evidence["objective"] = words
+        return ("argmax" if ARGMAX_WORDS.search(question) else "argmin"), f"attribute:{attribute}", None
+    objective = what_is_checked(question)
+    evidence["objective"] = "a variant or buying is asked about" if objective == "availability" \
+        else "nothing but a price is asked about"
+    found = sufficiency.COUNTING_QUESTION.search(question)
+    if found:
+        chosen("quantifier", found)
+        return "count", objective, None
+    if other:
+        evidence["objective"] = other[1]
+        objective = f"attribute:{other[0]}"
+    evidence["quantifier"] = "no quantifier word, so everything is listed"
+    return "aggregate", objective, None
+
+
+def from_rules(question: str, page: page_module.Page | None = None) -> Form:
+    """The form of a question, by written rules. Deterministic, free, the fallback.
+
+    The page, when given, supplies the sellers a question can name. Nothing else about it
+    is read here.
+    """
+    evidence: dict[str, str] = {}
+    population, urls = population_of(question, evidence)
+    reading = reading_in(question, evidence)
+    filters = filters_in(question, reading, evidence)
+    named = named_listings(question, page, urls, evidence) if population != "reviews" else None
+    quantifier, objective, k = shape_of(question, filters, named, evidence)
+    if quantifier == "lookup":
+        filters.insert(0, named)
+    if population == "reviews":
+        mention = MENTION.search(question)
+        phrase = mention.group(1) if mention else question.split("?")[0].split(".", 1)[-1].strip()
+        filters.append(Filter("review text", "contains", phrase))
+        evidence["filter:review text"] = mention.group(0) if mention else "the question's clause"
+    # A witness and the k cheapest are read as options you could buy, the reading the v2
+    # design fixed on 14 October 2026: a sold-out size cannot be bought under any limit.
+    # Recorded as a reading, not hidden, so a user who meant the menu can say so.
+    if quantifier in ("exists", "topk") and population != "reviews" \
+            and not any(f.attribute == "availability" for f in filters):
+        filters.append(Filter("availability", "=", "buyable"))
+        reading = "buyable"
+        evidence["reading"] = "no availability word, read as buyable by the v2 design"
+    unknowns = ()
+    vague = VAGUE_PRICE.search(question)
+    if vague and not FIGURE.search(URL.sub("", question)):
+        unknowns = ("price limit",)
+        evidence["unknowns"] = vague.group(0)
+    return Form(quantifier=quantifier, objective=objective, filters=tuple(filters),
+                population=population, k=k, reading=reading, unknowns=unknowns,
+                source="rules", evidence=evidence)
+
+
+# ---------------------------------------------------------------------------
+# The model parser
+
+CONTEXT = """You are parsing a shopper's question into a logical form before a web agent \
+retrieves anything from an online shop.
+
+The shop's search results page lists competing listings for one product. For each listing \
+it shows the seller, the title, the URL and one advertised price, which is the cheapest \
+option that listing can sell. Opening a listing shows its size menu. The price of a size \
+appears only after that size is chosen, and a size that cannot be bought is listed in the \
+menu as a disabled option. Reviews of a listing are on their own pages, ten to a page, each \
+with its text and a rating."""
+
+SHOWN = """The attributes the shop shows, and the only ones a form may compare or filter on:
+- on the results page: {results}
+- on a listing page: {listing}
+- on a review page: {review}
+It does not show delivery time, shipping cost, warranty, stock quantity or a seller rating."""
+
+PROPERTIES = """A form is sound only if all five of these hold:
+1. A bound (the advertised price) may only rule out listings that were listed first. The \
+results page lists them, so a bound over the results page is fine.
+2. A figure a bound produces is never reported as a price.
+3. A claim about every listing is refuted by one counterexample and proved only by opening \
+every listing.
+4. The best of the market needs every listing the bound cannot rule out to be opened.
+5. Every attribute the form compares or filters on is one the shop shows. If the question \
+needs one it does not show, name it in "unknowns" rather than choosing a substitute."""
+
+SCHEMA = """Return one JSON object and nothing else, with exactly these fields:
+
+{
+  "quantifier": one of "lookup" (named listings), "exists" (is there any), "forall" (does \
+every), "argmin" (the cheapest or best), "argmax" (the dearest), "topk" (the k cheapest), \
+"count" (how many), "aggregate" (list them all),
+  "objective": the attribute compared or returned: "price" (of the option asked about), \
+"advertised price" (the results page's figure), "rate" (price per unit), "availability", \
+"size", "mention" (what reviews say), or "attribute:<name>" for anything else,
+  "filters": a list of {"attribute": ..., "op": one of "=", "<=", ">=", "in", "contains", \
+"value": ...} that a candidate must meet, such as size = "M", price <= 20, availability = \
+"buyable", seller in ["A", "B"], review text contains "leaks",
+  "population": one of "listing" (one or more named product pages), "results" (the listings \
+on the results page), "reviews" (the reviews of one listing),
+  "k": a number for topk, otherwise null,
+  "reading": which reading of an ambiguous word you chose, or null,
+  "unknowns": a list of what the question leaves unsaid or needs that the shop does not show,
+  "evidence": an object with one line per field above, quoting the words of the question \
+that chose it
+}"""
+
+
+def prompt(question: str, page: page_module.Page | None = None) -> str:
+    """The one prompt the model parser sends. Everything in it is true of the shop today."""
+    shown = attributes_shown(page)
+    lists = SHOWN.format(results=", ".join(sorted(shown - LISTING_PAGE_SHOWS - REVIEW_PAGE_SHOWS)),
+                         listing=", ".join(sorted(LISTING_PAGE_SHOWS)),
+                         review=", ".join(sorted(REVIEW_PAGE_SHOWS)))
+    return "\n\n".join([CONTEXT, lists, PROPERTIES, SCHEMA, f"The question:\n{question}"])
+
+
+def from_model(question: str, page: page_module.Page | None, call) -> Form:
+    """The form a model proposes. `call(prompt) -> str` is injected, so this module makes no
+    request of its own, and the runner that supplies a real call is a paid script. A reply
+    that is not one JSON object in the vocabulary raises, with the fault named."""
+    reply = call(prompt(question, page))
+    block = re.search(r"\{.*\}", reply or "", re.DOTALL)
+    if not block:
+        raise ValueError(f"the model's reply holds no JSON object: {(reply or '')[:200]!r}")
+    try:
+        data = json.loads(block.group(0))
+    except json.JSONDecodeError as error:
+        raise ValueError(f"the model's JSON does not parse ({error}): {block.group(0)[:200]!r}")
+    return from_record(data, source="model")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("question")
+    args = parser.parse_args()
+    form = from_rules(args.question)
+    print(json.dumps(form.record(), indent=2))
+    problems = verify(form)
+    print("\nverify:", "sound" if not problems else "; ".join(problems))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

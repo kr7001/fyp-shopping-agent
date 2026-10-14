@@ -177,6 +177,12 @@ def _listing_key(url: str) -> str | None:
     return None
 
 
+def listing_key(url: str) -> str | None:
+    """`_listing_key`, for the box: the key a listing's URL is counted under when a run
+    opens it, so a plan can say which of the listings it named were opened (14 Oct 2026)."""
+    return _listing_key(url)
+
+
 # Below this, a figure in this catalogue is a per-unit rate rather than a total. Rates
 # are computed by the agent and correctly absent from the page, so the unsupported test
 # does not apply to them. A stated domain assumption: the cheapest total in these
