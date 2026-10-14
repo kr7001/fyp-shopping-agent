@@ -521,6 +521,27 @@ def census() -> dict:
     return out
 
 
+def market() -> list[dict]:
+    """The Thornwood tee market, listing by listing: what the results page advertised, as the
+    block read it in the pilot, joined with what size M looks like inside each listing, from
+    the generated fixture the shop was seeded from."""
+    fixture = json.loads((paths.FIXTURES / "scaled_apparel.json").read_text())
+    target = fixture["_instance"]["target_option"]
+    by_seller = {fam["seller"]: fam for fam in fixture["families"]}
+    suite = json.loads((paths.RESULTS / PILOT_BATCH / "suite.json").read_text())
+    page = suite["rows"][0]["box"]["page"]
+    rows = []
+    for listing in page["listings"]:
+        fam = by_seller[listing["seller"]]
+        m = next((v for v in fam["variants"] if v["option"] == target), None)
+        rows.append({"seller": listing["seller"], "advertised": listing["advertised"],
+                     "url": listing["url"], "in_menu": m is not None,
+                     "price": m["price"] if m else None, "buyable": bool(m and m["qty"] > 0),
+                     "sizes": [v["option"] for v in fam["variants"]]})
+    rows.sort(key=lambda r: r["advertised"])
+    return rows
+
+
 def patterns() -> dict:
     """What the box's rules key on, read from the code so this table cannot drift from it."""
     def regexes(module):
@@ -644,6 +665,7 @@ def build() -> dict:
         "pilot": pilot(),
         "census": census(),
         "patterns": patterns(),
+        "market": market(),
     }
 
 

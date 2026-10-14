@@ -5230,11 +5230,213 @@ window.SITE = {
    "planner": 2
   }
  },
+ "market": [
+  {
+   "seller": "Rookwood Uniforms",
+   "advertised": 11.87,
+   "url": "http://localhost:7770/igr-app-03.html",
+   "in_menu": false,
+   "price": null,
+   "buyable": false,
+   "sizes": [
+    "S",
+    "L"
+   ]
+  },
+  {
+   "seller": "Jarrow Garments",
+   "advertised": 14.9,
+   "url": "http://localhost:7770/igr-app-13.html",
+   "in_menu": false,
+   "price": null,
+   "buyable": false,
+   "sizes": [
+    "S",
+    "L"
+   ]
+  },
+  {
+   "seller": "Ivybridge Collective",
+   "advertised": 17.12,
+   "url": "http://localhost:7770/igr-app-08.html",
+   "in_menu": true,
+   "price": 19.31,
+   "buyable": false,
+   "sizes": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ]
+  },
+  {
+   "seller": "Fairhaven Workwear",
+   "advertised": 18.33,
+   "url": "http://localhost:7770/igr-app-07.html",
+   "in_menu": true,
+   "price": 15.04,
+   "buyable": false,
+   "sizes": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ]
+  },
+  {
+   "seller": "Dunmore Apparel",
+   "advertised": 20.05,
+   "url": "http://localhost:7770/igr-app-05.html",
+   "in_menu": true,
+   "price": 16.55,
+   "buyable": false,
+   "sizes": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ]
+  },
+  {
+   "seller": "Copperfield Apparel",
+   "advertised": 23.4,
+   "url": "http://localhost:7770/igr-app-02.html",
+   "in_menu": true,
+   "price": 29.66,
+   "buyable": true,
+   "sizes": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ]
+  },
+  {
+   "seller": "Elmsworth Clothing Co",
+   "advertised": 24.83,
+   "url": "http://localhost:7770/igr-app-01.html",
+   "in_menu": true,
+   "price": 28.96,
+   "buyable": true,
+   "sizes": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ]
+  },
+  {
+   "seller": "Alderney Clothing Co",
+   "advertised": 25.77,
+   "url": "http://localhost:7770/igr-app-14.html",
+   "in_menu": true,
+   "price": 25.77,
+   "buyable": true,
+   "sizes": [
+    "M",
+    "L",
+    "XL"
+   ]
+  },
+  {
+   "seller": "Northwick Outfitters",
+   "advertised": 25.96,
+   "url": "http://localhost:7770/igr-app-11.html",
+   "in_menu": true,
+   "price": 32.39,
+   "buyable": true,
+   "sizes": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ]
+  },
+  {
+   "seller": "Haldane Supply",
+   "advertised": 27.13,
+   "url": "http://localhost:7770/igr-app-10.html",
+   "in_menu": true,
+   "price": 35.83,
+   "buyable": false,
+   "sizes": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ]
+  },
+  {
+   "seller": "Oakhurst Threads",
+   "advertised": 27.75,
+   "url": "http://localhost:7770/igr-app-04.html",
+   "in_menu": false,
+   "price": null,
+   "buyable": false,
+   "sizes": [
+    "S",
+    "XL"
+   ]
+  },
+  {
+   "seller": "Lymington Textiles",
+   "advertised": 28.09,
+   "url": "http://localhost:7770/igr-app-15.html",
+   "in_menu": false,
+   "price": null,
+   "buyable": false,
+   "sizes": [
+    "S",
+    "L",
+    "XL"
+   ]
+  },
+  {
+   "seller": "Brindle Textiles",
+   "advertised": 30.61,
+   "url": "http://localhost:7770/igr-app-09.html",
+   "in_menu": true,
+   "price": 40.26,
+   "buyable": false,
+   "sizes": [
+    "M",
+    "L",
+    "XL"
+   ]
+  },
+  {
+   "seller": "Marchmont Textiles",
+   "advertised": 30.92,
+   "url": "http://localhost:7770/igr-app-06.html",
+   "in_menu": true,
+   "price": 33.47,
+   "buyable": true,
+   "sizes": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ]
+  },
+  {
+   "seller": "Pentland Workwear",
+   "advertised": 36.59,
+   "url": "http://localhost:7770/igr-app-12.html",
+   "in_menu": false,
+   "price": null,
+   "buyable": false,
+   "sizes": [
+    "S",
+    "L",
+    "XL"
+   ]
+  }
+ ],
  "built": {
-  "commit": "f1ad66f",
+  "commit": "4bc47a1",
   "date": "2026-10-14",
   "branch": "dev",
-  "dirty": false,
+  "dirty": true,
   "repo": "https://github.com/kr7001/fyp-shopping-agent",
   "agent_core": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
   "commits_by_week": {
@@ -5242,7 +5444,7 @@ window.SITE = {
    "2026-09-07": 44,
    "2026-09-14": 49,
    "2026-10-05": 45,
-   "2026-10-12": 32
+   "2026-10-12": 36
   }
  }
 };
