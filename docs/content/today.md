@@ -117,9 +117,25 @@ as is. If it shows a defect in the plan's wording, fix it, bump `box.VERSION`, a
 on the fixed version. Either way the box is frozen at the end of today, and Thornwood is spent
 for it.
 
+## The pilot ran, 08:43 to 08:48
+
+Two runs, declared $1.05, charged $0.61. Re-derived from the raw files with
+`make verify BATCH=experiments/results/20261014T084322`, every answer read, no silence over 60
+seconds, both answers correct under the key:
+
+| Question | Answer | Listings opened | Tool calls | Cost | Cell 5 on the same question, 3 runs |
+| --- | --- | --- | --- | --- | --- |
+| Cheapest buyable M | Alderney Clothing Co at $25.77, "opened 8, skipped 7, rejected 5 as unavailable" | 8, exactly the eight advertised at or below $25.77 | 40 | $0.39 | 3 of 3 correct, 15 opened, about $0.59 a run |
+| How many sell M now | 5, naming the five | 15 | 33 | $0.22 | 2 of 3 correct, 15 opened, about $0.54 a run |
+
+The bound did what the spec says: the agent stopped after the listings the advertised prices
+could not rule out, and the refusal check from the page passed both answers (population 15,
+floor 8 for the price question). One run per question, on the market the box was designed on,
+so this is a working pipeline and a direction, not a result.
+
 ## What is not yet done, in plain terms
 
-- No paid run of the box has happened. Every figure about the box is a prediction or a replay.
+- The box has had one pilot of two runs. Every other figure about it is a prediction or a replay.
 - The raw logs still live only on this laptop.
 - The fresh clothing market is not generated. It is tomorrow's first task after the freeze.
 - The September pooling scripts still print their pooled row.
