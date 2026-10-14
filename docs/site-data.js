@@ -4011,11 +4011,15 @@ window.SITE = {
    },
    {
     "title": "The day",
-    "html": "<div class=\"table-wrap\"><table><thead><tr><th>Time</th><th>What</th><th>Who</th></tr></thead><tbody><tr><td>6 to 7 am</td><td>Review this page, the spec and the build. Decide the two open points below</td><td>student, with me</td></tr><tr><td>7 to 10 am</td><td>The pilot ran at 08:43 (two runs, both correct, below). The student asked for a deeper design before spending more, so the 18 run batch is on hold and the morning went to research and the v2 design instead</td><td>done</td></tr><tr><td>10 to 12</td><td>The coder builds v2 (the logical form, the primitives, the model parser behind the guard), the verifier checks it. One small paid test proposed: the model parses the 42 census questions, about $0.20</td><td>the guard asks for the yes</td></tr><tr><td>12 to 4 pm</td><td>The report, from the skeleton on the \"Report\" page, filling the blanks from verified figures only</td><td>student, with me</td></tr></tbody></table></div>\n<p><strong>Open point 1: the budget.</strong> $43.39 is left on the key (read from the account on 14 October). The proposed runs:</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Run</th><th>Runs</th><th>Estimate</th><th>Basis</th></tr></thead><tbody><tr><td>Pilot: one price question, one count question, under <code>--reading menu</code></td><td>2</td><td>$1.05</td><td>cell 5's mean cost a run. The verifier's note: these two questions were cell 5's dearer ones, $0.59 and $0.54 a run, so expect about $1.13, up to $1.30 at cell 5's maxima, and about $1.90 if both runs hit the 100 step cap</td></tr><tr><td>Development batch: the six questions, 3 repeats, <code>--reading menu</code></td><td>18</td><td>$9.45</td><td>the same</td></tr><tr><td>The two ambiguous questions, 3 repeats, <code>--reading buyable</code></td><td>6</td><td>$3.15</td><td>the same</td></tr><tr><td><strong>Today</strong></td><td><strong>26</strong></td><td><strong>$13.65</strong> at cell 5's cost, about $6.50 at the regression's</td><td></td></tr><tr><td>Week 2 and 3 claim run on a fresh market, three arms</td><td>60</td><td>$20 to $31</td><td>the plan's budget table</td></tr></tbody></table></div>\n<p>The exact commands, in the order they run. Each needs the verifier's stamp at the committed code, and the guard asks for a yes before anything is spent:</p>\n<p>``` IGR_ESTIMATE_USD=1.05 caffeinate -i python3 experiments/runners/suite.py \\ --tasks experiments/tasks/tasks_apparel.json --repeats 1 --box --reading menu \\ --policy gate --only apparel-cheapest-target apparel-count-buyable</p>\n<p>IGR_ESTIMATE_USD=9.45 caffeinate -i python3 experiments/runners/suite.py \\ --tasks experiments/tasks/tasks_apparel.json --repeats 3 --box --reading menu --policy gate</p>\n<p>IGR_ESTIMATE_USD=3.15 caffeinate -i python3 experiments/runners/suite.py \\ --tasks experiments/tasks/tasks_apparel.json --repeats 3 --box --reading buyable \\ --policy gate --only apparel-all-stocked apparel-count-stocked ```</p>\n<p><code>--policy gate</code> switches the box's refusal check on. It adds no browser action and no cost, and every raw answer stays in the run record, so the batch can be compared with cells 1 and 5 on raw answers and still show what the box would have refused.</p>\n<p>The verifier passed the pilot command at the committed code on 14 October at 3 am, with the held-constant table against cells 1 and 5 built and every intended difference named: the box hands the agent the listings' URLs and advertised prices, the v7 strategy text, the refusal check with rules v3, one repeat, and Thornwood is the market the box was designed on, so the pilot is in sample. After each batch, before any figure is read: <code>make verify BATCH=experiments/results/&lt;stamp&gt;</code> with both answers read in full, the 60 second silence rule, the stored page record against the live shop, and cost against the account (<code>python3 experiments/analysis/cell_facts.py</code>, section G). Watch the pilot log for the agent trusting its own four card probe over the preamble's fifteen.</p>\n<p><strong>Open point 2, decided at 9 am: v1 is the floor, v2 is the product.</strong> The pilot showed the agent follows the plan. Rather than spend $13 measuring v1 on all six questions, the budget waits for v2, which handles every form in the research census, so the development batch measures the thing the project claims. Thornwood stays the development market; the claim market is generated after v2 is frozen.</p>"
+    "html": "<div class=\"table-wrap\"><table><thead><tr><th>Time</th><th>What</th><th>Who</th></tr></thead><tbody><tr><td>6 to 7 am</td><td>Review this page, the spec and the build. Decide the two open points below</td><td>student, with me</td></tr><tr><td>7 to 10 am</td><td>The pilot ran at 08:43 (two runs, both correct, below). The student asked for a deeper design before spending more, so the 18 run batch is on hold and the morning went to research and the v2 design instead</td><td>done</td></tr><tr><td>10 to 12</td><td>v2 built by the coder in three commits, 140 tests, v1's six texts reproduced byte for byte. The verifier is checking it and the one small paid test proposed: the model parses the 37 census questions, declared $0.30</td><td>the guard asks for the yes</td></tr><tr><td>12 to 4 pm</td><td>The report, from the skeleton on the \"Report\" page, filling the blanks from verified figures only</td><td>student, with me</td></tr></tbody></table></div>\n<p><strong>Open point 1: the budget.</strong> $43.39 is left on the key (read from the account on 14 October). The proposed runs:</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Run</th><th>Runs</th><th>Estimate</th><th>Basis</th></tr></thead><tbody><tr><td>Pilot: one price question, one count question, under <code>--reading menu</code></td><td>2</td><td>$1.05</td><td>cell 5's mean cost a run. The verifier's note: these two questions were cell 5's dearer ones, $0.59 and $0.54 a run, so expect about $1.13, up to $1.30 at cell 5's maxima, and about $1.90 if both runs hit the 100 step cap</td></tr><tr><td>Development batch: the six questions, 3 repeats, <code>--reading menu</code></td><td>18</td><td>$9.45</td><td>the same</td></tr><tr><td>The two ambiguous questions, 3 repeats, <code>--reading buyable</code></td><td>6</td><td>$3.15</td><td>the same</td></tr><tr><td><strong>Today</strong></td><td><strong>26</strong></td><td><strong>$13.65</strong> at cell 5's cost, about $6.50 at the regression's</td><td></td></tr><tr><td>Week 2 and 3 claim run on a fresh market, three arms</td><td>60</td><td>$20 to $31</td><td>the plan's budget table</td></tr></tbody></table></div>\n<p>The exact commands, in the order they run. Each needs the verifier's stamp at the committed code, and the guard asks for a yes before anything is spent:</p>\n<p>``` IGR_ESTIMATE_USD=1.05 caffeinate -i python3 experiments/runners/suite.py \\ --tasks experiments/tasks/tasks_apparel.json --repeats 1 --box --reading menu \\ --policy gate --only apparel-cheapest-target apparel-count-buyable</p>\n<p>IGR_ESTIMATE_USD=9.45 caffeinate -i python3 experiments/runners/suite.py \\ --tasks experiments/tasks/tasks_apparel.json --repeats 3 --box --reading menu --policy gate</p>\n<p>IGR_ESTIMATE_USD=3.15 caffeinate -i python3 experiments/runners/suite.py \\ --tasks experiments/tasks/tasks_apparel.json --repeats 3 --box --reading buyable \\ --policy gate --only apparel-all-stocked apparel-count-stocked ```</p>\n<p><code>--policy gate</code> switches the box's refusal check on. It adds no browser action and no cost, and every raw answer stays in the run record, so the batch can be compared with cells 1 and 5 on raw answers and still show what the box would have refused.</p>\n<p>The verifier passed the pilot command at the committed code on 14 October at 3 am, with the held-constant table against cells 1 and 5 built and every intended difference named: the box hands the agent the listings' URLs and advertised prices, the v7 strategy text, the refusal check with rules v3, one repeat, and Thornwood is the market the box was designed on, so the pilot is in sample. After each batch, before any figure is read: <code>make verify BATCH=experiments/results/&lt;stamp&gt;</code> with both answers read in full, the 60 second silence rule, the stored page record against the live shop, and cost against the account (<code>python3 experiments/analysis/cell_facts.py</code>, section G). Watch the pilot log for the agent trusting its own four card probe over the preamble's fifteen.</p>\n<p><strong>Open point 2, decided at 9 am: v1 is the floor, v2 is the product.</strong> The pilot showed the agent follows the plan. Rather than spend $13 measuring v1 on all six questions, the budget waits for v2, which handles every form in the research census, so the development batch measures the thing the project claims. Thornwood stays the development market; the claim market is generated after v2 is frozen.</p>"
    },
    {
     "title": "The pilot ran, 08:43 to 08:48",
     "html": "<p>Two runs, declared $1.05, charged $0.61. Re-derived from the raw files with <code>make verify BATCH=experiments/results/20261014T084322</code>, every answer read, no silence over 60 seconds, both answers correct under the key:</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Question</th><th>Answer</th><th>Listings opened</th><th>Tool calls</th><th>Cost</th><th>Cell 5 on the same question, 3 runs</th></tr></thead><tbody><tr><td>Cheapest buyable M</td><td>Alderney Clothing Co at $25.77, \"opened 8, skipped 7, rejected 5 as unavailable\"</td><td>8, exactly the eight advertised at or below $25.77</td><td>40</td><td>$0.39</td><td>3 of 3 correct, 15 opened, about $0.59 a run</td></tr><tr><td>How many sell M now</td><td>5, naming the five</td><td>15</td><td>33</td><td>$0.22</td><td>2 of 3 correct, 15 opened, about $0.54 a run</td></tr></tbody></table></div>\n<p>The bound did what the spec says: the agent stopped after the listings the advertised prices could not rule out, and the refusal check from the page passed both answers (population 15, floor 8 for the price question). One run per question, on the market the box was designed on, so this is a working pipeline and a direction, not a result.</p>"
+   },
+   {
+    "title": "The census parse ran, 11:20",
+    "html": "<p><strong>The census parse, 14 October, 11:20.</strong> The model (Claude Haiku 4.5, temperature 0) wrote the logical form of all 37 distinct questions, one call each, $0.069 charged, no browser. Compared with the rules' forms, from <code>experiments/results/parse-probe-20261014T112047.json</code>:</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Agreement</th><th>Questions</th></tr></thead><tbody><tr><td>Same quantifier (the field that picks the primitive)</td><td>34 of 37</td></tr><tr><td>Same quantifier and objective</td><td>33 of 37</td></tr><tr><td>Same on those and the population</td><td>26 of 37</td></tr><tr><td>Same on every field</td><td>5 of 37</td></tr></tbody></table></div>\n<p>The gap between 33 and 5 is two prompt vocabulary problems, not judgement: the model never puts the listing's URL in the filters, so 7 of its single-listing forms fail \"a lookup names no listing\", and it writes \"listing\" as the population where the rules write \"results\" in 7 cases. Both are fixes to the prompt. The four real disagreements: \"which of these two sellers is cheaper\" (rules: look up both; model: cheapest of the two, both open the same pages), \"is the 1 kg size the cheapest per kg\" (rules right: it needs every size's rate; the model proposed a lookup), \"list every pack size and its price\" (the model invented an attribute \"pack size and price\" and was refused by the fifth property, which is the property doing its job), and the Calderwood cheapest question (the model chose \"advertised price\", the rules \"price\": the rules are right). In sample for the rules, which were written on these 37 questions.</p>"
    },
    {
     "title": "What is not yet done, in plain terms",
@@ -4061,7 +4065,7 @@ window.SITE = {
   "sections": [
    {
     "title": "Summary",
-    "html": "<p>[Three sentences: what the box is, what today's runs showed, what is next.]</p>"
+    "html": "<p>The box is a step before the shopping agent that reads the question and the first results page, hands the agent a plan or asks the user back, and checks the answer from the page. Its first version ran a two-run pilot on 14 October and got both right, opening 8 listings instead of 15 on the cheapest question for two thirds of the cost of opening everything. Its second version, built the same day, parses any shopping question into a logical form and composes the retrieval from seven primitives, with a model doing the parsing (it agrees with the rules on the plan-deciding fields for 33 of 37 questions) and rules doing everything after; next week it is measured on the clothing market and then frozen for a fresh one.</p>"
    },
    {
     "title": "1. Where we left off on 7 October",
@@ -4081,7 +4085,7 @@ window.SITE = {
    },
    {
     "title": "4a. Box v2, the strategist",
-    "html": "<p>v1 is the floor: four fixed strategies for four kinds of question. v2 is what the project claims to build, designed on 14 October after the research (the \"Research\" and \"Box v2\" pages):</p>\n<ul><li>Every question parses into a logical form: a quantifier (exists, every, cheapest, top-k, count, lookup), the attribute compared, the filters, and the population. The research census shows the shopping benchmarks' reading tasks all have one of these forms.</li><li>A model does the parsing, because that is judgement. Rules do everything after: the plan is composed from seven retrieval primitives whose stop rules are theorems (a bound prunes, one counterexample refutes, one witness proves, a count needs everything), verified by five properties, the fifth being that every attribute the question needs is shown on this shop.</li><li>The box asks only when the form is underdetermined on this page: which reading of a word, which entity, what threshold, or that the shop does not show the attribute at all.</li></ul>\n<p>[Free census test, after the build: of the 42 questions, how many the rules and the model parse the same, which fail verification and why, which raise an ask. Each read by hand.]</p>\n<p>[If run: the model parser's cost per question.]</p>"
+    "html": "<p>v1 is the floor: four fixed strategies for four kinds of question. v2 is what the project claims to build, designed on 14 October after the research (the \"Research\" and \"Box v2\" pages):</p>\n<ul><li>Every question parses into a logical form: a quantifier (exists, every, cheapest, top-k, count, lookup), the attribute compared, the filters, and the population. The research census shows the shopping benchmarks' reading tasks all have one of these forms.</li><li>A model does the parsing, because that is judgement. Rules do everything after: the plan is composed from seven retrieval primitives whose stop rules are theorems (a bound prunes, one counterexample refutes, one witness proves, a count needs everything), verified by five properties, the fifth being that every attribute the question needs is shown on this shop.</li><li>The box asks only when the form is underdetermined on this page: which reading of a word, which entity, what threshold, or that the shop does not show the attribute at all.</li></ul>\n<p><strong>The census parse, 14 October, 11:20.</strong> The model (Claude Haiku 4.5, temperature 0) wrote the logical form of all 37 distinct questions, one call each, $0.069 charged, no browser. Compared with the rules' forms, from <code>experiments/results/parse-probe-20261014T112047.json</code>:</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Agreement</th><th>Questions</th></tr></thead><tbody><tr><td>Same quantifier (the field that picks the primitive)</td><td>34 of 37</td></tr><tr><td>Same quantifier and objective</td><td>33 of 37</td></tr><tr><td>Same on those and the population</td><td>26 of 37</td></tr><tr><td>Same on every field</td><td>5 of 37</td></tr></tbody></table></div>\n<p>The gap between 33 and 5 is two prompt vocabulary problems, not judgement: the model never puts the listing's URL in the filters, so 7 of its single-listing forms fail \"a lookup names no listing\", and it writes \"listing\" as the population where the rules write \"results\" in 7 cases. Both are fixes to the prompt. The four real disagreements: \"which of these two sellers is cheaper\" (rules: look up both; model: cheapest of the two, both open the same pages), \"is the 1 kg size the cheapest per kg\" (rules right: it needs every size's rate; the model proposed a lookup), \"list every pack size and its price\" (the model invented an attribute \"pack size and price\" and was refused by the fifth property, which is the property doing its job), and the Calderwood cheapest question (the model chose \"advertised price\", the rules \"price\": the rules are right). In sample for the rules, which were written on these 37 questions.</p>\n<p>Cost per question: $0.0019 on average, so a model parse adds about a fifth of a cent to a run that costs $0.20 to $0.50.</p>"
    },
    {
     "title": "4b. Is this only an openJiuwen problem? The second agent and the second model",
@@ -4097,7 +4101,7 @@ window.SITE = {
    },
    {
     "title": "5. What did not work, and limits",
-    "html": "<p>[From the verified batch: any plan the agent did not follow, any refusal of a correct answer, anything the page could not tell.]</p>\n<p>Standing limits: one market family, one model, our shop's 60 ms price reveal, the two agents' different sampling and clocks, the refusal check's one blind spot (a misread advertised price), shipping cost and combined discounts out of scope.</p>"
+    "html": "<p>In the pilot nothing failed, with two runs that proves little. What the day's checks found: the model parser omits the listing's URL and misnames the population, both prompt fixes, and invented one attribute, which the fifth property caught; v2's stricter \"does every\" check would have refused 5 of 14 correct bare \"No\" answers in the old cells, a trade accepted because the box's own text tells the agent to name the counterexample; the bound texts say \"at or above\" where the check counted \"at or below\", harmless on this market and fixed for a market with a tie; and the first ambiguity rule fired on two price questions before it was tightened. No paid run of v2 exists yet.</p>\n<p>Standing limits: one market family, one model, our shop's 60 ms price reveal, the two agents' different sampling and clocks, the refusal check's one blind spot (a misread advertised price), shipping cost and combined discounts out of scope.</p>"
    },
    {
     "title": "6. Next week",
@@ -4105,7 +4109,7 @@ window.SITE = {
    },
    {
     "title": "7. Spend",
-    "html": "<p>[Spend today, and the balance, from the account.] Before today: $56.61 of the $100 key used, $43.39 left.</p>"
+    "html": "<p>Before today $56.61 of the $100 key used. Today the pilot $0.61 and the census parse $0.07, both matched by the provider's charges. $42.71 left, read from the account on 14 October.</p>"
    }
   ]
  },
@@ -4143,7 +4147,7 @@ window.SITE = {
   ]
  },
  "v2": {
-  "intro": "<p>Status: <strong>design, 14 October 2026, written after the research page and before the build.</strong> Box v1 is the measured floor. Version 2 is what the project claims to build: a step that reads any shopping question, works out what evidence would settle it, retrieves that evidence at the lowest cost the page allows, asks the user when the question does not settle it, and refuses an answer the evidence does not support.</p>",
+  "intro": "<p>Status: <strong>designed and built on 14 October 2026.</strong> Steps 1 to 4 of the build order below are commits <code>fd59b5b</code>, <code>25c7656</code> and <code>70556af</code>, 140 tests, with the six clothing questions rendering byte for byte what v1 rendered, so the pilot stands under v2. The verifier checked the build against this page on 14 October: v1 preserved, no answer read, every new statement true of the shop. It passed the census parse and named four fixes before any paid box run, listed with the coder's twelve recorded departures from this page in the README decision log of 14 October. Box v1 is the measured floor. Version 2 is what the project claims to build: a step that reads any shopping question, works out what evidence would settle it, retrieves that evidence at the lowest cost the page allows, asks the user when the question does not settle it, and refuses an answer the evidence does not support.</p>",
   "sections": [
    {
     "title": "Should the box be an agent? An honest answer",
@@ -4168,6 +4172,10 @@ window.SITE = {
    {
     "title": "Ambiguity, from the form",
     "html": "<p>The box asks when the form is underdetermined in a way that changes the retrieval or the answer, and only then:</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Kind (DiscoBench's names)</th><th>Example</th><th>What the box asks</th></tr></thead><tbody><tr><td>facet</td><td>\"offer size M\": listed, or can sell now</td><td>the two readings, as in v1</td></tr><tr><td>entity</td><td>\"the cheapest tee\" when the page shows two product lines</td><td>which product</td></tr><tr><td>numerical</td><td>\"a cheap one\" with no figure, \"under about $20\"</td><td>the threshold</td></tr><tr><td>attribute not shown</td><td>\"delivers fastest\"</td><td>says the shop does not show it, and offers what it does show</td></tr></tbody></table></div>\n<p>It does not ask when the readings give the same answer on this page, which the box can often tell: if no listing on the page is sold out in the size asked about, \"offer\" has one answer. That rule comes from \"Dialogue to Discovery\" (ask only when the catalogue splits on the attribute) and it is what keeps the box from over-asking.</p>"
+   },
+   {
+    "title": "Questions the box cannot classify",
+    "html": "<p>Added on 14 October at the student's request. A question with no recognised shape and no shopping signal at all (no listing or product URL, no market word, no price, size, stock or review word) is a <strong>bypass</strong>: the box hands it to the agent unchanged, with no plan and no preamble, and records that it did. A shopping question whose attribute this shop does not show is <strong>pushed back</strong>: the box says what the shop does not show and what it does, and nothing runs. A shopping question with a signal but no recognised quantifier keeps v1's fallback plan and records that it was a fallback. Every batch counts its asked, refused, bypassed and fallback runs, so the rate at which questions get past the box is a measured property, and the bypassed runs are the baseline agent on those questions.</p>"
    },
    {
     "title": "What stays from v1",
@@ -4297,6 +4305,17 @@ window.SITE = {
       ]
      },
      {
+      "name": "Bypass",
+      "doc": "A question with no shopping shape and no shopping signal goes to the agent unchanged,\nand the record says so (14 Oct 2026, at the student's request). A shopping question the\nrules can only survey runs and is recorded as a fallback. One about an attribute the\nshop lacks keeps its refusal. The six clothing questions are none of these.",
+      "tests": [
+       "an unrelated question bypasses the box",
+       "a shopping question with no shape runs as a recorded fallback",
+       "a pushed back question keeps its refusal",
+       "a shopping question with no page is an error not a bypass",
+       "the clothing questions and the census are neither"
+      ]
+     },
+     {
       "name": "V1Bytes",
       "doc": "The six clothing questions render byte for byte what box v1 rendered, frozen in\n`fixtures/v1_clothing_queries.json` from the v1 code before box.py changed, under no\nreading and under each scripted reading. So the pilot measured under v1 is a\nmeasurement of the text v2 sends.",
       "tests": [
@@ -4336,7 +4355,15 @@ window.SITE = {
        "a cheapest answer that covered its bound passes",
        "a count without the whole page is refused",
        "a count over the whole page passes",
-       "the floor counts listings advertised at or below the price named"
+       "the floor is the listings advertised below the price named plus its own",
+       "a tie at the price named is counted once"
+      ]
+     },
+     {
+      "name": "FloorOnStoredBatches",
+      "doc": "The floor from the page counts a tie at the answer's price once (14 Oct 2026). On\nThornwood, whose fifteen advertised prices are distinct, that is the old figure, every\nlisting advertised at or below the answer, for every stored answer: so the pilot's\nrecorded floor and the refusal replays over cells 1, 2 and 5 stand.",
+      "tests": [
+       "every stored superlative row keeps its floor"
       ]
      },
      {
@@ -4356,6 +4383,10 @@ window.SITE = {
        "an asked row spends nothing and runs nothing",
        "a refused row spends nothing and says what was missing",
        "the reading is recorded only on a row the box asked on",
+       "a bypassed question is built without a page and sent unchanged",
+       "the check on a bypassed run is the figure rules alone",
+       "the batch counts what the box did",
+       "the dry run prints bypass for an unrelated question",
        "the box and a strategy flag are refused",
        "the browser tool is pinned and the user agent defined once"
       ]
@@ -4503,6 +4534,15 @@ window.SITE = {
       ]
      },
      {
+      "name": "Unknown",
+      "doc": "A question with no shape and no shopping signal is unknown, and one with a signal\nbut no shape keeps the survey fallback and says so (14 October 2026, at the student's\nrequest). The box bypasses the first and runs the second, see `test_box.Bypass`.",
+      "tests": [
+       "an unrelated question is unknown",
+       "a shopping question with no shape is a recorded fallback",
+       "every census question has a shape"
+      ]
+     },
+     {
       "name": "Shown",
       "doc": "Property 5: what the shop shows, and a refusal for what it does not.",
       "tests": [
@@ -4536,10 +4576,13 @@ window.SITE = {
       "doc": "Each primitive's answer check on a fault it exists to find, and on a case it must\nleave alone. The page: 15 listings at $10.15, $11.15 ... $24.15, Seller A the cheapest.",
       "tests": [
        "witness",
+       "witness named without a yes",
        "bound and prune for the k cheapest",
        "bound and prune for the cheapest and the dearest",
        "lookup",
        "counterexample",
+       "counterexample named without a no",
+       "bound and prune counts a tie at the answer once",
        "exhaust",
        "the filter holds the answer to the limit",
        "depth defers to the sufficiency rules"
@@ -4598,6 +4641,44 @@ window.SITE = {
       "doc": "",
       "tests": [
        "the clothing results page reads whole"
+      ]
+     }
+    ]
+   },
+   {
+    "file": "experiments/tests/test_probe.py",
+    "doc": "The model parser's probe, `runners/parse_probe.py`, on fakes: nothing is sent.",
+    "classes": [
+     {
+      "name": "Agree",
+      "doc": "",
+      "tests": [
+       "numbers compare as numbers",
+       "a silent default may be left out but not contradicted",
+       "a filter only the model states is still a difference",
+       "a filter the words chose has to be there",
+       "the shape has to match",
+       "comparable"
+      ]
+     },
+     {
+      "name": "ResultsPage",
+      "doc": "The rules get the results page a question names, fetched once per URL.",
+      "tests": [
+       "fetched once per results url and not for a product url",
+       "a page the shop cannot serve is none once with a warning"
+      ]
+     },
+     {
+      "name": "Probe",
+      "doc": "`main` on fakes: a question whose call fails is a row with the error and no cost,\nthe others are parsed, and the file is written however the loop ends.",
+      "tests": [
+       "a failed call is recorded and the probe goes on",
+       "no failure counts none",
+       "a reply that is not a form is a model problem not a failed call",
+       "the file is written when something else stops the loop",
+       "the file says which commit and form version made it",
+       "the rules see the page the question names"
       ]
      }
     ]
@@ -4771,10 +4852,10 @@ window.SITE = {
   "source": "README decision log, 8 October 2026"
  },
  "built": {
-  "commit": "83c0377",
+  "commit": "2d76fae",
   "date": "2026-10-14",
   "branch": "dev",
-  "dirty": false,
+  "dirty": true,
   "repo": "https://github.com/kr7001/fyp-shopping-agent",
   "agent_core": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
   "commits_by_week": {
@@ -4782,7 +4863,7 @@ window.SITE = {
    "2026-09-07": 44,
    "2026-09-14": 49,
    "2026-10-05": 45,
-   "2026-10-12": 16
+   "2026-10-12": 19
   }
  }
 };

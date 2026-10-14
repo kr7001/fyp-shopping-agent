@@ -1,0 +1,2174 @@
+{
+  "ran_at": "20261014T112047",
+  "model": "anthropic/claude-haiku-4.5",
+  "temperature": 0,
+  "form_version": 1,
+  "spend_usd": 0.0455,
+  "charged_usd": 0.06850700000000001,
+  "rows": [
+    {
+      "file": "tasks.json",
+      "question": "On http://localhost:7770/igr-water-a.html what price is shown for this product on first load? Report the exact price.",
+      "rules": {
+        "form_version": 1,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "url",
+            "op": "in",
+            "value": [
+              "http://localhost:7770/igr-water-a.html"
+            ]
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "1 product URL",
+          "filter:url": "1 product URL",
+          "quantifier": "1 product URL",
+          "objective": "a price is asked for"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Named listing URL provided",
+          "objective": "what price is shown",
+          "filters": "none specified",
+          "population": "http://localhost:7770/igr-water-a.html is a listing page",
+          "unknowns": "The question asks for price 'on first load' but the shop only shows a size-specific price after a size is chosen from the menu; no price is shown before size selection"
+        }
+      },
+      "model_problems": [
+        "a lookup names no listing"
+      ],
+      "agree": false,
+      "cost_usd": 0.001647
+    },
+    {
+      "file": "tasks.json",
+      "question": "On http://localhost:7770/igr-water-a.html what is the price of the 2 x 9.5L pack? Report the exact price.",
+      "rules": {
+        "form_version": 1,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "url",
+            "op": "in",
+            "value": [
+              "http://localhost:7770/igr-water-a.html"
+            ]
+          },
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "1 product URL",
+          "filter:size": "the 2 x 9.5L pack",
+          "filter:url": "1 product URL",
+          "quantifier": "1 product URL",
+          "objective": "a price is asked for"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "The question names a specific listing URL, so it is a lookup of that one listing",
+          "objective": "The question asks 'what is the price', so the objective is price",
+          "filters": "The question specifies '2 x 9.5L pack', which is a size filter",
+          "population": "The question provides a specific listing URL (http://localhost:7770/igr-water-a.html), so the population is that one listing page",
+          "reading": "No ambiguous words requiring a reading choice"
+        }
+      },
+      "model_problems": [
+        "a lookup names no listing"
+      ],
+      "agree": false,
+      "cost_usd": 0.001973
+    },
+    {
+      "file": "tasks.json",
+      "question": "On http://localhost:7770/igr-water-b.html what is the price of the 2 x 9.5L pack? Report the exact price.",
+      "rules": {
+        "form_version": 1,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "url",
+            "op": "in",
+            "value": [
+              "http://localhost:7770/igr-water-b.html"
+            ]
+          },
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "1 product URL",
+          "filter:size": "the 2 x 9.5L pack",
+          "filter:url": "1 product URL",
+          "quantifier": "1 product URL",
+          "objective": "a price is asked for"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "The question names a specific listing URL and asks for a specific price",
+          "objective": "what is the price",
+          "filters": "of the 2 x 9.5L pack",
+          "population": "http://localhost:7770/igr-water-b.html is a listing page",
+          "k": "not applicable",
+          "reading": "not applicable",
+          "unknowns": "none"
+        }
+      },
+      "model_problems": [
+        "a lookup names no listing"
+      ],
+      "agree": false,
+      "cost_usd": 0.001858
+    },
+    {
+      "file": "tasks.json",
+      "question": "On http://localhost:7770/igr-water-a.html which pack size is cheapest per litre? Name the pack size and its price.",
+      "rules": {
+        "form_version": 1,
+        "kind": "rate_bound",
+        "quantifier": "argmin",
+        "objective": "rate",
+        "filters": [],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "1 product URL",
+          "filter:url": "1 product URL",
+          "quantifier": "per litre",
+          "objective": "per litre"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "rate_bound",
+        "quantifier": "argmin",
+        "objective": "rate",
+        "filters": [
+          {
+            "attribute": "url",
+            "op": "=",
+            "value": "http://localhost:7770/igr-water-a.html"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "the volume in litres of each pack size"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which pack size is cheapest per litre \u2014 argmin seeks the minimum",
+          "objective": "rate \u2014 price per litre requires dividing price by volume",
+          "filters": "On http://localhost:7770/igr-water-a.html \u2014 the URL specifies a single listing",
+          "population": "listing \u2014 a named URL is a single product page",
+          "unknowns": "per litre requires the volume of each pack size, which the shop does not show; only price and size are shown on a listing page"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.002084
+    },
+    {
+      "file": "tasks.json",
+      "question": "Two sellers list Glenmoor Still Spring Water: http://localhost:7770/igr-water-a.html (Cellar Direct) and http://localhost:7770/igr-water-b.html (Hillside Provisions). Which seller is cheaper for the 2 x 9.5L pack, and what is that price?",
+      "rules": {
+        "form_version": 1,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "url",
+            "op": "in",
+            "value": [
+              "http://localhost:7770/igr-water-a.html",
+              "http://localhost:7770/igr-water-b.html"
+            ]
+          },
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "2 product URLs",
+          "filter:size": "the 2 x 9.5L pack",
+          "filter:url": "2 product URLs",
+          "quantifier": "2 product URLs",
+          "objective": "a price is asked for"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "total_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Which seller is cheaper",
+          "objective": "what is that price",
+          "filters": "for the 2 x 9.5L pack",
+          "population": "Two sellers list Glenmoor Still Spring Water: http://localhost:7770/igr-water-a.html (Cellar Direct) and http://localhost:7770/igr-water-b.html (Hillside Provisions)"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.001893
+    },
+    {
+      "file": "tasks.json",
+      "question": "On http://localhost:7770/igr-coffee-a.html what is the price of the 1 kg size? Report the exact price.",
+      "rules": {
+        "form_version": 1,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "url",
+            "op": "in",
+            "value": [
+              "http://localhost:7770/igr-coffee-a.html"
+            ]
+          },
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "1 kg"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "1 product URL",
+          "filter:size": "the 1 kg size",
+          "filter:url": "1 product URL",
+          "quantifier": "1 product URL",
+          "objective": "a price is asked for"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "1 kg"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "On http://localhost:7770/igr-coffee-a.html what is the price \u2014 a direct lookup of a named listing",
+          "objective": "price \u2014 the question asks 'what is the price'",
+          "filters": "of the 1 kg size \u2014 size = '1 kg'",
+          "population": "listing \u2014 the URL names a specific product page",
+          "reading": "The question is unambiguous"
+        }
+      },
+      "model_problems": [
+        "a lookup names no listing"
+      ],
+      "agree": false,
+      "cost_usd": 0.001833
+    },
+    {
+      "file": "tasks.json",
+      "question": "On http://localhost:7770/igr-coffee-a.html which size is the best value per kilogram? Name the size.",
+      "rules": {
+        "form_version": 1,
+        "kind": "rate_bound",
+        "quantifier": "argmin",
+        "objective": "rate",
+        "filters": [],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "1 product URL",
+          "filter:url": "1 product URL",
+          "quantifier": "best value",
+          "objective": "best value"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "rate_bound",
+        "quantifier": "argmin",
+        "objective": "rate",
+        "filters": [
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "the weight in kilograms of each size"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which size is the best value per kilogram \u2014 argmin seeks the minimum",
+          "objective": "per kilogram \u2014 rate is price per unit of weight",
+          "filters": "best value implies only buyable sizes are candidates",
+          "population": "On http://localhost:7770/igr-coffee-a.html \u2014 a named listing page",
+          "unknowns": "the shop shows size and price on a listing page, but not the weight in kilograms of each size, which is needed to compute price per kilogram"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.00201
+    },
+    {
+      "file": "tasks.json",
+      "question": "On http://localhost:7770/igr-coffee-a.html is the 1 kg size the cheapest per kilogram? Answer yes or no and give the per-kilogram prices.",
+      "rules": {
+        "form_version": 1,
+        "kind": "rate_bound",
+        "quantifier": "argmin",
+        "objective": "rate",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "1 kg"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "1 product URL",
+          "filter:size": "the 1 kg size",
+          "filter:url": "1 product URL",
+          "quantifier": "per kilogram",
+          "objective": "per kilogram"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "rate",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "1 kg"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "what other sizes are available at this listing",
+          "the prices of those other sizes"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "the question names a specific listing URL and asks about one size",
+          "objective": "per kilogram prices are requested; this is rate (price per unit)",
+          "filters": "the question specifies '1 kg size'",
+          "population": "the question provides a specific listing URL: http://localhost:7770/igr-coffee-a.html",
+          "unknowns": "to answer whether 1 kg is cheapest per kilogram, all available sizes and their prices must be known, but the question only asks about one size"
+        }
+      },
+      "model_problems": [
+        "a lookup names no listing"
+      ],
+      "agree": false,
+      "cost_usd": 0.002083
+    },
+    {
+      "file": "tasks.json",
+      "question": "On http://localhost:7770/igr-tee-a.html is size M available to buy? Answer yes or no.",
+      "rules": {
+        "form_version": 1,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "url",
+            "op": "in",
+            "value": [
+              "http://localhost:7770/igr-tee-a.html"
+            ]
+          },
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "1 product URL",
+          "filter:size": "size M",
+          "filter:availability": "available",
+          "filter:url": "1 product URL",
+          "quantifier": "1 product URL",
+          "objective": "available"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "On http://localhost:7770/igr-tee-a.html is size M available to buy? \u2014 a named listing is being queried",
+          "objective": "available to buy \u2014 checking availability of a specific size",
+          "filters": "size M \u2014 the question specifies size M",
+          "population": "On http://localhost:7770/igr-tee-a.html \u2014 a specific listing page URL is named"
+        }
+      },
+      "model_problems": [
+        "a lookup names no listing"
+      ],
+      "agree": false,
+      "cost_usd": 0.001814
+    },
+    {
+      "file": "tasks.json",
+      "question": "On http://localhost:7770/igr-tee-a.html what is the price of size XL? Report the exact price.",
+      "rules": {
+        "form_version": 1,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "url",
+            "op": "in",
+            "value": [
+              "http://localhost:7770/igr-tee-a.html"
+            ]
+          },
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "XL"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "1 product URL",
+          "filter:size": "size XL",
+          "filter:url": "1 product URL",
+          "quantifier": "1 product URL",
+          "objective": "a price is asked for"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "XL"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "On http://localhost:7770/igr-tee-a.html what is the price \u2014 a direct lookup of a named listing",
+          "objective": "price of size XL \u2014 the price attribute for a specific size",
+          "filters": "size XL \u2014 the size menu option to select",
+          "population": "listing \u2014 the URL names a specific product page",
+          "unknowns": "None \u2014 all needed attributes are shown on listing pages"
+        }
+      },
+      "model_problems": [
+        "a lookup names no listing"
+      ],
+      "agree": false,
+      "cost_usd": 0.001841
+    },
+    {
+      "file": "tasks.json",
+      "question": "On http://localhost:7770/igr-tee-a.html is every size currently in stock? Answer yes or no, and name any size that is not.",
+      "rules": {
+        "form_version": 1,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "1 product URL",
+          "filter:availability": "in stock",
+          "filter:url": "1 product URL",
+          "quantifier": "every size currently in stock",
+          "objective": "stock"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "every size",
+          "objective": "currently in stock",
+          "population": "the listing at http://localhost:7770/igr-tee-a.html",
+          "filters": "availability must be buyable for all sizes"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.001442
+    },
+    {
+      "file": "tasks.json",
+      "question": "On http://localhost:7770/igr-water-a.html list every pack size and its price.",
+      "rules": {
+        "form_version": 1,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "url",
+            "op": "in",
+            "value": [
+              "http://localhost:7770/igr-water-a.html"
+            ]
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "1 product URL",
+          "filter:url": "1 product URL",
+          "quantifier": "1 product URL",
+          "objective": "a price is asked for"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "attribute:pack size and price",
+        "filters": [],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "list every",
+          "objective": "pack size and its price",
+          "filters": "none",
+          "population": "the named listing at http://localhost:7770/igr-water-a.html",
+          "k": "not applicable",
+          "reading": "not applicable",
+          "unknowns": "none"
+        }
+      },
+      "model_problems": [
+        "the shop does not show pack size and price"
+      ],
+      "agree": false,
+      "cost_usd": 0.001564
+    },
+    {
+      "file": "tasks_scaled.json",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Rivenhall . Of the Rivenhall water listings shown, which one advertises the lowest price on the results page, and what is that price?",
+      "rules": {
+        "form_version": 1,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "advertises",
+          "objective": "advertises"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [
+          {
+            "attribute": "title",
+            "op": "contains",
+            "value": "Rivenhall"
+          },
+          {
+            "attribute": "title",
+            "op": "contains",
+            "value": "water"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which one advertises the lowest price",
+          "objective": "advertises the lowest price on the results page",
+          "filters": "Rivenhall water listings",
+          "population": "listings shown on the results page at http://localhost:7770/catalogsearch/result/?q=Rivenhall"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.001875
+    },
+    {
+      "file": "tasks_scaled.json",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Rivenhall . Across all the Rivenhall listings, which seller is cheapest for the 2 x 9.5L pack, and what is that price?",
+      "rules": {
+        "form_version": 1,
+        "kind": "total_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "the 2 x 9.5L pack",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "total_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "title",
+            "op": "contains",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "which seller(s) sell the 2 x 9.5L pack variant (requires opening each listing to see size menu)"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which seller is cheapest",
+          "objective": "price",
+          "filters": "the 2 x 9.5L pack",
+          "population": "Across all the Rivenhall listings",
+          "unknowns": "The advertised price on the results page is the cheapest option per listing, but the price of the specific 2 x 9.5L size only appears after opening a listing and selecting that size. To find the cheapest seller for this specific size, every listing must be opened to check if that size is available and what its price is."
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.002201
+    },
+    {
+      "file": "tasks_scaled.json",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Rivenhall . What is the lowest price anyone charges for the 2 x 9.5L pack of Rivenhall water?",
+      "rules": {
+        "form_version": 1,
+        "kind": "total_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "the 2 x 9.5L pack",
+          "quantifier": "lowest price",
+          "objective": "lowest price"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "total_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "title",
+            "op": "contains",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "which listing(s) on the results page match '2 x 9.5L pack of Rivenhall water'"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "lowest price",
+          "objective": "price",
+          "filters": "2 x 9.5L pack",
+          "population": "the results page at the given URL must be opened first to identify matching listings, then each matching listing must be opened to see its price for that size",
+          "unknowns": "the question names a product but not a specific listing; the results page must be consulted to find which listings sell this pack size"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.002043
+    },
+    {
+      "file": "tasks_scaled.json",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Rivenhall . Does every Rivenhall listing stock the 2 x 9.5L pack? Answer yes or no.",
+      "rules": {
+        "form_version": 1,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "the 2 x 9.5L pack",
+          "quantifier": "every Rivenhall listing stock",
+          "objective": "stock"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Does every Rivenhall listing",
+          "objective": "stock the 2 x 9.5L pack \u2014 checking if the size is available (buyable) in each listing",
+          "filters": "2 x 9.5L pack \u2014 the specific size to check",
+          "population": "Rivenhall listing \u2014 named product pages from the search results at the given URL",
+          "unknowns": "The question asks to check every listing, which requires opening each one to see its size menu and determine availability"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.001967
+    },
+    {
+      "file": "tasks_scaled.json",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Rivenhall . Across all the Rivenhall listings and all their pack sizes, which seller offers the lowest price per litre?",
+      "rules": {
+        "form_version": 1,
+        "kind": "rate_bound",
+        "quantifier": "argmin",
+        "objective": "rate",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "per litre",
+          "objective": "per litre"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "rate_bound",
+        "quantifier": "argmin",
+        "objective": "rate",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "the volume in litres of each pack size (needed to compute price per litre)"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which seller offers the lowest price per litre",
+          "objective": "price per litre requires volume data not shown by the shop",
+          "filters": "no filters specified",
+          "population": "Across all the Rivenhall listings and all their pack sizes",
+          "unknowns": "The shop shows price and size on listing pages, but not the volume in litres; computing rate (price per unit volume) requires this information which the shop does not display"
+        }
+      },
+      "model_problems": [],
+      "agree": true,
+      "cost_usd": 0.001822
+    },
+    {
+      "file": "tasks_heldout.json",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Calderwood . Of the Calderwood water listings shown, which one advertises the lowest price on the results page, and what is that price?",
+      "rules": {
+        "form_version": 1,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "advertises",
+          "objective": "advertises"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [
+          {
+            "attribute": "title",
+            "op": "contains",
+            "value": "Calderwood"
+          },
+          {
+            "attribute": "title",
+            "op": "contains",
+            "value": "water"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which one advertises the lowest price",
+          "objective": "advertises the lowest price on the results page",
+          "filters": "Calderwood water listings",
+          "population": "the listings shown [on the results page at the given URL]"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.00181
+    },
+    {
+      "file": "tasks_heldout.json",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Calderwood . Across all the Calderwood listings, which seller is cheapest for the 2 x 9.5L pack, and what is that price?",
+      "rules": {
+        "form_version": 1,
+        "kind": "total_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "the 2 x 9.5L pack",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [
+          {
+            "attribute": "title",
+            "op": "contains",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "Whether the advertised price on the results page matches the actual price when the listing is opened (the question asks for 'that price' but the results page only shows the cheapest option per listing, not necessarily the price of the specific size)"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which seller is cheapest",
+          "objective": "advertised price shown on results page",
+          "filters": "the 2 x 9.5L pack",
+          "population": "Go to http://localhost:7770/catalogsearch/result/?q=Calderwood . Across all the Calderwood listings",
+          "unknowns": "The question asks for a price but the results page advertised price may not be for the 2 x 9.5L pack specifically; that price only appears after opening the listing and selecting the size"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.002316
+    },
+    {
+      "file": "tasks_heldout.json",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Calderwood . What is the lowest price anyone charges for the 2 x 9.5L pack of Calderwood water?",
+      "rules": {
+        "form_version": 1,
+        "kind": "total_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "the 2 x 9.5L pack",
+          "quantifier": "lowest price",
+          "objective": "lowest price"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "total_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "title",
+            "op": "contains",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "which listing(s) on the results page match '2 x 9.5L pack of Calderwood water'"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "lowest price",
+          "objective": "price",
+          "filters": "2 x 9.5L pack",
+          "population": "the results page at the given URL must be searched first to identify matching listings, then each must be opened to see prices for that specific size",
+          "unknowns": "the question names a product but the results page shows multiple listings; we must open each listing's size menu to find which ones offer '2 x 9.5L' and what price each charges for it"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.002118
+    },
+    {
+      "file": "tasks_heldout.json",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Calderwood . Does every Calderwood listing stock the 2 x 9.5L pack? Answer yes or no.",
+      "rules": {
+        "form_version": 1,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "the 2 x 9.5L pack",
+          "quantifier": "every Calderwood listing stock",
+          "objective": "stock"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "2 x 9.5L"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Does every Calderwood listing",
+          "objective": "stock the 2 x 9.5L pack: checking availability of that size",
+          "filters": "2 x 9.5L pack",
+          "population": "Calderwood listing: the results page from the given URL will show all Calderwood listings; each listing page shows its size menu with availability",
+          "k": "not applicable",
+          "reading": "null"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.001902
+    },
+    {
+      "file": "tasks_heldout.json",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Calderwood . Across all the Calderwood listings and all their pack sizes, which seller offers the lowest price per litre?",
+      "rules": {
+        "form_version": 1,
+        "kind": "rate_bound",
+        "quantifier": "argmin",
+        "objective": "rate",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "per litre",
+          "objective": "per litre"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "rate_bound",
+        "quantifier": "argmin",
+        "objective": "rate",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": "price per litre across all pack sizes of all listings",
+        "unknowns": [
+          "pack size in litres (the shop shows size but not its unit or volume)",
+          "which listings have multiple pack sizes available"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which seller offers the lowest price per litre",
+          "objective": "price per litre",
+          "population": "Across all the Calderwood listings and all their pack sizes",
+          "unknowns": "The shop shows size as an attribute but does not display the volume in litres or the unit of measurement, so the rate (price per litre) cannot be calculated from shop-shown attributes alone"
+        }
+      },
+      "model_problems": [],
+      "agree": true,
+      "cost_usd": 0.001862
+    },
+    {
+      "file": "tasks_apparel.json",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Of the Thornwood tee listings shown, which one advertises the lowest price on the results page, and what is that price?",
+      "rules": {
+        "form_version": 1,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "advertises",
+          "objective": "advertises"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [
+          {
+            "attribute": "title",
+            "op": "contains",
+            "value": "Thornwood"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which one advertises the lowest price",
+          "objective": "advertised price on the results page",
+          "filters": "Thornwood tee listings shown",
+          "population": "the listings on the results page at http://localhost:7770/catalogsearch/result/?q=Thornwood"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.001709
+    },
+    {
+      "file": "tasks_apparel.json",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . What is the lowest price anyone charges for size M of the Thornwood tee, among those that can actually be bought?",
+      "rules": {
+        "form_version": 1,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "bought",
+          "quantifier": "lowest price",
+          "objective": "lowest price"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "lowest price",
+          "objective": "price",
+          "filters": "size M, can actually be bought",
+          "population": "http://localhost:7770/catalogsearch/result/?q=Thornwood",
+          "k": "None",
+          "reading": "None",
+          "unknowns": "None"
+        }
+      },
+      "model_problems": [],
+      "agree": true,
+      "cost_usd": 0.001862
+    },
+    {
+      "file": "tasks_apparel.json",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Across the Thornwood listings, which seller is cheapest for size M, and what is that price? Only count a listing that can actually supply that size.",
+      "rules": {
+        "form_version": 1,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "supply",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which seller is cheapest",
+          "objective": "what is that price",
+          "filters": "for size M, Only count a listing that can actually supply that size",
+          "population": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Across the Thornwood listings",
+          "k": "None",
+          "reading": "None",
+          "unknowns": "None"
+        }
+      },
+      "model_problems": [],
+      "agree": true,
+      "cost_usd": 0.001985
+    },
+    {
+      "file": "tasks_apparel.json",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Does every Thornwood listing offer size M? Answer yes or no.",
+      "rules": {
+        "form_version": 1,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "quantifier": "every Thornwood listing offer",
+          "objective": "offer"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Does every",
+          "objective": "offer size M",
+          "filters": "size M",
+          "population": "Thornwood listing \u2014 the results page at the given URL will show all Thornwood listings, and each must be opened to check its size menu for availability of M"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.001651
+    },
+    {
+      "file": "tasks_apparel.json",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . How many of the Thornwood listings offer size M?",
+      "rules": {
+        "form_version": 1,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "How many"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "How many of the Thornwood listings offer size M?",
+          "objective": "offer size M means the size is available to buy",
+          "filters": "size M",
+          "population": "the Thornwood listings on the results page at http://localhost:7770/catalogsearch/result/?q=Thornwood"
+        }
+      },
+      "model_problems": [],
+      "agree": true,
+      "cost_usd": 0.001698
+    },
+    {
+      "file": "tasks_apparel.json",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . How many of the Thornwood listings have size M in stock and available to buy right now?",
+      "rules": {
+        "form_version": 1,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "in stock",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "How many"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "listing",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "How many",
+          "objective": "available to buy right now",
+          "filters": "size M in stock and available to buy right now",
+          "population": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . How many of the Thornwood listings",
+          "note": "The question names a URL and asks about listings found there, so population is 'listing' (each listing must be opened to check size availability and buyability). The count requires opening every listing returned by the search to check which have size M available for purchase."
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.002126
+    },
+    {
+      "file": "tasks_reviews.json",
+      "question": "Go to http://localhost:7770/review/product/list/id/230/ . Do any buyers report that this product leaks or arrives leaking? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "rules": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "leaks or arrives leaking"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "review",
+          "quantifier": "review",
+          "objective": "review",
+          "filter:review text": "report that this product leaks or arrives leaking"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "leaks"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Do any buyers report",
+          "objective": "that this product leaks or arrives leaking",
+          "filters": "leaks or arrives leaking",
+          "population": "Go to http://localhost:7770/review/product/list/id/230/ . Do any buyers report that this product leaks or arrives leaking?"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.001729
+    },
+    {
+      "file": "tasks_reviews.json",
+      "question": "Go to http://localhost:7770/review/product/list/id/10375/ . Do any buyers report that this product leaks or arrives leaking? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "rules": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "leaks or arrives leaking"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "review",
+          "quantifier": "review",
+          "objective": "review",
+          "filter:review text": "report that this product leaks or arrives leaking"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "leaks"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Do any buyers report",
+          "objective": "that this product leaks or arrives leaking",
+          "filters": "leaks or arrives leaking",
+          "population": "Go to http://localhost:7770/review/product/list/id/10375/ . Do any buyers report that this product leaks or arrives leaking?"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.001735
+    },
+    {
+      "file": "tasks_reviews.json",
+      "question": "Go to http://localhost:7770/review/product/list/id/13913/ . Do any buyers report that this product leaks or arrives leaking? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "rules": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "leaks or arrives leaking"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "review",
+          "quantifier": "review",
+          "objective": "review",
+          "filter:review text": "report that this product leaks or arrives leaking"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "leaks"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Do any buyers report",
+          "objective": "that this product leaks or arrives leaking",
+          "filters": "leaks or arrives leaking",
+          "population": "Go to http://localhost:7770/review/product/list/id/13913/ . Do any buyers report that this product leaks or arrives leaking?"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.001735
+    },
+    {
+      "file": "tasks_reviews.json",
+      "question": "Go to http://localhost:7770/review/product/list/id/250/ . Do any buyers report that this product arrives broken or breaks in use? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "rules": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "arrives broken or breaks in use"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "review",
+          "quantifier": "review",
+          "objective": "review",
+          "filter:review text": "report that this product arrives broken or breaks in use"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "broken"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Do any buyers report",
+          "objective": "that this product arrives broken or breaks in use",
+          "filters": "arrives broken or breaks in use",
+          "population": "Go to http://localhost:7770/review/product/list/id/250/ . Do any buyers report that this product arrives broken or breaks in use?"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.001724
+    },
+    {
+      "file": "tasks_reviews.json",
+      "question": "Go to http://localhost:7770/review/product/list/id/125/ . Do any buyers report that this product arrives broken or breaks in use? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "rules": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "arrives broken or breaks in use"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "review",
+          "quantifier": "review",
+          "objective": "review",
+          "filter:review text": "report that this product arrives broken or breaks in use"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "broken"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Do any buyers report",
+          "objective": "that this product arrives broken or breaks in use",
+          "filters": "arrives broken or breaks in use",
+          "population": "Go to http://localhost:7770/review/product/list/id/125/ . Do any buyers report"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.001679
+    },
+    {
+      "file": "tasks_reviews.json",
+      "question": "Go to http://localhost:7770/review/product/list/id/984/ . Do any buyers report that this product arrives broken or breaks in use? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "rules": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "arrives broken or breaks in use"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "review",
+          "quantifier": "review",
+          "objective": "review",
+          "filter:review text": "report that this product arrives broken or breaks in use"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "broken"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Do any buyers report",
+          "objective": "that this product arrives broken or breaks in use",
+          "filters": "arrives broken or breaks in use",
+          "population": "Go to http://localhost:7770/review/product/list/id/984/ . Do any buyers report",
+          "reading": "broken or breaks in use interpreted as mentions of 'broken' in review text"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.001794
+    },
+    {
+      "file": "tasks_reviews.json",
+      "question": "Go to http://localhost:7770/review/product/list/id/119/ . Do any buyers report that this product left them asking for a refund? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "rules": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "left them asking for a refund"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "review",
+          "quantifier": "review",
+          "objective": "review",
+          "filter:review text": "report that this product left them asking for a refund"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "refund"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Do any buyers report",
+          "objective": "asking for a refund",
+          "filters": "refund",
+          "population": "Go to http://localhost:7770/review/product/list/id/119/ . Do any buyers report that this product left them asking for a refund?"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.001695
+    },
+    {
+      "file": "tasks_reviews.json",
+      "question": "Go to http://localhost:7770/review/product/list/id/21626/ . Do any buyers report that this product left them asking for a refund? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "rules": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "left them asking for a refund"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "review",
+          "quantifier": "review",
+          "objective": "review",
+          "filter:review text": "report that this product left them asking for a refund"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "refund"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Do any buyers report",
+          "objective": "that this product left them asking for a refund",
+          "filters": "refund",
+          "population": "Go to http://localhost:7770/review/product/list/id/21626/ . Do any buyers report that this product left them asking for a refund?"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.001726
+    },
+    {
+      "file": "tasks_reviews.json",
+      "question": "Go to http://localhost:7770/review/product/list/id/20718/ . Do any buyers report that this product left them asking for a refund? Answer yes or no, and quote the review you are relying on if the answer is yes.",
+      "rules": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "left them asking for a refund"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "review",
+          "quantifier": "review",
+          "objective": "review",
+          "filter:review text": "report that this product left them asking for a refund"
+        }
+      },
+      "rules_problems": [],
+      "model": {
+        "form_version": 1,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "refund"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Do any buyers report",
+          "objective": "asking for a refund",
+          "filters": "refund",
+          "population": "Go to http://localhost:7770/review/product/list/id/20718/ . Do any buyers report that this product left them asking for a refund?"
+        }
+      },
+      "model_problems": [],
+      "agree": false,
+      "cost_usd": 0.001701
+    }
+  ]
+}

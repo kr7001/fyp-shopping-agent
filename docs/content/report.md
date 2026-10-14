@@ -6,7 +6,7 @@ blanks are complete.
 
 ## Summary
 
-[Three sentences: what the box is, what today's runs showed, what is next.]
+The box is a step before the shopping agent that reads the question and the first results page, hands the agent a plan or asks the user back, and checks the answer from the page. Its first version ran a two-run pilot on 14 October and got both right, opening 8 listings instead of 15 on the cheapest question for two thirds of the cost of opening everything. Its second version, built the same day, parses any shopping question into a logical form and composes the retrieval from seven primitives, with a model doing the parsing (it agrees with the rules on the plan-deciding fields for 33 of 37 questions) and rules doing everything after; next week it is measured on the clothing market and then frozen for a fresh one.
 
 ## 1. Where we left off on 7 October
 
@@ -96,10 +96,30 @@ claims to build, designed on 14 October after the research (the "Research" and "
 - The box asks only when the form is underdetermined on this page: which reading of a word,
   which entity, what threshold, or that the shop does not show the attribute at all.
 
-[Free census test, after the build: of the 42 questions, how many the rules and the model parse
-the same, which fail verification and why, which raise an ask. Each read by hand.]
+**The census parse, 14 October, 11:20.** The model (Claude Haiku 4.5, temperature 0) wrote the
+logical form of all 37 distinct questions, one call each, $0.069 charged, no browser. Compared
+with the rules' forms, from `experiments/results/parse-probe-20261014T112047.json`:
 
-[If run: the model parser's cost per question.]
+| Agreement | Questions |
+| --- | --- |
+| Same quantifier (the field that picks the primitive) | 34 of 37 |
+| Same quantifier and objective | 33 of 37 |
+| Same on those and the population | 26 of 37 |
+| Same on every field | 5 of 37 |
+
+The gap between 33 and 5 is two prompt vocabulary problems, not judgement: the model never puts
+the listing's URL in the filters, so 7 of its single-listing forms fail "a lookup names no
+listing", and it writes "listing" as the population where the rules write "results" in 7
+cases. Both are fixes to the prompt. The four real disagreements: "which of these two sellers
+is cheaper" (rules: look up both; model: cheapest of the two, both open the same pages), "is the
+1 kg size the cheapest per kg" (rules right: it needs every size's rate; the model proposed a
+lookup), "list every pack size and its price" (the model invented an attribute "pack size and
+price" and was refused by the fifth property, which is the property doing its job), and the
+Calderwood cheapest question (the model chose "advertised price", the rules "price": the rules
+are right). In sample for the rules, which were written on these 37 questions.
+
+Cost per question: $0.0019 on average, so a model parse adds about a fifth of a cent to a run
+that costs $0.20 to $0.50.
 
 ## 4b. Is this only an openJiuwen problem? The second agent and the second model
 
@@ -159,8 +179,7 @@ contribution unless a pull request is merged (project rule).
 
 ## 5. What did not work, and limits
 
-[From the verified batch: any plan the agent did not follow, any refusal of a correct answer,
-anything the page could not tell.]
+In the pilot nothing failed, with two runs that proves little. What the day's checks found: the model parser omits the listing's URL and misnames the population, both prompt fixes, and invented one attribute, which the fifth property caught; v2's stricter "does every" check would have refused 5 of 14 correct bare "No" answers in the old cells, a trade accepted because the box's own text tells the agent to name the counterexample; the bound texts say "at or above" where the check counted "at or below", harmless on this market and fixed for a market with a tie; and the first ambiguity rule fired on two price questions before it was tightened. No paid run of v2 exists yet.
 
 Standing limits: one market family, one model, our shop's 60 ms price reveal, the two agents'
 different sampling and clocks, the refusal check's one blind spot (a misread advertised price),
@@ -175,5 +194,4 @@ shipping cost and combined discounts out of scope.
 
 ## 7. Spend
 
-[Spend today, and the balance, from the account.] Before today: $56.61 of the $100 key used,
-$43.39 left.
+Before today $56.61 of the $100 key used. Today the pilot $0.61 and the census parse $0.07, both matched by the provider's charges. $42.71 left, read from the account on 14 October.
