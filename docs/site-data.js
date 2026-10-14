@@ -4345,7 +4345,8 @@ window.SITE = {
       "doc": "Box v2's answer check: v1's page-derived check for a v1 kind, then the plan's own.",
       "tests": [
        "a v1 kind keeps v1s verdict and adds the primitives",
-       "a new kind exempts the questions own figure and runs its primitive"
+       "a new kind exempts the questions own figure and runs its primitive",
+       "a limit written without decimals is still the questions own"
       ]
      },
      {
@@ -4397,6 +4398,7 @@ window.SITE = {
        "the batch counts what the box did",
        "the dry run prints bypass for an unrelated question",
        "the box and a strategy flag are refused",
+       "the box and the naive scaffold are refused until its browser is confined",
        "the browser tool is pinned and the user agent defined once",
        "the browser may request only the shop on the gated shop"
       ]
@@ -5221,7 +5223,7 @@ window.SITE = {
   ],
   "ask_text": "Your question says '{verb}'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
   "versions": {
-   "box": 5,
+   "box": 6,
    "form": 4,
    "primitives": 3,
    "targeting": 7,
@@ -5229,10 +5231,10 @@ window.SITE = {
   }
  },
  "built": {
-  "commit": "fda4398",
+  "commit": "bb89137",
   "date": "2026-10-14",
   "branch": "dev",
-  "dirty": false,
+  "dirty": true,
   "repo": "https://github.com/kr7001/fyp-shopping-agent",
   "agent_core": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
   "commits_by_week": {
@@ -5240,7 +5242,7 @@ window.SITE = {
    "2026-09-07": 44,
    "2026-09-14": 49,
    "2026-10-05": 45,
-   "2026-10-12": 29
+   "2026-10-12": 31
   }
  }
 };
