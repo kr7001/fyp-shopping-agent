@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import dataclasses
 import pathlib
+import re
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
@@ -44,7 +45,12 @@ import targeting
 #      that opens with neither yes nor no: one that names a listing is held to the
 #      coverage its claim needs, and one that names nothing is flagged as unclear. The
 #      bound check counts a tie at the answer's price once (`policy.bound_floor`)
-VERSION = 2
+#   3  14 October 2026. A denial is read however it starts, "None of the sellers" and
+#      "Nobody" as well as "No" (`denies`), and an existence answer with neither yes nor
+#      no owes what a no owes, whatever listing it names. The bound check's extra one is
+#      for the answer's own listing only, and a seller is named only as a whole word
+#      (`policy.bound_floor`, `policy.named_in`)
+VERSION = 3
 
 # The same hazard as every v1 bound strategy: a figure derived from a bound is not a price.
 QUARANTINE = targeting.QUARANTINE
@@ -98,16 +104,23 @@ def affirms(answer: str) -> bool:
     return bool(sufficiency.AFFIRMS.match(answer or ""))
 
 
+# A denial that does not start with the word "no": "None of the sellers ...", "Nobody
+# sells ...", "Not one.", "There is no seller ...". `sufficiency.DENIES` is `^\W*no\b`
+# alone, which "No one" and "No seller sells" already match, and widening it would
+# re-score every stored run, so the box's own checks read the union here (verifier
+# finding, 14 October 2026: "None of the sellers, including Seller A at $25.00, sells size
+# M under $20.00" was read as a yes through the listing it names). Run over the 446 stored
+# answers on that day, it matched none, so no replay changes.
+NEGATION = re.compile(r"^\W*(?:none|nobody|not\s+one|there\s+(?:is|are)\s+no)\b", re.IGNORECASE)
+
+
 def denies(answer: str) -> bool:
-    return bool(sufficiency.DENIES.match(answer or ""))
+    return bool(sufficiency.DENIES.match(answer or "") or NEGATION.match(answer or ""))
 
 
-def named_in(answer: str, page: page_module.Page) -> list[page_module.Listing]:
-    """The page's listings the answer names, by seller or by the last part of the URL. A
-    stored answer on 18 September 2026 named its counterexample as "(igr-app-09.html)"."""
-    low = (answer or "").lower()
-    return [item for item in page.listings
-            if item.seller.lower() in low or item.url.rsplit("/", 1)[-1].lower() in low]
+# The page's listings an answer names, as whole names. It lives beside the floor that
+# needs it (`policy.bound_floor`) and keeps this name because the checks below call it.
+named_in = policy.named_in
 
 
 def opened_all(page: page_module.Page, opened: set[str]) -> bool:
@@ -330,35 +343,39 @@ class Witness:
     def check(form: form_module.Form, page: page_module.Page, answer: str, opened: set[str],
               text: str) -> dict:
         """A yes needs its witness opened, or every candidate. A no needs every candidate
-        the limit does not rule out opened.
+        the limit does not rule out opened, and so does an answer with neither word.
 
-        An answer that opens with neither word but names a listing, "Seller A sells size M
-        at $10.15, so there is a seller under $20.00", affirms through its witness and is
-        held to the same coverage. Until 14 October 2026 it passed with nothing opened
-        (verifier finding). One that names nothing either is not an answer the plan can
-        check, and is flagged rather than believed.
+        A no is read however it starts (`denies`): until 14 October 2026 only the word
+        "No" counted, so "None of the sellers, including Seller A at $25.00, sells size M
+        under $20.00" was taken as a yes through the listing it names and passed with
+        Seller A alone opened (verifier finding). An answer with neither yes nor no is
+        held to what a no owes, whatever it names: that is the larger of the two
+        coverages, so it cannot pass with less than either reading needs. Until the same
+        day, "Seller A sells size M at $10.15, so there is a seller under $20.00" was read
+        as a yes through its witness, and one naming nothing was flagged outright.
         """
-        if denies(answer):
-            limit = ceiling_of(form)
-            floor = (policy.at_or_below(page, limit, at_least=0) if limit is not None
-                     else len(page.listings))
-            if len(opened) < floor:
-                return flag("existence_denied_without_coverage",
-                            f"answers no having opened {len(opened)} of the {floor} listings "
-                            f"the limit does not rule out")
-            return ok("every listing the limit does not rule out was opened")
-        named = named_in(answer, page)
-        if affirms(answer) or named:
+        if affirms(answer):
+            named = named_in(answer, page)
             if any(sufficiency.listing_key(item.url) in opened for item in named):
                 return ok("the witness named was opened")
             if opened_all(page, opened):
                 return ok("every listing was opened")
             return flag("witness_not_opened",
-                        f"{'answers yes' if affirms(answer) else 'affirms'} naming "
-                        f"{named[0].seller if named else 'no listing'} without having opened "
-                        f"it, having opened {len(opened)} of {len(page.listings)}")
-        return flag("answer_unclear", "neither affirms, denies nor names a listing, so "
-                                      "nothing in it can be held to the plan")
+                        f"answers yes naming {named[0].seller if named else 'no listing'} "
+                        f"without having opened it, having opened {len(opened)} of "
+                        f"{len(page.listings)}")
+        limit = ceiling_of(form)
+        floor = (policy.at_or_below(page, limit, at_least=0) if limit is not None
+                 else len(page.listings))
+        if len(opened) >= floor:
+            return ok("every listing the limit does not rule out was opened")
+        if denies(answer):
+            return flag("existence_denied_without_coverage",
+                        f"answers no having opened {len(opened)} of the {floor} listings "
+                        f"the limit does not rule out")
+        return flag("answer_unclear",
+                    f"neither yes nor no, so is held to what a no owes, having opened "
+                    f"{len(opened)} of the {floor} listings the limit does not rule out")
 
 
 class Counterexample:
@@ -394,7 +411,8 @@ class Counterexample:
         the coverage a yes needs: every candidate. Until 14 October 2026 it passed with
         nothing opened (verifier finding). The refutation text says to answer No and name
         the listing, so a run that follows it is never held to that. One that names nothing
-        either is flagged as unclear.
+        either is flagged as unclear. A no is read however it starts (`denies`, the same
+        day), so "None of them has it; Seller D is sold out" is a no naming Seller D.
         """
         named = named_in(answer, page)
         if denies(answer):
@@ -442,9 +460,9 @@ class BoundPrune:
     def check(form: form_module.Form, page: page_module.Page, answer: str, opened: set[str],
               text: str) -> dict:
         """`policy.bound_floor`'s rule, the one `page_floor` applies to v1's kinds: every
-        candidate advertised below the answered price was opened, and the answer's own.
-        For the k best, below the dearest of the k prices named; for the dearest of all,
-        everything."""
+        candidate advertised below the answered price was opened, and the answer's own,
+        found by the sellers the answer names. For the k best, below the dearest of the k
+        prices named; for the dearest of all, everything."""
         kind = form.kind()
         if kind == "results_page":
             return ok("answered from the results page, so nothing had to be opened")
@@ -453,9 +471,10 @@ class BoundPrune:
             floor = len(page.listings)
         elif form.quantifier == "topk":
             floor = (len(page.listings) if len(prices) < form.k
-                     else max(form.k, policy.bound_floor(page, max(prices[:form.k]))))
+                     else max(form.k, policy.bound_floor(page, max(prices[:form.k]), answer)))
         else:
-            floor = len(page.listings) if not prices else policy.bound_floor(page, prices[0])
+            floor = (len(page.listings) if not prices
+                     else policy.bound_floor(page, prices[0], answer))
         if len(opened) < floor:
             return flag("superlative_without_coverage",
                         f"names the best of {len(page.listings)} listings having opened "

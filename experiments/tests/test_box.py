@@ -15,6 +15,7 @@ import io
 import json
 import pathlib
 import re
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -372,6 +373,16 @@ class Bypass(unittest.TestCase):
         with self.assertRaises(ValueError):
             box.decide("Which seller is cheapest for size M?", None)
 
+    def test_who_sells_is_a_fallback_not_a_bypass(self):
+        # Verifier finding, 14 Oct 2026: "sells" was not a market word, so this bypassed.
+        decision = box.decide("Who sells the softest tee?", self.page)
+        self.assertFalse(decision.bypass)
+        self.assertEqual((decision.kind, decision.record()["fallback"]), ("survey", True))
+        self.assertIn("a market word: sells", decision.form.evidence["fallback"])
+        for question in UNRELATED:
+            with self.subTest(question=question):
+                self.assertTrue(box.decide(question, self.page).bypass)
+
     def test_the_clothing_questions_and_the_census_are_neither(self):
         for task_id, question in clothing_questions().items():
             with self.subTest(task=task_id):
@@ -611,6 +622,61 @@ class GateFromPage(unittest.TestCase):
         self.assertEqual(policy.gate_from_page(self.CHEAPEST, tie, answer, two)["flag"],
                          "superlative_without_coverage")
 
+    def test_the_extra_one_is_for_the_answers_own_listing(self):
+        # Verifier finding, 14 Oct 2026: the answer's own listing is advertised at $8 and
+        # sells size M at $12.00, and two other listings are advertised at $12. A run that
+        # followed the text opened the two advertised below its answer and skipped the
+        # two at it. The old rule added one for any listing at the price and refused it.
+        tie = synthetic_page([8.00, 9.00, 12.00, 12.00, 20.00])
+        answer = "Seller A is cheapest at $12.00 for size M."
+        self.assertEqual(policy.bound_floor(tie, 12.00, answer), 2)
+        self.assertEqual(policy.page_floor(self.CHEAPEST, tie, answer), 2)
+        two = openjiuwen_log(self.tmp.name, "own-2", [i.url for i in tie.listings[:2]], "Price: $12.00")
+        verdict = policy.gate_from_page(self.CHEAPEST, tie, answer, two)
+        self.assertEqual((verdict["ok"], verdict["floor"], verdict["opened"]), (True, 2, 2))
+        one = openjiuwen_log(self.tmp.name, "own-1", [tie.listings[0].url], "Price: $12.00")
+        self.assertEqual(policy.gate_from_page(self.CHEAPEST, tie, answer, one)["flag"],
+                         "superlative_without_coverage")
+        # The answer's own listing advertised at the price: the one is added, as before.
+        self.assertEqual(policy.bound_floor(tie, 12.00, "Seller C is cheapest at $12.00."), 3)
+        # No seller named: the old rule, one for any listing advertised at the price.
+        self.assertEqual(policy.bound_floor(tie, 12.00, "$12.00"), 3)
+        self.assertEqual(policy.bound_floor(tie, 12.00), 3)
+        # A seller the page does not have is no seller named.
+        self.assertEqual(policy.bound_floor(tie, 12.00, "Seller Z at $12.00"), 3)
+
+
+class NamedIn(unittest.TestCase):
+    """The listings an answer names, as whole names (verifier finding, 14 Oct 2026: the
+    substring "seller a" was found inside "seller and")."""
+
+    def setUp(self):
+        self.page = page.Page(url=RESULTS_URL, total=3, next_page=False, listings=[
+            page.Listing(seller="Seller And Sons", title="t", url=f"{BASE}/example-tee-01.html", advertised=10.0),
+            page.Listing(seller="Seller A", title="t", url=f"{BASE}/example-tee-02.html", advertised=11.0),
+            page.Listing(seller="Sons & Co.", title="t", url=f"{BASE}/example-tee-03.html", advertised=12.0)])
+
+    def sellers(self, answer: str) -> list[str]:
+        return [item.seller for item in policy.named_in(answer, self.page)]
+
+    def test_a_name_counts_only_as_a_whole(self):
+        self.assertEqual(self.sellers("Seller And Sons is cheapest at $12.00."), ["Seller And Sons"])
+        self.assertEqual(self.sellers("Seller A is cheapest at $12.00."), ["Seller A"])
+        self.assertEqual(self.sellers("seller a, at $12.00"), ["Seller A"])
+        self.assertEqual(self.sellers("Seller Andrew is cheapest."), [])
+        self.assertEqual(self.sellers("Seller AB is cheapest."), [])
+        # A name ending in punctuation still matches before a space or a full stop.
+        self.assertEqual(self.sellers("Sons & Co. is cheapest."), ["Sons & Co."])
+        self.assertEqual(self.sellers("Cheapest: Sons & Co.."), ["Sons & Co."])
+        self.assertEqual(self.sellers("Sons & Company is cheapest."), [])
+        # By the last part of the URL, as a stored answer wrote it.
+        self.assertEqual(self.sellers("The counterexample is (example-tee-02.html)."), ["Seller A"])
+        self.assertEqual(self.sellers("See example-tee-02.html5."), [])
+        self.assertEqual(self.sellers(""), [])
+        self.assertEqual(self.sellers(None), [])
+        # The primitives call it under its old name.
+        self.assertIs(primitives.named_in, policy.named_in)
+
 
 def thornwood_page() -> page.Page:
     """The Thornwood results page as the box recorded it in the pilot: what the box read
@@ -792,7 +858,10 @@ class SuiteQuery(unittest.TestCase):
 
     def test_the_batch_counts_what_the_box_did(self):
         def row(verdict: str, **box_record) -> dict:
-            record = {"asked": False, "refuse": None, "bypassed": False, "fallback": False, **box_record}
+            # A row the box closed, asked or refused, has no query; every other row ran.
+            ran = verdict not in ("asked", "refused")
+            record = {"asked": False, "refuse": None, "bypassed": False, "fallback": False,
+                      "query": "the text the agent got" if ran else None, **box_record}
             return {"task": "t", "family": "f", "gated": True, "repeat": 1, "verdict": verdict,
                     "why": "", "answer": "", "tool_calls": None, "actions": None,
                     "observations": None, "cost_usd": 0, "elapsed_s": 0, "error": None,
@@ -800,12 +869,23 @@ class SuiteQuery(unittest.TestCase):
         rows = [row("asked", asked=True), row("asked", asked=True),
                 row("correct", asked=True),        # asked, and a --reading answered it
                 row("refused", refuse="The shop does not show delivery time"),
-                row("wrong", bypassed=True), row("correct", fallback=True), row("correct")]
+                row("wrong", bypassed=True), row("correct", fallback=True), row("correct"),
+                # Planned by the fallback and then refused, or asked on with no reading:
+                # nothing ran, so refused or asked alone (verifier finding, 14 Oct 2026:
+                # a refused fallback was counted twice).
+                row("refused", refuse="The shop does not show shipping cost", fallback=True),
+                row("asked", asked=True, fallback=True)]
         summary = suite.summarise(rows)
-        self.assertEqual(summary["box"], {"asked": 3, "refused": 1, "bypassed": 1, "fallback": 1})
+        self.assertEqual(summary["box"], {"asked": 4, "refused": 2, "bypassed": 1, "fallback": 1})
         with contextlib.redirect_stdout(io.StringIO()) as out:
             suite.print_summary(summary, rows)
-        self.assertIn("box: asked 3, refused 1, bypassed 1, fallback 1", out.getvalue())
+        self.assertIn("box: asked 4, refused 2, bypassed 1, fallback 1", out.getvalue())
+        # A refused fallback is what the box records for a shapeless question about an
+        # attribute the shop lacks, so the row above is a real shape, not an invented one.
+        refused = box.decide(f"Go to {RESULTS_URL} . Tell me about the shipping of the listings.",
+                             self.page).record()
+        self.assertEqual((refused["fallback"], bool(refused["refuse"]), refused["query"]),
+                         (True, True, None))
         # Without the box there is nothing to count, and no line.
         plain = [{k: v for k, v in r.items() if k != "box"} for r in rows]
         self.assertIsNone(suite.summarise(plain)["box"])
@@ -830,6 +910,9 @@ class SuiteQuery(unittest.TestCase):
         self.assertEqual(run.returncode, 0, run.stderr)
         self.assertIn(f"BYPASS: {UNRELATED[0]}", run.stdout)
         self.assertNotIn("Listings by advertised price", run.stdout)
+        # The header says what the browser may request, as the payload of a paid run does.
+        self.assertIn(f"browser: browser_tool={suite.BROWSER_TOOL} "
+                      f"browser_origins={suite.ALLOWED_ORIGINS}\n", run.stdout)
         self.assertEqual(tasks.read_bytes(), before)
 
     def test_the_box_and_a_strategy_flag_are_refused(self):
@@ -845,6 +928,23 @@ class SuiteQuery(unittest.TestCase):
         self.assertNotIn("latest", suite.MCP_ARGS_GATED)
         self.assertIn(page.GATED_UA, suite.MCP_ARGS_GATED)
         self.assertIs(suite.GATED_UA, page.GATED_UA)
+
+    def test_the_browser_may_request_only_the_shop_on_the_gated_shop(self):
+        # A bypassed question names no shop page, so the browser is confined to the shop
+        # (verifier finding, 14 Oct 2026). The agent splits the string with shlex.
+        words = shlex.split(suite.browser_env("gated")["PLAYWRIGHT_MCP_ARGS"])
+        self.assertEqual(words.count("--allowed-origins"), 1)
+        self.assertEqual(words[words.index("--allowed-origins") + 1], "http://localhost:7770")
+        self.assertEqual(words[words.index("--user-agent") + 1], page.GATED_UA)
+        self.assertEqual(words[:2], ["-y", f"@playwright/mcp@{suite.BROWSER_TOOL}"])
+        # The default shop sets no MCP arguments, so it is not confined, and says so.
+        self.assertNotIn("PLAYWRIGHT_MCP_ARGS", suite.browser_env("default"))
+        self.assertEqual(suite.browser_conditions("openjiuwen", "gated"),
+                         {"browser_tool": "0.0.83", "browser_origins": "http://localhost:7770"})
+        for scaffold, shop in (("openjiuwen", "default"), ("naive", "gated"), ("naive", "default")):
+            with self.subTest(scaffold=scaffold, shop=shop):
+                self.assertEqual(suite.browser_conditions(scaffold, shop),
+                                 {"browser_tool": None, "browser_origins": None})
 
 
 class AgentCode(unittest.TestCase):

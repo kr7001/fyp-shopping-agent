@@ -80,8 +80,22 @@ def repository_commit() -> str:
         return "unknown"
 
 
+class UnexpectedReply(Exception):
+    """A reply the provider served as a success whose body is not a chat completion: no
+    `choices`, or no message content in the first. The provider may still have charged
+    for it, so the charge comes with it when the body says one, and the row keeps it.
+    Until 14 October 2026 the KeyError stopped the loop and lost the row (verifier
+    finding)."""
+
+    def __init__(self, why: str, cost: float | None):
+        super().__init__(why)
+        self.cost = cost
+
+
 def call_model(key: str, model: str, prompt: str) -> tuple[str, float | None]:
-    """One call, and what the provider charged for it, or None when it did not say."""
+    """One call, and what the provider charged for it, or None when it did not say. A
+    200 with a body that is not JSON raises requests' own `JSONDecodeError`, a request
+    failure; a JSON body without the completion raises `UnexpectedReply`."""
     reply = requests.post(
         ENDPOINT,
         headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
@@ -91,8 +105,15 @@ def call_model(key: str, model: str, prompt: str) -> tuple[str, float | None]:
     )
     reply.raise_for_status()
     payload = reply.json()
-    cost = (payload.get("usage") or {}).get("cost")
-    return payload["choices"][0]["message"]["content"], (float(cost) if cost is not None else None)
+    usage = payload.get("usage") if isinstance(payload, dict) else None
+    cost = usage.get("cost") if isinstance(usage, dict) else None
+    cost = float(cost) if cost is not None else None
+    try:
+        text = payload["choices"][0]["message"]["content"]
+    except (KeyError, IndexError, TypeError) as fault:
+        raise UnexpectedReply(f"the reply holds no choices[0].message.content "
+                              f"({type(fault).__name__}: {fault}): {str(payload)[:200]!r}", cost)
+    return text, cost
 
 
 def summary(record: dict) -> str:
@@ -104,9 +125,10 @@ def summary(record: dict) -> str:
 
 def comparable(value):
     """A filter value as `agree` compares it: a number as a number, so the rules' 20.0 and
-    a model's 20 are the same limit, a name as itself."""
+    a model's 20 are the same limit, a name as itself, and the values of an `in` filter as
+    a set, so `seller in (A, B)` is `(B, A)` (verifier finding, 14 October 2026)."""
     if isinstance(value, tuple):
-        return tuple(comparable(v) for v in value)
+        return frozenset(comparable(v) for v in value)
     if isinstance(value, (int, float)) and not isinstance(value, bool):
         return float(value)
     try:
@@ -144,9 +166,10 @@ def agree(rules: form.Form, model: form.Form) -> bool:
 
 def probe_one(name: str, question: str, model: str, key: str) -> dict:
     """One question: the rules' form on the page it names, the model's form, whether the
-    two agree, and what the call cost. A request that fails, an HTTP error or a timeout,
-    is recorded on the row with no cost rather than ending the probe. No retry, so the
-    figure stays one call per question."""
+    two agree, and what the call cost. A request that fails, an HTTP error, a timeout or
+    a body that is not JSON, is recorded on the row with no cost rather than ending the
+    probe, and a success whose body holds no completion is recorded the same way, with
+    whatever it was charged. No retry, so the figure stays one call per question."""
     page = results_page(question)
     rules = form.from_rules(question, page)
     charged: list[float | None] = []
@@ -159,10 +182,16 @@ def probe_one(name: str, question: str, model: str, key: str) -> dict:
     proposed, error, failed = None, None, False
     try:
         proposed = form.from_model(question, None, call)
-    except ValueError as fault:         # a reply that is not a form in the vocabulary
-        error = str(fault)
+    # Request failures before ValueError: requests' `JSONDecodeError`, raised for a 200
+    # whose body is not JSON, is both, and until 14 October 2026 the ValueError handler
+    # took it as a model problem, so `calls_failed` undercounted (verifier finding).
     except requests.exceptions.RequestException as fault:
         error, failed = f"request failed: {fault}", True
+    except UnexpectedReply as fault:
+        error, failed = f"reply not a completion: {fault}", True
+        charged.append(fault.cost)
+    except ValueError as fault:         # a reply that is not a form in the vocabulary
+        error = str(fault)
     return {"file": name, "question": question,
             "rules": rules.record(), "rules_problems": form.verify(rules, page),
             "model": proposed.record() if proposed else None,

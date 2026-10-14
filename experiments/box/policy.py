@@ -116,13 +116,31 @@ def page_floor(question: str, page, answer: str) -> int | None:
     named = scoring.prices_in(answer)
     if not named:
         return len(page.listings)
-    return bound_floor(page, named[0])
+    return bound_floor(page, named[0], answer)
 
 
-def bound_floor(page, price: float) -> int:
+def named_in(answer: str, page) -> list:
+    """The page's listings the answer names, by seller or by the last part of the URL. A
+    stored answer on 18 September 2026 named its counterexample as "(igr-app-09.html)".
+
+    A name counts only as a whole: "Seller A" is not named by "Seller And Sons", which a
+    substring test said it was until 14 October 2026 (verifier finding). The edge of a name
+    is any character that is not part of a word, rather than `\\b`, so a seller written
+    "Sons & Co." still matches before a space. Case does not matter. It lives here, beside
+    the floor that needs it, because `primitives.py` imports this module and so cannot be
+    imported by it; `primitives.named_in` is this function under its old name.
+    """
+    def mentioned(name: str) -> bool:
+        return re.search(rf"(?<!\w){re.escape(name)}(?!\w)", answer or "", re.IGNORECASE) is not None
+
+    return [item for item in page.listings
+            if mentioned(item.seller) or mentioned(item.url.rsplit("/", 1)[-1])]
+
+
+def bound_floor(page, price: float, answer: str = "") -> int:
     """The fewest listings a run that followed a bound strategy opened before answering
     `price`: every listing advertised strictly below it, plus one for the answer's own
-    listing when a listing is advertised at exactly that price.
+    listing when that listing is advertised at exactly the price.
 
     The bound texts say to skip every unopened listing advertised "at or above" the best
     total found. A run that follows them opens the listings advertised below its answer
@@ -140,13 +158,23 @@ def bound_floor(page, price: float) -> int:
     Copperfield's $29.66 for size M has twelve listings advertised below it, Copperfield's
     own $23.40 among them, and a run that followed the text opens those twelve.
 
-    On a market whose advertised prices are distinct the figure equals the old one for
-    every answer, so the pilot and the replays stand; `tests/test_box.py` checks that over
-    every stored clothing batch. Within half a cent, because the page's price is a float
-    and the answer's is parsed text. At least one, the listing the answer came from.
+    Whose listing is at the price matters. The answer's own is the one it names
+    (`named_in`): a page advertising $8, $9, $12, $12 and $20, and an answer naming the $8
+    listing's size M at $12.00, has two listings below the answer and two others at it,
+    and a run that followed the text opened the two. Until 14 October 2026 the one was
+    added for any listing at the price, which made the floor three and refused that run
+    (verifier finding). When the answer names no listing of the page, the one is still
+    added for any listing advertised at exactly the price, the old rule: the run's own
+    listing cannot be told from the others, and the stricter reading is kept.
+
+    On every stored clothing answer the figure is the old one, so the pilot and the
+    replays stand; `tests/test_box.py` checks that over every stored clothing batch.
+    Within half a cent, because the page's price is a float and the answer's is parsed
+    text. At least one, the listing the answer came from.
     """
     below = sum(1 for item in page.listings if item.advertised < price - 0.005)
-    at_the_price = any(abs(item.advertised - price) <= 0.005 for item in page.listings)
+    own = named_in(answer, page) or page.listings
+    at_the_price = any(abs(item.advertised - price) <= 0.005 for item in own)
     return max(1, below + int(at_the_price))
 
 
