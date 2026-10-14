@@ -51,7 +51,12 @@ import targeting
 #   4  14 October 2026. A question with no shopping shape and no shopping signal bypasses
 #      the box: the agent gets it unchanged and the record says so. A shopping question
 #      the rules can only survey keeps running and records that it was a fallback
-VERSION = 4
+#   5  14 October 2026. The checks change, the text does not (primitives v3): a denial is
+#      read however it starts, an existence answer with neither yes nor no owes what a no
+#      owes, the floor's extra one is for the answer's own listing only, and a seller is
+#      named only as a whole word. "sell" and its forms are market words (form v4), so
+#      "Who sells the softest tee?" is a fallback rather than a bypass
+VERSION = 5
 
 # The results page the question sends the agent to: the first URL in it.
 URL = re.compile(r"https?://\S+")

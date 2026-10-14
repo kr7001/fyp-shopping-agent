@@ -56,7 +56,36 @@ RESULTS = paths.RESULTS
 # box's runs and the cells they are compared with. Recorded in every suite payload as
 # `browser_tool`.
 BROWSER_TOOL = "0.0.83"
-MCP_ARGS_GATED = f'-y @playwright/mcp@{BROWSER_TOOL} --user-agent "{GATED_UA}"'
+# The browser may request the shop and nothing else. A bypassed question names no shop
+# page, so without this an agent could take the browser onto a live site, which the project
+# never does. From `npx -y @playwright/mcp@0.0.83 --help`, read on 14 October 2026:
+#
+#   --allowed-origins <origins>           semicolon-separated list of TRUSTED
+#                                         origins to allow the browser to request.
+#                                         Default is to allow all.
+#                                         Important: *does not* serve as a
+#                                         security boundary and *does not* affect
+#                                         redirects.
+#
+# So a redirect off the shop is not stopped by it, and reading every log's URLs stays the
+# check that no run left the shop. A recorded condition (`browser_origins` in every suite
+# payload) that differs from cells 1 to 5, which ran without it: no run of those cells left
+# localhost, since the listing counter and the verifier's checks saw only shop URLs. The
+# default shop sets no MCP arguments of its own (openJiuwen's apply), so it is not confined
+# and its payload says None. The agent splits the string with `shlex`, so the flag and its
+# value are two words, as the quoted user agent before them is one.
+ALLOWED_ORIGINS = "http://localhost:7770"
+MCP_ARGS_GATED = (f'-y @playwright/mcp@{BROWSER_TOOL} --user-agent "{GATED_UA}" '
+                  f'--allowed-origins {ALLOWED_ORIGINS}')
+
+
+def browser_conditions(scaffold: str, shop: str) -> dict:
+    """The pinned browser tool and the origins it may request, recorded in every suite
+    payload. Only openJiuwen on the gated shop gets them: the naive loop drives its own
+    browser, and the default shop leaves openJiuwen's own "latest" in place."""
+    pinned = scaffold == "openjiuwen" and shop == "gated"
+    return {"browser_tool": BROWSER_TOOL if pinned else None,
+            "browser_origins": ALLOWED_ORIGINS if pinned else None}
 
 
 def browser_env(shop: str, probe: str = "viewport",
@@ -453,12 +482,16 @@ def main() -> int:
     # so the dry run shows it too. Only openJiuwen lives in the submodule.
     agent_code = (agent_code_identity() if args.scaffold == "openjiuwen"
                   else {"agent_core_commit": None, "agent_core_patch": None})
+    browser = browser_conditions(args.scaffold, args.shop)
 
     stamp = dt.datetime.now().strftime("%Y%m%dT%H%M%S")
     out_dir = RESULTS / stamp
     total = len(tasks) * args.repeats
     print(f"{len(tasks)} tasks x {args.repeats} repeats = {total} runs -> {out_dir}")
     print("agent code: " + " ".join(f"{key}={value}" for key, value in agent_code.items()))
+    # The browser's conditions in the header too, so the dry run shows what a paid run
+    # under the same flags would record.
+    print("browser: " + " ".join(f"{key}={value}" for key, value in browser.items()))
 
     if args.dry_run:
         # The exact text, through the same function the paid loop uses, so what is read
@@ -582,11 +615,9 @@ def main() -> int:
                "form_version": form_module.VERSION if args.box else None,
                "primitives_version": primitives_module.VERSION if args.box else None,
                "reading": args.reading,
-               # The pinned browser tool, which only openJiuwen on the gated shop gets:
-               # the naive loop drives its own browser, and the default shop leaves
-               # openJiuwen's own "latest" in place.
-               "browser_tool": (BROWSER_TOOL if args.scaffold == "openjiuwen"
-                                and args.shop == "gated" else None),
+               # The pinned browser tool and the origins the browser may request, see
+               # `browser_conditions`: `browser_tool` and `browser_origins`.
+               **browser,
                # Which sufficiency rules judged this suite. A verdict that does not say
                # what judged it cannot be compared with one scored under different rules,
                # and the rules have now changed once.
@@ -643,14 +674,17 @@ def box_counts(rows: list[dict]) -> dict | None:
     """How many rows the box asked on, refused, bypassed and planned by its fallback, so
     the rate at which questions get past it is a figure of the batch (14 Oct 2026). Asked
     counts every row the box put its question on, whether or not a `--reading` answered
-    it: the verdicts say which. None when no row went through the box."""
+    it: the verdicts say which. Fallback counts a row the fallback planned and the agent
+    ran, so a fallback the box then refused, or asked on with no reading to answer it, is
+    counted under refused or asked alone. Until 14 Oct 2026 a refused fallback was counted
+    twice (verifier finding). None when no row went through the box."""
     records = [row["box"] for row in rows if row.get("box")]
     if not records:
         return None
     return {"asked": sum(1 for r in records if r.get("asked")),
             "refused": sum(1 for r in records if r.get("refuse")),
             "bypassed": sum(1 for r in records if r.get("bypassed")),
-            "fallback": sum(1 for r in records if r.get("fallback"))}
+            "fallback": sum(1 for r in records if r.get("fallback") and r.get("query") is not None)}
 
 
 def mean(values: list) -> float | None:

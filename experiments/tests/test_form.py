@@ -312,6 +312,20 @@ class Unknown(unittest.TestCase):
                 self.assertNotEqual(parsed.quantifier, "unknown")
                 self.assertFalse(parsed.fallback)
 
+    def test_sell_is_a_market_word(self):
+        # Verifier finding, 14 Oct 2026: "Who sells the softest tee?" bypassed the box.
+        for question, word in (("Who sells the softest tee?", "sells"),
+                               ("Which of them sell tees?", "sell"),
+                               ("Tell me what is sold here.", "sold"),
+                               ("Who is selling tees?", "selling")):
+            with self.subTest(question=question):
+                parsed = form.from_rules(question)
+                self.assertEqual((parsed.quantifier, parsed.fallback), ("aggregate", True))
+                self.assertIn(f"a market word: {word}", parsed.evidence["fallback"])
+        for question in self.UNRELATED:
+            with self.subTest(question=question):
+                self.assertEqual(form.from_rules(question).quantifier, "unknown")
+
 
 class Shown(unittest.TestCase):
     """Property 5: what the shop shows, and a refusal for what it does not."""
@@ -477,22 +491,71 @@ class Checks(unittest.TestCase):
                                                              "Seller D", "Seller E"))["ok"])
 
     def test_witness_named_without_a_yes(self):
-        # Verifier finding, 14 Oct 2026: an answer that names its witness without the word
-        # "yes" passed with nothing opened. It is an affirmation and owes the same coverage.
+        # Verifier findings, 14 Oct 2026: an answer that names its witness without the
+        # word "yes" first passed with nothing opened, then was read as a yes through the
+        # listing it names. Neither yes nor no is held to what a no owes, whatever it
+        # names: ten listings are advertised at or below $20.
         exists = GO + "Is there any seller under $20 for size M?"
         named = "Seller C sells size M at $12.15, so there is a seller under $20.00."
-        self.assertEqual(self.check(exists, named, self.observed("Seller A", "Seller B"))["flag"],
-                         "witness_not_opened")
-        self.assertEqual(self.check(exists, named, "")["flag"], "witness_not_opened")
-        self.assertTrue(self.check(exists, named, self.observed("Seller C"))["ok"])
+        for opened in (self.observed("Seller A", "Seller B"), "", self.observed("Seller C"),
+                       self.observed(*[f"Seller {c}" for c in "ABCDEFGHI"])):
+            with self.subTest(opened=opened.count("Page URL")):
+                verdict = self.check(exists, named, opened)
+                self.assertEqual((verdict["ok"], verdict["flag"]), (False, "answer_unclear"))
+                self.assertIn("held to what a no owes", verdict["why"])
+        self.assertTrue(self.check(exists, named, self.observed(*[f"Seller {c}" for c in "ABCDEFGHIJ"]))["ok"])
         self.assertTrue(self.check(exists, named, self.all_but())["ok"])
         # A no that names a listing is still a no, held to the limit's coverage.
         no = "No. The cheapest is Seller K at $20.15, above the limit."
         self.assertEqual(self.check(exists, no, self.observed("Seller K"))["flag"],
                          "existence_denied_without_coverage")
-        # Neither yes, no nor a listing: the plan cannot check it, so it is not believed.
-        unclear = self.check(exists, "The cheapest size M is $21.00, over the limit.", self.all_but())
-        self.assertEqual((unclear["ok"], unclear["flag"]), (False, "answer_unclear"))
+        # Neither yes, no nor a listing: the same coverage, and the same flag when short.
+        unclear = "The cheapest size M is over the limit."
+        self.assertEqual(self.check(exists, unclear, self.observed("Seller A"))["flag"], "answer_unclear")
+        self.assertTrue(self.check(exists, unclear, self.all_but())["ok"])
+
+    def test_witness_reads_a_denial_however_it_starts(self):
+        # Verifier finding, 14 Oct 2026: on a page advertising $10.15, $15.00 and $25.00,
+        # under a limit of $20, each of these denials names Seller A, and with Seller A
+        # alone opened each passed as a yes through it. A no owes the two listings the
+        # limit does not rule out.
+        three = synthetic_page([10.15, 15.00, 25.00])
+        exists = GO + "Is there any seller under $20 for size M?"
+        parsed = form.from_rules(exists, three)
+        by_seller = {item.seller: item for item in three.listings}
+
+        def opened(*sellers: str) -> str:
+            return "\n".join(f"Page URL: {by_seller[s].url}\nPrice: $25.00" for s in sellers)
+
+        denials = ("None of the sellers, including Seller A at $25.00, sells size M under $20.00.",
+                   "Nobody sells size M under $20.00; Seller A is $25.00.",
+                   "Not one. Seller A is $25.00.",
+                   "No one sells size M under $20.00; Seller A is $25.00.",
+                   "No seller sells size M under $20.00; Seller A is $25.00.",
+                   "There is no seller under $20.00; Seller A is $25.00.",
+                   "There are no sellers under $20.00; Seller A is $25.00.")
+        for answer in denials:
+            with self.subTest(answer=answer):
+                self.assertTrue(primitives.denies(answer))
+                short = primitives.check(parsed, three, answer, opened("Seller A"))
+                self.assertEqual((short["ok"], short["flag"]), (False, "existence_denied_without_coverage"))
+                # Both candidates opened: a no, so the $25.00 it quotes is the price that
+                # failed and is not held to the limit.
+                self.assertTrue(primitives.check(parsed, three, answer, opened("Seller A", "Seller B"))["ok"])
+        # The words inside longer words, or after a yes, are not a denial.
+        for answer in ("Nonetheless, Seller A sells size M at $10.15.",
+                       "Notably, Seller A sells size M at $10.15.",
+                       "Yes, none of the others matter: Seller A sells size M at $10.15.",
+                       "Seller A sells size M at $10.15."):
+            with self.subTest(answer=answer):
+                self.assertFalse(primitives.denies(answer))
+        # The affirmation cases pass and fail as before.
+        yes = "Yes. Seller A has size M at $10.15."
+        self.assertTrue(primitives.check(parsed, three, yes, opened("Seller A"))["ok"])
+        self.assertEqual(primitives.check(parsed, three, yes, opened("Seller B"))["flag"], "witness_not_opened")
+        self.assertEqual(primitives.check(parsed, three, "Yes, one is.", opened("Seller A", "Seller B"))["flag"],
+                         "witness_not_opened")
+        self.assertTrue(primitives.check(parsed, three, "Yes, one is.", opened("Seller A", "Seller B", "Seller C"))["ok"])
 
     def test_bound_and_prune_for_the_k_cheapest(self):
         top3 = GO + "Which are the three cheapest sellers for size M?"
@@ -539,6 +602,10 @@ class Checks(unittest.TestCase):
         self.assertEqual(self.check(every, "Yes, all of them.", self.all_but("Seller D"))["flag"],
                          "unverified_universal")
         self.assertTrue(self.check(every, "Yes, all of them.", self.all_but())["ok"])
+        # A no read however it starts (14 Oct 2026), naming its counterexample.
+        none = "None of them has it; Seller D is sold out."
+        self.assertTrue(self.check(every, none, self.observed("Seller D"))["ok"])
+        self.assertEqual(self.check(every, none, self.observed("Seller A"))["flag"], "counterexample_not_opened")
 
     def test_counterexample_named_without_a_no(self):
         # Verifier finding, 14 Oct 2026: an answer with neither yes nor no passed with nothing

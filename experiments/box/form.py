@@ -49,7 +49,9 @@ import targeting
 #   3  14 October 2026. A question with no recognised shape and no shopping signal parses
 #      to the quantifier "unknown", which the box bypasses. One with a signal keeps the
 #      survey fallback and says so in its evidence
-VERSION = 3
+#   4  14 October 2026. "sell", "sells", "sold" and "selling" are market words, so "Who
+#      sells the softest tee?" is a fallback rather than a bypass
+VERSION = 4
 
 # The vocabulary. A form outside it is refused when it is built, so a model's reply cannot
 # smuggle in a quantifier nothing knows how to plan. "unknown" is the rules' answer to a
@@ -387,10 +389,13 @@ READING_MARKS = {key: sentence.split("' ", 1)[1] for key, (_, sentence) in ambig
 # chose. "Write a short poem about shoes" has none of these, so the box has nothing to plan
 # and hands it to the agent unchanged (14 October 2026, at the student's request). Built
 # from the patterns the parser already reads, so this list and the parser cannot drift.
+# "sell" and its forms joined the same day (verifier finding): "Who sells the softest tee?"
+# is a shopping question with no shape, a fallback, and bypassed the box without them.
 MARKET_WORDS = ambiguity.whole_words(("listing", "listings", "seller", "sellers", "offer",
-                                      "offers", "offered", "offering", "product", "products",
-                                      "item", "items", "shop", "store", "vendor", "vendors",
-                                      "merchant", "merchants"))
+                                      "offers", "offered", "offering", "sell", "sells", "sold",
+                                      "selling", "product", "products", "item", "items",
+                                      "shop", "store", "vendor", "vendors", "merchant",
+                                      "merchants"))
 PRICE_WORDS = ambiguity.whole_words(("price", "prices", "priced", "cost", "costs", "stock",
                                      "stocked", "sold out"))
 SIGNALS = (("a URL", URL), ("a market word", MARKET_WORDS), ("a price word", PRICE_WORDS),
