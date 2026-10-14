@@ -539,6 +539,33 @@ class BoxCheck(unittest.TestCase):
                              openjiuwen_log(self.tmp.name, "invented", self.urls(10)))
         self.assertEqual(invented["flag"], "unsupported_number")
 
+    def test_a_limit_written_without_decimals_is_still_the_questions_own(self):
+        # Verifier finding, 14 Oct 2026: `sufficiency.prices_in` needs decimals, so a
+        # question written "under $20" exempted nothing, while the witness text wrote the
+        # limit as "$20.00" and an answer echoing it was refused as an invented price.
+        three = synthetic_page([10.15, 15.00, 25.00])
+        opened = [item.url for item in three.listings[:2]]     # the two the limit allows
+        answer = "No. No seller is under $20.00 for size M."
+        for n, written in enumerate(("$20", "$20.00")):
+            with self.subTest(written=written):
+                decision = box.decide(self.go + f"Is there any seller under {written} for size M?", three)
+                self.assertEqual(decision.kind, "exists_price")
+                self.assertIn("at or below $20.00", decision.plan.instruction)
+                verdict = box.check(decision, answer, openjiuwen_log(self.tmp.name, f"limit-{n}", opened))
+                self.assertEqual((verdict["ok"], verdict["flag"], verdict.get("primitive"), verdict["opened"]),
+                                 (True, None, "witness", 2))
+                self.assertEqual(box.stated_figures(decision), {2000})
+                # A figure that is neither the limit nor on any page is still unsupported.
+                invented = box.check(decision, "No. The cheapest M is $21.00.",
+                                     openjiuwen_log(self.tmp.name, f"invented-{n}", opened))
+                self.assertEqual(invented["flag"], "unsupported_number")
+        # The exemption is the question's own limit and nothing else: on a question that
+        # sets none, "$20.00" is as unsupported as any other figure the run never saw.
+        no_limit = box.decide(self.go + "Which three sellers are cheapest for size M?", three)
+        self.assertEqual((no_limit.kind, box.stated_figures(no_limit)), ("topk_price", set()))
+        verdict = box.check(no_limit, "Seller A at $20.00.", openjiuwen_log(self.tmp.name, "no-limit", opened))
+        self.assertEqual(verdict["flag"], "unsupported_number")
+
 
 class GateFromPage(unittest.TestCase):
     """LESSONS 32: the refusal check reads the market size and the floor from the page."""
@@ -922,6 +949,23 @@ class SuiteQuery(unittest.TestCase):
              "--box", "--targeting", "--dry-run"], capture_output=True, text=True)
         self.assertEqual(run.returncode, 2)
         self.assertIn("--box cannot be combined with --targeting or --exhaustive", run.stderr)
+
+    def test_the_box_and_the_naive_scaffold_are_refused_until_its_browser_is_confined(self):
+        # The naive loop launches its own browser with a user agent and nothing else
+        # (`naive_agent.py`), so a question the box bypasses could take it off the shop.
+        command = [sys.executable, str(paths.EXPERIMENTS / "runners" / "suite.py"),
+                   "--tasks", str(paths.TASKS / "tasks_apparel.json"), "--repeats", "1",
+                   "--only", "apparel-headline", "--scaffold", "naive", "--dry-run"]
+        run = subprocess.run(command + ["--box"], capture_output=True, text=True)
+        self.assertEqual(run.returncode, 2)
+        self.assertIn("the second agent's browser is not confined to the shop", run.stderr)
+        self.assertNotIn("Listings by advertised price", run.stdout)
+        # Without the box the second agent's dry run is as before.
+        run = subprocess.run(command, capture_output=True, text=True)
+        self.assertEqual(run.returncode, 0, run.stderr)
+        self.assertIn("1 tasks x 1 repeats = 1 runs", run.stdout)
+        self.assertIn("browser: browser_tool=None browser_origins=None\n", run.stdout)
+        self.assertNotIn("Listings by advertised price", run.stdout)
 
     def test_the_browser_tool_is_pinned_and_the_user_agent_defined_once(self):
         self.assertIn(f"@playwright/mcp@{suite.BROWSER_TOOL}", suite.MCP_ARGS_GATED)

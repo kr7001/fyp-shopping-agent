@@ -439,7 +439,8 @@ def main() -> int:
     parser.add_argument("--box", action="store_true",
                         help="run the box first: it reads the results page, asks back on an "
                              "ambiguous question, and otherwise plans the retrieval. The "
-                             "contribution. Excludes --targeting and --exhaustive")
+                             "contribution. Excludes --targeting, --exhaustive and, until "
+                             "its browser is confined to the shop, --scaffold naive")
     parser.add_argument("--reading", choices=("menu", "buyable"),
                         help="the scripted user's reply when the box asks. menu: a size in "
                              "the listing's menu counts, sold out or not, which is the "
@@ -463,6 +464,18 @@ def main() -> int:
     if args.box and args.policy in ("retry", "investigate"):
         parser.error("--box supports --policy off or gate only in v1: the retry arms "
                      "rebuild the query without the box's plan")
+    # The naive loop launches its own browser with a user agent and nothing else
+    # (`naive_agent.py`, `driver.chromium.launch()` and `browser.new_context`), so
+    # `browser_conditions` records it as not confined to the shop, where openJiuwen on the
+    # gated shop gets --allowed-origins. A question the box bypasses names no shop page, so
+    # under the box that browser could be sent to a live site, which this project never
+    # does. Refused until the second agent's browser is confined too (14 October 2026,
+    # verifier finding).
+    if args.box and args.scaffold == "naive":
+        parser.error("--box cannot be combined with --scaffold naive: the second agent's "
+                     "browser is not confined to the shop, since it launches its own without "
+                     "--allowed-origins, and a question the box bypasses could take it off "
+                     "localhost. Refused until it is confined")
 
     # Task files moved into experiments/tasks/ on 8 Oct 2026. Commands in the decision log
     # still name the old place, so a missing path falls back to the same file name there.
