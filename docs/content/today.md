@@ -147,11 +147,12 @@ with the rules' forms, from `experiments/results/parse-probe-20261014T112047.jso
 | Same on those and the population | 26 of 37 |
 | Same on every field | 5 of 37 |
 
-The gap between 33 and 5 is two prompt vocabulary problems, not judgement: the model never puts
-the listing's URL in the filters, so 7 of its single-listing forms fail "a lookup names no
-listing", and it writes "listing" as the population where the rules write "results" in 7
-cases. Both are fixes to the prompt. The four real disagreements: "which of these two sellers
-is cheaper" (rules: look up both; model: cheapest of the two, both open the same pages), "is the
+The gap between 33 and 5 is two prompt vocabulary problems, not judgement: the model leaves
+the listing's URL out of the filters in 8 of the 9 forms where the rules include it, so 7 of
+its single-listing forms fail "a lookup names no listing", and it writes "listing" as the
+population where the rules write "results" in 7 cases. Both are fixes to the prompt. The four
+real disagreements: "which of these two sellers is cheaper" (rules: look up both named pages;
+the model: the cheapest, naming no page, so its form alone does not say what to open), "is the
 1 kg size the cheapest per kg" (rules right: it needs every size's rate; the model proposed a
 lookup), "list every pack size and its price" (the model invented an attribute "pack size and
 price" and was refused by the fifth property, which is the property doing its job), and the

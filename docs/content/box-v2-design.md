@@ -1,6 +1,6 @@
 # Box v2, the strategist
 
-Status: **designed and built on 14 October 2026.** Steps 1 to 4 of the build order below are commits `fd59b5b`, `25c7656` and `70556af`, 140 tests, with the six clothing questions rendering byte for byte what v1 rendered, so the pilot stands under v2. The verifier checked the build against this page on 14 October: v1 preserved, no answer read, every new statement true of the shop. It passed the census parse and named four fixes before any paid box run, listed with the coder's twelve recorded departures from this page in the README decision log of 14 October.
+Status: **designed and built on 14 October 2026.** Steps 1 to 4 of the build order below are commits `fd59b5b`, `25c7656` and `70556af`, then `108fe1a` (the verifier's fixes) and `2d76fae` (the bypass), 171 tests, with the six clothing questions rendering byte for byte what v1 rendered, so the pilot stands under v2. The verifier checked the build against this page twice on 14 October: v1 preserved, no answer read, every new statement true of the shop. Where the build departs from this page, and what the verifier still wants changed before a paid batch, is in the README decision log of 14 October.
 Box v1 is the measured floor. Version 2 is what the project claims to build: a step that reads
 any shopping question, works out what evidence would settle it, retrieves that evidence at the
 lowest cost the page allows, asks the user when the question does not settle it, and refuses
@@ -117,14 +117,18 @@ attribute) and it is what keeps the box from over-asking.
 ## Questions the box cannot classify
 
 Added on 14 October at the student's request. A question with no recognised shape and no
-shopping signal at all (no listing or product URL, no market word, no price, size, stock or
-review word) is a **bypass**: the box hands it to the agent unchanged, with no plan and no
+shopping signal at all (the signals are listed in `form.SIGNALS`: a listing or product URL, a
+market word, a price or cheapest word, a size or variant word, an availability word, a review
+word, a filter) is a **bypass**: the box hands it to the agent unchanged, with no plan and no
 preamble, and records that it did. A shopping question whose attribute this shop does not show
 is **pushed back**: the box says what the shop does not show and what it does, and nothing
 runs. A shopping question with a signal but no recognised quantifier keeps v1's fallback plan
 and records that it was a fallback. Every batch counts its asked, refused, bypassed and
 fallback runs, so the rate at which questions get past the box is a measured property, and
-the bypassed runs are the baseline agent on those questions.
+the bypassed runs are the baseline agent on those questions. A bypassed question names no
+shop page, so before any batch contains one the browser is confined to the shop
+(`--allowed-origins http://localhost:7770`), recorded as a condition: the project never lets an
+agent onto a live site.
 
 ## What stays from v1
 
