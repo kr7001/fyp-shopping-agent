@@ -25,8 +25,10 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import box as box_module
+import form as form_module
 import page as page_module
 import policy as policy_module
+import primitives as primitives_module
 import sufficiency
 import score as scoring
 import planner as planner_module
@@ -241,15 +243,16 @@ def build_query(task: dict, spec: dict, args) -> tuple[str | None, dict]:
     One function for the dry run and the paid loop, so the text the verifier reads is the
     text the agent gets (LESSONS 17). Applied in order: the box, targeting, the exhaustive
     instruction, the confidence prompt. The text is None when the box asked and no
-    `--reading` answered it. The dict holds the strategy kind, the box's record and the
-    page it read, each None when not used.
+    `--reading` answered it, or when it refused. The dict holds the strategy kind, the
+    box's record, the page it read and its decision, each None when not used.
     """
     query = task["query"].format(base=spec["base_url"])
-    applied = {"strategy": None, "box": None, "page": None}
+    applied = {"strategy": None, "box": None, "page": None, "decision": None}
     if args.box:
         page = results_page(box_module.results_url(query))
         decision = box_module.decide(query, page, reply=args.reading)
-        applied.update(strategy=decision.kind, box=decision.record(), page=page)
+        applied.update(strategy=decision.kind, box=decision.record(), page=page,
+                       decision=decision)
         if decision.query is None:
             return None, applied
         query = decision.query
@@ -270,12 +273,15 @@ def build_query(task: dict, spec: dict, args) -> tuple[str | None, dict]:
 
 
 def asked_row(task: dict, repeat: int, box_record: dict) -> dict:
-    """A run slot the box answered with a question to the user instead of running the
-    agent. Nothing was spent, so the cost is zero rather than unknown."""
+    """A run slot the box closed without running the agent: it asked the user, or (box v2)
+    it refused because the shop does not show what the question needs. Nothing was spent,
+    so the cost is zero rather than unknown."""
+    refused = box_record.get("refuse")
     return {"task": task["id"], "family": task["family"], "gated": task["gated"],
-            "repeat": repeat, "verdict": "asked",
-            "why": "the box asked the user and no --reading answered it",
-            "answer": box_record["ask"][:300],
+            "repeat": repeat, "verdict": "refused" if refused else "asked",
+            "why": ("the box refused: the shop does not show what the question needs"
+                    if refused else "the box asked the user and no --reading answered it"),
+            "answer": (refused or box_record["ask"])[:300],
             "tool_calls": None, "actions": None, "observations": None,
             "cost_usd": 0, "elapsed_s": 0, "error": None, "log": None,
             "box": box_record, "reading": None}
@@ -293,10 +299,14 @@ def box_fields(box_record: dict, reading: str | None) -> dict:
 
 
 def gate_for(task: dict, spec: dict, answer: str, log_path: pathlib.Path,
-             page: page_module.Page | None) -> dict:
-    """The refusal check. Under the box it reads the market size and the floor from the
+             page: page_module.Page | None,
+             decision: box_module.Decision | None = None) -> dict:
+    """The refusal check. Under box v2 it is the box's own: v1's page-derived rules, then
+    the plan's primitive check. Under v1 it read the market size and the floor from the
     page the box fetched. Without the box it is the evaluation tool it was, reading both
     from the answer key."""
+    if decision is not None and decision.plan is not None:
+        return box_module.check(decision, answer, log_path)
     if page is not None:
         question = task["query"].format(base=spec["base_url"])
         return policy_module.gate_from_page(question, page, answer, log_path)
@@ -307,7 +317,8 @@ def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
                  out_dir: pathlib.Path, tag: str, confidence: str = "off",
                  reason: str | None = None, scaffold: str = "openjiuwen",
                  shop: str = "gated", probe: str = "viewport",
-                 page: page_module.Page | None = None) -> tuple:
+                 page: page_module.Page | None = None,
+                 decision: box_module.Decision | None = None) -> tuple:
     """Run the sufficiency check and act on it.
 
     Cost and interaction counts are reported for the arm as a whole, both attempts
@@ -315,11 +326,12 @@ def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
     it, or the comparison against the baseline is not a comparison.
 
     `page` is the results page the box read, when it ran, and makes the check read the
-    market from the page rather than from the answer key.
+    market from the page rather than from the answer key. `decision` is the box's plan,
+    and makes the check the plan's own.
     """
     result = record.get("result") or {}
     trace = record.get("trace") or {}
-    check = gate_for(task, spec, answer, out_dir / f"{tag}.log", page)
+    check = gate_for(task, spec, answer, out_dir / f"{tag}.log", page, decision)
 
     if check["ok"] or mode == "gate":
         if not check["ok"]:
@@ -340,7 +352,7 @@ def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
     result2 = second.get("result") or {}
     answer2 = str(result2.get("final") or "")
     trace2 = second.get("trace") or {}
-    check2 = gate_for(task, spec, answer2, out_dir / f"{tag2}.log", page)
+    check2 = gate_for(task, spec, answer2, out_dir / f"{tag2}.log", page, decision)
 
     # Still unverified after being told why: abstain rather than emit it a second time.
     final_answer = answer2 if check2["ok"] else policy_module.abstention_for(check2)
@@ -445,11 +457,17 @@ def main() -> int:
 
     if args.dry_run:
         # The exact text, through the same function the paid loop uses, so what is read
-        # here is what the agent gets (LESSONS 17). An ask is printed as the box's question.
+        # here is what the agent gets (LESSONS 17). An ask is printed as the box's question,
+        # a refusal as what the box said was missing.
         for task in tasks:
             print(f"  {task['id']:26} gated={task['gated']}  {task['expect']['kind']}")
             query, applied = build_query(task, spec, args)
-            print(f"ASKS: {applied['box']['ask']}" if query is None else query)
+            if query is not None:
+                print(query)
+            elif applied["box"]["refuse"]:
+                print(f"REFUSES: {applied['box']['refuse']}")
+            else:
+                print(f"ASKS: {applied['box']['ask']}")
             print()
         return 0
 
@@ -462,11 +480,11 @@ def main() -> int:
             query, applied = build_query(task, spec, args)
             strategy = applied["strategy"]
             if query is None:
-                # The box asked and no scripted reply was given. The ask is the outcome:
-                # no agent runs and nothing is spent.
+                # The box asked and no scripted reply was given, or it refused. Either is
+                # the outcome: no agent runs and nothing is spent.
                 row = asked_row(task, repeat, applied["box"])
                 rows.append(row)
-                print(f"[{done}/{total}] {tag:32} {row['verdict']:10} the box asked")
+                print(f"[{done}/{total}] {tag:32} {row['verdict']:10} the box {row['verdict']}")
                 continue
             record = run_once(task, spec["base_url"], out_dir, tag, query=query,
                               scaffold=args.scaffold, shop=args.shop, probe=args.probe)
@@ -488,7 +506,7 @@ def main() -> int:
                     args.policy, task, spec, answer, record, out_dir, tag,
                     confidence=args.confidence, reason=reason,
                     scaffold=args.scaffold, shop=args.shop, probe=args.probe,
-                    page=applied["page"])
+                    page=applied["page"], decision=applied["decision"])
 
             # Scored against the key for the reading the scripted user chose, when the
             # sidecar has one for this task, and against the task's own key otherwise.
@@ -551,6 +569,10 @@ def main() -> int:
                                    if args.targeting or args.box else None),
                "box": args.box,
                "box_version": box_module.VERSION if args.box else None,
+               # Box v2 parses through form.py and plans through primitives.py, each
+               # versioned on its own, so a run says which of each produced it.
+               "form_version": form_module.VERSION if args.box else None,
+               "primitives_version": primitives_module.VERSION if args.box else None,
                "reading": args.reading,
                # The pinned browser tool, which only openJiuwen on the gated shop gets:
                # the naive loop drives its own browser, and the default shop leaves

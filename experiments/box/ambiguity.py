@@ -117,6 +117,20 @@ def ask(question: str) -> Ask | None:
                          for key, (label, sentence) in READINGS.items()})
 
 
+# The numerical case (box v2, 14 October 2026): a price word with no figure. The threshold
+# changes which listings count, and only the user has it.
+THRESHOLD = ("Your question says '{word}' and gives no figure. What is the most you would "
+             "pay? Give a limit, such as under $20, and only listings at or below it will "
+             "count.")
+
+
+def threshold_ask(word: str) -> Ask:
+    """The question put to the user when the form found a price word with no figure. It
+    offers no readings: a limit is a figure the user supplies, not a choice between two, so
+    the scripted user's `--reading` cannot answer it and the ask stands as the outcome."""
+    return Ask(verb=word, text=THRESHOLD.format(word=word), readings={})
+
+
 def with_reading(question: str, asked: Ask, reading: str) -> str:
     """The question with the chosen reading written into it, so the agent sees no ambiguity."""
     if reading not in asked.readings:
