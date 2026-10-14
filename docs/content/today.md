@@ -69,7 +69,7 @@ and the box's first measurement should not mix two gating mechanisms.
 | --- | --- | --- |
 | 6 to 7 am | Review this page, the spec and the build. Decide the two open points below | student, with me |
 | 7 to 10 am | The pilot ran at 08:43 (two runs, both correct, below). The student asked for a deeper design before spending more, so the 18 run batch is on hold and the morning went to research and the v2 design instead | done |
-| 10 to 12 | The coder builds v2 (the logical form, the primitives, the model parser behind the guard), the verifier checks it. One small paid test proposed: the model parses the 42 census questions, about $0.20 | the guard asks for the yes |
+| 10 to 12 | v2 built by the coder in three commits, 140 tests, v1's six texts reproduced byte for byte. The verifier is checking it and the one small paid test proposed: the model parses the 37 census questions, declared $0.30 | the guard asks for the yes |
 | 12 to 4 pm | The report, from the skeleton on the "Report" page, filling the blanks from verified figures only | student, with me |
 
 **Open point 1: the budget.** $43.39 is left on the key (read from the account on 14 October).
@@ -133,6 +133,30 @@ The bound did what the spec says: the agent stopped after the listings the adver
 could not rule out, and the refusal check from the page passed both answers (population 15,
 floor 8 for the price question). One run per question, on the market the box was designed on,
 so this is a working pipeline and a direction, not a result.
+
+## The census parse ran, 11:20
+
+**The census parse, 14 October, 11:20.** The model (Claude Haiku 4.5, temperature 0) wrote the
+logical form of all 37 distinct questions, one call each, $0.069 charged, no browser. Compared
+with the rules' forms, from `experiments/results/parse-probe-20261014T112047.json`:
+
+| Agreement | Questions |
+| --- | --- |
+| Same quantifier (the field that picks the primitive) | 34 of 37 |
+| Same quantifier and objective | 33 of 37 |
+| Same on those and the population | 26 of 37 |
+| Same on every field | 5 of 37 |
+
+The gap between 33 and 5 is two prompt vocabulary problems, not judgement: the model never puts
+the listing's URL in the filters, so 7 of its single-listing forms fail "a lookup names no
+listing", and it writes "listing" as the population where the rules write "results" in 7
+cases. Both are fixes to the prompt. The four real disagreements: "which of these two sellers
+is cheaper" (rules: look up both; model: cheapest of the two, both open the same pages), "is the
+1 kg size the cheapest per kg" (rules right: it needs every size's rate; the model proposed a
+lookup), "list every pack size and its price" (the model invented an attribute "pack size and
+price" and was refused by the fifth property, which is the property doing its job), and the
+Calderwood cheapest question (the model chose "advertised price", the rules "price": the rules
+are right). In sample for the rules, which were written on these 37 questions.
 
 ## What is not yet done, in plain terms
 
