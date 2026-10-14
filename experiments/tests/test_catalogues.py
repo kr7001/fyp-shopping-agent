@@ -29,6 +29,10 @@ CASES = [
     ("Calderwood questions", ["experiments/water/make_scaled_tasks.py",
                               "--fixture", "env/fixtures/heldout_calderwood.json"],
      {"--out": paths.TASKS / "tasks_heldout.json"}),
+    # The box v2 batch's questions, from the Thornwood fixture and the pilot's two files.
+    ("Thornwood v2 questions", ["env/generate_apparel_v2_tasks.py"],
+     {"--out": paths.TASKS / "tasks_apparel_v2.json",
+      "--readings-out": paths.TASKS / "readings_apparel_v2.json"}),
 ]
 
 

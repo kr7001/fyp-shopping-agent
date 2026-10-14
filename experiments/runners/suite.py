@@ -509,10 +509,13 @@ def main() -> int:
     if args.dry_run:
         # The exact text, through the same function the paid loop uses, so what is read
         # here is what the agent gets (LESSONS 17). An ask is printed as the box's question,
-        # a refusal as what the box said was missing.
+        # a refusal as what the box said was missing. Under the box, the counts the batch
+        # would record and how many of its slots would reach the agent come last.
+        records = []
         for task in tasks:
             print(f"  {task['id']:26} gated={task['gated']}  {task['expect']['kind']}")
             query, applied = build_query(task, spec, args)
+            records.append(applied["box"])
             if query is not None and applied["box"] and applied["box"]["bypassed"]:
                 print(f"BYPASS: {query}")
             elif query is not None:
@@ -522,6 +525,9 @@ def main() -> int:
             else:
                 print(f"ASKS: {applied['box']['ask']}")
             print()
+        summary = dry_summary(records, args.repeats)
+        if summary:
+            print(summary)
         return 0
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -631,6 +637,9 @@ def main() -> int:
                # The pinned browser tool and the origins the browser may request, see
                # `browser_conditions`: `browser_tool` and `browser_origins`.
                **browser,
+               # Which scorer judged the rows (LESSONS 10). Absent before 14 Oct 2026,
+               # when every batch was scored by version 1.
+               "scorer_version": scoring.VERSION,
                # Which sufficiency rules judged this suite. A verdict that does not say
                # what judged it cannot be compared with one scored under different rules,
                # and the rules have now changed once.
@@ -698,6 +707,21 @@ def box_counts(rows: list[dict]) -> dict | None:
             "refused": sum(1 for r in records if r.get("refuse")),
             "bypassed": sum(1 for r in records if r.get("bypassed")),
             "fallback": sum(1 for r in records if r.get("fallback") and r.get("query") is not None)}
+
+
+def dry_summary(records: list[dict | None], repeats: int) -> str | None:
+    """What a batch under the box would count, from the dry run's one decision per task:
+    `box_counts` over the rows the paid loop would write, and how many of its slots reach
+    the agent, since an asked or refused slot runs nothing. None without the box. Added
+    14 Oct 2026 so the v2 task file's expectations can be checked before anything is spent."""
+    rows = [{"box": record} for record in records if record] * repeats
+    counts = box_counts(rows)
+    if counts is None:
+        return None
+    reach = sum(1 for record in records if record and record["query"] is not None) * repeats
+    return (f"box: asked {counts['asked']}, refused {counts['refused']}, bypassed "
+            f"{counts['bypassed']}, fallback {counts['fallback']}; {reach} of "
+            f"{len(records) * repeats} runs would reach the agent")
 
 
 def mean(values: list) -> float | None:
