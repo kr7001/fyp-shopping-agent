@@ -4247,6 +4247,35 @@ window.SITE = {
  "tests": {
   "unit": [
    {
+    "file": "experiments/tests/test_apparel_v2.py",
+    "doc": "The box v2 development batch's task file on Thornwood, `tasks_apparel_v2.json`.",
+    "classes": [
+     {
+      "name": "TaskFile",
+      "doc": "",
+      "tests": [
+       "the pilots six questions come first and unchanged",
+       "the draw is the pilots",
+       "the readings sidecar carries the pilots readings",
+       "every key is computed and the generators checks fire",
+       "the comparison pair crosses over behind the menu",
+       "the box does what each task expects",
+       "a batchs box counts follow from the file",
+       "the six old questions render the pilots text"
+      ]
+     },
+     {
+      "name": "DrySummary",
+      "doc": "The dry run's last line under the box: the counts a batch would record and the slots\nthat would reach the agent, so the task file's expectations can be checked for free.",
+      "tests": [
+       "the counts and the reach",
+       "silent without the box",
+       "the dry run prints it"
+      ]
+     }
+    ]
+   },
+   {
     "file": "experiments/tests/test_box.py",
     "doc": "The box: the question classifier, the planner, the ambiguity lexicon, the decision, the page-derived refusal check, and the suite's one query builder.",
     "classes": [
@@ -4727,7 +4756,24 @@ window.SITE = {
       "doc": "",
       "tests": [
        "not available reads as no",
-       "a leading yes decides"
+       "a leading yes decides",
+       "a yes that must name its witness"
+      ]
+     },
+     {
+      "name": "RankedRule",
+      "doc": "The ranked kind (14 Oct 2026): k sellers in order, each with its own price.",
+      "tests": [
+       "the right ranking in different wordings",
+       "a wrong order a missing seller and a wrong price fire",
+       "a comparison holds the optional loser to its own price"
+      ]
+     },
+     {
+      "name": "NoKey",
+      "doc": "The none kind (14 Oct 2026): a question the box is expected to ask on, refuse or\nbypass has no key, and an answer to it is unscored rather than wrong or abstained.",
+      "tests": [
+       "an answer is unscored and a failed run still fails"
       ]
      },
      {
@@ -4839,8 +4885,8 @@ window.SITE = {
   },
   "count_rule": {
    "file": "experiments/analysis/score.py",
-   "start": 159,
-   "end": 164,
+   "start": 188,
+   "end": 193,
    "code": "        numbers = list(re.finditer(r\"(?<![\\d.$])(\\d{1,3})(?![\\d.])\", answer or \"\"))\n        if not numbers:\n            return {\"verdict\": \"ambiguous\", \"why\": \"no number given\", \"prices\": found}\n        coverage = {m.start(1) for m in COVERAGE_NUMBER.finditer(answer or \"\")}\n        kept = [m for m in numbers if m.start(1) not in coverage]\n        stated = int((kept or numbers)[0].group(1))"
   },
   "stratified": {
@@ -5433,10 +5479,10 @@ window.SITE = {
   }
  ],
  "built": {
-  "commit": "34f9f2a",
+  "commit": "7d2ec2e",
   "date": "2026-10-14",
   "branch": "dev",
-  "dirty": false,
+  "dirty": true,
   "repo": "https://github.com/kr7001/fyp-shopping-agent",
   "agent_core": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
   "commits_by_week": {
@@ -5444,7 +5490,7 @@ window.SITE = {
    "2026-09-07": 44,
    "2026-09-14": 49,
    "2026-10-05": 45,
-   "2026-10-12": 37
+   "2026-10-12": 40
   }
  }
 };
