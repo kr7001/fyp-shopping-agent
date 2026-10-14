@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import dataclasses
 import datetime as dt
 import json
 import pathlib
@@ -30,6 +31,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
+import form as form_module  # noqa: E402  (the box's parser: the floor reads the question with it)
 import score as scoring  # noqa: E402
 import sufficiency  # noqa: E402
 import suite as suite_module  # noqa: E402  (for box_counts, the one rule for the box's counts)
@@ -58,7 +60,9 @@ def longest_silence(log: str) -> float:
 
 
 def ground_truth() -> dict:
-    """Per listing: seller, the advertised price, and what size M is."""
+    """Per listing: seller, the advertised price, what size M is, and every size's price,
+    with `buyable` holding only the sizes that can be bought (the generator's
+    `price_for` and `buyable_price_for`, which a test checks this agrees with)."""
     spec = json.loads(FIXTURE.read_text())
     out = {}
     for family in spec["families"]:
@@ -68,46 +72,105 @@ def ground_truth() -> dict:
             "seller": family["seller"],
             "from": min(v["price"] for v in family["variants"] if v["qty"] > 0),
             "m": None if m is None else ("buyable" if m["qty"] > 0 else "sold out"),
+            "sizes": {v["option"]: v["price"] for v in family["variants"]},
+            "buyable": {v["option"]: v["price"] for v in family["variants"] if v["qty"] > 0},
         }
     return out
 
 
-def own_floor(task: dict, instance: dict) -> int:
-    """The fewest listings any correct method has to open for this question.
+@dataclasses.dataclass(frozen=True)
+class Floor:
+    """What a sound answer had to open. `count` is the floor as a number, None when no
+    rule covers the question. `all_of` are listings every sound answer opens, `one_of` a
+    set of which it opens at least one. An answer is covered when both held."""
+    count: int | None
+    all_of: frozenset[str] = frozenset()
+    one_of: frozenset[str] = frozenset()
+    rule: str = "none"
 
-    The rule is the question's shape, read with the same patterns the refusal check uses,
-    so the floor and the check cannot drift apart.
+
+def own_floor(task: dict, truth: dict) -> Floor:
+    """The fewest listings any correct method has to open for this question, and which.
+
+    The floor is the number of listings the answer depends on, read from the question,
+    from the advertised prices the box read from the page (the fixture's "from" prices,
+    which the dry run checks the live page agrees with) and from the fixture's variants.
+    Never from the agent's answer. The question is read with `form.from_rules`, the
+    parser the box plans by, so the floor and the plan cannot drift apart. Written down
+    here on 14 Oct 2026 (LESSONS 5) for the four shapes the v2 batch adds, after the
+    verifier found this function raised on them, and for the filtered cheapest, which
+    read size M's floor from `_instance` whatever size the question named:
+
+    1. Not gated: 0.
+    2. Cheapest for a size: every listing advertised at or below the cheapest price any
+       listing can sell that size for. On Thornwood for size M that is the winner and
+       every listing advertised below it, `_instance.oracle_min_opens`; for size XL it is
+       every listing advertised at or below the XL winner's price, not the M floor.
+    3. Exists under a limit, when a witness exists (the key says yes): the answer depends
+       on the witness only, so the floor is 1, and covered means a witness listing itself
+       was opened, not any one listing.
+    4. Exists under a limit, no witness (the key says no): a sound no needs every listing
+       the limit does not rule out, every listing advertised strictly under the limit,
+       since the question says "under". Computed from the page and the limit.
+    5. Top-k: every listing advertised at or below the k-th cheapest price any listing can
+       sell the size for. Fewer than k can sell it: every listing.
+    6. A named pair, or any named listings: the named listings, and covered means every
+       one of them was opened.
+    7. Does every listing: 1, and covered means a listing without the size was opened.
+    8. How many: every listing.
+    9. Any other shape: no rule. The count is None and the report lists it as a problem,
+       "no floor rule for <id>", rather than raising.
     """
-    question = task["query"]
     if not task["gated"]:
-        return 0
-    if sufficiency.superlative_over_population(question):
-        return instance["oracle_min_opens"]
-    if sufficiency.COUNTING_QUESTION.search(question):
-        return instance["listings"]
-    if sufficiency.UNIVERSAL_QUESTION.search(question):
-        return 1
-    raise ValueError(f"no floor rule for {task['id']}")
+        return Floor(0, rule="not gated")
+    form = form_module.from_rules(task["query"])
+    size = form.filter("size")
+    size = size.value if size else None
+    every = frozenset(truth)
+
+    def advertised(at_or_below: float | None = None, below: float | None = None) -> frozenset[str]:
+        return frozenset(sku for sku, t in truth.items()
+                         if (at_or_below is None or t["from"] <= at_or_below)
+                         and (below is None or t["from"] < below))
+
+    def can_sell(size: str) -> list[float]:
+        return sorted(t["buyable"][size] for t in truth.values() if size in t["buyable"])
+
+    if form.quantifier == "argmin" and form.objective == "price" and size:
+        prices = can_sell(size)
+        needed = advertised(at_or_below=prices[0]) if prices else every
+        return Floor(len(needed), all_of=needed, rule=f"cheapest for size {size}")
+    if form.quantifier == "exists" and form.objective == "price" and size and form.filter("price"):
+        limit = form.filter("price").value
+        witnesses = frozenset(sku for sku, t in truth.items()
+                              if size in t["buyable"] and t["buyable"][size] < limit)
+        if witnesses:
+            return Floor(1, one_of=witnesses, rule=f"exists under {limit}, a witness")
+        needed = advertised(below=limit)
+        return Floor(len(needed), all_of=needed, rule=f"exists under {limit}, no witness")
+    if form.quantifier == "topk" and form.objective == "price" and size:
+        prices = can_sell(size)
+        needed = advertised(at_or_below=prices[form.k - 1]) if len(prices) >= form.k else every
+        return Floor(len(needed), all_of=needed, rule=f"top {form.k} for size {size}")
+    if form.quantifier == "lookup" and form.filter("seller"):
+        names = {name.lower() for name in form.filter("seller").value}
+        needed = frozenset(sku for sku, t in truth.items() if t["seller"].lower() in names)
+        if len(needed) == len(names):
+            return Floor(len(needed), all_of=needed, rule="the named listings")
+    if form.quantifier == "forall" and size:
+        without = frozenset(sku for sku, t in truth.items() if size not in t["sizes"])
+        return Floor(1, one_of=without, rule=f"every listing, size {size}")
+    if form.quantifier == "count":
+        return Floor(len(every), all_of=every, rule="how many")
+    return Floor(None)
 
 
-def must_open(task: dict, instance: dict, truth: dict) -> set[str]:
-    """The listings this question cannot be answered without, by name rather than number.
-
-    Opening eight listings meets the best-price floor only if they are the right eight:
-    every listing whose advertised price is at or below the answer, since none of those
-    can be ruled out without opening it. A count needs every listing. A "does every
-    listing" question needs any one listing that lacks the size, which is handled
-    separately because it is a choice of one from several rather than a fixed set.
-    """
-    question = task["query"]
-    if not task["gated"]:
-        return set()
-    if sufficiency.superlative_over_population(question):
-        best = instance["winner"]["price"]
-        return {sku for sku, t in truth.items() if t["from"] <= best}
-    if sufficiency.COUNTING_QUESTION.search(question):
-        return set(truth)
-    return set()
+def covered(floor: Floor, opened: set[str]) -> bool:
+    """Whether a run opened what its answer depends on: every listing in `all_of`, and
+    one of `one_of` when there is such a set. A question with no rule is never covered."""
+    if floor.count is None:
+        return False
+    return floor.all_of <= opened and (not floor.one_of or bool(floor.one_of & opened))
 
 
 def tool_replies(log_path: pathlib.Path) -> dict[str, tuple[str, str]]:
@@ -159,7 +222,7 @@ def rescore(task: dict, answer: str, ok: bool, row: dict, suite: dict,
     return scoring.score(scoring.under_reading(task, reading, readings), answer, ok)
 
 
-def verify_run(record_path: pathlib.Path, task: dict, instance: dict, truth: dict,
+def verify_run(record_path: pathlib.Path, task: dict, truth: dict,
                stored: dict, suite: dict | None = None,
                readings: dict | None = None) -> dict:
     record = json.loads(record_path.read_text())
@@ -198,14 +261,15 @@ def verify_run(record_path: pathlib.Path, task: dict, instance: dict, truth: dic
     opened = sufficiency.listings_opened(log)
     opened_seen = sufficiency.listings_opened(observed)
     skus = sorted(key.split(":", 1)[1] for key in opened)
-    floor = own_floor(task, instance)
+    floor = own_floor(task, truth)
     probe_line = next((line for line in log.splitlines() if line.startswith("card probe:")),
                       None)
     trace = record.get("trace") or {}
     rescored = rescore(task, answer, ok, stored, suite or {}, readings or {})
+    # Kept as it was, an opened listing without size M whatever the question asks, so the
+    # field reads the same on every stored batch. The floor's own counterexample set is
+    # `floor.one_of`, which `covered` applies.
     without_m = [s for s in skus if truth.get(s, {}).get("m") is None and s in truth]
-    needed = must_open(task, instance, truth)
-    universal = task["gated"] and not needed
 
     return {
         "task": task["id"], "gated": task["gated"],
@@ -216,13 +280,15 @@ def verify_run(record_path: pathlib.Path, task: dict, instance: dict, truth: dic
         "answer_matches_suite": answer[:300] == (stored.get("answer") or ""),
         "opened": len(opened), "opened_in_replies": len(opened_seen),
         "skus": skus, "unknown_pages": [s for s in skus if s not in truth],
-        "floor": floor, "met_floor": len(opened) >= floor,
+        "floor": floor.count, "floor_rule": floor.rule,
+        "met_floor": floor.count is not None and len(opened) >= floor.count,
         "met_eight": len(opened) >= 8,
         "counterexample_seen": bool(without_m),
-        # The strict test: the listings the answer depends on were all opened, or for a
-        # "does every listing" question, a listing without the size was.
-        "covered": (bool(without_m) if universal else needed <= set(skus)),
-        "missed": sorted(needed - set(skus)),
+        # The strict test: the listings the answer depends on were all opened, and for a
+        # "does every listing" or a witnessed existence question, one of the listings that
+        # settles it was.
+        "covered": covered(floor, set(skus)),
+        "missed": sorted(floor.all_of - set(skus)),
         # Recomputed from the log rather than read from the record, because the record's
         # count predates the fix that counts sizes chosen inside a batch step.
         "selections": (trace.get("selections") or [] if scaffold == "naive"
@@ -259,10 +325,33 @@ def verify_batch(batch: pathlib.Path) -> tuple[dict, list[dict]]:
         if record_path.name == "suite.json":
             continue
         task_id, repeat = record_path.stem.rsplit("-", 1)
-        runs.append(verify_run(record_path, tasks[task_id], spec["_instance"], truth,
+        runs.append(verify_run(record_path, tasks[task_id], truth,
                                stored.get((task_id, int(repeat)), {}),
                                suite=suite, readings=readings))
     return suite, runs
+
+
+def floor_table(tasks_path: pathlib.Path) -> list[dict]:
+    """Every task's floor in a task file, from the fixture and the question alone, so the
+    figures can be read before a batch exists and quoted from this command."""
+    spec = json.loads(tasks_path.read_text())
+    truth = ground_truth()
+    rows = []
+    for task in spec["tasks"]:
+        floor = own_floor(task, truth)
+        rows.append({"task": task["id"], "gated": task["gated"], "rule": floor.rule,
+                     "floor": floor.count, "all_of": sorted(floor.all_of),
+                     "one_of": sorted(floor.one_of)})
+    return rows
+
+
+def print_floor_table(rows: list[dict]) -> None:
+    print(f"{'task':26} {'floor':>5}  {'rule':34} listings")
+    for row in rows:
+        which = (f"all of {row['all_of']}" if row["all_of"] else "") + \
+                (f"one of {row['one_of']}" if row["one_of"] else "")
+        print(f"  {row['task']:26} {'-' if row['floor'] is None else row['floor']:>3}  "
+              f"{row['rule']:34} {which}")
 
 
 def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: bool) -> dict:
@@ -298,6 +387,8 @@ def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: boo
         if r["longest_silence_s"] > SUSPENDED_AFTER_S:
             problem(f"{tag}: log silent for {r['longest_silence_s']:.0f}s, the run was "
                     f"suspended, so it is void")
+        if r["floor"] is None:
+            problem(f"{tag}: no floor rule for {r['task']}")
         if not r["own_cache"]:
             problem(f"{tag}: no per-run selector cache directory")
         if r["scaffold"] == "naive" and r["user_agent"] != "Mozilla/5.0 IGRGated/1.0":
@@ -385,7 +476,8 @@ def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: boo
     print("\nper question     own floor  met  covered  correct  opened")
     for task_id in dict.fromkeys(r["task"] for r in runs):
         rows = [r for r in runs if r["task"] == task_id]
-        print(f"  {task_id:26} {rows[0]['floor']:>3}  {count(rows, 'met_floor')}/{len(rows)}  "
+        floor = "-" if rows[0]["floor"] is None else rows[0]["floor"]
+        print(f"  {task_id:26} {floor:>3}  {count(rows, 'met_floor')}/{len(rows)}  "
               f"{count(rows, 'covered')}/{len(rows)}      {ratio(rows)}"
               f"      {[r['opened'] for r in rows]}")
     print(f"\nproblems found: {len(problems)}")
@@ -410,10 +502,18 @@ def box_line(counts: dict) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("batches", nargs="+", type=pathlib.Path)
+    parser.add_argument("batches", nargs="*", type=pathlib.Path)
     parser.add_argument("--answers", action="store_true", help="print every answer in full")
     parser.add_argument("--json", type=pathlib.Path, help="write every run's checks here")
+    parser.add_argument("--floors", type=pathlib.Path, metavar="TASKS",
+                        help="print every task's coverage floor in this task file, from the "
+                             "fixture and the question, with no batch")
     args = parser.parse_args()
+    if args.floors:
+        print_floor_table(floor_table(args.floors))
+        return 0
+    if not args.batches:
+        parser.error("name at least one batch, or --floors TASKS")
     out = []
     for batch in args.batches:
         suite, runs = verify_batch(batch)
