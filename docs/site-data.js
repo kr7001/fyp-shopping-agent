@@ -1858,6 +1858,66 @@ window.SITE = {
    "cost": 0.6106,
    "status": "current",
    "why": ""
+  },
+  {
+   "batch": "20261014T213118",
+   "date": "2026-10-14",
+   "tasks": "tasks_apparel_v2.json",
+   "market": "Thornwood",
+   "draw": "Thornwood:f9faf835ea",
+   "model": "claude-haiku-4.5",
+   "scaffold": "openjiuwen",
+   "arm": "unmodified",
+   "probe": "viewport",
+   "shop": "gated",
+   "cell": "",
+   "runs": 18,
+   "gated": 15,
+   "correct": 16,
+   "refused": 0,
+   "cost": 4.0702,
+   "status": "current",
+   "why": ""
+  },
+  {
+   "batch": "20261014T220116",
+   "date": "2026-10-14",
+   "tasks": "tasks_apparel_v2.json",
+   "market": "Thornwood",
+   "draw": "Thornwood:f9faf835ea",
+   "model": "claude-haiku-4.5",
+   "scaffold": "openjiuwen",
+   "arm": "unmodified",
+   "probe": "viewport",
+   "shop": "gated",
+   "cell": "",
+   "runs": 10,
+   "gated": 5,
+   "correct": 4,
+   "refused": 0,
+   "cost": 2.1899,
+   "status": "current",
+   "why": ""
+  },
+  {
+   "batch": "20261014T222007",
+   "date": "2026-10-14",
+   "tasks": "tasks_apparel_v2.json",
+   "market": "Thornwood",
+   "draw": "Thornwood:f9faf835ea",
+   "model": "claude-haiku-4.5",
+   "scaffold": "openjiuwen",
+   "arm": "unmodified",
+   "probe": "viewport",
+   "shop": "gated",
+   "cell": "",
+   "runs": 6,
+   "gated": 6,
+   "correct": 6,
+   "refused": 0,
+   "cost": 0.7037,
+   "status": "current",
+   "why": ""
   }
  ],
  "catalogues": {
@@ -4183,7 +4243,7 @@ window.SITE = {
    },
    {
     "title": "How v2 is measured",
-    "html": "<ol><li><strong>Free, on the census.</strong> Every question in the census is parsed by rules and by the model. Agreement rate, the forms that fail verification, the asks raised, each read by hand.</li><li><strong>Development, on Thornwood.</strong> The questions v1 ran, plus new ones for the forms v1 lacks: an existence question, a top-3, a named comparison, a filtered cheapest. Against cells 1 and 5 and against v1.</li><li><strong>The claim, on a fresh clothing market</strong> generated after v2 is frozen, three arms.</li><li><strong>Next</strong>, the review questions, through the depth primitive.</li></ol>"
+    "html": "<ol><li><strong>Free, on the census.</strong> Every question in the census is parsed by rules and by the model. Agreement rate, the forms that fail verification, the asks raised, each read by hand.</li><li><strong>Development, on Thornwood.</strong> The questions v1 ran, plus new ones for the forms v1 lacks: an existence question, a top-3, a named comparison, a filtered cheapest. Against cells 1 and 5 and against v1.</li><li><strong>The claim, on a fresh clothing market</strong> generated after v2 is frozen, three arms.</li><li><strong>Next</strong>, the review questions, through the depth primitive.</li></ol>\n<h4>The coverage floors</h4>\n<p>\"Met own floor\" and \"covered\" in <code>verify_cells.py</code> hold each run to the listings its answer depends on. The floor is read from the question, from the advertised prices the box read from the page and from the fixture's variants, never from the agent's answer, the same way as the existing cheapest rule: every listing advertised at or below the winning price for the size. Written down on 14 October 2026, before being coded (LESSONS 5), when the verifier found the tool raised on the four shapes the v2 batch adds. The definitions live in the docstring of <code>verify_cells.own_floor</code>, and <code>python3 experiments/analysis/verify_cells.py --floors experiments/tasks/tasks_apparel_v2.json</code> prints every v2 question's floor from the fixture.</p>\n<ol><li><strong>Exists under a limit, with a witness</strong> (the key says yes): the answer depends on the witness only, so the floor is 1, and covered means a witness listing itself was opened, not any one listing.</li><li><strong>Exists under a limit, no witness</strong> (the key says no): a sound no needs every listing the limit does not rule out, every listing advertised strictly under the limit, since the question says \"under\". Computed from the page and the limit.</li><li><strong>Top-k</strong>: every listing advertised at or below the k-th cheapest price any listing can sell the size for.</li><li><strong>A named pair</strong>: the two named listings, floor 2, and covered means both were opened.</li><li><strong>Cheapest for a size other than M</strong>: every listing advertised at or below that size's winning price, not the M floor. Until this was written the tool read size M's floor from <code>_instance</code> whatever size the question named.</li></ol>\n<p>A gated question none of these rules covers gets no floor, and the report lists it as a problem, \"no floor rule for &lt;id&gt;\", rather than a figure.</p>"
    },
    {
     "title": "The build, in order",
@@ -4427,6 +4487,7 @@ window.SITE = {
        "the batch counts what the box did",
        "the dry run prints bypass for an unrelated question",
        "the box and a strategy flag are refused",
+       "an unknown task id in only is refused by name",
        "the box and the naive scaffold are refused until its browser is confined",
        "the browser tool is pinned and the user agent defined once",
        "the browser may request only the shop on the gated shop"
@@ -4512,6 +4573,34 @@ window.SITE = {
        "the rows reading uses the sidecar key",
        "without a reading the tasks own key stands",
        "the batch reading applies when the row has none"
+      ]
+     },
+     {
+      "name": "BoxRowsInTheReport",
+      "doc": "Verifier finding, 14 Oct 2026, at 7d2ec2e: the report listed asked rows but said\nnothing of refused ones, and showed a run with no answer key (score.py v2's \"none\"\nkind, verdict \"unscored\") as 0 of 1 correct. Each case is on the scratch batch above,\nwith the pilot's two scored runs beside the new rows, so what must stay as it was is\nchecked in the same output.",
+      "tests": [
+       "the scratch batch is what it says",
+       "refused rows are listed like asked rows",
+       "unscored runs are counted apart and never in a ratio",
+       "box counts come from the payload and are checked against the rows",
+       "a batch without box counts prints none",
+       "a run with no floor rule is a problem not a crash"
+      ]
+     },
+     {
+      "name": "OwnFloor",
+      "doc": "The coverage floor of each v2 question shape, written down in `verify_cells.own_floor`\non 14 Oct 2026 (LESSONS 5) after the verifier found the four new shapes raised. Every\nexpected figure here is recomputed from the fixture with the generator's own helpers,\nnever typed, and each rule has a case where it must fire and one where it must stay\nquiet: the six v1 questions keep their floors, and a wrong set of listings is not\ncovered even when it is the right size.",
+      "tests": [
+       "the truth is the fixture read with the generators helpers",
+       "the six v1 floors are unchanged",
+       "cheapest for a size reads the size from the question",
+       "exists with a witness needs the witness itself",
+       "exists without a witness needs every listing under the limit",
+       "top k needs every listing at or below the kth price",
+       "a named pair needs both named listings",
+       "a shape with no rule gets none rather than raising",
+       "every v2 task has a floor or is not gated",
+       "the floor table prints every task"
       ]
      }
     ]
@@ -4879,8 +4968,8 @@ window.SITE = {
   },
   "suspended": {
    "file": "experiments/analysis/verify_cells.py",
-   "start": 44,
-   "end": 56,
+   "start": 47,
+   "end": 59,
    "code": "# openJiuwen logs a heartbeat about every 30 seconds while a run is alive. A longer silence\n# means the process was not running at all, which on 8 October 2026 was the laptop going to\n# sleep mid-batch: three runs went silent for 17 to 50 minutes and two of them were then\n# failed by the ten minute clock. In every earlier batch the longest silence is 31 seconds.\n# A suspended run measures the machine, not the agent, so it is void and is re-run.\nSUSPENDED_AFTER_S = 60\nSTAMP = re.compile(r\"^(\\d{4}-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d) \\|\", re.MULTILINE)\n\n\ndef longest_silence(log: str) -> float:\n    \"\"\"Seconds of the longest gap between consecutive timestamped log lines.\"\"\"\n    stamps = [dt.datetime.strptime(m, \"%Y-%m-%d %H:%M:%S\") for m in STAMP.findall(log)]\n    return max(((b - a).total_seconds() for a, b in zip(stamps, stamps[1:])), default=0.0)"
   },
   "count_rule": {
@@ -5479,7 +5568,7 @@ window.SITE = {
   }
  ],
  "built": {
-  "commit": "7f5d3cb",
+  "commit": "933f958",
   "date": "2026-10-14",
   "branch": "dev",
   "dirty": true,
@@ -5490,7 +5579,7 @@ window.SITE = {
    "2026-09-07": 44,
    "2026-09-14": 49,
    "2026-10-05": 45,
-   "2026-10-12": 41
+   "2026-10-12": 44
   }
  }
 };
