@@ -79,6 +79,7 @@ test('every paid script is recognised', async ($, on) => {
     'uv run python /Users/x/repo/experiments/runners/run_browser_task.py "a task"',
     '.venv-naive/bin/python experiments/runners/naive_agent.py "a task"',
     'python3 experiments/runners/plan_probe.py',
+    'python3 experiments/runners/parse_probe.py',
     'bash experiments/runners/run.sh "a task"',
     './experiments/runners/run.sh "a task"',
     'caffeinate -i sh -c "python3 -u experiments/runners/suite.py --only x > out.log 2>&1"',
