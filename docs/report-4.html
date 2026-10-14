@@ -28,7 +28,8 @@
 
   table.fit { table-layout: fixed; width: 100%; margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
   table.fit th, table.fit td { overflow-wrap: anywhere; white-space: normal; vertical-align: top; }
-  table.fit th.num, table.fit td.num { text-align: right; white-space: nowrap; }
+  table.fit th.num, table.fit td.num { text-align: right; }
+  table.fit td.num { white-space: nowrap; }
   table.fit tbody tr:nth-child(even) td { background: var(--surface-2); }
   table.fit td .sub.mono { font-family: var(--mono); font-size: 11.5px; }
   tr.hl-row td { background: var(--accent-soft) !important; }
@@ -59,6 +60,9 @@
   .next div { border-radius: 10px; padding: 16px 18px; border: 1px solid var(--line); background: var(--surface); }
   .next h3 { font-size: 16px; margin-bottom: 8px; }
   .next ul { margin: 0; padding-left: 18px; font-size: 14.5px; } .next li + li { margin-top: 6px; }
+  ul.setup { margin: 12px 0 0; padding-left: 20px; font-size: 15px; } ul.setup > li + li { margin-top: 10px; } ul.setup ul { margin-top: 6px; padding-left: 18px; } ul.setup ul li + li { margin-top: 4px; }
+  ul.setup details { margin-top: 8px; } ul.setup details > summary { font-size: 13.5px; padding: 8px 12px; }
+  .yes { color: var(--good); font-weight: 600; } .no { color: var(--muted); }
 </style>
 <script>try { var t = localStorage.getItem('igr-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
 </head>
@@ -66,42 +70,41 @@
 <div class="report" id="main">
 
 <div class="page-head">
-  <span class="eyebrow">Final year project · NUS Data Science and Analytics · progress report 4 · 14 October 2026</span>
+  <span class="eyebrow">Final year project | progress report 14 October 2026</span>
   <h1>Shopping agents under interaction-gated information</h1>
-  <p class="lede">What happened since the update of 7 October: three more tests on the clothing market, the first run of the pre-processing block, the research that shaped its second version, and what was verified. The figures on this page are generated from the run files (built <span data-f="built"></span>).</p>
-  <div class="toc">
-    <a href="#results">1. The tests</a><a href="#block">2. The block</a><a href="#research">Research</a><a href="#arch">Architecture</a><a href="#scenarios">Scenarios</a><a href="#verified">Verified</a><a href="#significance">Why it matters</a><a href="#next">3. Next week</a>
-  </div>
-</div>
-
-<div class="keys" id="key"></div>
-
-<div class="callout">
-  <span class="eyebrow">In short</span>
-  A shopping agent answers from the page it can see. When the price, size or stock a question needs only appears after a click, it often answers anyway, and wrongly, without saying it is unsure. The tests of the last two weeks say where that failure comes from and what it costs to avoid. The block built this week sits in front of the agent. It reads the question and the first page, hands the agent a plan, asks the user back when the question is ambiguous, and checks the answer against the page afterwards. In its pilot it got both questions right, and on the cheapest question it opened <span data-f="pilot.cheapest.opened"></span> listings instead of 15 for <span data-f="pilot.cheapest.cost"></span>, where opening everything costs about $0.59. The second version, built today, covers every question shape the shopping benchmarks contain, with a model doing the parsing and rules doing the rest.
+  <p class="lede" style="max-width: 100%; width: 100%;">Since last week (7 October):</p>
+  <ul class="lede" style="max-width: 90%; width: 90%;">
+    <li><b>Three more tests</b> on the clothing market: (1) a second agent, (2) an "open everything" ceiling, (3) and the block's first run.</li>
+    <li><b>Built a block</b> that sits in front of the agent: it reads the question and the search results page, hands the agent a plan, asks the user back when the question is ambiguous, and checks the answer against the page afterwards.</li>
+    <li><b>Research done</b> that shaped the block's second version, and checked every result against the raw run files.</li>
+  </ul>
 </div>
 
 <!-- ===================================================== 1. RESULTS -->
 <h2 class="part" id="results">1. The tests since last week</h2>
 
 <div class="block">
-  <div class="head"><h2>All five tests</h2>
+  <div class="head"><h2>The setup</h2>
     <div class="seg" role="group" aria-label="Reading of offer"><button type="button" data-reading="menu" aria-pressed="true">Answer key</button><button type="button" data-reading="buyable" aria-pressed="false">"Can sell now" reading</button></div></div>
-  <p class="note">Tests 1 to 4 ask five gated questions three times each, with Claude Haiku 4.5 on the gated shop. Test 5 is the block's pilot, one run on each of two questions. The toggle switches the key for the two questions where the word "offer" has two readings. "Opened what it needs" means every listing the answer depends on was opened: all 15 for a count, the listings the advertised prices cannot rule out for a cheapest, one counterexample for a "does every".</p>
-  <div id="bars"></div>
-  <div class="callout"><span class="eyebrow">What the picture shows</span>The bars are full wherever the agent saw all fifteen listings, whether because its window limit was off (Test 2), it was told to open everything (Test 4), the block told it what to open (Test 5), or it had no probe to stop it (Test 3). They are short when it ran as shipped. Correctness follows coverage, and the block gets that coverage at the lowest cost of the four that have it.</div>
+  <ul class="setup">
+    <li><b>Tests 1 to 4</b> ask the same five questions about one market, three runs each, so 15 runs a test.
+      <details><summary>The five questions and their answer keys</summary><div id="five-questions"></div></details></li>
+    <li><b>Model and shop.</b> Claude Haiku 4.5 through OpenRouter, for every test. The shop is the local copy of the WebArena store with a generated market of 15 "Thornwood tee" listings, under a theme where a size's price and stock appear only after that size is chosen. The results page shows one advertised price per listing, which is its cheapest size that can be bought.</li>
+    <li><b>Test 5</b> is the block's pilot: one run on each of two of those questions.
+      <details><summary>The two questions</summary><div id="two-questions"></div></details></li>
+    <li><b>The toggle</b> above switches the answer key for the two questions that use the word "offer". On this shop a size can be in a listing's menu and sold out, so "offer size M" has two readings:
+      <ul>
+        <li><b>Listed in the menu.</b> Size M is in the listing's size menu, sold out or not. <span data-f="m.menu"></span> of the 15 listings. This is the answer key, fixed before any run.</li>
+        <li><b>Can sell it now.</b> Size M can be put in the basket. <span data-f="m.buyable"></span> of the 15.</li>
+      </ul></li>
+    <li><b>"Opened what it needs"</b> means the agent opened every listing the answer depends on, which is different for each kind of question.
+      <details><summary>What that means for each question</summary><div id="coverage"></div></details></li>
+  </ul>
 </div>
 
 <div class="block">
-  <h2>The same as numbers</h2>
+  <h2>The numbers</h2>
   <div id="cells"></div>
-  <details><summary>Which test is which</summary><div><table class="fit"><thead><tr><th>Name here</th><th>In the repository</th><th>What it is</th></tr></thead><tbody>
-    <tr><td>Test 1</td><td>cell 1</td><td>openJiuwen as shipped</td></tr>
-    <tr><td>Test 2</td><td>cell 2</td><td>openJiuwen with its card probe's window limit off, and nothing else changed</td></tr>
-    <tr><td>Test 3</td><td>cell 3</td><td>a second agent written from scratch: four tools, no card probe, temperature 0, the same model, window and budget</td></tr>
-    <tr><td>Test 4</td><td>cell 5</td><td>openJiuwen as shipped, told to open every listing</td></tr>
-    <tr><td>Test 5</td><td>the box v1 pilot</td><td>openJiuwen as shipped, with the block's plan in front of it</td></tr>
-  </tbody></table></div></details>
 </div>
 
 <div class="block">
@@ -113,17 +116,23 @@
   <h2>Each question</h2>
   <p class="note">Correct answers out of 3 runs for Tests 1 to 4, and out of 1 run for Test 5, under the answer key.</p>
   <div id="questions"></div>
-  <div class="callout"><span class="eyebrow">The count-stocked row</span>It is wrong in every test, including the one that opened everything. This is the ambiguous question. Every agent read "offer size M" as "can sell it now" and answered 5, where the key, fixed before any run, says 10. There was nothing more to open. The block's answer is to ask which reading was meant.</div>
 </div>
 
 <div class="block">
-  <details><summary><b>What went wrong, run by run, and what the block does about each kind</b></summary><div><div id="errors"></div></div></details>
-  <details><summary><b>The statistics behind the sentences above</b></summary><div><p class="note">Two sided exact tests, compared within each question first because the questions differ in difficulty. The second agent is compared on its distinct runs only, since at temperature 0 it repeats itself.</p><div id="tests"></div></div></details>
+  <h2>The question every test got wrong: "How many of the Thornwood listings offer size M?"</h2>
+  <p class="note">The 15 listings as the results page advertises them, and what size M looks like once each listing is opened. From the generated catalogue the shop was seeded from, joined with the results page the block read.</p>
+  <div id="market"></div>
+  <div id="market-reading"></div>
+</div>
+
+<div class="block">
+  <h2>What went wrong, run by run, and what the block does about each kind</h2>
+  <div id="errors"></div>
 </div>
 
 <div class="block">
   <h2>Test 5 in full</h2>
-  <p class="note">From the run records: the agent's answer, and the exact text the block handed it, folded away below each.</p>
+  <p class="note">From the run records. Pick a question to see the agent's answer and the exact text the block handed it.</p>
   <div id="pilot"></div>
 </div>
 
@@ -211,7 +220,6 @@
   <div><h3>Reviews, and the open items</h3><ul><li>The nine review questions, which have never run, through the depth primitive: stop at the first mention, or read every page before answering no.</li><li>The model parser's prompt vocabulary, and the block in front of the second agent once that agent's browser is confined to the shop.</li></ul></div>
 </div>
 
-<p class="small" style="margin-top:28px">Project site: <code>docs/index.html</code> in the repository, with the commands that reproduce every figure. This report is generated from the same data file.</p>
 </div>
 <script src="site-data.js"></script>
 <script src="report-4.js"></script>
