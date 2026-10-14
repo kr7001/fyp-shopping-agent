@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Progress Report 4</title>
+<meta name="description" content="Progress report 4 of the FYP on shopping agents and interaction-gated information: the five tests on the clothing market, the pre-processing block, the research behind it, what was verified, and next week.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .report { max-width: 1100px; margin: 0 auto; padding: 28px 20px 96px; }
+  .report .page-head { margin-bottom: 8px; }
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; font-family: var(--sans); font-size: 13.5px; }
+  .toc a { border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; color: var(--muted); text-decoration: none; background: var(--surface); }
+  .toc a:hover { color: var(--ink); border-color: var(--ink); }
+  h2.part { margin-top: 40px; font-size: 24px; }
+  .arch-node { text-align: left; cursor: pointer; font: inherit; color: inherit; }
+  .arch-node[aria-pressed="true"] { outline: 2px solid var(--accent); }
+  .arch-detail { margin-top: 12px; }
+  pre.wrap { white-space: pre-wrap; padding: 12px 14px; }
+  blockquote { margin: 8px 0 0; padding: 10px 14px; border-left: 3px solid var(--accent); background: var(--surface-2); border-radius: 6px; }
+  td.small { font-size: 12px; }
+  .sig { border-left: 3px solid var(--accent); padding-left: 14px; }
+</style>
+<script>try { var t = localStorage.getItem('igr-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body>
+<div class="report" id="main">
+
+<div class="page-head">
+  <span class="eyebrow">Final year project · NUS Data Science and Analytics · progress report 4 · 14 October 2026</span>
+  <h1>Shopping agents under interaction-gated information</h1>
+  <p class="lede">Since the update of 7 October: three more tests on the clothing market, the first run of the pre-processing block, the research that shaped its second version, and what was verified. Every figure on this page is generated from the run files (built <span data-f="built"></span>); the commands that reproduce them are on the project site.</p>
+  <div class="toc">
+    <a href="#results">1. The tests since last week</a><a href="#block">2. The block</a><a href="#research">Research</a><a href="#arch">Architecture</a><a href="#scenarios">Scenarios</a><a href="#verified">What was verified</a><a href="#significance">Why it matters</a><a href="#next">3. Next week</a>
+  </div>
+</div>
+
+<div class="block prose">
+  <h2>In one paragraph</h2>
+  <p>A shopping agent answers from the page it can see. When the price, size or stock a question needs only appears after a click, the agent often answers anyway, confidently and wrongly. Last week's two tests showed the shipped agent opens what the answer needs in <span data-f="c1.opened"></span> of 15 runs, and that one default in its card probe is the cause (<span data-f="c2.opened"></span> of 15 with it off). This week added a second agent, an "open everything" ceiling, and the first run of a block that sits before the agent: it reads the question and the first page, hands the agent a plan, asks the user back when the question is ambiguous, and checks the answer from the page. The block's pilot got both questions right, opening <span data-f="pilot.cheapest.opened"></span> listings instead of 15 on the cheapest question for <span data-f="pilot.cheapest.cost"></span> against about $0.59. Version 2, built today, generalises the block to every question shape the shopping benchmarks contain, with a model parsing the question and rules doing everything after.</p>
+</div>
+
+<!-- ===================================================== 1. RESULTS -->
+<h2 class="part" id="results">1. The tests since last week</h2>
+
+<div class="block">
+  <div class="head"><h2>All five tests on the clothing market</h2>
+    <div class="seg" role="group" aria-label="Reading of offer"><button type="button" data-reading="menu" aria-pressed="true">Answer key</button><button type="button" data-reading="buyable" aria-pressed="false">"Can sell now" reading</button></div></div>
+  <p class="note">Tests 1 to 4: the five gated questions, three runs each, Claude Haiku 4.5, the gated shop. Test 5 is the block's pilot, one run on each of two questions. "Opened what it needs" means every listing the answer depends on was opened: all 15 for a count, the listings the advertised prices cannot rule out for a cheapest, one counterexample for "does every". The toggle switches the key for the two questions whose word "offer" has two readings.</p>
+  <div id="cells"></div>
+  <div class="table-wrap" style="margin-top:14px"><table><thead><tr><th>Name here</th><th>Name in the repository</th><th>What it is</th></tr></thead><tbody>
+    <tr><td>Test 1</td><td>cell 1</td><td>openJiuwen as shipped</td></tr>
+    <tr><td>Test 2</td><td>cell 2</td><td>openJiuwen with its card probe's window limit off, nothing else changed</td></tr>
+    <tr><td>Test 3</td><td>cell 3</td><td>a second agent written from scratch: four tools, no card probe, temperature 0, same model, window and budget</td></tr>
+    <tr><td>Test 4</td><td>cell 5</td><td>openJiuwen as shipped, told to open every listing</td></tr>
+    <tr><td>Test 5</td><td>the box v1 pilot</td><td>openJiuwen as shipped, with the block's plan in front of it</td></tr>
+  </tbody></table></div>
+</div>
+
+<div class="block">
+  <h2>Each question</h2>
+  <p class="note">Correct / opened what it needs, of 3 runs for tests 1 to 4 and of 1 run for test 5, under the answer key.</p>
+  <div id="questions"></div>
+</div>
+
+<div class="block prose sig">
+  <h2>What the results tell us</h2>
+  <p><strong>Test 3, the second agent, answers the question "is this only an openJiuwen problem?" in two halves.</strong> The four-listing stop is openJiuwen's: the second agent, with no card probe and the page as text, opened what the answer needed in <span data-f="c3.opened"></span> of 15 runs under the key and <span data-f="c3.opened_b"></span> of 15 under the other reading, median 15 listings, against <span data-f="c1.opened"></span> of 15 for the shipped agent (p = <span data-f="p.opened.3v1"></span> by question on its <span data-f="c3.distinct"></span> distinct runs). It was also the cheapest arm at <span data-f="c3.cost"></span> a run. But its wrong answers were the two kinds that do not depend on the scaffold: it read "offer" as "can sell it now" (<span data-f="c3.err.offer"></span> distinct run) and read a price before the page revealed it (<span data-f="c3.err.reveal"></span>). Those belong to the model and the page, and they are what the block's ask-back and look-again steps target. A second model on the first agent (DeepSeek, 18 September) opened 10, 7, 10 and 4 listings, so the stop is the probe's default together with how far the model trusts it.</p>
+  <p><strong>Test 4, open everything, is the ceiling, and it still has errors.</strong> <span data-f="c5.right"></span> of 15 correct under the key at <span data-f="c5.cost"></span> a run, <span data-f="ratio51"></span> times the shipped agent, and <span data-f="c5.calls"></span> tool calls a run. Of its <span data-f="c5.errors.total"></span> wrong answers, <span data-f="c5.errors.offer"></span> are the same thing: "How many listings offer size M?" answered as "can sell it now" (5) where the key says "in the menu" (10). Every agent that explained itself read it that way. That is not a retrieval failure, it is an ambiguous question, and noticing it is what produced the block's ask-back: a question with two reasonable readings should be asked back, not guessed. The questions are kept as they are, on purpose, because catching them is the block's job.</p>
+  <p><strong>Test 5, the block's pilot, shows the plan being followed.</strong> On the cheapest question the agent opened exactly the <span data-f="pilot.cheapest.opened"></span> listings advertised at or below the winning price, skipped the other 7, and named the right seller, for <span data-f="pilot.cheapest.cost"></span>. On the count question it opened all 15, as the plan says a count must, for <span data-f="pilot.count.cost"></span>. Two runs on the market the block was designed on: a working pipeline, not yet a result.</p>
+  <p><strong>The statistics.</strong> Window limit off against as shipped: correct p = <span data-f="p.correct.2v1"></span>, opened what it needs p = <span data-f="p.opened.2v1"></span>, by question. Open everything against limit off: p = <span data-f="p.correct.5v2"></span>, no difference found. Same under both readings.</p>
+</div>
+
+<div class="block">
+  <div class="head"><h2>The tests behind those sentences</h2></div>
+  <p class="note">Two sided exact tests, compared within each question first because the questions differ in difficulty. The second agent is compared on its distinct runs only, since at temperature 0 it repeats itself.</p>
+  <div id="tests"></div>
+</div>
+
+<div class="block">
+  <h2>What went wrong, run by run</h2>
+  <p class="note">Every gated run that was not correct, sorted by written rules, not by eye. Test 3 counts distinct runs.</p>
+  <div id="errors"></div>
+</div>
+
+<div class="block">
+  <h2>Test 5 in full: the text the block handed the agent, and what came back</h2>
+  <p class="note">Taken from the run records. The plan is the same bytes every time for the same question and page.</p>
+  <div id="pilot"></div>
+</div>
+
+<!-- ===================================================== 2. THE BLOCK -->
+<h2 class="part" id="block">2. Building the block</h2>
+
+<div class="block prose">
+  <h2>What it is</h2>
+  <p>A step that runs before the shopping agent. It reads the user's question and the first results page, and does one of three things: hands the agent a plan (how many listings there are, which to open in what order, when to stop, what counts as evidence), asks the user back when the question is ambiguous or names something the shop does not show, or passes a question that is not about shopping straight through and counts it. After the agent answers, the block decides from the page alone whether the answer is supported, and refuses it if not. Version 1 ran the pilot above with four fixed strategies. Version 2, built today after the research below, handles every question shape in the shopping benchmarks and lets a model do the parsing.</p>
+</div>
+
+<div class="block" id="research">
+  <h2>Research, and what each piece changed</h2>
+  <p class="note">Read on 14 October from published sources only. The full notes are on the site's Research page.</p>
+  <div class="table-wrap"><table><thead><tr><th>Source</th><th>What it says</th><th>What it changed in the block</th></tr></thead><tbody>
+    <tr><td>WebMall (SIGIR 2026), DeepShop (2025), WebShop (2022)</td><td>The reading tasks shopping agents are benchmarked on fall into a few shapes: find a product, cheapest with or without requirements, vague requirements, substitutes. Agents fail most on vague requirements (64% at best) and on filters and sorting (under 35%).</td><td>The census of question shapes, and the set of primitives version 2 composes from: lookup, witness, counterexample, bound and prune, exhaust, depth, with filters inside.</td></tr>
+    <tr><td>DiscoBench (June 2026), SAGE-Agent (ACL 2026)</td><td>Search agents should ask only when ambiguity changes the answer; both over-asking and under-asking are scored, with a simulated user answering.</td><td>Our "offer" case is their facet ambiguity, our scripted user is their simulator, and the clear questions are the control for over-asking.</td></tr>
+    <tr><td>Dialogue to Discovery (June 2026)</td><td>Ask about an attribute only when the catalogue splits on it.</td><td>The rule that the block should not ask when both readings give the same answer on this page (designed, waits for a page that shows stock).</td></tr>
+    <tr><td>AB-RAG, Stop-RAG, TASR, Know Before You Fetch (2025 to 2026)</td><td>When to stop retrieving, decided from the model's own uncertainty under a budget.</td><td>The contrast: the block's stop rule reads a bound from the page, and its check can refuse an answer the model is confident about. That is the gap it fills.</td></tr>
+    <tr><td>Calibrate-Then-Act (Feb 2026), classical optimal stopping and branch and bound</td><td>Weigh the cost of another look against what it could change; a lower bound on an unopened item lets it be skipped.</td><td>The cheapest strategy is branch and bound with the advertised price as the bound, and the measured cost per listing opened ($0.035) is what the saving is counted in.</td></tr>
+    <tr><td>LLM-Modulo (2024), Metagent-P (ACL 2025), plan verification with formal methods (Oct 2025)</td><td>A model proposes, a symbolic critic verifies, before anything executes.</td><td>Version 2's shape: a model writes the logical form, rules verify five properties and compose the plan. The fifth property, "the attribute exists on this shop", is the one the 18 September probe showed was missing.</td></tr>
+    <tr><td>Product QA survey (ACL 2023), AmazonQA (2019)</td><td>Review questions have an answerability problem: the evidence may not be there.</td><td>How the review questions will join: the depth primitive stops at the first mention or the last page, and never answers "no" from an unread page.</td></tr>
+    <tr><td>NRF and Salesforce (Jan 2026), the agentic commerce press (2026)</td><td>Nearly half of shoppers used an AI assistant in their last purchase; agents are starting to check out; the worry is hallucinated orders.</td><td>The framing of why answering matters: every purchase is a retrieval question first.</td></tr>
+  </tbody></table></div>
+</div>
+
+<div class="block" id="arch">
+  <h2>Architecture</h2>
+  <p class="note">Click a step. The box is rules except where judgement is needed: the parse can come from a model, and the model's form is compared with the rules' form on every question.</p>
+  <div id="arch"></div>
+</div>
+
+<div class="block" id="scenarios">
+  <h2>Scenarios: which question gets which strategy</h2>
+  <p class="note">Generated from the code's own patterns, so this table cannot drift from what runs. Order matters: the rules test results-page, reviews and "every" first, then the price shapes, then the fallback.</p>
+  <div id="scenarios"></div>
+</div>
+
+<div class="block" id="census">
+  <h2>The model parser against the rules: the census parse</h2>
+  <p class="note">The model wrote the logical form of all 37 distinct questions in the project, one call each, no browser. In sample for the rules, which were written on these questions. The gap between "quantifier and objective" and "every field" is two prompt vocabulary gaps, the listing's URL left out of the filters and "listing" written for "results", not judgement.</p>
+  <div id="census"></div>
+</div>
+
+<div class="block" id="verified">
+  <h2>What was verified, and how</h2>
+  <p class="prose">Three kinds of check, each run by the project's independent verifier module before any paid run and after every batch. It failed the first write-up of these results five times before passing it; each failure is in the decision log.</p>
+  <h4>Unit tests: <span data-f="tests.unit"></span> in the experiments, <span data-f="tests.mod"></span> for the spend guard, <span data-f="tests.regression"></span> questions in the planner regression</h4>
+  <p class="note">Every rule has a test where it must fire on a known fault and one where it must stay quiet. Before a test counts, the fault is planted and the test watched to fail (lesson 31). The published figures on the site are pinned, so a change to any of them fails a test.</p>
+  <div id="unit"></div>
+  <h4>The verifier's checks on the block, 14 October</h4>
+  <div class="table-wrap"><table><thead><tr><th>Check</th><th>How</th><th>Result</th></tr></thead><tbody>
+    <tr><td>Fairness against tests 1 and 4</td><td>The held-constant table: model, sampling, step budget, clock, window, shop and theme, browser tool version, per-run caches, scorer and rules versions, the question text byte for byte; every difference named</td><td>One intended difference: the block hands the agent the listings' URLs and advertised prices. Browser tool pinned at 0.0.83, the version every test ran on</td></tr>
+    <tr><td>The block never reads an answer</td><td>Read the code; plant reads of a fixture, an answer key, a manifest, a seller name and a price in a scratch copy and watch the test fail</td><td>All plants caught; the box reads the page and the question only</td></tr>
+    <tr><td>Every statement the agent receives is true of the shop</td><td>The dry run's exact text against the live shop: the listing count, "no next page", every seller, price and URL, the size menu, the sold-out state, the review page</td><td>All true. One sentence of the frozen strategy text is strictly false for a sold-out size under the ordinary theme, left for version 8 and recorded</td></tr>
+    <tr><td>The refusal check from the page</td><td>Replayed over tests 1, 2 and 4 with the page's numbers, against the answer key's</td><td><span data-f="refusal.c1.refused"></span> of the <span data-f="refusal.c1.wrong"></span> wrong answers in test 1 refused, 0 correct answers refused; the key's numbers give 9 and 0. The miss is a misread advertised price no page-only check can see</td></tr>
+    <tr><td>Version 1 preserved under version 2</td><td>The six clothing texts frozen as a fixture before the change, regenerated from the old commit by the verifier, compared byte for byte; five dry runs compared line by line</td><td>Identical, so the pilot stands under version 2</td></tr>
+    <tr><td>Cost</td><td>The provider's charge per call summed, against the account's movement</td><td>The pilot's $0.61 and the parse's $0.07 match the account to the cent</td></tr>
+    <tr><td>The figures on this page</td><td>Each recomputed by the verifier from the run files and the probe file</td><td>All held; two sentences were overstated and corrected before this report</td></tr>
+  </tbody></table></div>
+</div>
+
+<div class="block prose" id="significance">
+  <h2>Why this matters, and what it is not</h2>
+  <p><strong>Agent agnostic.</strong> The block does not replace a browser agent and is not one. It sits in front of whichever agent is used and hands it text. Test 3 is the evidence that the two errors it targets besides coverage, the ambiguous verb and the price read too early, appear in a second agent built from scratch; the block in front of that agent is next week's check.</p>
+  <p><strong>Answering, not buying.</strong> Every purchase an agent makes is a retrieval question first: which offer, at what price, in which size, in stock. A wrong answer there becomes a wrong purchase one click later, and the live assistant observed in August named one seller 27% cheaper for a carton it was dearer for, with no sign of doubt. The block makes that answer correct at a known cost, and says when it cannot. Buying, discounts, coupons and delivery are out of scope and stated as limits. Reviews are in scope and come next: they gate by depth, not by a click, and the block already has the primitive for them.</p>
+  <p><strong>Honest status.</strong> One week behind the plan, because 8 to 10 October went on re-deriving every published figure, rebuilding the repository and the site, and five verifier passes that found and fixed overclaims. No paid run of version 2 against the agent exists yet. The pilot is two runs on the market the block was designed on. $42.71 of the $100 remains; today cost $0.68.</p>
+</div>
+
+<div class="block prose">
+  <h2>Also done since 7 October</h2>
+  <ul>
+    <li>Every figure from the first three tests re-derived from the raw run files; three reported on 7 October were wrong and are corrected.</li>
+    <li>The repository reorganised into folders by job, with a test suite and one site that generates every figure from the run files. The history was rewritten before publishing to remove a paper the licence did not allow and to restore Magento's notice on the gated theme.</li>
+    <li>A workbench that refuses any paid command without a verifier pass, a declared cost and the student's yes; three modules, coder, verifier and insights, with one job each; <span data-f="lessons"></span> lessons on record, each with the rule it produced.</li>
+    <li>The September result on the water markets restated honestly: suggestive, not shown. Its refusal check read the market size from the answer key; the block's reads it from the page.</li>
+  </ul>
+</div>
+
+<!-- ===================================================== 3. NEXT -->
+<h2 class="part" id="next">3. Next week</h2>
+<div class="block prose">
+  <ol>
+    <li><strong>The block on real runs.</strong> The development batch on Thornwood under version 2: the six questions, three repeats, the two ambiguous ones under both readings, plus new questions for the shapes version 1 lacked (is there any, the three cheapest, a named comparison, a cheapest with a condition) and a few unrelated questions to measure the bypass. Against tests 1 and 4. Then freeze.</li>
+    <li><strong>A fresh clothing market</strong>, generated after the freeze, seeded, verified in a browser, with both readings of every ambiguous question stated before any run. The claim run on it: shipped, open everything, and the block, three repeats, compared within each question. Once the market generator and the gated theme are stable, they are prepared as a contribution to WebArena-Verified, which welcomes dataset and tooling contributions; nothing is claimed until a pull request is merged.</li>
+    <li><strong>Reviews.</strong> The nine review questions, which have never run, through the depth primitive: stop at the first mention, or read every page before answering no. The first question shape where the evidence may simply not be there.</li>
+    <li><strong>Version 2's open items</strong>, all recorded: the model parser's prompt vocabulary, the block in front of the second agent, and the four fixes the verifier named after today's second pass, already made and awaiting its pass.</li>
+  </ol>
+</div>
+
+<p class="small">Project site: <code>docs/index.html</code> in the repository, with the commands that reproduce every figure. Report generated from the same data file as the site.</p>
+</div>
+<script src="site-data.js"></script>
+<script src="report-4.js"></script>
+</body>
+</html>
