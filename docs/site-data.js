@@ -4866,11 +4866,373 @@ window.SITE = {
   "on": "2026-10-08",
   "source": "README decision log, 8 October 2026"
  },
+ "pilot": [
+  {
+   "task": "apparel-cheapest-target",
+   "verdict": "correct",
+   "why": "named the expected option",
+   "answer": "The cheapest seller for Thornwood size M is Alderney Clothing Co at $25.77. I checked the option was available by selecting it from the dropdown menu (it was not disabled). I opened 8 listings, skipped 7 listings, and rejected 5 listings for being unavailable in size M.",
+   "opened": 8,
+   "population": 15,
+   "floor": 8,
+   "tool_calls": 40,
+   "cost": 0.39092,
+   "elapsed_s": 138.3,
+   "kind": "availability_bound",
+   "query": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Across the Thornwood listings, which seller is cheapest for size M, and what is that price? Only count a listing that can actually supply that size.\n\nThe results page lists 15 listings on one page; there is no next page.\nListings by advertised price, read from the results page:\n1. Rookwood Uniforms, advertised $11.87, http://localhost:7770/igr-app-03.html\n2. Jarrow Garments, advertised $14.90, http://localhost:7770/igr-app-13.html\n3. Ivybridge Collective, advertised $17.12, http://localhost:7770/igr-app-08.html\n4. Fairhaven Workwear, advertised $18.33, http://localhost:7770/igr-app-07.html\n5. Dunmore Apparel, advertised $20.05, http://localhost:7770/igr-app-05.html\n6. Copperfield Apparel, advertised $23.40, http://localhost:7770/igr-app-02.html\n7. Elmsworth Clothing Co, advertised $24.83, http://localhost:7770/igr-app-01.html\n8. Alderney Clothing Co, advertised $25.77, http://localhost:7770/igr-app-14.html\n9. Northwick Outfitters, advertised $25.96, http://localhost:7770/igr-app-11.html\n10. Haldane Supply, advertised $27.13, http://localhost:7770/igr-app-10.html\n11. Oakhurst Threads, advertised $27.75, http://localhost:7770/igr-app-04.html\n12. Lymington Textiles, advertised $28.09, http://localhost:7770/igr-app-15.html\n13. Brindle Textiles, advertised $30.61, http://localhost:7770/igr-app-09.html\n14. Marchmont Textiles, advertised $30.92, http://localhost:7770/igr-app-06.html\n15. Pentland Workwear, advertised $36.59, http://localhost:7770/igr-app-12.html\n\nUse this retrieval strategy, and follow it rather than opening listings in the order they appear.\n1. Read the advertised price of every listing from the search results first. That price is the cheapest option in that listing, so nothing inside it can cost less.\n2. Open listings in ascending order of advertised price. For each one, do two separate things. First, choose the option asked about, then look at the page again and read the price it now shows. The price a listing shows before you choose is its cheapest option, not the one asked about, and the reply to choosing an option does not show the new price. Second, check whether that option can actually be bought. An option can be listed and still be unavailable, in which case it is shown as disabled or greyed out and cannot be chosen, so it has no price you can use.\n3. A listing only becomes your best candidate if the option is both cheaper and available. A cheaper unavailable one changes nothing.\n4. Skip every unopened listing whose advertised price is at or above your best available total. Such a listing cannot win whatever its stock.\n5. Stop when no unopened listing has an advertised price below your best available total.\nIn your answer, name the seller, give the price, and say explicitly that you checked the option was available rather than only listed. Say how many listings you opened, how many you skipped, and how many you rejected for being unavailable.\nImportant: the figure this bound produces is a limit used only to decide what to skip. It is not a real price and must never appear in your answer. Only report a price you read from a listing you opened, for the exact option asked about, read after that option was chosen. Never pair an advertised price with an option unless you saw that price shown while that option was chosen."
+  },
+  {
+   "task": "apparel-count-buyable",
+   "verdict": "correct",
+   "why": "counted 5",
+   "answer": "5 Thornwood listings have size M in stock and available to buy right now. These are: (1) Copperfield Apparel ($23.40), (2) Elmsworth Clothing Co ($24.83), (3) Alderney Clothing Co ($25.77), (4) Northwick Outfitters ($25.96), and (5) Marchmont Textiles ($30.92). I opened all 15 listings from the search results page to check the size options.",
+   "opened": 15,
+   "population": 15,
+   "floor": null,
+   "tool_calls": 33,
+   "cost": 0.219644,
+   "elapsed_s": 98.9,
+   "kind": "survey",
+   "query": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . How many of the Thornwood listings have size M in stock and available to buy right now?\n\nThe results page lists 15 listings on one page; there is no next page.\nListings by advertised price, read from the results page:\n1. Rookwood Uniforms, advertised $11.87, http://localhost:7770/igr-app-03.html\n2. Jarrow Garments, advertised $14.90, http://localhost:7770/igr-app-13.html\n3. Ivybridge Collective, advertised $17.12, http://localhost:7770/igr-app-08.html\n4. Fairhaven Workwear, advertised $18.33, http://localhost:7770/igr-app-07.html\n5. Dunmore Apparel, advertised $20.05, http://localhost:7770/igr-app-05.html\n6. Copperfield Apparel, advertised $23.40, http://localhost:7770/igr-app-02.html\n7. Elmsworth Clothing Co, advertised $24.83, http://localhost:7770/igr-app-01.html\n8. Alderney Clothing Co, advertised $25.77, http://localhost:7770/igr-app-14.html\n9. Northwick Outfitters, advertised $25.96, http://localhost:7770/igr-app-11.html\n10. Haldane Supply, advertised $27.13, http://localhost:7770/igr-app-10.html\n11. Oakhurst Threads, advertised $27.75, http://localhost:7770/igr-app-04.html\n12. Lymington Textiles, advertised $28.09, http://localhost:7770/igr-app-15.html\n13. Brindle Textiles, advertised $30.61, http://localhost:7770/igr-app-09.html\n14. Marchmont Textiles, advertised $30.92, http://localhost:7770/igr-app-06.html\n15. Pentland Workwear, advertised $36.59, http://localhost:7770/igr-app-12.html\n\nOpen every listing in the search results and check the relevant option on each before answering. Whether an option can be chosen is shown in the option menu itself, so there is no need to choose it to find that out. Say how many you opened."
+  }
+ ],
+ "census": {
+  "model": "anthropic/claude-haiku-4.5",
+  "temperature": 0,
+  "calls": 37,
+  "charged": 0.068507,
+  "same_quantifier": 34,
+  "same_quantifier_objective": 33,
+  "same_with_population": 26,
+  "same_every_field": 5,
+  "model_failures": {
+   "a lookup names no listing": 7,
+   "the shop does not show pack size and price": 1
+  },
+  "disagreements": [
+   {
+    "question": "Two sellers list Glenmoor Still Spring Water: http://localhost:7770/igr-water-a.html (Cellar Direct) and http://localhost:7770/igr-water-b.html (Hillside Provisions). Which seller is cheaper for the 2 x 9.5L pack, and what is that price?",
+    "rules": {
+     "form_version": 1,
+     "kind": "named_lookup",
+     "quantifier": "lookup",
+     "objective": "price",
+     "filters": [
+      {
+       "attribute": "url",
+       "op": "in",
+       "value": [
+        "http://localhost:7770/igr-water-a.html",
+        "http://localhost:7770/igr-water-b.html"
+       ]
+      },
+      {
+       "attribute": "size",
+       "op": "=",
+       "value": "2 x 9.5L"
+      }
+     ],
+     "population": "listing",
+     "k": null,
+     "reading": null,
+     "unknowns": [],
+     "source": "rules",
+     "evidence": {
+      "population": "2 product URLs",
+      "filter:size": "the 2 x 9.5L pack",
+      "filter:url": "2 product URLs",
+      "quantifier": "2 product URLs",
+      "objective": "a price is asked for"
+     }
+    },
+    "model": {
+     "form_version": 1,
+     "kind": "total_bound",
+     "quantifier": "argmin",
+     "objective": "price",
+     "filters": [
+      {
+       "attribute": "size",
+       "op": "=",
+       "value": "2 x 9.5L"
+      }
+     ],
+     "population": "listing",
+     "k": null,
+     "reading": null,
+     "unknowns": [],
+     "source": "model",
+     "evidence": {
+      "quantifier": "Which seller is cheaper",
+      "objective": "what is that price",
+      "filters": "for the 2 x 9.5L pack",
+      "population": "Two sellers list Glenmoor Still Spring Water: http://localhost:7770/igr-water-a.html (Cellar Direct) and http://localhost:7770/igr-water-b.html (Hillside Provisions)"
+     }
+    }
+   },
+   {
+    "question": "On http://localhost:7770/igr-coffee-a.html is the 1 kg size the cheapest per kilogram? Answer yes or no and give the per-kilogram prices.",
+    "rules": {
+     "form_version": 1,
+     "kind": "rate_bound",
+     "quantifier": "argmin",
+     "objective": "rate",
+     "filters": [
+      {
+       "attribute": "size",
+       "op": "=",
+       "value": "1 kg"
+      }
+     ],
+     "population": "listing",
+     "k": null,
+     "reading": null,
+     "unknowns": [],
+     "source": "rules",
+     "evidence": {
+      "population": "1 product URL",
+      "filter:size": "the 1 kg size",
+      "filter:url": "1 product URL",
+      "quantifier": "per kilogram",
+      "objective": "per kilogram"
+     }
+    },
+    "model": {
+     "form_version": 1,
+     "kind": "named_lookup",
+     "quantifier": "lookup",
+     "objective": "rate",
+     "filters": [
+      {
+       "attribute": "size",
+       "op": "=",
+       "value": "1 kg"
+      }
+     ],
+     "population": "listing",
+     "k": null,
+     "reading": null,
+     "unknowns": [
+      "what other sizes are available at this listing",
+      "the prices of those other sizes"
+     ],
+     "source": "model",
+     "evidence": {
+      "quantifier": "the question names a specific listing URL and asks about one size",
+      "objective": "per kilogram prices are requested; this is rate (price per unit)",
+      "filters": "the question specifies '1 kg size'",
+      "population": "the question provides a specific listing URL: http://localhost:7770/igr-coffee-a.html",
+      "unknowns": "to answer whether 1 kg is cheapest per kilogram, all available sizes and their prices must be known, but the question only asks about one size"
+     }
+    }
+   },
+   {
+    "question": "On http://localhost:7770/igr-water-a.html list every pack size and its price.",
+    "rules": {
+     "form_version": 1,
+     "kind": "named_lookup",
+     "quantifier": "lookup",
+     "objective": "price",
+     "filters": [
+      {
+       "attribute": "url",
+       "op": "in",
+       "value": [
+        "http://localhost:7770/igr-water-a.html"
+       ]
+      }
+     ],
+     "population": "listing",
+     "k": null,
+     "reading": null,
+     "unknowns": [],
+     "source": "rules",
+     "evidence": {
+      "population": "1 product URL",
+      "filter:url": "1 product URL",
+      "quantifier": "1 product URL",
+      "objective": "a price is asked for"
+     }
+    },
+    "model": {
+     "form_version": 1,
+     "kind": "survey",
+     "quantifier": "aggregate",
+     "objective": "attribute:pack size and price",
+     "filters": [],
+     "population": "listing",
+     "k": null,
+     "reading": null,
+     "unknowns": [],
+     "source": "model",
+     "evidence": {
+      "quantifier": "list every",
+      "objective": "pack size and its price",
+      "filters": "none",
+      "population": "the named listing at http://localhost:7770/igr-water-a.html",
+      "k": "not applicable",
+      "reading": "not applicable",
+      "unknowns": "none"
+     }
+    }
+   },
+   {
+    "question": "Across all the Calderwood listings, which seller is cheapest for the 2 x 9.5L pack, and what is that price?",
+    "rules": {
+     "form_version": 1,
+     "kind": "total_bound",
+     "quantifier": "argmin",
+     "objective": "price",
+     "filters": [
+      {
+       "attribute": "size",
+       "op": "=",
+       "value": "2 x 9.5L"
+      }
+     ],
+     "population": "results",
+     "k": null,
+     "reading": null,
+     "unknowns": [],
+     "source": "rules",
+     "evidence": {
+      "population": "the results URL",
+      "filter:size": "the 2 x 9.5L pack",
+      "quantifier": "cheapest",
+      "objective": "cheapest"
+     }
+    },
+    "model": {
+     "form_version": 1,
+     "kind": "results_page",
+     "quantifier": "argmin",
+     "objective": "advertised price",
+     "filters": [
+      {
+       "attribute": "title",
+       "op": "contains",
+       "value": "2 x 9.5L"
+      }
+     ],
+     "population": "results",
+     "k": null,
+     "reading": null,
+     "unknowns": [
+      "Whether the advertised price on the results page matches the actual price when the listing is opened (the question asks for 'that price' but the results page only shows the cheapest option per listing, not necessarily the price of the specific size)"
+     ],
+     "source": "model",
+     "evidence": {
+      "quantifier": "which seller is cheapest",
+      "objective": "advertised price shown on results page",
+      "filters": "the 2 x 9.5L pack",
+      "population": "Go to http://localhost:7770/catalogsearch/result/?q=Calderwood . Across all the Calderwood listings",
+      "unknowns": "The question asks for a price but the results page advertised price may not be for the 2 x 9.5L pack specifically; that price only appears after opening the listing and selecting the size"
+     }
+    }
+   }
+  ]
+ },
+ "patterns": {
+  "targeting": {
+   "BUYABLE": "\\b(buy|bought|buyable|purchas\\w+|available|in stock|suppl\\w+|ship\\w*)\\b",
+   "CHEAPEST": "\\b(cheapest|lowest price|lowest cost|least expensive)\\b",
+   "RESULTS_PAGE": "\\b(advertis\\w+|on the results page)\\b",
+   "REVIEWS": "\\b(buyers?|reviewers?|reviews?)\\b",
+   "UNIT_RATE": "per\\s+(litre|liter|kg|kilogram|unit)|best value",
+   "UNIVERSAL": "\\b(every|all)\\b.*\\b(stock|carry|offer|have)\\b"
+  },
+  "form": {
+   "ARGMAX": "\\b(?:most expensive|dearest|highest price|priciest)\\b",
+   "ARGMAX_WORDS": "\\b(?:highest|most|longest|best|slowest)\\b",
+   "BUYABLE_WORDS": "\\b(?:in\\s+stock|available\\s+to\\s+buy|available\\s+for\\s+purchase|can\\s+be\\s+bought|can\\s+actually\\s+be\\s+bought|can\\s+buy|can\\s+supply|can\\s+actually\\s+supply|can\\s+ship|purchasable|buyable|right\\s+now|ready\\s+to\\s+ship)\\b",
+   "CEILING": "\\b(?:under|below|less than|at most|no more than|not more than|cheaper than|up to|within)\\s*\\$?\\s*(?P<a>\\d+(?:\\.\\d{1,2})?)\\b|\\$?(?P<b>\\d+(?:\\.\\d{1,2})?)\\s+or\\s+(?:less|under|below|cheaper)\\b",
+   "COLOUR": "\\bin\\s+(white|black|blue|red|green|grey|gray|navy|yellow|pink|purple|orange|brown|beige|cream)\\b",
+   "EXISTS": "\\b(?:is|are)\\s+there\\s+(?:any|a|an|one)\\b|\\b(?:does|do|is|are|can|could|will|would)\\s+any(?:one|body)?\\b|\\banyone\\b",
+   "FIGURE": "\\d",
+   "FREE_SHIPPING": "\\bfree\\s+(?:shipping|delivery|postage)\\b",
+   "MARKET_WORDS": "\\b(?:listing|listings|seller|sellers|offer|offers|offered|offering|sell|sells|sold|selling|product|products|item|items|shop|store|vendor|vendors|merchant|merchants)\\b",
+   "MENTION": "\\b(?:report|say|mention|complain)(?:s|ed)?\\s+(?:that\\s+)?(?:this\\s+product|it|they|the\\s+product)\\s+(.+?)(?=[?.]|\\s+Answer\\b)",
+   "MENU_WORDS": "\\b(?:listed|lists|in\\s+its\\s+menu|in\\s+the\\s+menu|on\\s+the\\s+menu|as\\s+an\\s+option|sold\\s+out\\s+or\\s+not|even\\s+if\\s+sold\\s+out|whether\\s+or\\s+not)\\b",
+   "NAMED_PAIR": "\\b(?:[Bb]etween|[Oo]f)\\s+(?P<a>[A-Z][\\w&'-]*(?:\\s+(?:[A-Z][\\w&'-]*|&))*)\\s+(?:and|or)\\s+(?P<b>[A-Z][\\w&'-]*(?:\\s+(?:[A-Z][\\w&'-]*|&))*)(?=\\s*[,:?]|\\s+which\\b)",
+   "PACK": "\\bthe\\s+((?:\\d[\\w.]*\\s*x\\s*)?\\d[\\w.]*\\s*(?:ml|l|g|kg|litres?|liters?)?)\\s+(?:pack|size|bottle|carton|bag)\\b",
+   "PRICE_WORDS": "\\b(?:price|prices|priced|cost|costs|stock|stocked|sold\\s+out)\\b",
+   "RATING": "\\brat(?:ing|ed)\\s+(?:of\\s+)?(?:at\\s+least|above|over|no\\s+less\\s+than)\\s+(?P<a>\\d(?:\\.\\d)?)\\b|\\brated\\s+(?P<b>\\d(?:\\.\\d)?)\\s+or\\s+(?:higher|more|better|above)\\b|\\b(?P<c>\\d(?:\\.\\d)?)\\s+stars?\\s+(?:or\\s+(?:more|higher|better|above)|and\\s+up)\\b|\\bat\\s+least\\s+(?P<d>\\d(?:\\.\\d)?)\\s+stars?\\b",
+   "RESULTS_URL": "catalogsearch",
+   "SIZE": "\\bsize\\s+([A-Z]{1,4}|\\d[\\w.]*)\\b",
+   "SIZE_IN": "\\bin\\s+(XXS|XS|S|M|L|XL|XXL|XXXL)\\b",
+   "SUPERLATIVE": "\\b(?:fastest|quickest|soonest|slowest|longest|shortest|best|highest|lowest|most|least)\\b",
+   "TOPK": "\\b(?:(?P<before>(?:two|three|four|five|six|seven|eight|nine|ten|\\d{1,2}))\\s+cheapest|cheapest\\s+(?P<after>(?:two|three|four|five|six|seven|eight|nine|ten|\\d{1,2}))|top\\s+(?P<top>(?:two|three|four|five|six|seven|eight|nine|ten|\\d{1,2})))\\b",
+   "TOPK_COUNT": "\\b(?<!\\bthe\\s)(?<!\\bthese\\s)(?<!\\bthose\\s)(?P<count>(?:two|three|four|five|six|seven|eight|nine|ten|\\d{1,2}))\\s+(?:sellers?|listings?)\\b",
+   "URL": "https?://\\S+",
+   "VAGUE_PRICE": "\\b(?:cheap|affordable|inexpensive|budget|low[- ]cost|bargain)\\b",
+   "VARIANT": "\\b(?:size|sizes|pack|packs|variant|variants|colour|color|colours|colors|option|options)\\b"
+  },
+  "ambiguity": {
+   "CLEAR": "\\b(?:in\\s+stock|available\\s+to\\s+buy|available\\s+for\\s+purchase|can\\s+be\\s+bought|can\\s+actually\\s+be\\s+bought|can\\s+buy|can\\s+supply|can\\s+actually\\s+supply|can\\s+ship|purchasable|buyable|right\\s+now|ready\\s+to\\s+ship|listed|lists|in\\s+its\\s+menu|in\\s+the\\s+menu|on\\s+the\\s+menu|as\\s+an\\s+option|sold\\s+out\\s+or\\s+not|even\\s+if\\s+sold\\s+out|whether\\s+or\\s+not)\\b",
+   "GOVERNED": "((?:\\s+[\\w.]+){0,6}?\\s+(?:size|sizes|pack|packs|variant|variants|colour|color|colours|colors|option|options))\\b",
+   "VALUE": "\\s+([A-Z]{1,4}|\\d[\\w.]*)\\b",
+   "VERB": "\\b(?:offer|offers|offered|offering|carry|carries|carried|carrying|stock|stocks|stocked|stocking|sell|sells|sold|selling|have|has|had|having)\\b"
+  },
+  "stop_rules": {
+   "total_bound": "when no unopened listing advertises below the best total found",
+   "rate_bound": "when no unopened listing's best possible rate beats the best rate found",
+   "availability_bound": "when no unopened listing advertises below the best total found that can actually be supplied",
+   "refutation": "at the first listing that lacks the option, which settles the question",
+   "depth_search": "at the first review that mentions it, or not before the last page",
+   "survey": "when every enumerated listing has been opened",
+   "results_page": "once every listing on the results page has been read",
+   "exists_price": "at the first listing whose option is available at or below the limit, or when every listing advertised at or below the limit has been opened",
+   "topk_price": "when the {k} cheapest available totals are held and no unopened listing advertises below the dearest of them",
+   "named_lookup": "when every named listing has been opened",
+   "argmax_price": "when every listing has been opened, since the advertised price bounds nothing from above"
+  },
+  "quantifiers": {
+   "total_bound": "argmin",
+   "rate_bound": "argmin",
+   "availability_bound": "argmin",
+   "refutation": "universal",
+   "depth_search": "existential",
+   "survey": "enumerate",
+   "results_page": "argmin",
+   "exists_price": "existential",
+   "topk_price": "argmin",
+   "named_lookup": "enumerate",
+   "argmax_price": "argmin"
+  },
+  "primitive_for": {
+   "lookup": "Lookup",
+   "exists": "Witness",
+   "forall": "Counterexample",
+   "argmin": "BoundPrune",
+   "argmax": "BoundPrune",
+   "topk": "BoundPrune",
+   "count": "Exhaust",
+   "aggregate": "Exhaust"
+  },
+  "listing_page_shows": [
+   "availability",
+   "price",
+   "size"
+  ],
+  "review_page_shows": [
+   "review page",
+   "review rating",
+   "review text"
+  ],
+  "ask_text": "Your question says '{verb}'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+  "versions": {
+   "box": 5,
+   "form": 4,
+   "primitives": 3,
+   "targeting": 7,
+   "planner": 2
+  }
+ },
  "built": {
-  "commit": "6877ccc",
+  "commit": "f42442a",
   "date": "2026-10-14",
   "branch": "dev",
-  "dirty": false,
+  "dirty": true,
   "repo": "https://github.com/kr7001/fyp-shopping-agent",
   "agent_core": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
   "commits_by_week": {
@@ -4878,7 +5240,7 @@ window.SITE = {
    "2026-09-07": 44,
    "2026-09-14": 49,
    "2026-10-05": 45,
-   "2026-10-12": 25
+   "2026-10-12": 26
   }
  }
 };

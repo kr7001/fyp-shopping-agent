@@ -38,8 +38,12 @@ import paths  # noqa: E402
 import arms  # noqa: E402
 import cell_facts  # noqa: E402
 import compare_cells  # noqa: E402
+import box  # noqa: E402
 import planner  # noqa: E402
 import targeting  # noqa: E402
+import ambiguity  # noqa: E402
+import form  # noqa: E402
+import primitives  # noqa: E402
 
 OUT = DOCS / "site-data.js"
 CONTENT = DOCS / "content"
@@ -476,6 +480,63 @@ def catalogues() -> dict:
     return {"markets": markets, "tasks": tasks, "ledger": ledger()}
 
 
+# ------------------------------------------------------------------ the box's pilot and census
+
+PILOT_BATCH = "20261014T084322"
+CENSUS_FILE = "parse-probe-20261014T112047.json"
+
+
+def pilot() -> list[dict]:
+    """The box v1 pilot, each run with the exact text the agent received and its answer."""
+    batch = paths.RESULTS / PILOT_BATCH
+    suite = json.loads((batch / "suite.json").read_text())
+    rows = []
+    for row in suite["rows"]:
+        record = json.loads((batch / f"{row['task']}-{row['repeat']}.json").read_text())
+        rows.append({"task": row["task"], "verdict": row["verdict"], "why": row["why"],
+                     "answer": (record.get("result") or {}).get("final", ""),
+                     "opened": row.get("opened"), "population": row.get("population"),
+                     "floor": row.get("floor"), "tool_calls": row.get("tool_calls"),
+                     "cost": row.get("cost_usd"), "elapsed_s": row.get("elapsed_s"),
+                     "kind": row["box"]["kind"], "query": row["box"]["query"]})
+    return rows
+
+
+def census() -> dict:
+    """The model's forms against the rules', from the probe's own file."""
+    data = json.loads((paths.RESULTS / CENSUS_FILE).read_text())
+    rows = data["rows"]
+    same = lambda a, b, keys: all((a or {}).get(k) == (b or {}).get(k) for k in keys)
+    out = {"model": data["model"], "temperature": data["temperature"], "calls": len(rows),
+           "charged": data["charged_usd"],
+           "same_quantifier": sum(same(r["rules"], r["model"], ["quantifier"]) for r in rows),
+           "same_quantifier_objective": sum(same(r["rules"], r["model"], ["quantifier", "objective"]) for r in rows),
+           "same_with_population": sum(same(r["rules"], r["model"], ["quantifier", "objective", "population"]) for r in rows),
+           "same_every_field": sum(bool(r["agree"]) for r in rows),
+           "model_failures": collections.Counter(p for r in rows for p in (r["model_problems"] or [])),
+           "disagreements": [{"question": r["question"].split(" . ", 1)[-1],
+                              "rules": r["rules"], "model": r["model"]}
+                             for r in rows if not same(r["rules"], r["model"], ["quantifier", "objective"])]}
+    out["model_failures"] = dict(out["model_failures"])
+    return out
+
+
+def patterns() -> dict:
+    """What the box's rules key on, read from the code so this table cannot drift from it."""
+    def regexes(module):
+        return {n: getattr(module, n).pattern for n in dir(module)
+                if isinstance(getattr(module, n), re.Pattern)}
+    return {"targeting": regexes(targeting), "form": regexes(form), "ambiguity": regexes(ambiguity),
+            "stop_rules": planner.STOP_RULES, "quantifiers": planner.QUANTIFIERS,
+            "primitive_for": {k: v.__name__ if hasattr(v, "__name__") else str(v)
+                              for k, v in primitives.FOR_QUANTIFIER.items()},
+            "listing_page_shows": sorted(form.LISTING_PAGE_SHOWS),
+            "review_page_shows": sorted(form.REVIEW_PAGE_SHOWS),
+            "ask_text": ambiguity.ASK if isinstance(ambiguity.ASK, str) else str(ambiguity.ASK),
+            "versions": {"box": box.VERSION, "form": form.VERSION, "primitives": primitives.VERSION,
+                         "targeting": targeting.VERSION, "planner": planner.VERSION}}
+
+
 # ---------------------------------------------------------------------------- tests and code
 
 def unit_tests() -> list[dict]:
@@ -580,6 +641,9 @@ def build() -> dict:
                   "versions": {"targeting": targeting.VERSION, "planner": planner.VERSION}},
         "code": code(),
         "budget": BUDGET,
+        "pilot": pilot(),
+        "census": census(),
+        "patterns": patterns(),
     }
 
 
