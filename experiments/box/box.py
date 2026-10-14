@@ -48,10 +48,17 @@ import targeting
 #      counts a tie at the answer's price once (`policy.bound_floor`), and the witness
 #      and counterexample checks refuse an answer with neither yes nor no (primitives
 #      v2). On Thornwood every stored floor is the same, so the pilot stands
-VERSION = 3
+#   4  14 October 2026. A question with no shopping shape and no shopping signal bypasses
+#      the box: the agent gets it unchanged and the record says so. A shopping question
+#      the rules can only survey keeps running and records that it was a fallback
+VERSION = 4
 
 # The results page the question sends the agent to: the first URL in it.
 URL = re.compile(r"https?://\S+")
+
+# Why a question went to the agent unchanged. The one reason there is: the rules found no
+# shape and no sign that the question is about the shop (`form.shopping_signal`).
+BYPASS_REASON = "no shopping shape recognised"
 
 # The account of the market the box puts in front of every plan. It lives beside the
 # primitives that follow it, and keeps this name because the suite and the tests call it.
@@ -61,33 +68,40 @@ preamble = primitives.preamble
 @dataclasses.dataclass(frozen=True)
 class Decision:
     question: str               # the question as planned, with any reading written in
-    kind: str | None            # the plan's kind, None when the box asked or refused
+    kind: str | None            # the plan's kind, None when the box asked, refused or bypassed
     ask: ambiguity.Ask | None   # the question put to the user, when there was one
     reading: str | None         # the reading the user's reply chose
     query: str | None           # the exact text the agent receives, None when not running
     plan: primitives.Plan | None
-    page: page_module.Page      # what the box read
+    page: page_module.Page | None   # what the box read, None when the question names no page
     form: form_module.Form | None = None    # what the box parsed, None when it asked first
     refuse: str | None = None   # why no plan was made: what the shop does not show
+    bypass: bool = False        # the agent gets the question unchanged, see BYPASS_REASON
 
     def record(self) -> dict:
         return {"box_version": VERSION, "form_version": form_module.VERSION,
                 "primitives_version": primitives.VERSION,
-                "kind": self.kind, "page": self.page.record(),
+                "kind": self.kind, "page": self.page.record() if self.page else None,
                 "asked": self.ask is not None, "ask": self.ask.text if self.ask else None,
                 "reading": self.reading, "query": self.query,
                 "form": self.form.record() if self.form else None, "refuse": self.refuse,
+                "bypassed": self.bypass, "bypass_reason": BYPASS_REASON if self.bypass else None,
+                "fallback": bool(self.form and self.form.fallback),
                 "plan": self.plan.record() if self.plan else None}
 
 
-def results_url(question: str) -> str:
+def results_url(question: str, required: bool = True) -> str | None:
+    """The first URL in the question. None when there is none and none is required, as
+    for a question that may turn out to be about something other than the shop."""
     found = URL.search(question)
     if not found:
-        raise ValueError("the question names no results page to read")
+        if required:
+            raise ValueError("the question names no results page to read")
+        return None
     return found.group(0).rstrip(".,;:)")
 
 
-def decide(question: str, page: page_module.Page, reply: str | None = None) -> Decision:
+def decide(question: str, page: page_module.Page | None, reply: str | None = None) -> Decision:
     """An ask, a refusal or a plan for one question.
 
     With no reply, an ambiguous question comes back as an ask and nothing is planned. A
@@ -99,6 +113,10 @@ def decide(question: str, page: page_module.Page, reply: str | None = None) -> D
     and the ask stands as the outcome. The design's third rule, not asking when the two
     readings agree on this page, waits: it needs to know whether any listing is sold out
     in the size asked about, and the results page shows no stock, so it is not faked here.
+
+    A question the rules find no shape and no shopping signal in is a bypass: the agent
+    gets it unchanged, with no preamble and no plan, and the record says so. The page may
+    be None then, since such a question names none. Every other outcome needs the page.
     """
     asked = ambiguity.ask(question)
     if asked is not None and reply is None:
@@ -112,6 +130,11 @@ def decide(question: str, page: page_module.Page, reply: str | None = None) -> D
         question = ambiguity.with_reading(question, asked, reply)
         reading = reply
     form = form_module.from_rules(question, page)
+    if form.quantifier == "unknown":
+        return Decision(question=question, kind=None, ask=asked, reading=reading,
+                        query=question, plan=None, page=page, form=form, bypass=True)
+    if page is None:
+        raise ValueError("the question names no results page to read")
     if form.unknowns:
         return Decision(question=question, kind=None,
                         ask=ambiguity.threshold_ask(form.evidence["unknowns"]),
@@ -136,9 +159,10 @@ def check(decision: Decision, answer: str, log_path: pathlib.Path) -> dict:
     A v1 kind gets v1's page-derived check unchanged, so the pilot's verdicts stay
     comparable. A kind v1 did not have gets the figure rules alone, with the figures the
     question itself states exempted (a limit the answer quotes back is not an invented
-    price), since the coverage rules are written for v1's question shapes. Either way, a
-    verdict that passes is then held to the plan's own check: did the run open what the
-    primitive's stop rule required.
+    price), since the coverage rules are written for v1's question shapes. So does a
+    bypassed question, which has no plan and usually no page: the figure rules need
+    neither. Either way, a verdict that passes is then held to the plan's own check, when
+    there is a plan: did the run open what the primitive's stop rule required.
     """
     text = sufficiency.observed_text(log_path)
     if decision.kind in targeting.BODIES:
@@ -150,8 +174,8 @@ def check(decision: Decision, answer: str, log_path: pathlib.Path) -> dict:
                 "any": seen["any"] | stated}
         verdict = {**sufficiency.check(answer, seen),
                    "opened": len(sufficiency.listings_opened(text)),
-                   "population": len(decision.page.listings), "floor": None,
-                   "floor_from": "page"}
+                   "population": len(decision.page.listings) if decision.page else None,
+                   "floor": None, "floor_from": "page" if decision.page else None}
     if verdict["ok"] and decision.plan is not None:
         own = primitives.check(decision.form, decision.page, answer, text)
         verdict = {**verdict, "ok": own["ok"], "flag": own["flag"], "why": own["why"],

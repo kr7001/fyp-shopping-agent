@@ -321,6 +321,68 @@ class Decide(unittest.TestCase):
         self.assertEqual(box.results_url(f"See {BASE}/a.html."), f"{BASE}/a.html")
         with self.assertRaises(ValueError):
             box.results_url("Which seller is cheapest for size M?")
+        self.assertIsNone(box.results_url("Which seller is cheapest for size M?", required=False))
+
+
+UNRELATED = ("What is the weather in Singapore today?",
+             "Write a short poem about shoes.",
+             "Who founded the Thornwood brand and when?")
+
+
+class Bypass(unittest.TestCase):
+    """A question with no shopping shape and no shopping signal goes to the agent unchanged,
+    and the record says so (14 Oct 2026, at the student's request). A shopping question the
+    rules can only survey runs and is recorded as a fallback. One about an attribute the
+    shop lacks keeps its refusal. The six clothing questions are none of these."""
+
+    def setUp(self):
+        self.page = synthetic_page([31.40, 12.25, 19.50])
+
+    def test_an_unrelated_question_bypasses_the_box(self):
+        for question in UNRELATED:
+            for page_ in (None, self.page):
+                with self.subTest(question=question, page=page_ is not None):
+                    decision = box.decide(question, page_)
+                    self.assertTrue(decision.bypass)
+                    self.assertEqual((decision.query, decision.kind, decision.plan, decision.ask,
+                                      decision.refuse), (question, None, None, None, None))
+                    record = decision.record()
+                    self.assertEqual((record["bypassed"], record["bypass_reason"], record["fallback"],
+                                      record["query"], record["asked"], record["refuse"], record["plan"]),
+                                     (True, "no shopping shape recognised", False, question, False,
+                                      None, None))
+                    self.assertEqual(record["page"], None if page_ is None else page_.record())
+                    self.assertEqual(record["form"]["quantifier"], "unknown")
+
+    def test_a_shopping_question_with_no_shape_runs_as_a_recorded_fallback(self):
+        question = f"Go to {RESULTS_URL} . Tell me about the Thornwood tee listings."
+        decision = box.decide(question, self.page)
+        self.assertFalse(decision.bypass)
+        self.assertEqual((decision.kind, decision.plan.primitive), ("survey", "exhaust"))
+        self.assertTrue(decision.query.startswith(question + "\n\n" + box.preamble(self.page)))
+        self.assertEqual((decision.record()["bypassed"], decision.record()["fallback"]), (False, True))
+
+    def test_a_pushed_back_question_keeps_its_refusal(self):
+        decision = box.decide(f"Go to {RESULTS_URL} . Which seller delivers fastest?", self.page)
+        self.assertFalse(decision.bypass)
+        self.assertTrue(decision.refuse.startswith("The shop does not show delivery time"))
+        self.assertIsNone(decision.query)
+
+    def test_a_shopping_question_with_no_page_is_an_error_not_a_bypass(self):
+        with self.assertRaises(ValueError):
+            box.decide("Which seller is cheapest for size M?", None)
+
+    def test_the_clothing_questions_and_the_census_are_neither(self):
+        for task_id, question in clothing_questions().items():
+            with self.subTest(task=task_id):
+                record = box.decide(question, self.page, reply="menu").record()
+                self.assertEqual((record["bypassed"], record["fallback"]), (False, False))
+        for _, question in planner.questions():
+            with self.subTest(question=question[:60]):
+                # The ambiguous water questions come back as asks, which is not a bypass.
+                decision = box.decide(question, self.page)
+                self.assertFalse(decision.bypass)
+                self.assertFalse(decision.record()["bypassed"])
 
 
 class V1Bytes(unittest.TestCase):
@@ -700,6 +762,75 @@ class SuiteQuery(unittest.TestCase):
                 asked = task["id"] in Decide.AMBIGUOUS
                 self.assertEqual(fields["box"]["asked"], asked)
                 self.assertEqual(fields["reading"], "menu" if asked else None)
+
+    def unrelated_task(self) -> dict:
+        return {"id": "unrelated-weather", "family": "apparel", "gated": False,
+                "query": UNRELATED[0], "expect": {"kind": "contains", "any": ["sunny"]}}
+
+    def test_a_bypassed_question_is_built_without_a_page_and_sent_unchanged(self):
+        task = self.unrelated_task()
+        query, applied = suite.build_query(task, self.spec, self.args(box=True))
+        self.assertEqual(query, UNRELATED[0])
+        self.assertEqual((applied["strategy"], applied["page"], applied["box"]["bypassed"],
+                          applied["decision"].bypass), (None, None, True, True))
+        # Anything applied after the box still applies, as to any run.
+        self.assertEqual(suite.build_query(task, self.spec, self.args(box=True, confidence="plain"))[0],
+                         policy.confidence_query(UNRELATED[0], "plain"))
+
+    def test_the_check_on_a_bypassed_run_is_the_figure_rules_alone(self):
+        task = self.unrelated_task()
+        _, applied = suite.build_query(task, self.spec, self.args(box=True))
+        with tempfile.TemporaryDirectory() as tmp:
+            log = openjiuwen_log(tmp, "bypass", [], "It is 31 degrees.")
+            fine = suite.gate_for(task, self.spec, "Sunny, 31 degrees.", log,
+                                  applied["page"], applied["decision"])
+            invented = suite.gate_for(task, self.spec, "Sunny, and it costs $999.99.", log,
+                                      applied["page"], applied["decision"])
+        self.assertEqual((fine["ok"], fine["population"], fine["floor"], fine["floor_from"],
+                          fine["opened"]), (True, None, None, None, 0))
+        self.assertEqual(invented["flag"], "unsupported_number")
+
+    def test_the_batch_counts_what_the_box_did(self):
+        def row(verdict: str, **box_record) -> dict:
+            record = {"asked": False, "refuse": None, "bypassed": False, "fallback": False, **box_record}
+            return {"task": "t", "family": "f", "gated": True, "repeat": 1, "verdict": verdict,
+                    "why": "", "answer": "", "tool_calls": None, "actions": None,
+                    "observations": None, "cost_usd": 0, "elapsed_s": 0, "error": None,
+                    "log": None, "box": record}
+        rows = [row("asked", asked=True), row("asked", asked=True),
+                row("correct", asked=True),        # asked, and a --reading answered it
+                row("refused", refuse="The shop does not show delivery time"),
+                row("wrong", bypassed=True), row("correct", fallback=True), row("correct")]
+        summary = suite.summarise(rows)
+        self.assertEqual(summary["box"], {"asked": 3, "refused": 1, "bypassed": 1, "fallback": 1})
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            suite.print_summary(summary, rows)
+        self.assertIn("box: asked 3, refused 1, bypassed 1, fallback 1", out.getvalue())
+        # Without the box there is nothing to count, and no line.
+        plain = [{k: v for k, v in r.items() if k != "box"} for r in rows]
+        self.assertIsNone(suite.summarise(plain)["box"])
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            suite.print_summary(suite.summarise(plain), plain)
+        self.assertNotIn("box:", out.getvalue())
+
+    def test_the_dry_run_prints_bypass_for_an_unrelated_question(self):
+        # In a temporary copy of the clothing task file, with --only so that nothing is
+        # fetched. The task file under experiments/tasks/ must not change.
+        tasks = paths.TASKS / "tasks_apparel.json"
+        before = tasks.read_bytes()
+        spec = json.loads(before)
+        spec["tasks"].append(self.unrelated_task())
+        with tempfile.TemporaryDirectory() as tmp:
+            temporary = pathlib.Path(tmp) / "tasks_temporary.json"
+            temporary.write_text(json.dumps(spec, indent=2))
+            run = subprocess.run(
+                [sys.executable, str(paths.EXPERIMENTS / "runners" / "suite.py"),
+                 "--tasks", str(temporary), "--repeats", "1", "--box",
+                 "--only", "unrelated-weather", "--dry-run"], capture_output=True, text=True)
+        self.assertEqual(run.returncode, 0, run.stderr)
+        self.assertIn(f"BYPASS: {UNRELATED[0]}", run.stdout)
+        self.assertNotIn("Listings by advertised price", run.stdout)
+        self.assertEqual(tasks.read_bytes(), before)
 
     def test_the_box_and_a_strategy_flag_are_refused(self):
         run = subprocess.run(

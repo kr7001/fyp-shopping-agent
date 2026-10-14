@@ -45,6 +45,8 @@ class Vocabulary(unittest.TestCase):
             "filter op": lambda: Filter("price", "~", 20),
             "in without a tuple": lambda: Filter("seller", "in", "A"),
             "tuple without in": lambda: Filter("seller", "=", ("A",)),
+            "unknown with an objective": lambda: Form("unknown", "price"),
+            "none with a quantifier": lambda: Form("argmin", "none"),
         }.items():
             with self.subTest(fault=label):
                 with self.assertRaises(ValueError):
@@ -52,6 +54,7 @@ class Vocabulary(unittest.TestCase):
         # And the same values inside the vocabulary build.
         Form("topk", "price", k=3)
         Form("argmin", "attribute:delivery time")
+        Form("unknown", "none")
         Filter("seller", "in", ("A", "B"))
 
     def test_the_record_round_trips(self):
@@ -258,6 +261,56 @@ class NewForms(unittest.TestCase):
         self.assertEqual((parsed.quantifier, parsed.objective, parsed.population, parsed.kind()),
                          ("exists", "mention", "reviews", "depth_search"))
         self.assertEqual(parsed.filters, (Filter("review text", "contains", "leaks or arrives leaking"),))
+
+
+class Unknown(unittest.TestCase):
+    """A question with no shape and no shopping signal is unknown, and one with a signal
+    but no shape keeps the survey fallback and says so (14 October 2026, at the student's
+    request). The box bypasses the first and runs the second, see `test_box.Bypass`."""
+
+    UNRELATED = ("What is the weather in Singapore today?",
+                 "Write a short poem about shoes.",
+                 "Who founded the Thornwood brand and when?")
+
+    def test_an_unrelated_question_is_unknown(self):
+        for question in self.UNRELATED:
+            with self.subTest(question=question):
+                parsed = form.from_rules(question)
+                self.assertEqual((parsed.quantifier, parsed.objective, parsed.kind(),
+                                  parsed.filters, parsed.fallback),
+                                 ("unknown", "none", "unknown", (), False))
+                self.assertEqual(parsed.evidence["quantifier"], "no shape and no shopping signal")
+                self.assertEqual(form.verify(parsed), ["no plan exists for kind 'unknown'"])
+                self.assertEqual(form.not_shown(parsed), [])
+                self.assertEqual(form.from_record(parsed.record(), "rules"), parsed)
+
+    def test_a_shopping_question_with_no_shape_is_a_recorded_fallback(self):
+        parsed = form.from_rules("Tell me about the Thornwood tee listings.")
+        self.assertEqual((parsed.quantifier, parsed.kind(), parsed.fallback),
+                         ("aggregate", "survey", True))
+        self.assertEqual(parsed.evidence["fallback"],
+                         "no recognised quantifier, kept in the shop by a market word: listings")
+        # Each kind of signal on its own keeps a shapeless question in the shop. A review
+        # word is not here because it always gives a shape, the depth search.
+        for question, signal in ((f"Tell me about {RESULTS_URL}", "a URL"),
+                                 ("Tell me about the sellers.", "a market word: sellers"),
+                                 ("Tell me about the prices.", "a price word: prices"),
+                                 ("Tell me about the affordable ones.", "a price word: affordable"),
+                                 ("Tell me about the sizes.", "a variant word: sizes"),
+                                 ("Tell me what can be bought.", "an availability word: bought"),
+                                 ("Tell me about the warranty.", "an attribute word: warranty"),
+                                 ("Tell me about the one in white.", "a filter: colour")):
+            with self.subTest(question=question):
+                parsed = form.from_rules(question)
+                self.assertEqual((parsed.quantifier, parsed.fallback), ("aggregate", True))
+                self.assertIn(signal, parsed.evidence["fallback"])
+
+    def test_every_census_question_has_a_shape(self):
+        for _, question in census():
+            with self.subTest(question=question[:60]):
+                parsed = form.from_rules(question)
+                self.assertNotEqual(parsed.quantifier, "unknown")
+                self.assertFalse(parsed.fallback)
 
 
 class Shown(unittest.TestCase):
