@@ -14,6 +14,19 @@ import json
 import pathlib
 import re
 
+# Bumped when a rule changes a verdict or a kind of key is added. Recorded in every suite
+# payload as `scorer_version` since 14 October 2026; a batch without the field was scored
+# by version 1. Runs scored under different versions are compared only after a rescore.
+#
+#   1  The rules as they stood on 14 October 2026: price, contains, boolean, count,
+#      all_prices
+#   2  14 October 2026, for the box v2 batch. A yes-or-no key may name the witness a yes
+#      must name (`any`, `not_any` on a boolean). A "ranked" kind holds an answer to k
+#      sellers in order, each with its price. A "none" kind marks a question with no key,
+#      one the box is expected to ask on, refuse or bypass; its verdict is "unscored". No
+#      stored key uses any of the three, so no stored verdict changes
+VERSION = 2
+
 # Phrases that mean the agent declined rather than answered. Kept narrow on
 # purpose: "not" alone is far too broad, "could not determine" is not.
 ABSTENTION_MARKERS = (
@@ -84,6 +97,10 @@ def score(task: dict, answer: str, ok: bool) -> dict:
 
     if not ok or not answer.strip():
         return {"verdict": "failed", "why": "run did not produce an answer", "prices": found}
+    if kind == "none":
+        # No key. The box is expected to ask on, refuse or bypass this question; when a
+        # bypassed one runs, its answer is read by hand rather than judged here.
+        return {"verdict": "unscored", "why": "no answer key for this question", "prices": found}
     if abstained(answer):
         return {"verdict": "abstained", "why": "answer declined to commit", "prices": found}
 
@@ -140,6 +157,18 @@ def score(task: dict, answer: str, ok: bool) -> dict:
             says_no = has_marker(low, NEGATIVE_MARKERS)
             says_yes = has_marker(low, POSITIVE_MARKERS) and not says_no
         if says_no == (not wants_yes) and (says_no or says_yes):
+            if says_yes and expect.get("any"):
+                # "Name the seller if yes": a yes owes its witness. A yes that names an
+                # excluded seller instead, the sold-out or absent-size trap, is wrong; one
+                # that names nobody has not finished answering.
+                hit = any(token.lower() in low for token in expect["any"])
+                bad = any(token.lower() in low for token in expect.get("not_any", []))
+                if not hit and bad:
+                    return {"verdict": "wrong", "why": "answered yes naming an excluded seller",
+                            "prices": found}
+                if not hit:
+                    return {"verdict": "ambiguous", "why": "answered yes but named no seller",
+                            "prices": found}
             return {"verdict": "correct", "why": f"answered {'no' if says_no else 'yes'}",
                     "prices": found}
         if not says_no and not says_yes:
@@ -174,4 +203,71 @@ def score(task: dict, answer: str, ok: bool) -> dict:
             return {"verdict": "correct", "why": "listed every price", "prices": found}
         return {"verdict": "wrong", "why": f"missing {missing}", "prices": found}
 
+    if kind == "ranked":
+        return ranked(expect, answer, found)
+
     raise ValueError(f"unknown expect kind: {kind}")
+
+
+def mentions_of(low: str, items: list[dict]) -> list[tuple[int, int]]:
+    """Where the ranked sellers are named: (position, item index), every occurrence."""
+    found = []
+    for index, item in enumerate(items):
+        for token in item["any"]:
+            found += [(m.start(), index) for m in re.finditer(re.escape(token.lower()), low)]
+    return sorted(found)
+
+
+def ranked(expect: dict, answer: str, found: list[float]) -> dict:
+    """The k sellers in order, each with its price. Written 14 October 2026 for the top-k
+    and named-comparison questions of the box v2 batch.
+
+    A seller's price is read from the text between its neighbouring seller mentions, so
+    "Alderney $25.77, Elmsworth $28.96" and "$25.77 from Alderney, $28.96 from Elmsworth"
+    both give each seller its own price. A seller named more than once is stood for by the
+    mention beside its expected price, so an answer that narrates the listings it opened
+    before ranking them is read by its ranking. A seller named without any price nearby is
+    not scored wrong but leaves the answer ambiguous; one whose nearby price is another
+    figure is wrong, which also catches a neighbour's price given in place of its own.
+
+    An item marked optional need not be named, but when it is named with a price the price
+    must be its own: the loser of a comparison quoted at its advertised price is a wrong
+    answer, however the winner is reported. Not caught: an extra seller ranked ahead of the
+    expected ones, which the verifier reads for (LESSONS 4).
+    """
+    low = answer.lower()
+    items = expect["items"]
+    mentions = mentions_of(low, items)
+    cuts = [position for position, _ in mentions]
+
+    def nearby(position: int) -> list[float]:
+        before = max([c for c in cuts if c < position], default=0)
+        after = min([c for c in cuts if c > position], default=len(low))
+        return prices_in(low[before:after])
+
+    chosen, unpriced = [], []
+    for index, item in enumerate(items):
+        name = item["any"][0]
+        own = [position for position, i in mentions if i == index]
+        if not own:
+            if item.get("optional"):
+                continue
+            return {"verdict": "wrong", "why": f"expected seller {name} not named", "prices": found}
+        position = next((p for p in own if item["price"] in nearby(p)), own[0])
+        prices = nearby(position)
+        if item["price"] not in prices:
+            if prices:
+                return {"verdict": "wrong",
+                        "why": f"{name} priced at {prices[0]}, expected {item['price']}",
+                        "prices": found}
+            if not item.get("optional"):
+                unpriced.append(name)
+        if not item.get("optional"):
+            chosen.append(position)
+    if chosen != sorted(chosen):
+        return {"verdict": "wrong", "why": "sellers named out of order", "prices": found}
+    if unpriced:
+        return {"verdict": "ambiguous", "why": f"no price given for {', '.join(unpriced)}",
+                "prices": found}
+    return {"verdict": "correct", "why": "named every seller in order with its price",
+            "prices": found}

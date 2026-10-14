@@ -1,0 +1,21 @@
+{
+  "_about": [
+    "Written by env/generate_apparel_v2_tasks.py from experiments/tasks/readings_apparel.json:",
+    "the scripted user's second reading of the two ambiguous clothing questions, copied",
+    "for the questions tasks_apparel_v2.json carries over unchanged. Do not hand edit.",
+    "The new questions in that file are clear, or are asks no reading answers (a price",
+    "word with no figure), so none has a second reading."
+  ],
+  "readings": {
+    "buyable": {
+      "apparel-count-stocked": {
+        "kind": "count",
+        "value": 5
+      },
+      "apparel-all-stocked": {
+        "kind": "boolean",
+        "value": false
+      }
+    }
+  }
+}

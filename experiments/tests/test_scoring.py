@@ -62,6 +62,83 @@ class BooleanRule(unittest.TestCase):
         answer = "Yes, every listing has it, though one is not available in black."
         self.assertEqual(verdict({"kind": "boolean", "value": True}, answer), "correct")
 
+    def test_a_yes_that_must_name_its_witness(self):
+        # "Name the seller if yes" (the box v2 batch, 14 Oct 2026): the witness named is
+        # correct, an excluded seller instead is wrong, nobody named is unfinished.
+        expect = {"kind": "boolean", "value": True, "any": ["Harbour"], "not_any": ["Quiet"]}
+        self.assertEqual(verdict(expect, "Yes. Harbour Lane has size M at $12.15."), "correct")
+        self.assertEqual(verdict(expect, "Yes, Quiet Oak at $9.15, though its M is sold out."), "wrong")
+        self.assertEqual(verdict(expect, "Yes."), "ambiguous")
+        # A no is judged as before, whoever it names, and so is a key without names.
+        self.assertEqual(verdict(expect, "No. Quiet Oak is the cheapest and is sold out."), "wrong")
+        self.assertEqual(verdict({**expect, "value": False}, "No. Quiet Oak is sold out."), "correct")
+        self.assertEqual(verdict({"kind": "boolean", "value": True}, "Yes."), "correct")
+
+
+class RankedRule(unittest.TestCase):
+    """The ranked kind (14 Oct 2026): k sellers in order, each with its own price."""
+
+    TOP3 = {"kind": "ranked", "items": [{"any": ["Harbour Lane"], "price": 12.15},
+                                        {"any": ["Mellow Fields"], "price": 13.15},
+                                        {"any": ["Quiet Oak"], "price": 14.15}]}
+    PAIR = {"kind": "ranked", "items": [{"any": ["Mellow Fields"], "price": 13.15},
+                                        {"any": ["Harbour Lane"], "price": 15.15, "optional": True}]}
+
+    def test_the_right_ranking_in_different_wordings(self):
+        for answer in (
+            "1. Harbour Lane at $12.15, 2. Mellow Fields at $13.15, 3. Quiet Oak at $14.15. "
+            "I opened six listings and checked M was available in each.",
+            "The three cheapest are Harbour Lane ($12.15), Mellow Fields ($13.15) and Quiet Oak "
+            "($14.15); I skipped nine listings advertised at or above $14.15.",
+            "$12.15 from Harbour Lane, $13.15 from Mellow Fields, $14.15 from Quiet Oak.",
+            # The listings opened are narrated first, in another order; the ranking decides.
+            "I opened Quiet Oak, Mellow Fields, Harbour Lane and three others. Cheapest "
+            "three with M available: Harbour Lane $12.15, Mellow Fields $13.15, Quiet Oak $14.15.",
+            "Harbour Lane\n$12.15\nMellow Fields\n$13.15\nQuiet Oak\n$14.15",
+        ):
+            with self.subTest(answer=answer[:50]):
+                self.assertEqual(verdict(self.TOP3, answer), "correct")
+
+    def test_a_wrong_order_a_missing_seller_and_a_wrong_price_fire(self):
+        cases = {
+            "Mellow Fields $13.15, Harbour Lane $12.15, Quiet Oak $14.15.": "wrong",
+            "Harbour Lane $12.15 and Quiet Oak $14.15.": "wrong",
+            "Harbour Lane $12.15, Mellow Fields $11.15, Quiet Oak $14.15.": "wrong",
+            # Two sellers' prices swapped, and a neighbour's price given for a seller's own.
+            "Harbour Lane $13.15, Mellow Fields $12.15, Quiet Oak $14.15.": "wrong",
+            "Harbour Lane $12.15, Mellow Fields, Quiet Oak $14.15.": "wrong",
+            # The right sellers in the right order and no prices at all: unfinished.
+            "Harbour Lane, Mellow Fields, Quiet Oak.": "ambiguous",
+        }
+        for answer, expected in cases.items():
+            with self.subTest(answer=answer):
+                self.assertEqual(verdict(self.TOP3, answer), expected)
+
+    def test_a_comparison_holds_the_optional_loser_to_its_own_price(self):
+        for answer in ("Mellow Fields is cheaper for size M, at $13.15.",
+                       "Between Harbour Lane and Mellow Fields, Mellow Fields is cheaper at "
+                       "$13.15; Harbour Lane charges $15.15 for M.",
+                       "Mellow Fields: $13.15. Harbour Lane: $15.15. So Mellow Fields."):
+            with self.subTest(answer=answer[:50]):
+                self.assertEqual(verdict(self.PAIR, answer), "correct")
+        # The loser quoted at its advertised price, which the results page shows and the
+        # size menu does not, and the winner never named.
+        self.assertEqual(verdict(self.PAIR, "Harbour Lane is cheaper at $10.15 versus Mellow "
+                                            "Fields at $13.15."), "wrong")
+        self.assertEqual(verdict(self.PAIR, "Harbour Lane, at $10.15."), "wrong")
+
+
+class NoKey(unittest.TestCase):
+    """The none kind (14 Oct 2026): a question the box is expected to ask on, refuse or
+    bypass has no key, and an answer to it is unscored rather than wrong or abstained."""
+
+    def test_an_answer_is_unscored_and_a_failed_run_still_fails(self):
+        self.assertEqual(verdict({"kind": "none"}, "Lisbon."), "unscored")
+        self.assertEqual(verdict({"kind": "none"}, "I could not determine this."), "unscored")
+        self.assertEqual(score.score({"expect": {"kind": "none"}}, "", False)["verdict"], "failed")
+        # Any other kind is still judged.
+        self.assertEqual(verdict({"kind": "contains", "any": ["Lisbon"]}, "Lisbon."), "correct")
+
 
 class Abstention(unittest.TestCase):
     def test_the_gate_refusal_scores_as_abstained(self):
