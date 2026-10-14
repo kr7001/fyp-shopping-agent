@@ -116,8 +116,14 @@ def page_floor(question: str, page, answer: str) -> int | None:
     named = scoring.prices_in(answer)
     if not named:
         return len(page.listings)
-    # Within half a cent: the page's price is a float and the answer's is parsed text.
-    return max(1, sum(1 for item in page.listings if item.advertised <= named[0] + 0.005))
+    return at_or_below(page, named[0])
+
+
+def at_or_below(page, price: float, at_least: int = 1) -> int:
+    """How many listings the page advertises at or below a price: the ones a bound cannot
+    rule out, so each had to be opened. Within half a cent, because the page's price is a
+    float and the answer's is parsed text. Shared with box v2's primitives (14 Oct 2026)."""
+    return max(at_least, sum(1 for item in page.listings if item.advertised <= price + 0.005))
 
 
 def gate_from_page(question: str, page, answer: str, log_path: pathlib.Path) -> dict:

@@ -69,6 +69,13 @@ QUANTIFIERS = {
     "depth_search": "existential",
     "survey": "enumerate",
     "results_page": "argmin",
+    # Box v2's kinds, 14 October 2026, whose text lives in `primitives.py` rather than in
+    # `targeting.py`. They share these tables so one source states what each plan rests on.
+    # `plan` never produces them, since `targeting.classify` cannot, so no v1 plan changed.
+    "exists_price": "existential",
+    "topk_price": "argmin",
+    "named_lookup": "enumerate",
+    "argmax_price": "argmin",
 }
 
 # Which bound may be used to skip a member of the population, and why it is valid.
@@ -94,6 +101,20 @@ BOUNDS = {
     "depth_search": None,
     "survey": None,
     "results_page": None,
+    "exists_price": {
+        "field": "advertised price",
+        "valid_because": "the advertised price is the cheapest option that listing can "
+                         "sell, so a listing advertised above the limit cannot meet it",
+    },
+    "topk_price": {
+        "field": "advertised price",
+        "valid_because": "the advertised price is the cheapest option that listing can "
+                         "actually sell, so nothing buyable inside it can cost less",
+    },
+    "named_lookup": None,
+    # The advertised price is a lower bound, and nothing a lower bound says rules a
+    # listing out of being the dearest.
+    "argmax_price": None,
 }
 
 # What the answer has to be able to show, in the same vocabulary the sufficiency rules use.
@@ -126,6 +147,20 @@ EVIDENCE = {
     "results_page": {"min_listings_opened": 0,
                      "counterexample": False,
                      "enforced_by": []},
+    # Box v2's kinds are enforced by the primitive's own check (`primitives.check`).
+    "exists_price": {"min_listings_opened": 1,
+                     "counterexample": False,
+                     "witness": True,
+                     "enforced_by": ["primitives.Witness"]},
+    "topk_price": {"min_listings_opened": "oracle_floor",
+                   "counterexample": False,
+                   "enforced_by": ["primitives.BoundPrune"]},
+    "named_lookup": {"min_listings_opened": "population",
+                     "counterexample": False,
+                     "enforced_by": ["primitives.Lookup"]},
+    "argmax_price": {"min_listings_opened": "population",
+                     "counterexample": False,
+                     "enforced_by": ["primitives.BoundPrune"]},
 }
 
 # A figure produced by a bound is a device for deciding what to skip. It is not a price, and
@@ -169,6 +204,13 @@ STOP_RULES = {
     "depth_search": "at the first review that mentions it, or not before the last page",
     "survey": "when every enumerated listing has been opened",
     "results_page": "once every listing on the results page has been read",
+    "exists_price": "at the first listing whose option is available at or below the limit, "
+                    "or when every listing advertised at or below the limit has been opened",
+    "topk_price": "when the {k} cheapest available totals are held and no unopened listing "
+                  "advertises below the dearest of them",
+    "named_lookup": "when every named listing has been opened",
+    "argmax_price": "when every listing has been opened, since the advertised price bounds "
+                    "nothing from above",
 }
 
 
@@ -187,12 +229,18 @@ def verify(plan_obj: dict) -> list[str]:
     being compared is on the results page, as it is for the control question. Both are now
     conditional, and both conditions are stated in the plan rather than inferred.
     """
-    problems = []
     kind = plan_obj.get("kind")
     if kind not in targeting.STRATEGIES:
-        problems.append(f"no strategy text exists for kind {kind!r}")
-        return problems
+        return [f"no strategy text exists for kind {kind!r}"]
+    return properties(plan_obj)
 
+
+def properties(plan_obj: dict) -> list[str]:
+    """The four soundness properties alone, for a plan whose text comes from somewhere other
+    than `targeting.py`: box v2 composes its text from `primitives.py` and holds the plan to
+    these through `form.verify` (14 October 2026). `verify` is these plus the check that v1
+    text exists, so nothing a v1 caller sees has changed."""
+    problems = []
     evidence = plan_obj.get("evidence_required") or {}
     quantifier = plan_obj.get("quantifier")
     gated = plan_obj.get("evidence_source", "listing pages") == "listing pages"
