@@ -4175,7 +4175,7 @@ window.SITE = {
    },
    {
     "title": "Questions the box cannot classify",
-    "html": "<p>Added on 14 October at the student's request. A question with no recognised shape and no shopping signal at all (the signals are listed in <code>form.SIGNALS</code>: a listing or product URL, a market word, a price or cheapest word, a size or variant word, an availability word, a review word, a filter) is a <strong>bypass</strong>: the box hands it to the agent unchanged, with no plan and no preamble, and records that it did. A shopping question whose attribute this shop does not show is <strong>pushed back</strong>: the box says what the shop does not show and what it does, and nothing runs. A shopping question with a signal but no recognised quantifier keeps v1's fallback plan and records that it was a fallback. Every batch counts its asked, refused, bypassed and fallback runs, so the rate at which questions get past the box is a measured property, and the bypassed runs are the baseline agent on those questions. A bypassed question names no shop page, so before any batch contains one the browser is confined to the shop (<code>--allowed-origins http://localhost:7770</code>), recorded as a condition: the project never lets an agent onto a live site.</p>"
+    "html": "<p>Added on 14 October at the student's request. A question with no recognised shape and no shopping signal at all (the signals are listed in <code>form.SIGNALS</code>: a listing or product URL, a market word, a price or cheapest word, a size or variant word, an availability word, a review word, a filter) is a <strong>bypass</strong>: the box hands it to the agent unchanged, with no plan and no preamble, and records that it did. A shopping question whose attribute this shop does not show is <strong>pushed back</strong>: the box says what the shop does not show and what it does, and nothing runs. A shopping question with a signal but no recognised quantifier keeps v1's fallback plan and records that it was a fallback. Every batch counts its asked, refused, bypassed and fallback runs, so the rate at which questions get past the box is a measured property, and the bypassed runs are the baseline agent on those questions. A bypassed question names no shop page, so openJiuwen's browser is confined to the shop (<code>--allowed-origins http://localhost:7770</code>, since commit <code>6ccadab</code>), recorded in every batch as a condition: the project never lets an agent onto a live site. The second agent drives its own browser and is not yet confined, so bypassed questions do not run under it.</p>"
    },
    {
     "title": "What stays from v1",
@@ -4312,6 +4312,7 @@ window.SITE = {
        "a shopping question with no shape runs as a recorded fallback",
        "a pushed back question keeps its refusal",
        "a shopping question with no page is an error not a bypass",
+       "who sells is a fallback not a bypass",
        "the clothing questions and the census are neither"
       ]
      },
@@ -4356,7 +4357,15 @@ window.SITE = {
        "a count without the whole page is refused",
        "a count over the whole page passes",
        "the floor is the listings advertised below the price named plus its own",
-       "a tie at the price named is counted once"
+       "a tie at the price named is counted once",
+       "the extra one is for the answers own listing"
+      ]
+     },
+     {
+      "name": "NamedIn",
+      "doc": "The listings an answer names, as whole names (verifier finding, 14 Oct 2026: the\nsubstring \"seller a\" was found inside \"seller and\").",
+      "tests": [
+       "a name counts only as a whole"
       ]
      },
      {
@@ -4388,7 +4397,8 @@ window.SITE = {
        "the batch counts what the box did",
        "the dry run prints bypass for an unrelated question",
        "the box and a strategy flag are refused",
-       "the browser tool is pinned and the user agent defined once"
+       "the browser tool is pinned and the user agent defined once",
+       "the browser may request only the shop on the gated shop"
       ]
      },
      {
@@ -4539,7 +4549,8 @@ window.SITE = {
       "tests": [
        "an unrelated question is unknown",
        "a shopping question with no shape is a recorded fallback",
-       "every census question has a shape"
+       "every census question has a shape",
+       "sell is a market word"
       ]
      },
      {
@@ -4577,6 +4588,7 @@ window.SITE = {
       "tests": [
        "witness",
        "witness named without a yes",
+       "witness reads a denial however it starts",
        "bound and prune for the k cheapest",
        "bound and prune for the cheapest and the dearest",
        "lookup",
@@ -4658,7 +4670,8 @@ window.SITE = {
        "a filter only the model states is still a difference",
        "a filter the words chose has to be there",
        "the shape has to match",
-       "comparable"
+       "comparable",
+       "an in filters values compare as a set"
       ]
      },
      {
@@ -4676,6 +4689,8 @@ window.SITE = {
        "a failed call is recorded and the probe goes on",
        "no failure counts none",
        "a reply that is not a form is a model problem not a failed call",
+       "a reply without a completion is a failed call that keeps its charge",
+       "a body that is not json is a failed call through the real call",
        "the file is written when something else stops the loop",
        "the file says which commit and form version made it",
        "the rules see the page the question names"
@@ -4852,10 +4867,10 @@ window.SITE = {
   "source": "README decision log, 8 October 2026"
  },
  "built": {
-  "commit": "683d85a",
+  "commit": "6ccadab",
   "date": "2026-10-14",
   "branch": "dev",
-  "dirty": false,
+  "dirty": true,
   "repo": "https://github.com/kr7001/fyp-shopping-agent",
   "agent_core": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
   "commits_by_week": {
@@ -4863,7 +4878,7 @@ window.SITE = {
    "2026-09-07": 44,
    "2026-09-14": 49,
    "2026-10-05": 45,
-   "2026-10-12": 22
+   "2026-10-12": 24
   }
  }
 };

@@ -126,9 +126,10 @@ runs. A shopping question with a signal but no recognised quantifier keeps v1's 
 and records that it was a fallback. Every batch counts its asked, refused, bypassed and
 fallback runs, so the rate at which questions get past the box is a measured property, and
 the bypassed runs are the baseline agent on those questions. A bypassed question names no
-shop page, so before any batch contains one the browser is confined to the shop
-(`--allowed-origins http://localhost:7770`), recorded as a condition: the project never lets an
-agent onto a live site.
+shop page, so openJiuwen's browser is confined to the shop (`--allowed-origins
+http://localhost:7770`, since commit `6ccadab`), recorded in every batch as a condition: the
+project never lets an agent onto a live site. The second agent drives its own browser and is
+not yet confined, so bypassed questions do not run under it.
 
 ## What stays from v1
 
