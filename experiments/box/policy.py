@@ -104,9 +104,9 @@ def gate(task: dict, spec: dict, answer: str, log_path: pathlib.Path) -> dict:
 def page_floor(question: str, page, answer: str) -> int | None:
     """The fewest listings a sound answer to this question had to open, from the page.
 
-    For the best of a market: every listing advertised at or below the price the answer
-    names could have beaten it, so each had to be opened, and the one named is among them,
-    so at least one. An answer that names no price gets no benefit of the doubt and owes
+    For the best of a market: every listing advertised below the price the answer names
+    could have beaten it, so each had to be opened, and so had the one named, see
+    `bound_floor`. An answer that names no price gets no benefit of the doubt and owes
     the whole page. Any other question has no floor of this kind: a count needs the
     population, which `sufficiency.check` applies on its own, and a universal needs one
     counterexample.
@@ -116,13 +116,45 @@ def page_floor(question: str, page, answer: str) -> int | None:
     named = scoring.prices_in(answer)
     if not named:
         return len(page.listings)
-    return at_or_below(page, named[0])
+    return bound_floor(page, named[0])
+
+
+def bound_floor(page, price: float) -> int:
+    """The fewest listings a run that followed a bound strategy opened before answering
+    `price`: every listing advertised strictly below it, plus one for the answer's own
+    listing when a listing is advertised at exactly that price.
+
+    The bound texts say to skip every unopened listing advertised "at or above" the best
+    total found. A run that follows them opens the listings advertised below its answer
+    and the answer's own listing, and skips one advertised at the same price, which cannot
+    beat it. Until 14 October 2026 the floor was every listing advertised at or below the
+    answer, which on a market with two listings advertised at the answer's price refused a
+    run that had done exactly what it was told (verifier finding, reproduced on a synthetic
+    tie page: opened 3, floor 4).
+
+    The answer's own listing is advertised at or below the price it answers, since the
+    card shows a listing's cheapest option. So it is already among the strictly-below
+    listings unless it is advertised at exactly that price, and the one is added only
+    then. Adding it always would refuse a run whose answer no card advertises, the usual
+    case for a size dearer than its listing's "from" price: on Thornwood an answer of
+    Copperfield's $29.66 for size M has twelve listings advertised below it, Copperfield's
+    own $23.40 among them, and a run that followed the text opens those twelve.
+
+    On a market whose advertised prices are distinct the figure equals the old one for
+    every answer, so the pilot and the replays stand; `tests/test_box.py` checks that over
+    every stored clothing batch. Within half a cent, because the page's price is a float
+    and the answer's is parsed text. At least one, the listing the answer came from.
+    """
+    below = sum(1 for item in page.listings if item.advertised < price - 0.005)
+    at_the_price = any(abs(item.advertised - price) <= 0.005 for item in page.listings)
+    return max(1, below + int(at_the_price))
 
 
 def at_or_below(page, price: float, at_least: int = 1) -> int:
-    """How many listings the page advertises at or below a price: the ones a bound cannot
-    rule out, so each had to be opened. Within half a cent, because the page's price is a
-    float and the answer's is parsed text. Shared with box v2's primitives (14 Oct 2026)."""
+    """How many listings the page advertises at or below a price: under a limit, the ones
+    the limit does not rule out, so each had to be opened before a no. Within half a cent,
+    because the page's price is a float and the answer's is parsed text. Used by box v2's
+    witness check (14 Oct 2026); the floor under an answered price is `bound_floor`."""
     return max(at_least, sum(1 for item in page.listings if item.advertised <= price + 0.005))
 
 

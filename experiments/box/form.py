@@ -44,7 +44,9 @@ import targeting
 #
 #   1  14 October 2026. The record, the rules parser, the five-property check and the
 #      model parser's prompt
-VERSION = 1
+#   2  14 October 2026. A count before "sellers" or "listings" with "cheapest" anywhere is
+#      a top-k, so "which three sellers offer size M cheapest" keeps its k
+VERSION = 2
 
 # The vocabulary. A form outside it is refused when it is built, so a model's reply cannot
 # smuggle in a quantifier nothing knows how to plan.
@@ -297,6 +299,13 @@ NUMBER_WORDS = {w: i for i, w in enumerate(
 COUNT_WORD = r"(?:two|three|four|five|six|seven|eight|nine|ten|\d{1,2})"
 TOPK = re.compile(rf"\b(?:(?P<before>{COUNT_WORD})\s+cheapest|cheapest\s+(?P<after>{COUNT_WORD})"
                   rf"|top\s+(?P<top>{COUNT_WORD}))\b", re.IGNORECASE)
+# "Which three sellers offer size M cheapest?" parsed as the single cheapest until
+# 14 October 2026 (verifier finding): the count sits before "sellers" or "listings" and
+# the superlative anywhere else, so this is read only when `targeting.CHEAPEST` matches
+# too. "Of the three listings, which is cheapest" names a population, not a k, so a count
+# after "the", "these" or "those" is not one.
+TOPK_COUNT = re.compile(rf"\b(?<!\bthe\s)(?<!\bthese\s)(?<!\bthose\s)(?P<count>{COUNT_WORD})"
+                        r"\s+(?:sellers?|listings?)\b", re.IGNORECASE)
 # An existence question. "anyone" in "the lowest price anyone charges" is a superlative, so
 # `targeting.CHEAPEST` is checked first and wins.
 EXISTS = re.compile(r"\b(?:is|are)\s+there\s+(?:any|a|an|one)\b"
@@ -487,8 +496,10 @@ def shape_of(question: str, filters: list[Filter], named: Filter | None,
         evidence["objective"] = found.group(2)
         return "forall", "availability", None
     found = TOPK.search(question)
+    if not found and targeting.CHEAPEST.search(question):
+        found = TOPK_COUNT.search(question)
     if found:
-        k = number(found.group("before") or found.group("after") or found.group("top"))
+        k = number(next(word for word in found.groups() if word))
         if k >= 2:
             chosen("quantifier", found)
             chosen("objective", found)
