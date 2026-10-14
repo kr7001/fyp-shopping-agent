@@ -950,6 +950,21 @@ class SuiteQuery(unittest.TestCase):
         self.assertEqual(run.returncode, 2)
         self.assertIn("--box cannot be combined with --targeting or --exhaustive", run.stderr)
 
+    def test_an_unknown_task_id_in_only_is_refused_by_name(self):
+        # Verifier finding, 14 Oct 2026, at 7d2ec2e: an id that named no task was dropped
+        # without a word, so a misspelt --only ran the rest as if nothing were missing.
+        command = [sys.executable, str(paths.EXPERIMENTS / "runners" / "suite.py"),
+                   "--tasks", str(paths.TASKS / "tasks_apparel.json"), "--repeats", "1",
+                   "--dry-run", "--only", "apparel-headline"]
+        run = subprocess.run(command + ["apparel-headlnie"], capture_output=True, text=True)
+        self.assertEqual(run.returncode, 2)
+        self.assertIn("apparel-headlnie", run.stderr)
+        self.assertNotIn("Go to", run.stdout)
+        # The same list without the misspelling runs as before.
+        run = subprocess.run(command, capture_output=True, text=True)
+        self.assertEqual(run.returncode, 0, run.stderr)
+        self.assertIn("1 tasks x 1 repeats = 1 runs", run.stdout)
+
     def test_the_box_and_the_naive_scaffold_are_refused_until_its_browser_is_confined(self):
         # The naive loop launches its own browser with a user agent and nothing else
         # (`naive_agent.py`), so a question the box bypasses could take it off the shop.
