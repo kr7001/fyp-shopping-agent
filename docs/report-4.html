@@ -10,70 +10,55 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap">
 <link rel="stylesheet" href="site.css">
 <style>
-  /* Report-only styling on top of the site's tokens: a key-findings strip, callouts,
-     coloured chips in the tables, three coloured cards for the significance, a timeline. */
-  :root { --chip-accent-bg: var(--accent-soft); --chip-accent: var(--accent-ink); }
-  .report { max-width: 1120px; margin: 0 auto; padding: 28px 20px 96px; }
+  /* Report-only styling on top of the site's tokens. One accent colour; green and red only
+     on verdicts; long text folded into collapsibles; tables wrap instead of scrolling. */
+  .report { max-width: 1080px; margin: 0 auto; padding: 28px 20px 96px; }
   .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; font-family: var(--sans); font-size: 13.5px; }
   .toc a { border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; color: var(--muted); text-decoration: none; background: var(--surface); }
   .toc a:hover { color: var(--ink); border-color: var(--ink); }
-  h2.part { margin-top: 44px; font-size: 26px; padding-left: 14px; border-left: 5px solid var(--accent); }
-  h2.part.two { border-color: var(--info); }
-  h2.part.three { border-color: var(--warn); }
+  h2.part { margin-top: 44px; font-size: 26px; padding-bottom: 8px; border-bottom: 2px solid var(--line-strong); }
 
-  .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 18px; }
-  .key { border-radius: 10px; padding: 16px 16px 14px; font-family: var(--sans); border: 1px solid var(--line); border-top: 5px solid var(--line-strong); background: var(--surface); box-shadow: var(--shadow); }
-  .key b { display: block; font-size: 30px; font-weight: 600; letter-spacing: -0.02em; margin: 6px 0 4px; font-variant-numeric: tabular-nums; }
+  .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-top: 18px; }
+  .key { border-radius: 10px; padding: 16px 16px 14px; font-family: var(--sans); border: 1px solid var(--line); border-top: 3px solid var(--accent); background: var(--surface); }
+  .key b { display: block; font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin: 6px 0 4px; color: var(--accent-ink); font-variant-numeric: tabular-nums; }
   .key p { margin: 0; font-size: 13.5px; color: var(--muted); line-height: 1.45; }
-  .key.bad { border-top-color: var(--bad); } .key.bad b { color: var(--bad); }
-  .key.good { border-top-color: var(--good); } .key.good b { color: var(--good); }
-  .key.warn { border-top-color: var(--warn); } .key.warn b { color: var(--warn); }
-  .key.info { border-top-color: var(--info); } .key.info b { color: var(--info); }
-  .key.accent { border-top-color: var(--accent); background: var(--accent-soft); } .key.accent b { color: var(--accent-ink); }
 
-  .callout { border-radius: 9px; padding: 14px 18px; margin-top: 16px; border-left: 5px solid var(--accent); background: var(--accent-soft); font-size: 15.5px; }
-  .callout.good { border-color: var(--good); background: var(--good-soft); }
-  .callout.warn { border-color: var(--warn); background: var(--warn-soft); }
-  .callout.bad { border-color: var(--bad); background: var(--bad-soft); }
-  .callout.info { border-color: var(--info); background: var(--info-soft); }
+  .callout { border-radius: 9px; padding: 14px 18px; margin-top: 16px; border-left: 4px solid var(--accent); background: var(--surface-2); font-size: 15.5px; }
   .callout .eyebrow { display: block; margin-bottom: 4px; }
 
-  .chip.accent { background: var(--chip-accent-bg); color: var(--chip-accent); border-color: transparent; }
-  .chip.good, .chip.bad, .chip.warn, .chip.info, .chip.accent { font-size: 12px; padding: 4px 9px; }
-  table.striped tbody tr:nth-child(even) td { background: var(--surface-2); }
+  table.fit { table-layout: fixed; width: 100%; margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  table.fit th, table.fit td { overflow-wrap: anywhere; white-space: normal; vertical-align: top; }
+  table.fit th.num, table.fit td.num { text-align: right; white-space: nowrap; }
+  table.fit tbody tr:nth-child(even) td { background: var(--surface-2); }
+  table.fit td .sub.mono { font-family: var(--mono); font-size: 11.5px; }
   tr.hl-row td { background: var(--accent-soft) !important; }
-  td.small { font-size: 12.5px; }
-  .track i.bad { background: var(--bad); } .track i.good { background: var(--good); } .track i.warn { background: var(--warn); } .track i.info { background: var(--info); } .track i.accent { background: var(--accent); }
-  .track i.dim { opacity: .55; }
+  code.pat { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11.5px; padding: 8px 10px; margin-top: 4px; }
+  td details { margin-top: 6px; border: 0; background: transparent; }
+  td details > summary { padding: 0; font-size: 12.5px; color: var(--muted); font-weight: 500; }
+  td details[open] > summary { border: 0; margin-bottom: 4px; }
+  td details > div { padding: 0; }
 
-  .cards3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-top: 16px; }
-  .sigcard { border-radius: 10px; padding: 16px 18px; border: 1px solid var(--line); border-top: 5px solid var(--line-strong); background: var(--surface); }
+  .sigcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; margin-top: 16px; }
+  .sigcard { border-radius: 10px; padding: 16px 18px; border: 1px solid var(--line); background: var(--surface-2); font-size: 15px; }
   .sigcard h3 { margin: 6px 0 10px; font-size: 17px; }
-  .sigcard ul { margin: 0; padding-left: 18px; font-size: 14.5px; }
-  .sigcard li + li { margin-top: 8px; }
-  .sigcard.info { border-top-color: var(--info); } .sigcard.warn { border-top-color: var(--warn); } .sigcard.accent { border-top-color: var(--accent); background: var(--accent-soft); } .sigcard.good { border-top-color: var(--good); } .sigcard.bad { border-top-color: var(--bad); }
+  .sigcard details { margin-top: 10px; }
+  .sigcard details > summary { font-size: 13.5px; }
+  .sigcard p + p { margin-top: 10px; }
 
-  .stat.good { border-color: var(--good); background: var(--good-soft); } .stat.good b { color: var(--good); }
-  .stat.warn { border-color: var(--warn); background: var(--warn-soft); } .stat.warn b { color: var(--warn); }
-  .stat.bad { border-color: var(--bad); background: var(--bad-soft); } .stat.bad b { color: var(--bad); }
+  .moves { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 16px; }
+  .move { border-radius: 10px; padding: 14px 16px; border: 1px solid var(--line); background: var(--surface-2); font-size: 14.5px; }
+  .move b { display: block; font-family: var(--sans); font-size: 15px; margin-bottom: 4px; }
 
   .arch-node { text-align: left; cursor: pointer; font: inherit; color: inherit; }
   .arch-node[aria-pressed="true"] { outline: 3px solid var(--accent); }
-  .node.warn { border-color: var(--warn); background: var(--warn-soft); }
   .arch-detail { margin-top: 12px; }
   pre.wrap { white-space: pre-wrap; padding: 12px 14px; }
-  blockquote { margin: 8px 0 0; padding: 10px 14px; border-left: 3px solid var(--accent); background: var(--surface-2); border-radius: 6px; }
+  blockquote { margin: 8px 0 0; padding: 10px 14px; border-left: 3px solid var(--line-strong); background: var(--surface-2); border-radius: 6px; }
 
-  .steps3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 16px; }
-  .step3 { border-radius: 10px; padding: 14px 16px; border: 1px solid var(--line); background: var(--surface-2); font-family: var(--sans); font-size: 14px; }
-  .step3 b { display: block; font-size: 15px; margin-bottom: 4px; }
-  .step3.plan { border-color: var(--accent); } .step3.ask { border-color: var(--warn); } .step3.check { border-color: var(--info); }
-
-  .timeline3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 16px; }
-  .tl { border-radius: 10px; padding: 16px 18px; border: 1px solid var(--line); border-top: 5px solid var(--line-strong); background: var(--surface); }
-  .tl h3 { font-size: 16px; margin-bottom: 8px; }
-  .tl ul { margin: 0; padding-left: 18px; font-size: 14.5px; } .tl li + li { margin-top: 6px; }
-  .tl.a { border-top-color: var(--accent); } .tl.b { border-top-color: var(--info); } .tl.c { border-top-color: var(--warn); }
+  .next { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 16px; }
+  .next div { border-radius: 10px; padding: 16px 18px; border: 1px solid var(--line); background: var(--surface); }
+  .next h3 { font-size: 16px; margin-bottom: 8px; }
+  .next ul { margin: 0; padding-left: 18px; font-size: 14.5px; } .next li + li { margin-top: 6px; }
 </style>
 <script>try { var t = localStorage.getItem('igr-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
 </head>
@@ -83,7 +68,7 @@
 <div class="page-head">
   <span class="eyebrow">Final year project · NUS Data Science and Analytics · progress report 4 · 14 October 2026</span>
   <h1>Shopping agents under interaction-gated information</h1>
-  <p class="lede">Since the update of 7 October: three more tests on the clothing market, the first run of the pre-processing block, the research that shaped its second version, and what was verified. Every figure on this page is generated from the run files (built <span data-f="built"></span>).</p>
+  <p class="lede">What happened since the update of 7 October: three more tests on the clothing market, the first run of the pre-processing block, the research that shaped its second version, and what was verified. The figures on this page are generated from the run files (built <span data-f="built"></span>).</p>
   <div class="toc">
     <a href="#results">1. The tests</a><a href="#block">2. The block</a><a href="#research">Research</a><a href="#arch">Architecture</a><a href="#scenarios">Scenarios</a><a href="#verified">Verified</a><a href="#significance">Why it matters</a><a href="#next">3. Next week</a>
   </div>
@@ -92,148 +77,138 @@
 <div class="keys" id="key"></div>
 
 <div class="callout">
-  <span class="eyebrow">In one paragraph</span>
-  A shopping agent answers from the page it can see. When the price, size or stock a question needs only appears after a click, it often answers anyway, confidently and wrongly. Two weeks of tests say where the failure lives and what it costs to avoid. The block built this week sits before the agent: it reads the question and the first page, hands the agent a plan, asks back when the question is ambiguous, and checks the answer from the page. Its pilot got both questions right, opening <span data-f="pilot.cheapest.opened"></span> listings instead of 15 on the cheapest question for <span data-f="pilot.cheapest.cost"></span> against about $0.59. Version 2, built today, covers every question shape the shopping benchmarks contain, with a model doing the parsing and rules doing everything after.
+  <span class="eyebrow">In short</span>
+  A shopping agent answers from the page it can see. When the price, size or stock a question needs only appears after a click, it often answers anyway, and wrongly, without saying it is unsure. The tests of the last two weeks say where that failure comes from and what it costs to avoid. The block built this week sits in front of the agent. It reads the question and the first page, hands the agent a plan, asks the user back when the question is ambiguous, and checks the answer against the page afterwards. In its pilot it got both questions right, and on the cheapest question it opened <span data-f="pilot.cheapest.opened"></span> listings instead of 15 for <span data-f="pilot.cheapest.cost"></span>, where opening everything costs about $0.59. The second version, built today, covers every question shape the shopping benchmarks contain, with a model doing the parsing and rules doing the rest.
 </div>
 
 <!-- ===================================================== 1. RESULTS -->
 <h2 class="part" id="results">1. The tests since last week</h2>
 
 <div class="block">
-  <div class="head"><h2>All five tests, one picture</h2>
+  <div class="head"><h2>All five tests</h2>
     <div class="seg" role="group" aria-label="Reading of offer"><button type="button" data-reading="menu" aria-pressed="true">Answer key</button><button type="button" data-reading="buyable" aria-pressed="false">"Can sell now" reading</button></div></div>
-  <p class="note">Tests 1 to 4: five gated questions, three runs each, Claude Haiku 4.5, the gated shop. Test 5 is the block's pilot, one run on each of two questions. The toggle switches the key for the two questions whose word "offer" has two readings.</p>
+  <p class="note">Tests 1 to 4 ask five gated questions three times each, with Claude Haiku 4.5 on the gated shop. Test 5 is the block's pilot, one run on each of two questions. The toggle switches the key for the two questions where the word "offer" has two readings. "Opened what it needs" means every listing the answer depends on was opened: all 15 for a count, the listings the advertised prices cannot rule out for a cheapest, one counterexample for a "does every".</p>
   <div id="bars"></div>
-  <div class="callout good" style="margin-top:18px"><span class="eyebrow">The point of the picture</span>Full bars where the agent was made to see all fifteen listings (Tests 2, 4, 5) or had no probe to stop it (Test 3). Short bars where it ran as shipped. Correctness follows coverage, and the block gets the coverage at the lowest cost of the four that have it.</div>
+  <div class="callout"><span class="eyebrow">What the picture shows</span>The bars are full wherever the agent saw all fifteen listings, whether because its window limit was off (Test 2), it was told to open everything (Test 4), the block told it what to open (Test 5), or it had no probe to stop it (Test 3). They are short when it ran as shipped. Correctness follows coverage, and the block gets that coverage at the lowest cost of the four that have it.</div>
 </div>
 
 <div class="block">
-  <h2>The same, as numbers</h2>
+  <h2>The same as numbers</h2>
   <div id="cells"></div>
-  <details><summary>Which test is which</summary><div><div class="table-wrap"><table><thead><tr><th>Name here</th><th>In the repository</th><th>What it is</th></tr></thead><tbody>
+  <details><summary>Which test is which</summary><div><table class="fit"><thead><tr><th>Name here</th><th>In the repository</th><th>What it is</th></tr></thead><tbody>
     <tr><td>Test 1</td><td>cell 1</td><td>openJiuwen as shipped</td></tr>
-    <tr><td>Test 2</td><td>cell 2</td><td>openJiuwen with its card probe's window limit off, nothing else changed</td></tr>
-    <tr><td>Test 3</td><td>cell 3</td><td>a second agent written from scratch: four tools, no card probe, temperature 0, same model, window and budget</td></tr>
+    <tr><td>Test 2</td><td>cell 2</td><td>openJiuwen with its card probe's window limit off, and nothing else changed</td></tr>
+    <tr><td>Test 3</td><td>cell 3</td><td>a second agent written from scratch: four tools, no card probe, temperature 0, the same model, window and budget</td></tr>
     <tr><td>Test 4</td><td>cell 5</td><td>openJiuwen as shipped, told to open every listing</td></tr>
     <tr><td>Test 5</td><td>the box v1 pilot</td><td>openJiuwen as shipped, with the block's plan in front of it</td></tr>
-  </tbody></table></div></div></details>
+  </tbody></table></div></details>
 </div>
 
 <div class="block">
   <h2>What the results tell us</h2>
-  <div id="sig"></div>
+  <div class="sigcards" id="sig"></div>
 </div>
 
 <div class="block">
   <h2>Each question</h2>
-  <p class="note">Correct / opened what it needs, of 3 runs for Tests 1 to 4 and of 1 run for Test 5, under the answer key. Green: all right. Red: none right.</p>
+  <p class="note">Correct answers out of 3 runs for Tests 1 to 4, and out of 1 run for Test 5, under the answer key.</p>
   <div id="questions"></div>
-  <div class="callout warn"><span class="eyebrow">Read across the count-stocked row</span>Red in every test, including the one that opened everything. That row is the ambiguous question: every agent read "offer size M" as "can sell it now" and answered 5 where the key, fixed before any run, says 10. Not a retrieval failure. The block's answer is to ask.</div>
+  <div class="callout"><span class="eyebrow">The count-stocked row</span>It is wrong in every test, including the one that opened everything. This is the ambiguous question. Every agent read "offer size M" as "can sell it now" and answered 5, where the key, fixed before any run, says 10. There was nothing more to open. The block's answer is to ask which reading was meant.</div>
 </div>
 
 <div class="block">
-  <h2>What went wrong, run by run, and what the block does about each kind</h2>
-  <div id="errors"></div>
+  <details><summary><b>What went wrong, run by run, and what the block does about each kind</b></summary><div><div id="errors"></div></div></details>
+  <details><summary><b>The statistics behind the sentences above</b></summary><div><p class="note">Two sided exact tests, compared within each question first because the questions differ in difficulty. The second agent is compared on its distinct runs only, since at temperature 0 it repeats itself.</p><div id="tests"></div></div></details>
 </div>
 
 <div class="block">
-  <h2>The statistics behind the sentences</h2>
-  <p class="note">Two sided exact tests, compared within each question first because the questions differ in difficulty. The second agent is compared on its distinct runs only: at temperature 0 it repeats itself.</p>
-  <div id="tests"></div>
-</div>
-
-<div class="block">
-  <h2>Test 5 in full: what the block handed the agent, and what came back</h2>
-  <p class="note">From the run records. The plan is the same bytes every time for the same question and page.</p>
+  <h2>Test 5 in full</h2>
+  <p class="note">From the run records: the agent's answer, and the exact text the block handed it, folded away below each.</p>
   <div id="pilot"></div>
 </div>
 
 <!-- ===================================================== 2. THE BLOCK -->
-<h2 class="part two" id="block">2. Building the block</h2>
+<h2 class="part" id="block">2. Building the block</h2>
 
 <div class="block">
-  <h2>What it does, in three moves</h2>
-  <div class="steps3">
-    <div class="step3 plan"><b>Plan</b>Reads the question and the first results page, and hands the agent the listing count, the listings by advertised price with their URLs, and a strategy with a stop rule: open these, in this order, stop when no unopened one can change the answer.</div>
-    <div class="step3 ask"><b>Ask, or push back, or pass through</b>When the question has two readings, asks which. When it names something the shop does not show, says so and runs nothing. When it is not about shopping at all, hands it to the agent unchanged and counts it.</div>
-    <div class="step3 check"><b>Check</b>After the answer, decides from the page alone whether the answer is supported by what was opened, and refuses it if not. No answer key is ever read.</div>
+  <h2>What it does</h2>
+  <div class="moves">
+    <div class="move"><b>Plan</b>It reads the question and the first results page, then gives the agent the number of listings, the listings in order of advertised price with their URLs, and a strategy with a stop rule: open these, in this order, and stop when no unopened listing can change the answer.</div>
+    <div class="move"><b>Ask, push back, or pass through</b>When the question has two readings it asks which one is meant. When the question needs something the shop does not show, it says so and nothing runs. When the question is not about shopping at all, it hands it to the agent unchanged and counts that this happened.</div>
+    <div class="move"><b>Check</b>After the agent answers, it decides from the page alone whether the answer is supported by what was opened, and refuses it if not. It never reads an answer key.</div>
   </div>
-  <div class="callout info"><span class="eyebrow">Version 1 and version 2</span>Version 1 ran the pilot above with four fixed strategies. Version 2, built today after the research below, turns any question into a logical form, lets a model do that parsing, verifies it by five properties, and composes the plan from seven primitives. On the six clothing questions it produces byte for byte what version 1 produced, so the pilot stands.</div>
+  <div class="callout"><span class="eyebrow">Version 1 and version 2</span>Version 1 ran the pilot above with four fixed strategies. Version 2, built today after the research below, turns any question into a logical form, lets a model do that parsing, checks the form against five properties, and builds the plan from seven primitives. On the six clothing questions it produces exactly the same text as version 1, so the pilot result still stands.</div>
 </div>
 
 <div class="block" id="research">
   <h2>Research, and what each piece changed</h2>
-  <p class="note">Read on 14 October from published sources only; the notes are on the project site. The first column says which part of the block a source shaped.</p>
-  <div id="research-table"></div>
-  <div class="callout good"><span class="eyebrow">The gap</span>Nobody builds the pre-browse policy as a separate, verifiable step. The retrieval-budget work reads the model's own uncertainty and cannot refuse a confident wrong answer; the clarification work elicits preferences before a search; the benchmarks measure agents end to end. The block fills the space between them.</div>
+  <p class="note">Read on 14 October from published sources only. The full notes are on the project site.</p>
+  <details open><summary>The sources and their influence</summary><div><div id="research-table"></div></div></details>
+  <div class="callout"><span class="eyebrow">The gap</span>Nobody builds the step before browsing as something separate that can be checked. The work on retrieval budgets reads the model's own uncertainty and cannot refuse an answer the model is sure about. The work on clarification asks about preferences before a search starts. The benchmarks measure agents end to end. The block sits in the space between those three.</div>
 </div>
 
 <div class="block" id="arch">
   <h2>Architecture</h2>
-  <p class="note">Click a step. Green is the block's own code, yellow where it stops to ask, blue the agent, amber the shop.</p>
+  <p class="note">Click a step to read what it does.</p>
   <div id="arch"></div>
-  <div class="callout"><span class="eyebrow">Should the block be an agent?</span>A model parses the question, because that is judgement, and on 37 questions it agrees with the rules on the plan-deciding fields <span data-f="census.qo"></span> of <span data-f="census.n"></span> times. Rules do everything after, because their stop rules are theorems, their checks can refuse a confident answer, and the same bytes come out every time. A fully agentic block would be Test 4 with extra steps, at <span data-f="ratio51"></span> times the cost, and Test 4 is what the block has to beat.</div>
+  <div class="callout"><span class="eyebrow">Should the block be an agent?</span>Partly. A model parses the question, because that takes judgement, and on the project's 37 questions it agreed with the rules on the fields that decide the plan <span data-f="census.qo"></span> times out of <span data-f="census.n"></span>. Rules do everything after that, because their stop rules can be proved, their checks can refuse an answer the model is sure about, and the same input gives the same text every time. A fully agentic block would be Test 4 with extra steps, at <span data-f="ratio51"></span> times the cost, and Test 4 is what the block has to improve on.</div>
 </div>
 
 <div class="block" id="scenarios">
-  <h2>Scenarios: which question gets which strategy</h2>
-  <p class="note">Generated from the code's own patterns, so this table cannot drift from what runs. The rules test results-page, reviews and "every" first, then the price shapes, then the fallback.</p>
+  <h2>Which question gets which strategy</h2>
+  <p class="note">The rules check the question for these shapes in this order and take the first match. The trigger column says in plain words what the rule looks for; the exact pattern from the code is under each one.</p>
   <div id="scenarios"></div>
 </div>
 
 <div class="block" id="census-block">
   <h2>The model parser against the rules</h2>
-  <p class="note">The model wrote the logical form of all 37 distinct questions in the project, one call each, no browser. In sample for the rules, which were written on these questions.</p>
+  <p class="note">The model wrote the logical form of all 37 distinct questions in the project, one call each, with no browser. This is in sample for the rules, which were written on these questions.</p>
   <div id="census"></div>
-  <div class="callout info"><span class="eyebrow">Reading the four numbers</span>The two on the left are judgement and they are high. The two on the right are vocabulary: the prompt did not tell the model to put the listing's URL in the filters, and the model wrote "listing" where the rules write "results". Both are prompt fixes. The one invented attribute, "pack size and price", was refused by the fifth soundness property, which is the property doing its job.</div>
+  <div class="callout"><span class="eyebrow">How to read the four numbers</span>The first two are about judgement and they are high. The second two are about vocabulary: the prompt never told the model to put the listing's URL among the conditions, and the model wrote "listing" where the rules write "results". Both are fixes to the prompt. The model also invented one attribute, "pack size and price", and the fifth property refused it, which is what that property is for.</div>
 </div>
 
 <div class="block" id="verified">
   <h2>What was verified, and how</h2>
   <div class="stats">
-    <div class="stat good"><b data-f="tests.unit"></b><span>unit tests, each rule with a case that fires and one that stays quiet</span></div>
-    <div class="stat good"><b data-f="tests.mod"></b><span>tests of the spend guard that refuses any unverified paid run</span></div>
-    <div class="stat good"><b data-f="tests.regression"></b><span>questions in the planner regression, 0 failures</span></div>
-    <div class="stat info"><b data-f="lessons"></b><span>lessons on record, each a mistake and the rule it produced</span></div>
+    <div class="stat"><b data-f="tests.unit"></b><span>unit tests; each rule has one that must fire and one that must stay quiet</span></div>
+    <div class="stat"><b data-f="tests.mod"></b><span>tests of the spend guard, which refuses any paid run the verifier has not passed</span></div>
+    <div class="stat"><b data-f="tests.regression"></b><span>questions in the planner regression, 0 failures</span></div>
+    <div class="stat"><b data-f="lessons"></b><span>lessons on record, each a mistake and the rule it produced</span></div>
   </div>
-  <p class="note">Before a test counts, the fault it is named for is planted and the test watched to fail. The published figures are pinned, so a change to any of them fails a test. An independent verifier module checks every code change and every batch; it failed the first write-up of these results five times before passing it, and each failure is in the decision log.</p>
-  <div class="table-wrap"><table class="striped"><thead><tr><th>Check on the block</th><th>How</th><th>Result</th></tr></thead><tbody>
-    <tr><td><b>Fairness against Tests 1 and 4</b></td><td class="small">A held-constant table: model, sampling, step budget, clock, window, shop and theme, browser tool version, per-run caches, scorer and rules versions, the question text byte for byte; every difference named</td><td><span class="chip good">held</span> one intended difference: the block hands the agent the listings' URLs and prices</td></tr>
-    <tr><td><b>The block never reads an answer</b></td><td class="small">Read the code; plant reads of a fixture, an answer key, a manifest, a seller name and a price in a scratch copy; watch the test fail</td><td><span class="chip good">all plants caught</span></td></tr>
-    <tr><td><b>Every statement the agent receives is true of the shop</b></td><td class="small">The dry run's exact text against the live shop: listing count, "no next page", every seller, price and URL, the size menu, the sold-out state, the review page</td><td><span class="chip good">all true</span> one frozen sentence is strictly false for a sold-out size under the ordinary theme, left for version 8 and recorded</td></tr>
-    <tr><td><b>The refusal check from the page</b></td><td class="small">Replayed over Tests 1, 2 and 4 with the page's numbers, against the answer key's</td><td><span class="chip good"><span data-f="refusal.c1.refused"></span> of <span data-f="refusal.c1.wrong"></span> wrong answers refused, 0 correct refused</span> the key's numbers give 9 and 0; the miss is a misread advertised price no page-only check can see</td></tr>
-    <tr><td><b>Version 1 preserved under version 2</b></td><td class="small">The six clothing texts frozen before the change, regenerated from the old commit by the verifier, compared byte for byte; five dry runs line by line</td><td><span class="chip good">identical</span> so the pilot stands</td></tr>
-    <tr><td><b>Cost</b></td><td class="small">The provider's charge per call summed, against the account's movement</td><td><span class="chip good">to the cent</span> $0.61 for the pilot, $0.07 for the parse</td></tr>
-    <tr><td><b>The figures on this page</b></td><td class="small">Each recomputed by the verifier from the run files and the probe file</td><td><span class="chip good">all held</span> two overstated sentences corrected before this report</td></tr>
-  </tbody></table></div>
+  <p class="note">Before a test counts, the fault it is named for is planted and the test is watched to fail. The published figures are pinned, so a change to any of them fails a test. An independent verifier checks every code change and every batch; it failed the first write-up of these results five times before passing it, and each failure is in the decision log.</p>
+  <table class="fit"><thead><tr><th>Check on the block</th><th>How it was checked</th><th>Result</th></tr></thead><tbody>
+    <tr><td><b>Fairness against Tests 1 and 4</b></td><td>A table of everything held constant: model, sampling, step budget, clock, window, shop and theme, browser tool version, per-run caches, scorer and rules versions, the question text byte for byte. Every difference named.</td><td><span class="chip good">held</span> One intended difference: the block gives the agent the listings' URLs and prices.</td></tr>
+    <tr><td><b>The block never reads an answer</b></td><td>Read the code. Then plant reads of a fixture, an answer key, a manifest, a seller name and a price in a scratch copy and watch the test fail.</td><td><span class="chip good">all plants caught</span></td></tr>
+    <tr><td><b>Everything the agent is told is true of the shop</b></td><td>The exact text from a dry run, checked against the live shop: the listing count, "no next page", every seller, price and URL, the size menu, the sold-out state, the review page.</td><td><span class="chip good">all true</span> One sentence in the frozen strategy text is strictly false for a sold-out size under the ordinary theme; it is recorded and left for version 8.</td></tr>
+    <tr><td><b>The refusal check from the page</b></td><td>Replayed over Tests 1, 2 and 4 with the page's numbers, and compared with the answer key's numbers.</td><td><span class="chip good"><span data-f="refusal.c1.refused"></span> of <span data-f="refusal.c1.wrong"></span> wrong answers refused, 0 correct ones refused</span> The key's numbers give 9 and 0. The one it misses is a misread advertised price that no page-only check could see.</td></tr>
+    <tr><td><b>Version 1 preserved under version 2</b></td><td>The six clothing texts were frozen before the change, regenerated from the old commit by the verifier, and compared byte for byte; five dry runs were compared line by line.</td><td><span class="chip good">identical</span> So the pilot stands.</td></tr>
+    <tr><td><b>Cost</b></td><td>The provider's charge for each model call, summed, against the account's movement.</td><td><span class="chip good">matches to the cent</span> $0.61 for the pilot and $0.07 for the parse.</td></tr>
+    <tr><td><b>The figures on this page</b></td><td>Each recomputed by the verifier from the run files and the probe file.</td><td><span class="chip good">all held</span> Two overstated sentences were corrected before this report.</td></tr>
+  </tbody></table>
   <details><summary>Every unit test, by file</summary><div id="unit"></div></details>
 </div>
 
 <div class="block" id="significance">
   <h2>Why this matters, and what it is not</h2>
-  <div class="cards3">
-    <div class="sigcard good"><span class="eyebrow">Agent agnostic</span><h3>Not a browser agent, and not replacing one</h3><ul><li>The block sits in front of whichever agent is used and hands it text.</li><li>Test 3 is the evidence that the two errors it targets besides coverage, the ambiguous verb and the price read too early, appear in a second agent built from scratch.</li><li>The block in front of that agent is next week's check.</li></ul></div>
-    <div class="sigcard info"><span class="eyebrow">Answering, not buying</span><h3>The step before the purchase button</h3><ul><li>Every purchase an agent makes is a retrieval question first: which offer, at what price, in which size, in stock.</li><li>A wrong answer there becomes a wrong purchase one click later. The live assistant seen in August named one seller 27% cheaper for a carton it was dearer for, with no sign of doubt.</li><li>Buying, discounts, coupons and delivery are out of scope and stated as limits. Reviews are in scope and come next.</li></ul></div>
-    <div class="sigcard warn"><span class="eyebrow">Honest status</span><h3>One week behind, and why</h3><ul><li>8 to 10 October went on re-deriving every published figure, rebuilding the repository and the site, and five verifier passes that found and fixed overclaims.</li><li>No paid run of version 2 against the agent exists yet. The pilot is two runs on the market the block was designed on.</li><li>$42.71 of the $100 remains; today cost $0.68.</li></ul></div>
+  <div class="sigcards">
+    <div class="sigcard"><span class="eyebrow">It does not replace the agent</span><h3>The block works with whichever agent is used</h3><p>It sits in front of the agent and hands it text, and it never browses on its own. Test 3 shows that the two errors it targets besides coverage, the ambiguous verb and the price read too early, also appear in a second agent built from scratch. Putting the block in front of that agent is next week's check.</p></div>
+    <div class="sigcard"><span class="eyebrow">It answers questions rather than buying</span><h3>The step before the purchase button</h3><p>Every purchase an agent makes starts with a retrieval question: which offer, at what price, in which size, is it in stock. A wrong answer there turns into a wrong purchase one click later. The live assistant observed in August named one seller 27% cheaper for a carton it was actually dearer for, with no sign of doubt. The block makes that answer correct at a known cost, and says when it cannot. Buying, discounts, coupons and delivery are out of scope and stated as limits. Reviews are in scope and come next.</p></div>
+    <div class="sigcard"><span class="eyebrow">Where things honestly stand</span><h3>About a week behind the plan</h3><p>The days from 8 to 10 October went on re-deriving every published figure, rebuilding the repository and the site, and five verifier passes that found and fixed overclaims. No paid run of version 2 against the agent exists yet, and the pilot is two runs on the market the block was designed on. $42.71 of the $100 remains; today cost $0.68.</p></div>
   </div>
-</div>
-
-<div class="block prose">
-  <h2>Also done since 7 October</h2>
-  <ul>
-    <li>Every figure from the first three tests re-derived from the raw run files; three reported on 7 October were wrong and are corrected.</li>
-    <li>The repository reorganised into folders by job, with a test suite and one site that generates every figure from the run files. The history was rewritten before publishing to remove a paper the licence did not allow and to restore Magento's notice on the gated theme.</li>
-    <li>A workbench that refuses any paid command without a verifier pass, a declared cost and the student's yes; three modules, coder, verifier and insights, with one job each.</li>
-    <li>The September result on the water markets restated honestly: suggestive, not shown. Its refusal check read the market size from the answer key; the block's reads it from the page.</li>
-  </ul>
+  <details><summary>Also done since 7 October</summary><div><ul>
+    <li>Every figure from the first three tests was re-derived from the raw run files. Three figures reported on 7 October were wrong and are now corrected.</li>
+    <li>The repository was reorganised into folders by job, with a test suite and one site that generates every figure from the run files. The history was rewritten before publishing, to remove a paper the licence did not allow and to restore Magento's notice on the gated theme.</li>
+    <li>A workbench now refuses any paid command without a verifier pass, a declared cost and the student's yes. Three modules, coder, verifier and insights, each have one job.</li>
+    <li>The September result on the water markets was restated as suggestive rather than shown. Its refusal check read the market size from the answer key; the block's reads it from the page.</li>
+  </ul></div></details>
 </div>
 
 <!-- ===================================================== 3. NEXT -->
-<h2 class="part three" id="next">3. Next week</h2>
-<div class="timeline3">
-  <div class="tl a"><h3>The block on real runs</h3><ul><li>The development batch on Thornwood under version 2: the six questions, three repeats, the two ambiguous ones under both readings.</li><li>New questions for the shapes version 1 lacked: is there any, the three cheapest, a named comparison, a cheapest with a condition, and a few unrelated ones to measure the bypass.</li><li>Against Tests 1 and 4. Then freeze.</li></ul></div>
-  <div class="tl b"><h3>A fresh market, and the contribution</h3><ul><li>A new clothing market generated after the freeze, seeded, verified in a browser, both readings of every ambiguous question stated before any run.</li><li>The claim run: shipped, open everything, and the block, three repeats, compared within each question.</li><li>Once the market generator and the gated theme are stable, prepared as a contribution to WebArena-Verified, which welcomes dataset and tooling contributions. Nothing claimed until merged.</li></ul></div>
-  <div class="tl c"><h3>Reviews, and the open items</h3><ul><li>The nine review questions, never run, through the depth primitive: stop at the first mention, or read every page before answering no.</li><li>The model parser's prompt vocabulary; the block in front of the second agent once its browser is confined to the shop.</li></ul></div>
+<h2 class="part" id="next">3. Next week</h2>
+<div class="next">
+  <div><h3>The block on real runs</h3><ul><li>The development batch on Thornwood under version 2: the six questions, three repeats, and the two ambiguous ones under both readings.</li><li>New questions for the shapes version 1 lacked: is there any, the three cheapest, a comparison of two named sellers, a cheapest with a condition, and a few unrelated questions to measure how often the block passes a question through.</li><li>Compared with Tests 1 and 4, then frozen.</li></ul></div>
+  <div><h3>A fresh market, then the contribution</h3><ul><li>A new clothing market generated after the freeze, seeded, checked in a browser, with both readings of every ambiguous question written down before any run.</li><li>The claim run on it: shipped, open everything, and the block, three repeats, compared within each question.</li><li>Once the market generator and the gated theme are stable, they are prepared as a contribution to WebArena-Verified, which welcomes dataset and tooling contributions. Nothing is claimed until a pull request is merged.</li></ul></div>
+  <div><h3>Reviews, and the open items</h3><ul><li>The nine review questions, which have never run, through the depth primitive: stop at the first mention, or read every page before answering no.</li><li>The model parser's prompt vocabulary, and the block in front of the second agent once that agent's browser is confined to the shop.</li></ul></div>
 </div>
 
 <p class="small" style="margin-top:28px">Project site: <code>docs/index.html</code> in the repository, with the commands that reproduce every figure. This report is generated from the same data file.</p>
