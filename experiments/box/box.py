@@ -56,7 +56,11 @@ import targeting
 #      owes, the floor's extra one is for the answer's own listing only, and a seller is
 #      named only as a whole word. "sell" and its forms are market words (form v4), so
 #      "Who sells the softest tee?" is a fallback rather than a bypass
-VERSION = 5
+#   6  14 October 2026. The check changes, the text does not: the figures the question
+#      states include every price limit the form parsed from it, written as the plan
+#      writes it, so a question that says "under $20" exempts the "$20.00" the witness
+#      text sends and an answer quoting it back is not refused (`stated_figures`)
+VERSION = 6
 
 # The results page the question sends the agent to: the first URL in it.
 URL = re.compile(r"https?://\S+")
@@ -158,23 +162,43 @@ def decide(question: str, page: page_module.Page | None, reply: str | None = Non
                     query=f"{question}\n\n{plan.text}", plan=plan, page=page, form=form)
 
 
+def stated_figures(decision: Decision) -> set[int]:
+    """The figures the question itself states, in cents, so an answer that quotes a limit
+    back is not refused for inventing it: the decimals written in the question, and every
+    price limit the form parsed from it, written as the plan text writes it.
+
+    A question that says "under $20" writes no decimal, so `sufficiency.prices_in` read
+    nothing from it, while the witness text put "$20.00" in front of the agent and an
+    answer echoing that was refused as unsupported (verifier finding, 14 October 2026).
+    The form's limit is the same figure however the question wrote it. A limit parsed by
+    the rules is a float; one a model proposed is whatever its JSON held, and only a number
+    is read.
+    """
+    stated = set(sufficiency.prices_in(decision.question))
+    filters = decision.form.filters if decision.form is not None else ()
+    for condition in filters:
+        if condition.attribute == "price" and isinstance(condition.value, (int, float)):
+            stated.update(sufficiency.prices_in(f"${condition.value:.2f}"))
+    return stated
+
+
 def check(decision: Decision, answer: str, log_path: pathlib.Path) -> dict:
     """The refusal check for a run the box planned, from the page and the plan alone.
 
     A v1 kind gets v1's page-derived check unchanged, so the pilot's verdicts stay
     comparable. A kind v1 did not have gets the figure rules alone, with the figures the
     question itself states exempted (a limit the answer quotes back is not an invented
-    price), since the coverage rules are written for v1's question shapes. So does a
-    bypassed question, which has no plan and usually no page: the figure rules need
-    neither. Either way, a verdict that passes is then held to the plan's own check, when
-    there is a plan: did the run open what the primitive's stop rule required.
+    price, `stated_figures`), since the coverage rules are written for v1's question
+    shapes. So does a bypassed question, which has no plan and usually no page: the figure
+    rules need neither. Either way, a verdict that passes is then held to the plan's own
+    check, when there is a plan: did the run open what the primitive's stop rule required.
     """
     text = sufficiency.observed_text(log_path)
     if decision.kind in targeting.BODIES:
         verdict = policy.gate_from_page(decision.question, decision.page, answer, log_path)
     else:
         seen = sufficiency.evidence(text)
-        stated = set(sufficiency.prices_in(decision.question))
+        stated = stated_figures(decision)
         seen = {"deltas": seen["deltas"], "absolutes": seen["absolutes"] | stated,
                 "any": seen["any"] | stated}
         verdict = {**sufficiency.check(answer, seen),
