@@ -4643,7 +4643,7 @@ window.SITE = {
   "source": "README decision log, 8 October 2026"
  },
  "built": {
-  "commit": "a3b9185",
+  "commit": "caec062",
   "date": "2026-10-14",
   "branch": "dev",
   "dirty": true,
@@ -4654,7 +4654,7 @@ window.SITE = {
    "2026-09-07": 44,
    "2026-09-14": 49,
    "2026-10-05": 45,
-   "2026-10-12": 9
+   "2026-10-12": 10
   }
  }
 };
