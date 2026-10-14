@@ -5229,10 +5229,10 @@ window.SITE = {
   }
  },
  "built": {
-  "commit": "e7259b4",
+  "commit": "21382d4",
   "date": "2026-10-14",
   "branch": "dev",
-  "dirty": false,
+  "dirty": true,
   "repo": "https://github.com/kr7001/fyp-shopping-agent",
   "agent_core": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
   "commits_by_week": {
@@ -5240,7 +5240,7 @@ window.SITE = {
    "2026-09-07": 44,
    "2026-09-14": 49,
    "2026-10-05": 45,
-   "2026-10-12": 27
+   "2026-10-12": 28
   }
  }
 };
