@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 4</title>
+<style>
+  body { margin: 0; background: #f6f7f9; color: #1d2229; font: 16px/1.55 Georgia, "Times New Roman", serif; }
+  .page { max-width: 800px; margin: 0 auto; padding: 32px 20px 80px; }
+  h1 { font: 600 30px/1.2 system-ui, sans-serif; margin: 0 0 4px; }
+  h2 { font: 600 20px/1.3 system-ui, sans-serif; margin: 36px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #d5d9e0; }
+  h3 { font: 600 16px/1.3 system-ui, sans-serif; margin: 18px 0 6px; }
+  .eyebrow { font: 600 12px system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; color: #6b7280; }
+  p { margin: 8px 0; }
+  ul, ol { margin: 6px 0 6px 22px; padding: 0; } li { margin: 4px 0; }
+  .box { background: #fff; border: 1px solid #d5d9e0; border-radius: 8px; padding: 14px 18px; margin: 12px 0; }
+  .key { background: #eef5f1; border-left: 4px solid #2f7d5b; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font: 14.5px/1.4 system-ui, sans-serif; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #e3e6eb; vertical-align: top; }
+  th { font-weight: 600; color: #4b5563; font-size: 12.5px; text-transform: uppercase; letter-spacing: .04em; }
+  td.n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .good { color: #2f7d5b; font-weight: 600; } .bad { color: #b3261e; font-weight: 600; }
+  .muted { color: #6b7280; font-size: 14px; }
+  code { font: 13px ui-monospace, Menlo, monospace; background: #eef0f3; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="eyebrow">FYP progress update · 14 October 2026</div>
+<h1>Shopping agents and hidden information</h1>
+<p class="muted">What was done since 7 October, in plain terms. Every number here was checked against the raw run files.</p>
+
+<h2>1. The problem, in one example</h2>
+<div class="box">
+  <p>Our test shop has 15 listings of the same "Thornwood tee" from 15 sellers. The search results page shows <b>one price per listing: its cheapest size</b>. The price and stock of size M only appear <b>after you click M</b> inside the listing.</p>
+  <p>So if you ask "which seller is cheapest for size M?", the results page cannot tell you. The agent has to open listings. The cheapest-looking card (Rookwood, $11.87) does not even sell M. The real answer is Alderney at $25.77, and 8 listings have to be opened to be sure.</p>
+  <p>A shopping agent that answers from the results page alone is confidently wrong. That is the failure this project measures and fixes.</p>
+</div>
+
+<h2>2. The five questions every test asks</h2>
+<ol>
+  <li><b>Lowest price for size M</b> among listings that can actually sell it. Key: $25.77.</li>
+  <li><b>Which seller is cheapest for size M</b>, and at what price. Key: Alderney at $25.77.</li>
+  <li><b>Does every listing offer size M?</b> Key: No.</li>
+  <li><b>How many listings offer size M?</b> Key: 10 (M is in their size menu, even if sold out).</li>
+  <li><b>How many listings have M in stock and buyable right now?</b> Key: 5.</li>
+</ol>
+<p class="muted">Each test runs every question 3 times, so 15 runs a test. Model: Claude Haiku 4.5 via OpenRouter, the same for every test.</p>
+
+<h2>3. The five tests</h2>
+<table>
+  <tr><th>Test</th><th>What it is</th><th>Correct</th><th>Opened enough listings</th><th>Cost a run</th></tr>
+  <tr><td><b>1</b></td><td>openJiuwen as shipped</td><td class="n bad">4 of 15</td><td class="n bad">3 of 15</td><td class="n">$0.18</td></tr>
+  <tr><td><b>2</b></td><td>openJiuwen, one default changed so its card reader sees the whole page, not just the visible window</td><td class="n">11 of 15</td><td class="n good">15 of 15</td><td class="n">$0.48</td></tr>
+  <tr><td><b>3</b></td><td>A second agent, written from scratch, same model</td><td class="n">9 of 15</td><td class="n">12 of 15</td><td class="n">$0.13</td></tr>
+  <tr><td><b>4</b></td><td>openJiuwen as shipped, told "open every listing"</td><td class="n">11 of 15</td><td class="n good">15 of 15</td><td class="n">$0.52</td></tr>
+  <tr><td><b>5</b></td><td>openJiuwen as shipped, with <b>the block</b> in front of it (2 runs only, one per question, on questions 2 and 5)</td><td class="n good">2 of 2</td><td class="n good">2 of 2</td><td class="n">$0.31</td></tr>
+</table>
+<p class="muted">"Opened enough listings" means the agent opened every listing its answer depended on: all 15 for a count, the 8 listings priced at or below $25.77 for the cheapest question, one listing without M for "does every".</p>
+
+<h2>4. What the results tell us</h2>
+<div class="box">
+  <p><b>Test 1 → 2: the shipped agent stops too early, and we know why.</b> As shipped it opened enough listings in only 3 of 15 runs. It reads the 4 product cards visible in the browser window and trusts them. Switching that one default off took it to 15 of 15 and correct answers from 4 to 11.</p>
+  <p><b>Test 3: it is not only an openJiuwen problem.</b> A second agent we wrote from scratch, with no card reader, opened enough listings most of the time and was the cheapest. But it still got answers wrong for two reasons that have nothing to do with the agent's code: it misread the ambiguous word "offer" (next section), and it read a price before the page had updated after clicking a size. Those come from the model and the page. Any agent will have them.</p>
+  <p><b>Test 4: "just open everything" is the ceiling, and it is not good enough.</b> It costs 3 times the shipped agent and still gets 4 of 15 wrong, 3 of them on the same ambiguous question.</p>
+  <p><b>Test 5: the block worked on its first two runs.</b> On the cheapest question it opened exactly the 8 listings that mattered, skipped the other 7, and gave the right answer for $0.39, where Test 4 opened all 15 for about $0.59. On the count question it opened all 15 as a count must. Only two runs, on the market the block was designed on, so this shows the pipeline works, not yet that the method wins.</p>
+</div>
+
+<h2>5. The question every test got wrong, and what it taught us</h2>
+<div class="box">
+  <p><b>"How many listings offer size M?"</b> Of the 15 listings, 10 have M in their size menu, but only 5 can sell it right now (the other 5 are sold out). The answer key, written before any run, says 10. <b>Every agent in every test answered 5</b>, even the one that opened all 15 listings.</p>
+  <p>So the agents did not fail to look. They read "offer" as "can sell it now" where the key meant "listed in the menu". The question is ambiguous, and no amount of browsing fixes that.</p>
+  <p><b>This is what inspired the block's "ask back" step:</b> when a question has two reasonable readings, ask the user which one they mean before running anything, instead of guessing. We kept the ambiguous questions on purpose, so the block can be measured on catching them.</p>
+</div>
+
+<h2>6. The block</h2>
+<div class="box key">
+  <p>A step that runs <b>before</b> the shopping agent. It is not an agent and does not replace one; it works with whichever agent is used.</p>
+  <ol>
+    <li><b>Plan.</b> It reads the question and the results page, then hands the agent a plan: here are the 15 listings sorted by advertised price, open them in this order, and stop once no unopened listing can beat the best found. For "cheapest size M" that means 8 listings instead of 15.</li>
+    <li><b>Ask back, or push back.</b> If the question has two readings ("offer"), it asks which. If the question needs something the shop does not show (delivery time), it says so and runs nothing. If the question is not about shopping at all, it passes it straight to the agent and counts that this happened.</li>
+    <li><b>Check.</b> After the agent answers, it checks from the page alone whether the answer is supported by what was opened, and refuses it if not. It never sees the answer key.</li>
+  </ol>
+</div>
+
+<h3>Is the block written by an AI, or fixed rules?</h3>
+<p>Both, in a deliberate split. A model may <b>parse</b> the question into its logical form (what kind of answer, which attribute, which conditions), because that takes judgement. Fixed <b>rules</b> do everything after: build the plan, decide when to stop, check the answer. Rules can be proved and tested, give the same text every time, and can refuse an answer the model is confident about. We tested the model parser on all 37 questions in the project: it agreed with the rules on the fields that decide the plan 33 times out of 37, for $0.07 in total.</p>
+
+<h3>Version 2, built today</h3>
+<p>Version 1 had four fixed strategies and ran the pilot. Version 2 handles every question shape the shopping benchmarks contain (cheapest, cheapest with conditions, is there any, the k cheapest, does every, how many, compare two named sellers, reviews), composed from seven building blocks. On the six clothing questions it produces exactly the same text as version 1, so the pilot still stands. 182 automated tests, each checked to fail when its fault is planted.</p>
+
+<h3>Research that shaped it</h3>
+<ul>
+  <li><b>Shopping benchmarks</b> (WebShop, WebMall, DeepShop): gave the list of question shapes, and showed agents fail most on vague requirements and filters.</li>
+  <li><b>Clarifying-question work</b> (DiscoBench, SAGE-Agent): ask only when the ambiguity changes the answer; score both over-asking and under-asking.</li>
+  <li><b>Adaptive retrieval</b> (AB-RAG, Stop-RAG): the closest existing work. It decides when to stop from the model's own confidence, so it cannot catch a confident wrong answer. Our stop rule comes from the page (the advertised price as a lower bound), which is the gap we fill.</li>
+  <li><b>"Model proposes, rules verify"</b> (LLM-Modulo): the pattern the block follows.</li>
+</ul>
+
+<h2>7. Scope, and why it matters</h2>
+<ul>
+  <li><b>Answering, not buying.</b> Every purchase an agent makes starts with a question: which offer, what price, which size, in stock? A wrong answer there becomes a wrong purchase one click later. Buying, discounts, coupons and delivery are out of scope and stated as limits.</li>
+  <li><b>Reviews are in scope and come next.</b> "Do buyers say it leaks?" is the same kind of hidden information, hidden by pages of reviews instead of a click.</li>
+  <li><b>Agent agnostic.</b> The block hands text to whichever agent is used. Test 3 shows the errors it targets appear in a second agent too.</li>
+</ul>
+
+<h2>8. Honest status</h2>
+<ul>
+  <li>About a week behind plan: 8 to 10 October went on re-checking every published figure (three from the 7 October update were wrong and are corrected), rebuilding the repository, and an independent verifier pass on every result and every code change.</li>
+  <li>No full run of version 2 against the agent yet. The pilot is two runs.</li>
+  <li>Budget: $42.71 of $100 left. Today cost $0.68.</li>
+</ul>
+
+<h2>9. Next week</h2>
+<ol>
+  <li><b>Run the block properly.</b> All six questions, 3 repeats, plus new question shapes (is there any under $20, the three cheapest, compare two sellers) and a few unrelated questions to measure how often the block passes a question through. Compared against Tests 1 and 4.</li>
+  <li><b>A fresh market</b>, generated after the block is frozen, so the block is tested on a market it was not designed on. Once the market generator is stable, prepare it as a contribution to WebArena-Verified (nothing claimed until a pull request is merged).</li>
+  <li><b>Reviews.</b> Nine review questions, never run yet, through the block.</li>
+</ol>
+
+</div>
+</body>
+</html>
