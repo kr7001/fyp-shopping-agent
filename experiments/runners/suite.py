@@ -342,15 +342,45 @@ def asked_row(task: dict, repeat: int, box_record: dict) -> dict:
             "box": box_record, "reading": None}
 
 
-def box_fields(box_record: dict, reading: str | None) -> dict:
-    """What a run under the box records about it: the box's own record, and the reading
-    only where the box asked. A reading is the scripted user's reply to the box's
-    question, so on a question the box never asked it is not a condition of the run.
-    Until 14 Oct 2026 every row under `--reading menu` said `reading: "menu"`, the clear
-    questions included (verifier finding). The scorer is unchanged: it takes the reading
-    from the flag, and a question the sidecar has no key for is scored on its own key
-    either way."""
-    return {"box": box_record, "reading": reading if box_record["asked"] else None}
+def box_fields(box_record: dict) -> dict:
+    """What a run under the box records about it: the box's own record, the reading the
+    question was answered under, and who chose it.
+
+    The reading is the box record's: the scripted user's reply where the box asked, the
+    box's own choice where one reading had no answer on this shop (`box.decide`,
+    `reading_by` "box"), and None on a question the box never asked, where no reading is
+    a condition of the run. Until 14 Oct 2026 every row under `--reading menu` said
+    `reading: "menu"`, the clear questions included; until 20 Oct a row the box read as
+    buyable said None, and the run was scored under the menu key (verifier findings)."""
+    return {"box": box_record, "reading": box_record.get("reading"),
+            "reading_by": box_record.get("reading_by")}
+
+
+def reading_answered(box_record: dict | None, flag: str | None) -> str | None:
+    """The reading a run answered under, which its scoring key follows: the box record's
+    when the box ran, a reply or the box's own choice, else the `--reading` flag, which
+    without the box is None."""
+    return box_record.get("reading") if box_record else flag
+
+
+def print_dry_task(task: dict, query: str | None, applied: dict) -> None:
+    """One task of the dry run: the exact text, through the same function the paid loop
+    uses, so what is read here is what the agent gets (LESSONS 17). An ask is printed as
+    the box's question, a refusal as what the box said was missing, a reading the box took
+    on its own as a line before the text."""
+    print(f"  {task['id']:26} gated={task['gated']}  {task['expect']['kind']}")
+    record = applied["box"]
+    if query is not None and record and record["bypassed"]:
+        print(f"BYPASS: {query}")
+    elif query is not None:
+        if record and record.get("reading_by") == "box":
+            print(f"reading taken by the box: {record['reading']}")
+        print(query)
+    elif record["refuse"]:
+        print(f"REFUSES: {record['refuse']}")
+    else:
+        print(f"ASKS: {record['ask']}")
+    print()
 
 
 def gate_for(task: dict, spec: dict, answer: str, log_path: pathlib.Path,
@@ -542,18 +572,9 @@ def main() -> int:
         # would record and how many of its slots would reach the agent come last.
         records = []
         for task in tasks:
-            print(f"  {task['id']:26} gated={task['gated']}  {task['expect']['kind']}")
             query, applied = build_query(task, spec, args)
             records.append(applied["box"])
-            if query is not None and applied["box"] and applied["box"]["bypassed"]:
-                print(f"BYPASS: {query}")
-            elif query is not None:
-                print(query)
-            elif applied["box"]["refuse"]:
-                print(f"REFUSES: {applied['box']['refuse']}")
-            else:
-                print(f"ASKS: {applied['box']['ask']}")
-            print()
+            print_dry_task(task, query, applied)
         summary = dry_summary(records, args.repeats)
         if summary:
             print(summary)
@@ -596,9 +617,11 @@ def main() -> int:
                     scaffold=args.scaffold, shop=args.shop, probe=args.probe,
                     page=applied["page"], decision=applied["decision"])
 
-            # Scored against the key for the reading the scripted user chose, when the
-            # sidecar has one for this task, and against the task's own key otherwise.
-            verdict = scoring.score(scoring.under_reading(task, args.reading, readings),
+            # Scored against the key for the reading the run answered under, the user's
+            # reply or the box's own choice, when the sidecar has one for this task, and
+            # against the task's own key otherwise.
+            answered = reading_answered(applied["box"], args.reading)
+            verdict = scoring.score(scoring.under_reading(task, answered, readings),
                                     answer, bool(result.get("ok")))
             row = {
                 "task": task["id"], "family": task["family"], "gated": task["gated"],
@@ -616,9 +639,10 @@ def main() -> int:
             if strategy:
                 row["strategy"] = strategy
             if args.box:
-                # The page the box read, whether it asked, the reading where it did, and
-                # the exact query, so a run under the box says what produced it.
-                row.update(box_fields(applied["box"], args.reading))
+                # The page the box read, whether it asked, the reading answered under and
+                # who chose it, and the exact query, so a run under the box says what
+                # produced it.
+                row.update(box_fields(applied["box"]))
             if args.confidence != "off":
                 row["confidence"] = confidence
                 row["confidence_reason"] = reason
@@ -640,6 +664,8 @@ def main() -> int:
             conf = f" conf={row.get('confidence')}" if args.confidence != "off" else ""
             conf += f" [{strategy}]" if strategy else ""
             conf += " [bypass]" if args.box and applied["box"]["bypassed"] else ""
+            if args.box and applied["box"].get("reading_by") == "box":
+                conf += f" [reading taken by the box: {applied['box']['reading']}]"
             print(f"[{done}/{total}] {tag:32} {row['verdict']:10} "
                   f"calls={row['tool_calls']} act={row['actions']}{conf} "
                   f"${row['cost_usd']} {row['elapsed_s']}s")

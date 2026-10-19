@@ -121,6 +121,16 @@ class ReadingKey(unittest.TestCase):
         self.assertEqual(self.verdict("10 listings", {}, {}), "correct")
         self.assertEqual(self.verdict("5 listings", {}, {}), "wrong")
 
+    def test_a_reading_the_box_took_scores_under_its_own_key(self):
+        # 20 Oct 2026: a row the box read as buyable carries that reading, so the re-score
+        # uses the buyable key even under a batch run with --reading menu.
+        self.assertEqual(self.verdict("5 listings", {"reading": "buyable", "reading_by": "box"},
+                                      {"reading": "menu"}), "correct")
+        self.assertEqual(self.verdict("5 listings", {"reading": "menu", "reading_by": "user"},
+                                      {"reading": "menu"}), "wrong")
+        self.assertEqual(self.verdict("5 listings", {"reading": None, "reading_by": None},
+                                      {"reading": "menu"}), "wrong")
+
     def test_the_batch_reading_applies_when_the_row_has_none(self):
         self.assertEqual(self.verdict("5 listings", {}, {"reading": "buyable"}), "correct")
         # The menu reading is the task's own key.

@@ -63,7 +63,9 @@ import targeting
 #   7  20 October 2026. "best price", "top price" and "best deal" are the cheapest in shop
 #      vocabulary (`BEST_PRICE`), so "Which seller has the best price for size M?" is the
 #      best of the market by price rather than the survey fallback
-VERSION = 7
+#   8  20 October 2026. "top price" is dropped from `BEST_PRICE` (verifier): it can mean
+#      the highest, so it asks or is refused like any graded word, never the cheapest
+VERSION = 8
 
 # The vocabulary. A form outside it is refused when it is built, so a model's reply cannot
 # smuggle in a quantifier nothing knows how to plan. "unknown" is the rules' answer to a
@@ -363,10 +365,11 @@ SIZE_IN = re.compile(r"\bin\s+(XXS|XS|S|M|L|XL|XXL|XXXL)\b")
 PACK = re.compile(r"\bthe\s+((?:\d[\w.]*\s*x\s*)?\d[\w.]*\s*(?:ml|l|g|kg|litres?|liters?)?)"
                   r"\s+(?:pack|size|bottle|carton|bag)\b", re.IGNORECASE)
 ARGMAX = re.compile(r"\b(?:most expensive|dearest|highest price|priciest)\b", re.IGNORECASE)
-# The cheapest, in shop vocabulary: "best price", "top price", "best deal" (verifier
-# finding, 20 October 2026; "top price" is read as the shop's best offer, the decision of
-# that day, not as the highest). `targeting.CHEAPEST` reads "cheapest" and "lowest price".
-BEST_PRICE = re.compile(r"\b(?:best|top)\s+(?:price|prices|deal)\b", re.IGNORECASE)
+# The cheapest, in shop vocabulary: "best price", "best deal" (verifier finding, 20 October
+# 2026). "top price" is not here: in English it is as often the highest as the best, so it
+# is left to the graded-word rule, which asks or refuses and never plans the cheapest.
+# `targeting.CHEAPEST` reads "cheapest" and "lowest price".
+BEST_PRICE = re.compile(r"\bbest\s+(?:price|prices|deal)\b", re.IGNORECASE)
 # A price word with no figure anywhere in the question (URLs aside) asks for a threshold.
 VAGUE_PRICE = re.compile(r"\b(?:cheap|affordable|inexpensive|budget|low[- ]cost|bargain)\b",
                          re.IGNORECASE)

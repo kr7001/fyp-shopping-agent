@@ -36,6 +36,7 @@ import score  # noqa: E402
 import sufficiency  # noqa: E402
 import suite  # noqa: E402
 import targeting  # noqa: E402
+import trace_stats  # noqa: E402
 
 BASE = "http://localhost:7770"
 RESULTS_URL = f"{BASE}/catalogsearch/result/?q=Example"
@@ -527,9 +528,12 @@ class Refusal(unittest.TestCase):
         chosen = box.decide(depends, self.page)
         self.assertEqual((chosen.ask, chosen.refuse, chosen.reading, chosen.reading_by),
                          (None, None, "buyable", "box"))
-        self.assertTrue(box.decide(depends, self.page, reply="menu").refuse.startswith(
-            "The shop does not show the price of a sold-out size"))
-        self.assertIsNotNone(box.decide(depends, self.page, reply="buyable").query)
+        self.assertEqual(box.decide(depends, self.page, reply="menu").query, chosen.query)
+        # The menu reading of such a question is refused when the question settles it
+        # itself, with one of the menu phrases, so there is nothing to ask.
+        settled = box.decide(depends.replace("stock size M", "stock size M, sold out or not"), self.page)
+        self.assertIsNone(ambiguity.ask(settled.question))
+        self.assertTrue(settled.refuse.startswith("The shop does not show the price of a sold-out size"))
         # A question answerable under both readings still asks.
         plain = box.decide(self.go + "Does every listing offer size M?", self.page)
         self.assertEqual((plain.ask is not None, plain.refuse), (True, None))
@@ -546,10 +550,14 @@ class Refusal(unittest.TestCase):
         self.assertEqual((decision.record()["asked"], decision.record()["reading_by"]), (False, "box"))
         self.assertIn("By 'has the best price for size M' I mean listings that can sell it now",
                       decision.query)
-        # The user's own reply still decides, and is recorded as theirs.
-        self.assertEqual(box.decide(q, self.page, reply="buyable").reading_by, "user")
-        self.assertTrue(box.decide(q, self.page, reply="menu").refuse.startswith(
-            "The shop does not show the price of a sold-out size"))
+        # A reply to a question the box does not put is ignored, the scripted user's
+        # --reading included: the box's choice stands either way.
+        for reply in ("buyable", "menu"):
+            with self.subTest(reply=reply):
+                replied = box.decide(q, self.page, reply=reply)
+                self.assertEqual((replied.reading, replied.reading_by, replied.refuse, replied.ask),
+                                 ("buyable", "box", None, None))
+                self.assertEqual(replied.query, decision.query)
         # Both readings answerable: the box asks, as before, and records no reading.
         for q in (self.go + "Which seller has the best availability for size M?",
                   self.go + "Does every listing offer size M?"):
@@ -610,6 +618,11 @@ def menu_log(folder: str, name: str, pages: list[tuple]) -> pathlib.Path:
             # A snapshot taken with a depth that ends at the combobox: a leaf, no colon, no
             # option lines, its sibling next (20260910T133605/scaled-cheapest-target-1.log).
             block = '- combobox "Size *" [ref=f1e89]\\n- generic [ref=f1e92]:'
+        if how == "excerpt-front":
+            # A find window that starts inside the option block: the head, then the options
+            # from the match's window on, without the placeholder, then the next tree line
+            # (20261014T220116/apparel-cheapest-xl-1, igr-app-08, a find for "XL").
+            block = '- combobox "Size *" [ref=f1e89]:' + options
         if how in ("snapshot", "depth-cut"):
             reply("browser_snapshot", "{'result': '### Page\\n- Page URL: " + url
                   + "\\n### Snapshot\\n```yaml\\n" + block + "\\n```'}")
@@ -773,15 +786,42 @@ class CounterexampleFromTheMenu(unittest.TestCase):
         cut = menu_log(self.tmp.name, "depth", [(self.urls[0], {}, "depth-cut")])
         self.assertEqual(sufficiency.size_menus(cut), {})
         self.assertEqual(box.check(self.decision(), "No", cut)["flag"], "counterexample_not_opened")
-        # The fault, planted: the same text with the leaf read as a head with children.
+        # The fault, planted: the reading the first rule made of this snapshot, complete
+        # with no sizes, refutes every size; no text gives that reading now, a head with
+        # a colon and no option lines included.
+        forced = {key: sufficiency.MenuReading({}, True)}
+        self.assertIsNotNone(primitives.counterexample_seen(self.decision().form, self.page, {key}, forced))
         text = cut.read_text().replace('[ref=f1e89]\\\\n', '[ref=f1e89]:\\\\n')
         planted = pathlib.Path(self.tmp.name) / "planted.log"
         planted.write_text(text)
-        self.assertEqual(sufficiency.size_menus(planted), {key: sufficiency.MenuReading({}, True)})
-        self.assertTrue(box.check(self.decision(), "No", planted)["ok"])
+        self.assertEqual(sufficiency.size_menus(planted), {})
         # A whole snapshot, head with a colon, options, then a tree line, still refutes.
         whole = menu_log(self.tmp.name, "whole", [(self.urls[0], {"S": True, "L": True})])
         self.assertTrue(box.check(self.decision(), "No", whole)["ok"])
+
+    def test_a_find_window_that_starts_inside_the_menu_shows_presence_only(self):
+        # Verifier finding, 20 Oct 2026: the find renderer prints three lines around a
+        # match with no mark of what it dropped before them, so a block whose first option
+        # is not the placeholder may have lost options in front of the window.
+        key = sufficiency.listing_key(self.urls[0])
+        xs = box.decide(f"Go to {RESULTS_URL} . Does every listing offer size XS? Answer yes or no.",
+                        self.page, reply="menu")
+        seen = {"S": True, "M": True, "L": True, "XL": True}        # a find on XL: options 2 to 5
+        front = menu_log(self.tmp.name, "front", [(self.urls[0], seen, "excerpt-front")])
+        reading = sufficiency.size_menus(front)[key]
+        self.assertEqual((reading.options, reading.complete), (seen, False))
+        self.assertEqual(box.check(xs, "No", front)["flag"], "counterexample_not_opened")
+        # The fault, planted: the block read as complete refutes XS.
+        forced = {key: sufficiency.MenuReading(dict(seen), True)}
+        self.assertIsNotNone(primitives.counterexample_seen(xs.form, self.page, {key}, forced))
+        # The same block beginning with the placeholder is the whole menu and refutes XS.
+        whole = menu_log(self.tmp.name, "front-whole", [(self.urls[0], seen, "excerpt-closed")])
+        self.assertTrue(sufficiency.size_menus(whole)[key].complete)
+        self.assertTrue(box.check(xs, "No", whole)["ok"])
+        # Presence still counts: a size seen disabled in the window refutes the buying reading.
+        disabled = menu_log(self.tmp.name, "front-disabled",
+                            [(self.urls[0], {"M": False, "L": True}, "excerpt-front")])
+        self.assertTrue(box.check(self.decision(reply="buyable"), "No", disabled)["ok"])
 
 
 V2_BATCHES = compare_cells.DEVELOPMENT["box v2 development, Thornwood, in-sample"]
@@ -819,6 +859,15 @@ class BoxBatchesReplayed(unittest.TestCase):
         partial = [r for r in rows if r["reading"] == "partial"]
         self.assertEqual((len(rows), len(complete), len(partial)), (180, 109, 71))
         self.assertEqual([r for r in rows if not r["agrees"]], [])
+        # The one stored find block without the placeholder (cheapest-xl-1, igr-app-08, a
+        # find for "XL" printing S, M, L, XL) is partial on its own; the run's two snapshots
+        # of that listing keep its merged reading complete.
+        log = paths.RESULTS / "20261014T220116" / "apparel-cheapest-xl-1.log"
+        finds = [sufficiency.menu_blocks(text, whole_page=False)
+                 for tool, text, _ in trace_stats.tool_replies(log).values() if tool == "browser_find"]
+        self.assertEqual([b for blocks in finds for b in blocks],
+                         [({"S": False, "M": False, "L": True, "XL": True}, False)])
+        self.assertTrue(sufficiency.size_menus(log)["slug:igr-app-08"].complete)
         # The verifier's case: on count-stocked-2 of 20261014T213118 a No to "every listing
         # offers XL" is refuted by the one complete reading, igr-app-03's menu of S and L,
         # and not by igr-app-02's excerpt of S and M.
@@ -1219,10 +1268,52 @@ class SuiteQuery(unittest.TestCase):
             with self.subTest(task=task["id"]):
                 query, applied = suite.build_query(task, self.spec, args)
                 self.assertIsNotNone(query)
-                fields = suite.box_fields(applied["box"], args.reading)
+                fields = suite.box_fields(applied["box"])
                 asked = task["id"] in Decide.AMBIGUOUS
                 self.assertEqual(fields["box"]["asked"], asked)
-                self.assertEqual(fields["reading"], "menu" if asked else None)
+                self.assertEqual((fields["reading"], fields["reading_by"]),
+                                 ("menu", "user") if asked else (None, None))
+                self.assertEqual(suite.reading_answered(applied["box"], args.reading),
+                                 "menu" if asked else None)
+
+    def test_a_reading_the_box_took_is_recorded_printed_and_scored_under_its_key(self):
+        # Verifier finding, 20 Oct 2026: a run the box read as buyable recorded no reading
+        # and was scored under the menu key, the flag's.
+        task = {"id": "best-price", "family": "apparel", "gated": True,
+                "query": "Go to {base}/catalogsearch/result/?q=Example . Which seller has the "
+                         "best price for size M?",
+                "expect": {"kind": "contains", "any": ["Seller B"], "price": 12.25}}
+        query, applied = suite.build_query(task, self.spec, self.args(box=True, reading="menu"))
+        fields = suite.box_fields(applied["box"])
+        self.assertEqual((fields["reading"], fields["reading_by"], fields["box"]["asked"]),
+                         ("buyable", "box", False))
+        self.assertEqual(suite.reading_answered(applied["box"], "menu"), "buyable")
+        self.assertIsNone(suite.reading_answered(None, None))
+        # The dry run says so, before the text.
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            suite.print_dry_task(task, query, applied)
+        lines = out.getvalue().splitlines()
+        self.assertEqual(lines[1], "reading taken by the box: buyable")
+        self.assertTrue(lines[2].startswith("Go to "))
+        # Scored under the buyable sidecar key, where the task has one: the clothing count
+        # question's key is 10 under the menu reading and 5 under buyable.
+        count = next(t for t in self.spec["tasks"] if t["id"] == "apparel-count-stocked")
+        readings = score.readings_for(paths.TASKS / "tasks_apparel.json")
+        taken = {"reading": "buyable", "reading_by": "box"}
+        self.assertEqual(score.under_reading(count, suite.reading_answered(taken, "menu"), readings)["expect"],
+                         {"kind": "count", "value": 5})
+        asked = {"reading": "menu", "reading_by": "user"}
+        self.assertEqual(score.under_reading(count, suite.reading_answered(asked, "menu"), readings)["expect"],
+                         count["expect"])
+        clear = {"reading": None, "reading_by": None}
+        self.assertEqual(score.under_reading(count, suite.reading_answered(clear, "menu"), readings)["expect"],
+                         count["expect"])
+        # A plain task prints no such line.
+        plain = next(t for t in self.spec["tasks"] if t["id"] == "apparel-headline")
+        query, applied = suite.build_query(plain, self.spec, self.args(box=True))
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            suite.print_dry_task(plain, query, applied)
+        self.assertNotIn("reading taken by the box", out.getvalue())
 
     def unrelated_task(self) -> dict:
         return {"id": "unrelated-weather", "family": "apparel", "gated": False,

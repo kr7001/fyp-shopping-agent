@@ -187,8 +187,17 @@ GENERATED_SLUG = re.compile(r"^slug:igr-", re.IGNORECASE)
 # prints `- combobox "Pack Size *" [ref=f3e89]` with no colon and no option lines, and the
 # next line is its sibling. So a head line without a trailing colon has no rendered
 # children and gives no reading at all; with one, the block rule applies. The verifier
-# checked this on every stored snapshot line on 20 October 2026: 2,310 combobox lines with
-# a colon all followed by a child line, 1,461 without one never.
+# checked this on every combobox head in every stored tool reply on 20 October 2026: 5,574
+# heads; 3,646 with a colon and a child line after it; 1,924 with no colon and no child;
+# 4 with a colon and no child, "Sort By" heads at the end of a find window, which match
+# no Size head and give no reading.
+#
+# The find renderer prints windows of three lines around each match under the ancestor
+# chain, with no gap marker before a window that starts inside the option block, so a
+# find block whose first option line is not the menu's placeholder may have lost options
+# before its window (20261014T220116/apparel-cheapest-xl-1, igr-app-08: a find for "XL"
+# prints the head and S, M, L, XL without the placeholder). Such a block is partial at the
+# front and shows presence only, whatever follows it.
 MENU_HEAD = re.compile(r'combobox "Size[^"]*"')
 MENU_LINE = re.compile(r'^[ \t]*- option "([^"]*)"((?: \[[^\]]*\])*)[ \t]*$')
 MENU_OPTION = re.compile(r'option "([^"]*)"((?: \[[^\]]*\])*)')
@@ -313,9 +322,11 @@ def listings_opened(text: str, market: Iterable[str] | None = None) -> set[str]:
 
 def menu_blocks(text: str, whole_page: bool) -> list[tuple[dict[str, bool], bool]]:
     """Every size menu in one reply's text, as (the options seen, whether the reading is
-    complete). The block is the option lines after a Size combobox line; it is complete
-    when the reply shows the whole page, or when a line that is not an option follows it.
-    A line that starts as an option and is cut short still shows its size."""
+    complete). The block is the option lines after a Size combobox line that ends with a
+    colon; it is complete when it begins with the menu's placeholder and either the reply
+    shows the whole page or a line of the page's tree follows the block. A block that does
+    not begin with the placeholder may have lost options before a find window, and a line
+    that starts as an option and is cut short still shows its size; both are partial."""
     plain = text.replace("\\\\n", "\n").replace("\\n", "\n").replace('\\"', '"')
     lines = plain.split("\n")
     found = []
@@ -326,6 +337,7 @@ def menu_blocks(text: str, whole_page: bool) -> list[tuple[dict[str, bool], bool
             continue      # a leaf: its children were not rendered, so nothing was seen
         options: dict[str, bool] = {}
         complete = whole_page
+        first = None
         for later in lines[n + 1:]:
             whole = MENU_LINE.match(later)
             if whole:
@@ -340,10 +352,13 @@ def menu_blocks(text: str, whole_page: bool) -> list[tuple[dict[str, bool], bool
                         complete = True
                     break
                 label, flags = cut.group(1), cut.group(2)
+            first = label if first is None else first
             if label != MENU_PLACEHOLDER:
                 options[label] = "[disabled]" not in flags
             if not whole:
                 break                     # a cut line is where an excerpt ended
+        if first != MENU_PLACEHOLDER:
+            complete = False              # options before the window may be missing
         found.append((options, complete))
     return found
 

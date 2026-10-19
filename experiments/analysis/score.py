@@ -88,7 +88,10 @@ def readings_for(tasks_path: pathlib.Path) -> dict:
 
 def under_reading(task: dict, reading: str | None, readings: dict) -> dict:
     """The task with the answer key for this reading, or its own key when the reading has
-    none for it, so a question that was never ambiguous is scored as before."""
+    none for it, so a question that was never ambiguous is scored as before. `reading` is
+    the one the run answered under: the user's reply to the box's question, or the reading
+    the box took itself when the other had no answer on the shop (since 20 Oct 2026 the
+    row carries it as `reading` with `reading_by`)."""
     expect = (readings.get(reading) or {}).get(task["id"]) if reading else None
     return {**task, "expect": expect} if expect else task
 

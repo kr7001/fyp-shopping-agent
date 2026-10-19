@@ -94,7 +94,7 @@ shows).
 | --- | --- | --- | --- |
 | lookup | the named listing or listings | after reading them | the named pages were opened |
 | witness (exists) | candidates in the order most likely to satisfy, cheapest first for price conditions | at the first candidate that satisfies | the witness was opened, or every candidate was |
-| counterexample (forall) | any order | at the first candidate that fails | a counterexample was opened, or every candidate was. A No is supported when the log shows an opened listing whose complete observed size menu lacks the size asked about, whether or not the answer names it; naming the listing stays in the plan text as a request (20 October 2026, after five correct bare "No" runs were refused for naming nothing). A menu is complete when the reply shows the whole page or the option block ends before the reply does; a find excerpt cut inside the menu is evidence of the sizes it shows, disabled or not, and of nothing else (the verifier found an excerpt of S, M read as a menu without L and XL) |
+| counterexample (forall) | any order | at the first candidate that fails | a counterexample was opened, or every candidate was. A No is supported when the log shows an opened listing whose complete observed size menu lacks the size asked about, whether or not the answer names it; naming the listing stays in the plan text as a request (20 October 2026, after five correct bare "No" runs were refused for naming nothing). A menu is complete when its option block begins with the menu's placeholder ("Choose an Option...") and the reply shows the whole page or the block ends before the reply does; a find excerpt cut inside the menu, or one whose block does not begin with the placeholder (the find renderer prints three lines around a match with no mark of what it dropped before them), is evidence of the sizes it shows, disabled or not, and of nothing else (the verifier found an excerpt of S, M read as a menu without L and XL). A snapshot taken with a depth prints a menu beyond it as a leaf, with no colon and no options, which is no reading at all |
 | bound and prune (argmin, argmax, topk) | ascending advertised price for argmin | when no unopened candidate can beat the best, or the k-th best | every candidate advertised at or below the answer's price was opened |
 | exhaust (count, aggregate) | every candidate | when all are opened | every candidate was opened |
 | depth (reviews) | review pages in order | at the first mention, or the last page | the quoted page was read, or every page was |
@@ -123,6 +123,19 @@ It does not ask when the readings give the same answer on this page, which the b
 tell: if no listing on the page is sold out in the size asked about, "offer" has one answer.
 That rule comes from "Dialogue to Discovery" (ask only when the catalogue splits on the
 attribute) and it is what keeps the box from over-asking.
+
+Nor does it ask when one reading has no answer on this shop (20 October 2026). The menu
+reading of a price question asks for the price of a size that is listed but sold out, which
+the gated page never prints, so for a question whose form compares a price or carries a price
+limit, the cheapest, the dearest or the k cheapest of a size, an existence question under a
+price limit, a comparison of named listings by price and a price survey, asked with an
+ambiguous verb ("which seller has the best price for size M"), the box takes the buyable
+reading without asking, writes that reading into the question text the agent gets, and
+records `reading_by: "box"` beside the reading; the run is then scored under that reading's
+key, as a run the user answered is. The box decides whether it would ask before it looks at
+any reply, so a reply to a question it does not put, the scripted user's `--reading`
+included, is ignored. A question answerable under both readings, "does every listing offer
+size M" or "how many listings offer size M", still asks.
 
 ## Questions the box cannot classify
 

@@ -445,7 +445,6 @@ class Graded(unittest.TestCase):
         # 20 Oct 2026: "best price", "top price" and "best deal" are the cheapest in shop
         # vocabulary, not a survey of everything. "best availability" stays as it was.
         for question in ("Which seller has the best price for size M?",
-                         "Which seller has the top price for size M?",
                          "Who offers the best deal for size M?",
                          "Which seller has the lowest price for size M?"):
             with self.subTest(question=question):
@@ -455,6 +454,13 @@ class Graded(unittest.TestCase):
                 self.assertEqual(form.not_shown(parsed), [])
         availability = form.from_rules(GO + "Which seller has the best availability for size M?")
         self.assertEqual((availability.kind(), availability.fallback), ("survey", True))
+        # "top price" can mean the highest, so it is never the cheapest: it asks (the verb
+        # "has" governs "size M") or is refused, as the graded-word rule decides.
+        top = GO + "Which seller has the top price for size M?"
+        parsed = form.from_rules(top)
+        self.assertNotEqual(parsed.quantifier, "argmin")
+        self.assertTrue(ambiguity.ask(top) is not None or form.not_shown(parsed))
+        self.assertIsNotNone(box.decide(top, synthetic_page([12.25, 19.50])).ask)
         # The dearest is still the dearest.
         self.assertEqual(form.from_rules(GO + "Which seller has the highest price for size M?").kind(),
                          "argmax_price")

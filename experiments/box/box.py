@@ -160,10 +160,13 @@ def decide(question: str, page: page_module.Page | None, reply: str | None = Non
     size M?" has a price only for a size that can be sold, so it is read as buyable rather
     than asked and then refused after the reply (verifier finding, 20 October 2026). When
     both readings can be answered, as for "does every listing offer size M", the box asks.
+    The box decides whether it would ask before it looks at any reply, so a reply given to
+    a question it does not put, the scripted user's `--reading` included, is ignored, as a
+    reply to a clear question is.
     """
     asked = ambiguity.ask(question)
     reading_by = None
-    if asked is not None and reply is None:
+    if asked is not None:
         form = form_module.from_rules(question, page)
         missing = form_module.not_shown(form, page) if page is not None else []
         if form.quantifier != "unknown" and missing:
@@ -173,7 +176,7 @@ def decide(question: str, page: page_module.Page | None, reply: str | None = Non
             form_module.from_rules(ambiguity.with_reading(question, asked, key), page), page)]
         if page is not None and len(answerable) == 1 and len(asked.readings) == 2:
             reply, reading_by = answerable[0], "box"
-        else:
+        elif reply is None:
             return Decision(question=question, kind=None, ask=asked, reading=None, query=None,
                             plan=None, page=page)
     reading = None
