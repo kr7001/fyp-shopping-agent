@@ -4535,7 +4535,7 @@ window.SITE = {
    },
    {
     "title": "5. What did not work, and limits",
-    "html": "<p>In the pilot nothing failed, with two runs that proves little. What the day's checks found: the model parser omits the listing's URL and misnames the population, both prompt fixes, and invented one attribute, which the fifth property caught; v2's stricter \"does every\" check would have refused 5 of 14 correct bare \"No\" answers in the old cells, a trade accepted because the box's own text tells the agent to name the counterexample; the bound texts say \"at or above\" where the check counted \"at or below\", harmless on this market and fixed for a market with a tie; and the first ambiguity rule fired on two price questions before it was tightened.</p>\n<p>In the development batches (section 4), three runs of 26 were wrong, and the fallback plan spent $0.796 and 95 tool calls opening every listing for an attribute no page shows. The check that would have refused the wrong answers was off, and replayed it refuses none of them. On 20 October the verifier's pass on the batches produced box v7 to v9: a bare \"No\" counts when the log shows a complete menu without the size, a question about an attribute the shop does not show is refused whatever the word, a keyless run that did not finish is unscored, and the listing counter no longer counts a category page (its fourth correction). The verifier then failed the new menu reader twice before accepting it, once for taking a search excerpt for a whole menu and once for taking a depth-cut snapshot for a menu with no sizes. Both are lessons 37 and 38.</p>\n<p>Standing limits: one market family, one model, our shop's 60 ms price reveal, the two agents' different sampling and clocks, the refusal check's one blind spot (a misread advertised price), shipping cost and combined discounts out of scope.</p>"
+    "html": "<p>In the pilot nothing failed, with two runs that proves little. What the day's checks found: the model parser omits the listing's URL and misnames the population, both prompt fixes, and invented one attribute, which the fifth property caught. V2's stricter \"does every\" check would have refused 5 of 14 correct bare \"No\" answers in the old cells, a trade accepted because the box's own text tells the agent to name the counterexample. The bound texts say \"at or above\" where the check counted \"at or below\", harmless on this market and fixed for a market with a tie. And the first ambiguity rule fired on two price questions before it was tightened.</p>\n<p>In the development batches (section 4), three runs of 26 were wrong, and the fallback plan spent $0.796 and 95 tool calls opening every listing for an attribute no page shows. The check that would have refused the wrong answers was off, and replayed it refuses none of them. On 20 October the verifier's pass on the batches produced box v7 to v9: a bare \"No\" counts when the log shows a complete menu without the size, a question about an attribute the shop does not show is refused whatever the word, a keyless run that did not finish is unscored, and the listing counter no longer counts a category page (its fourth correction). The verifier then failed the new menu reader twice before accepting it, once for taking a search excerpt for a whole menu and once for taking a depth-cut snapshot for a menu with no sizes. Both are lessons 37 and 38.</p>\n<p>Standing limits: one market family, one model, our shop's 60 ms price reveal, the two agents' different sampling and clocks, the refusal check's one blind spot (a misread advertised price), shipping cost and combined discounts out of scope.</p>"
    },
    {
     "title": "6. Next week",
@@ -7030,7 +7030,7 @@ window.SITE = {
   }
  ],
  "built": {
-  "commit": "e1e0a15",
+  "commit": "2bf3e86",
   "date": "2026-10-20",
   "branch": "dev",
   "dirty": true,
@@ -7042,7 +7042,7 @@ window.SITE = {
    "2026-09-14": 49,
    "2026-10-05": 45,
    "2026-10-12": 47,
-   "2026-10-19": 8
+   "2026-10-19": 9
   }
  }
 };
