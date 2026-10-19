@@ -173,40 +173,10 @@ def covered(floor: Floor, opened: set[str]) -> bool:
     return floor.all_of <= opened and (not floor.one_of or bool(floor.one_of & opened))
 
 
-def tool_replies(log_path: pathlib.Path) -> dict[str, tuple[str, str]]:
-    """Every tool reply openJiuwen received, in full, keyed by call id.
-
-    The last event's history is not enough on its own, because the runtime trims older
-    tool replies to a thousand characters before re-sending them. Every reply is seen
-    untrimmed in the event that follows it, so the longest copy of each is the original.
-    """
-    names: dict[str, str] = {}
-    arguments: dict[str, dict] = {}
-    replies: dict[str, str] = {}
-    for line in log_path.read_text(errors="replace").splitlines():
-        start = line.find('{"event_id"')
-        if start < 0:
-            continue
-        try:
-            event = json.loads(line[start:])
-        except json.JSONDecodeError:
-            continue
-        for message in event.get("messages") or []:
-            for call in message.get("tool_calls") or []:
-                function = call.get("function") or {}
-                names[call.get("id")] = trace_stats.normalise(function.get("name") or "")
-                try:
-                    arguments[call.get("id")] = json.loads(function.get("arguments") or "{}")
-                except (json.JSONDecodeError, TypeError):
-                    arguments[call.get("id")] = {}
-            if message.get("role") == "tool":
-                content = message.get("content")
-                content = content if isinstance(content, str) else json.dumps(content)
-                key = message.get("tool_call_id")
-                if len(content) > len(replies.get(key, "")):
-                    replies[key] = content
-    return {key: (names.get(key, "?"), text, arguments.get(key) or {})
-            for key, text in replies.items()}
+# Every tool reply openJiuwen received, in full, keyed by call id. The reader lives in
+# `trace_stats` since 20 October 2026, so the box's check can use it too; the name here is
+# kept for the callers and the tests.
+tool_replies = trace_stats.tool_replies
 
 
 def rescore(task: dict, answer: str, ok: bool, row: dict, suite: dict,
@@ -258,10 +228,21 @@ def verify_run(record_path: pathlib.Path, task: dict, truth: dict,
         cost_lines = len(trace_stats.COST_FIELD.findall(log))
         resummed = trace_stats.cost_reported(log)
 
-    opened = sufficiency.listings_opened(log)
-    opened_seen = sufficiency.listings_opened(observed)
+    # The market's listings are the ones on the results page the box read, when the row
+    # carries it (every run under the box); without it the counter's own rule applies.
+    page_record = (stored.get("box") or {}).get("page") or {}
+    market = [item["url"] for item in page_record.get("listings") or []] or None
+    opened = sufficiency.listings_opened(log, market)
+    opened_seen = sufficiency.listings_opened(observed, market)
+    # Product pages the run opened that are not the market's: nothing under the box so
+    # far, and the thing LESSONS 1 was about.
+    outside = sufficiency.listings_opened(log) - opened
     skus = sorted(key.split(":", 1)[1] for key in opened)
     floor = own_floor(task, truth)
+    # The key the run was scored under: the sidecar's reading when it has a key for this
+    # task under the batch's or the row's reading, otherwise the task's own.
+    reading = stored.get("reading") or (suite or {}).get("reading")
+    scored_under = reading if ((readings or {}).get(reading) or {}).get(task["id"]) else None
     probe_line = next((line for line in log.splitlines() if line.startswith("card probe:")),
                       None)
     trace = record.get("trace") or {}
@@ -280,6 +261,13 @@ def verify_run(record_path: pathlib.Path, task: dict, truth: dict,
         "answer_matches_suite": answer[:300] == (stored.get("answer") or ""),
         "opened": len(opened), "opened_in_replies": len(opened_seen),
         "skus": skus, "unknown_pages": [s for s in skus if s not in truth],
+        "outside_market": sorted(key.split(":", 1)[1] for key in outside),
+        # What kind of key judged the run, how many sellers a ranked key expects, and the
+        # sidecar reading it was scored under (None for the task's own key), so the error
+        # kinds and the development cell's comparisons can read them (20 Oct 2026).
+        "key_kind": task["expect"]["kind"],
+        "ranked": len(task["expect"]["items"]) if task["expect"]["kind"] == "ranked" else None,
+        "scored_under": scored_under,
         "floor": floor.count, "floor_rule": floor.rule,
         "met_floor": floor.count is not None and len(opened) >= floor.count,
         "met_eight": len(opened) >= 8,
@@ -373,6 +361,8 @@ def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: boo
                     f"{r['opened_in_replies']} in the tool replies")
         if r["unknown_pages"]:
             problem(f"{tag}: opened pages outside the market {r['unknown_pages']}")
+        if r.get("outside_market"):
+            problem(f"{tag}: opened product pages outside the market {r['outside_market']}")
         if r["not_found_pages"]:
             problem(f"{tag}: {r['not_found_pages']} not-found pages observed")
         if r["surcharge_labels"]:

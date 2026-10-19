@@ -60,7 +60,15 @@ import targeting
 #      states include every price limit the form parsed from it, written as the plan
 #      writes it, so a question that says "under $20" exempts the "$20.00" the witness
 #      text sends and an answer quoting it back is not refused (`stated_figures`)
-VERSION = 6
+#   7  20 October 2026. Two changes to what is refused before the agent runs, and two to
+#      the check. A superlative or comparative on an attribute the shop does not show is
+#      refused whatever the word (form v5), and a refusal comes before an ask for a price
+#      limit. The check counts as opened only the listings on the page the box read, and
+#      a bare No to a universal is supported by an opened listing whose observed size
+#      menu lacks the size (primitives v4, `sufficiency.size_menus`). On the three box
+#      v2 batches of 14 October no text changes; one question, "Who sells the softest
+#      Thornwood tee?", is refused instead of planned by the fallback
+VERSION = 7
 
 # The results page the question sends the agent to: the first URL in it.
 URL = re.compile(r"https?://\S+")
@@ -126,6 +134,10 @@ def decide(question: str, page: page_module.Page | None, reply: str | None = Non
     A question the rules find no shape and no shopping signal in is a bypass: the agent
     gets it unchanged, with no preamble and no plan, and the record says so. The page may
     be None then, since such a question names none. Every other outcome needs the page.
+
+    A refusal comes before an ask (20 October 2026): a question that needs an attribute
+    the shop does not show cannot be answered whatever limit the user would give, so it is
+    refused rather than asked. The one ask the form raises on its own is for a price limit.
     """
     asked = ambiguity.ask(question)
     if asked is not None and reply is None:
@@ -144,14 +156,14 @@ def decide(question: str, page: page_module.Page | None, reply: str | None = Non
                         query=question, plan=None, page=page, form=form, bypass=True)
     if page is None:
         raise ValueError("the question names no results page to read")
-    if form.unknowns:
-        return Decision(question=question, kind=None,
-                        ask=ambiguity.threshold_ask(form.evidence["unknowns"]),
-                        reading=reading, query=None, plan=None, page=page, form=form)
     missing = form_module.not_shown(form, page)
     if missing:
         return Decision(question=question, kind=None, ask=asked, reading=reading, query=None,
                         plan=None, page=page, form=form, refuse=form_module.refusal(missing))
+    if "price limit" in form.unknowns:
+        return Decision(question=question, kind=None,
+                        ask=ambiguity.threshold_ask(form.evidence["unknowns"]),
+                        reading=reading, query=None, plan=None, page=page, form=form)
     problems = form_module.verify(form, page)
     if problems:
         # The refusal `planner.planned_query` makes, for the same reason: paying a model to
@@ -192,8 +204,13 @@ def check(decision: Decision, answer: str, log_path: pathlib.Path) -> dict:
     shapes. So does a bypassed question, which has no plan and usually no page: the figure
     rules need neither. Either way, a verdict that passes is then held to the plan's own
     check, when there is a plan: did the run open what the primitive's stop rule required.
+
+    What counts as opened is a listing of the market the box read, the page's own URLs
+    (20 October 2026); a bypassed run has no page, so the counter's own rule applies. The
+    size menus the run saw are read from its log for the counterexample check.
     """
     text = sufficiency.observed_text(log_path)
+    market = [item.url for item in decision.page.listings] if decision.page else None
     if decision.kind in targeting.BODIES:
         verdict = policy.gate_from_page(decision.question, decision.page, answer, log_path)
     else:
@@ -202,11 +219,12 @@ def check(decision: Decision, answer: str, log_path: pathlib.Path) -> dict:
         seen = {"deltas": seen["deltas"], "absolutes": seen["absolutes"] | stated,
                 "any": seen["any"] | stated}
         verdict = {**sufficiency.check(answer, seen),
-                   "opened": len(sufficiency.listings_opened(text)),
+                   "opened": len(sufficiency.listings_opened(text, market)),
                    "population": len(decision.page.listings) if decision.page else None,
                    "floor": None, "floor_from": "page" if decision.page else None}
     if verdict["ok"] and decision.plan is not None:
-        own = primitives.check(decision.form, decision.page, answer, text)
+        own = primitives.check(decision.form, decision.page, answer, text,
+                               menus=sufficiency.size_menus(log_path))
         verdict = {**verdict, "ok": own["ok"], "flag": own["flag"], "why": own["why"],
                    "primitive": own["primitive"]}
     return verdict

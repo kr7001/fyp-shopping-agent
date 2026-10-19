@@ -77,6 +77,16 @@ class Page:
         return sorted(self.listings, key=lambda item: (item.advertised, item.seller))
 
 
+def from_record(data: dict) -> Page:
+    """The page back from the record `Page.record` wrote into a run record, so a stored
+    run's check can be replayed on the page the box read (20 October 2026). The record keeps
+    no title, so each listing's title is its seller here, which no plan reads."""
+    listings = [Listing(seller=item["seller"], title=item["seller"], url=item["url"],
+                        advertised=float(item["advertised"])) for item in data["listings"]]
+    return Page(url=data["url"], listings=listings, total=data.get("total"),
+                next_page=bool(data.get("next_page")))
+
+
 def parse(html: str, url: str) -> Page:
     """The page's listings in the order shown, the toolbar total and the pager state.
 

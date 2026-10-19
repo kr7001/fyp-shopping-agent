@@ -106,9 +106,21 @@ class TaskFile(unittest.TestCase):
         url = box.results_url(self.question(task), required=False)
         return box.decide(self.question(task), self.page if url else None, reply=reply)
 
+    # What the box does since 20 October 2026 where it differs from the file's "box" field,
+    # which records what the box did when the batch ran (box v6, form v4): a superlative on
+    # an attribute the shop does not show is refused rather than planned by the fallback
+    # (docs/content/box-v2-design.md, "Verification, five properties"). The file is the
+    # frozen record of that batch, so the moved expectation lives here, dated.
+    SINCE_20_OCT = {"apparel-softest": {"outcome": "refuse", "kind": None}}
+
+    def expected_box(self, task: dict) -> dict:
+        return self.SINCE_20_OCT.get(task["id"], task["box"])
+
     def test_the_box_does_what_each_task_expects(self):
+        self.assertEqual(self.spec["tasks"][-3]["id"], "apparel-softest")
+        self.assertEqual(self.spec["tasks"][-3]["box"], {"outcome": "fallback", "kind": "survey"})
         for task in self.spec["tasks"]:
-            outcome, kind = task["box"]["outcome"], task["box"]["kind"]
+            outcome, kind = self.expected_box(task)["outcome"], self.expected_box(task)["kind"]
             with self.subTest(task=task["id"], outcome=outcome):
                 decision = self.decide(task)
                 record = decision.record()
@@ -141,9 +153,9 @@ class TaskFile(unittest.TestCase):
     def expected_counts(self) -> tuple[dict, int, int]:
         """What the file's "box" fields say a batch of REPEATS repeats counts, and how many
         slots reach the agent without a reading and with one."""
-        outcomes = [t["box"]["outcome"] for t in self.spec["tasks"]]
+        outcomes = [self.expected_box(t)["outcome"] for t in self.spec["tasks"]]
         answered = sum(1 for t in self.spec["tasks"]
-                       if t["box"]["outcome"] == "ask" and t["box"]["kind"])
+                       if self.expected_box(t)["outcome"] == "ask" and self.expected_box(t)["kind"])
         counts = {"asked": outcomes.count("ask"), "refused": outcomes.count("refuse"),
                   "bypassed": outcomes.count("bypass"), "fallback": outcomes.count("fallback")}
         counts = {key: value * REPEATS for key, value in counts.items()}

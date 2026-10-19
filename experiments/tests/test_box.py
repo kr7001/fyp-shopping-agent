@@ -31,6 +31,7 @@ import page  # noqa: E402
 import planner  # noqa: E402
 import policy  # noqa: E402
 import primitives  # noqa: E402
+import replay_box  # noqa: E402
 import score  # noqa: E402
 import sufficiency  # noqa: E402
 import suite  # noqa: E402
@@ -374,11 +375,16 @@ class Bypass(unittest.TestCase):
             box.decide("Which seller is cheapest for size M?", None)
 
     def test_who_sells_is_a_fallback_not_a_bypass(self):
-        # Verifier finding, 14 Oct 2026: "sells" was not a market word, so this bypassed.
-        decision = box.decide("Who sells the softest tee?", self.page)
+        # Verifier finding, 14 Oct 2026: "sells" was not a market word, so "Who sells the
+        # softest tee?" bypassed. Since 20 Oct that question is refused for its superlative
+        # (`Refusal`), so the market word is checked on one without a superlative.
+        decision = box.decide("Who sells the Thornwood tee?", self.page)
         self.assertFalse(decision.bypass)
         self.assertEqual((decision.kind, decision.record()["fallback"]), ("survey", True))
         self.assertIn("a market word: sells", decision.form.evidence["fallback"])
+        softest = box.decide("Who sells the softest tee?", self.page)
+        self.assertEqual((softest.bypass, softest.kind, softest.record()["fallback"]), (False, None, False))
+        self.assertTrue(softest.refuse)
         for question in UNRELATED:
             with self.subTest(question=question):
                 self.assertTrue(box.decide(question, self.page).bypass)
@@ -486,6 +492,31 @@ class Refusal(unittest.TestCase):
                 self.assertIsNone(decision.refuse)
                 self.assertIsNotNone(decision.query)
 
+    def test_a_superlative_on_an_attribute_the_shop_does_not_show_is_refused_whatever_the_word(self):
+        # 20 Oct 2026: "Who sells the softest Thornwood tee?" was planned by the fallback
+        # and opened all 15 listings for an attribute no page shows (verifier finding).
+        decision = box.decide(self.go + "Who sells the softest Thornwood tee?", self.page)
+        self.assertTrue(decision.refuse.startswith("The shop does not show what 'softest' ranks by"))
+        self.assertEqual((decision.query, decision.plan, decision.kind, decision.record()["fallback"]),
+                         (None, None, None, False))
+        # A refusal comes before an ask: no limit the user could give would answer it.
+        both = box.decide(self.go + "Is there a cheap tee that is the softest?", self.page)
+        self.assertTrue(both.refuse)
+        self.assertIsNone(both.ask)
+        asks = box.decide(self.go + "Is there a cheap Thornwood tee in size M?", self.page)
+        self.assertIsNotNone(asks.ask)
+        self.assertIsNone(asks.refuse)
+
+
+class PageRecord(unittest.TestCase):
+    def test_a_page_comes_back_from_its_record(self):
+        # The record keeps no title; the replay reads sellers, URLs and prices only.
+        original = synthetic_page([31.40, 12.25, 19.50])
+        back = page.from_record(original.record())
+        self.assertEqual(back.record(), original.record())
+        self.assertEqual([i.seller for i in back.by_price()], [i.seller for i in original.by_price()])
+        self.assertEqual((back.total, back.next_page), (3, False))
+
 
 def openjiuwen_log(folder: str, name: str, urls: list[str], seen: str = "") -> pathlib.Path:
     """A log whose tool replies report landing on these URLs, in the form
@@ -496,6 +527,188 @@ def openjiuwen_log(folder: str, name: str, urls: list[str], seen: str = "") -> p
     path = pathlib.Path(folder) / f"{name}.log"
     path.write_text(json.dumps({"event_id": "e1", "messages": messages}) + "\n")
     return path
+
+
+def menu_log(folder: str, name: str, pages: list[tuple[str, dict[str, bool]]]) -> pathlib.Path:
+    """A log whose tool replies report landing on each URL and show its size menu, in the
+    form the runtime stores (a Python repr inside JSON, so a newline is backslash and n),
+    which `sufficiency.size_menus` reads. `pages` pairs each URL with its menu: each label
+    and whether it can be chosen."""
+    messages = [{"role": "user", "content": "the task"}]
+    for n, (url, menu) in enumerate(pages):
+        options = "".join(f'\\n  - option "{label}"' + ("" if can else " [disabled]")
+                          for label, can in menu.items())
+        text = ("{'result': '### Page\\n- Page URL: " + url + "\\n### Snapshot\\n```yaml\\n"
+                '- combobox "Size *" [ref=f1e89]:\\n  - option "Choose an Option..." [selected]'
+                + options + "\\n```'}")
+        messages.append({"role": "assistant", "content": None, "tool_calls": [
+            {"id": f"c{n}", "function": {"name": "mcp_playwright-official_browser_snapshot",
+                                         "arguments": "{}"}}]})
+        messages.append({"role": "tool", "tool_call_id": f"c{n}",
+                         "content": [{"type": "text", "text": text}]})
+    path = pathlib.Path(folder) / f"{name}.log"
+    path.write_text(json.dumps({"event_id": "e1", "messages": messages}) + "\n")
+    return path
+
+
+class ListingsOpened(unittest.TestCase):
+    """The listing counter since 20 Oct 2026 (LESSONS 2, a fourth time: a category page,
+    `electronics.html`, had counted as a listing). A page is a listing by what it is: one of
+    the market's listings when the page the box read is given, else a product page of a
+    generated market or Magento's id path. Never a category or home page."""
+
+    TEXT = "\n".join(f"Page URL: {url}" for url in (
+        "http://localhost:7770/electronics.html", "http://localhost:7770/",
+        "http://localhost:7770/igr-app-03.html", "http://localhost:7770/igr-rvn-07.html",
+        "http://localhost:7770/catalog/product/view/id/230",
+        "http://localhost:7770/calderwood-still-spring-water-multipack-chandler-direct.html",
+        "http://localhost:7770/catalogsearch/result/?q=Thornwood"))
+
+    def test_without_a_market_the_generated_markets_product_pages_count(self):
+        self.assertEqual(sufficiency.listings_opened(self.TEXT),
+                         {"slug:igr-app-03", "slug:igr-rvn-07", "id:230"})
+        # The fault, planted: the old rule, any single-segment .html path, read the
+        # category page and the name slug as listings too.
+        old = {sufficiency._listing_key(url) for url in sufficiency.PAGE_MARKER.findall(self.TEXT)}
+        self.assertEqual(old - {None}, {"slug:electronics", "slug:igr-app-03", "slug:igr-rvn-07",
+                                        "id:230",
+                                        "slug:calderwood-still-spring-water-multipack-chandler-direct"})
+
+    def test_with_a_market_only_its_listings_count(self):
+        market = ["http://localhost:7770/igr-app-03.html", "http://localhost:7770/igr-app-04.html"]
+        self.assertEqual(sufficiency.listings_opened(self.TEXT, market), {"slug:igr-app-03"})
+        self.assertEqual(sufficiency.listings_opened(self.TEXT, []), set())
+        # A market's listings count by membership, however their URLs are spelled.
+        synthetic = synthetic_page([10.15, 11.15])
+        text = "\n".join(f"Page URL: {item.url}" for item in synthetic.listings)
+        self.assertEqual(sufficiency.listings_opened(text, [item.url for item in synthetic.listings]),
+                         {sufficiency.listing_key(item.url) for item in synthetic.listings})
+        self.assertEqual(sufficiency.listings_opened(text), set())
+
+
+class CounterexampleFromTheMenu(unittest.TestCase):
+    """20 Oct 2026: a bare "No" to "does every listing offer size M" is supported by an
+    opened listing whose observed size menu lacks M, whether or not the answer names it.
+    Five correct bare "No" runs of the 14 October batches were refused without this. The
+    plan text still asks the agent to name the listing."""
+
+    def setUp(self):
+        self.page = synthetic_page([10.15, 11.15, 12.15])
+        self.urls = [item.url for item in self.page.listings]
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.question = f"Go to {RESULTS_URL} . Does every listing offer size M? Answer yes or no."
+
+    def decision(self, reply: str = "menu") -> box.Decision:
+        return box.decide(self.question, self.page, reply=reply)
+
+    def why(self, decision: box.Decision, answer: str, log: pathlib.Path) -> str:
+        """The counterexample check's own reason. `box.check` keeps its verdict and then
+        reports the filter check's reason, as it always has."""
+        text = sufficiency.observed_text(log)
+        opened = sufficiency.listings_opened(text, [item.url for item in self.page.listings])
+        return primitives.Counterexample.check(decision.form, decision.page, answer, opened, text,
+                                               sufficiency.size_menus(log))["why"]
+
+    def test_a_bare_no_is_supported_by_an_opened_listing_without_the_size(self):
+        log = menu_log(self.tmp.name, "lacks", [(self.urls[0], {"S": True, "L": True})])
+        self.assertEqual(sufficiency.size_menus(log),
+                         {sufficiency.listing_key(self.urls[0]): {"S": True, "L": True}})
+        verdict = box.check(self.decision(), "No", log)
+        self.assertEqual((verdict["ok"], verdict["opened"], verdict["primitive"]),
+                         (True, 1, "counterexample"))
+        self.assertEqual(self.why(self.decision(), "No", log),
+                         "a counterexample was opened: Seller A's size menu lists S, L and not M")
+
+    def test_a_bare_no_with_only_a_listing_that_has_the_size_opened_is_refused(self):
+        log = menu_log(self.tmp.name, "has", [(self.urls[0], {"S": True, "M": True, "L": True})])
+        self.assertEqual(box.check(self.decision(), "No", log)["flag"], "counterexample_not_opened")
+
+    def test_a_bare_no_with_nothing_opened_is_refused(self):
+        log = openjiuwen_log(self.tmp.name, "nothing", [])
+        self.assertFalse(box.check(self.decision(), "No", log)["ok"])
+
+    def test_a_disabled_size_refutes_the_buying_reading_only(self):
+        log = menu_log(self.tmp.name, "disabled", [(self.urls[0], {"S": True, "M": False, "L": True})])
+        self.assertTrue(box.check(self.decision(reply="buyable"), "No", log)["ok"])
+        self.assertEqual(self.why(self.decision(reply="buyable"), "No", log),
+                         "a counterexample was opened: Seller A's size menu shows M disabled")
+        self.assertEqual(box.check(self.decision(reply="menu"), "No", log)["flag"],
+                         "counterexample_not_opened")
+
+    def test_the_fault_planted(self):
+        # The check without the menus is the check as it was: the same log and the same
+        # No, refused (LESSONS 31).
+        log = menu_log(self.tmp.name, "planted", [(self.urls[0], {"S": True, "L": True})])
+        decision = self.decision()
+        text = sufficiency.observed_text(log)
+        without = primitives.check(decision.form, decision.page, "No", text)
+        self.assertEqual(without["flag"], "counterexample_not_opened")
+        self.assertTrue(primitives.check(decision.form, decision.page, "No", text,
+                                         menus=sufficiency.size_menus(log))["ok"])
+
+    def test_naming_an_opened_listing_passes_as_before(self):
+        log = menu_log(self.tmp.name, "named", [(self.urls[0], {"S": True, "M": True})])
+        self.assertTrue(box.check(self.decision(), "No. Seller A lacks it.", log)["ok"])
+        self.assertEqual(self.why(self.decision(), "No. Seller A lacks it.", log),
+                         "the counterexample named was opened")
+
+    def test_a_pack_label_with_a_surcharge_is_the_pack(self):
+        # The water markets label a pack "2 x 9.5L +$15.01"; the size is still in the menu.
+        self.assertEqual(primitives.menu_has({"2 x 9.5L +$15.01": True}, "2 x 9.5L"), "2 x 9.5L +$15.01")
+        self.assertIsNone(primitives.menu_has({"12 x 550ml": True, "9.5L": True}, "2 x 9.5L"))
+
+
+V2_BATCHES = compare_cells.DEVELOPMENT["box v2 development, Thornwood, in-sample"]
+HAVE_V2_LOGS = all(any((paths.RESULTS / batch).glob("*.log")) for batch in V2_BATCHES)
+
+
+@unittest.skipUnless(HAVE_V2_LOGS, "the raw logs live on the laptop, not in git")
+class BoxBatchesReplayed(unittest.TestCase):
+    """The box's own check replayed over the three batches of 14 October 2026 from the
+    stored page record and the logs (`replay_box`). The figures the verifier asked for on
+    20 Oct: no wrong run refused, and no other run refused either, where five correct bare
+    "No" runs were refused before the menu evidence was read."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.rows = [r for batch in V2_BATCHES for r in replay_box.replay(paths.RESULTS / batch)]
+
+    def test_the_check_refuses_no_wrong_run_and_no_other_run(self):
+        s = replay_box.summary(self.rows)
+        self.assertEqual((s["runs"], s["wrong"], s["wrong_refused"], s["other"], s["other_refused"]),
+                         (32, 3, [], 29, []))
+        self.assertEqual((s["text_reproduced"], s["same_today"], s["decided_differently_today"]),
+                         (32, 31, ["apparel-softest-1"]))
+
+    def test_without_the_menus_the_five_bare_no_runs_are_refused(self):
+        original = sufficiency.size_menus
+        sufficiency.size_menus = lambda log_path: {}
+        try:
+            rows = [r for batch in V2_BATCHES for r in replay_box.replay(paths.RESULTS / batch)]
+        finally:
+            sufficiency.size_menus = original
+        s = replay_box.summary(rows)
+        self.assertEqual(s["wrong_refused"], [])
+        self.assertEqual(sorted(s["other_refused"]),
+                         sorted(["apparel-all-stocked-1", "apparel-all-stocked-3",
+                                 "apparel-all-stocked-1", "apparel-all-stocked-2",
+                                 "apparel-all-stocked-3"]))
+
+    def test_the_menus_read_from_a_real_log(self):
+        batch = paths.RESULTS / "20261014T213118"
+        self.assertEqual(sufficiency.size_menus(batch / "apparel-all-stocked-1.log"),
+                         {"slug:igr-app-03": {"S": True, "L": True}})
+        menus = sufficiency.size_menus(batch / "apparel-cheapest-target-2.log")
+        self.assertEqual(menus["slug:igr-app-07"], {"S": False, "M": False, "L": True, "XL": True})
+        self.assertEqual(menus["slug:igr-app-02"], {"S": True, "M": True, "L": True, "XL": True})
+
+    def test_the_counter_on_the_run_that_wandered_to_a_category_page(self):
+        text = sufficiency.observed_text(paths.RESULTS / "20261014T213118" / "apparel-all-stocked-2.log")
+        self.assertEqual(sufficiency.listings_opened(text), {"slug:igr-app-03"})
+        old = {sufficiency._listing_key(url) for url in
+               sufficiency.PRODUCT_NAV.findall(text) + sufficiency.PAGE_MARKER.findall(text)}
+        self.assertEqual(old - {None}, {"slug:electronics", "slug:igr-app-03"})
 
 
 class BoxCheck(unittest.TestCase):
@@ -937,9 +1150,11 @@ class SuiteQuery(unittest.TestCase):
         self.assertEqual(run.returncode, 0, run.stderr)
         self.assertIn(f"BYPASS: {UNRELATED[0]}", run.stdout)
         self.assertNotIn("Listings by advertised price", run.stdout)
-        # The header says what the browser may request, as the payload of a paid run does.
+        # The header says what the browser may request and the flags it runs with, as the
+        # payload of a paid run does.
         self.assertIn(f"browser: browser_tool={suite.BROWSER_TOOL} "
-                      f"browser_origins={suite.ALLOWED_ORIGINS}\n", run.stdout)
+                      f"browser_origins={suite.ALLOWED_ORIGINS} "
+                      f"browser_flags={suite.BROWSER_FLAGS}\n", run.stdout)
         self.assertEqual(tasks.read_bytes(), before)
 
     def test_the_box_and_a_strategy_flag_are_refused(self):
@@ -979,7 +1194,7 @@ class SuiteQuery(unittest.TestCase):
         run = subprocess.run(command, capture_output=True, text=True)
         self.assertEqual(run.returncode, 0, run.stderr)
         self.assertIn("1 tasks x 1 repeats = 1 runs", run.stdout)
-        self.assertIn("browser: browser_tool=None browser_origins=None\n", run.stdout)
+        self.assertIn("browser: browser_tool=None browser_origins=None browser_flags=None\n", run.stdout)
         self.assertNotIn("Listings by advertised price", run.stdout)
 
     def test_the_browser_tool_is_pinned_and_the_user_agent_defined_once(self):
@@ -990,20 +1205,28 @@ class SuiteQuery(unittest.TestCase):
 
     def test_the_browser_may_request_only_the_shop_on_the_gated_shop(self):
         # A bypassed question names no shop page, so the browser is confined to the shop
-        # (verifier finding, 14 Oct 2026). The agent splits the string with shlex.
+        # (verifier finding, 14 Oct 2026), and since 20 Oct service workers are blocked
+        # beside it, so every page the agent reads is one the shop served. The agent splits
+        # the string with shlex.
         words = shlex.split(suite.browser_env("gated")["PLAYWRIGHT_MCP_ARGS"])
         self.assertEqual(words.count("--allowed-origins"), 1)
         self.assertEqual(words[words.index("--allowed-origins") + 1], "http://localhost:7770")
+        self.assertEqual(words.count("--block-service-workers"), 1)
+        self.assertEqual(suite.BROWSER_FLAGS, "--block-service-workers")
         self.assertEqual(words[words.index("--user-agent") + 1], page.GATED_UA)
         self.assertEqual(words[:2], ["-y", f"@playwright/mcp@{suite.BROWSER_TOOL}"])
-        # The default shop sets no MCP arguments, so it is not confined, and says so.
+        # The default shop sets no MCP arguments, so it is not confined, and says so; the
+        # naive loop drives its own browser and gets neither flag.
         self.assertNotIn("PLAYWRIGHT_MCP_ARGS", suite.browser_env("default"))
+        self.assertNotIn("PLAYWRIGHT_MCP_ARGS", suite.browser_env("default", "viewport"))
         self.assertEqual(suite.browser_conditions("openjiuwen", "gated"),
-                         {"browser_tool": "0.0.83", "browser_origins": "http://localhost:7770"})
+                         {"browser_tool": "0.0.83", "browser_origins": "http://localhost:7770",
+                          "browser_flags": "--block-service-workers"})
         for scaffold, shop in (("openjiuwen", "default"), ("naive", "gated"), ("naive", "default")):
             with self.subTest(scaffold=scaffold, shop=shop):
                 self.assertEqual(suite.browser_conditions(scaffold, shop),
-                                 {"browser_tool": None, "browser_origins": None})
+                                 {"browser_tool": None, "browser_origins": None,
+                                  "browser_flags": None})
 
 
 class AgentCode(unittest.TestCase):

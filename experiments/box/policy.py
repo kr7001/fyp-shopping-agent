@@ -198,9 +198,12 @@ def gate_from_page(question: str, page, answer: str, log_path: pathlib.Path) -> 
     and misread an advertised price as the size's price. No check that reads only the page
     can tell that from a correct answer. The plan's "choose the size, then look again" step
     is what targets it.
+
+    Opened means a listing of the page itself (20 October 2026): the market the box read
+    is what a listing is here, so a category page a run wanders to is not one.
     """
     text = sufficiency.observed_text(log_path)
-    opened = sufficiency.listings_opened(text)
+    opened = sufficiency.listings_opened(text, market=[item.url for item in page.listings])
     population = len(page.listings)
     floor = page_floor(question, page, answer)
     verdict = sufficiency.check(

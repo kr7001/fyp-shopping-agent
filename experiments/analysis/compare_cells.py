@@ -29,6 +29,7 @@ from __future__ import annotations
 import collections
 import json
 import pathlib
+import statistics
 import sys
 from math import comb
 
@@ -49,6 +50,18 @@ CELLS = {
     "2 openJiuwen, limit off": ["20261007T115021"],
     "3 second agent": ["20261007T134621"],
     "5 openJiuwen, open everything": ["20261008T034455", "20261008T143724", "20261008T144558"],
+}
+
+# The box's development cell: the three batches of 14 October 2026 under box v2 on
+# Thornwood, the market the box was designed and tuned on, so in-sample and no claim
+# (LESSONS 19). Kept apart from CELLS, which are the four claim-grade cells on one task
+# file and one key: these batches ask tasks_apparel_v2.json, and the third answered the two
+# "offer" questions under the other reading, so pooling them with the first would mix two
+# keys. The tests against cells 1 and 5 use only the runs on the five questions those cells
+# asked, scored under the key fixed before any run (`in_sample`); the other runs are listed.
+DEVELOPMENT = {
+    "box v2 development, Thornwood, in-sample": ["20261014T213118", "20261014T220116",
+                                                 "20261014T222007"],
 }
 
 # "Does every listing offer size M" and "how many listings offer size M" both turn on the
@@ -123,10 +136,11 @@ def load_batch(batch: str) -> list[dict]:
     return found
 
 
-def load() -> tuple[dict, dict]:
+def load(which: dict[str, list[str]] | None = None) -> tuple[dict, dict]:
+    """The gated runs of each cell in `which`, CELLS by default, with the fixture's truth."""
     truth = verify_cells.ground_truth()
     cells = {}
-    for name, batches in CELLS.items():
+    for name, batches in (CELLS if which is None else which).items():
         runs = [run for batch in batches for run in load_batch(batch)]
         # A run the laptop slept through measures the machine, not the agent, and is left
         # out rather than counted as a failure. See `verify_cells.SUSPENDED_AFTER_S`.
@@ -136,6 +150,58 @@ def load() -> tuple[dict, dict]:
                   f"{[r['task'].replace('apparel-', '') + '-' + str(r['repeat']) for r in void]}")
         cells[name] = [r for r in runs if r["gated"] and r not in void]
     return cells, truth
+
+
+def in_sample(runs: list[dict], against: list[dict]) -> list[dict]:
+    """The runs of a development cell that can be set against another cell: those on the
+    questions the other cell asked, scored under the task's own key, the one fixed before
+    any run. A run scored under a sidecar reading (`scored_under`) answered a different
+    question and is left out (LESSONS 7)."""
+    questions = {r["task"] for r in against}
+    return [r for r in runs if r["task"] in questions and r.get("scored_under") is None]
+
+
+def print_development(cells: dict, truth: dict) -> None:
+    """The development cell after the four cells: every run by question, then the tests
+    against cells 1 and 5 on the shared questions. In-sample, so no claim."""
+    names = list(cells)
+    development, _ = load(DEVELOPMENT)
+    for name, runs in development.items():
+        batches = DEVELOPMENT[name]
+        suite = json.loads((RESULTS / batches[0] / "suite.json").read_text())
+        questions = sorted({r["task"] for r in runs})
+        print(f"\n=== {name}")
+        print(f"In-sample, no claim: the box was designed and tuned on Thornwood (LESSONS 19), so "
+              f"these are development figures,\nnot the claim, which needs a market the box was "
+              f"not tuned on. Batches {', '.join(batches)} under box v{suite['box_version']}, "
+              f"form v{suite['form_version']}, primitives v{suite['primitives_version']}:\n"
+              f"{len(runs)} gated runs over {len(questions)} questions. The tests use the runs on "
+              f"the questions cells 1 and 5 asked, scored under the key fixed before the runs;\n"
+              f"a run scored under the other reading of 'offer' is listed, not tested.")
+        print(f"\n  {'question':20} {'batch':16} {'key':9} correct  covered  opened")
+        groups: dict[tuple, list[dict]] = collections.defaultdict(list)
+        for run in runs:
+            groups[(run["task"], run["batch"], run.get("scored_under") or "own")].append(run)
+        for (task, batch, key), group in sorted(groups.items()):
+            print(f"  {task.replace('apparel-', ''):20} {batch:16} {key:9} {sum(r['rescored'] == 'correct' for r in group)}/{len(group)}"
+                  f"      {sum(r['covered'] for r in group)}/{len(group)}      {[r['opened'] for r in group]}")
+        sample = in_sample(runs, cells[names[0]])
+        shared = sorted({r["task"] for r in sample})
+        opened = sorted(r["opened"] for r in sample)
+        print(f"\n  on the {len(shared)} questions cells 1 and 5 asked, under the key fixed before "
+              f"the runs: {len(sample)} runs, "
+              f"{sum(correct(r, 'menu') for r in sample)} correct, "
+              f"{sum(covered(r, 'menu', truth) for r in sample)} covered, "
+              f"median {statistics.median(opened) if opened else '-'} opened, "
+              f"${sum(r['cost'] or 0 for r in sample) / max(1, len(sample)):.3f} a run, "
+              f"{sum(r['tool_calls'] or 0 for r in sample) / max(1, len(sample)):.0f} calls a run")
+        for reading in READINGS:
+            for label, measure in (("correct", lambda r: correct(r, reading)),
+                                   ("covered", lambda r: covered(r, reading, truth))):
+                for other in (names[0], names[3]):
+                    text, pooled, strat = compare(sample, cells[other], measure)
+                    print(f"    {reading:8} {label:8} box vs {other[:1]}  {text:26} "
+                          f"pooled Fisher p={pooled:.5f}  by question p={strat:.5f}")
 
 
 def compare(a: list[dict], b: list[dict], measure) -> tuple[str, float, float]:
@@ -184,6 +250,7 @@ def main() -> int:
                     tag = "distinct runs only" if collapse else "every run"
                     print(f"    {x[:1]} vs {y[:1]}  {text:24} pooled Fisher p={pooled:.5f}  "
                           f"by question p={strat:.5f}   ({tag})")
+    print_development(cells, truth)
     return 0
 
 

@@ -33,6 +33,7 @@ import json
 import pathlib
 import re
 import sys
+from typing import Iterable
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
@@ -49,11 +50,18 @@ RESULTS = paths.RESULTS
 #   3  adds count_without_coverage, written 18 September 2026 alongside the clothing market
 #      and before any run of it. No existing question is a counting question, so this
 #      changes no recorded verdict
+#   4  20 October 2026. The rules are the same; the listing count they are given changes.
+#      `listings_opened` counts the market's own listings when the page record names them,
+#      and otherwise a generated market's product page or Magento's id path, never a
+#      category or home page. Replayed over every stored run of the clothing cells, the
+#      pilot and the three box v2 batches, one count changes: 20261014T213118
+#      apparel-all-stocked-2, 2 to 1, where `electronics.html` had been counted. No
+#      verdict changes
 #
 # Runs scored under different versions are different measurements. A figure quoted from
 # version 1 runs stays a version 1 figure, and the effect of version 2 on them is reported
 # by replay, separately, never by restating the original number.
-RULES_VERSION = 3
+RULES_VERSION = 4
 
 # Money is handled in integer cents throughout. Comparing prices as floats invites a
 # value that does not round-trip to slip past an equality test, and the whole check rests
@@ -141,14 +149,31 @@ ON_RESULTS_PAGE = re.compile(r"\b(advertis\w+|on the results page)\b", re.IGNORE
 # the second scaffold followed the site's own links, which are named after the product,
 # `calderwood-still-spring-water-multipack-chandler-direct.html`, and it read zero again.
 #
-# Magento serves product pages as a single path segment ending in .html, or as an id path,
-# and serves nothing else that way: search results carry a query string and live under
-# catalogsearch. So the rule is the shape of the path, not the spelling of the slug, and it
-# is the same rule for every scaffold.
+# Magento serves product pages as a single path segment ending in .html, or as an id path.
+# Search results carry a query string and live under catalogsearch. But a category page is
+# a single-segment .html path too (`electronics.html`), and on 14 October 2026 a run that
+# wandered to one was counted as having opened a listing, the fourth time the counter read
+# a shape rather than the thing (LESSONS 2). So since 20 October a page is a listing by
+# what it is: one of the market's own listings when the results page the box read names
+# them (`listings_opened(text, market)`), and otherwise a product page of one of the
+# generated markets, whose URL key is its SKU (`igr-app-07`, `igr-rvn-03`, `igr-cal-11`,
+# `igr-water-a`), or Magento's id path. Every stored batch but two void ones from September
+# used one of those two forms, so no stored count changes but the one above.
 PAGE_MARKER = re.compile(r"Page URL:\s*(\S+)")
 PRODUCT_NAV = re.compile(r"page\.goto\('([^']+)'\)")
 PRODUCT_PATH = re.compile(r"^/[a-z0-9][a-z0-9-]*\.html$", re.IGNORECASE)
 PRODUCT_BY_ID = re.compile(r"^/catalog/product/view/id/(\d+)")
+GENERATED_SLUG = re.compile(r"^slug:igr-", re.IGNORECASE)
+
+# A listing's size menu as the agent's own snapshot of the page reports it, read from the
+# box v2 batches' logs on 20 October 2026 (20261014T213118/apparel-all-stocked-1.log,
+# igr-app-03): a `combobox "Size *"` line, then one `option "..."` line per entry of the
+# menu, the placeholder first and a sold-out size marked `[disabled]`. The runtime stores
+# the reply as a Python repr inside JSON, so in the text a newline is the two characters
+# backslash and n, and a quote carries a backslash; `size_menus` undoes that before reading.
+SIZE_MENU = re.compile(r'combobox "Size[^"]*"[^\n]*\n((?:[ \t]*- option "[^"]*"[^\n]*\n?)+)')
+MENU_OPTION = re.compile(r'option "([^"]*)"((?: \[[^\]]*\])*)')
+MENU_PLACEHOLDER = "Choose an Option..."
 
 
 def _listing_key(url: str) -> str | None:
@@ -228,19 +253,58 @@ def evidence(text: str) -> dict[str, set[int]]:
     }
 
 
-def listings_opened(text: str) -> set[str]:
-    """Distinct product pages the run landed on, however it got there.
+def listings_opened(text: str, market: Iterable[str] | None = None) -> set[str]:
+    """Distinct listings the run landed on, however it got there.
 
     Reads both the addresses the run navigated to and the addresses its observations report
     it was at, so a listing opened by clicking a card counts the same as one opened by
     typing its URL.
+
+    `market` is the listing URLs of the results page the box read. When it is given, only
+    those listings count: they are the market the run was sent to, which is what a listing
+    is rather than how its address is spelled (LESSONS 2). Without it, a product page of a
+    generated market or Magento's id path counts, and a category or home page never does
+    (20 October 2026; until then any single-segment .html path counted, and all-stocked-2
+    of 20261014T213118 read 2 listings for one listing and `electronics.html`). A market
+    given as slugs does not recognise the id path of one of its own listings, which no run
+    under the box has used.
     """
     found = set()
     for url in PRODUCT_NAV.findall(text) + PAGE_MARKER.findall(text):
         key = _listing_key(url)
         if key:
             found.add(key)
-    return found
+    if market is not None:
+        return found & {key for key in map(listing_key, market) if key}
+    return {key for key in found if key.startswith("id:") or GENERATED_SLUG.match(key)}
+
+
+def size_menus(log_path: pathlib.Path) -> dict[str, dict[str, bool]]:
+    """The size menu each opened listing showed the run, from the tool replies alone: for
+    each listing key, the sizes in its menu and whether each could be chosen (False when
+    the option is marked disabled, which is how this shop lists a sold-out size).
+
+    A reply that reports a page URL says where the browser was; a reply without one, such
+    as a find, belongs to the page reported last, since the browser is at one page at a
+    time. Only openJiuwen's logs carry these replies; another scaffold's log gives nothing
+    here. Added 20 October 2026 for the counterexample check: a bare "No" is supported when
+    an opened listing's menu lacks the size asked about, whether or not the answer names it.
+    """
+    menus: dict[str, dict[str, bool]] = {}
+    current = None
+    for _tool, text, _args in trace_stats.tool_replies(log_path).values():
+        located = PAGE_MARKER.search(text)
+        if located:
+            current = _listing_key(located.group(1))
+        if current is None:
+            continue
+        plain = text.replace("\\\\n", "\n").replace("\\n", "\n").replace('\\"', '"')
+        for block in SIZE_MENU.findall(plain):
+            menu = menus.setdefault(current, {})
+            for label, flags in MENU_OPTION.findall(block):
+                if label != MENU_PLACEHOLDER:
+                    menu[label] = "[disabled]" not in flags
+    return menus
 
 
 def prices_in(text: str) -> list[int]:

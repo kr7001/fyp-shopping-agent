@@ -50,7 +50,12 @@ import targeting
 #      no owes what a no owes, whatever listing it names. The bound check's extra one is
 #      for the answer's own listing only, and a seller is named only as a whole word
 #      (`policy.bound_floor`, `policy.named_in`)
-VERSION = 3
+#   4  20 October 2026. The counterexample check reads the size menus the run saw: a No
+#      is supported when an opened listing's observed menu lacks the size asked about, or
+#      shows it disabled when the question is about buying, whether or not the answer
+#      names it (`counterexample_seen`). Every check counts as opened only the market's
+#      own listings, those on the page the box read (`sufficiency.listings_opened`)
+VERSION = 4
 
 # The same hazard as every v1 bound strategy: a figure derived from a bound is not a price.
 QUARANTINE = targeting.QUARANTINE
@@ -199,7 +204,7 @@ class FilterModifier:
 
     @staticmethod
     def check(form: form_module.Form, page: page_module.Page, answer: str, opened: set[str],
-              text: str) -> dict:
+              text: str, menus: dict | None = None) -> dict:
         """The price the answer names is within the limit the question set. A No is not held
         to it: the price it quotes is the one that failed."""
         limit = ceiling_of(form)
@@ -314,7 +319,7 @@ class Lookup:
 
     @staticmethod
     def check(form: form_module.Form, page: page_module.Page, answer: str, opened: set[str],
-              text: str) -> dict:
+              text: str, menus: dict | None = None) -> dict:
         required = {sufficiency.listing_key(url) for _, url in named_listings(form, page)
                     if url and sufficiency.listing_key(url)}
         missing = required - set(opened)
@@ -341,7 +346,7 @@ class Witness:
 
     @staticmethod
     def check(form: form_module.Form, page: page_module.Page, answer: str, opened: set[str],
-              text: str) -> dict:
+              text: str, menus: dict | None = None) -> dict:
         """A yes needs its witness opened, or every candidate. A no needs every candidate
         the limit does not rule out opened, and so does an answer with neither word.
 
@@ -378,17 +383,52 @@ class Witness:
                     f"{len(opened)} of the {floor} listings the limit does not rule out")
 
 
+def menu_has(menu: dict[str, bool], size: str) -> str | None:
+    """The menu's label for a size: the size itself, or the size followed by a surcharge
+    as the water markets label a pack ("2 x 9.5L +$15.01"). None when the menu lacks it."""
+    return next((label for label in menu if label == size or label.startswith(size + " ")), None)
+
+
+def counterexample_seen(form: form_module.Form, page: page_module.Page, opened: set[str],
+                        menus: dict[str, dict[str, bool]]) -> tuple[page_module.Listing, str] | None:
+    """The first opened listing whose observed size menu refutes the universal, with why:
+    its menu lacks the size asked about, or, when the question is about buying, shows it
+    disabled, which is how this shop lists a sold-out size. None when the form names no
+    size, or no opened listing was seen to do either. The menus come from the run's own
+    tool replies (`sufficiency.size_menus`), never from the fixture."""
+    size = form.filter("size")
+    if size is None:
+        return None
+    wanted = str(size.value)
+    availability = form.filter("availability")
+    buyable = availability is not None and availability.value == "buyable"
+    for item in page.listings:
+        key = sufficiency.listing_key(item.url)
+        if key not in opened or key not in menus:
+            continue
+        menu = menus[key]
+        label = menu_has(menu, wanted)
+        if label is None:
+            return item, f"lists {', '.join(menu) if menu else 'no size'} and not {wanted}"
+        if buyable and not menu[label]:
+            return item, f"shows {label} disabled"
+    return None
+
+
 class Counterexample:
     """A universal: any order, stop at the first candidate that fails.
 
     The check is stricter than v1's `refutation_without_evidence`, which only refused a No
     that opened nothing: a No must name a listing that was opened, or every listing must
-    have been. Replayed over the stored clothing cells on 14 October 2026, before any run
-    under v2: all 4 wrong Yes answers are caught, and 5 of 14 correct No answers, every one
-    the bare word "No", would be refused for naming no listing. A sixth named its listing
-    by URL and passes. Those cells were never told to name the listing. The refutation text
-    the box sends says to name it as the evidence, so a run under the box that does not is
-    refused rather than believed.
+    have been, or (since 20 October 2026) the log must show an opened listing whose size
+    menu lacks the size asked about. Replayed over the stored clothing cells on 14 October
+    2026, before any run under v2: all 4 wrong Yes answers are caught, and 5 of 14 correct
+    No answers, every one the bare word "No", would be refused for naming no listing. A
+    sixth named its listing by URL and passes. Those cells were never told to name the
+    listing. The refutation text the box sends says to name it as the evidence, and that
+    request stays in the text; but in the box v2 batches of 14 October five correct runs
+    answered the bare word "No" having opened one listing whose menu lacked size M, and
+    were refused (verifier finding). The evidence was in the log, so the check reads it.
     """
     name = "counterexample"
 
@@ -402,9 +442,9 @@ class Counterexample:
 
     @staticmethod
     def check(form: form_module.Form, page: page_module.Page, answer: str, opened: set[str],
-              text: str) -> dict:
-        """A no needs its counterexample opened, or every candidate. A yes needs every
-        candidate.
+              text: str, menus: dict | None = None) -> dict:
+        """A no needs its counterexample opened, or every candidate, or an opened listing
+        whose observed menu refutes the claim. A yes needs every candidate.
 
         An answer that opens with neither word but names a listing could be naming a
         counterexample or an example, and the check cannot tell which, so it is held to
@@ -413,6 +453,11 @@ class Counterexample:
         the listing, so a run that follows it is never held to that. One that names nothing
         either is flagged as unclear. A no is read however it starts (`denies`, the same
         day), so "None of them has it; Seller D is sold out" is a no naming Seller D.
+
+        A bare no, naming nothing, is supported when `menus` (the size menus the run's
+        tool replies showed, by listing) holds an opened listing without the size, or with
+        it disabled when the question is about buying (20 October 2026, see the class).
+        A no naming a listing that was not opened is held to the same evidence.
         """
         named = named_in(answer, page)
         if denies(answer):
@@ -420,6 +465,9 @@ class Counterexample:
                 return ok("the counterexample named was opened")
             if opened_all(page, opened):
                 return ok("every listing was opened")
+            seen = counterexample_seen(form, page, opened, menus or {})
+            if seen is not None:
+                return ok(f"a counterexample was opened: {seen[0].seller}'s size menu {seen[1]}")
             return flag("counterexample_not_opened",
                         f"answers no {'naming ' + named[0].seller if named else 'naming no listing'} "
                         f"without having opened it, having opened {len(opened)} of "
@@ -458,7 +506,7 @@ class BoundPrune:
 
     @staticmethod
     def check(form: form_module.Form, page: page_module.Page, answer: str, opened: set[str],
-              text: str) -> dict:
+              text: str, menus: dict | None = None) -> dict:
         """`policy.bound_floor`'s rule, the one `page_floor` applies to v1's kinds: every
         candidate advertised below the answered price was opened, and the answer's own,
         found by the sellers the answer names. For the k best, below the dearest of the k
@@ -496,7 +544,7 @@ class Exhaust:
 
     @staticmethod
     def check(form: form_module.Form, page: page_module.Page, answer: str, opened: set[str],
-              text: str) -> dict:
+              text: str, menus: dict | None = None) -> dict:
         if not opened_all(page, opened):
             return flag("population_not_covered",
                         f"answers over {len(page.listings)} listings having opened "
@@ -520,7 +568,7 @@ class Depth:
 
     @staticmethod
     def check(form: form_module.Form, page: page_module.Page, answer: str, opened: set[str],
-              text: str) -> dict:
+              text: str, menus: dict | None = None) -> dict:
         verdict = sufficiency.check(answer, sufficiency.evidence(text))
         return {"ok": verdict["ok"], "flag": verdict["flag"], "why": verdict["why"]}
 
@@ -559,13 +607,16 @@ def compose(form: form_module.Form, page: page_module.Page) -> Plan:
                 instruction=instruction, text=f"{preamble(page)}\n\n{instruction}")
 
 
-def check(form: form_module.Form, page: page_module.Page, answer: str, text: str) -> dict:
+def check(form: form_module.Form, page: page_module.Page, answer: str, text: str,
+          menus: dict | None = None) -> dict:
     """The plan's own answer check: the primitive's, then the filters', in the verdict shape
     `sufficiency.check` uses. `text` is what the run observed; the listings it opened are
-    read from it the way every scaffold's are."""
-    opened = sufficiency.listings_opened(text)
+    read from it the way every scaffold's are, and only the market's own listings count,
+    the ones on the page the box read. `menus` is what `sufficiency.size_menus` read from
+    the run's log, which the counterexample check uses."""
+    opened = sufficiency.listings_opened(text, market=[item.url for item in page.listings])
     primitive = primitive_for(form)
-    verdict = primitive.check(form, page, answer, opened, text)
+    verdict = primitive.check(form, page, answer, opened, text, menus)
     if verdict["ok"]:
-        verdict = FilterModifier.check(form, page, answer, opened, text)
+        verdict = FilterModifier.check(form, page, answer, opened, text, menus)
     return {**verdict, "primitive": primitive.name, "opened": len(opened)}

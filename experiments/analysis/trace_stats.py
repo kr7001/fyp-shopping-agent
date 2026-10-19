@@ -145,6 +145,46 @@ def final_messages(log_path: pathlib.Path) -> list[dict]:
     return best
 
 
+def tool_replies(log_path: pathlib.Path) -> dict[str, tuple[str, str, dict]]:
+    """Every tool reply openJiuwen received, in full and in call order, keyed by call id:
+    the tool's name, the reply text and the call's arguments.
+
+    The last event's history is not enough on its own, because the runtime trims older
+    tool replies to a thousand characters before re-sending them. Every reply is seen
+    untrimmed in the event that follows it, so the longest copy of each is the original.
+    Written for `verify_cells` and moved here on 20 October 2026, so the box's own answer
+    check can read the size menus a run saw (`sufficiency.size_menus`) without importing
+    the analysis. `verify_cells.tool_replies` is this function.
+    """
+    names: dict[str, str] = {}
+    arguments: dict[str, dict] = {}
+    replies: dict[str, str] = {}
+    for line in log_path.read_text(errors="replace").splitlines():
+        start = line.find('{"event_id"')
+        if start < 0:
+            continue
+        try:
+            event = json.loads(line[start:])
+        except json.JSONDecodeError:
+            continue
+        for message in event.get("messages") or []:
+            for call in message.get("tool_calls") or []:
+                function = call.get("function") or {}
+                names[call.get("id")] = normalise(function.get("name") or "")
+                try:
+                    arguments[call.get("id")] = json.loads(function.get("arguments") or "{}")
+                except (json.JSONDecodeError, TypeError):
+                    arguments[call.get("id")] = {}
+            if message.get("role") == "tool":
+                content = message.get("content")
+                content = content if isinstance(content, str) else json.dumps(content)
+                key = message.get("tool_call_id")
+                if len(content) > len(replies.get(key, "")):
+                    replies[key] = content
+    return {key: (names.get(key, "?"), text, arguments.get(key) or {})
+            for key, text in replies.items()}
+
+
 SELECT_OPS = ("select_option", "select_visible_text")
 
 

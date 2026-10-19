@@ -27,7 +27,9 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import compare_cells  # noqa: E402
 import policy  # noqa: E402
+import replay_box  # noqa: E402
 import score  # noqa: E402
+import sufficiency  # noqa: E402
 import trace_stats  # noqa: E402
 
 verify_cells = compare_cells.verify_cells
@@ -37,6 +39,17 @@ TASKS = {t["id"]: t for t in SPEC["tasks"]}
 PRICE_TASKS = ("apparel-target-price", "apparel-cheapest-target")
 # The batch run just before cell 1, kept only because its charge settled inside cell 1.
 PILOT = "20261007T111945"
+
+# The kinds of error, named once. The first two are read per seller: the seller named
+# first on a price question, and every ranked seller on a ranked one (20 Oct 2026).
+SELLER = "named a seller that cannot sell M"
+REVEAL = "read the price before the page revealed it"
+# Written 20 Oct 2026 from 20261014T213118/apparel-count-buyable-2: on 12 of 15 listings
+# the only thing the run did after opening the listing was `browser_find` for the word
+# "disabled", so a listing whose menu has no size M at all, and so nothing disabled,
+# counted as having M available, and the count came out as 10 where 5 is right.
+MENU_UNREAD = ("tested for the word disabled and never read the menu, so an absent size "
+               "counted as available")
 
 
 def m_prices() -> dict[str, float | None]:
@@ -57,11 +70,70 @@ def first_seller(answer: str, truth: dict) -> str | None:
     return min(hits)[1] if hits else None
 
 
+def seller_kind(sku: str, prices: list[float], truth: dict, m_price: dict) -> str | None:
+    """What is wrong with naming this seller at these prices, as the answer to a price
+    question: it cannot sell M at all, or the price given for it is its advertised price
+    where its size M price is another figure. The rule the first-seller check has applied
+    since October; here so a ranked answer can apply it to every seller it ranks."""
+    if truth[sku]["m"] != "buyable":
+        return SELLER
+    if prices and abs(prices[0] - truth[sku]["from"]) < 0.005 \
+            and abs(prices[0] - (m_price[sku] or 0)) >= 0.005:
+        return REVEAL
+    return None
+
+
+def ranked_sellers(answer: str, k: int, truth: dict) -> list[tuple[str, list[float]]]:
+    """The first k distinct sellers an answer names, each with the prices in the text
+    between its mention and the next seller's: the ranking a top-k or a comparison answer
+    gives before it narrates what it skipped. 20261014T220116/apparel-top-3-1 ranks
+    Alderney, Oakhurst and Lymington and then lists three it skipped, so the first three
+    are the ranked ones."""
+    low = answer.lower()
+    mentions = sorted((m.start(), sku) for sku, t in truth.items()
+                      for m in re.finditer(re.escape(t["seller"].split()[0].lower()), low))
+    ranked: list[tuple[str, list[float]]] = []
+    for n, (position, sku) in enumerate(mentions):
+        if sku in {s for s, _ in ranked}:
+            continue
+        if len(ranked) == k:
+            break
+        after = mentions[n + 1][0] if n + 1 < len(mentions) else len(low)
+        ranked.append((sku, score.prices_in(low[position:after])))
+    return ranked
+
+
+def menu_unread(log_path: pathlib.Path) -> int:
+    """Listings the run opened by navigating and then judged by a search for the word
+    "disabled" alone, never reading the menu: between the navigation and the next one (or
+    the end of the run) every call is `browser_find` for "disabled". A screenshot in
+    between does not count as reading the menu: the Size menu is a native select, drawn
+    closed, so a screenshot shows its one chosen line and none of its options."""
+    steps = trace_stats.tool_steps(trace_stats.final_messages(log_path))
+    count = 0
+    for n, step in enumerate(steps):
+        if step["tool"] != "browser_navigate" or not sufficiency.listing_key(step["target"]):
+            continue
+        after = []
+        for later in steps[n + 1:]:
+            if later["tool"] in ("browser_navigate", "browser_navigate_back"):
+                break
+            if later["tool"] != "browser_take_screenshot":
+                after.append(later)
+        if after and all(s["tool"] == "browser_find" and "disabled" in s["target"].lower()
+                         for s in after):
+            count += 1
+    return count
+
+
 def error_kinds(run: dict, truth: dict, m_price: dict) -> list[str]:
     """What went wrong in a run that was not correct, by written rules, not by eye.
 
     A run can have more than one kind. A run that fits none is reported as "other", so
-    that nothing is dropped silently.
+    that nothing is dropped silently. The seller rules read the seller named first on the
+    two price questions, and every ranked seller on a question with a ranked key (20 Oct
+    2026, when 20261014T220116/apparel-top-3-1, which ranked two sellers that cannot sell
+    M at their advertised prices in second and third place, classified as "other").
     """
     if run["rescored"] == "correct":
         return []
@@ -70,12 +142,18 @@ def error_kinds(run: dict, truth: dict, m_price: dict) -> list[str]:
         kinds.append("did not open what the answer needs")
     if run["task"] in PRICE_TASKS:
         sku = first_seller(run["answer"], truth)
-        prices = score.prices_in(run["answer"])
-        if sku and truth[sku]["m"] != "buyable":
-            kinds.append("named a seller that cannot sell M")
-        elif sku and prices and abs(prices[0] - truth[sku]["from"]) < 0.005 \
-                and abs(prices[0] - (m_price[sku] or 0)) >= 0.005:
-            kinds.append("read the price before the page revealed it")
+        kind = seller_kind(sku, score.prices_in(run["answer"]), truth, m_price) if sku else None
+        if kind:
+            kinds.append(kind)
+    if run.get("key_kind") == "ranked":
+        for sku, prices in ranked_sellers(run["answer"], run["ranked"], truth):
+            kind = seller_kind(sku, prices, truth, m_price)
+            if kind and kind not in kinds:
+                kinds.append(kind)
+    if run.get("batch"):
+        log_path = RESULTS / run["batch"] / f"{run['task']}-{run['repeat']}.log"
+        if log_path.exists() and menu_unread(log_path):
+            kinds.append(MENU_UNREAD)
     if run["task"] == "apparel-count-stocked":
         opened = [s for s in run["skus"] if s in truth]
         sellable = sum(1 for s in opened if truth[s]["m"] == "buyable")
@@ -271,6 +349,58 @@ def facts(account: bool = True) -> dict:
         moved = (nxt - first[batch]) if nxt is not None and first[batch] is not None else None
         out["cost"].append({"batch": batch, "charges": totals[batch], "moved": moved})
     out["account_now"] = now
+
+    # H. The box's development cell, in-sample and no claim, kept apart from A to G: see
+    # `compare_cells.DEVELOPMENT`. Added 20 October 2026.
+    out["development"] = development_facts(cells, truth, m_price)
+    return out
+
+
+def development_facts(cells: dict, truth: dict, m_price: dict) -> dict:
+    """Section H: each development cell's runs by question, its runs on the questions
+    cells 1 and 5 asked under the key fixed before the runs with the tests against those
+    two cells, its kinds of error, and the box's own check replayed over its batches."""
+    names = list(cells)
+    development, _ = compare_cells.load(compare_cells.DEVELOPMENT)
+    out = {}
+    for name, runs in development.items():
+        batches = compare_cells.DEVELOPMENT[name]
+        groups = collections.defaultdict(list)
+        for run in runs:
+            groups[(run["task"], run["batch"], run.get("scored_under") or "own")].append(run)
+        per_question = [{"task": task, "batch": batch, "key": key,
+                         "correct": sum(r["rescored"] == "correct" for r in group),
+                         "covered": sum(r["covered"] for r in group), "of": len(group),
+                         "opened": [r["opened"] for r in group]}
+                        for (task, batch, key), group in sorted(groups.items())]
+        sample = compare_cells.in_sample(runs, cells[names[0]])
+        tests = []
+        for reading in compare_cells.READINGS:
+            for what, measure in (("correct", lambda r: compare_cells.correct(r, reading)),
+                                  ("opened", lambda r: compare_cells.covered(r, reading, truth))):
+                for other in (names[0], names[3]):
+                    text, pooled, strat = compare_cells.compare(sample, cells[other], measure)
+                    tests.append({"reading": reading, "measure": what, "b": other.split()[0],
+                                  "text": text, "p_question": strat, "p_pooled": pooled})
+        tally = collections.defaultdict(list)
+        for run in compare_cells.distinct(runs):
+            for kind in error_kinds(run, truth, m_price):
+                tally[kind].append(short(run))
+        check = replay_box.summary([r for batch in batches
+                                    for r in replay_box.replay(RESULTS / batch)])
+        out[name] = {
+            "batches": batches, "runs": len(runs),
+            "questions": sorted({r["task"] for r in runs}),
+            "per_question": per_question,
+            "in_sample": {"runs": len(sample),
+                          "questions": sorted({r["task"] for r in sample}),
+                          "right": sum(compare_cells.correct(r, "menu") for r in sample),
+                          "opened": sum(compare_cells.covered(r, "menu", truth) for r in sample),
+                          "median_opened": statistics.median(r["opened"] for r in sample) if sample else None,
+                          "calls": statistics.mean(r["tool_calls"] or 0 for r in sample) if sample else None,
+                          "cost": statistics.mean(r["cost"] or 0 for r in sample) if sample else None},
+            "tests": tests, "errors": sorted(tally.items()), "check": check,
+        }
     return out
 
 
@@ -371,6 +501,37 @@ def main() -> int:
                  if c["moved"] is not None else "(no account reading)"))
     if f["account_now"] is not None:
         print(f"  account used now ${f['account_now']:.4f}")
+
+    print("\nH. BOX V2 DEVELOPMENT, in-sample, no claim: the box was designed and tuned on "
+          "Thornwood (LESSONS 19)")
+    for name, d in f["development"].items():
+        print(f"  {name}: batches {', '.join(d['batches'])}, {d['runs']} gated runs over "
+              f"{len(d['questions'])} questions")
+        print(f"  {'question':20} {'batch':16} {'key':9} correct  covered  opened")
+        for q in d["per_question"]:
+            print(f"    {q['task'].replace('apparel-', ''):20} {q['batch']:16} {q['key']:9} "
+                  f"{q['correct']}/{q['of']}      {q['covered']}/{q['of']}      {q['opened']}")
+        s = d["in_sample"]
+        print(f"  on the {len(s['questions'])} questions cells 1 and 5 asked, under the key fixed "
+              f"before the runs: {s['runs']} runs, {s['right']} correct, {s['opened']} opened what "
+              f"the answer needs, median {s['median_opened']} opened, "
+              f"{s['calls']:.0f} calls, ${s['cost']:.3f} a run")
+        for t in d["tests"]:
+            print(f"    {t['reading']:8} {t['measure']:8} box vs {t['b']}  {t['text']:26} "
+                  f"by question p={t['p_question']:.5f}  pooled p={t['p_pooled']:.5f}")
+        print("  kinds of error, every gated run that was not correct")
+        for kind, which in d["errors"]:
+            print(f"    {len(which):>2}  {kind:44} {', '.join(which)}")
+        c = d["check"]
+        print(f"  the box's own check replayed over every run of the batches: {c['runs']} runs, "
+              f"stored text reproduced {c['text_reproduced']}, decided the same today "
+              f"{c['same_today']}")
+        print(f"    wrong {c['wrong']}, refused {len(c['wrong_refused'])}"
+              + (f": {', '.join(c['wrong_refused'])}" if c["wrong_refused"] else ""))
+        print(f"    not wrong {c['other']}, refused {len(c['other_refused'])}"
+              + (f": {', '.join(c['other_refused'])}" if c["other_refused"] else ""))
+        if c["decided_differently_today"]:
+            print(f"    decided differently today: {', '.join(c['decided_differently_today'])}")
     return 0
 
 

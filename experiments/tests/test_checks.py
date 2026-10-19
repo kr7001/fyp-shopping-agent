@@ -17,6 +17,7 @@ import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402
+import cell_facts  # noqa: E402
 import compare_cells  # noqa: E402
 import score  # noqa: E402
 import suite  # noqa: E402
@@ -282,6 +283,194 @@ class BoxRowsInTheReport(unittest.TestCase):
         self.assertIn("  argmax-question              -  0/1", out.getvalue())
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(verify_cells.report(self.batch, self.suite, self.runs, False)["problems"], [])
+
+
+class VerifyRunFields(unittest.TestCase):
+    """What `verify_run` reads since 20 Oct 2026: the market's listings from the row's page
+    record (so a category page is never counted, and a product page outside the market is
+    named), the kind of key, how many sellers a ranked key expects, and the sidecar reading
+    the run was scored under."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        cls.batch = scratch_batch(cls.tmp.name)
+        cls.payload = json.loads((cls.batch / "suite.json").read_text())
+        cls.tasks = {t["id"]: t for t in json.loads(V2.read_text())["tasks"]}
+        cls.truth = verify_cells.ground_truth()
+        cls.readings = score.readings_for(V2)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmp.cleanup()
+
+    def verify(self, task_id: str, stored: dict, suite_payload: dict, log_text: str) -> dict:
+        record = self.batch / "apparel-cheapest-target-1.json"
+        record.with_suffix(".log").write_text(log_text)
+        return verify_cells.verify_run(record, self.tasks[task_id], self.truth, stored,
+                                       suite_payload, self.readings)
+
+    def test_opened_counts_the_markets_listings_and_names_the_rest(self):
+        row = next(r for r in self.payload["rows"] if r["task"] == "apparel-cheapest-target")
+        self.assertTrue(row["box"]["page"]["listings"])     # the pilot's rows carry the page
+        log = "\n".join(f"Page URL: {url}" for url in (
+            "http://localhost:7770/electronics.html", "http://localhost:7770/igr-app-03.html",
+            "http://localhost:7770/igr-rvn-01.html"))
+        run = self.verify("apparel-cheapest-target", row, self.payload, log)
+        self.assertEqual((run["opened"], run["skus"], run["outside_market"], run["unknown_pages"]),
+                         (1, ["igr-app-03"], ["igr-rvn-01"], []))
+        self.assertEqual((run["key_kind"], run["ranked"], run["scored_under"]), ("contains", None, None))
+        with contextlib.redirect_stdout(io.StringIO()):
+            problems = verify_cells.report(self.batch, self.payload, [run], False)["problems"]
+        self.assertIn("apparel-cheapest-target-1: opened product pages outside the market "
+                      "['igr-rvn-01']", problems)
+        # Without a page record the counter's own rule applies: the category page is still
+        # not a listing, and the other market's product page counts as opened.
+        plain = self.verify("apparel-cheapest-target", {k: v for k, v in row.items() if k != "box"},
+                            {}, log)
+        self.assertEqual((plain["opened"], plain["skus"], plain["outside_market"], plain["unknown_pages"]),
+                         (2, ["igr-app-03", "igr-rvn-01"], [], ["igr-rvn-01"]))
+
+    def test_the_key_a_run_was_scored_under(self):
+        row = {"reading": "buyable"}
+        self.assertEqual(self.verify("apparel-count-stocked", row, {}, "")["scored_under"], "buyable")
+        self.assertEqual(self.verify("apparel-count-stocked", {}, {"reading": "buyable"}, "")["scored_under"],
+                         "buyable")
+        # The menu reading is the task's own key, and a task without a sidecar key is scored
+        # on its own key under any reading.
+        self.assertIsNone(self.verify("apparel-count-stocked", {}, {"reading": "menu"}, "")["scored_under"])
+        self.assertIsNone(self.verify("apparel-cheapest-target", row, {}, "")["scored_under"])
+        ranked = self.verify("apparel-top-3", {}, {}, "")
+        self.assertEqual((ranked["key_kind"], ranked["ranked"]), ("ranked", 3))
+
+
+def steps_log(folder: str, name: str, steps: list[tuple[str, dict]]) -> pathlib.Path:
+    """A log whose trace holds these tool calls in order, as `trace_stats.tool_steps` reads them."""
+    messages = [{"role": "user", "content": "the task"}]
+    for n, (tool, arguments) in enumerate(steps):
+        messages.append({"role": "assistant", "content": None, "tool_calls": [
+            {"id": f"c{n}", "function": {"name": f"mcp_playwright-official_{tool}",
+                                         "arguments": json.dumps(arguments)}}]})
+        messages.append({"role": "tool", "tool_call_id": f"c{n}", "content": "ok"})
+    path = pathlib.Path(folder) / f"{name}.log"
+    path.write_text(json.dumps({"event_id": "e1", "messages": messages}) + "\n")
+    return path
+
+
+V2_BATCHES = compare_cells.DEVELOPMENT["box v2 development, Thornwood, in-sample"]
+HAVE_V2_LOGS = all(any((paths.RESULTS / batch).glob("*.log")) for batch in V2_BATCHES)
+
+
+class ErrorKinds(unittest.TestCase):
+    """Two kinds written 20 Oct 2026 from the box v2 batches: a ranked answer's sellers are
+    each read for the two seller faults, not only the first; and a listing judged by a
+    search for the word "disabled" alone, never reading its menu. Each fires on its fault
+    and stays quiet otherwise, with the fixture's facts read from the fixture."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.truth = verify_cells.ground_truth()
+        cls.m_price = cell_facts.m_prices()
+        cls.name = {sku: t["seller"] for sku, t in cls.truth.items()}
+        buyable = {sku: t["buyable"]["M"] for sku, t in cls.truth.items() if "M" in t["buyable"]}
+        cls.winner = min(buyable, key=buyable.get)
+        cls.no_m = next(sku for sku, t in sorted(cls.truth.items()) if t["m"] is None)
+        cls.hidden = next(sku for sku, t in sorted(cls.truth.items())
+                          if t["m"] == "buyable" and abs(t["from"] - cls.m_price[sku]) > 0.01)
+
+    def run_dict(self, answer: str, **over) -> dict:
+        return {"task": "apparel-top-3", "repeat": 1, "rescored": "wrong", "covered": True,
+                "answer": answer, "ok": True, "error": None, "skus": [], "key_kind": "ranked",
+                "ranked": 3, **over}
+
+    def test_every_ranked_seller_is_read(self):
+        ranked = (f"1. {self.name[self.winner]} - ${self.m_price[self.winner]:.2f} "
+                  f"2. {self.name[self.no_m]} - ${self.truth[self.no_m]['from']:.2f} "
+                  f"3. {self.name[self.hidden]} - ${self.truth[self.hidden]['from']:.2f}")
+        self.assertEqual(cell_facts.error_kinds(self.run_dict(ranked), self.truth, self.m_price),
+                         [cell_facts.SELLER, cell_facts.REVEAL])
+        # The fault, planted: read for the first seller only, the ranking is clean.
+        self.assertIsNone(cell_facts.seller_kind(self.winner, [self.m_price[self.winner]],
+                                                 self.truth, self.m_price))
+        self.assertEqual(cell_facts.error_kinds(self.run_dict(ranked, key_kind="contains", ranked=None),
+                                                self.truth, self.m_price), ["other"])
+        # Quiet: the right sellers at their size M prices, and a seller narrated after the
+        # ranking is not one of the ranked.
+        right = (f"1. {self.name[self.winner]} - ${self.m_price[self.winner]:.2f} "
+                 f"2. {self.name[self.hidden]} - ${self.m_price[self.hidden]:.2f}. "
+                 f"I skipped {self.name[self.no_m]} at ${self.truth[self.no_m]['from']:.2f}.")
+        self.assertEqual(cell_facts.error_kinds(self.run_dict(right, ranked=2), self.truth, self.m_price),
+                         ["other"])
+        self.assertEqual([sku for sku, _ in cell_facts.ranked_sellers(right, 2, self.truth)],
+                         [self.winner, self.hidden])
+
+    def test_a_listing_judged_by_a_search_for_disabled_alone(self):
+        listing = lambda n: {"url": f"http://localhost:7770/igr-app-{n:02d}.html"}
+        with tempfile.TemporaryDirectory() as tmp:
+            fires = steps_log(tmp, "fires", [
+                ("browser_navigate", listing(7)), ("browser_find", {"query": "disabled"}),
+                ("browser_navigate", listing(8)), ("browser_snapshot", {}),
+                ("browser_find", {"query": "disabled"}),
+                ("browser_navigate", listing(9)), ("browser_find", {"text": "disabled"}),
+                ("browser_take_screenshot", {})])
+            self.assertEqual(cell_facts.menu_unread(fires), 2)
+            quiet = steps_log(tmp, "quiet", [
+                ("browser_navigate", listing(7)), ("browser_snapshot", {}),
+                ("browser_navigate", listing(8)), ("browser_find", {"query": "Size"}),
+                ("browser_navigate", {"url": "http://localhost:7770/catalogsearch/result/?q=T"}),
+                ("browser_find", {"query": "disabled"})])
+            self.assertEqual(cell_facts.menu_unread(quiet), 0)
+
+    @unittest.skipUnless(HAVE_V2_LOGS, "the raw logs live on the laptop, not in git")
+    def test_on_the_batches(self):
+        results = paths.RESULTS
+        self.assertEqual(cell_facts.menu_unread(results / "20261014T213118" / "apparel-count-buyable-2.log"), 12)
+        self.assertEqual(cell_facts.menu_unread(results / "20261014T213118" / "apparel-count-buyable-1.log"), 0)
+        development, truth = compare_cells.load(compare_cells.DEVELOPMENT)
+        kinds = {f"{r['batch']}/{r['task']}-{r['repeat']}": cell_facts.error_kinds(r, truth, self.m_price)
+                 for runs in development.values() for r in runs}
+        self.assertEqual({k: v for k, v in kinds.items() if v},
+                         {"20261014T213118/apparel-cheapest-target-1":
+                              ["did not open what the answer needs", cell_facts.REVEAL],
+                          "20261014T213118/apparel-count-buyable-2": [cell_facts.MENU_UNREAD],
+                          "20261014T220116/apparel-top-3-1": [cell_facts.SELLER]})
+
+
+class DevelopmentCell(unittest.TestCase):
+    """The box v2 development cell (20 Oct 2026): three batches as one cell, in-sample, kept
+    apart from the four claim-grade cells, and compared with cells 1 and 5 only on the
+    questions those cells asked and only under the key fixed before the runs."""
+
+    def test_in_sample_keeps_the_shared_questions_under_the_own_key(self):
+        against = [{"task": "apparel-all-stocked"}, {"task": "apparel-count-stocked"}]
+        runs = [{"task": "apparel-all-stocked", "scored_under": None},
+                {"task": "apparel-all-stocked", "scored_under": "buyable"},
+                {"task": "apparel-top-3", "scored_under": None},
+                {"task": "apparel-count-stocked", "scored_under": None}]
+        self.assertEqual(compare_cells.in_sample(runs, against), [runs[0], runs[3]])
+        self.assertEqual(compare_cells.in_sample(runs, []), [])
+
+    @unittest.skipUnless(HAVE_V2_LOGS, "the raw logs live on the laptop, not in git")
+    def test_the_figures_against_cells_1_and_5(self):
+        with contextlib.redirect_stdout(io.StringIO()):
+            facts = cell_facts.facts(account=False)
+        d = facts["development"]["box v2 development, Thornwood, in-sample"]
+        self.assertEqual((d["batches"], d["runs"], len(d["questions"])), (V2_BATCHES, 26, 10))
+        s = d["in_sample"]
+        self.assertEqual((s["runs"], s["right"], s["opened"], s["median_opened"], round(s["cost"], 3)),
+                         (15, 13, 14, 8, 0.258))
+        tests = {(t["reading"], t["measure"], t["b"]): (t["text"], round(t["p_question"], 5))
+                 for t in d["tests"]}
+        self.assertEqual(tests[("menu", "correct", "1")], ("13 of 15 against 4 of 15", 0.00155))
+        self.assertEqual(tests[("menu", "opened", "1")], ("14 of 15 against 3 of 15", 0.00034))
+        self.assertEqual(tests[("menu", "correct", "5")], ("13 of 15 against 11 of 15", 0.63))
+        self.assertEqual(tests[("menu", "opened", "5")], ("14 of 15 against 15 of 15", 1.0))
+        self.assertEqual(d["check"]["wrong"], 3)
+        self.assertEqual(d["check"]["wrong_refused"], [])
+        self.assertEqual((d["check"]["other"], d["check"]["other_refused"]), (29, []))
+        # The four cells are the four cells still, and the site's tests table is theirs alone.
+        self.assertEqual([n.split()[0] for n in facts["names"]], ["1", "2", "3", "5"])
+        self.assertEqual({t["a"] for t in facts["tests"]}, {"2", "3", "5"})
 
 
 class OwnFloor(unittest.TestCase):

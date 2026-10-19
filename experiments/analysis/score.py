@@ -25,7 +25,13 @@ import re
 #      sellers in order, each with its price. A "none" kind marks a question with no key,
 #      one the box is expected to ask on, refuse or bypass; its verdict is "unscored". No
 #      stored key uses any of the three, so no stored verdict changes
-VERSION = 2
+#   3  20 October 2026. A "none" key is unscored whether or not the run finished. Until
+#      now a keyless run that ended without ok was scored failed, and verify_cells counted
+#      it in the control ratio (verifier finding on 20261014T220116: apparel-softest-1 ran
+#      out of answers and showed as "control correct 0 of 1"). Replayed over every stored
+#      run, that one verdict changes, failed to unscored; the batch's suite.json keeps the
+#      stored verdict until it is rescored
+VERSION = 3
 
 # Phrases that mean the agent declined rather than answered. Kept narrow on
 # purpose: "not" alone is far too broad, "could not determine" is not.
@@ -95,12 +101,14 @@ def score(task: dict, answer: str, ok: bool) -> dict:
     found = prices_in(answer)
     low = answer.lower()
 
-    if not ok or not answer.strip():
-        return {"verdict": "failed", "why": "run did not produce an answer", "prices": found}
     if kind == "none":
         # No key. The box is expected to ask on, refuse or bypass this question; when a
-        # bypassed one runs, its answer is read by hand rather than judged here.
+        # bypassed one runs, its answer is read by hand rather than judged here. Before the
+        # failed branch since 20 October 2026: a keyless run that did not finish has no
+        # key to fail against either, and "failed" was counted as a wrong control answer.
         return {"verdict": "unscored", "why": "no answer key for this question", "prices": found}
+    if not ok or not answer.strip():
+        return {"verdict": "failed", "why": "run did not produce an answer", "prices": found}
     if abstained(answer):
         return {"verdict": "abstained", "why": "answer declined to commit", "prices": found}
 

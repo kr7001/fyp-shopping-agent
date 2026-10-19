@@ -314,7 +314,9 @@ class Unknown(unittest.TestCase):
 
     def test_sell_is_a_market_word(self):
         # Verifier finding, 14 Oct 2026: "Who sells the softest tee?" bypassed the box.
-        for question, word in (("Who sells the softest tee?", "sells"),
+        # Since 20 Oct that question is refused for its superlative (`Graded`), so the
+        # market word is checked on a question without one.
+        for question, word in (("Who sells the Thornwood tee?", "sells"),
                                ("Which of them sell tees?", "sell"),
                                ("Tell me what is sold here.", "sold"),
                                ("Who is selling tees?", "selling")):
@@ -325,6 +327,117 @@ class Unknown(unittest.TestCase):
         for question in self.UNRELATED:
             with self.subTest(question=question):
                 self.assertEqual(form.from_rules(question).quantifier, "unknown")
+
+
+class Graded(unittest.TestCase):
+    """Property 5 whatever the word (20 October 2026): a superlative or comparative on an
+    attribute the shop does not show names it in the form, so the box refuses; one on a
+    shown attribute keeps its kind; the fallback stays for a shapeless question whose
+    attributes are all shown. Verifier finding: "Who sells the softest Thornwood tee?" fell
+    to the fallback and opened all fifteen listings, $0.80, for an attribute no page shows."""
+
+    SOFTEST = GO + "Who sells the softest Thornwood tee?"
+
+    def test_the_softest_tee_is_refused_naming_the_word(self):
+        parsed = form.from_rules(self.SOFTEST)
+        self.assertEqual((parsed.quantifier, parsed.objective, parsed.fallback, parsed.unknowns),
+                         ("argmax", "attribute:what 'softest' ranks by", False,
+                          ("what 'softest' ranks by",)))
+        self.assertEqual(parsed.evidence["objective"], "softest")
+        self.assertEqual(form.not_shown(parsed), ["what 'softest' ranks by"])
+        self.assertIn("the shop does not show what 'softest' ranks by", form.verify(parsed))
+        self.assertTrue(form.refusal(form.not_shown(parsed)).startswith(
+            "The shop does not show what 'softest' ranks by, so this question cannot be answered"))
+        self.assertEqual(form.from_record(parsed.record(), "rules"), parsed)
+
+    def test_the_fault_planted(self):
+        # With the rule silenced the question is the fallback it was (LESSONS 31).
+        original = form.graded_unknown
+        form.graded_unknown = lambda question: None
+        try:
+            parsed = form.from_rules(self.SOFTEST)
+        finally:
+            form.graded_unknown = original
+        self.assertEqual((parsed.quantifier, parsed.kind(), parsed.fallback),
+                         ("aggregate", "survey", True))
+
+    def test_a_shown_attribute_keeps_its_kind(self):
+        kept = (
+            ("Which seller is cheapest for size M? Only count a listing that can actually "
+             "supply it.", "availability_bound"),
+            ("Which seller is most expensive for size M?", "argmax_price"),
+            ("Across all the listings and all their pack sizes, which seller offers the best "
+             "value per litre?", "rate_bound"),
+            ("Which listing is highest rated?", "argmax_rating"),
+            ("Which seller has the highest rated reviews?", "depth_search"),
+            ("What is the lowest price anyone charges for size M of the Thornwood tee, among "
+             "those that can actually be bought?", "availability_bound"),
+            ("Which seller charges the most for size M?", "survey"),
+            ("Is there any seller at most $20 for size M?", "exists_price"),
+            ("Most of the sellers list size M: which is cheapest?", "total_bound"),
+            ("Which seller has the fewest sizes?", "survey"),
+            ("Which seller is cheapest for the sweater in size M?", "total_bound"),
+            ("Which seller is cheapest for the vest in size M?", "total_bound"),
+        )
+        for question, kind in kept:
+            with self.subTest(question=question):
+                parsed = form.from_rules(GO + question)
+                self.assertEqual(parsed.kind(), kind)
+                self.assertEqual([u for u in parsed.unknowns if "ranks by" in u], [])
+        # "highest rated" is refused for the rating it asks for, as before, not for the word.
+        self.assertEqual(form.not_shown(form.from_rules(GO + "Which listing is highest rated?")),
+                         ["rating"])
+
+    def test_the_fallback_and_the_bypass_stay(self):
+        parsed = form.from_rules(GO + "What sizes does Rookwood list?")
+        self.assertEqual((parsed.quantifier, parsed.kind(), parsed.fallback),
+                         ("aggregate", "survey", True))
+        for question in Unknown.UNRELATED + ("What is the best way to get to Singapore?",):
+            with self.subTest(question=question):
+                self.assertEqual(form.from_rules(question).quantifier, "unknown")
+
+    def test_a_comparative_and_an_unknown_attribute_beside_a_shape(self):
+        pair = form.from_rules(GO + "Between Copperfield Apparel and Elmsworth Clothing Co, "
+                               "which is softer?")
+        self.assertEqual((pair.kind(), pair.objective, form.not_shown(pair)),
+                         ("named_lookup", "attribute:what 'softer' ranks by",
+                          ["what 'softer' ranks by"]))
+        filtered = form.from_rules(GO + "Which seller is cheapest for size M among the softest tees?")
+        self.assertEqual((filtered.kind(), filtered.filter("what 'softest' ranks by").value,
+                          form.not_shown(filtered)),
+                         ("total_bound", "softest", ["what 'softest' ranks by"]))
+        for question in ("Is the Thornwood tee softer than the Rookwood one?",
+                         "Which tee is warmest?", "Which is the most comfortable tee?",
+                         "Which seller is best for size M?",
+                         "Which seller ships fastest for size M?",
+                         "How many sellers have the softest tee in size M?"):
+            with self.subTest(question=question):
+                parsed = form.from_rules(GO + question)
+                missing = form.not_shown(parsed)
+                self.assertEqual(len(missing), 1, missing)
+                self.assertIn("ranks by", missing[0])
+                self.assertFalse(parsed.fallback)
+        # A question an OTHER_ATTRIBUTES entry already names keeps that entry's name.
+        self.assertEqual(form.not_shown(form.from_rules(GO + "Which seller delivers fastest for size M?")),
+                         ["delivery time"])
+
+    def test_every_frame_fires_and_every_listed_word_stays_quiet(self):
+        for question, phrase in (("Who sells the softest tee?", "softest"),
+                                 ("Which tee is warmest?", "warmest"),
+                                 ("Which of them is softer?", "softer"),
+                                 ("Is this tee softer than that one?", "softer"),
+                                 ("Which is the most comfortable tee?", "most comfortable")):
+            with self.subTest(question=question):
+                self.assertEqual(form.graded_unknown(question), (f"what '{phrase}' ranks by", phrase))
+        for word in sorted(form.NOT_GRADED):
+            with self.subTest(word=word):
+                self.assertIsNone(form.graded_unknown(f"Tell me about the {word} of the listings."))
+        for word in sorted(form.NOT_AFTER_MOST):
+            with self.subTest(word=word):
+                self.assertIsNone(form.graded_unknown(f"Which sellers list most {word} size M?"))
+        self.assertIsNone(form.graded_unknown("Is there any seller at most $20 for size M?"))
+        self.assertIsNone(form.graded_unknown("Which seller charges the most for size M?"))
+        self.assertIsNone(form.graded_unknown("Which seller charges the most?"))
 
 
 class Shown(unittest.TestCase):

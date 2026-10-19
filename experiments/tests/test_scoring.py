@@ -132,12 +132,19 @@ class NoKey(unittest.TestCase):
     """The none kind (14 Oct 2026): a question the box is expected to ask on, refuse or
     bypass has no key, and an answer to it is unscored rather than wrong or abstained."""
 
-    def test_an_answer_is_unscored_and_a_failed_run_still_fails(self):
+    def test_an_answer_is_unscored_and_so_is_a_run_that_did_not_finish(self):
         self.assertEqual(verdict({"kind": "none"}, "Lisbon."), "unscored")
         self.assertEqual(verdict({"kind": "none"}, "I could not determine this."), "unscored")
-        self.assertEqual(score.score({"expect": {"kind": "none"}}, "", False)["verdict"], "failed")
-        # Any other kind is still judged.
+        # A keyless run that ended without ok has no key to fail against either. Until
+        # 20 Oct 2026 (scorer v3) it was "failed", and verify_cells counted it as a wrong
+        # control answer (verifier finding on 20261014T220116, apparel-softest-1).
+        self.assertEqual(score.score({"expect": {"kind": "none"}}, "", False)["verdict"], "unscored")
+        self.assertEqual(score.score({"expect": {"kind": "none"}}, "No softness found.", False)["verdict"],
+                         "unscored")
+        # Any other kind is still judged, and still fails without an answer.
         self.assertEqual(verdict({"kind": "contains", "any": ["Lisbon"]}, "Lisbon."), "correct")
+        self.assertEqual(score.score({"expect": {"kind": "contains", "any": ["Lisbon"]}}, "", False)["verdict"],
+                         "failed")
 
 
 class Abstention(unittest.TestCase):

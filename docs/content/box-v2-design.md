@@ -78,13 +78,23 @@ The planner's four, and the one the probe showed was missing:
 
 A form that fails verification is never executed. It becomes an ask or a refusal.
 
+The fifth property holds whatever the word. A question whose objective or filter is an
+attribute the shop does not show is refused, "the softest tee" as much as "delivers fastest":
+the rules read a superlative or comparative, and when its attribute is not one the shop shows
+(price, availability, size, the review attributes, the results-page fields) the form names
+what the word ranks by as the missing attribute and the box says so. The survey fallback is
+only for a shopping question whose shape is unknown but whose attributes are all shown, such
+as "What sizes does Rookwood list?" (20 October 2026, after "Who sells the softest Thornwood
+tee?" fell to the fallback and opened all fifteen listings, $0.80, for an attribute no page
+shows).
+
 ## Primitives, and the plans composed from them
 
 | Primitive | Opens | Stops | Answer check |
 | --- | --- | --- | --- |
 | lookup | the named listing or listings | after reading them | the named pages were opened |
 | witness (exists) | candidates in the order most likely to satisfy, cheapest first for price conditions | at the first candidate that satisfies | the witness was opened, or every candidate was |
-| counterexample (forall) | any order | at the first candidate that fails | a counterexample was opened, or every candidate was |
+| counterexample (forall) | any order | at the first candidate that fails | a counterexample was opened, or every candidate was. A No is supported when the log shows an opened listing whose observed size menu lacks the size asked about, whether or not the answer names it; naming the listing stays in the plan text as a request (20 October 2026, after five correct bare "No" runs were refused for naming nothing) |
 | bound and prune (argmin, argmax, topk) | ascending advertised price for argmin | when no unopened candidate can beat the best, or the k-th best | every candidate advertised at or below the answer's price was opened |
 | exhaust (count, aggregate) | every candidate | when all are opened | every candidate was opened |
 | depth (reviews) | review pages in order | at the first mention, or the last page | the quoted page was read, or every page was |

@@ -51,7 +51,13 @@ import targeting
 #      survey fallback and says so in its evidence
 #   4  14 October 2026. "sell", "sells", "sold" and "selling" are market words, so "Who
 #      sells the softest tee?" is a fallback rather than a bypass
-VERSION = 4
+#   5  20 October 2026. A superlative or comparative whose attribute the shop does not
+#      show names that attribute in the form (`graded_unknown`): as the objective when the
+#      question has no other shape, as a filter when it has one. Property 5 then refuses
+#      the question whatever the word, so "Who sells the softest tee?" is refused rather
+#      than planned by the fallback. The fallback is only for a shopping question with no
+#      shape whose attributes are all shown
+VERSION = 5
 
 # The vocabulary. A form outside it is refused when it is built, so a model's reply cannot
 # smuggle in a quantifier nothing knows how to plan. "unknown" is the rules' answer to a
@@ -377,6 +383,46 @@ OTHER_ATTRIBUTES = (
 ARGMAX_WORDS = re.compile(r"\b(?:highest|most|longest|best|slowest)\b", re.IGNORECASE)
 SUPERLATIVE = re.compile(r"\b(?:fastest|quickest|soonest|slowest|longest|shortest|best|"
                          r"highest|lowest|most|least)\b", re.IGNORECASE)
+# A superlative or comparative on any attribute at all (20 October 2026, verifier finding:
+# "Who sells the softest Thornwood tee?" had no shape, so it fell to the survey fallback and
+# opened all fifteen listings, $0.80, for an attribute no page shows). Four frames: an
+# "-est" word after "the" ("the softest tee"), an "-est" or "-er" word after "which ... is"
+# or "are" ("which tee is warmest", "which is softer"), an "-er" word before "than" ("softer
+# than"), and "most" or "least" before a word ("most comfortable"). An "-er" word is not read
+# after "the", where nouns ending in -er are everywhere ("the seller", "the sweater", "the
+# order"). The nouns and plain adjectives ending in -est that a question can put after "the"
+# are listed in NOT_GRADED, and the words after "most" that make a quantity rather than a
+# degree ("most of the sellers") in NOT_AFTER_MOST. The words of SUPERLATIVE count too,
+# wherever they stand.
+GRADED = re.compile(
+    r"\bthe\s+(?P<the>[a-z]+est)\b"
+    r"|\bwhich\b(?:\s+\w+){0,3}?\s+(?:is|are)\s+(?:the\s+)?(?P<which>[a-z]+(?:est|er))\b"
+    r"|\b(?P<than>[a-z]+er)\s+than\b"
+    r"|\b(?P<most>(?:most|least)\s+[a-z]+)\b", re.IGNORECASE)
+NOT_GRADED = frozenset("rest test west chest guest quest request interest contest forest harvest "
+                       "vest nest pest jest crest zest digest suggest protest invest honest "
+                       "modest earnest".split())
+NOT_AFTER_MOST = frozenset("of for in at to on by is are and or the a an that than as up out "
+                           "from with listings listing sellers seller items products them "
+                           "these those it its".split())
+# Adjectives of attributes the shop shows, so a superlative or comparative built on one
+# keeps the kind the patterns above gave the question. "best", "most" and the other generic
+# words take their attribute from the word after them: "best value" is the rate, "lowest
+# price" the price, "most expensive" the price, "highest rated" the rating, and "the best
+# tee" names nothing the shop shows.
+PRICE_ADJECTIVES = frozenset("cheap cheaper cheapest dear dearer dearest expensive pricey pricier "
+                             "priciest costly costlier costliest low lower lowest high higher "
+                             "highest".split())
+SIZE_ADJECTIVES = frozenset("large larger largest small smaller smallest big bigger biggest".split())
+GENERIC_GRADED = frozenset("best better worst worse most least top fewest fewer".split())
+PRICE_VERBS = frozenset("charge charges charged charging cost costs costing pay pays paid "
+                        "paying".split())
+ATTRIBUTE_WORDS = {"price": "price", "prices": "price", "priced": "price", "cost": "price",
+                   "costs": "price", "deal": "price", "value": "rate", "rate": "rate",
+                   "rated": "rating", "rating": "rating", "ratings": "rating", "size": "size",
+                   "sizes": "size", "stock": "availability", "stocked": "availability",
+                   "available": "availability", "reviews": "review text",
+                   "reviewed": "review text"}
 VARIANT = ambiguity.whole_words(ambiguity.VARIANTS)
 MENU_WORDS = ambiguity.whole_words(ambiguity.MENU)
 BUYABLE_WORDS = ambiguity.whole_words(ambiguity.BUYABLE)
@@ -516,6 +562,71 @@ def other_attribute(question: str) -> tuple[str, str] | None:
     return None
 
 
+def graded_words(question: str) -> list[tuple[str, str, str]]:
+    """Every superlative or comparative in the question as (the word before it, the words,
+    the word after it): the four frames of GRADED and the words of SUPERLATIVE, each once,
+    in the order they appear. "most" and "least" are a degree only with a word after them
+    that is not a quantity's ("most of the sellers"), and never after "at" ("at most $20",
+    "at least 4 stars"). The word before skips "the", so "charges the most" is read with
+    "charges"."""
+    found = []
+    matches = sorted(list(GRADED.finditer(question)) + list(SUPERLATIVE.finditer(question)),
+                     key=lambda m: m.start())
+    for match in matches:
+        if match.re is GRADED:
+            phrase = match.group(match.lastgroup)
+            if match.lastgroup == "the" and phrase.lower() in NOT_GRADED:
+                continue
+        else:
+            phrase = match.group(0)
+        before = re.search(r"([a-z]+)\s+(?:the\s+)?$", question[:match.start()], re.IGNORECASE)
+        before = before.group(1).lower() if before else ""
+        after = re.match(r"\s+([a-z]+)", question[match.end():], re.IGNORECASE)
+        after = after.group(1).lower() if after else ""
+        tail = phrase.split()[-1].lower()
+        if phrase.lower() in ("most", "least") and (before == "at" or not after or after in NOT_AFTER_MOST):
+            continue
+        if phrase.lower().split()[0] in ("most", "least") and tail in NOT_AFTER_MOST:
+            continue
+        entry = (before, phrase, after)
+        if entry not in found:
+            found.append(entry)
+    return found
+
+
+def graded_attribute(before: str, phrase: str, after: str) -> str | None:
+    """The shown attribute a superlative or comparative ranks by, or None when it names
+    none the shop shows. "most comfortable" is judged by "comfortable"; "best" and the
+    other generic words by the word after them, or by a price verb before them ("charges
+    the most", "costs the least")."""
+    words = phrase.lower().split()
+    word = words[-1]
+    if len(words) == 1 and word in GENERIC_GRADED:
+        if before in PRICE_VERBS:
+            return "price"
+        word = after
+    if word in ATTRIBUTE_WORDS:
+        return ATTRIBUTE_WORDS[word]
+    if word in PRICE_ADJECTIVES:
+        return "price"
+    if word in SIZE_ADJECTIVES:
+        return "size"
+    return None
+
+
+def graded_unknown(question: str) -> tuple[str, str] | None:
+    """The first superlative or comparative whose attribute the shop does not show, as
+    (what the form calls the attribute, the words that asked), or None. A question an
+    entry of OTHER_ATTRIBUTES already names ("delivers fastest") is left to that entry,
+    which names the attribute better."""
+    if other_attribute(question):
+        return None
+    for before, phrase, after in graded_words(question):
+        if graded_attribute(before, phrase, after) is None:
+            return f"what '{phrase.lower()}' ranks by", phrase
+    return None
+
+
 def what_is_checked(question: str) -> str:
     """For a count, a universal or a listing of everything: the option's availability when
     the question is about a variant or about buying, otherwise the price."""
@@ -622,13 +733,31 @@ def from_rules(question: str, page: page_module.Page | None = None) -> Form:
     # "aggregate" is only ever the fallback, reached when no shape fits. With a shopping
     # signal the question is still planned, as a survey, and the record says it was a
     # fallback. Without one the box has nothing to plan: the question is unknown.
+    signal = shopping_signal(question, filters) if quantifier == "aggregate" else None
+    if quantifier == "aggregate" and signal is None:
+        evidence = {"quantifier": "no shape and no shopping signal",
+                    "objective": "nothing of the shop is asked about",
+                    "population": evidence["population"]}
+        return Form(quantifier="unknown", objective="none", source="rules", evidence=evidence)
+    # A superlative or comparative on an attribute the shop does not show makes the form
+    # name that attribute, so property 5 refuses the question whatever the word (20 October
+    # 2026). With no other shape it is the objective, the best of the market by it; with
+    # one, a filter the candidates must meet. A lookup whose objective was only guessed as
+    # a price takes it as the objective too.
+    graded = graded_unknown(question)
+    if graded is not None:
+        attribute, words = graded
+        guessed_lookup = quantifier == "lookup" and evidence.get("objective") == "a price is asked for"
+        if quantifier == "aggregate" or guessed_lookup:
+            quantifier = "lookup" if guessed_lookup else "argmax"
+            objective = f"attribute:{attribute}"
+            evidence["objective"] = words
+            if not guessed_lookup:
+                evidence["quantifier"] = words
+        else:
+            filters.append(Filter(attribute, "=", words))
+            evidence[f"filter:{attribute}"] = words
     if quantifier == "aggregate":
-        signal = shopping_signal(question, filters)
-        if signal is None:
-            evidence = {"quantifier": "no shape and no shopping signal",
-                        "objective": "nothing of the shop is asked about",
-                        "population": evidence["population"]}
-            return Form(quantifier="unknown", objective="none", source="rules", evidence=evidence)
         evidence["fallback"] = f"no recognised quantifier, kept in the shop by {signal}"
     if quantifier == "lookup":
         filters.insert(0, named)
@@ -650,6 +779,9 @@ def from_rules(question: str, page: page_module.Page | None = None) -> Form:
     if vague and not FIGURE.search(URL.sub("", question)):
         unknowns = ("price limit",)
         evidence["unknowns"] = vague.group(0)
+    if graded is not None:
+        unknowns += (graded[0],)
+        evidence["unknowns:attribute"] = graded[1]
     return Form(quantifier=quantifier, objective=objective, filters=tuple(filters),
                 population=population, k=k, reading=reading, unknowns=unknowns,
                 source="rules", evidence=evidence)

@@ -74,18 +74,34 @@ BROWSER_TOOL = "0.0.83"
 # default shop sets no MCP arguments of its own (openJiuwen's apply), so it is not confined
 # and its payload says None. The agent splits the string with `shlex`, so the flag and its
 # value are two words, as the quoted user agent before them is one.
+#
+# Beside it, from the same `--help`, read again on 20 October 2026:
+#
+#   --block-service-workers               block service workers
+#
+# A service worker is a script a page may register that answers the page's later requests
+# itself, from its own cache, so with one in place what the browser shows is not only what
+# the shop sent. Blocking them keeps every page the agent reads a page the shop served
+# (verifier finding, 20 October 2026). The three batches of 14 October (20261014T213118,
+# 20261014T220116, 20261014T222007) ran without it, which their payloads show by having no
+# `browser_flags`. `--allowed-origins` confines network requests and nothing else: in
+# 20261014T220116 the bypassed poem run wrote its poem into a `data:text/html,...` URL and
+# navigated to it, which makes no network request, so no breach, recorded here.
 ALLOWED_ORIGINS = "http://localhost:7770"
+BROWSER_FLAGS = "--block-service-workers"
 MCP_ARGS_GATED = (f'-y @playwright/mcp@{BROWSER_TOOL} --user-agent "{GATED_UA}" '
-                  f'--allowed-origins {ALLOWED_ORIGINS}')
+                  f'--allowed-origins {ALLOWED_ORIGINS} {BROWSER_FLAGS}')
 
 
 def browser_conditions(scaffold: str, shop: str) -> dict:
-    """The pinned browser tool and the origins it may request, recorded in every suite
-    payload. Only openJiuwen on the gated shop gets them: the naive loop drives its own
-    browser, and the default shop leaves openJiuwen's own "latest" in place."""
+    """The pinned browser tool, the origins it may request and the flags it runs with,
+    recorded in every suite payload and printed in the dry run's header. Only openJiuwen
+    on the gated shop gets them: the naive loop drives its own browser, and the default
+    shop leaves openJiuwen's own "latest" in place."""
     pinned = scaffold == "openjiuwen" and shop == "gated"
     return {"browser_tool": BROWSER_TOOL if pinned else None,
-            "browser_origins": ALLOWED_ORIGINS if pinned else None}
+            "browser_origins": ALLOWED_ORIGINS if pinned else None,
+            "browser_flags": BROWSER_FLAGS if pinned else None}
 
 
 def browser_env(shop: str, probe: str = "viewport",
@@ -641,8 +657,9 @@ def main() -> int:
                "form_version": form_module.VERSION if args.box else None,
                "primitives_version": primitives_module.VERSION if args.box else None,
                "reading": args.reading,
-               # The pinned browser tool and the origins the browser may request, see
-               # `browser_conditions`: `browser_tool` and `browser_origins`.
+               # The pinned browser tool, the origins the browser may request and the
+               # flags it runs with, see `browser_conditions`: `browser_tool`,
+               # `browser_origins` and `browser_flags`.
                **browser,
                # Which scorer judged the rows (LESSONS 10). Absent before 14 Oct 2026,
                # when every batch was scored by version 1.
