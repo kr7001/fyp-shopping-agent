@@ -151,9 +151,9 @@ The gap between 33 and 5 is two prompt vocabulary problems, not judgement: the m
 the listing's URL out of the filters in 8 of the 9 forms where the rules include it, so 7 of
 its single-listing forms fail "a lookup names no listing", and it writes "listing" as the
 population where the rules write "results" in 7 cases. Both are fixes to the prompt. The four
-real disagreements: "which of these two sellers is cheaper" (rules: look up both named pages;
+real disagreements: "which of these two sellers is cheaper" (rules: look up both named pages,
 the model: the cheapest, naming no page, so its form alone does not say what to open), "is the
-1 kg size the cheapest per kg" (rules right: it needs every size's rate; the model proposed a
+1 kg size the cheapest per kg" (rules right: it needs every size's rate, and the model proposed a
 lookup), "list every pack size and its price" (the model invented an attribute "pack size and
 price" and was refused by the fifth property, which is the property doing its job), and the
 Calderwood cheapest question (the model chose "advertised price", the rules "price": the rules
