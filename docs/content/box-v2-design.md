@@ -22,9 +22,9 @@ retrieval primitives whose stop rules are theorems, not judgements: a lower boun
 counterexample refutes, one witness proves, a count needs the whole population. The soundness
 check, the answer check and the ambiguity test all follow from the form. Three reasons to keep
 this symbolic, from the project's own measurements: openJiuwen told to be thorough costs three
-times the shipped agent and still makes the ambiguity and reveal errors (cell 5); the model's
+times the shipped agent and still makes the ambiguity and reveal errors (cell 5). The model's
 one unsound plan in the probe compared an attribute the shop does not publish, and only a check
-against the page catches that; and a plan that is the same bytes every time can be audited,
+against the page catches that. And a plan that is the same bytes every time can be audited,
 tested and compared across runs, which a loop of model calls cannot.
 
 So the box is "a model proposes, rules verify and execute", the LLM-Modulo pattern applied to

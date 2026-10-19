@@ -115,7 +115,7 @@ Watch the pilot log for the agent trusting its own four card probe over the prea
 **Open point 2, decided at 9 am: v1 is the floor, v2 is the product.** The pilot showed the
 agent follows the plan. Rather than spend $13 measuring v1 on all six questions, the budget
 waits for v2, which handles every form in the research census, so the development batch
-measures the thing the project claims. Thornwood stays the development market; the claim market
+measures the thing the project claims. Thornwood stays the development market. The claim market
 is generated after v2 is frozen.
 
 ## The pilot ran, 08:43 to 08:48
