@@ -187,7 +187,8 @@ GENERATED_SLUG = re.compile(r"^slug:igr-", re.IGNORECASE)
 # prints `- combobox "Pack Size *" [ref=f3e89]` with no colon and no option lines, and the
 # next line is its sibling. So a head line without a trailing colon has no rendered
 # children and gives no reading at all; with one, the block rule applies. The verifier
-# checked this on every combobox head in every stored tool reply on 20 October 2026: 5,574
+# checked this on every combobox head in every stored tool reply under experiments/results
+# and experiments/runs on 20 October 2026: 5,574
 # heads; 3,646 with a colon and a child line after it; 1,924 with no colon and no child;
 # 4 with a colon and no child, "Sort By" heads at the end of a find window, which match
 # no Size head and give no reading.

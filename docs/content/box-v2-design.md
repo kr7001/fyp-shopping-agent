@@ -128,7 +128,7 @@ Nor does it ask when one reading has no answer on this shop (20 October 2026). T
 reading of a price question asks for the price of a size that is listed but sold out, which
 the gated page never prints, so for a question whose form compares a price or carries a price
 limit, the cheapest, the dearest or the k cheapest of a size, an existence question under a
-price limit, a comparison of named listings by price and a price survey, asked with an
+price limit and a comparison of named listings by price, asked with an
 ambiguous verb ("which seller has the best price for size M"), the box takes the buyable
 reading without asking, writes that reading into the question text the agent gets, and
 records `reading_by: "box"` beside the reading; the run is then scored under that reading's
