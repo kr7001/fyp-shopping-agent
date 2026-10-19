@@ -60,7 +60,10 @@ import targeting
 #   6  20 October 2026, from the verifier's probe of the rule: "availability" is a shown
 #      attribute's word, "the widest range of sizes" and "most sizes" rank by size, and
 #      "the top tee" is read like "the best tee" while "the top 3" stays a count
-VERSION = 6
+#   7  20 October 2026. "best price", "top price" and "best deal" are the cheapest in shop
+#      vocabulary (`BEST_PRICE`), so "Which seller has the best price for size M?" is the
+#      best of the market by price rather than the survey fallback
+VERSION = 7
 
 # The vocabulary. A form outside it is refused when it is built, so a model's reply cannot
 # smuggle in a quantifier nothing knows how to plan. "unknown" is the rules' answer to a
@@ -360,6 +363,10 @@ SIZE_IN = re.compile(r"\bin\s+(XXS|XS|S|M|L|XL|XXL|XXXL)\b")
 PACK = re.compile(r"\bthe\s+((?:\d[\w.]*\s*x\s*)?\d[\w.]*\s*(?:ml|l|g|kg|litres?|liters?)?)"
                   r"\s+(?:pack|size|bottle|carton|bag)\b", re.IGNORECASE)
 ARGMAX = re.compile(r"\b(?:most expensive|dearest|highest price|priciest)\b", re.IGNORECASE)
+# The cheapest, in shop vocabulary: "best price", "top price", "best deal" (verifier
+# finding, 20 October 2026; "top price" is read as the shop's best offer, the decision of
+# that day, not as the highest). `targeting.CHEAPEST` reads "cheapest" and "lowest price".
+BEST_PRICE = re.compile(r"\b(?:best|top)\s+(?:price|prices|deal)\b", re.IGNORECASE)
 # A price word with no figure anywhere in the question (URLs aside) asks for a threshold.
 VAGUE_PRICE = re.compile(r"\b(?:cheap|affordable|inexpensive|budget|low[- ]cost|bargain)\b",
                          re.IGNORECASE)
@@ -697,7 +704,7 @@ def shape_of(question: str, filters: list[Filter], named: Filter | None,
         chosen("quantifier", found)
         chosen("objective", found)
         return "argmin", "rate", None
-    found = targeting.CHEAPEST.search(question)
+    found = targeting.CHEAPEST.search(question) or BEST_PRICE.search(question)
     if found:
         chosen("quantifier", found)
         chosen("objective", found)

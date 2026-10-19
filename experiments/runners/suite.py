@@ -221,10 +221,16 @@ def agent_code_identity(git: str = "git", where: pathlib.Path = AGENT_CORE) -> d
     leave `agent/` out, so an edit there would reach a paid run unverified, and until
     14 Oct 2026 no batch record said which agent code ran. The verifier found the patch
     present in every clothing cell: a held-constant condition that no record named
-    (LESSONS 10, 12). `agent_core_patch` is the sha1 of the bytes `git diff` prints, so an
-    empty diff gives the sha1 of nothing. Git being unavailable never fails a batch: both
-    fields read "unknown" and a warning is printed. `git` and `where` are parameters so a
-    test can take both paths.
+    (LESSONS 10, 12). `agent_core_patch` is the sha1 of the bytes `git diff --full-index`
+    prints, so an empty diff gives the sha1 of nothing, and the committed
+    `agent/openjiuwen-local.patch`, written with the same flag, has that sha1 itself. Full
+    blob ids because a plain `git diff` abbreviates them by the machine's setting, so the
+    figure depended on the machine (verifier finding, 20 October 2026): the four October
+    batches (20261014T084322, 20261014T213118, 20261014T220116, 20261014T222007) recorded
+    the abbreviated form, ae20d54335978d01c3cd040b153585a8324831cc, for the same content
+    that now records as the full-index digest. Git being unavailable never fails a batch:
+    both fields read "unknown" and a warning is printed. `git` and `where` are parameters
+    so a test can take both paths.
     """
     try:
         # `--show-toplevel` with HEAD, because git answers for the nearest enclosing
@@ -233,7 +239,7 @@ def agent_code_identity(git: str = "git", where: pathlib.Path = AGENT_CORE) -> d
         toplevel, commit = _git(git, where, "rev-parse", "--show-toplevel", "HEAD").decode().split()
         if pathlib.Path(toplevel).resolve() != where.resolve():
             raise LookupError(f"{where} is not its own repository, git answered for {toplevel}")
-        patch = hashlib.sha1(_git(git, where, "diff")).hexdigest()
+        patch = hashlib.sha1(_git(git, where, "diff", "--full-index")).hexdigest()
     except (OSError, subprocess.CalledProcessError, LookupError) as error:
         print(f"warning: the agent code's identity could not be read, recording it as "
               f"unknown: {error}", file=sys.stderr)

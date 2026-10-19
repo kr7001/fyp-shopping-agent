@@ -1,5 +1,5 @@
 diff --git a/openjiuwen/harness/tools/browser_move/playwright_runtime/runtime.py b/openjiuwen/harness/tools/browser_move/playwright_runtime/runtime.py
-index abc17b21..c46fbca7 100644
+index abc17b21aef8bb0b2ae1e63424d455b0be037bb0..c46fbca74eae4df1bedb6db565a427b412167b57 100644
 --- a/openjiuwen/harness/tools/browser_move/playwright_runtime/runtime.py
 +++ b/openjiuwen/harness/tools/browser_move/playwright_runtime/runtime.py
 @@ -28,7 +28,7 @@ from openjiuwen.harness.prompts.prompt_attachment_manager import (
@@ -40,7 +40,7 @@ index abc17b21..c46fbca7 100644
                  "ok": False,
                  "error": "Could not parse browser_probe_cards result JSON",
 diff --git a/openjiuwen/harness/tools/browser_move/utils/parsing.py b/openjiuwen/harness/tools/browser_move/utils/parsing.py
-index 17740886..d6ae61f1 100644
+index 17740886d6a7c7b96ee8e86a27b6f76a595f1fe9..d6ae61f1f80b9a23637b9a819a6c5f911ba1de9f 100644
 --- a/openjiuwen/harness/tools/browser_move/utils/parsing.py
 +++ b/openjiuwen/harness/tools/browser_move/utils/parsing.py
 @@ -52,6 +52,27 @@ def sanitize_json_schema(schema: Any) -> Any:

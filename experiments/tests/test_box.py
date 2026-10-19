@@ -518,17 +518,45 @@ class Refusal(unittest.TestCase):
                 self.assertTrue(decision.refuse)
                 self.assertEqual((decision.ask, decision.query, decision.record()["asked"]),
                                  (None, None, False))
-        # A question answerable under a reading still asks, and the one refusal that
-        # depends on the reading (the price of a sold-out size) waits for the reply.
+        # The one refusal that depends on the reading (the price of a sold-out size) is
+        # not raised before the ask: a price question with an ambiguous verb is read the
+        # one way the shop can answer (`test_a_reading_the_shop_cannot_answer_is_not_asked_about`),
+        # and the user's own menu reply is still refused.
         depends = self.go + ("Across the listings, which seller is cheapest for size M among "
                              "those that stock size M?")
-        asks = box.decide(depends, self.page)
-        self.assertEqual((asks.ask is not None, asks.refuse), (True, None))
+        chosen = box.decide(depends, self.page)
+        self.assertEqual((chosen.ask, chosen.refuse, chosen.reading, chosen.reading_by),
+                         (None, None, "buyable", "box"))
         self.assertTrue(box.decide(depends, self.page, reply="menu").refuse.startswith(
             "The shop does not show the price of a sold-out size"))
         self.assertIsNotNone(box.decide(depends, self.page, reply="buyable").query)
+        # A question answerable under both readings still asks.
         plain = box.decide(self.go + "Does every listing offer size M?", self.page)
         self.assertEqual((plain.ask is not None, plain.refuse), (True, None))
+
+    def test_a_reading_the_shop_cannot_answer_is_not_asked_about(self):
+        # 20 Oct 2026: "has size M" is the menu-or-buyable ambiguity, but a price exists
+        # only for a size that can be sold, so the box reads the question as buyable and
+        # says so instead of asking and refusing after the reply.
+        q = self.go + "Which seller has the best price for size M?"
+        self.assertIsNotNone(ambiguity.ask(q))
+        decision = box.decide(q, self.page)
+        self.assertEqual((decision.ask, decision.reading, decision.reading_by, decision.kind),
+                         (None, "buyable", "box", "availability_bound"))
+        self.assertEqual((decision.record()["asked"], decision.record()["reading_by"]), (False, "box"))
+        self.assertIn("By 'has the best price for size M' I mean listings that can sell it now",
+                      decision.query)
+        # The user's own reply still decides, and is recorded as theirs.
+        self.assertEqual(box.decide(q, self.page, reply="buyable").reading_by, "user")
+        self.assertTrue(box.decide(q, self.page, reply="menu").refuse.startswith(
+            "The shop does not show the price of a sold-out size"))
+        # Both readings answerable: the box asks, as before, and records no reading.
+        for q in (self.go + "Which seller has the best availability for size M?",
+                  self.go + "Does every listing offer size M?"):
+            with self.subTest(question=q):
+                asks = box.decide(q, self.page)
+                self.assertEqual((asks.ask is not None, asks.reading, asks.reading_by), (True, None, None))
+                self.assertEqual(box.decide(q, self.page, reply="menu").reading_by, "user")
 
 
 class PageRecord(unittest.TestCase):
@@ -578,7 +606,11 @@ def menu_log(folder: str, name: str, pages: list[tuple]) -> pathlib.Path:
                           for label, can in menu.items())
         block = ('- combobox "Size *" [ref=f1e89]:\\n  - option "Choose an Option..." [selected]'
                  + options)
-        if how == "snapshot":
+        if how == "depth-cut":
+            # A snapshot taken with a depth that ends at the combobox: a leaf, no colon, no
+            # option lines, its sibling next (20260910T133605/scaled-cheapest-target-1.log).
+            block = '- combobox "Size *" [ref=f1e89]\\n- generic [ref=f1e92]:'
+        if how in ("snapshot", "depth-cut"):
             reply("browser_snapshot", "{'result': '### Page\\n- Page URL: " + url
                   + "\\n### Snapshot\\n```yaml\\n" + block + "\\n```'}")
             continue
@@ -731,6 +763,25 @@ class CounterexampleFromTheMenu(unittest.TestCase):
         both = menu_log(self.tmp.name, "both", [(self.urls[0], {"S": True, "M": True}, "excerpt"),
                                                 (self.urls[0], {"S": True, "M": True})])
         self.assertTrue(sufficiency.size_menus(both)[key].complete)
+
+    def test_a_depth_cut_snapshot_gives_no_reading(self):
+        # Verifier finding, 20 Oct 2026: a snapshot taken with a depth prints the combobox
+        # as a leaf, no colon and no option lines, and carries the page URL, which the first
+        # rule took for a complete reading with no sizes: a bare No against a listing whose
+        # menu was never seen.
+        key = sufficiency.listing_key(self.urls[0])
+        cut = menu_log(self.tmp.name, "depth", [(self.urls[0], {}, "depth-cut")])
+        self.assertEqual(sufficiency.size_menus(cut), {})
+        self.assertEqual(box.check(self.decision(), "No", cut)["flag"], "counterexample_not_opened")
+        # The fault, planted: the same text with the leaf read as a head with children.
+        text = cut.read_text().replace('[ref=f1e89]\\\\n', '[ref=f1e89]:\\\\n')
+        planted = pathlib.Path(self.tmp.name) / "planted.log"
+        planted.write_text(text)
+        self.assertEqual(sufficiency.size_menus(planted), {key: sufficiency.MenuReading({}, True)})
+        self.assertTrue(box.check(self.decision(), "No", planted)["ok"])
+        # A whole snapshot, head with a colon, options, then a tree line, still refutes.
+        whole = menu_log(self.tmp.name, "whole", [(self.urls[0], {"S": True, "L": True})])
+        self.assertTrue(box.check(self.decision(), "No", whole)["ok"])
 
 
 V2_BATCHES = compare_cells.DEVELOPMENT["box v2 development, Thornwood, in-sample"]
@@ -1349,10 +1400,17 @@ class AgentCode(unittest.TestCase):
         identity = suite.agent_code_identity()
         self.assertRegex(identity["agent_core_commit"], self.HEX40)
         self.assertRegex(identity["agent_core_patch"], self.HEX40)
-        # The same two figures taken independently: the digest is of the bytes git prints,
-        # so an empty diff would give the sha1 of nothing.
+        # The same two figures taken independently: the digest is of the bytes git prints
+        # with full blob ids, so an empty diff would give the sha1 of nothing, and the
+        # machine's abbreviation setting changes nothing (verifier finding, 20 Oct 2026).
         self.assertEqual(identity["agent_core_commit"], self.git("rev-parse", "HEAD").decode().strip())
-        self.assertEqual(identity["agent_core_patch"], hashlib.sha1(self.git("diff")).hexdigest())
+        self.assertEqual(identity["agent_core_patch"],
+                         hashlib.sha1(self.git("diff", "--full-index")).hexdigest())
+        self.assertNotEqual(identity["agent_core_patch"], hashlib.sha1(self.git("diff")).hexdigest())
+        # The committed patch is that diff, so its own sha1 is the figure a batch records.
+        patch = paths.REPO / "agent" / "openjiuwen-local.patch"
+        self.assertEqual(hashlib.sha1(patch.read_bytes()).hexdigest(), identity["agent_core_patch"])
+        self.assertIn(b"index abc17b21aef8bb0b2ae1e63424d455b0be037bb0..", patch.read_bytes())
 
     def test_without_git_the_batch_records_unknown_and_warns(self):
         with contextlib.redirect_stderr(io.StringIO()) as err:

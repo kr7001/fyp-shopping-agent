@@ -168,14 +168,16 @@ class Probe(unittest.TestCase):
         parse_probe.PAGES.clear()
         self.addCleanup(parse_probe.PAGES.clear)
 
-    def run_main(self, call_model) -> tuple[int | None, dict, str]:
-        """The exit code (None when main raised), the file written, and what was printed."""
+    def run_main(self, call_model, folder: str | None = None) -> tuple[int | None, dict, str]:
+        """The exit code (None when main raised), the file written, and what was printed.
+        `folder` is where the probe writes; the test's own temporary folder by default."""
         out = io.StringIO()
         code = None
+        folder = folder or self.tmp.name
         with mock.patch.object(parse_probe, "census", return_value=QUESTIONS), \
                 mock.patch.object(page, "fetch", return_value=synthetic_page([12.25, 19.50])), \
                 mock.patch.object(parse_probe, "call_model", call_model), \
-                mock.patch.object(parse_probe, "RESULTS", pathlib.Path(self.tmp.name)), \
+                mock.patch.object(parse_probe, "RESULTS", pathlib.Path(folder)), \
                 mock.patch.object(plan_probe, "load_key", return_value="fake-key"), \
                 mock.patch.object(plan_probe, "usage", return_value=None), \
                 mock.patch.object(sys, "argv", ["parse_probe.py", "--model", "fake/model"]), \
@@ -184,7 +186,7 @@ class Probe(unittest.TestCase):
                 code = parse_probe.main()
             except RuntimeError:
                 pass
-        files = list(pathlib.Path(self.tmp.name).glob("parse-probe-*.json"))
+        files = list(pathlib.Path(folder).glob("parse-probe-*.json"))
         self.assertEqual(len(files), 1, "the result file is written once, whatever happened")
         return code, json.loads(files[0].read_text()), out.getvalue()
 
@@ -202,13 +204,18 @@ class Probe(unittest.TestCase):
     def test_a_failed_call_is_recorded_and_the_probe_goes_on(self):
         # The last is what `reply.json()` raises for a 200 whose body is not JSON. It is a
         # ValueError too, and until 14 Oct 2026 was recorded as a model problem (verifier).
+        # A fresh folder for each fault: the probe names its file to the second
+        # (parse_probe.py, `stamp`), so two subtests within one second in one folder would
+        # leave one file for two runs and the count below would fail by timing (verifier
+        # finding, 20 Oct 2026). A real probe is one invocation, minutes long, so the
+        # naming is not a fault there.
         for fault in (requests.exceptions.HTTPError("429 Too Many Requests"),
                       requests.exceptions.Timeout("read timed out"),
                       requests.exceptions.ConnectionError("refused"),
                       requests.exceptions.JSONDecodeError("Expecting value", "<html>", 0)):
-            with self.subTest(fault=type(fault).__name__):
+            with self.subTest(fault=type(fault).__name__), tempfile.TemporaryDirectory() as fresh:
                 call_model, prompts = self.failing_on_the_second(fault)
-                code, payload, printed = self.run_main(call_model)
+                code, payload, printed = self.run_main(call_model, fresh)
                 self.assertEqual(code, 0)
                 self.assertEqual(len(prompts), 3, "no retry: one call per question")
                 rows = payload["rows"]

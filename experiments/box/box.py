@@ -73,7 +73,12 @@ import targeting
 #      (`sufficiency.MenuReading`). A refusal comes before the ambiguity ask too, so no
 #      user turn is spent on a question that needs what the shop does not show. The
 #      graded-word rule reads "availability", a range of sizes and "the top" (form v6)
-VERSION = 8
+#   9  20 October 2026. A snapshot's combobox printed as a leaf (a depth cut) gives no
+#      menu reading. An ambiguous question with one reading property 5 refuses is read
+#      the other way without asking, and the record says the box chose it
+#      (`Decision.reading_by`): a price question asked with "has size M" has a price only
+#      for a size that can be sold. "best price" is the cheapest (form v7)
+VERSION = 9
 
 # The results page the question sends the agent to: the first URL in it.
 URL = re.compile(r"https?://\S+")
@@ -99,13 +104,14 @@ class Decision:
     form: form_module.Form | None = None    # what the box parsed, None when it asked first
     refuse: str | None = None   # why no plan was made: what the shop does not show
     bypass: bool = False        # the agent gets the question unchanged, see BYPASS_REASON
+    reading_by: str | None = None   # who chose the reading: "user" by a reply, "box" when the other reading was refused
 
     def record(self) -> dict:
         return {"box_version": VERSION, "form_version": form_module.VERSION,
                 "primitives_version": primitives.VERSION,
                 "kind": self.kind, "page": self.page.record() if self.page else None,
                 "asked": self.ask is not None, "ask": self.ask.text if self.ask else None,
-                "reading": self.reading, "query": self.query,
+                "reading": self.reading, "reading_by": self.reading_by, "query": self.query,
                 "form": self.form.record() if self.form else None, "refuse": self.refuse,
                 "bypassed": self.bypass, "bypass_reason": BYPASS_REASON if self.bypass else None,
                 "fallback": bool(self.form and self.form.fallback),
@@ -147,37 +153,55 @@ def decide(question: str, page: page_module.Page | None, reply: str | None = Non
     one refusal that depends on the reading (the price of a sold-out size) is never raised
     here, and such a question is still asked. The one ask the form raises on its own is
     for a price limit.
+
+    A reading property 5 refuses is no reading at all, so when one of the two is refused
+    the question is read the other way without asking, and the record says the box chose
+    it (`reading_by` "box"; "user" when a reply did). "Which seller has the best price for
+    size M?" has a price only for a size that can be sold, so it is read as buyable rather
+    than asked and then refused after the reply (verifier finding, 20 October 2026). When
+    both readings can be answered, as for "does every listing offer size M", the box asks.
     """
     asked = ambiguity.ask(question)
+    reading_by = None
     if asked is not None and reply is None:
         form = form_module.from_rules(question, page)
         missing = form_module.not_shown(form, page) if page is not None else []
         if form.quantifier != "unknown" and missing:
             return Decision(question=question, kind=None, ask=None, reading=None, query=None,
                             plan=None, page=page, form=form, refuse=form_module.refusal(missing))
-        return Decision(question=question, kind=None, ask=asked, reading=None, query=None,
-                        plan=None, page=page)
+        answerable = [key for key in asked.readings if not form_module.not_shown(
+            form_module.from_rules(ambiguity.with_reading(question, asked, key), page), page)]
+        if page is not None and len(answerable) == 1 and len(asked.readings) == 2:
+            reply, reading_by = answerable[0], "box"
+        else:
+            return Decision(question=question, kind=None, ask=asked, reading=None, query=None,
+                            plan=None, page=page)
     reading = None
     if asked is not None:
         if reply not in asked.readings:
             raise ValueError(f"reply {reply!r} is not one of the readings offered: "
                              f"{sorted(asked.readings)}")
         question = ambiguity.with_reading(question, asked, reply)
-        reading = reply
+        reading, reading_by = reply, reading_by or "user"
+    # The ask recorded is the one put to the user; a reading the box chose was never asked.
+    asked = None if reading_by == "box" else asked
     form = form_module.from_rules(question, page)
     if form.quantifier == "unknown":
         return Decision(question=question, kind=None, ask=asked, reading=reading,
-                        query=question, plan=None, page=page, form=form, bypass=True)
+                        query=question, plan=None, page=page, form=form, bypass=True,
+                        reading_by=reading_by)
     if page is None:
         raise ValueError("the question names no results page to read")
     missing = form_module.not_shown(form, page)
     if missing:
         return Decision(question=question, kind=None, ask=asked, reading=reading, query=None,
-                        plan=None, page=page, form=form, refuse=form_module.refusal(missing))
+                        plan=None, page=page, form=form, refuse=form_module.refusal(missing),
+                        reading_by=reading_by)
     if "price limit" in form.unknowns:
         return Decision(question=question, kind=None,
                         ask=ambiguity.threshold_ask(form.evidence["unknowns"]),
-                        reading=reading, query=None, plan=None, page=page, form=form)
+                        reading=reading, query=None, plan=None, page=page, form=form,
+                        reading_by=reading_by)
     problems = form_module.verify(form, page)
     if problems:
         # The refusal `planner.planned_query` makes, for the same reason: paying a model to
@@ -185,7 +209,8 @@ def decide(question: str, page: page_module.Page | None, reply: str | None = Non
         raise ValueError("refusing to execute an unsound plan: " + "; ".join(problems))
     plan = primitives.compose(form, page)
     return Decision(question=question, kind=form.kind(), ask=asked, reading=reading,
-                    query=f"{question}\n\n{plan.text}", plan=plan, page=page, form=form)
+                    query=f"{question}\n\n{plan.text}", plan=plan, page=page, form=form,
+                    reading_by=reading_by)
 
 
 def stated_figures(decision: Decision) -> set[int]:

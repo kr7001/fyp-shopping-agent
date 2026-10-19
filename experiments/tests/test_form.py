@@ -441,6 +441,24 @@ class Graded(unittest.TestCase):
                 self.assertEqual(form.not_shown(form.from_rules(GO + question)),
                                  [f"what '{word}' ranks by"])
 
+    def test_best_price_is_the_cheapest(self):
+        # 20 Oct 2026: "best price", "top price" and "best deal" are the cheapest in shop
+        # vocabulary, not a survey of everything. "best availability" stays as it was.
+        for question in ("Which seller has the best price for size M?",
+                         "Which seller has the top price for size M?",
+                         "Who offers the best deal for size M?",
+                         "Which seller has the lowest price for size M?"):
+            with self.subTest(question=question):
+                parsed = form.from_rules(GO + question)
+                self.assertEqual((parsed.quantifier, parsed.objective, parsed.kind(), parsed.fallback),
+                                 ("argmin", "price", "total_bound", False))
+                self.assertEqual(form.not_shown(parsed), [])
+        availability = form.from_rules(GO + "Which seller has the best availability for size M?")
+        self.assertEqual((availability.kind(), availability.fallback), ("survey", True))
+        # The dearest is still the dearest.
+        self.assertEqual(form.from_rules(GO + "Which seller has the highest price for size M?").kind(),
+                         "argmax_price")
+
     def test_every_frame_fires_and_every_listed_word_stays_quiet(self):
         for question, phrase in (("Who sells the softest tee?", "softest"),
                                  ("Which tee is warmest?", "warmest"),

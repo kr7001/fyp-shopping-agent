@@ -181,6 +181,14 @@ GENERATED_SLUG = re.compile(r"^slug:igr-", re.IGNORECASE)
 # snapshot) shows the whole page, and so does an option block followed by a line that is
 # not an option. An excerpt that ends inside the block is partial: the sizes it shows are
 # seen, disabled or not, and nothing can be said about the sizes it does not show.
+#
+# A snapshot taken with a `depth` prints a node beyond it as a leaf, with no children and
+# no mark that any were dropped: 20260910T133605/scaled-cheapest-target-1.log (depth 6)
+# prints `- combobox "Pack Size *" [ref=f3e89]` with no colon and no option lines, and the
+# next line is its sibling. So a head line without a trailing colon has no rendered
+# children and gives no reading at all; with one, the block rule applies. The verifier
+# checked this on every stored snapshot line on 20 October 2026: 2,310 combobox lines with
+# a colon all followed by a child line, 1,461 without one never.
 MENU_HEAD = re.compile(r'combobox "Size[^"]*"')
 MENU_LINE = re.compile(r'^[ \t]*- option "([^"]*)"((?: \[[^\]]*\])*)[ \t]*$')
 MENU_OPTION = re.compile(r'option "([^"]*)"((?: \[[^\]]*\])*)')
@@ -314,6 +322,8 @@ def menu_blocks(text: str, whole_page: bool) -> list[tuple[dict[str, bool], bool
     for n, line in enumerate(lines):
         if not MENU_HEAD.search(line):
             continue
+        if not line.rstrip().endswith(":"):
+            continue      # a leaf: its children were not rendered, so nothing was seen
         options: dict[str, bool] = {}
         complete = whole_page
         for later in lines[n + 1:]:
