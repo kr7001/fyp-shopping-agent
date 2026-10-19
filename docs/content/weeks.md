@@ -72,3 +72,19 @@ No commits, notes or updates are dated in this week.
 - Stepped back. Wrote `OBJECTIVE.md`, `LESSONS.md` and `PARKED.md`, and set up the workbench mod and three subagents, so the work stays on the objective and nothing is spent without a check
 - Reorganised the code into folders, added unit tests, and replaced five pages with this site. The verifier failed it four times on claims stronger than the evidence, and passed it on the fifth
 - Rewrote the history not yet on GitHub, so it could be published: the openJiuwen paper out of every commit, and Magento's licence notice into every copy of the gated theme's template
+
+## Week of 12 October
+
+- Wrote the box v1 specification overnight on 13 to 14 October, built it with 90 tests, pinned the browser tool at 0.0.83, and had the verifier pass the pilot command before anything ran
+- The pilot, 14 October, 08:43: two runs, both correct, $0.61 charged against $1.05 declared. The cheapest question opened the 8 listings the advertised prices could not rule out and skipped 7
+- Researched what the shopping benchmarks ask and what has been built for adaptive retrieval and clarification, and designed box v2 from it: a logical form per question, five soundness properties, seven retrieval primitives. Built it the same day, with the six clothing questions rendering byte for byte what v1 rendered
+- The census parse: a model wrote the logical form of all 37 questions for $0.069 and agreed with the rules on the plan-deciding fields for 33 of 37
+- A question the box cannot classify bypasses it, at the student's request, and the gated browser is confined to the shop's origin
+- Progress report 4 and a short update written for the supervisor meeting
+- The development batches, 14 October evening: 32 agent runs in three batches on Thornwood, $6.96 charged against $11 declared, their verification left for the following week
+
+## Week of 19 October
+
+- The verifier passed the three batches of 14 October and found six things, fixed in box v7: a bare "No" is supported by an observed menu without the size, an attribute the shop does not show is refused whatever the word, a keyless run that did not finish is unscored, two written kinds of error, the listing counter's fourth correction, and the development cell in `compare_cells`. The browser now blocks service workers too
+- The verifier then failed the new menu reader twice before accepting it: a search excerpt is not a whole menu, and a depth-cut snapshot prints a menu with no sizes. Box v8 and v9, 254 tests, frozen for the fresh market
+- Six lessons added, 33 to 38. The site gained the development cell, in sample and never pinned, with every answer of the three batches in full

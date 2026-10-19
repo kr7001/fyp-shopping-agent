@@ -718,6 +718,297 @@ window.SITE = {
     "moved": null
    }
   ],
+  "development": {
+   "box v2 development, Thornwood, in-sample": {
+    "batches": [
+     "20261014T213118",
+     "20261014T220116",
+     "20261014T222007"
+    ],
+    "runs": 26,
+    "questions": [
+     "apparel-all-stocked",
+     "apparel-cheapest-target",
+     "apparel-cheapest-xl",
+     "apparel-count-buyable",
+     "apparel-count-stocked",
+     "apparel-exists-under-25",
+     "apparel-exists-under-27",
+     "apparel-named-pair",
+     "apparel-target-price",
+     "apparel-top-3"
+    ],
+    "per_question": [
+     {
+      "task": "apparel-all-stocked",
+      "batch": "20261014T213118",
+      "key": "own",
+      "correct": 3,
+      "covered": 3,
+      "of": 3,
+      "opened": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "task": "apparel-all-stocked",
+      "batch": "20261014T222007",
+      "key": "buyable",
+      "correct": 3,
+      "covered": 3,
+      "of": 3,
+      "opened": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "task": "apparel-cheapest-target",
+      "batch": "20261014T213118",
+      "key": "own",
+      "correct": 2,
+      "covered": 2,
+      "of": 3,
+      "opened": [
+       6,
+       8,
+       8
+      ]
+     },
+     {
+      "task": "apparel-cheapest-xl",
+      "batch": "20261014T220116",
+      "key": "own",
+      "correct": 1,
+      "covered": 1,
+      "of": 1,
+      "opened": [
+       3
+      ]
+     },
+     {
+      "task": "apparel-count-buyable",
+      "batch": "20261014T213118",
+      "key": "own",
+      "correct": 2,
+      "covered": 3,
+      "of": 3,
+      "opened": [
+       15,
+       15,
+       15
+      ]
+     },
+     {
+      "task": "apparel-count-stocked",
+      "batch": "20261014T213118",
+      "key": "own",
+      "correct": 3,
+      "covered": 3,
+      "of": 3,
+      "opened": [
+       15,
+       15,
+       15
+      ]
+     },
+     {
+      "task": "apparel-count-stocked",
+      "batch": "20261014T222007",
+      "key": "buyable",
+      "correct": 3,
+      "covered": 3,
+      "of": 3,
+      "opened": [
+       15,
+       15,
+       15
+      ]
+     },
+     {
+      "task": "apparel-exists-under-25",
+      "batch": "20261014T220116",
+      "key": "own",
+      "correct": 1,
+      "covered": 1,
+      "of": 1,
+      "opened": [
+       7
+      ]
+     },
+     {
+      "task": "apparel-exists-under-27",
+      "batch": "20261014T220116",
+      "key": "own",
+      "correct": 1,
+      "covered": 1,
+      "of": 1,
+      "opened": [
+       8
+      ]
+     },
+     {
+      "task": "apparel-named-pair",
+      "batch": "20261014T220116",
+      "key": "own",
+      "correct": 1,
+      "covered": 1,
+      "of": 1,
+      "opened": [
+       2
+      ]
+     },
+     {
+      "task": "apparel-target-price",
+      "batch": "20261014T213118",
+      "key": "own",
+      "correct": 3,
+      "covered": 3,
+      "of": 3,
+      "opened": [
+       8,
+       8,
+       8
+      ]
+     },
+     {
+      "task": "apparel-top-3",
+      "batch": "20261014T220116",
+      "key": "own",
+      "correct": 0,
+      "covered": 1,
+      "of": 1,
+      "opened": [
+       12
+      ]
+     }
+    ],
+    "in_sample": {
+     "runs": 15,
+     "questions": [
+      "apparel-all-stocked",
+      "apparel-cheapest-target",
+      "apparel-count-buyable",
+      "apparel-count-stocked",
+      "apparel-target-price"
+     ],
+     "right": 13,
+     "opened": 14,
+     "median_opened": 8,
+     "calls": 29.4,
+     "cost": 0.258101
+    },
+    "tests": [
+     {
+      "reading": "menu",
+      "measure": "correct",
+      "b": "1",
+      "text": "13 of 15 against 4 of 15",
+      "p_question": 0.00155,
+      "p_pooled": 0.002509
+     },
+     {
+      "reading": "menu",
+      "measure": "correct",
+      "b": "5",
+      "text": "13 of 15 against 11 of 15",
+      "p_question": 0.63,
+      "p_pooled": 0.651341
+     },
+     {
+      "reading": "menu",
+      "measure": "opened",
+      "b": "1",
+      "text": "14 of 15 against 3 of 15",
+      "p_question": 0.00034,
+      "p_pooled": 0.000116
+     },
+     {
+      "reading": "menu",
+      "measure": "opened",
+      "b": "5",
+      "text": "14 of 15 against 15 of 15",
+      "p_question": 1.0,
+      "p_pooled": 1.0
+     },
+     {
+      "reading": "buyable",
+      "measure": "correct",
+      "b": "1",
+      "text": "10 of 15 against 5 of 15",
+      "p_question": 0.099,
+      "p_pooled": 0.143111
+     },
+     {
+      "reading": "buyable",
+      "measure": "correct",
+      "b": "5",
+      "text": "10 of 15 against 14 of 15",
+      "p_question": 0.14,
+      "p_pooled": 0.168582
+     },
+     {
+      "reading": "buyable",
+      "measure": "opened",
+      "b": "1",
+      "text": "14 of 15 against 6 of 15",
+      "p_question": 0.005,
+      "p_pooled": 0.005197
+     },
+     {
+      "reading": "buyable",
+      "measure": "opened",
+      "b": "5",
+      "text": "14 of 15 against 15 of 15",
+      "p_question": 1.0,
+      "p_pooled": 1.0
+     }
+    ],
+    "errors": [
+     [
+      "did not open what the answer needs",
+      [
+       "cheapest-target-1"
+      ]
+     ],
+     [
+      "named a seller that cannot sell M",
+      [
+       "top-3-1"
+      ]
+     ],
+     [
+      "read the price before the page revealed it",
+      [
+       "cheapest-target-1"
+      ]
+     ],
+     [
+      "tested for the word disabled and never read the menu, so an absent size counted as available",
+      [
+       "count-buyable-2"
+      ]
+     ]
+    ],
+    "check": {
+     "runs": 32,
+     "wrong": 3,
+     "wrong_refused": [],
+     "other": 29,
+     "other_refused": [
+      "apparel-all-stocked-1"
+     ],
+     "text_reproduced": 32,
+     "same_today": 31,
+     "decided_differently_today": [
+      "apparel-softest-1"
+     ]
+    }
+   }
+  },
   "info": {
    "1 openJiuwen, limit on": {
     "label": "1",
@@ -3053,7 +3344,8 @@ window.SITE = {
     "how": "A second product category with its own generator: a size can be absent, sold out or buyable. Seed 203 was the one that rendered the answer outside the first row of results (env/pick_apparel_market.py).",
     "command": "python3 env/generate_apparel.py --seed 203",
     "tasks": [
-     "tasks_apparel.json"
+     "tasks_apparel.json",
+     "tasks_apparel_v2.json"
     ],
     "generator": "env/generate_apparel.py",
     "brand": "Thornwood",
@@ -3597,6 +3889,12 @@ window.SITE = {
     "gated": 5
    },
    {
+    "file": "tasks_apparel_v2.json",
+    "how": "The six clothing questions unchanged, plus ten for the forms box v2 adds, every key computed from the fixture by env/generate_apparel_v2_tasks.py. Run once, on 14 October.",
+    "questions": 16,
+    "gated": 10
+   },
+   {
     "file": "tasks_reviews.json",
     "how": "Generated from the shop's own review table by env/generate_review_tasks.py. Never run yet.",
     "questions": 9,
@@ -3625,8 +3923,8 @@ window.SITE = {
    {
     "market": "Thornwood, clothing",
     "listings": "15",
-    "status": "<strong>Development since 8 Oct 2026.</strong> Generated on 18 Sep, after the coverage rule was frozen. Cells 1, 2, 3 and 5 were measured on it on 7 and 8 Oct, and strategy v7 and planner v2 were then written from its failures",
-    "use": "Reporting cells 1, 2, 3 and 5, and developing box v1. Not a held-out test for the box"
+    "status": "<strong>Development since 8 Oct 2026.</strong> Generated on 18 Sep, after the coverage rule was frozen. Cells 1, 2, 3 and 5 were measured on it on 7 and 8 Oct, and strategy v7 and planner v2 were then written from its failures. Box v1's pilot and box v2's three development batches ran on it on 14 Oct, and box v7 to v9 were written from those batches' failures on 20 Oct",
+    "use": "Reporting cells 1, 2, 3 and 5, the pilot and the development cell, all in sample for the box. Not a held-out test for anything the box does"
    },
    {
     "market": "Calderwood-S",
@@ -3637,8 +3935,8 @@ window.SITE = {
    {
     "market": "Fresh clothing market",
     "listings": "15",
-    "status": "<strong>Reserved.</strong> To be generated with a new seed after box v1 is frozen, week 2 of the plan",
-    "use": "The held-out test for box v1, the claim"
+    "status": "<strong>Reserved.</strong> To be generated with a new seed now that box v9 is frozen for it (20 Oct 2026). Four sizes, or the menu reader's excerpt rule is extended first",
+    "use": "The held-out test for the box, the claim: shipped, open everything and box v9, three repeats, per question"
    }
   ]
  },
@@ -3950,6 +4248,64 @@ window.SITE = {
       ]
      }
     ]
+   },
+   {
+    "group": "Reading the runs, from the box v2 batches of 14 October 2026",
+    "rows": [
+     {
+      "n": 33,
+      "what": "The listing counter, in its fourth form, counted the category page <code>electronics.html</code> as a listing opened, because it recognised a <code>.html</code> path rather than membership of the market. One stored count moved from 2 to 1 (lesson 2, a fourth time)",
+      "rule": "Count a listing by membership of the page's own listing set, read from the box's page record, else by the generated market's product page, and never by the shape of a URL. Replay the counter over every stored run and list each count that moves",
+      "who": [
+       "C",
+       "V"
+      ]
+     },
+     {
+      "n": 34,
+      "what": "A run with no answer key, the \"softest tee\" fallback, ended without <code>ok</code> and was scored failed, so it sat in the wrong column as if a key had judged it",
+      "rule": "Order the scorer by what the key can say: no key means unscored, whatever the run did. When the scorer version changes, re-score every stored run, record the version and the reason in the batch, and keep the old verdict beside the new",
+      "who": [
+       "V"
+      ]
+     },
+     {
+      "n": 35,
+      "what": "The survey fallback took \"who sells the softest tee\", an attribute no page shows, opened all 15 listings for $0.80 and found nothing, because the fallback was not held to the fifth soundness property",
+      "rule": "Every plan, the fallback included, is held to every soundness property before it is rendered. A shape the box does not know is still refused when its attribute is not shown",
+      "who": [
+       "C",
+       "V"
+      ]
+     },
+     {
+      "n": 36,
+      "what": "<code>--allowed-origins</code> was recorded as confining the browser to the shop. It confines network requests only: a bypassed run composed a <code>data:</code> page of its own and navigated to it with no request made",
+      "rule": "For every confinement flag, record what it does not cover, and test the gap with a run that tries it. Service workers are blocked too, and the second agent, which is not confined at all, runs no bypassed question until it is",
+      "who": [
+       "C",
+       "V"
+      ]
+     },
+     {
+      "n": 37,
+      "what": "The menu reader took a <code>browser_find</code> excerpt, the matched line and three more with no gap marker, for the whole size menu, so a size cut off the excerpt counted as absent and a \"No\" was supported by a menu that had the size",
+      "rule": "Before absence from an observation counts as evidence, check the observation is complete. Every log reader is validated against the fixture on every stored run: the readings it calls complete must equal the fixture's menu, and the partial ones must be a prefix of it",
+      "who": [
+       "C",
+       "V"
+      ]
+     },
+     {
+      "n": 38,
+      "what": "A snapshot taken with a depth limit prints a menu beyond it as a leaf, a head line with no children and no marker, and the reader took that for a complete menu with no sizes",
+      "rule": "A head line without a trailing colon has no rendered children and gives no reading at all. Checked on every stored snapshot line: heads with a colon always have a child, heads without never do",
+      "who": [
+       "C",
+       "V"
+      ]
+     }
+    ]
    }
   ]
  },
@@ -3973,6 +4329,10 @@ window.SITE = {
   {
    "date": "2026-10-08",
    "text": "Reviews. Nine questions exist and have never been run."
+  },
+  {
+   "date": "2026-10-20",
+   "text": "<code>suite.py --box --dry-run</code> crashes in <code>page.parse</code> (\"no product cards\") on <code>tasks.json</code> and <code>tasks_reviews.json</code>, whose questions name a listing page or a review page rather than a results page. Pre-existing at 6175992 and 2ce22cf (verifier finding). The box reads results pages only; those files have never run under it."
   }
  ],
  "weeks": {
@@ -4022,6 +4382,16 @@ window.SITE = {
     "title": "Week of 5 October",
     "html": "<ul><li>Found the second agent's first 12 runs were void. A link cap of mine meant it never reached a product page. Fixed, and its cell re-run</li><li>Gave each openJiuwen run its own selector cache, and switched cost to the provider's charge per call</li><li>Ran cells 1, 2 and 3 on the clothing market. The four listing behaviour comes from one default in openJiuwen's card probe, which reports only the cards inside the browser window</li><li>Wrote the 7 October update deck for the supervisor</li><li>Re-derived every figure from the raw run files the next day, found three figures from 7 October were wrong, and corrected them</li><li>Ran cell 5, openJiuwen told to open everything. The laptop slept mid-batch, so three runs were voided by rule and re-run</li><li>Stepped back. Wrote <code>OBJECTIVE.md</code>, <code>LESSONS.md</code> and <code>PARKED.md</code>, and set up the workbench mod and three subagents, so the work stays on the objective and nothing is spent without a check</li><li>Reorganised the code into folders, added unit tests, and replaced five pages with this site. The verifier failed it four times on claims stronger than the evidence, and passed it on the fifth</li><li>Rewrote the history not yet on GitHub, so it could be published: the openJiuwen paper out of every commit, and Magento's licence notice into every copy of the gated theme's template</li></ul>",
     "monday": "2026-10-05"
+   },
+   {
+    "title": "Week of 12 October",
+    "html": "<ul><li>Wrote the box v1 specification overnight on 13 to 14 October, built it with 90 tests, pinned the browser tool at 0.0.83, and had the verifier pass the pilot command before anything ran</li><li>The pilot, 14 October, 08:43: two runs, both correct, $0.61 charged against $1.05 declared. The cheapest question opened the 8 listings the advertised prices could not rule out and skipped 7</li><li>Researched what the shopping benchmarks ask and what has been built for adaptive retrieval and clarification, and designed box v2 from it: a logical form per question, five soundness properties, seven retrieval primitives. Built it the same day, with the six clothing questions rendering byte for byte what v1 rendered</li><li>The census parse: a model wrote the logical form of all 37 questions for $0.069 and agreed with the rules on the plan-deciding fields for 33 of 37</li><li>A question the box cannot classify bypasses it, at the student's request, and the gated browser is confined to the shop's origin</li><li>Progress report 4 and a short update written for the supervisor meeting</li><li>The development batches, 14 October evening: 32 agent runs in three batches on Thornwood, $6.96 charged against $11 declared, their verification left for the following week</li></ul>",
+    "monday": "2026-10-12"
+   },
+   {
+    "title": "Week of 19 October",
+    "html": "<ul><li>The verifier passed the three batches of 14 October and found six things, fixed in box v7: a bare \"No\" is supported by an observed menu without the size, an attribute the shop does not show is refused whatever the word, a keyless run that did not finish is unscored, two written kinds of error, the listing counter's fourth correction, and the development cell in <code>compare_cells</code>. The browser now blocks service workers too</li><li>The verifier then failed the new menu reader twice before accepting it: a search excerpt is not a whole menu, and a depth-cut snapshot prints a menu with no sizes. Box v8 and v9, 254 tests, frozen for the fresh market</li><li>Six lessons added, 33 to 38. The site gained the development cell, in sample and never pinned, with every answer of the three batches in full</li></ul>",
+    "monday": "2026-10-19"
    }
   ]
  },
@@ -4034,11 +4404,11 @@ window.SITE = {
    },
    {
     "title": "Week 2, 16 to 22 October: first measurement, then a fresh market",
-    "html": "<ul><li><strong>A small paid test on Thornwood.</strong> Box runs only, since cells 1 and 5 already measured the same questions on the same market. This is development: Thornwood is in sample for the box, so nothing here is a claim</li><li><strong>Fix what it shows, then freeze the box</strong> at a version number</li><li><strong>Generate a fresh clothing market</strong> with a new seed, after the freeze, so the box was never tuned on it. Seed it, verify it in a real browser, and write its question file with every reading of \"offer\" stated before any run</li><li><strong>Point <code>verify_cells.py</code> at each batch's own market</strong>, so the claim run is not scored against Thornwood's answers</li><li><em>Done when:</em> the box version is frozen, the new market is seeded and verified, and the verifier has passed the claim run's plan</li></ul>"
+    "html": "<ul><li><strong>A small paid test on Thornwood.</strong> <strong>Done on 14 October</strong>, ahead of the week: three batches, 32 agent runs, $6.96 charged against $11 declared, verified on 20 October. Box runs only, since cells 1 and 5 already measured the same questions on the same market. Development: Thornwood is in sample for the box, so nothing there is a claim. The record is on the Results page</li><li><strong>Fix what it shows, then freeze the box</strong> at a version number. <strong>Done on 20 October</strong>: box v7 to v9 from the verifier's findings, frozen at box v9, form v8, primitives v5, scorer v3, rules v4, 254 tests</li><li><strong>Generate a fresh clothing market</strong> with a new seed, after the freeze, so the box was never tuned on it. Seed it, verify it in a real browser, and write its question file with every reading of \"offer\" stated before any run. Keep four sizes, or first extend the menu reader's excerpt rule, which was validated on four size menus only (Problems page)</li><li><strong>Point <code>verify_cells.py</code> at each batch's own market</strong>, so the claim run is not scored against Thornwood's answers</li><li><strong>Strategy v8</strong>, the one false sentence reworded, so the claim's arms share one text</li><li><em>Done when:</em> the box version is frozen, the new market is seeded and verified, and the verifier has passed the claim run's plan</li></ul>"
    },
    {
     "title": "Week 3, 23 to 29 October: the claim run, verified",
-    "html": "<ul><li><strong>The claim run on the fresh market:</strong> openJiuwen as shipped, openJiuwen told to open everything, and openJiuwen with the box, on the same questions, three repeats each</li><li><strong>Verify the outputs:</strong> every answer read in full, the suspended run rule, cost against the account</li><li><strong>Insights:</strong> findings with the command that reproduces each, and the site rebuilt</li><li><strong>Stretch, only if time and budget allow:</strong> the box in front of the second agent, or the review questions</li><li><em>Done when:</em> the results are verified and on the site, and the code is tagged as the version the report describes. Product and code are locked on 29 October</li></ul>"
+    "html": "<ul><li><strong>The claim run on the fresh market:</strong> openJiuwen as shipped, openJiuwen told to open everything, and openJiuwen with the box, on the same questions, three repeats each, compared per question with the stratified exact test. The top-k question goes in only if its ranked answer rule is written and tested first, else it is left out and stated as a limit</li><li><strong>Verify the outputs:</strong> every answer read in full, the suspended run rule, cost against the account, the menu reader validated against the new fixture</li><li><strong>Insights:</strong> findings with the command that reproduces each, and the site rebuilt</li><li><strong>Stretch, only if time and budget allow:</strong> the review questions through the depth primitive, which need the box to read a listing page first, or the box in front of the second agent, which needs that agent's browser confined to the shop first</li><li><em>Done when:</em> the results are verified and on the site, and the code is tagged as the version the report describes. Product and code are locked on 29 October</li></ul>"
    },
    {
     "title": "Week 4, 30 October to 5 November: the report",
@@ -4082,8 +4452,12 @@ window.SITE = {
     "html": "<p><strong>The census parse, 14 October, 11:20.</strong> The model (Claude Haiku 4.5, temperature 0) wrote the logical form of all 37 distinct questions, one call each, $0.069 charged, no browser. Compared with the rules' forms, from <code>experiments/results/parse-probe-20261014T112047.json</code>:</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Agreement</th><th>Questions</th></tr></thead><tbody><tr><td>Same quantifier (the field that picks the primitive)</td><td>34 of 37</td></tr><tr><td>Same quantifier and objective</td><td>33 of 37</td></tr><tr><td>Same on those and the population</td><td>26 of 37</td></tr><tr><td>Same on every field</td><td>5 of 37</td></tr></tbody></table></div>\n<p>The gap between 33 and 5 is two prompt vocabulary problems, not judgement: the model leaves the listing's URL out of the filters in 8 of the 9 forms where the rules include it, so 7 of its single-listing forms fail \"a lookup names no listing\", and it writes \"listing\" as the population where the rules write \"results\" in 7 cases. Both are fixes to the prompt. The four real disagreements: \"which of these two sellers is cheaper\" (rules: look up both named pages; the model: the cheapest, naming no page, so its form alone does not say what to open), \"is the 1 kg size the cheapest per kg\" (rules right: it needs every size's rate; the model proposed a lookup), \"list every pack size and its price\" (the model invented an attribute \"pack size and price\" and was refused by the fifth property, which is the property doing its job), and the Calderwood cheapest question (the model chose \"advertised price\", the rules \"price\": the rules are right). In sample for the rules, which were written on these 37 questions.</p>"
    },
    {
+    "title": "The development batches ran, 21:31 to 22:28",
+    "html": "<p>Added on 20 October, after the verifier passed the three batches. The student said yes to a smaller split than the $13.65 proposed above: the six old questions three times under the \"menu\" reading, declared $6. The ten new questions once, declared $3. The two \"offer\" questions three times under the \"buyable\" reading, declared $2. All three at commit <code>d3725ce</code>, box v6, the verifier's stamp of 21:30. Charged $4.0702, $2.1899 and $0.7037, from <code>make verify BATCH=experiments/results/20261014T213118</code>, <code>...T220116</code> and <code>...T222007</code>.</p>\n<p><em>In plain words.</em> On the five questions the earlier cells asked, the box got 13 of 15 right, opened about half the listings, and cost half of opening everything. It asked back on the ambiguous questions every time and refused the one the shop cannot answer. Three answers were wrong, all from the agent's reading rather than the plan's coverage, and one fallback plan spent $0.80 looking for softness, which no page shows.</p>\n<p><em>Method.</em> The figures are <code>make facts</code>, section H, on the runs for the questions cells 1 and 5 asked, scored under the key fixed before any run, with two sided exact tests within each question. In sample on the market the box was designed on, so no claim.</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Arm, the five shared questions</th><th>Correct</th><th>Opened what it needs</th><th>Median opened</th><th>Tool calls</th><th>Cost a run</th></tr></thead><tbody><tr><td>Cell 1, as shipped</td><td>4 of 15</td><td>3 of 15</td><td>4</td><td>23</td><td>$0.176</td></tr><tr><td>Box v2, development</td><td>13 of 15</td><td>14 of 15</td><td>8</td><td>29</td><td>$0.258</td></tr><tr><td>Cell 5, told to open everything</td><td>11 of 15</td><td>15 of 15</td><td>15</td><td>57</td><td>$0.524</td></tr></tbody></table></div>\n<p>Box against cell 1: p = 0.00155 correct, 0.00034 opened what it needs, by question. Against cell 5: p = 0.63 and 1.0. The ten new questions: four correct (exists under $27 and under $25, the named pair, cheapest XL, opening 8, 7, 2 and 3 listings), the top-3 wrong (12 opened, two sellers that cannot sell M ranked at their advertised prices), delivery refused and \"a cheap tee\" asked back at $0, the softest tee's fallback plan opened all 15 for $0.796 and gave no answer, and the two bypassed questions cost $0.013 and $0.009 with every navigation off the shop blocked. The two \"offer\" questions under the buyable reading: 6 of 6 correct against that reading's key, $0.7037. The whole record, every answer included, is on the Results page.</p>"
+   },
+   {
     "title": "What is not yet done, in plain terms",
-    "html": "<ul><li>The box has had one pilot of two runs. Every other figure about it is a prediction or a replay.</li><li>The raw logs still live only on this laptop.</li><li>The fresh clothing market is not generated. It is tomorrow's first task after the freeze.</li><li>The September pooling scripts still print their pooled row.</li></ul>"
+    "html": "<ul><li>The box has had its pilot and its development batches, all on Thornwood. Nothing about it is measured on a market it was not tuned on.</li><li>The raw logs still live only on this laptop.</li><li>The fresh clothing market is not generated. Box v9 is frozen for it on 20 October.</li><li>The September pooling scripts still print their pooled row.</li></ul>"
    }
   ]
  },
@@ -4141,7 +4515,7 @@ window.SITE = {
    },
    {
     "title": "4. The box on Thornwood, development runs",
-    "html": "<p><strong>The pilot, two runs, 14 October.</strong> Declared $1.05, charged $0.61, both correct, re-derived from the raw files (<code>make verify BATCH=experiments/results/20261014T084322</code>):</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Question</th><th>Box</th><th>Cell 1, as shipped</th><th>Cell 5, told to open everything</th></tr></thead><tbody><tr><td>Cheapest buyable M</td><td>correct, opened 8 of 15, 40 calls, $0.39</td><td>0 of 3 correct, opened 4</td><td>3 of 3 correct, opened 15, about $0.59 a run</td></tr><tr><td>How many sell M now</td><td>correct, opened 15, 33 calls, $0.22</td><td>1 of 3 correct</td><td>2 of 3 correct, opened 15, about $0.54 a run</td></tr></tbody></table></div>\n<p>The agent followed the plan: it opened exactly the eight listings advertised at or below the winning price and skipped the other seven. One run per question, on the market the box was designed on.</p>\n<p>[Table: cell 1, cell 5 and the box on all five gated questions, if the development batch runs: correct under the key, opened what it needs, median listings opened, tool calls a run, cost a run. From <code>make facts</code> after the batch is verified.]</p>\n<p>[The ambiguous questions under each reading: asked, then correct against that reading's key.]</p>\n<p>[Tests by question against cell 1 and cell 5, p by question.]</p>\n<p>[What went wrong, run by run, from section D of <code>make facts</code>.]</p>\n<p>[Cost: the batch's charges against the account.]</p>\n<p>This is development: the box was designed on this market, so these are not the claim.</p>"
+    "html": "<p><strong>The pilot, two runs, 14 October.</strong> Declared $1.05, charged $0.61, both correct, re-derived from the raw files (<code>make verify BATCH=experiments/results/20261014T084322</code>):</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Question</th><th>Box</th><th>Cell 1, as shipped</th><th>Cell 5, told to open everything</th></tr></thead><tbody><tr><td>Cheapest buyable M</td><td>correct, opened 8 of 15, 40 calls, $0.39</td><td>0 of 3 correct, opened 4</td><td>3 of 3 correct, opened 15, about $0.59 a run</td></tr><tr><td>How many sell M now</td><td>correct, opened 15, 33 calls, $0.22</td><td>1 of 3 correct</td><td>2 of 3 correct, opened 15, about $0.54 a run</td></tr></tbody></table></div>\n<p>The agent followed the plan: it opened exactly the eight listings advertised at or below the winning price and skipped the other seven. One run per question, on the market the box was designed on.</p>\n<p><strong>The development batches, 14 October, 21:31 to 22:28.</strong> Three commands at commit <code>d3725ce</code>, box v6, stamped by the verifier at 21:30 and declared $6, $3 and $2. Charged $4.0702, $2.1899 and $0.7037 (<code>make verify BATCH=experiments/results/20261014T213118</code>, <code>...T220116</code>, <code>...T222007</code>, each read in full, no silence over 60 seconds, every listing count re-derived from the log). The verifier passed the three batches on 20 October. Every figure below is from <code>make facts</code>, section H, or <code>make verify</code> on the batch named. The caption for all of it: <strong>Thornwood is the market the box's rules were written on, and the rules were corrected again from these runs' failures on 20 October, so this is development, in sample, and not the claim.</strong></p>\n<p><em>In plain words, for the student.</em> On the five questions the earlier cells asked, the box got 13 of 15 right where the shipped agent got 4 and open everything got 11. It opened about half the listings open everything opens, and cost half as much. Two of its three wrong answers were the agent reading a price it had not revealed and testing for a word instead of reading the menu. The box asked back on both \"offer\" questions every time, asked for a figure on \"a cheap tee\", and refused \"delivers fastest\" without spending anything.</p>\n<p><em>Method and limits, for the supervisor.</em> 15 runs on 5 questions, three repeats each, all of which differ in tokens and cost. Scored under the key fixed before any run. Two sided exact tests within each question, then combined. Against cells 1 and 5 on the same questions, the same market, the same model and the same browser. In sample for the box, so a small p says only that the pipeline does what it was built to do on this market.</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Arm, the five shared questions</th><th>Correct</th><th>Opened what it needs</th><th>Median listings opened</th><th>Tool calls a run</th><th>Cost a run</th></tr></thead><tbody><tr><td>Cell 1, openJiuwen as shipped</td><td>4 of 15</td><td>3 of 15</td><td>4</td><td>23</td><td>$0.176</td></tr><tr><td>Box v2, development, batch <code>20261014T213118</code></td><td>13 of 15</td><td>14 of 15</td><td>8</td><td>29</td><td>$0.258</td></tr><tr><td>Cell 5, openJiuwen told to open everything</td><td>11 of 15</td><td>15 of 15</td><td>15</td><td>57</td><td>$0.524</td></tr></tbody></table></div>\n<p>The control question, answerable from the results page, 3 of 3. Per question, correct and opened what it needs, of 3: target-price 3 and 3 (8 opened each time), cheapest-target 2 and 2 (6, 8, 8 opened), all-stocked 3 and 3 (1 opened), count-stocked 3 and 3 (15), count-buyable 2 and 3 (15).</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Test, by question</th><th>Counts</th><th>p, by question</th><th>p, pooled</th></tr></thead><tbody><tr><td>Box against cell 1, correct</td><td>13 of 15 against 4 of 15</td><td>0.00155</td><td>0.00251</td></tr><tr><td>Box against cell 1, opened what it needs</td><td>14 of 15 against 3 of 15</td><td>0.00034</td><td>0.00012</td></tr><tr><td>Box against cell 5, correct</td><td>13 of 15 against 11 of 15</td><td>0.63</td><td>0.65134</td></tr><tr><td>Box against cell 5, opened what it needs</td><td>14 of 15 against 15 of 15</td><td>1.0</td><td>1.0</td></tr></tbody></table></div>\n<p>Under the other reading of \"offer\" (the two count questions re-keyed), correct is 10 of 15 against cell 1's 5 (p = 0.099) and cell 5's 14 (p = 0.14): the box's runs answered the reading the scripted user gave, so under the other key they are wrong, as they should be.</p>\n<p><strong>The ambiguous questions under each reading.</strong> The box asked on \"does every listing offer size M\" and \"how many listings offer size M\" in all 12 of their slots, before any agent ran. With the scripted user answering \"menu\", 3 of 3 and 3 of 3 correct against the menu key (batch <code>20261014T213118</code>). Answering \"buyable\", 3 of 3 and 3 of 3 against the buyable key, $0.7037 for the six (batch <code>20261014T222007</code>). \"Is there a cheap Thornwood tee in size M\" was asked back for a figure and nothing ran, $0. \"Which seller delivers fastest\" was refused, with what the shop does show, $0.</p>\n<p><strong>The ten new questions, one run each, batch <code>20261014T220116</code></strong> (<code>make verify BATCH=experiments/results/20261014T220116 --answers</code>):</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Question</th><th>What the box did</th><th>Outcome</th><th>Listings opened, needed</th><th>Tool calls</th><th>Cost</th></tr></thead><tbody><tr><td>Any listing with M buyable under $27</td><td>witness plan, cheapest first</td><td>correct: yes, Alderney at $25.77</td><td>8, needs the witness</td><td>26</td><td>$0.300</td></tr><tr><td>Any listing with M buyable under $25</td><td>witness plan</td><td>correct: no, after the 7 advertised under $25</td><td>7, needs 7</td><td>36</td><td>$0.287</td></tr><tr><td>The three cheapest sellers for M</td><td>top-k bound and prune</td><td><strong>wrong</strong>: Alderney, then Oakhurst and Lymington, two sellers that cannot sell M, at their advertised prices</td><td>12, needs 12</td><td>45</td><td>$0.429</td></tr><tr><td>Copperfield or Elmsworth, cheaper for M</td><td>lookup of the two</td><td>correct: Elmsworth $28.96, Copperfield $29.66</td><td>2, needs 2</td><td>20</td><td>$0.103</td></tr><tr><td>Cheapest seller for XL</td><td>bound and prune on XL</td><td>correct: Ivybridge $18.08</td><td>3, needs 3</td><td>24</td><td>$0.254</td></tr><tr><td>Delivers fastest</td><td>refused: the shop does not show delivery</td><td>no run</td><td></td><td></td><td>$0</td></tr><tr><td>A cheap tee, no figure</td><td>asked for a limit</td><td>no run</td><td></td><td></td><td>$0</td></tr><tr><td>The softest tee</td><td>fell back to the survey plan</td><td>no answer: \"no softness attribute on any of the 15 pages\", unscored</td><td>15</td><td>95</td><td>$0.796</td></tr><tr><td>A four line poem about shoes</td><td>bypassed, question unchanged</td><td>wrote the poem into a <code>data:</code> page it composed, unscored</td><td>0</td><td>6</td><td>$0.013</td></tr><tr><td>The capital of Portugal</td><td>bypassed</td><td>answered Lisbon from the model, and its 6 navigations to google, bing and wikipedia were blocked (<code>net::ERR_BLOCKED_BY_CLIENT</code>), unscored</td><td>0</td><td>4</td><td>$0.009</td></tr></tbody></table></div>\n<p><strong>What went wrong, run by run</strong>, by the written rules in <code>cell_facts.error_kinds</code> (<code>make facts</code>, section H):</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Run</th><th>Kinds</th><th>What the answer said</th></tr></thead><tbody><tr><td>cheapest-target-1</td><td>did not open what the answer needs, and read the price before the page revealed it</td><td>Copperfield at $23.40, its advertised price, after 6 of the 8 listings its bound required</td></tr><tr><td>count-buyable-2</td><td>tested for the word \"disabled\" on 12 of 15 listings and never read the menu, so an absent size counted as available</td><td>10, where 5 is right</td></tr><tr><td>top-3-1</td><td>named a seller that cannot sell M</td><td>Oakhurst and Lymington ranked second and third at their advertised prices</td></tr></tbody></table></div>\n<p>The box's own answer check was off in these batches. Replayed from the logs (<code>python3 experiments/analysis/replay_box.py experiments/results/20261014T213118 experiments/results/20261014T220116 experiments/results/20261014T222007 --rows</code>): 32 runs, the stored text reproduced from each record, it refuses 0 of the 3 wrong answers and 1 of the 29 others (<code>20261014T222007/apparel-all-stocked-1</code>, whose only view of its counterexample's menu was a cut excerpt). The misread advertised price in cheapest-target-1 is invisible to any check that reads only the page, as the 14 October replay over cell 1 had already shown for one run.</p>\n<p><strong>Cost.</strong> Charges $6.9638 for the three batches against $11 declared. The account reading stored with the runs moved from $57.2861 before the first to $64.1931 at the last, $6.9071, with that last reading taken before the final run's own charge settled (Results page, the development block's cost table). Cell 5 cost $0.524 a run on the same five questions, the box $0.258.</p>\n<p><strong>What it means for the box.</strong> The bound did its work on the price questions (8 opened where 15 is everything, and the right 8), the ambiguity rule asked where it should and nowhere else, and the fifth property refused the one question the shop cannot answer. The three failures are the agent's reading, not the plan's coverage, and they are what box v7 to v9 answer on 20 October: a count run must read the menu, a ranked answer's every seller must have been seen with the size chosen, and the box's check now reads the menus from the log.</p>\n<p>Next, in the objective's order: freeze (done, box v9), generate the fresh clothing market and verify it in a browser, then the claim run.</p>"
    },
    {
     "title": "4a. Box v2, the strategist",
@@ -4161,15 +4535,15 @@ window.SITE = {
    },
    {
     "title": "5. What did not work, and limits",
-    "html": "<p>In the pilot nothing failed, with two runs that proves little. What the day's checks found: the model parser omits the listing's URL and misnames the population, both prompt fixes, and invented one attribute, which the fifth property caught; v2's stricter \"does every\" check would have refused 5 of 14 correct bare \"No\" answers in the old cells, a trade accepted because the box's own text tells the agent to name the counterexample; the bound texts say \"at or above\" where the check counted \"at or below\", harmless on this market and fixed for a market with a tie; and the first ambiguity rule fired on two price questions before it was tightened. No paid run of v2 exists yet.</p>\n<p>Standing limits: one market family, one model, our shop's 60 ms price reveal, the two agents' different sampling and clocks, the refusal check's one blind spot (a misread advertised price), shipping cost and combined discounts out of scope.</p>"
+    "html": "<p>In the pilot nothing failed, with two runs that proves little. What the day's checks found: the model parser omits the listing's URL and misnames the population, both prompt fixes, and invented one attribute, which the fifth property caught; v2's stricter \"does every\" check would have refused 5 of 14 correct bare \"No\" answers in the old cells, a trade accepted because the box's own text tells the agent to name the counterexample; the bound texts say \"at or above\" where the check counted \"at or below\", harmless on this market and fixed for a market with a tie; and the first ambiguity rule fired on two price questions before it was tightened.</p>\n<p>In the development batches (section 4), three runs of 26 were wrong, and the fallback plan spent $0.796 and 95 tool calls opening every listing for an attribute no page shows. The check that would have refused the wrong answers was off, and replayed it refuses none of them. On 20 October the verifier's pass on the batches produced box v7 to v9: a bare \"No\" counts when the log shows a complete menu without the size, a question about an attribute the shop does not show is refused whatever the word, a keyless run that did not finish is unscored, and the listing counter no longer counts a category page (its fourth correction). The verifier then failed the new menu reader twice before accepting it, once for taking a search excerpt for a whole menu and once for taking a depth-cut snapshot for a menu with no sizes. Both are lessons 37 and 38.</p>\n<p>Standing limits: one market family, one model, our shop's 60 ms price reveal, the two agents' different sampling and clocks, the refusal check's one blind spot (a misread advertised price), shipping cost and combined discounts out of scope.</p>"
    },
    {
     "title": "6. Next week",
-    "html": "<ul><li>Freeze box v1. Generate a fresh clothing market with a new seed, seed it, verify it in a browser, write its question file with both readings stated before any run.</li><li>The claim run: shipped, open everything, and the box, on the fresh market, 3 repeats.</li><li>Then the review questions, which gate by depth and have never run.</li></ul>"
+    "html": "<ul><li>Box v9 is frozen (20 October). Generate a fresh clothing market with a new seed, seed it, verify it in a browser, write its question file with both readings stated before any run. Keep four sizes, or first extend the menu reader's excerpt rule, which was validated on a four size menu only.</li><li>The claim run: shipped, open everything, and the box, on the fresh market, 3 repeats, tested per question. <code>verify_cells.py</code> must take the fixture from the batch's own question file first.</li><li>Then the review questions, which gate by depth and have never run, the top-k and ranked answer limit the top-3 run showed, and the second agent's confinement before any bypassed question runs under it.</li></ul>"
    },
    {
     "title": "7. Spend",
-    "html": "<p>Before today $56.61 of the $100 key used. Today the pilot $0.61 and the census parse $0.07, both matched by the provider's charges. $42.71 left, read from the account on 14 October.</p>"
+    "html": "<p>Before 14 October $56.61 of the $100 key used. On 14 October the pilot $0.61 and the census parse $0.07, then the three development batches $4.0702, $2.1899 and $0.7037 (<code>make verify</code> on each batch), $6.9638 against $11 declared. The account reading stored with the last run says $64.19 used, taken before that run's own charge settled (the Results page's development block). Nothing was spent on 20 October.</p>"
    }
   ]
  },
@@ -4207,7 +4581,7 @@ window.SITE = {
   ]
  },
  "v2": {
-  "intro": "<p>Status: <strong>designed and built on 14 October 2026.</strong> Steps 1 to 4 of the build order below are commits <code>fd59b5b</code>, <code>25c7656</code> and <code>70556af</code>, then <code>108fe1a</code> (the verifier's fixes) and <code>2d76fae</code> (the bypass), 171 tests, with the six clothing questions rendering byte for byte what v1 rendered, so the pilot stands under v2. The verifier checked the build against this page twice on 14 October: v1 preserved, no answer read, every new statement true of the shop. Where the build departs from this page, and what the verifier still wants changed before a paid batch, is in the README decision log of 14 October. Box v1 is the measured floor. Version 2 is what the project claims to build: a step that reads any shopping question, works out what evidence would settle it, retrieves that evidence at the lowest cost the page allows, asks the user when the question does not settle it, and refuses an answer the evidence does not support.</p>",
+  "intro": "<p>Status on 20 October 2026: <strong>box v9, form v8, primitives v5, scorer v3, rules v4, 254 tests, frozen for the fresh clothing market.</strong> Designed and built on 14 October (<code>fd59b5b</code>, <code>25c7656</code>, <code>70556af</code>, then <code>108fe1a</code> and <code>2d76fae</code>, with the six clothing questions rendering byte for byte what v1 rendered). Its development batches ran that evening on Thornwood under box v6: 32 agent runs in three batches, <code>20261014T213118</code>, <code>20261014T220116</code> and <code>20261014T222007</code>, in sample and no claim, with the whole record on the Results page and the figures in <code>make facts</code>, section H. The verifier passed the batches on 20 October and the corrections are box v7 to v9 (<code>2ce22cf</code>, <code>8607c3a</code>, <code>e3c299e</code>, <code>a01b8e3</code>, <code>4a4fecf</code>). Two of its findings failed the new menu reader before it was accepted: a <code>browser_find</code> excerpt, the matched line and three more with no gap marker, had been taken for the whole size menu (<code>20261014T213118/apparel-count-stocked-2</code>, igr-app-08 read as S, M where the menu is S, M, L, XL), and a snapshot taken with a depth limit prints a menu beyond it as a head line with no children and no marker, which the rule had taken for a complete menu with no sizes (<code>20260910T133605/scaled-cheapest-target-1</code>). The rules that came out of them are on the counterexample row below. The reader is validated against the fixture over every stored run of the three batches with <code>python3 experiments/analysis/replay_box.py experiments/results/20261014T213118 experiments/results/20261014T220116 experiments/results/20261014T222007 --menus</code>: 180 readings, 109 complete and all equal to the fixture's menu, 71 partial and all a prefix of it. Where the build departs from this page is in the README decision log of 14 and 20 October. Box v1 is the measured floor. Version 2 is what the project claims to build: a step that reads any shopping question, works out what evidence would settle it, retrieves that evidence at the lowest cost the page allows, asks the user when the question does not settle it, and refuses an answer the evidence does not support.</p>",
   "sections": [
    {
     "title": "Should the box be an agent? An honest answer",
@@ -4223,15 +4597,15 @@ window.SITE = {
    },
    {
     "title": "Verification, five properties",
-    "html": "<p>The planner's four, and the one the probe showed was missing:</p>\n<ol><li>A bound is used only over a population that was enumerated.</li><li>A figure derived from a bound is never reported as a price.</li><li>A universal claim needs a counterexample or the whole population.</li><li>The best of a population needs coverage of everything the bound cannot rule out.</li><li><strong>Every attribute the form compares or filters on is shown on this shop</strong>, on the results page or on a listing page. The box knows which from the page it read and from a short list of what a listing page shows. \"Which seller delivers fastest\" fails here, and the box says what is missing instead of planning.</li></ol>\n<p>A form that fails verification is never executed. It becomes an ask or a refusal.</p>"
+    "html": "<p>The planner's four, and the one the probe showed was missing:</p>\n<ol><li>A bound is used only over a population that was enumerated.</li><li>A figure derived from a bound is never reported as a price.</li><li>A universal claim needs a counterexample or the whole population.</li><li>The best of a population needs coverage of everything the bound cannot rule out.</li><li><strong>Every attribute the form compares or filters on is shown on this shop</strong>, on the results page or on a listing page. The box knows which from the page it read and from a short list of what a listing page shows. \"Which seller delivers fastest\" fails here, and the box says what is missing instead of planning.</li></ol>\n<p>A form that fails verification is never executed. It becomes an ask or a refusal.</p>\n<p>The fifth property holds whatever the word. A question whose objective or filter is an attribute the shop does not show is refused, \"the softest tee\" as much as \"delivers fastest\": the rules read a superlative or comparative, and when its attribute is not one the shop shows (price, availability, size, the review attributes, the results-page fields) the form names what the word ranks by as the missing attribute and the box says so. The survey fallback is only for a shopping question whose shape is unknown but whose attributes are all shown, such as \"What sizes does Rookwood list?\" (20 October 2026, after \"Who sells the softest Thornwood tee?\" fell to the fallback and opened all fifteen listings, $0.80, for an attribute no page shows).</p>"
    },
    {
     "title": "Primitives, and the plans composed from them",
-    "html": "<div class=\"table-wrap\"><table><thead><tr><th>Primitive</th><th>Opens</th><th>Stops</th><th>Answer check</th></tr></thead><tbody><tr><td>lookup</td><td>the named listing or listings</td><td>after reading them</td><td>the named pages were opened</td></tr><tr><td>witness (exists)</td><td>candidates in the order most likely to satisfy, cheapest first for price conditions</td><td>at the first candidate that satisfies</td><td>the witness was opened, or every candidate was</td></tr><tr><td>counterexample (forall)</td><td>any order</td><td>at the first candidate that fails</td><td>a counterexample was opened, or every candidate was</td></tr><tr><td>bound and prune (argmin, argmax, topk)</td><td>ascending advertised price for argmin</td><td>when no unopened candidate can beat the best, or the k-th best</td><td>every candidate advertised at or below the answer's price was opened</td></tr><tr><td>exhaust (count, aggregate)</td><td>every candidate</td><td>when all are opened</td><td>every candidate was opened</td></tr><tr><td>depth (reviews)</td><td>review pages in order</td><td>at the first mention, or the last page</td><td>the quoted page was read, or every page was</td></tr><tr><td>filter</td><td>applied inside any of the above: from the results page when the attribute is shown there, by opening when it is not</td><td></td><td>the filter's attribute was read for each counted candidate</td></tr></tbody></table></div>\n<p>Composition is the form: <code>argmin price filter(size M, buyable)</code> is \"bound and prune with two checks inside each opened listing\". <code>exists price&lt;20 filter(size M)</code> is \"witness, cheapest first, stop at the first buyable M under 20\". <code>topk 3</code> is bound and prune to the third best. The plan is rendered as the preamble the v1 box already writes (the listing count, the listings by advertised price with URLs) plus the primitive's instruction text, with the stop rule and the forbidden claims stated.</p>"
+    "html": "<div class=\"table-wrap\"><table><thead><tr><th>Primitive</th><th>Opens</th><th>Stops</th><th>Answer check</th></tr></thead><tbody><tr><td>lookup</td><td>the named listing or listings</td><td>after reading them</td><td>the named pages were opened</td></tr><tr><td>witness (exists)</td><td>candidates in the order most likely to satisfy, cheapest first for price conditions</td><td>at the first candidate that satisfies</td><td>the witness was opened, or every candidate was</td></tr><tr><td>counterexample (forall)</td><td>any order</td><td>at the first candidate that fails</td><td>a counterexample was opened, or every candidate was. A No is supported when the log shows an opened listing whose complete observed size menu lacks the size asked about, whether or not the answer names it; naming the listing stays in the plan text as a request (20 October 2026, after five correct bare \"No\" runs were refused for naming nothing). A menu is complete when its option block begins with the menu's placeholder (\"Choose an Option...\") and the reply shows the whole page or the block ends before the reply does; a find excerpt cut inside the menu, or one whose block does not begin with the placeholder (the find renderer prints three lines around a match with no mark of what it dropped before them), is evidence of the sizes it shows, disabled or not, and of nothing else (the verifier found an excerpt of S, M read as a menu without L and XL). A snapshot taken with a depth prints a menu beyond it as a leaf, with no colon and no options, which is no reading at all</td></tr><tr><td>bound and prune (argmin, argmax, topk)</td><td>ascending advertised price for argmin</td><td>when no unopened candidate can beat the best, or the k-th best</td><td>every candidate advertised at or below the answer's price was opened</td></tr><tr><td>exhaust (count, aggregate)</td><td>every candidate</td><td>when all are opened</td><td>every candidate was opened</td></tr><tr><td>depth (reviews)</td><td>review pages in order</td><td>at the first mention, or the last page</td><td>the quoted page was read, or every page was</td></tr><tr><td>filter</td><td>applied inside any of the above: from the results page when the attribute is shown there, by opening when it is not</td><td></td><td>the filter's attribute was read for each counted candidate</td></tr></tbody></table></div>\n<p>Composition is the form: <code>argmin price filter(size M, buyable)</code> is \"bound and prune with two checks inside each opened listing\". <code>exists price&lt;20 filter(size M)</code> is \"witness, cheapest first, stop at the first buyable M under 20\". <code>topk 3</code> is bound and prune to the third best. The plan is rendered as the preamble the v1 box already writes (the listing count, the listings by advertised price with URLs) plus the primitive's instruction text, with the stop rule and the forbidden claims stated.</p>"
    },
    {
     "title": "Ambiguity, from the form",
-    "html": "<p>The box asks when the form is underdetermined in a way that changes the retrieval or the answer, and only then:</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Kind (DiscoBench's names)</th><th>Example</th><th>What the box asks</th></tr></thead><tbody><tr><td>facet</td><td>\"offer size M\": listed, or can sell now</td><td>the two readings, as in v1</td></tr><tr><td>entity</td><td>\"the cheapest tee\" when the page shows two product lines</td><td>which product</td></tr><tr><td>numerical</td><td>\"a cheap one\" with no figure, \"under about $20\"</td><td>the threshold</td></tr><tr><td>attribute not shown</td><td>\"delivers fastest\"</td><td>says the shop does not show it, and offers what it does show</td></tr></tbody></table></div>\n<p>It does not ask when the readings give the same answer on this page, which the box can often tell: if no listing on the page is sold out in the size asked about, \"offer\" has one answer. That rule comes from \"Dialogue to Discovery\" (ask only when the catalogue splits on the attribute) and it is what keeps the box from over-asking.</p>"
+    "html": "<p>The box asks when the form is underdetermined in a way that changes the retrieval or the answer, and only then:</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Kind (DiscoBench's names)</th><th>Example</th><th>What the box asks</th></tr></thead><tbody><tr><td>facet</td><td>\"offer size M\": listed, or can sell now</td><td>the two readings, as in v1</td></tr><tr><td>entity</td><td>\"the cheapest tee\" when the page shows two product lines</td><td>which product</td></tr><tr><td>numerical</td><td>\"a cheap one\" with no figure, \"under about $20\"</td><td>the threshold</td></tr><tr><td>attribute not shown</td><td>\"delivers fastest\"</td><td>says the shop does not show it, and offers what it does show</td></tr></tbody></table></div>\n<p>It does not ask when the readings give the same answer on this page, which the box can often tell: if no listing on the page is sold out in the size asked about, \"offer\" has one answer. That rule comes from \"Dialogue to Discovery\" (ask only when the catalogue splits on the attribute) and it is what keeps the box from over-asking.</p>\n<p>Nor does it ask when one reading has no answer on this shop (20 October 2026). The menu reading of a price question asks for the price of a size that is listed but sold out, which the gated page never prints, so for a question whose form compares a price or carries a price limit, the cheapest, the dearest or the k cheapest of a size, an existence question under a price limit and a comparison of named listings by price, asked with an ambiguous verb (\"which seller has the best price for size M\"), the box takes the buyable reading without asking, writes that reading into the question text the agent gets, and records <code>reading_by: \"box\"</code> beside the reading; the run is then scored under that reading's key, as a run the user answered is. The box decides whether it would ask before it looks at any reply, so a reply to a question it does not put, the scripted user's <code>--reading</code> included, is ignored. A question answerable under both readings, \"does every listing offer size M\" or \"how many listings offer size M\", still asks.</p>"
    },
    {
     "title": "Questions the box cannot classify",
@@ -4243,7 +4617,7 @@ window.SITE = {
    },
    {
     "title": "How v2 is measured",
-    "html": "<ol><li><strong>Free, on the census.</strong> Every question in the census is parsed by rules and by the model. Agreement rate, the forms that fail verification, the asks raised, each read by hand.</li><li><strong>Development, on Thornwood.</strong> The questions v1 ran, plus new ones for the forms v1 lacks: an existence question, a top-3, a named comparison, a filtered cheapest. Against cells 1 and 5 and against v1.</li><li><strong>The claim, on a fresh clothing market</strong> generated after v2 is frozen, three arms.</li><li><strong>Next</strong>, the review questions, through the depth primitive.</li></ol>\n<h4>The coverage floors</h4>\n<p>\"Met own floor\" and \"covered\" in <code>verify_cells.py</code> hold each run to the listings its answer depends on. The floor is read from the question, from the advertised prices the box read from the page and from the fixture's variants, never from the agent's answer, the same way as the existing cheapest rule: every listing advertised at or below the winning price for the size. Written down on 14 October 2026, before being coded (LESSONS 5), when the verifier found the tool raised on the four shapes the v2 batch adds. The definitions live in the docstring of <code>verify_cells.own_floor</code>, and <code>python3 experiments/analysis/verify_cells.py --floors experiments/tasks/tasks_apparel_v2.json</code> prints every v2 question's floor from the fixture.</p>\n<ol><li><strong>Exists under a limit, with a witness</strong> (the key says yes): the answer depends on the witness only, so the floor is 1, and covered means a witness listing itself was opened, not any one listing.</li><li><strong>Exists under a limit, no witness</strong> (the key says no): a sound no needs every listing the limit does not rule out, every listing advertised strictly under the limit, since the question says \"under\". Computed from the page and the limit.</li><li><strong>Top-k</strong>: every listing advertised at or below the k-th cheapest price any listing can sell the size for.</li><li><strong>A named pair</strong>: the two named listings, floor 2, and covered means both were opened.</li><li><strong>Cheapest for a size other than M</strong>: every listing advertised at or below that size's winning price, not the M floor. Until this was written the tool read size M's floor from <code>_instance</code> whatever size the question named.</li></ol>\n<p>A gated question none of these rules covers gets no floor, and the report lists it as a problem, \"no floor rule for &lt;id&gt;\", rather than a figure.</p>"
+    "html": "<ol><li><strong>Free, on the census.</strong> Every question in the census is parsed by rules and by the model. Agreement rate, the forms that fail verification, the asks raised, each read by hand.</li><li><strong>Development, on Thornwood.</strong> The questions v1 ran, plus new ones for the forms v1 lacks: an existence question, a top-3, a named comparison, a filtered cheapest. Against cells 1 and 5 and against v1. Done on 14 October, verified on 20 October: on the five questions cells 1 and 5 asked, 13 of 15 correct, 14 of 15 opened what the answer needs, a median of 8 listings opened, $0.258 a run (<code>make facts</code>, section H), in sample and no claim. The Results page holds the record.</li><li><strong>The claim, on a fresh clothing market</strong> generated after v2 is frozen, three arms. The freeze is box v9, 20 October.</li><li><strong>Next</strong>, the review questions, through the depth primitive.</li></ol>\n<h4>The coverage floors</h4>\n<p>\"Met own floor\" and \"covered\" in <code>verify_cells.py</code> hold each run to the listings its answer depends on. The floor is read from the question, from the advertised prices the box read from the page and from the fixture's variants, never from the agent's answer, the same way as the existing cheapest rule: every listing advertised at or below the winning price for the size. Written down on 14 October 2026, before being coded (LESSONS 5), when the verifier found the tool raised on the four shapes the v2 batch adds. The definitions live in the docstring of <code>verify_cells.own_floor</code>, and <code>python3 experiments/analysis/verify_cells.py --floors experiments/tasks/tasks_apparel_v2.json</code> prints every v2 question's floor from the fixture.</p>\n<ol><li><strong>Exists under a limit, with a witness</strong> (the key says yes): the answer depends on the witness only, so the floor is 1, and covered means a witness listing itself was opened, not any one listing.</li><li><strong>Exists under a limit, no witness</strong> (the key says no): a sound no needs every listing the limit does not rule out, every listing advertised strictly under the limit, since the question says \"under\". Computed from the page and the limit.</li><li><strong>Top-k</strong>: every listing advertised at or below the k-th cheapest price any listing can sell the size for.</li><li><strong>A named pair</strong>: the two named listings, floor 2, and covered means both were opened.</li><li><strong>Cheapest for a size other than M</strong>: every listing advertised at or below that size's winning price, not the M floor. Until this was written the tool read size M's floor from <code>_instance</code> whatever size the question named.</li></ol>\n<p>A gated question none of these rules covers gets no floor, and the report lists it as a problem, \"no floor rule for &lt;id&gt;\", rather than a figure.</p>"
    },
    {
     "title": "The build, in order",
@@ -4255,32 +4629,40 @@ window.SITE = {
   "intro": "<p>Problems that are known and not yet fixed, most important first. Solved ones are the lessons in <code>LESSONS.md</code>, each with the rule it produced. Side ideas are in <code>PARKED.md</code>. When one of these is fixed, move it into the decision log with the date, and take it off this list.</p>",
   "sections": [
    {
-    "title": "The box has not had a paid run",
-    "html": "<p>Box v1 is built and tested, and every figure about it is a replay or a prediction. The development batch on Thornwood is proposed on the Today page with its estimate. Until it runs and is verified, nothing about the box is a result. <em>Today, with the student's yes.</em></p>"
+    "title": "Nothing about the box is measured on a market it was not tuned on",
+    "html": "<p>Box v2's development batches of 14 October ran on Thornwood, the market its rules were written on, and box v7 to v9 were then corrected from those runs' failures on 20 October. Every figure about the box is in sample (<code>make facts</code>, section H). The fresh clothing market is reserved in the README's ledger and not yet generated. Box v9 is the frozen version for it. <em>Next, before the claim run.</em></p>"
+   },
+   {
+    "title": "The menu reader's excerpt rule was validated on four sizes only",
+    "html": "<p>A <code>browser_find</code> excerpt counts as a complete size menu only when its option block begins with the menu's placeholder and ends before the reply does. Validated against the fixture on every stored run of the three batches, 180 readings, 109 complete and equal to the fixture's menu, 71 partial and a prefix of it (<code>python3 experiments/analysis/replay_box.py experiments/results/20261014T213118 experiments/results/20261014T220116 experiments/results/20261014T222007 --menus</code>). Thornwood's menus have four sizes. On a market with more, an excerpt would cut the menu more often and a bare \"No\" would be refused more often, as <code>20261014T222007/apparel-all-stocked-1</code> already is. Either the fresh market keeps four sizes, or the rule is extended and validated first. <em>Before the fresh market is drawn.</em></p>"
+   },
+   {
+    "title": "Top-k and ranked answers",
+    "html": "<p>The one top-3 run (<code>20261014T220116/apparel-top-3-1</code>) ranked Oakhurst and Lymington second and third at their advertised prices, and neither can sell M. It had opened the 12 listings its floor required, so the coverage check passes it, and the box's own check, replayed, does not refuse it. One run of one question. The plan text and the check need a rule that every ranked seller was seen with the size chosen, and a test that fires on this run. <em>Before the claim run, or the top-k question is left out of it and stated as a limit.</em></p>"
+   },
+   {
+    "title": "The second agent is not confined to the shop",
+    "html": "<p>openJiuwen on the gated shop runs with <code>--allowed-origins http://localhost:7770</code> and, since <code>2ce22cf</code>, <code>--block-service-workers</code>. The second agent drives its own browser and has neither, so <code>--box</code> with <code>--scaffold naive</code> is refused (<code>bb89137</code>) and no bypassed question may run under it. The project never lets an agent onto a live site. <em>Before the second agent runs under the box.</em></p>"
    },
    {
     "title": "One sentence of the frozen strategy text is strictly false",
-    "html": "<p>The availability strategy tells the agent that a listing's advertised price \"is the cheapest option in that listing, so nothing inside it can cost less\". Magento's \"As low as\" price is the cheapest option that can be bought. Fairhaven's sold-out size M costs $15.04 under the default theme, below its advertised $18.33. In the gated shop the agent cannot see that price and the bound over buyable options stays sound, so the pilot runs on the frozen v7 text. Reword it to \"the cheapest option that can be bought\" in strategy v8, after the development batch, so the batch and the cells share one text. Found by the verifier on 14 October. <em>Week 2.</em></p>"
+    "html": "<p>The availability strategy tells the agent that a listing's advertised price \"is the cheapest option in that listing, so nothing inside it can cost less\". Magento's \"As low as\" price is the cheapest option that can be bought. Fairhaven's sold-out size M costs $15.04 under the default theme, below its advertised $18.33. In the gated shop the agent cannot see that price and the bound over buyable options stays sound, so the pilot and the development batches ran on the frozen v7 text. Reword it to \"the cheapest option that can be bought\" in strategy v8 before the claim run, so the claim's arms share one text. Found by the verifier on 14 October. <em>Before the claim run.</em></p>"
    },
    {
-    "title": "The refusal check's one blind spot",
-    "html": "<p>With the market size and the floor read from the page, the check refuses 8 of the 9 coverage failures in cell 1 and no correct answer. The ninth opened every listing its bound required and misread an advertised price as the size's price, which no check that reads only the page can tell from a correct answer. The plan's \"choose the size, then look again\" step targets it, and the development batch will show whether it works. <em>Measured today.</em></p>"
+    "title": "The refusal check's one blind spot, now seen twice",
+    "html": "<p>With the market size and the floor read from the page, the check refuses 8 of the 9 coverage failures in cell 1 and no correct answer. The ninth opened every listing its bound required and misread an advertised price as the size's price. In the development batch <code>20261014T213118/apparel-cheapest-target-1</code> did the same, naming Copperfield at its advertised $23.40 after opening 6 of the 8 its bound required, and the box's check, replayed, refuses 0 of the batches' 3 wrong answers. No check that reads only the page can tell that answer from a correct one. The plan's \"choose the size, then look again\" step did not prevent it in 1 of the 6 cheapest runs. <em>A limit to state.</em></p>"
    },
    {
     "title": "`verify_cells.py` reads Thornwood's answers by name",
-    "html": "<p><code>experiments/analysis/verify_cells.py</code> loads <code>env/fixtures/scaled_apparel.json</code> directly. Run on a batch from the fresh clothing market, it would score against Thornwood's answers. It must take the fixture from the batch's own question file before the claim run. <em>Week 2.</em></p>"
+    "html": "<p><code>experiments/analysis/verify_cells.py</code> loads <code>env/fixtures/scaled_apparel.json</code> directly (<code>FIXTURE</code>, line 40). Run on a batch from the fresh clothing market, it would score against Thornwood's answers. It must take the fixture from the batch's own question file before the claim run. <em>Before the claim run.</em></p>"
    },
    {
     "title": "The raw logs exist only on this laptop",
-    "html": "<p>452 run logs, about 1.7 GB, are gitignored because each one replays the whole conversation at every step. Every \"opened what the answer needs\" figure is computed from them, so losing the laptop loses the evidence. Back them up privately, to a drive or a private cloud folder. Not to GitHub: the repository is public. Count them with <code>find experiments/results -name '*.log' | wc -l</code>. <em>Week 1.</em></p>"
-   },
-   {
-    "title": "The browser tool is fetched as \"latest\" on every run",
-    "html": "<p><code>experiments/runners/suite.py</code> starts Playwright MCP as <code>@playwright/mcp@latest</code>. Cells 1 to 3 used version 0.0.83 throughout, as the re-derivation of 8 October confirmed. A release in the middle of a batch would change the tool between runs. Pin it before the box is measured. <em>Week 1.</em></p>"
+    "html": "<p>486 run logs, about 1.8 GB, are gitignored because each one replays the whole conversation at every step. Every \"opened what the answer needs\" figure and every menu reading is computed from them, so losing the laptop loses the evidence. Back them up privately, to a drive or a private cloud folder. Not to GitHub: the repository is public. Count them with <code>find experiments/results -name '*.log' | wc -l</code>. <em>Overdue since week 1.</em></p>"
    },
    {
     "title": "Two September scripts pool across model and scaffold",
-    "html": "<p><code>experiments/water/arms.py</code> and <code>experiments/water/headline.py</code> put 4 DeepSeek runs and 12 second agent runs, which were later voided, into the Calderwood \"unmodified\" row: 28 runs and 9 correct. Like for like, Claude Haiku on openJiuwen, it is 3 of 12. The decision log quotes the right figure, and the September table on this site is built per model and scaffold. The scripts themselves still print the pooled row: see <code>python3 experiments/water/headline.py</code>. Found during the reorganisation on 8 October, and left unfixed there because that change was not allowed to alter any output. <em>Week 1.</em></p>"
+    "html": "<p><code>experiments/water/arms.py</code> and <code>experiments/water/headline.py</code> put 4 DeepSeek runs and 12 second agent runs, which were later voided, into the Calderwood \"unmodified\" row: 28 runs and 9 correct. Like for like, Claude Haiku on openJiuwen, it is 3 of 12. The decision log quotes the right figure, and the September table on this site is built per model and scaffold. The scripts themselves still print the pooled row: see <code>python3 experiments/water/headline.py</code>. Found during the reorganisation on 8 October, and left unfixed there because that change was not allowed to alter any output. <em>Overdue since week 1.</em></p>"
    },
    {
     "title": "The two agents sample differently, and only one has a clock",
@@ -4288,7 +4670,7 @@ window.SITE = {
    },
    {
     "title": "\"Offer\" has two readings",
-    "html": "<p>\"Does every listing offer size M\" and \"how many listings offer size M\" can mean \"has M in its menu\" or \"can sell M now\". The answer key, fixed before any run, uses the first. Every agent that explained itself used the second. The wording is kept on purpose: noticing it and asking back is the box's job. Every result is reported under both readings.</p>"
+    "html": "<p>\"Does every listing offer size M\" and \"how many listings offer size M\" can mean \"has M in its menu\" or \"can sell M now\". The answer key, fixed before any run, uses the first. Every agent that explained itself used the second. The wording is kept on purpose: noticing it and asking back is the box's job, and in the development batches it asked in all 12 slots and a scripted user answered. Since 20 October the box takes the \"can sell now\" reading without asking on a question whose shape compares a price, because the gated page never prints a sold-out size's price, and records that it chose. Every result is reported under both readings.</p>"
    },
    {
     "title": "The 60 ms reveal is a property of our shop",
@@ -4300,7 +4682,7 @@ window.SITE = {
    },
    {
     "title": "Smaller items",
-    "html": "<ul><li><code>env/generate_catalogue.py</code> tells the user to run <code>--diagnose</code>, which it does not define. Open since 13 September</li><li>The surcharge rule <code>delta_as_absolute</code> can refuse a correct yes or no answer that quotes \"XL +$2.00\". Recorded on 14 September and not re-checked since</li><li><code>experiments/tasks/tasks_heldout.json</code> says it was generated from <code>scaled_water.json</code>. It regenerates byte for byte from <code>heldout_calderwood.json</code>, so the data is right and the note is not</li><li>Shipping cost and discounts after combining items are out of scope. The supervisor asked for this to be stated as a limit in the report</li></ul>"
+    "html": "<ul><li>The box reads results pages only. <code>suite.py --box --dry-run</code> crashes in <code>page.parse</code> on <code>tasks.json</code> and <code>tasks_reviews.json</code>, whose questions name a listing or a review page (parked, 20 October). The review questions need the box to read a listing page first</li><li><code>env/generate_catalogue.py</code> tells the user to run <code>--diagnose</code>, which it does not define. Open since 13 September</li><li>The surcharge rule <code>delta_as_absolute</code> can refuse a correct yes or no answer that quotes \"XL +$2.00\". Recorded on 14 September and not re-checked since</li><li><code>experiments/tasks/tasks_heldout.json</code> says it was generated from <code>scaled_water.json</code>. It regenerates byte for byte from <code>heldout_calderwood.json</code>, so the data is right and the note is not</li><li>Shipping cost and discounts after combining items are out of scope. The supervisor asked for this to be stated as a limit in the report</li></ul>"
    }
   ]
  },
@@ -4426,7 +4808,52 @@ window.SITE = {
       "doc": "Box v2: a question needing an attribute the shop does not show gets no plan and no\nagent run. The box says what is missing.",
       "tests": [
        "delivery and shipping are refused",
-       "a question the shop can answer is not refused"
+       "a question the shop can answer is not refused",
+       "a superlative on an attribute the shop does not show is refused whatever the word",
+       "a refusal comes before the ambiguity ask",
+       "a reading the shop cannot answer is not asked about"
+      ]
+     },
+     {
+      "name": "PageRecord",
+      "doc": "",
+      "tests": [
+       "a page comes back from its record"
+      ]
+     },
+     {
+      "name": "ListingsOpened",
+      "doc": "The listing counter since 20 Oct 2026 (LESSONS 2, a fourth time: a category page,\n`electronics.html`, had counted as a listing). A page is a listing by what it is: one of\nthe market's listings when the page the box read is given, else a product page of a\ngenerated market or Magento's id path. Never a category or home page.",
+      "tests": [
+       "without a market the generated markets product pages count",
+       "with a market only its listings count"
+      ]
+     },
+     {
+      "name": "CounterexampleFromTheMenu",
+      "doc": "20 Oct 2026: a bare \"No\" to \"does every listing offer size M\" is supported by an\nopened listing whose observed size menu lacks M, whether or not the answer names it.\nFive correct bare \"No\" runs of the 14 October batches were refused without this. The\nplan text still asks the agent to name the listing.",
+      "tests": [
+       "a bare no is supported by an opened listing without the size",
+       "a bare no with only a listing that has the size opened is refused",
+       "a bare no with nothing opened is refused",
+       "a disabled size refutes the buying reading only",
+       "the fault planted",
+       "naming an opened listing passes as before",
+       "a pack label with a surcharge is the pack",
+       "an excerpt cut inside the menu shows presence only",
+       "a depth cut snapshot gives no reading",
+       "a find window that starts inside the menu shows presence only"
+      ]
+     },
+     {
+      "name": "BoxBatchesReplayed",
+      "doc": "The box's own check replayed over the three batches of 14 October 2026 from the\nstored page record and the logs (`replay_box`). The figures the verifier asked for on\n20 Oct: no wrong run refused, and no other run refused either, where five correct bare\n\"No\" runs were refused before the menu evidence was read.",
+      "tests": [
+       "the check refuses no wrong run and one other whose menu was an excerpt",
+       "every menu reading agrees with the fixture",
+       "without the menus the five bare no runs are refused",
+       "the menus read from a real log",
+       "the counter on the run that wandered to a category page"
       ]
      },
      {
@@ -4482,6 +4909,7 @@ window.SITE = {
        "an asked row spends nothing and runs nothing",
        "a refused row spends nothing and says what was missing",
        "the reading is recorded only on a row the box asked on",
+       "a reading the box took is recorded printed and scored under its key",
        "a bypassed question is built without a page and sent unchanged",
        "the check on a bypassed run is the figure rules alone",
        "the batch counts what the box did",
@@ -4572,6 +5000,7 @@ window.SITE = {
       "tests": [
        "the rows reading uses the sidecar key",
        "without a reading the tasks own key stands",
+       "a reading the box took scores under its own key",
        "the batch reading applies when the row has none"
       ]
      },
@@ -4585,6 +5014,38 @@ window.SITE = {
        "box counts come from the payload and are checked against the rows",
        "a batch without box counts prints none",
        "a run with no floor rule is a problem not a crash"
+      ]
+     },
+     {
+      "name": "VerifyRunFields",
+      "doc": "What `verify_run` reads since 20 Oct 2026: the market's listings from the row's page\nrecord (so a category page is never counted, and a product page outside the market is\nnamed), the kind of key, how many sellers a ranked key expects, and the sidecar reading\nthe run was scored under.",
+      "tests": [
+       "opened counts the markets listings and names the rest",
+       "the key a run was scored under"
+      ]
+     },
+     {
+      "name": "Rescore",
+      "doc": "`rescore.py` writes the scorer's version into the payload it rewrites (20 Oct 2026;\nuntil then a rescored batch kept the version of the scorer that first judged it), keeps\nthe previous verdict beside the new one, and changes nothing else.",
+      "tests": [
+       "a rescore writes the scorers version and keeps the previous verdict"
+      ]
+     },
+     {
+      "name": "ErrorKinds",
+      "doc": "Two kinds written 20 Oct 2026 from the box v2 batches: a ranked answer's sellers are\neach read for the two seller faults, not only the first; and a listing judged by a\nsearch for the word \"disabled\" alone, never reading its menu. Each fires on its fault\nand stays quiet otherwise, with the fixture's facts read from the fixture.",
+      "tests": [
+       "every ranked seller is read",
+       "a listing judged by a search for disabled alone",
+       "on the batches"
+      ]
+     },
+     {
+      "name": "DevelopmentCell",
+      "doc": "The box v2 development cell (20 Oct 2026): three batches as one cell, in-sample, kept\napart from the four claim-grade cells, and compared with cells 1 and 5 only on the\nquestions those cells asked and only under the key fixed before the runs.",
+      "tests": [
+       "in sample keeps the shared questions under the own key",
+       "the figures against cells 1 and 5"
       ]
      },
      {
@@ -4671,6 +5132,20 @@ window.SITE = {
        "a shopping question with no shape is a recorded fallback",
        "every census question has a shape",
        "sell is a market word"
+      ]
+     },
+     {
+      "name": "Graded",
+      "doc": "Property 5 whatever the word (20 October 2026): a superlative or comparative on an\nattribute the shop does not show names it in the form, so the box refuses; one on a\nshown attribute keeps its kind; the fallback stays for a shapeless question whose\nattributes are all shown. Verifier finding: \"Who sells the softest Thornwood tee?\" fell\nto the fallback and opened all fifteen listings, $0.80, for an attribute no page shows.",
+      "tests": [
+       "the softest tee is refused naming the word",
+       "the fault planted",
+       "a shown attribute keeps its kind",
+       "the fallback and the bypass stay",
+       "a comparative and an unknown attribute beside a shape",
+       "the verifiers probe",
+       "best price is the cheapest",
+       "every frame fires and every listed word stays quiet"
       ]
      },
      {
@@ -4862,7 +5337,7 @@ window.SITE = {
       "name": "NoKey",
       "doc": "The none kind (14 Oct 2026): a question the box is expected to ask on, refuse or\nbypass has no key, and an answer to it is unscored rather than wrong or abstained.",
       "tests": [
-       "an answer is unscored and a failed run still fails"
+       "an answer is unscored and so is a run that did not finish"
       ]
      },
      {
@@ -4974,14 +5449,14 @@ window.SITE = {
   },
   "count_rule": {
    "file": "experiments/analysis/score.py",
-   "start": 188,
-   "end": 193,
+   "start": 199,
+   "end": 204,
    "code": "        numbers = list(re.finditer(r\"(?<![\\d.$])(\\d{1,3})(?![\\d.])\", answer or \"\"))\n        if not numbers:\n            return {\"verdict\": \"ambiguous\", \"why\": \"no number given\", \"prices\": found}\n        coverage = {m.start(1) for m in COVERAGE_NUMBER.finditer(answer or \"\")}\n        kept = [m for m in numbers if m.start(1) not in coverage]\n        stated = int((kept or numbers)[0].group(1))"
   },
   "stratified": {
    "file": "experiments/analysis/compare_cells.py",
-   "start": 90,
-   "end": 111,
+   "start": 103,
+   "end": 124,
    "code": "def stratified_exact(strata: list[tuple[int, int, int, int]]) -> float:\n    \"\"\"Two sided exact conditional test of no difference within any stratum.\n\n    Each stratum is (successes in A, runs in A, successes in B, runs in B). Within a\n    stratum the successes in A are hypergeometric given the stratum's total, and the\n    statistic is their sum across strata. Two sided in the same sense as Fisher's test:\n    the probability of every outcome no more likely than the one observed.\n    \"\"\"\n    dist = {0: 1.0}\n    observed = 0\n    for sa, na, sb, nb in strata:\n        total, size = sa + sb, na + nb\n        pmf = {k: comb(total, k) * comb(size - total, na - k) / comb(size, na)\n               for k in range(max(0, total - nb), min(total, na) + 1)}\n        nxt: dict[int, float] = collections.defaultdict(float)\n        for t, p in dist.items():\n            for k, q in pmf.items():\n                nxt[t + k] += p * q\n        dist = nxt\n        observed += sa\n    p_obs = dist[observed]\n    return sum(p for p in dist.values() if p <= p_obs * (1 + 1e-9))"
   },
   "guard": {
@@ -4998,10 +5473,10 @@ window.SITE = {
   }
  },
  "budget": {
-  "left": 43.39,
+  "left": 35.81,
   "of": 100,
-  "on": "2026-10-08",
-  "source": "README decision log, 8 October 2026"
+  "on": "2026-10-14",
+  "source": "the account reading stored with the last run of 20261014T222007, which lags that run's own charge"
  },
  "pilot": [
   {
@@ -5033,6 +5508,990 @@ window.SITE = {
    "query": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . How many of the Thornwood listings have size M in stock and available to buy right now?\n\nThe results page lists 15 listings on one page; there is no next page.\nListings by advertised price, read from the results page:\n1. Rookwood Uniforms, advertised $11.87, http://localhost:7770/igr-app-03.html\n2. Jarrow Garments, advertised $14.90, http://localhost:7770/igr-app-13.html\n3. Ivybridge Collective, advertised $17.12, http://localhost:7770/igr-app-08.html\n4. Fairhaven Workwear, advertised $18.33, http://localhost:7770/igr-app-07.html\n5. Dunmore Apparel, advertised $20.05, http://localhost:7770/igr-app-05.html\n6. Copperfield Apparel, advertised $23.40, http://localhost:7770/igr-app-02.html\n7. Elmsworth Clothing Co, advertised $24.83, http://localhost:7770/igr-app-01.html\n8. Alderney Clothing Co, advertised $25.77, http://localhost:7770/igr-app-14.html\n9. Northwick Outfitters, advertised $25.96, http://localhost:7770/igr-app-11.html\n10. Haldane Supply, advertised $27.13, http://localhost:7770/igr-app-10.html\n11. Oakhurst Threads, advertised $27.75, http://localhost:7770/igr-app-04.html\n12. Lymington Textiles, advertised $28.09, http://localhost:7770/igr-app-15.html\n13. Brindle Textiles, advertised $30.61, http://localhost:7770/igr-app-09.html\n14. Marchmont Textiles, advertised $30.92, http://localhost:7770/igr-app-06.html\n15. Pentland Workwear, advertised $36.59, http://localhost:7770/igr-app-12.html\n\nOpen every listing in the search results and check the relevant option on each before answering. Whether an option can be chosen is shown in the option menu itself, so there is no need to choose it to find that out. Say how many you opened."
   }
  ],
+ "development": {
+  "name": "box v2 development, Thornwood, in-sample",
+  "batches": [
+   "20261014T213118",
+   "20261014T220116",
+   "20261014T222007"
+  ],
+  "conditions": {
+   "20261014T213118": {
+    "ran_at": "2026-10-14T22:01:00",
+    "repeats": 3,
+    "reading": "menu",
+    "policy": "off",
+    "box_version": 6,
+    "form_version": 4,
+    "primitives_version": 3,
+    "scorer_version": 2,
+    "browser_tool": "0.0.83",
+    "browser_origins": "http://localhost:7770",
+    "browser_flags": null,
+    "agent_core_commit": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
+    "agent_core_patch": "ae20d54335978d01c3cd040b153585a8324831cc",
+    "model": "anthropic/claude-haiku-4.5",
+    "rescored": []
+   },
+   "20261014T220116": {
+    "ran_at": "2026-10-14T22:19:56",
+    "repeats": 1,
+    "reading": "menu",
+    "policy": "off",
+    "box_version": 6,
+    "form_version": 4,
+    "primitives_version": 3,
+    "scorer_version": 3,
+    "browser_tool": "0.0.83",
+    "browser_origins": "http://localhost:7770",
+    "browser_flags": null,
+    "agent_core_commit": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
+    "agent_core_patch": "ae20d54335978d01c3cd040b153585a8324831cc",
+    "model": "anthropic/claude-haiku-4.5",
+    "rescored": [
+     {
+      "on": "2026-10-20",
+      "reason": "scorer v3 (2ce22cf): a keyless run that did not finish is unscored, not failed; apparel-softest-1 failed -> unscored",
+      "changed": [
+       {
+        "task": "apparel-softest",
+        "repeat": 1,
+        "from": "failed",
+        "to": "unscored"
+       }
+      ]
+     }
+    ]
+   },
+   "20261014T222007": {
+    "ran_at": "2026-10-14T22:28:13",
+    "repeats": 3,
+    "reading": "buyable",
+    "policy": "off",
+    "box_version": 6,
+    "form_version": 4,
+    "primitives_version": 3,
+    "scorer_version": 2,
+    "browser_tool": "0.0.83",
+    "browser_origins": "http://localhost:7770",
+    "browser_flags": null,
+    "agent_core_commit": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
+    "agent_core_patch": "ae20d54335978d01c3cd040b153585a8324831cc",
+    "model": "anthropic/claude-haiku-4.5",
+    "rescored": []
+   }
+  },
+  "rows": [
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-headline",
+    "short": "headline",
+    "repeat": 1,
+    "question": "Of the Thornwood tee listings shown, which one advertises the lowest price on the results page, and what is that price?",
+    "gated": false,
+    "kind": "contains",
+    "answer_key": "Rookwood at $11.87",
+    "did": "planned",
+    "plan": "results_page",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "named the expected option",
+    "opened": 0,
+    "covered": true,
+    "floor": 0,
+    "tool_calls": 2,
+    "cost": 0.072569,
+    "elapsed_s": 20.6,
+    "longest_silence_s": 31.0,
+    "answer": "The Thornwood tee listing with the lowest advertised price on the search results page is from Rookwood Uniforms at $11.87."
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-headline",
+    "short": "headline",
+    "repeat": 2,
+    "question": "Of the Thornwood tee listings shown, which one advertises the lowest price on the results page, and what is that price?",
+    "gated": false,
+    "kind": "contains",
+    "answer_key": "Rookwood at $11.87",
+    "did": "planned",
+    "plan": "results_page",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "named the expected option",
+    "opened": 0,
+    "covered": true,
+    "floor": 0,
+    "tool_calls": 2,
+    "cost": 0.063035,
+    "elapsed_s": 15.7,
+    "longest_silence_s": 8.0,
+    "answer": "The Thornwood tee listing with the lowest advertised price on the results page is from Rookwood Uniforms at $11.87."
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-headline",
+    "short": "headline",
+    "repeat": 3,
+    "question": "Of the Thornwood tee listings shown, which one advertises the lowest price on the results page, and what is that price?",
+    "gated": false,
+    "kind": "contains",
+    "answer_key": "Rookwood at $11.87",
+    "did": "planned",
+    "plan": "results_page",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "named the expected option",
+    "opened": 0,
+    "covered": true,
+    "floor": 0,
+    "tool_calls": 2,
+    "cost": 0.06305,
+    "elapsed_s": 14.9,
+    "longest_silence_s": 31.0,
+    "answer": "The Thornwood tee listing with the lowest advertised price on the search results page is from Rookwood Uniforms at $11.87 (http://localhost:7770/igr-app-03.html)."
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-target-price",
+    "short": "target-price",
+    "repeat": 1,
+    "question": "What is the lowest price anyone charges for size M of the Thornwood tee, among those that can actually be bought?",
+    "gated": true,
+    "kind": "price",
+    "answer_key": "$25.77",
+    "did": "planned",
+    "plan": "availability_bound",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "found 25.77",
+    "opened": 8,
+    "covered": true,
+    "floor": 8,
+    "tool_calls": 42,
+    "cost": 0.417805,
+    "elapsed_s": 163.8,
+    "longest_silence_s": 10.0,
+    "answer": "The lowest price anyone charges for size M of the Thornwood tee among those that can actually be bought is $25.77 from Alderney Clothing Co. I checked that the option was available (not disabled) and confirmed the price after selecting size M. I opened 8 listings total, skipped 7 listings whose advertised prices were at or above the best available price, and rejected 4 listings for having size M unavailable or disabled."
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-target-price",
+    "short": "target-price",
+    "repeat": 2,
+    "question": "What is the lowest price anyone charges for size M of the Thornwood tee, among those that can actually be bought?",
+    "gated": true,
+    "kind": "price",
+    "answer_key": "$25.77",
+    "did": "planned",
+    "plan": "availability_bound",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "found 25.77",
+    "opened": 8,
+    "covered": true,
+    "floor": 8,
+    "tool_calls": 30,
+    "cost": 0.359882,
+    "elapsed_s": 114.9,
+    "longest_silence_s": 11.0,
+    "answer": "The lowest price anyone charges for size M of the Thornwood tee among those that can actually be bought is $25.77 from Alderney Clothing Co. I checked that the option was available (not disabled) and confirmed the price after selecting size M. I opened 8 listings, skipped 7 listings with advertised prices at or above $25.77, and rejected 5 listings for being unavailable (either no M size option or M size disabled) and 2 listings for having higher prices when M was selected."
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-target-price",
+    "short": "target-price",
+    "repeat": 3,
+    "question": "What is the lowest price anyone charges for size M of the Thornwood tee, among those that can actually be bought?",
+    "gated": true,
+    "kind": "price",
+    "answer_key": "$25.77",
+    "did": "planned",
+    "plan": "availability_bound",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "found 25.77",
+    "opened": 8,
+    "covered": true,
+    "floor": 8,
+    "tool_calls": 28,
+    "cost": 0.278497,
+    "elapsed_s": 103.4,
+    "longest_silence_s": 10.0,
+    "answer": "The lowest price for size M of the Thornwood Heavyweight Cotton Tee that can actually be bought is $25.77 from Alderney Clothing Co. I checked that the option was available (not disabled or greyed out) and can be purchased. I opened 8 listings, skipped 7 listings with advertised prices at or above the best available price, and rejected 5 listings for being unavailable (either size M was not offered or was disabled/greyed out)."
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-cheapest-target",
+    "short": "cheapest-target",
+    "repeat": 1,
+    "question": "Across the Thornwood listings, which seller is cheapest for size M, and what is that price? Only count a listing that can actually supply that size.",
+    "gated": true,
+    "kind": "contains",
+    "answer_key": "Alderney at $25.77",
+    "did": "planned",
+    "plan": "availability_bound",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "wrong",
+    "why": "expected option not named",
+    "opened": 6,
+    "covered": false,
+    "floor": 8,
+    "tool_calls": 42,
+    "cost": 0.469134,
+    "elapsed_s": 168.1,
+    "longest_silence_s": 13.0,
+    "answer": "Copperfield Apparel is the cheapest seller for size M at $23.40. I checked that the option was available (not disabled). I opened 6 listings, skipped 9 listings with advertised prices at or above $23.40, and rejected 3 listings for having size M unavailable (disabled)."
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-cheapest-target",
+    "short": "cheapest-target",
+    "repeat": 2,
+    "question": "Across the Thornwood listings, which seller is cheapest for size M, and what is that price? Only count a listing that can actually supply that size.",
+    "gated": true,
+    "kind": "contains",
+    "answer_key": "Alderney at $25.77",
+    "did": "planned",
+    "plan": "availability_bound",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "named the expected option",
+    "opened": 8,
+    "covered": true,
+    "floor": 8,
+    "tool_calls": 31,
+    "cost": 0.309223,
+    "elapsed_s": 110.1,
+    "longest_silence_s": 11.0,
+    "answer": "Alderney Clothing Co is the cheapest seller for size M Thornwood Heavyweight Cotton Tee at $25.77. I verified that size M is available (not disabled) by selecting it from the dropdown and confirming the price displayed on the page. I opened 8 listings total, skipped 7 listings with advertised prices at or above $25.77, and rejected 5 listings for having size M unavailable or disabled (Rookwood Uniforms, Jarrow Garments, Ivybridge Collective, Fairhaven Workwear, and Dunmore Apparel)."
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-cheapest-target",
+    "short": "cheapest-target",
+    "repeat": 3,
+    "question": "Across the Thornwood listings, which seller is cheapest for size M, and what is that price? Only count a listing that can actually supply that size.",
+    "gated": true,
+    "kind": "contains",
+    "answer_key": "Alderney at $25.77",
+    "did": "planned",
+    "plan": "availability_bound",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "named the expected option",
+    "opened": 8,
+    "covered": true,
+    "floor": 8,
+    "tool_calls": 29,
+    "cost": 0.352148,
+    "elapsed_s": 111.1,
+    "longest_silence_s": 12.0,
+    "answer": "Alderney Clothing Co is the cheapest seller for size M at $25.77. I checked the option was available by selecting it from the dropdown - it was not disabled or greyed out. I opened 8 listings, skipped 7 listings (those with advertised prices at or above $25.77), and rejected 3 listings for being unavailable (Ivybridge Collective, Fairhaven Workwear, and Dunmore Apparel all had size M listed but disabled/greyed out)."
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-all-stocked",
+    "short": "all-stocked",
+    "repeat": 1,
+    "question": "Does every Thornwood listing offer size M? Answer yes or no.",
+    "gated": true,
+    "kind": "boolean",
+    "answer_key": "No",
+    "did": "planned",
+    "plan": "refutation",
+    "ask": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+    "refuse": "",
+    "reading": "menu",
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "answered no",
+    "opened": 1,
+    "covered": true,
+    "floor": 1,
+    "tool_calls": 4,
+    "cost": 0.016541,
+    "elapsed_s": 15.9,
+    "longest_silence_s": 4.0,
+    "answer": "No"
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-all-stocked",
+    "short": "all-stocked",
+    "repeat": 2,
+    "question": "Does every Thornwood listing offer size M? Answer yes or no.",
+    "gated": true,
+    "kind": "boolean",
+    "answer_key": "No",
+    "did": "planned",
+    "plan": "refutation",
+    "ask": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+    "refuse": "",
+    "reading": "menu",
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "answered no",
+    "opened": 1,
+    "covered": true,
+    "floor": 1,
+    "tool_calls": 6,
+    "cost": 0.067886,
+    "elapsed_s": 25.6,
+    "longest_silence_s": 31.0,
+    "answer": "No. Not every Thornwood listing offers size M. The Rookwood Uniforms listing (igr-app-03.html, advertised at $11.87) only offers sizes S and L, but does not include size M in its size menu."
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-all-stocked",
+    "short": "all-stocked",
+    "repeat": 3,
+    "question": "Does every Thornwood listing offer size M? Answer yes or no.",
+    "gated": true,
+    "kind": "boolean",
+    "answer_key": "No",
+    "did": "planned",
+    "plan": "refutation",
+    "ask": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+    "refuse": "",
+    "reading": "menu",
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "answered no",
+    "opened": 1,
+    "covered": true,
+    "floor": 1,
+    "tool_calls": 4,
+    "cost": 0.019455,
+    "elapsed_s": 16.7,
+    "longest_silence_s": 4.0,
+    "answer": "No"
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-count-stocked",
+    "short": "count-stocked",
+    "repeat": 1,
+    "question": "How many of the Thornwood listings offer size M?",
+    "gated": true,
+    "kind": "count",
+    "answer_key": "10",
+    "did": "planned",
+    "plan": "survey",
+    "ask": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+    "refuse": "",
+    "reading": "menu",
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "counted 10",
+    "opened": 15,
+    "covered": true,
+    "floor": 15,
+    "tool_calls": 32,
+    "cost": 0.150775,
+    "elapsed_s": 95.9,
+    "longest_silence_s": 5.0,
+    "answer": "I opened all 15 Thornwood listings from the search results page and checked the size menu for each. 10 of the 15 listings offer size M in their size menu (whether available or sold out). The listings that offer size M are: Ivybridge Collective, Fairhaven Workwear, Dunmore Apparel, Copperfield Apparel, Elmsworth Clothing Co, Alderney Clothing Co, Northwick Outfitters, Haldane Supply, Brindle Textiles, and Marchmont Textiles."
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-count-stocked",
+    "short": "count-stocked",
+    "repeat": 2,
+    "question": "How many of the Thornwood listings offer size M?",
+    "gated": true,
+    "kind": "count",
+    "answer_key": "10",
+    "did": "planned",
+    "plan": "survey",
+    "ask": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+    "refuse": "",
+    "reading": "menu",
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "counted 10",
+    "opened": 15,
+    "covered": true,
+    "floor": 15,
+    "tool_calls": 33,
+    "cost": 0.155751,
+    "elapsed_s": 106.6,
+    "longest_silence_s": 6.0,
+    "answer": "10 of the 15 Thornwood listings offer size M. These are: (1) Ivybridge Collective ($17.12), (2) Fairhaven Workwear ($18.33), (3) Dunmore Apparel ($20.05), (4) Copperfield Apparel ($23.40), (5) Elmsworth Clothing Co ($24.83), (6) Alderney Clothing Co ($25.77), (7) Northwick Outfitters ($25.96), (8) Haldane Supply ($27.13), (9) Brindle Textiles ($30.61), and (10) Marchmont Textiles ($30.92). I opened all 15 listings."
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-count-stocked",
+    "short": "count-stocked",
+    "repeat": 3,
+    "question": "How many of the Thornwood listings offer size M?",
+    "gated": true,
+    "kind": "count",
+    "answer_key": "10",
+    "did": "planned",
+    "plan": "survey",
+    "ask": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+    "refuse": "",
+    "reading": "menu",
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "counted 10",
+    "opened": 15,
+    "covered": true,
+    "floor": 15,
+    "tool_calls": 33,
+    "cost": 0.223599,
+    "elapsed_s": 96.4,
+    "longest_silence_s": 7.0,
+    "answer": "I have checked all 15 Thornwood product listings from the search results. 10 of them offer size M in their size menu (whether the size is available or sold out). The products offering size M are: Ivybridge Collective, Fairhaven Workwear, Dunmore Apparel, Copperfield Apparel, Elmsworth Clothing Co, Alderney Clothing Co, Northwick Outfitters, Haldane Supply, Brindle Textiles, and Marchmont Textiles."
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-count-buyable",
+    "short": "count-buyable",
+    "repeat": 1,
+    "question": "How many of the Thornwood listings have size M in stock and available to buy right now?",
+    "gated": true,
+    "kind": "count",
+    "answer_key": "5",
+    "did": "planned",
+    "plan": "survey",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "counted 5",
+    "opened": 15,
+    "covered": true,
+    "floor": 15,
+    "tool_calls": 42,
+    "cost": 0.30139,
+    "elapsed_s": 148.2,
+    "longest_silence_s": 8.0,
+    "answer": "5 Thornwood listings have size M in stock and available to buy right now. These are: (1) Copperfield Apparel ($23.40), (2) Marchmont Textiles ($30.92), (3) Northwick Outfitters ($25.96), (4) Elmsworth Clothing Co ($24.83), and (5) Alderney Clothing Co ($25.77). I opened all 15 listings to verify the availability of size M in each product's size dropdown."
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-count-buyable",
+    "short": "count-buyable",
+    "repeat": 2,
+    "question": "How many of the Thornwood listings have size M in stock and available to buy right now?",
+    "gated": true,
+    "kind": "count",
+    "answer_key": "5",
+    "did": "planned",
+    "plan": "survey",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "wrong",
+    "why": "counted 10, expected 5",
+    "opened": 15,
+    "covered": true,
+    "floor": 15,
+    "tool_calls": 45,
+    "cost": 0.432201,
+    "elapsed_s": 165.0,
+    "longest_silence_s": 7.0,
+    "answer": "10 Thornwood listings have size M in stock and available to buy right now. I opened all 15 listings from the search results and checked the size options for each product. Products with M available: 1) Copperfield Apparel, 3) Marchmont Textiles, 7) Northwick Outfitters, 9) Pentland Workwear, 10) Lymington Textiles, 11) Elmsworth Clothing Co, 12) Alderney Clothing Co, 13) Rookwood Uniforms, 14) Oakhurst Threads, 15) Jarrow Garments."
+   },
+   {
+    "batch": "20261014T213118",
+    "task": "apparel-count-buyable",
+    "short": "count-buyable",
+    "repeat": 3,
+    "question": "How many of the Thornwood listings have size M in stock and available to buy right now?",
+    "gated": true,
+    "kind": "count",
+    "answer_key": "5",
+    "did": "planned",
+    "plan": "survey",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "counted 5",
+    "opened": 15,
+    "covered": true,
+    "floor": 15,
+    "tool_calls": 40,
+    "cost": 0.317235,
+    "elapsed_s": 152.2,
+    "longest_silence_s": 7.0,
+    "answer": "I checked all 15 Thornwood listings on the search results page. By visiting each product page and checking the Size dropdown options, I found that 5 products have size M in stock and available to buy right now: (1) Copperfield Apparel ($23.40), (2) Elmsworth Clothing Co ($24.83), (3) Alderney Clothing Co ($25.77), (4) Northwick Outfitters ($25.96), and (5) Marchmont Textiles ($30.92). I opened all 15 listings as requested."
+   },
+   {
+    "batch": "20261014T220116",
+    "task": "apparel-exists-under-27",
+    "short": "exists-under-27",
+    "repeat": 1,
+    "question": "Is there any Thornwood listing with size M available to buy for under $27? Answer yes or no, and name the seller if yes.",
+    "gated": true,
+    "kind": "boolean",
+    "answer_key": "Yes",
+    "did": "planned",
+    "plan": "exists_price",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "answered yes",
+    "opened": 8,
+    "covered": true,
+    "floor": 1,
+    "tool_calls": 26,
+    "cost": 0.30003,
+    "elapsed_s": 95.7,
+    "longest_silence_s": 5.0,
+    "answer": "Yes. Alderney Clothing Co has a Thornwood listing with size M available for $25.77, which is under $27.00."
+   },
+   {
+    "batch": "20261014T220116",
+    "task": "apparel-exists-under-25",
+    "short": "exists-under-25",
+    "repeat": 1,
+    "question": "Is there any Thornwood listing with size M available to buy for under $25? Answer yes or no, and name the seller if yes.",
+    "gated": true,
+    "kind": "boolean",
+    "answer_key": "No",
+    "did": "planned",
+    "plan": "exists_price",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "answered no",
+    "opened": 7,
+    "covered": true,
+    "floor": 7,
+    "tool_calls": 36,
+    "cost": 0.286523,
+    "elapsed_s": 135.0,
+    "longest_silence_s": 12.0,
+    "answer": "No. There is no Thornwood listing with size M available to buy for under $25. I checked all 7 listings advertised at or below $25.00 in ascending order of price: Rookwood Uniforms ($11.87) has no size M; Jarrow Garments ($14.90) has no size M; Ivybridge Collective ($17.12) has size M disabled; Fairhaven Workwear ($18.33) has size M disabled; Dunmore Apparel ($20.05) has size M disabled; Copperfield Apparel ($23.40) has size M available but costs $29.66; Elmsworth Clothing Co ($24.83) has size M available but costs $28.96. Opened 7 listings total."
+   },
+   {
+    "batch": "20261014T220116",
+    "task": "apparel-top-3",
+    "short": "top-3",
+    "repeat": 1,
+    "question": "Which three sellers are cheapest for size M among listings that can actually supply it, and at what prices?",
+    "gated": true,
+    "kind": "ranked",
+    "answer_key": "Alderney at $25.77, then Elmsworth at $28.96, then Copperfield at $29.66",
+    "did": "planned",
+    "plan": "topk_price",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "wrong",
+    "why": "expected seller Elmsworth not named",
+    "opened": 12,
+    "covered": true,
+    "floor": 12,
+    "tool_calls": 45,
+    "cost": 0.429063,
+    "elapsed_s": 180.7,
+    "longest_silence_s": 9.0,
+    "answer": "The three cheapest sellers for size M of the Thornwood Heavyweight Cotton Tee are:\n\n1. Alderney Clothing Co - $25.77\n2. Oakhurst Threads - $27.75\n3. Lymington Textiles - $28.09\n\nI verified that each option was available (not disabled) by selecting size M on each listing page and reading the price displayed after selection. I opened 12 listings total and skipped 3 listings (Brindle Textiles at $30.61, Marchmont Textiles at $30.92, and Pentland Workwear at $36.59) because their advertised prices were at or above the dearest of my top 3 ($28.09), making it impossible for them to enter the top 3 regardless of their actual size M pricing."
+   },
+   {
+    "batch": "20261014T220116",
+    "task": "apparel-named-pair",
+    "short": "named-pair",
+    "repeat": 1,
+    "question": "Between Copperfield Apparel and Elmsworth Clothing Co, which is cheaper for size M, and what is that price?",
+    "gated": true,
+    "kind": "ranked",
+    "answer_key": "Elmsworth at $28.96, then Copperfield at $29.66 (may be left out)",
+    "did": "planned",
+    "plan": "named_lookup",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "named every seller in order with its price",
+    "opened": 2,
+    "covered": true,
+    "floor": 2,
+    "tool_calls": 20,
+    "cost": 0.103121,
+    "elapsed_s": 71.4,
+    "longest_silence_s": 7.0,
+    "answer": "Between Copperfield Apparel and Elmsworth Clothing Co for size M, Elmsworth Clothing Co is cheaper at $28.96. Copperfield Apparel costs $29.66 for size M."
+   },
+   {
+    "batch": "20261014T220116",
+    "task": "apparel-cheapest-xl",
+    "short": "cheapest-xl",
+    "repeat": 1,
+    "question": "Across the Thornwood listings, which seller is cheapest for size XL, and what is that price? Only count a listing that can actually supply that size.",
+    "gated": true,
+    "kind": "contains",
+    "answer_key": "Ivybridge at $18.08",
+    "did": "planned",
+    "plan": "availability_bound",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "correct",
+    "why": "named the expected option",
+    "opened": 3,
+    "covered": true,
+    "floor": 3,
+    "tool_calls": 24,
+    "cost": 0.253549,
+    "elapsed_s": 103.4,
+    "longest_silence_s": 9.0,
+    "answer": "Ivybridge Collective is the cheapest seller for Thornwood size XL at $18.08. I checked that the option was available (not disabled) when selected. I opened 3 listings, rejected 2 for being unavailable, and skipped 12 whose advertised prices were at or above the best available price."
+   },
+   {
+    "batch": "20261014T220116",
+    "task": "apparel-delivery",
+    "short": "delivery",
+    "repeat": 1,
+    "question": "Which Thornwood seller delivers fastest for size M?",
+    "gated": false,
+    "kind": "none",
+    "answer_key": "",
+    "did": "refused",
+    "plan": null,
+    "ask": "",
+    "refuse": "The shop does not show delivery time, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought. On a review page, the text, rating and page of each review.",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "refused",
+    "why": "the box refused: the shop does not show what the question needs",
+    "opened": null,
+    "covered": null,
+    "floor": null,
+    "tool_calls": null,
+    "cost": 0,
+    "elapsed_s": 0,
+    "longest_silence_s": null,
+    "answer": "The shop does not show delivery time, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought. On a review page, the text, ra"
+   },
+   {
+    "batch": "20261014T220116",
+    "task": "apparel-cheap-no-figure",
+    "short": "cheap-no-figure",
+    "repeat": 1,
+    "question": "Is there a cheap Thornwood tee in size M?",
+    "gated": false,
+    "kind": "none",
+    "answer_key": "",
+    "did": "asked",
+    "plan": null,
+    "ask": "Your question says 'cheap' and gives no figure. What is the most you would pay? Give a limit, such as under $20, and only listings at or below it will count.",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "asked",
+    "why": "the box asked the user and no --reading answered it",
+    "opened": null,
+    "covered": null,
+    "floor": null,
+    "tool_calls": null,
+    "cost": 0,
+    "elapsed_s": 0,
+    "longest_silence_s": null,
+    "answer": "Your question says 'cheap' and gives no figure. What is the most you would pay? Give a limit, such as under $20, and only listings at or below it will count."
+   },
+   {
+    "batch": "20261014T220116",
+    "task": "apparel-softest",
+    "short": "softest",
+    "repeat": 1,
+    "question": "Who sells the softest Thornwood tee?",
+    "gated": false,
+    "kind": "none",
+    "answer_key": "",
+    "did": "fallback",
+    "plan": "survey",
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "unscored",
+    "why": "no answer key for this question",
+    "opened": 15,
+    "covered": true,
+    "floor": 0,
+    "tool_calls": 95,
+    "cost": 0.796257,
+    "elapsed_s": 424.9,
+    "longest_silence_s": 9.0,
+    "answer": "Unable to answer the question. After opening and checking all 15 Thornwood tee listings from the search results, NO 'softness' attribute was found on any of them. All products only have a 'Size' attribute with options S, M, L, XL (with varying availability). The 'softness' option mentioned in the task does not exist on this website."
+   },
+   {
+    "batch": "20261014T220116",
+    "task": "bypass-poem",
+    "short": "bypass-poem",
+    "repeat": 1,
+    "question": "Write a four-line poem about shoes.",
+    "gated": false,
+    "kind": "none",
+    "answer_key": "",
+    "did": "bypassed",
+    "plan": null,
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "unscored",
+    "why": "no answer key for this question",
+    "opened": 0,
+    "covered": true,
+    "floor": 0,
+    "tool_calls": 6,
+    "cost": 0.012863,
+    "elapsed_s": 18.4,
+    "longest_silence_s": 32.0,
+    "answer": "Successfully wrote a four-line poem about shoes in the browser text area. The poem is: 'Laced with purpose, worn with pride, / Carrying us through every stride, / From morning walks to evening rest, / Shoes are friends that serve us best.'"
+   },
+   {
+    "batch": "20261014T220116",
+    "task": "bypass-capital",
+    "short": "bypass-capital",
+    "repeat": 1,
+    "question": "What is the capital of Portugal?",
+    "gated": false,
+    "kind": "none",
+    "answer_key": "",
+    "did": "bypassed",
+    "plan": null,
+    "ask": "",
+    "refuse": "",
+    "reading": null,
+    "scored_under": null,
+    "verdict": "unscored",
+    "why": "no answer key for this question",
+    "opened": 0,
+    "covered": true,
+    "floor": 0,
+    "tool_calls": 4,
+    "cost": 0.008516,
+    "elapsed_s": 14.0,
+    "longest_silence_s": 21.0,
+    "answer": "The capital of Portugal is Lisbon."
+   },
+   {
+    "batch": "20261014T222007",
+    "task": "apparel-all-stocked",
+    "short": "all-stocked",
+    "repeat": 1,
+    "question": "Does every Thornwood listing offer size M? Answer yes or no.",
+    "gated": true,
+    "kind": "boolean",
+    "answer_key": "No",
+    "did": "planned",
+    "plan": "refutation",
+    "ask": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+    "refuse": "",
+    "reading": "buyable",
+    "scored_under": "buyable",
+    "verdict": "correct",
+    "why": "answered no",
+    "opened": 1,
+    "covered": true,
+    "floor": 1,
+    "tool_calls": 5,
+    "cost": 0.037618,
+    "elapsed_s": 23.1,
+    "longest_silence_s": 31.0,
+    "answer": "No"
+   },
+   {
+    "batch": "20261014T222007",
+    "task": "apparel-all-stocked",
+    "short": "all-stocked",
+    "repeat": 2,
+    "question": "Does every Thornwood listing offer size M? Answer yes or no.",
+    "gated": true,
+    "kind": "boolean",
+    "answer_key": "No",
+    "did": "planned",
+    "plan": "refutation",
+    "ask": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+    "refuse": "",
+    "reading": "buyable",
+    "scored_under": "buyable",
+    "verdict": "correct",
+    "why": "answered no",
+    "opened": 1,
+    "covered": true,
+    "floor": 1,
+    "tool_calls": 4,
+    "cost": 0.019196,
+    "elapsed_s": 18.3,
+    "longest_silence_s": 19.0,
+    "answer": "No"
+   },
+   {
+    "batch": "20261014T222007",
+    "task": "apparel-all-stocked",
+    "short": "all-stocked",
+    "repeat": 3,
+    "question": "Does every Thornwood listing offer size M? Answer yes or no.",
+    "gated": true,
+    "kind": "boolean",
+    "answer_key": "No",
+    "did": "planned",
+    "plan": "refutation",
+    "ask": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+    "refuse": "",
+    "reading": "buyable",
+    "scored_under": "buyable",
+    "verdict": "correct",
+    "why": "answered no",
+    "opened": 1,
+    "covered": true,
+    "floor": 1,
+    "tool_calls": 4,
+    "cost": 0.041292,
+    "elapsed_s": 18.4,
+    "longest_silence_s": 31.0,
+    "answer": "No"
+   },
+   {
+    "batch": "20261014T222007",
+    "task": "apparel-count-stocked",
+    "short": "count-stocked",
+    "repeat": 1,
+    "question": "How many of the Thornwood listings offer size M?",
+    "gated": true,
+    "kind": "count",
+    "answer_key": "10",
+    "did": "planned",
+    "plan": "survey",
+    "ask": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+    "refuse": "",
+    "reading": "buyable",
+    "scored_under": "buyable",
+    "verdict": "correct",
+    "why": "counted 5",
+    "opened": 15,
+    "covered": true,
+    "floor": 15,
+    "tool_calls": 34,
+    "cost": 0.222961,
+    "elapsed_s": 123.8,
+    "longest_silence_s": 9.0,
+    "answer": "5 listings offer size M. These are: (1) Copperfield Apparel ($23.40), (2) Elmsworth Clothing Co ($24.83), (3) Alderney Clothing Co ($25.77), (4) Northwick Outfitters ($25.96), and (5) Marchmont Textiles ($30.92). I opened all 15 listings from the search results and checked the size options in each product page. Size M must be available (not disabled/sold out) to count as 'offering' it."
+   },
+   {
+    "batch": "20261014T222007",
+    "task": "apparel-count-stocked",
+    "short": "count-stocked",
+    "repeat": 2,
+    "question": "How many of the Thornwood listings offer size M?",
+    "gated": true,
+    "kind": "count",
+    "answer_key": "10",
+    "did": "planned",
+    "plan": "survey",
+    "ask": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+    "refuse": "",
+    "reading": "buyable",
+    "scored_under": "buyable",
+    "verdict": "correct",
+    "why": "counted 5",
+    "opened": 15,
+    "covered": true,
+    "floor": 15,
+    "tool_calls": 34,
+    "cost": 0.158705,
+    "elapsed_s": 102.0,
+    "longest_silence_s": 8.0,
+    "answer": "5 Thornwood listings offer size M that can be sold now (not sold out). These are: Copperfield Apparel ($23.40), Elmsworth Clothing Co ($24.83), Alderney Clothing Co ($25.77), Northwick Outfitters ($25.96), and Marchmont Textiles ($30.92). I opened all 15 listings from the search results page."
+   },
+   {
+    "batch": "20261014T222007",
+    "task": "apparel-count-stocked",
+    "short": "count-stocked",
+    "repeat": 3,
+    "question": "How many of the Thornwood listings offer size M?",
+    "gated": true,
+    "kind": "count",
+    "answer_key": "10",
+    "did": "planned",
+    "plan": "survey",
+    "ask": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+    "refuse": "",
+    "reading": "buyable",
+    "scored_under": "buyable",
+    "verdict": "correct",
+    "why": "counted 5",
+    "opened": 15,
+    "covered": true,
+    "floor": 15,
+    "tool_calls": 34,
+    "cost": 0.223922,
+    "elapsed_s": 106.6,
+    "longest_silence_s": 8.0,
+    "answer": "5 listings offer size M that can be purchased now (not sold out). These are: (1) Copperfield Apparel at $23.40, (2) Elmsworth Clothing Co at $24.83, (3) Alderney Clothing Co at $25.77, (4) Northwick Outfitters at $25.96, and (5) Marchmont Textiles at $30.92. I opened all 15 listings from the search results page and checked the size dropdown menu for each one."
+   }
+  ],
+  "cost": [
+   {
+    "batch": "20261014T213118",
+    "charges": 4.070176,
+    "moved": 3.972739,
+    "lags": false
+   },
+   {
+    "batch": "20261014T220116",
+    "charges": 2.189922,
+    "moved": 2.287359,
+    "lags": false
+   },
+   {
+    "batch": "20261014T222007",
+    "charges": 0.703694,
+    "moved": 0.646955,
+    "lags": true
+   }
+  ],
+  "charges": 6.963792,
+  "account_before": 57.28607,
+  "account_after": 64.193124,
+  "moved": 6.907053
+ },
  "census": {
   "model": "anthropic/claude-haiku-4.5",
   "temperature": 0,
@@ -5281,12 +6740,14 @@ window.SITE = {
   "form": {
    "ARGMAX": "\\b(?:most expensive|dearest|highest price|priciest)\\b",
    "ARGMAX_WORDS": "\\b(?:highest|most|longest|best|slowest)\\b",
+   "BEST_PRICE": "\\bbest\\s+(?:price|prices|deal)\\b",
    "BUYABLE_WORDS": "\\b(?:in\\s+stock|available\\s+to\\s+buy|available\\s+for\\s+purchase|can\\s+be\\s+bought|can\\s+actually\\s+be\\s+bought|can\\s+buy|can\\s+supply|can\\s+actually\\s+supply|can\\s+ship|purchasable|buyable|right\\s+now|ready\\s+to\\s+ship)\\b",
    "CEILING": "\\b(?:under|below|less than|at most|no more than|not more than|cheaper than|up to|within)\\s*\\$?\\s*(?P<a>\\d+(?:\\.\\d{1,2})?)\\b|\\$?(?P<b>\\d+(?:\\.\\d{1,2})?)\\s+or\\s+(?:less|under|below|cheaper)\\b",
    "COLOUR": "\\bin\\s+(white|black|blue|red|green|grey|gray|navy|yellow|pink|purple|orange|brown|beige|cream)\\b",
    "EXISTS": "\\b(?:is|are)\\s+there\\s+(?:any|a|an|one)\\b|\\b(?:does|do|is|are|can|could|will|would)\\s+any(?:one|body)?\\b|\\banyone\\b",
    "FIGURE": "\\d",
    "FREE_SHIPPING": "\\bfree\\s+(?:shipping|delivery|postage)\\b",
+   "GRADED": "\\bthe\\s+(?P<the>[a-z]+est|top)\\b|\\bwhich\\b(?:\\s+\\w+){0,3}?\\s+(?:is|are)\\s+(?:the\\s+)?(?P<which>[a-z]+(?:est|er))\\b|\\b(?P<than>[a-z]+er)\\s+than\\b|\\b(?P<most>(?:most|least)\\s+[a-z]+)\\b",
    "MARKET_WORDS": "\\b(?:listing|listings|seller|sellers|offer|offers|offered|offering|sell|sells|sold|selling|product|products|item|items|shop|store|vendor|vendors|merchant|merchants)\\b",
    "MENTION": "\\b(?:report|say|mention|complain)(?:s|ed)?\\s+(?:that\\s+)?(?:this\\s+product|it|they|the\\s+product)\\s+(.+?)(?=[?.]|\\s+Answer\\b)",
    "MENU_WORDS": "\\b(?:listed|lists|in\\s+its\\s+menu|in\\s+the\\s+menu|on\\s+the\\s+menu|as\\s+an\\s+option|sold\\s+out\\s+or\\s+not|even\\s+if\\s+sold\\s+out|whether\\s+or\\s+not)\\b",
@@ -5300,6 +6761,7 @@ window.SITE = {
    "SUPERLATIVE": "\\b(?:fastest|quickest|soonest|slowest|longest|shortest|best|highest|lowest|most|least)\\b",
    "TOPK": "\\b(?:(?P<before>(?:two|three|four|five|six|seven|eight|nine|ten|\\d{1,2}))\\s+cheapest|cheapest\\s+(?P<after>(?:two|three|four|five|six|seven|eight|nine|ten|\\d{1,2}))|top\\s+(?P<top>(?:two|three|four|five|six|seven|eight|nine|ten|\\d{1,2})))\\b",
    "TOPK_COUNT": "\\b(?<!\\bthe\\s)(?<!\\bthese\\s)(?<!\\bthose\\s)(?P<count>(?:two|three|four|five|six|seven|eight|nine|ten|\\d{1,2}))\\s+(?:sellers?|listings?)\\b",
+   "TOP_COUNT": "^\\s*(?:two|three|four|five|six|seven|eight|nine|ten|\\d{1,2})\\b",
    "URL": "https?://\\S+",
    "VAGUE_PRICE": "\\b(?:cheap|affordable|inexpensive|budget|low[- ]cost|bargain)\\b",
    "VARIANT": "\\b(?:size|sizes|pack|packs|variant|variants|colour|color|colours|colors|option|options)\\b"
@@ -5358,9 +6820,9 @@ window.SITE = {
   ],
   "ask_text": "Your question says '{verb}'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
   "versions": {
-   "box": 6,
-   "form": 4,
-   "primitives": 3,
+   "box": 9,
+   "form": 8,
+   "primitives": 5,
    "targeting": 7,
    "planner": 2
   }
@@ -5568,8 +7030,8 @@ window.SITE = {
   }
  ],
  "built": {
-  "commit": "5984ae0",
-  "date": "2026-10-14",
+  "commit": "4a4fecf",
+  "date": "2026-10-20",
   "branch": "dev",
   "dirty": true,
   "repo": "https://github.com/kr7001/fyp-shopping-agent",
@@ -5579,7 +7041,8 @@ window.SITE = {
    "2026-09-07": 44,
    "2026-09-14": 49,
    "2026-10-05": 45,
-   "2026-10-12": 45
+   "2026-10-12": 47,
+   "2026-10-19": 5
   }
  }
 };

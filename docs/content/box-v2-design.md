@@ -1,6 +1,6 @@
 # Box v2, the strategist
 
-Status: **designed and built on 14 October 2026.** Steps 1 to 4 of the build order below are commits `fd59b5b`, `25c7656` and `70556af`, then `108fe1a` (the verifier's fixes) and `2d76fae` (the bypass), 171 tests, with the six clothing questions rendering byte for byte what v1 rendered, so the pilot stands under v2. The verifier checked the build against this page twice on 14 October: v1 preserved, no answer read, every new statement true of the shop. Where the build departs from this page, and what the verifier still wants changed before a paid batch, is in the README decision log of 14 October.
+Status on 20 October 2026: **box v9, form v8, primitives v5, scorer v3, rules v4, 254 tests, frozen for the fresh clothing market.** Designed and built on 14 October (`fd59b5b`, `25c7656`, `70556af`, then `108fe1a` and `2d76fae`, with the six clothing questions rendering byte for byte what v1 rendered). Its development batches ran that evening on Thornwood under box v6: 32 agent runs in three batches, `20261014T213118`, `20261014T220116` and `20261014T222007`, in sample and no claim, with the whole record on the Results page and the figures in `make facts`, section H. The verifier passed the batches on 20 October and the corrections are box v7 to v9 (`2ce22cf`, `8607c3a`, `e3c299e`, `a01b8e3`, `4a4fecf`). Two of its findings failed the new menu reader before it was accepted: a `browser_find` excerpt, the matched line and three more with no gap marker, had been taken for the whole size menu (`20261014T213118/apparel-count-stocked-2`, igr-app-08 read as S, M where the menu is S, M, L, XL), and a snapshot taken with a depth limit prints a menu beyond it as a head line with no children and no marker, which the rule had taken for a complete menu with no sizes (`20260910T133605/scaled-cheapest-target-1`). The rules that came out of them are on the counterexample row below. The reader is validated against the fixture over every stored run of the three batches with `python3 experiments/analysis/replay_box.py experiments/results/20261014T213118 experiments/results/20261014T220116 experiments/results/20261014T222007 --menus`: 180 readings, 109 complete and all equal to the fixture's menu, 71 partial and all a prefix of it. Where the build departs from this page is in the README decision log of 14 and 20 October.
 Box v1 is the measured floor. Version 2 is what the project claims to build: a step that reads
 any shopping question, works out what evidence would settle it, retrieves that evidence at the
 lowest cost the page allows, asks the user when the question does not settle it, and refuses
@@ -166,8 +166,12 @@ nothing in the box reads an answer key. v1's four strategies become four of the 
    Agreement rate, the forms that fail verification, the asks raised, each read by hand.
 2. **Development, on Thornwood.** The questions v1 ran, plus new ones for the forms v1 lacks:
    an existence question, a top-3, a named comparison, a filtered cheapest. Against cells 1
-   and 5 and against v1.
-3. **The claim, on a fresh clothing market** generated after v2 is frozen, three arms.
+   and 5 and against v1. Done on 14 October, verified on 20 October: on the five questions
+   cells 1 and 5 asked, 13 of 15 correct, 14 of 15 opened what the answer needs, a median of
+   8 listings opened, $0.258 a run (`make facts`, section H), in sample and no claim. The
+   Results page holds the record.
+3. **The claim, on a fresh clothing market** generated after v2 is frozen, three arms. The
+   freeze is box v9, 20 October.
 4. **Next**, the review questions, through the depth primitive.
 
 ### The coverage floors

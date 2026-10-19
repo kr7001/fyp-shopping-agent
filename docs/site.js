@@ -37,6 +37,10 @@
       t.reading === (rd || 'menu') && t.distinct === !!distinct);
   const errorCount = (labels, kind) => sum(labels.map((l) =>
     ((C.errors[nameOf(l)] || []).find((e) => e[0] === kind) || [kind, []])[1].length));
+  // The box v2 development cell (cell_facts section H) and the record behind it
+  // (build_site.development). In sample on Thornwood: listed beside the cells, never pinned.
+  const D = C.development ? C.development[Object.keys(C.development)[0]] : null;
+  const DR = S.development || null;
 
   // Every inline figure, by name. Pages use <span data-f="name">.
   const F = {};
@@ -86,6 +90,47 @@
     F['tests.regression'] = S.tests.regression_questions;
     F['v.targeting'] = S.tests.versions.targeting;
     F['v.planner'] = S.tests.versions.planner;
+    if (S.patterns && S.patterns.versions) {
+      F['v.box'] = S.patterns.versions.box;
+      F['v.form'] = S.patterns.versions.form;
+      F['v.primitives'] = S.patterns.versions.primitives;
+    }
+    // The box v2 development cell: in sample on Thornwood, listed and never pinned as a claim.
+    if (D) {
+      const s = D.in_sample;
+      F['dev.runs'] = D.runs;
+      F['dev.questions'] = D.questions.length;
+      F['dev.in.runs'] = s.runs;
+      F['dev.in.questions'] = s.questions.length;
+      F['dev.right'] = s.right;
+      F['dev.opened'] = s.opened;
+      F['dev.median'] = s.median_opened;
+      F['dev.calls'] = Math.round(s.calls);
+      F['dev.cost'] = money(s.cost);
+      const dt = (m, b, rd) => D.tests.find((t) => t.measure === m && t.b === b && t.reading === (rd || 'menu'));
+      F['p.correct.dv1'] = pfmt(dt('correct', '1').p_question);
+      F['p.opened.dv1'] = pfmt(dt('opened', '1').p_question);
+      F['p.correct.dv5'] = pfmt(dt('correct', '5').p_question);
+      F['p.opened.dv5'] = pfmt(dt('opened', '5').p_question);
+      F['dev.check.wrong'] = D.check.wrong;
+      F['dev.check.wrong_refused'] = D.check.wrong_refused.length;
+      F['dev.check.other'] = D.check.other;
+      F['dev.check.other_refused'] = D.check.other_refused.length;
+    }
+    if (DR) {
+      const fresh = DR.rows.filter((r) => r.batch === DR.batches[1]);
+      F['dev.new.rows'] = fresh.length;
+      F['dev.new.ran'] = fresh.filter((r) => r.did !== 'asked' && r.did !== 'refused').length;
+      F['dev.new.correct'] = fresh.filter((r) => r.verdict === 'correct').length;
+      F['dev.new.keyed'] = fresh.filter((r) => r.kind !== 'none').length;
+      F['dev.new.wrong'] = fresh.filter((r) => r.verdict === 'wrong').length;
+      F['dev.charges'] = money(DR.charges, 4);
+      F['dev.moved'] = DR.moved == null ? '?' : money(DR.moved, 4);
+      F['dev.account_before'] = DR.account_before == null ? '?' : money(DR.account_before, 2);
+      F['dev.account_after'] = DR.account_after == null ? '?' : money(DR.account_after, 2);
+      const c0 = DR.conditions[DR.batches[0]] || {};
+      F['dev.versions'] = 'box v' + c0.box_version + ', form v' + c0.form_version + ', primitives v' + c0.primitives_version;
+    }
     F['built.date'] = S.built ? S.built.date : '';
     F['built.commit'] = S.built ? S.built.commit : '';
     F['budget.left'] = money(S.budget.left, 2);
@@ -246,6 +291,102 @@
     el.innerHTML = '<div class="table-wrap"><table><thead><tr><th>Batch</th><th>Cell</th>' +
       '<th class="num">Provider charges</th><th class="num">Account moved</th><th class="num">Difference</th>' +
       '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  };
+
+  R.development = (el) => {
+    if (!D || !DR) { el.innerHTML = '<p class="note">?</p>'; return; }
+    const s = D.in_sample;
+    const c1 = cell('1');
+    const c5 = cell('5');
+    const summary = [
+      ['1. ' + info('1').title, c1.right, c1.opened, c1.median_opened, c1.calls, c1.cost, c1.runs],
+      ['openJiuwen with box v2, development', s.right, s.opened, s.median_opened, s.calls, s.cost, s.runs],
+      ['5. ' + info('5').title, c5.right, c5.opened, c5.median_opened, c5.calls, c5.cost, c5.runs],
+    ].map((r) => '<tr><td><b>' + esc(r[0]) + '</b></td><td class="num">' + r[1] + ' of ' + r[6] +
+      '</td><td class="num">' + r[2] + ' of ' + r[6] + '</td><td class="num">' + r[3] + '</td><td class="num">' +
+      Math.round(r[4]) + '</td><td class="num">' + money(r[5]) + '</td></tr>').join('');
+    const perQ = D.per_question.map((q) => '<tr><td><b>' + esc(q.task.replace('apparel-', '')) +
+      '</b></td><td class="mono">' + esc(q.batch) + '</td><td>' + (q.key === 'own' ? 'the key fixed before the runs' :
+        'the "' + esc(q.key) + '" reading') + '</td><td class="num">' + q.correct + ' of ' + q.of +
+      '</td><td class="num">' + q.covered + ' of ' + q.of + '</td><td class="mono">' + esc(q.opened.join(', ')) +
+      '</td></tr>').join('');
+    const tests = D.tests.map((t) => '<tr><td><b>box vs ' + esc(t.b) + '</b><span class="sub">' +
+      esc(info(t.b).title) + '</span></td><td>' + (t.reading === 'menu' ? 'answer key' : '"can sell now"') +
+      '</td><td>' + (t.measure === 'opened' ? 'opened what it needs' : 'correct') + '</td><td>' + esc(t.text) +
+      '</td><td class="num">' + pfmt(t.p_question) + '</td><td class="num">' + pfmt(t.p_pooled) + '</td><td>' +
+      strength(t.p_question) + '</td></tr>').join('');
+    const errors = D.errors.map((k) => '<tr><td>' + esc(k[0]) + '</td><td class="num">' + k[1].length +
+      '</td><td class="mono">' + esc(k[1].join(', ')) + '</td></tr>').join('');
+    const did = (r) => {
+      if (r.did === 'asked') return 'asked the user, no agent ran<span class="sub">' + esc(r.ask) + '</span>';
+      if (r.did === 'refused') return 'refused, no agent ran<span class="sub">' + esc(r.refuse) + '</span>';
+      if (r.did === 'bypassed') return 'bypassed: no shopping shape, the question went to the agent unchanged';
+      if (r.did === 'fallback') return 'fell back to the survey plan<span class="sub">plan ' + esc(r.plan) + '</span>';
+      return 'planned <code>' + esc(r.plan) + '</code>' + (r.reading ? '<span class="sub">asked which reading, the scripted user said "' +
+        esc(r.reading) + '"</span>' : '');
+    };
+    const verdict = (r) => {
+      const chip = r.verdict === 'correct' ? 'good' : r.verdict === 'wrong' ? 'bad' : '';
+      return '<span class="chip ' + chip + '">' + esc(r.verdict) + '</span><span class="sub">' + esc(r.why || '') + '</span>';
+    };
+    const fresh = DR.rows.filter((r) => r.batch === DR.batches[1]);
+    const newRows = fresh.map((r) => '<tr><td><b>' + esc(r.short) + '</b><span class="sub">' + esc(r.question) +
+      '</span></td><td>' + (r.answer_key ? esc(r.answer_key) : '<span class="sub">no key</span>') + '</td><td>' + did(r) +
+      '</td><td>' + verdict(r) + '</td><td class="num">' + (r.opened == null ? '' : r.opened +
+        (r.floor ? ' <span class="sub">needs ' + r.floor + '</span>' : '')) + '</td><td class="num">' +
+      (r.tool_calls == null ? '' : r.tool_calls) + '</td><td class="num">' + money(r.cost) + '</td></tr>').join('');
+    const cost = DR.cost.map((c) => '<tr><td class="mono">' + esc(c.batch) + '</td><td class="num">' +
+      money(c.charges, 4) + '</td><td class="num">' + (c.moved == null ? '' : money(c.moved, 4)) + '</td><td>' +
+      (c.lags ? 'the last run\'s own reading, taken before its final charge settled' : 'to the next batch\'s first reading') +
+      '</td></tr>').join('') + '<tr><td><b>All three</b></td><td class="num">' + money(DR.charges, 4) + '</td><td class="num">' +
+      (DR.moved == null ? '' : money(DR.moved, 4)) + '</td><td>from ' + money(DR.account_before, 4) + ' used before the first run to ' +
+      money(DR.account_after, 4) + ' at the last run\'s reading</td></tr>';
+    const conditions = DR.batches.map((b) => {
+      const c = DR.conditions[b];
+      return '<tr><td class="mono">' + esc(b) + '</td><td>' + esc(c.reading) + '</td><td class="num">' + c.repeats +
+        '</td><td>box v' + c.box_version + ', form v' + c.form_version + ', primitives v' + c.primitives_version +
+        ', scorer v' + c.scorer_version + '</td><td class="mono">' + esc(c.browser_tool) + ', ' + esc(c.browser_origins) +
+        (c.browser_flags ? ', ' + esc(c.browser_flags) : ', no service worker block') + '</td><td>' + esc(c.policy) + '</td><td>' +
+        (c.rescored.length ? c.rescored.map((x) => esc(x.on) + ': ' + esc(x.reason)).join('; ') : 'none') + '</td></tr>';
+    }).join('');
+    const answers = DR.rows.map((r) => '<p><b>' + esc(r.batch) + ' ' + esc(r.short) + '-' + r.repeat + '</b> ' +
+      verdict(r) + '<br>' + esc(r.did === 'asked' ? r.ask : r.did === 'refused' ? r.refuse : r.answer || '(no answer)') + '</p>').join('');
+    const check = D.check;
+    el.innerHTML =
+      '<h4>On the five questions cells 1 and 5 asked, under the key fixed before the runs</h4>' +
+      '<div class="table-wrap"><table><thead><tr><th>Arm</th><th class="num">Correct</th><th class="num">Opened what it needs</th>' +
+      '<th class="num">Median listings opened</th><th class="num">Tool calls a run</th><th class="num">Cost a run</th></tr></thead><tbody>' +
+      summary + '</tbody></table></div>' +
+      '<p class="note">The box row is ' + s.runs + ' runs on ' + s.questions.length + ' questions, three repeats each, from batch <code>' +
+      esc(DR.batches[0]) + '</code>. Cells 1 and 5 are the same questions on the same market. <code>make facts</code>, section H.</p>' +
+      '<h4>Each question, every batch</h4>' +
+      '<div class="table-wrap"><table><thead><tr><th>Question</th><th>Batch</th><th>Scored under</th><th class="num">Correct</th>' +
+      '<th class="num">Opened what it needs</th><th>Listings opened, run by run</th></tr></thead><tbody>' + perQ + '</tbody></table></div>' +
+      '<h4>Tests against cells 1 and 5, on the shared questions only</h4>' +
+      '<div class="table-wrap"><table><thead><tr><th>Comparison</th><th>Reading of "offer"</th><th>Measure</th><th>Counts</th>' +
+      '<th class="num">p, by question</th><th class="num">p, pooled</th><th></th></tr></thead><tbody>' + tests + '</tbody></table></div>' +
+      '<p class="note">Two sided exact tests, within each question first. In sample: a small p here says the box did better than the shipped agent on the market it was tuned on, and nothing about any other market.</p>' +
+      '<h4>The ten new questions, one run each</h4>' +
+      '<p class="note">Batch <code>' + esc(DR.batches[1]) + '</code>. The box decided what to do with each before any agent ran: ' +
+      F['dev.new.ran'] + ' of ' + fresh.length + ' reached the agent. "Needs" is the question\'s own coverage floor, from <code>verify_cells.own_floor</code>.</p>' +
+      '<div class="table-wrap"><table><thead><tr><th>Question</th><th>Answer key</th><th>What the box did</th><th>Verdict</th>' +
+      '<th class="num">Listings opened</th><th class="num">Tool calls</th><th class="num">Cost</th></tr></thead><tbody>' + newRows + '</tbody></table></div>' +
+      '<h4>What went wrong, by written rule</h4>' +
+      '<div class="table-wrap"><table><thead><tr><th>Kind of error</th><th class="num">Runs</th><th>Which</th></tr></thead><tbody>' +
+      (errors || '<tr><td colspan="3">none</td></tr>') + '</tbody></table></div>' +
+      '<h4>The box\'s own answer check, replayed over the stored runs</h4>' +
+      '<p class="note">The batches ran with the check off. Replayed from the logs today (<code>replay_box.py</code>): ' + check.runs +
+      ' runs, the stored text reproduced from the record for ' + check.text_reproduced + ', decided the same today for ' + check.same_today +
+      '. Of the ' + check.wrong + ' wrong answers it refuses ' + check.wrong_refused.length + '. Of the ' + check.other +
+      ' others it refuses ' + check.other_refused.length + (check.other_refused.length ? ' (' + esc(check.other_refused.join(', ')) + ')' : '') +
+      (check.decided_differently_today.length ? '. Decided differently today: ' + esc(check.decided_differently_today.join(', ')) : '') + '.</p>' +
+      '<h4>Cost, the provider\'s charge per call summed, against the account</h4>' +
+      '<div class="table-wrap"><table><thead><tr><th>Batch</th><th class="num">Charges</th><th class="num">Account moved</th><th>How measured</th></tr></thead><tbody>' +
+      cost + '</tbody></table></div>' +
+      '<h4>Conditions, as each batch recorded them</h4>' +
+      '<div class="table-wrap"><table><thead><tr><th>Batch</th><th>Reading given</th><th class="num">Repeats</th><th>Versions</th>' +
+      '<th>Browser</th><th>Refusal check</th><th>Re-scored</th></tr></thead><tbody>' + conditions + '</tbody></table></div>' +
+      '<details><summary>Every answer, in full, all ' + DR.rows.length + ' rows</summary><div class="prose">' + answers + '</div></details>';
   };
 
   R.waterTable = (el) => {

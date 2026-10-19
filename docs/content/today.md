@@ -159,9 +159,44 @@ price" and was refused by the fifth property, which is the property doing its jo
 Calderwood cheapest question (the model chose "advertised price", the rules "price": the rules
 are right). In sample for the rules, which were written on these 37 questions.
 
+## The development batches ran, 21:31 to 22:28
+
+Added on 20 October, after the verifier passed the three batches. The student said yes to a
+smaller split than the $13.65 proposed above: the six old questions three times under the
+"menu" reading, declared $6. The ten new questions once, declared $3. The two "offer"
+questions three times under the "buyable" reading, declared $2. All three at commit `d3725ce`,
+box v6, the verifier's stamp of 21:30. Charged $4.0702, $2.1899 and $0.7037, from `make verify
+BATCH=experiments/results/20261014T213118`, `...T220116` and `...T222007`.
+
+*In plain words.* On the five questions the earlier cells asked, the box got 13 of 15 right,
+opened about half the listings, and cost half of opening everything. It asked back on the
+ambiguous questions every time and refused the one the shop cannot answer. Three answers were
+wrong, all from the agent's reading rather than the plan's coverage, and one fallback plan
+spent $0.80 looking for softness, which no page shows.
+
+*Method.* The figures are `make facts`, section H, on the runs for the questions cells 1 and 5
+asked, scored under the key fixed before any run, with two sided exact tests within each
+question. In sample on the market the box was designed on, so no claim.
+
+| Arm, the five shared questions | Correct | Opened what it needs | Median opened | Tool calls | Cost a run |
+| --- | --- | --- | --- | --- | --- |
+| Cell 1, as shipped | 4 of 15 | 3 of 15 | 4 | 23 | $0.176 |
+| Box v2, development | 13 of 15 | 14 of 15 | 8 | 29 | $0.258 |
+| Cell 5, told to open everything | 11 of 15 | 15 of 15 | 15 | 57 | $0.524 |
+
+Box against cell 1: p = 0.00155 correct, 0.00034 opened what it needs, by question. Against
+cell 5: p = 0.63 and 1.0. The ten new questions: four correct (exists under $27 and under $25,
+the named pair, cheapest XL, opening 8, 7, 2 and 3 listings), the top-3 wrong (12 opened, two
+sellers that cannot sell M ranked at their advertised prices), delivery refused and "a cheap
+tee" asked back at $0, the softest tee's fallback plan opened all 15 for $0.796 and gave no
+answer, and the two bypassed questions cost $0.013 and $0.009 with every navigation off the
+shop blocked. The two "offer" questions under the buyable reading: 6 of 6 correct against that
+reading's key, $0.7037. The whole record, every answer included, is on the Results page.
+
 ## What is not yet done, in plain terms
 
-- The box has had one pilot of two runs. Every other figure about it is a prediction or a replay.
+- The box has had its pilot and its development batches, all on Thornwood. Nothing about it is
+  measured on a market it was not tuned on.
 - The raw logs still live only on this laptop.
-- The fresh clothing market is not generated. It is tomorrow's first task after the freeze.
+- The fresh clothing market is not generated. Box v9 is frozen for it on 20 October.
 - The September pooling scripts still print their pooled row.

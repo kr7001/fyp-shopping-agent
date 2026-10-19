@@ -118,7 +118,7 @@ FIXTURES = [
             "out or buyable. Seed 203 was the one that rendered the answer outside the first "
             "row of results (env/pick_apparel_market.py).",
      "command": "python3 env/generate_apparel.py --seed 203",
-     "tasks": ["tasks_apparel.json"], "generator": "env/generate_apparel.py"},
+     "tasks": ["tasks_apparel.json", "tasks_apparel_v2.json"], "generator": "env/generate_apparel.py"},
 ]
 
 TASK_FILES = {
@@ -128,6 +128,9 @@ TASK_FILES = {
     "tasks_heldout_gated.json": "tasks_heldout.json's questions, asked through the gated "
                                 "theme. Same answers, one changed condition.",
     "tasks_apparel.json": "Generated with the clothing market by env/generate_apparel.py.",
+    "tasks_apparel_v2.json": "The six clothing questions unchanged, plus ten for the forms box "
+                             "v2 adds, every key computed from the fixture by "
+                             "env/generate_apparel_v2_tasks.py. Run once, on 14 October.",
     "tasks_reviews.json": "Generated from the shop's own review table by "
                           "env/generate_review_tasks.py. Never run yet.",
 }
@@ -343,6 +346,12 @@ def describe_answer(expect: dict) -> str:
     if kind == "contains":
         price = f" at ${expect['price']:.2f}" if expect.get("price") is not None else ""
         return " or ".join(expect["any"]) + price
+    if kind == "ranked":
+        return ", then ".join(
+            " or ".join(item["any"])
+            + (f" at ${item['price']:.2f}" if item.get("price") is not None else "")
+            + (" (may be left out)" if item.get("optional") else "")
+            for item in expect["items"])
     return json.dumps(expect)
 
 
@@ -502,6 +511,85 @@ def pilot() -> list[dict]:
     return rows
 
 
+def development() -> dict:
+    """The box v2 development batches of 14 October 2026, run by run, from each batch's
+    suite.json and run records: what the box did with each question (planned, asked,
+    refused, bypassed or fell back), the verdict under the current scorer, what the run
+    opened and cost, and the agent's answer in full. The cell's figures and its tests
+    against cells 1 and 5 are in clothing.development (cell_facts, section H); this is the
+    record behind them, the ten new questions included, which have no cell to be set
+    against. In-sample on Thornwood, so no claim (LESSONS 19).
+
+    The cost cross-check follows section G's rule: the account's reading at the start of
+    the next batch, and for the last batch its own last reading, which lags the final
+    charges, so the live account is the closing check."""
+    name, batches = next(iter(compare_cells.DEVELOPMENT.items()))
+    spec = json.loads((paths.TASKS / "tasks_apparel_v2.json").read_text())
+    base = spec.get("base_url") or "http://localhost:7770"
+    tasks = {t["id"]: t for t in spec["tasks"]}
+    rows, cost, conditions = [], [], {}
+    for batch in batches:
+        folder = paths.RESULTS / batch
+        suite = json.loads((folder / "suite.json").read_text())
+        conditions[batch] = {k: suite.get(k) for k in (
+            "ran_at", "repeats", "reading", "policy", "box_version", "form_version",
+            "primitives_version", "scorer_version", "browser_tool", "browser_origins",
+            "browser_flags", "agent_core_commit", "agent_core_patch", "model")}
+        conditions[batch]["rescored"] = suite.get("rescored") or []
+        with contextlib.redirect_stdout(io.StringIO()):
+            runs = {(r["task"], r["repeat"]): r for r in compare_cells.load_batch(batch)}
+        for row in suite["rows"]:
+            record = row.get("box") or {}
+            task = tasks[row["task"]]
+            query = task["query"].format(base=base)
+            did = ("asked" if row["verdict"] == "asked" else "refused" if row["verdict"] == "refused"
+                   else "bypassed" if record.get("bypassed") else "fallback" if record.get("fallback")
+                   else "planned")
+            run = runs.get((row["task"], row["repeat"]))
+            rows.append({
+                "batch": batch, "task": row["task"], "short": row["task"].replace("apparel-", ""),
+                "repeat": row["repeat"], "question": query.split(" . ", 1)[-1],
+                "gated": bool(task.get("gated")), "kind": task["expect"]["kind"],
+                "answer_key": describe_answer(task["expect"]) if task["expect"]["kind"] != "none" else "",
+                "did": did, "plan": record.get("kind"), "ask": record.get("ask") or "",
+                "refuse": record.get("refuse") or "",
+                "reading": row.get("reading"),
+                "scored_under": (run or {}).get("scored_under"),
+                "verdict": run["rescored"] if run else row["verdict"],
+                "why": run["why"] if run else row.get("why"),
+                "opened": run["opened"] if run else None,
+                "covered": run["covered"] if run else None,
+                "floor": run["floor"] if run else None,
+                "tool_calls": run["tool_calls"] if run else None,
+                "cost": run["cost"] if run else 0,
+                "elapsed_s": run["elapsed_s"] if run else 0,
+                "longest_silence_s": run["longest_silence_s"] if run else None,
+                "answer": (run["answer"] if run else row.get("answer")) or "",
+            })
+    # Cost against the account, section G's rule.
+    first, last, charges = {}, {}, {}
+    for batch in batches:
+        records = [json.loads(p.read_text()) for p in (paths.RESULTS / batch).glob("*.json")
+                   if p.name != "suite.json"]
+        befores = [r["spend_before_usd"] for r in records if r.get("spend_before_usd")]
+        afters = [r["spend_after_usd"] for r in records if r.get("spend_after_usd")]
+        first[batch] = min(befores) if befores else None
+        last[batch] = max(afters) if afters else None
+        charges[batch] = sum(r.get("cost_usd") or 0 for r in records)
+    for i, batch in enumerate(batches):
+        if i + 1 < len(batches):
+            nxt, lags = first[batches[i + 1]], False
+        else:
+            nxt, lags = last[batch], True
+        moved = (nxt - first[batch]) if nxt is not None and first[batch] is not None else None
+        cost.append({"batch": batch, "charges": charges[batch], "moved": moved, "lags": lags})
+    return {"name": name, "batches": batches, "conditions": conditions, "rows": rows,
+            "cost": cost, "charges": sum(charges.values()),
+            "account_before": first[batches[0]], "account_after": last[batches[-1]],
+            "moved": ((last[batches[-1]] - first[batches[0]])
+                      if last[batches[-1]] is not None and first[batches[0]] is not None else None)}
+
+
 def census() -> dict:
     """The model's forms against the rules', from the probe's own file."""
     data = json.loads((paths.RESULTS / CENSUS_FILE).read_text())
@@ -637,10 +725,23 @@ def week_start(title: str) -> str | None:
 
 # ---------------------------------------------------------------------------------- the build
 
+def budget(dev: dict) -> dict:
+    """What is left on the key: the account's reading stored with the last paid run, when
+    the records carry one, else the figure quoted from the decision log. The stored reading
+    is taken before that run's own charge settles, so it is a lower bound on the spend."""
+    if dev.get("account_after") is None:
+        return BUDGET
+    return {"left": round(BUDGET["of"] - dev["account_after"], 2), "of": BUDGET["of"],
+            "on": f"{dev['batches'][-1][:4]}-{dev['batches'][-1][4:6]}-{dev['batches'][-1][6:8]}",
+            "source": f"the account reading stored with the last run of {dev['batches'][-1]}, "
+                      "which lags that run's own charge"}
+
+
 def build() -> dict:
     weeks = content("weeks")
     for section in weeks["sections"]:
         section["monday"] = week_start(section["title"])
+    dev = development()
     return {
         "objective": objective(),
         "clothing": clothing(),
@@ -661,8 +762,9 @@ def build() -> dict:
                   "regression_questions": len(planner.questions()),
                   "versions": {"targeting": targeting.VERSION, "planner": planner.VERSION}},
         "code": code(),
-        "budget": BUDGET,
+        "budget": budget(dev),
         "pilot": pilot(),
+        "development": dev,
         "census": census(),
         "patterns": patterns(),
         "market": market(),

@@ -17,18 +17,19 @@ pass, a declared cost, the laptop kept awake, and your yes.
 
 ## Week 2, 16 to 22 October: first measurement, then a fresh market
 
-- **A small paid test on Thornwood.** Box runs only, since cells 1 and 5 already measured the same questions on the same market. This is development: Thornwood is in sample for the box, so nothing here is a claim
-- **Fix what it shows, then freeze the box** at a version number
-- **Generate a fresh clothing market** with a new seed, after the freeze, so the box was never tuned on it. Seed it, verify it in a real browser, and write its question file with every reading of "offer" stated before any run
+- **A small paid test on Thornwood.** **Done on 14 October**, ahead of the week: three batches, 32 agent runs, $6.96 charged against $11 declared, verified on 20 October. Box runs only, since cells 1 and 5 already measured the same questions on the same market. Development: Thornwood is in sample for the box, so nothing there is a claim. The record is on the Results page
+- **Fix what it shows, then freeze the box** at a version number. **Done on 20 October**: box v7 to v9 from the verifier's findings, frozen at box v9, form v8, primitives v5, scorer v3, rules v4, 254 tests
+- **Generate a fresh clothing market** with a new seed, after the freeze, so the box was never tuned on it. Seed it, verify it in a real browser, and write its question file with every reading of "offer" stated before any run. Keep four sizes, or first extend the menu reader's excerpt rule, which was validated on four size menus only (Problems page)
 - **Point `verify_cells.py` at each batch's own market**, so the claim run is not scored against Thornwood's answers
+- **Strategy v8**, the one false sentence reworded, so the claim's arms share one text
 - *Done when:* the box version is frozen, the new market is seeded and verified, and the verifier has passed the claim run's plan
 
 ## Week 3, 23 to 29 October: the claim run, verified
 
-- **The claim run on the fresh market:** openJiuwen as shipped, openJiuwen told to open everything, and openJiuwen with the box, on the same questions, three repeats each
-- **Verify the outputs:** every answer read in full, the suspended run rule, cost against the account
+- **The claim run on the fresh market:** openJiuwen as shipped, openJiuwen told to open everything, and openJiuwen with the box, on the same questions, three repeats each, compared per question with the stratified exact test. The top-k question goes in only if its ranked answer rule is written and tested first, else it is left out and stated as a limit
+- **Verify the outputs:** every answer read in full, the suspended run rule, cost against the account, the menu reader validated against the new fixture
 - **Insights:** findings with the command that reproduces each, and the site rebuilt
-- **Stretch, only if time and budget allow:** the box in front of the second agent, or the review questions
+- **Stretch, only if time and budget allow:** the review questions through the depth primitive, which need the box to read a listing page first, or the box in front of the second agent, which needs that agent's browser confined to the shop first
 - *Done when:* the results are verified and on the site, and the code is tagged as the version the report describes. Product and code are locked on 29 October
 
 ## Week 4, 30 October to 5 November: the report

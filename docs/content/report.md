@@ -67,19 +67,61 @@ The agent followed the plan: it opened exactly the eight listings advertised at 
 winning price and skipped the other seven. One run per question, on the market the box was
 designed on.
 
-[Table: cell 1, cell 5 and the box on all five gated questions, if the development batch runs:
-correct under the key, opened what it needs, median listings opened, tool calls a run, cost a
-run. From `make facts` after the batch is verified.]
+**The development batches, 14 October, 21:31 to 22:28.** Three commands at commit `d3725ce`, box v6, stamped by the verifier at 21:30 and declared $6, $3 and $2. Charged $4.0702, $2.1899 and $0.7037 (`make verify BATCH=experiments/results/20261014T213118`, `...T220116`, `...T222007`, each read in full, no silence over 60 seconds, every listing count re-derived from the log). The verifier passed the three batches on 20 October. Every figure below is from `make facts`, section H, or `make verify` on the batch named. The caption for all of it: **Thornwood is the market the box's rules were written on, and the rules were corrected again from these runs' failures on 20 October, so this is development, in sample, and not the claim.**
 
-[The ambiguous questions under each reading: asked, then correct against that reading's key.]
+*In plain words, for the student.* On the five questions the earlier cells asked, the box got 13 of 15 right where the shipped agent got 4 and open everything got 11. It opened about half the listings open everything opens, and cost half as much. Two of its three wrong answers were the agent reading a price it had not revealed and testing for a word instead of reading the menu. The box asked back on both "offer" questions every time, asked for a figure on "a cheap tee", and refused "delivers fastest" without spending anything.
 
-[Tests by question against cell 1 and cell 5, p by question.]
+*Method and limits, for the supervisor.* 15 runs on 5 questions, three repeats each, all of which differ in tokens and cost. Scored under the key fixed before any run. Two sided exact tests within each question, then combined. Against cells 1 and 5 on the same questions, the same market, the same model and the same browser. In sample for the box, so a small p says only that the pipeline does what it was built to do on this market.
 
-[What went wrong, run by run, from section D of `make facts`.]
+| Arm, the five shared questions | Correct | Opened what it needs | Median listings opened | Tool calls a run | Cost a run |
+| --- | --- | --- | --- | --- | --- |
+| Cell 1, openJiuwen as shipped | 4 of 15 | 3 of 15 | 4 | 23 | $0.176 |
+| Box v2, development, batch `20261014T213118` | 13 of 15 | 14 of 15 | 8 | 29 | $0.258 |
+| Cell 5, openJiuwen told to open everything | 11 of 15 | 15 of 15 | 15 | 57 | $0.524 |
 
-[Cost: the batch's charges against the account.]
+The control question, answerable from the results page, 3 of 3. Per question, correct and opened what it needs, of 3: target-price 3 and 3 (8 opened each time), cheapest-target 2 and 2 (6, 8, 8 opened), all-stocked 3 and 3 (1 opened), count-stocked 3 and 3 (15), count-buyable 2 and 3 (15).
 
-This is development: the box was designed on this market, so these are not the claim.
+| Test, by question | Counts | p, by question | p, pooled |
+| --- | --- | --- | --- |
+| Box against cell 1, correct | 13 of 15 against 4 of 15 | 0.00155 | 0.00251 |
+| Box against cell 1, opened what it needs | 14 of 15 against 3 of 15 | 0.00034 | 0.00012 |
+| Box against cell 5, correct | 13 of 15 against 11 of 15 | 0.63 | 0.65134 |
+| Box against cell 5, opened what it needs | 14 of 15 against 15 of 15 | 1.0 | 1.0 |
+
+Under the other reading of "offer" (the two count questions re-keyed), correct is 10 of 15 against cell 1's 5 (p = 0.099) and cell 5's 14 (p = 0.14): the box's runs answered the reading the scripted user gave, so under the other key they are wrong, as they should be.
+
+**The ambiguous questions under each reading.** The box asked on "does every listing offer size M" and "how many listings offer size M" in all 12 of their slots, before any agent ran. With the scripted user answering "menu", 3 of 3 and 3 of 3 correct against the menu key (batch `20261014T213118`). Answering "buyable", 3 of 3 and 3 of 3 against the buyable key, $0.7037 for the six (batch `20261014T222007`). "Is there a cheap Thornwood tee in size M" was asked back for a figure and nothing ran, $0. "Which seller delivers fastest" was refused, with what the shop does show, $0.
+
+**The ten new questions, one run each, batch `20261014T220116`** (`make verify BATCH=experiments/results/20261014T220116 --answers`):
+
+| Question | What the box did | Outcome | Listings opened, needed | Tool calls | Cost |
+| --- | --- | --- | --- | --- | --- |
+| Any listing with M buyable under $27 | witness plan, cheapest first | correct: yes, Alderney at $25.77 | 8, needs the witness | 26 | $0.300 |
+| Any listing with M buyable under $25 | witness plan | correct: no, after the 7 advertised under $25 | 7, needs 7 | 36 | $0.287 |
+| The three cheapest sellers for M | top-k bound and prune | **wrong**: Alderney, then Oakhurst and Lymington, two sellers that cannot sell M, at their advertised prices | 12, needs 12 | 45 | $0.429 |
+| Copperfield or Elmsworth, cheaper for M | lookup of the two | correct: Elmsworth $28.96, Copperfield $29.66 | 2, needs 2 | 20 | $0.103 |
+| Cheapest seller for XL | bound and prune on XL | correct: Ivybridge $18.08 | 3, needs 3 | 24 | $0.254 |
+| Delivers fastest | refused: the shop does not show delivery | no run | | | $0 |
+| A cheap tee, no figure | asked for a limit | no run | | | $0 |
+| The softest tee | fell back to the survey plan | no answer: "no softness attribute on any of the 15 pages", unscored | 15 | 95 | $0.796 |
+| A four line poem about shoes | bypassed, question unchanged | wrote the poem into a `data:` page it composed, unscored | 0 | 6 | $0.013 |
+| The capital of Portugal | bypassed | answered Lisbon from the model, and its 6 navigations to google, bing and wikipedia were blocked (`net::ERR_BLOCKED_BY_CLIENT`), unscored | 0 | 4 | $0.009 |
+
+**What went wrong, run by run**, by the written rules in `cell_facts.error_kinds` (`make facts`, section H):
+
+| Run | Kinds | What the answer said |
+| --- | --- | --- |
+| cheapest-target-1 | did not open what the answer needs, and read the price before the page revealed it | Copperfield at $23.40, its advertised price, after 6 of the 8 listings its bound required |
+| count-buyable-2 | tested for the word "disabled" on 12 of 15 listings and never read the menu, so an absent size counted as available | 10, where 5 is right |
+| top-3-1 | named a seller that cannot sell M | Oakhurst and Lymington ranked second and third at their advertised prices |
+
+The box's own answer check was off in these batches. Replayed from the logs (`python3 experiments/analysis/replay_box.py experiments/results/20261014T213118 experiments/results/20261014T220116 experiments/results/20261014T222007 --rows`): 32 runs, the stored text reproduced from each record, it refuses 0 of the 3 wrong answers and 1 of the 29 others (`20261014T222007/apparel-all-stocked-1`, whose only view of its counterexample's menu was a cut excerpt). The misread advertised price in cheapest-target-1 is invisible to any check that reads only the page, as the 14 October replay over cell 1 had already shown for one run.
+
+**Cost.** Charges $6.9638 for the three batches against $11 declared. The account reading stored with the runs moved from $57.2861 before the first to $64.1931 at the last, $6.9071, with that last reading taken before the final run's own charge settled (Results page, the development block's cost table). Cell 5 cost $0.524 a run on the same five questions, the box $0.258.
+
+**What it means for the box.** The bound did its work on the price questions (8 opened where 15 is everything, and the right 8), the ambiguity rule asked where it should and nowhere else, and the fifth property refused the one question the shop cannot answer. The three failures are the agent's reading, not the plan's coverage, and they are what box v7 to v9 answer on 20 October: a count run must read the menu, a ranked answer's every seller must have been seen with the size chosen, and the box's check now reads the menus from the log.
+
+Next, in the objective's order: freeze (done, box v9), generate the fresh clothing market and verify it in a browser, then the claim run.
 
 ## 4a. Box v2, the strategist
 
@@ -180,7 +222,9 @@ contribution unless a pull request is merged (project rule).
 
 ## 5. What did not work, and limits
 
-In the pilot nothing failed, with two runs that proves little. What the day's checks found: the model parser omits the listing's URL and misnames the population, both prompt fixes, and invented one attribute, which the fifth property caught; v2's stricter "does every" check would have refused 5 of 14 correct bare "No" answers in the old cells, a trade accepted because the box's own text tells the agent to name the counterexample; the bound texts say "at or above" where the check counted "at or below", harmless on this market and fixed for a market with a tie; and the first ambiguity rule fired on two price questions before it was tightened. No paid run of v2 exists yet.
+In the pilot nothing failed, with two runs that proves little. What the day's checks found: the model parser omits the listing's URL and misnames the population, both prompt fixes, and invented one attribute, which the fifth property caught; v2's stricter "does every" check would have refused 5 of 14 correct bare "No" answers in the old cells, a trade accepted because the box's own text tells the agent to name the counterexample; the bound texts say "at or above" where the check counted "at or below", harmless on this market and fixed for a market with a tie; and the first ambiguity rule fired on two price questions before it was tightened.
+
+In the development batches (section 4), three runs of 26 were wrong, and the fallback plan spent $0.796 and 95 tool calls opening every listing for an attribute no page shows. The check that would have refused the wrong answers was off, and replayed it refuses none of them. On 20 October the verifier's pass on the batches produced box v7 to v9: a bare "No" counts when the log shows a complete menu without the size, a question about an attribute the shop does not show is refused whatever the word, a keyless run that did not finish is unscored, and the listing counter no longer counts a category page (its fourth correction). The verifier then failed the new menu reader twice before accepting it, once for taking a search excerpt for a whole menu and once for taking a depth-cut snapshot for a menu with no sizes. Both are lessons 37 and 38.
 
 Standing limits: one market family, one model, our shop's 60 ms price reveal, the two agents'
 different sampling and clocks, the refusal check's one blind spot (a misread advertised price),
@@ -188,11 +232,17 @@ shipping cost and combined discounts out of scope.
 
 ## 6. Next week
 
-- Freeze box v1. Generate a fresh clothing market with a new seed, seed it, verify it in a
-  browser, write its question file with both readings stated before any run.
-- The claim run: shipped, open everything, and the box, on the fresh market, 3 repeats.
-- Then the review questions, which gate by depth and have never run.
+- Box v9 is frozen (20 October). Generate a fresh clothing market with a new seed, seed it,
+  verify it in a browser, write its question file with both readings stated before any run.
+  Keep four sizes, or first extend the menu reader's excerpt rule, which was validated on a
+  four size menu only.
+- The claim run: shipped, open everything, and the box, on the fresh market, 3 repeats,
+  tested per question. `verify_cells.py` must take the fixture from the batch's own question
+  file first.
+- Then the review questions, which gate by depth and have never run, the top-k and ranked
+  answer limit the top-3 run showed, and the second agent's confinement before any bypassed
+  question runs under it.
 
 ## 7. Spend
 
-Before today $56.61 of the $100 key used. Today the pilot $0.61 and the census parse $0.07, both matched by the provider's charges. $42.71 left, read from the account on 14 October.
+Before 14 October $56.61 of the $100 key used. On 14 October the pilot $0.61 and the census parse $0.07, then the three development batches $4.0702, $2.1899 and $0.7037 (`make verify` on each batch), $6.9638 against $11 declared. The account reading stored with the last run says $64.19 used, taken before that run's own charge settled (the Results page's development block). Nothing was spent on 20 October.

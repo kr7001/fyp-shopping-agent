@@ -75,6 +75,7 @@
       <div class="stat"><b><span data-f="c1.opened"></span> to <span data-f="c2.opened"></span></b><span>runs of 15 that opened every listing the answer needs, before and after one default changed</span></div>
       <div class="stat"><b><span data-f="c1.right"></span> to <span data-f="c2.right"></span></b><span>correct answers of 15, the same change</span></div>
       <div class="stat"><b><span data-f="ratio51"></span>×</b><span>the cost per run when the agent is told to open everything</span></div>
+      <div class="stat"><b><span data-f="dev.right"></span> of <span data-f="dev.in.runs"></span></b><span>correct with box v2 at <span data-f="dev.cost"></span> a run, on the market it was tuned on. In sample, not the claim</span></div>
     </div>
   </div>
 
@@ -97,6 +98,7 @@
       <li><strong>Opening everything works, and it costs.</strong> Told to open every listing, the shipped agent got <span data-f="c5.right"></span> of 15 right at <span data-f="c5.cost"></span> a run, <span data-f="ratio51"></span> times the shipped agent's <span data-f="c1.cost"></span>.</li>
       <li><strong>Once everything is opened, the errors change kind.</strong> In the two cells that opened everything, <span data-f="err25.unopened"></span> of the <span data-f="err25.wrong"></span> wrong answers left a listing unopened. <span data-f="err25.offer"></span> read "offer" as "can sell it now", <span data-f="err25.steps"></span> ran out of steps, and <span data-f="err25.reveal"></span> read a price before the page revealed it.</li>
       <li><strong>The goal now:</strong> openJiuwen with the box should be as accurate as opening everything, cost less, and ask back on the ambiguous questions instead of guessing, on a market the box was never tuned on.</li>
+      <li><strong>The box works on the market it was built on, which proves the pipeline and not the claim.</strong> On 14 October box v2 ran the same five questions on Thornwood: <span data-f="dev.right"></span> of <span data-f="dev.in.runs"></span> correct, <span data-f="dev.opened"></span> opened what the answer needs, a median of <span data-f="dev.median"></span> listings opened at <span data-f="dev.cost"></span> a run, where opening everything got <span data-f="c5.right"></span> at <span data-f="c5.cost"></span>. It also asked back on both ambiguous questions and refused the one about delivery, which the shop does not show. In sample: the rules were written on this market and have since been corrected from these runs. See the Results page.</li>
     </ol>
   </div>
 
@@ -135,7 +137,7 @@
       <tbody>
         <tr><td><b>RQ1.</b> How often does gating occur in a realistic shopping environment, and in what forms?</td><td>Forms catalogued by hand on three live marketplaces. Two are built into the local shop: a size's price shown only once chosen, and stock shown only in the size menu. Reviews behind pagination are measured and their questions written, not yet run.</td></tr>
         <tr><td><b>RQ2.</b> When a task needs gated information, does the agent retrieve it, and does it say when it has not?</td><td>Measured. Often it does not retrieve it, and it never says so: none of 125 unmodified runs on the September markets abstained (decision log, 17 September). On clothing, the shipped agent opened what the answer needs in <span data-f="c1.opened"></span> of 15 runs.</td></tr>
-        <tr><td><b>RQ3.</b> Can a question-conditioned retrieval policy reach correct answers with fewer interactions than exhaustive exploration?</td><td><span class="chip warn">suggestive</span> On the September water markets, strategy text plus a refusal check matched "open everything" on accuracy for fewer actions and less money, held-out market included. Between 8 and 36 runs per arm, twelve on the held-out market, no test, and the refusal check read the market size from the answer key. Box v1 is the next test, on clothing.</td></tr>
+        <tr><td><b>RQ3.</b> Can a question-conditioned retrieval policy reach correct answers with fewer interactions than exhaustive exploration?</td><td><span class="chip warn">suggestive</span> On the September water markets, strategy text plus a refusal check matched "open everything" on accuracy for fewer actions and less money, held-out market included. Between 8 and 36 runs per arm, twelve on the held-out market, no test, and the refusal check read the market size from the answer key. On clothing, box v2's development cell (Results page, in sample) got <span data-f="dev.right"></span> of <span data-f="dev.in.runs"></span> right at <span data-f="dev.cost"></span> a run against open everything's <span data-f="c5.right"></span> at <span data-f="c5.cost"></span>, opening a median of <span data-f="dev.median"></span> listings instead of <span data-f="c5.median"></span>. The claim waits for the fresh clothing market.</td></tr>
       </tbody>
     </table></div>
     <p class="note">RQ3 is the contribution. RQ1 and RQ2 set the baseline it is measured against.</p>
@@ -274,7 +276,17 @@
       <li><span class="chip warn">suggestive</span> <strong>Telling the agent to open everything does as well as turning the limit off</strong>, <span data-f="c5.right"></span> against <span data-f="c2.right"></span>, p = <span data-f="p.correct.5v2"></span>. No difference was found, which is not the same as showing there is none. In <span data-f="window.c5"></span> of <span data-f="window.c5.of"></span> runs it turned the limit off itself.</li>
       <li><span class="chip warn">suggestive</span> <strong>The second agent opens more than shipped openJiuwen</strong>, p = <span data-f="p.opened.3v1"></span> on its distinct runs only.</li>
       <li><span class="chip warn">suggestive</span> <strong>The refusal check catches the coverage failures, but only with the answer key's help.</strong> Replayed over finished runs it refused <span data-f="refusal.c1.refused"></span> of the <span data-f="refusal.c1.wrong"></span> wrong answers in cell 1, exactly the runs that did not open what they needed, and <span data-f="refusal.right_refused"></span> of <span data-f="refusal.right"></span> correct answers across cells 1, 2 and 5. To do it, <code>policy.gate</code> reads two numbers from the answer key: how many listings the market has, and the fewest a sound answer must open. Without them it refuses none of the nine (checked 9 October). The market size alone, which the results page also shows, still refuses all nine, at the cost of refusing one correct answer in cell 2. Box v1 has to take what it needs from the page.</li>
+      <li><span class="chip">in sample, not a claim</span> <strong>Box v2 on Thornwood, the market it was designed on.</strong> On the five questions cells 1 and 5 asked, <span data-f="dev.right"></span> of <span data-f="dev.in.runs"></span> correct and <span data-f="dev.opened"></span> opened what the answer needs, a median of <span data-f="dev.median"></span> listings opened at <span data-f="dev.cost"></span> a run, against the shipped agent's <span data-f="c1.right"></span> correct (p = <span data-f="p.correct.dv1"></span> by question) and open everything's <span data-f="c5.right"></span> at <span data-f="c5.cost"></span> (p = <span data-f="p.correct.dv5"></span>). The box's rules were written and corrected on this market's failures (LESSONS 19), so the figures say the pipeline works and nothing about a market it has not seen. The block below holds the whole record.</li>
     </ul>
+  </div>
+
+  <div class="block" id="development">
+    <div class="head">
+      <h2>Box v2 on Thornwood, the development cell</h2>
+      <span class="chip">in sample, no claim</span>
+    </div>
+    <p class="note">Three batches on 14 October, <span data-f="dev.versions"></span> as recorded by each: the six clothing questions three times under the "menu" reading of "offer", the ten new questions once, and the two "offer" questions three times under the "can sell now" reading. <span data-f="dev.runs"></span> gated runs over <span data-f="dev.questions"></span> questions. Thornwood is the market the box's rules were written on, and the rules have since been corrected from these runs' failures (box v7 to v9, 20 October), so nothing here is held out. The claim needs the fresh clothing market. Figures from <code>make facts</code>, section H, and <code>make verify BATCH=experiments/results/&lt;batch&gt;</code>; the four cells above are untouched by this block.</p>
+    <div data-render="development"></div>
   </div>
 
   <div class="block">
@@ -582,7 +594,7 @@
         <div class="node ours"><b>Refusal check</b><span><code>policy.gate_from_page</code>: is the answer supported by what was opened, with the market size and the floor read from the page</span></div><div class="arrow"></div>
         <div class="node"><b>An answer, or a stated refusal</b><span>never a confident guess</span></div>
       </div>
-      <p class="note">Box v1, strategy v<span data-f="v.targeting"></span> and planner v<span data-f="v.planner"></span> are the current versions. None has had a paid run yet. <code>page.py</code>, <code>ambiguity.py</code>, <code>box.py</code>, <code>targeting.py</code> and <code>planner.py</code> never read a market file, an answer key, a manifest or <code>_instance</code>, and a unit test checks their code, with planted reads to prove it can fail. The older <code>policy.gate</code> still reads the answer key's numbers for the September replays, and the same test keeps any other file from joining it.</p>
+      <p class="note">Box v<span data-f="v.box"></span>, form v<span data-f="v.form"></span>, primitives v<span data-f="v.primitives"></span>, strategy v<span data-f="v.targeting"></span> and planner v<span data-f="v.planner"></span> are the current versions. Box v1 ran its two run pilot on 14 October, and box v2 its three development batches that evening (Results page, in sample); the versions since are the corrections made from those runs, and are frozen for the fresh market. <code>page.py</code>, <code>ambiguity.py</code>, <code>box.py</code>, <code>targeting.py</code> and <code>planner.py</code> never read a market file, an answer key, a manifest or <code>_instance</code>, and a unit test checks their code, with planted reads to prove it can fail. The older <code>policy.gate</code> still reads the answer key's numbers for the September replays, and the same test keeps any other file from joining it.</p>
     </div>
     <div class="block">
       <h2>The kinds of question it knows today</h2>
@@ -747,6 +759,20 @@ make compare</pre></div>
       <div class="step"><h3>Re-derive one batch and read every answer</h3>
         <div class="cmd"><pre>make verify BATCH=experiments/results/20261007T112057</pre></div>
       </div>
+      <div class="step"><h3>Re-derive the box's three development batches, and compare the cell</h3>
+        <div class="cmd"><pre>make verify BATCH=experiments/results/20261014T213118
+make verify BATCH=experiments/results/20261014T220116
+make verify BATCH=experiments/results/20261014T222007
+make compare</pre></div>
+        <p class="note">The last prints the development cell after the four cells, with its tests against cells 1 and 5 on the shared questions.</p>
+      </div>
+      <div class="step"><h3>Replay the box's own answer check, and validate the menu reader against the fixture</h3>
+        <div class="cmd"><pre>python3 experiments/analysis/replay_box.py experiments/results/20261014T213118 \
+    experiments/results/20261014T220116 experiments/results/20261014T222007 --rows
+python3 experiments/analysis/replay_box.py experiments/results/20261014T213118 \
+    experiments/results/20261014T220116 experiments/results/20261014T222007 --menus | tail -1</pre></div>
+        <p class="note">The first rebuilds each run's plan from its record and judges the stored answer against its log, as the live check would. The second sets every size menu the reader found against the fixture, which the box itself never reads.</p>
+      </div>
       <div class="step"><h3>See the exact text a batch would send, without sending it</h3>
         <div class="cmd"><pre>make dry TASKS=tasks_apparel.json</pre></div>
         <div class="cmd"><pre>python3 experiments/runners/suite.py --tasks experiments/tasks/tasks_apparel.json \
@@ -778,6 +804,9 @@ open docs/index.html</pre></div>
         <tr><td>Kinds of error, run by run</td><td class="mono">make facts</td><td>Section D</td></tr>
         <tr><td>The refusal check refuses no correct answer</td><td class="mono">make facts</td><td>Section E</td></tr>
         <tr><td>Three runs in cell 5's first batch are void</td><td class="mono">make verify BATCH=experiments/results/20261008T034455</td><td>"problems found"</td></tr>
+        <tr><td>Box v2 on Thornwood, in sample: <span data-f="dev.right"></span> of <span data-f="dev.in.runs"></span> correct, p = <span data-f="p.correct.dv1"></span> against cell 1</td><td class="mono">make facts</td><td>Section H</td></tr>
+        <tr><td>The box's check refuses <span data-f="dev.check.wrong_refused"></span> of its <span data-f="dev.check.wrong"></span> wrong answers and <span data-f="dev.check.other_refused"></span> of <span data-f="dev.check.other"></span> others</td><td class="mono">python3 experiments/analysis/replay_box.py experiments/results/20261014T213118 experiments/results/20261014T220116 experiments/results/20261014T222007</td><td>"wrong" and "not wrong"</td></tr>
+        <tr><td>Every complete size menu the reader found equals the fixture's, every partial one is a prefix of it</td><td class="mono">python3 experiments/analysis/replay_box.py experiments/results/20261014T213118 experiments/results/20261014T220116 experiments/results/20261014T222007 --menus</td><td>the last line</td></tr>
         <tr><td>Every catalogue regenerates exactly</td><td class="mono">make test</td><td><code>test_catalogues</code></td></tr>
         <tr><td>The site matches its sources</td><td class="mono">make site-check</td><td>"matches its sources"</td></tr>
       </tbody>
