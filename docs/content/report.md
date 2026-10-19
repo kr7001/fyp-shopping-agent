@@ -6,7 +6,7 @@ blanks are complete.
 
 ## Summary
 
-The box is a step before the shopping agent that reads the question and the first results page, hands the agent a plan or asks the user back, and checks the answer from the page. Its first version ran a two-run pilot on 14 October and got both right, opening 8 listings instead of 15 on the cheapest question for two thirds of the cost of opening everything. Its second version, built the same day, parses any shopping question into a logical form and composes the retrieval from seven primitives, with a model doing the parsing (it agrees with the rules on the plan-deciding fields for 33 of 37 questions) and rules doing everything after; next week it is measured on the clothing market and then frozen for a fresh one.
+The box is a step before the shopping agent that reads the question and the first results page, hands the agent a plan or asks the user back, and checks the answer from the page. Its first version ran a two-run pilot on 14 October and got both right, opening 8 listings instead of 15 on the cheapest question for two thirds of the cost of opening everything. Its second version, built the same day, parses any shopping question into a logical form and composes the retrieval from seven primitives, with a model doing the parsing (it agrees with the rules on the plan-deciding fields for 33 of 37 questions) and rules doing everything after. It was measured on the clothing market on 14 October and is now frozen for a fresh one.
 
 ## 1. Where we left off on 7 October
 
@@ -50,8 +50,8 @@ refusal check decides from the page alone whether the answer is supported.
 
 **Decisions, each with its evidence.** See the "Box v1 spec" page for the eight decisions. The
 three that matter most: the page fetched over HTTP shows the same 15 prices the agent's own
-probe shows; the refusal check with page-derived numbers refuses 8 of the 9 coverage failures
-and no correct answer; the ambiguity rule asks on exactly the two "offer" questions.
+probe shows. The refusal check with page-derived numbers refuses 8 of the 9 coverage failures
+and no correct answer. The ambiguity rule asks on exactly the two "offer" questions.
 
 ## 4. The box on Thornwood, development runs
 
@@ -153,9 +153,9 @@ The gap between 33 and 5 is two prompt vocabulary problems, not judgement: the m
 the listing's URL out of the filters in 8 of the 9 forms where the rules include it, so 7 of
 its single-listing forms fail "a lookup names no listing", and it writes "listing" as the
 population where the rules write "results" in 7 cases. Both are fixes to the prompt. The four
-real disagreements: "which of these two sellers is cheaper" (rules: look up both named pages;
+real disagreements: "which of these two sellers is cheaper" (rules: look up both named pages,
 the model: the cheapest, naming no page, so its form alone does not say what to open), "is the
-1 kg size the cheapest per kg" (rules right: it needs every size's rate; the model proposed a
+1 kg size the cheapest per kg" (rules right: it needs every size's rate, and the model proposed a
 lookup), "list every pack size and its price" (the model invented an attribute "pack size and
 price" and was refused by the fifth property, which is the property doing its job), and the
 Calderwood cheapest question (the model chose "advertised price", the rules "price": the rules
