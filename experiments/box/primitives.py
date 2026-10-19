@@ -55,7 +55,10 @@ import targeting
 #      shows it disabled when the question is about buying, whether or not the answer
 #      names it (`counterexample_seen`). Every check counts as opened only the market's
 #      own listings, those on the page the box read (`sufficiency.listings_opened`)
-VERSION = 4
+#   5  20 October 2026. Absence of a size counts only from a complete menu reading; a
+#      find excerpt cut inside the menu shows the sizes it lists and nothing else
+#      (verifier finding: an excerpt of S, M was read as a menu without L and XL)
+VERSION = 5
 
 # The same hazard as every v1 bound strategy: a figure derived from a bound is not a price.
 QUARANTINE = targeting.QUARANTINE
@@ -390,12 +393,14 @@ def menu_has(menu: dict[str, bool], size: str) -> str | None:
 
 
 def counterexample_seen(form: form_module.Form, page: page_module.Page, opened: set[str],
-                        menus: dict[str, dict[str, bool]]) -> tuple[page_module.Listing, str] | None:
+                        menus: dict[str, sufficiency.MenuReading]) -> tuple[page_module.Listing, str] | None:
     """The first opened listing whose observed size menu refutes the universal, with why:
-    its menu lacks the size asked about, or, when the question is about buying, shows it
-    disabled, which is how this shop lists a sold-out size. None when the form names no
-    size, or no opened listing was seen to do either. The menus come from the run's own
-    tool replies (`sufficiency.size_menus`), never from the fixture."""
+    its complete menu lacks the size asked about, or, when the question is about buying, a
+    menu shows it disabled, which is how this shop lists a sold-out size. None when the
+    form names no size, or no opened listing was seen to do either. The menus come from
+    the run's own tool replies (`sufficiency.size_menus`), never from the fixture. A
+    partial reading, an excerpt cut inside the menu, is evidence of the sizes it shows and
+    of nothing else (verifier finding, 20 October 2026)."""
     size = form.filter("size")
     if size is None:
         return None
@@ -406,11 +411,14 @@ def counterexample_seen(form: form_module.Form, page: page_module.Page, opened: 
         key = sufficiency.listing_key(item.url)
         if key not in opened or key not in menus:
             continue
-        menu = menus[key]
-        label = menu_has(menu, wanted)
+        reading = menus[key]
+        label = menu_has(reading.options, wanted)
         if label is None:
-            return item, f"lists {', '.join(menu) if menu else 'no size'} and not {wanted}"
-        if buyable and not menu[label]:
+            if reading.complete:
+                return item, (f"lists {', '.join(reading.options) if reading.options else 'no size'} "
+                              f"and not {wanted}")
+            continue
+        if buyable and not reading.options[label]:
             return item, f"shows {label} disabled"
     return None
 

@@ -14,7 +14,7 @@
   "reading": "menu",
   "browser_tool": "0.0.83",
   "browser_origins": "http://localhost:7770",
-  "scorer_version": 2,
+  "scorer_version": 3,
   "rules_version": null,
   "model": "anthropic/claude-haiku-4.5",
   "scaffold": "openjiuwen",
@@ -204,7 +204,7 @@
       "apparel-softest": {
         "gated": false,
         "verdicts": {
-          "failed": 1
+          "unscored": 1
         },
         "actions": [
           22
@@ -261,8 +261,7 @@
       "wrong": 1,
       "refused": 1,
       "asked": 1,
-      "failed": 1,
-      "unscored": 2
+      "unscored": 3
     },
     "total_cost": 2.1899,
     "box": {
@@ -1662,8 +1661,8 @@
       "family": "apparel",
       "gated": false,
       "repeat": 1,
-      "verdict": "failed",
-      "why": "run did not produce an answer",
+      "verdict": "unscored",
+      "why": "no answer key for this question",
       "answer": "Unable to answer the question. After opening and checking all 15 Thornwood tee listings from the search results, NO 'softness' attribute was found on any of them. All products only have a 'Size' attribute with options S, M, L, XL (with varying availability). The 'softness' option mentioned in the ta",
       "tool_calls": 95,
       "actions": 22,
@@ -1857,7 +1856,8 @@
           ]
         }
       },
-      "reading": null
+      "reading": null,
+      "previous_verdict": "failed"
     },
     {
       "task": "bypass-poem",
@@ -1958,6 +1958,20 @@
         "plan": null
       },
       "reading": null
+    }
+  ],
+  "rescored": [
+    {
+      "on": "2026-10-20",
+      "reason": "scorer v3 (2ce22cf): a keyless run that did not finish is unscored, not failed; apparel-softest-1 failed -> unscored",
+      "changed": [
+        {
+          "task": "apparel-softest",
+          "repeat": 1,
+          "from": "failed",
+          "to": "unscored"
+        }
+      ]
     }
   ]
 }

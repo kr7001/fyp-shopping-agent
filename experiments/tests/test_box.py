@@ -507,6 +507,29 @@ class Refusal(unittest.TestCase):
         self.assertIsNotNone(asks.ask)
         self.assertIsNone(asks.refuse)
 
+    def test_a_refusal_comes_before_the_ambiguity_ask(self):
+        # Verifier finding, 20 Oct 2026: these asked which reading of "offer" was meant and
+        # refused after the reply, spending a user turn on a question the shop cannot answer.
+        for q in ("Does every listing offer the softest tee in size M?",
+                  "Which seller offers the most comfortable tee in size M?"):
+            with self.subTest(question=q):
+                self.assertIsNotNone(ambiguity.ask(self.go + q))
+                decision = box.decide(self.go + q, self.page)
+                self.assertTrue(decision.refuse)
+                self.assertEqual((decision.ask, decision.query, decision.record()["asked"]),
+                                 (None, None, False))
+        # A question answerable under a reading still asks, and the one refusal that
+        # depends on the reading (the price of a sold-out size) waits for the reply.
+        depends = self.go + ("Across the listings, which seller is cheapest for size M among "
+                             "those that stock size M?")
+        asks = box.decide(depends, self.page)
+        self.assertEqual((asks.ask is not None, asks.refuse), (True, None))
+        self.assertTrue(box.decide(depends, self.page, reply="menu").refuse.startswith(
+            "The shop does not show the price of a sold-out size"))
+        self.assertIsNotNone(box.decide(depends, self.page, reply="buyable").query)
+        plain = box.decide(self.go + "Does every listing offer size M?", self.page)
+        self.assertEqual((plain.ask is not None, plain.refuse), (True, None))
+
 
 class PageRecord(unittest.TestCase):
     def test_a_page_comes_back_from_its_record(self):
@@ -529,23 +552,41 @@ def openjiuwen_log(folder: str, name: str, urls: list[str], seen: str = "") -> p
     return path
 
 
-def menu_log(folder: str, name: str, pages: list[tuple[str, dict[str, bool]]]) -> pathlib.Path:
+def menu_log(folder: str, name: str, pages: list[tuple]) -> pathlib.Path:
     """A log whose tool replies report landing on each URL and show its size menu, in the
     form the runtime stores (a Python repr inside JSON, so a newline is backslash and n),
-    which `sufficiency.size_menus` reads. `pages` pairs each URL with its menu: each label
-    and whether it can be chosen."""
+    which `sufficiency.size_menus` reads. Each entry is (URL, menu) for a snapshot of the
+    page, or (URL, menu, how) with `how` "excerpt" for a navigation followed by a find
+    reply cut inside the option block, as the real logs hold them, or "excerpt-closed" for
+    a find reply whose block is followed by another line. The menu maps each label to
+    whether it can be chosen."""
     messages = [{"role": "user", "content": "the task"}]
-    for n, (url, menu) in enumerate(pages):
+    calls = 0
+
+    def reply(tool: str, text: str) -> None:
+        nonlocal calls
+        messages.append({"role": "assistant", "content": None, "tool_calls": [
+            {"id": f"c{calls}", "function": {"name": f"mcp_playwright-official_{tool}",
+                                             "arguments": "{}"}}]})
+        messages.append({"role": "tool", "tool_call_id": f"c{calls}",
+                         "content": [{"type": "text", "text": text}]})
+        calls += 1
+
+    for entry in pages:
+        url, menu, how = (*entry, "snapshot")[:3]
         options = "".join(f'\\n  - option "{label}"' + ("" if can else " [disabled]")
                           for label, can in menu.items())
-        text = ("{'result': '### Page\\n- Page URL: " + url + "\\n### Snapshot\\n```yaml\\n"
-                '- combobox "Size *" [ref=f1e89]:\\n  - option "Choose an Option..." [selected]'
-                + options + "\\n```'}")
-        messages.append({"role": "assistant", "content": None, "tool_calls": [
-            {"id": f"c{n}", "function": {"name": "mcp_playwright-official_browser_snapshot",
-                                         "arguments": "{}"}}]})
-        messages.append({"role": "tool", "tool_call_id": f"c{n}",
-                         "content": [{"type": "text", "text": text}]})
+        block = ('- combobox "Size *" [ref=f1e89]:\\n  - option "Choose an Option..." [selected]'
+                 + options)
+        if how == "snapshot":
+            reply("browser_snapshot", "{'result': '### Page\\n- Page URL: " + url
+                  + "\\n### Snapshot\\n```yaml\\n" + block + "\\n```'}")
+            continue
+        reply("browser_navigate", "{'result': \"### Ran Playwright code\\n```js\\nawait page.goto('"
+              + url + "');\\n```\\n### Page\\n- Page URL: " + url + "\\n### Snapshot\\n- [Snapshot](x.yml)\"}")
+        tail = "" if how == "excerpt" else "\\n- generic [ref=f1e92]:"
+        reply("browser_find", "{'result': '### Result\\nFound 2 matches for \"Size\":\\n\\n"
+              "- generic [ref=f1e87]: Size *\\n" + block + tail + "'}")
     path = pathlib.Path(folder) / f"{name}.log"
     path.write_text(json.dumps({"event_id": "e1", "messages": messages}) + "\n")
     return path
@@ -613,7 +654,8 @@ class CounterexampleFromTheMenu(unittest.TestCase):
     def test_a_bare_no_is_supported_by_an_opened_listing_without_the_size(self):
         log = menu_log(self.tmp.name, "lacks", [(self.urls[0], {"S": True, "L": True})])
         self.assertEqual(sufficiency.size_menus(log),
-                         {sufficiency.listing_key(self.urls[0]): {"S": True, "L": True}})
+                         {sufficiency.listing_key(self.urls[0]):
+                          sufficiency.MenuReading({"S": True, "L": True}, True)})
         verdict = box.check(self.decision(), "No", log)
         self.assertEqual((verdict["ok"], verdict["opened"], verdict["primitive"]),
                          (True, 1, "counterexample"))
@@ -658,6 +700,38 @@ class CounterexampleFromTheMenu(unittest.TestCase):
         self.assertEqual(primitives.menu_has({"2 x 9.5L +$15.01": True}, "2 x 9.5L"), "2 x 9.5L +$15.01")
         self.assertIsNone(primitives.menu_has({"12 x 550ml": True, "9.5L": True}, "2 x 9.5L"))
 
+    def test_an_excerpt_cut_inside_the_menu_shows_presence_only(self):
+        # Verifier finding, 20 Oct 2026: a find reply is an excerpt, cut wherever its three
+        # lines end, and one ending after S and M was read as a menu without L and XL.
+        key = sufficiency.listing_key(self.urls[0])
+        xl = box.decide(f"Go to {RESULTS_URL} . Does every listing offer size XL? Answer yes or no.",
+                        self.page, reply="menu")
+        cut = menu_log(self.tmp.name, "cut", [(self.urls[0], {"S": True, "M": True}, "excerpt")])
+        reading = sufficiency.size_menus(cut)[key]
+        self.assertEqual((reading.options, reading.complete), ({"S": True, "M": True}, False))
+        self.assertEqual(box.check(xl, "No", cut)["flag"], "counterexample_not_opened")
+        # The fault, planted: taken as complete, the same excerpt would refute XL.
+        forced = {key: sufficiency.MenuReading(dict(reading.options), True)}
+        self.assertIsNotNone(primitives.counterexample_seen(xl.form, self.page, {key}, forced))
+        self.assertIsNone(primitives.counterexample_seen(xl.form, self.page, {key}, {key: reading}))
+        # The same two sizes seen whole, in a snapshot or in an excerpt whose block ends
+        # before the excerpt does, do refute XL.
+        for how in ("snapshot", "excerpt-closed"):
+            with self.subTest(how=how):
+                whole = menu_log(self.tmp.name, f"whole-{how}", [(self.urls[0], {"S": True, "M": True}, how)])
+                self.assertTrue(sufficiency.size_menus(whole)[key].complete)
+                self.assertTrue(box.check(xl, "No", whole)["ok"])
+        # Presence still counts from an excerpt: M seen disabled refutes the buying reading.
+        disabled = menu_log(self.tmp.name, "cut-disabled", [(self.urls[0], {"S": True, "M": False}, "excerpt")])
+        self.assertFalse(sufficiency.size_menus(disabled)[key].complete)
+        self.assertTrue(box.check(self.decision(reply="buyable"), "No", disabled)["ok"])
+        self.assertEqual(self.why(self.decision(reply="buyable"), "No", disabled),
+                         "a counterexample was opened: Seller A's size menu shows M disabled")
+        # A later complete reading of the same listing completes it.
+        both = menu_log(self.tmp.name, "both", [(self.urls[0], {"S": True, "M": True}, "excerpt"),
+                                                (self.urls[0], {"S": True, "M": True})])
+        self.assertTrue(sufficiency.size_menus(both)[key].complete)
+
 
 V2_BATCHES = compare_cells.DEVELOPMENT["box v2 development, Thornwood, in-sample"]
 HAVE_V2_LOGS = all(any((paths.RESULTS / batch).glob("*.log")) for batch in V2_BATCHES)
@@ -674,12 +748,40 @@ class BoxBatchesReplayed(unittest.TestCase):
     def setUpClass(cls):
         cls.rows = [r for batch in V2_BATCHES for r in replay_box.replay(paths.RESULTS / batch)]
 
-    def test_the_check_refuses_no_wrong_run_and_no_other_run(self):
+    def test_the_check_refuses_no_wrong_run_and_one_other_whose_menu_was_an_excerpt(self):
         s = replay_box.summary(self.rows)
-        self.assertEqual((s["runs"], s["wrong"], s["wrong_refused"], s["other"], s["other_refused"]),
-                         (32, 3, [], 29, []))
+        self.assertEqual((s["runs"], s["wrong"], s["wrong_refused"], s["other"]), (32, 3, [], 29))
+        # The one correct run refused saw igr-app-03's menu in a find excerpt only, which
+        # shows S and L and cannot say M is absent (20 Oct 2026, the sound reader).
+        self.assertEqual([(r["batch"], replay_box.tag(r)) for r in self.rows if not r["ok"]],
+                         [("20261014T222007", "apparel-all-stocked-1")])
+        reading = sufficiency.size_menus(paths.RESULTS / "20261014T222007" / "apparel-all-stocked-1.log")
+        self.assertEqual(reading, {"slug:igr-app-03": sufficiency.MenuReading({"S": True, "L": True}, False)})
         self.assertEqual((s["text_reproduced"], s["same_today"], s["decided_differently_today"]),
                          (32, 31, ["apparel-softest-1"]))
+
+    def test_every_menu_reading_agrees_with_the_fixture(self):
+        # The reader validated against the fixture over every run of the three batches: a
+        # complete reading is the fixture's menu, a partial one a prefix of it.
+        rows = [r for batch in V2_BATCHES for r in replay_box.menu_table(paths.RESULTS / batch)]
+        complete = [r for r in rows if r["reading"] == "complete"]
+        partial = [r for r in rows if r["reading"] == "partial"]
+        self.assertEqual((len(rows), len(complete), len(partial)), (180, 109, 71))
+        self.assertEqual([r for r in rows if not r["agrees"]], [])
+        # The verifier's case: on count-stocked-2 of 20261014T213118 a No to "every listing
+        # offers XL" is refuted by the one complete reading, igr-app-03's menu of S and L,
+        # and not by igr-app-02's excerpt of S and M.
+        batch = paths.RESULTS / "20261014T213118"
+        suite_payload = json.loads((batch / "suite.json").read_text())
+        market = page.from_record(next(r["box"]["page"] for r in suite_payload["rows"] if r.get("box")))
+        menus = sufficiency.size_menus(batch / "apparel-count-stocked-2.log")
+        self.assertEqual((menus["slug:igr-app-02"].options, menus["slug:igr-app-02"].complete),
+                         ({"S": True, "M": True}, False))
+        decision = box.decide(f"Go to {market.url} . Does every listing offer size XL? Answer yes or no.",
+                              market, reply="menu")
+        seen = primitives.counterexample_seen(decision.form, market, set(menus), menus)
+        self.assertTrue(seen[0].url.endswith("/igr-app-03.html"))
+        self.assertEqual(seen[1], "lists S, L and not XL")
 
     def test_without_the_menus_the_five_bare_no_runs_are_refused(self):
         original = sufficiency.size_menus
@@ -698,10 +800,12 @@ class BoxBatchesReplayed(unittest.TestCase):
     def test_the_menus_read_from_a_real_log(self):
         batch = paths.RESULTS / "20261014T213118"
         self.assertEqual(sufficiency.size_menus(batch / "apparel-all-stocked-1.log"),
-                         {"slug:igr-app-03": {"S": True, "L": True}})
+                         {"slug:igr-app-03": sufficiency.MenuReading({"S": True, "L": True}, True)})
         menus = sufficiency.size_menus(batch / "apparel-cheapest-target-2.log")
-        self.assertEqual(menus["slug:igr-app-07"], {"S": False, "M": False, "L": True, "XL": True})
-        self.assertEqual(menus["slug:igr-app-02"], {"S": True, "M": True, "L": True, "XL": True})
+        self.assertEqual(menus["slug:igr-app-07"],
+                         sufficiency.MenuReading({"S": False, "M": False, "L": True, "XL": True}, True))
+        self.assertEqual(menus["slug:igr-app-02"],
+                         sufficiency.MenuReading({"S": True, "M": True, "L": True, "XL": True}, True))
 
     def test_the_counter_on_the_run_that_wandered_to_a_category_page(self):
         text = sufficiency.observed_text(paths.RESULTS / "20261014T213118" / "apparel-all-stocked-2.log")

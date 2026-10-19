@@ -344,6 +344,45 @@ class VerifyRunFields(unittest.TestCase):
         self.assertEqual((ranked["key_kind"], ranked["ranked"]), ("ranked", 3))
 
 
+class Rescore(unittest.TestCase):
+    """`rescore.py` writes the scorer's version into the payload it rewrites (20 Oct 2026;
+    until then a rescored batch kept the version of the scorer that first judged it), keeps
+    the previous verdict beside the new one, and changes nothing else."""
+
+    def test_a_rescore_writes_the_scorers_version_and_keeps_the_previous_verdict(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            batch = scratch_batch(tmp)
+            payload = json.loads((batch / "suite.json").read_text())
+            # The fault scorer v3 fixed, planted: a keyless run that did not finish, stored
+            # as failed by v2.
+            record = json.loads((batch / "apparel-softest-1.json").read_text())
+            record["result"]["ok"] = False
+            (batch / "apparel-softest-1.json").write_text(json.dumps(record))
+            next(r for r in payload["rows"] if r["task"] == "apparel-softest")["verdict"] = "failed"
+            payload["scorer_version"] = 2
+            # The pilot ran under the gate, which a rescore replays; the scratch batch's
+            # stand-in logs are empty, so the gate would abstain every run. This test is
+            # about the scorer, so the batch is rescored as one without a policy.
+            payload["policy"] = "off"
+            (batch / "suite.json").write_text(json.dumps(payload))
+            run = subprocess.run([sys.executable, str(paths.EXPERIMENTS / "analysis" / "rescore.py"),
+                                  str(batch), "--reason", "the test's reason"],
+                                 capture_output=True, text=True)
+            self.assertEqual(run.returncode, 0, run.stderr)
+            after = json.loads((batch / "suite.json").read_text())
+            self.assertEqual(after["scorer_version"], score.VERSION)
+            row = next(r for r in after["rows"] if r["task"] == "apparel-softest")
+            self.assertEqual((row["verdict"], row["previous_verdict"]), ("unscored", "failed"))
+            self.assertEqual(after["rescored"][-1]["reason"], "the test's reason")
+            self.assertEqual(after["rescored"][-1]["changed"],
+                             [{"task": "apparel-softest", "repeat": 1, "from": "failed", "to": "unscored"}])
+            others = {(r["task"], r["repeat"]): r["verdict"] for r in after["rows"]
+                      if r["task"] != "apparel-softest"}
+            self.assertEqual(others, {(r["task"], r["repeat"]): r["verdict"] for r in payload["rows"]
+                                      if r["task"] != "apparel-softest"})
+            self.assertNotIn(paths.RESULTS, batch.parents)
+
+
 def steps_log(folder: str, name: str, steps: list[tuple[str, dict]]) -> pathlib.Path:
     """A log whose trace holds these tool calls in order, as `trace_stats.tool_steps` reads them."""
     messages = [{"role": "user", "content": "the task"}]
@@ -467,7 +506,10 @@ class DevelopmentCell(unittest.TestCase):
         self.assertEqual(tests[("menu", "opened", "5")], ("14 of 15 against 15 of 15", 1.0))
         self.assertEqual(d["check"]["wrong"], 3)
         self.assertEqual(d["check"]["wrong_refused"], [])
-        self.assertEqual((d["check"]["other"], d["check"]["other_refused"]), (29, []))
+        # The one correct run refused saw its counterexample's menu in a find excerpt
+        # only, so the sound reader cannot say the size is absent (20 Oct 2026; the run is
+        # 20261014T222007 apparel-all-stocked-1, see test_box.BoxBatchesReplayed).
+        self.assertEqual((d["check"]["other"], d["check"]["other_refused"]), (29, ["apparel-all-stocked-1"]))
         # The four cells are the four cells still, and the site's tests table is theirs alone.
         self.assertEqual([n.split()[0] for n in facts["names"]], ["1", "2", "3", "5"])
         self.assertEqual({t["a"] for t in facts["tests"]}, {"2", "3", "5"})

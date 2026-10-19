@@ -68,7 +68,12 @@ import targeting
 #      menu lacks the size (primitives v4, `sufficiency.size_menus`). On the three box
 #      v2 batches of 14 October no text changes; one question, "Who sells the softest
 #      Thornwood tee?", is refused instead of planned by the fallback
-VERSION = 7
+#   8  20 October 2026, the verifier's fixes to 7. A bare No is supported only by a
+#      complete observed menu; an excerpt cut inside the menu shows presence alone
+#      (`sufficiency.MenuReading`). A refusal comes before the ambiguity ask too, so no
+#      user turn is spent on a question that needs what the shop does not show. The
+#      graded-word rule reads "availability", a range of sizes and "the top" (form v6)
+VERSION = 8
 
 # The results page the question sends the agent to: the first URL in it.
 URL = re.compile(r"https?://\S+")
@@ -136,11 +141,20 @@ def decide(question: str, page: page_module.Page | None, reply: str | None = Non
     be None then, since such a question names none. Every other outcome needs the page.
 
     A refusal comes before an ask (20 October 2026): a question that needs an attribute
-    the shop does not show cannot be answered whatever limit the user would give, so it is
-    refused rather than asked. The one ask the form raises on its own is for a price limit.
+    the shop does not show cannot be answered whatever reading or limit the user would
+    give, so it is refused before the user is asked anything, and no turn of theirs is
+    spent on it. The form read without a reading carries no availability filter, so the
+    one refusal that depends on the reading (the price of a sold-out size) is never raised
+    here, and such a question is still asked. The one ask the form raises on its own is
+    for a price limit.
     """
     asked = ambiguity.ask(question)
     if asked is not None and reply is None:
+        form = form_module.from_rules(question, page)
+        missing = form_module.not_shown(form, page) if page is not None else []
+        if form.quantifier != "unknown" and missing:
+            return Decision(question=question, kind=None, ask=None, reading=None, query=None,
+                            plan=None, page=page, form=form, refuse=form_module.refusal(missing))
         return Decision(question=question, kind=None, ask=asked, reading=None, query=None,
                         plan=None, page=page)
     reading = None

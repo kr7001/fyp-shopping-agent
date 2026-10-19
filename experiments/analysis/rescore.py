@@ -84,6 +84,10 @@ def main() -> int:
     history.append({"on": dt.date.today().isoformat(), "reason": args.reason,
                     "changed": changes})
     payload["rescored"] = history
+    # The rows now carry the verdicts of this scorer, so the payload says so (LESSONS 10);
+    # until 20 October 2026 a rescored batch kept the version of the scorer that first
+    # judged it.
+    payload["scorer_version"] = scoring.VERSION
     payload["summary"] = suite.summarise(payload["rows"])
     (args.results_dir / "suite.json").write_text(json.dumps(payload, indent=2, default=str) + "\n")
 

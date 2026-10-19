@@ -16,6 +16,7 @@ hidden. Nothing here reads an answer key for the check; the key is read only to 
 runs were wrong, as `verify_cells` does.
 
     python3 experiments/analysis/replay_box.py experiments/results/<batch> [...]
+    python3 experiments/analysis/replay_box.py experiments/results/<batch> --menus   # the reader against the fixture
 """
 
 from __future__ import annotations
@@ -32,6 +33,7 @@ import form as form_module  # noqa: E402
 import page as page_module  # noqa: E402
 import primitives  # noqa: E402
 import score as scoring  # noqa: E402
+import sufficiency  # noqa: E402
 import verify_cells  # noqa: E402
 
 WRONG = ("wrong", "ambiguous")
@@ -103,6 +105,49 @@ def tag(row: dict) -> str:
     return f"{row['task']}-{row['repeat']}"
 
 
+def menu_table(batch: pathlib.Path) -> list[dict]:
+    """Every size menu reading in the batch's logs set against the fixture, one row per
+    run and listing: what the run saw, whether it saw the whole menu, what the fixture
+    says the menu is (its sizes in order, a sold-out size disabled), and whether the two
+    agree, meaning a complete reading is the menu and a partial one is a prefix of it with
+    the same disabled marks. The fixture is read here to validate the reader, never by the
+    box (20 October 2026, after a find excerpt was read as a whole menu)."""
+    truth = verify_cells.ground_truth()
+    rows = []
+    for log_path in sorted(batch.glob("*.log")):
+        for key, reading in sufficiency.size_menus(log_path).items():
+            sku = key.split(":", 1)[1]
+            fixture = {size: size in truth[sku]["buyable"] for size in truth[sku]["sizes"]} \
+                if sku in truth else None
+            seen = list(reading.options)
+            if fixture is None:
+                agrees = False
+            elif reading.complete:
+                agrees = reading.options == fixture
+            else:
+                agrees = seen == list(fixture)[:len(seen)] and all(
+                    reading.options[size] == fixture[size] for size in seen)
+            rows.append({"batch": batch.name, "run": log_path.stem, "listing": sku,
+                         "reading": "complete" if reading.complete else "partial",
+                         "seen": reading.options, "fixture": fixture, "agrees": agrees})
+    return rows
+
+
+def print_menu_table(rows: list[dict]) -> None:
+    def menu(options: dict | None) -> str:
+        return "?" if options is None else ", ".join(
+            size + ("" if can else " [disabled]") for size, can in options.items())
+
+    for r in rows:
+        print(f"  {r['batch']} {r['run']:28} {r['listing']:12} {r['reading']:8} "
+              f"{'ok ' if r['agrees'] else 'BAD'} saw {menu(r['seen'])}; fixture {menu(r['fixture'])}")
+    complete = [r for r in rows if r["reading"] == "complete"]
+    partial = [r for r in rows if r["reading"] == "partial"]
+    print(f"{len(rows)} readings: {len(complete)} complete, {sum(r['agrees'] for r in complete)} equal "
+          f"to the fixture's menu; {len(partial)} partial, {sum(r['agrees'] for r in partial)} a "
+          f"prefix of it")
+
+
 def report(rows: list[dict]) -> None:
     s = summary(rows)
     print(f"runs replayed {s['runs']}: stored text reproduced from the record "
@@ -123,7 +168,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("batches", nargs="+", type=pathlib.Path)
     parser.add_argument("--rows", action="store_true", help="print every run's verdict and check")
+    parser.add_argument("--menus", action="store_true",
+                        help="print every size menu reading against the fixture, and nothing else")
     args = parser.parse_args()
+    if args.menus:
+        print_menu_table([r for batch in args.batches for r in menu_table(batch)])
+        return 0
     rows = [r for batch in args.batches for r in replay(batch)]
     if args.rows:
         for r in rows:

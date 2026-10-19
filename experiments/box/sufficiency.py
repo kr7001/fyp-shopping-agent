@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import dataclasses
 import json
 import pathlib
 import re
@@ -171,9 +172,32 @@ GENERATED_SLUG = re.compile(r"^slug:igr-", re.IGNORECASE)
 # menu, the placeholder first and a sold-out size marked `[disabled]`. The runtime stores
 # the reply as a Python repr inside JSON, so in the text a newline is the two characters
 # backslash and n, and a quote carries a backslash; `size_menus` undoes that before reading.
-SIZE_MENU = re.compile(r'combobox "Size[^"]*"[^\n]*\n((?:[ \t]*- option "[^"]*"[^\n]*\n?)+)')
+#
+# A `browser_find` reply is an excerpt, the matched line and three more, cut wherever that
+# falls: in 20261014T213118/apparel-count-stocked-2.log the find for "Size" on igr-app-08
+# ends after `option "S"` and `option "M"` where the menu is S, M, L, XL, and the first
+# reader took that for the whole menu (verifier finding, 20 October 2026). So each reading
+# says whether it is complete: a reply that carries the page URL (a navigation or a
+# snapshot) shows the whole page, and so does an option block followed by a line that is
+# not an option. An excerpt that ends inside the block is partial: the sizes it shows are
+# seen, disabled or not, and nothing can be said about the sizes it does not show.
+MENU_HEAD = re.compile(r'combobox "Size[^"]*"')
+MENU_LINE = re.compile(r'^[ \t]*- option "([^"]*)"((?: \[[^\]]*\])*)[ \t]*$')
 MENU_OPTION = re.compile(r'option "([^"]*)"((?: \[[^\]]*\])*)')
 MENU_PLACEHOLDER = "Choose an Option..."
+
+
+@dataclasses.dataclass
+class MenuReading:
+    """What a run saw of one listing's size menu: each size shown and whether it could be
+    chosen, and whether the whole menu was seen. Absence of a size is evidence only from a
+    complete reading; presence, disabled or not, from any."""
+    options: dict[str, bool] = dataclasses.field(default_factory=dict)
+    complete: bool = False
+
+    def merge(self, options: dict[str, bool], complete: bool) -> None:
+        self.options.update(options)
+        self.complete = self.complete or complete
 
 
 def _listing_key(url: str) -> str | None:
@@ -279,18 +303,55 @@ def listings_opened(text: str, market: Iterable[str] | None = None) -> set[str]:
     return {key for key in found if key.startswith("id:") or GENERATED_SLUG.match(key)}
 
 
-def size_menus(log_path: pathlib.Path) -> dict[str, dict[str, bool]]:
+def menu_blocks(text: str, whole_page: bool) -> list[tuple[dict[str, bool], bool]]:
+    """Every size menu in one reply's text, as (the options seen, whether the reading is
+    complete). The block is the option lines after a Size combobox line; it is complete
+    when the reply shows the whole page, or when a line that is not an option follows it.
+    A line that starts as an option and is cut short still shows its size."""
+    plain = text.replace("\\\\n", "\n").replace("\\n", "\n").replace('\\"', '"')
+    lines = plain.split("\n")
+    found = []
+    for n, line in enumerate(lines):
+        if not MENU_HEAD.search(line):
+            continue
+        options: dict[str, bool] = {}
+        complete = whole_page
+        for later in lines[n + 1:]:
+            whole = MENU_LINE.match(later)
+            if whole:
+                label, flags = whole.group(1), whole.group(2)
+            else:
+                cut = MENU_OPTION.search(later) if later.lstrip().startswith('- option "') else None
+                if cut is None:
+                    # The block ended before the text did, when what follows is another
+                    # line of the page's tree or the end of the yaml, not the reply's
+                    # closing characters.
+                    if later.lstrip().startswith("- ") or later.strip().startswith("```"):
+                        complete = True
+                    break
+                label, flags = cut.group(1), cut.group(2)
+            if label != MENU_PLACEHOLDER:
+                options[label] = "[disabled]" not in flags
+            if not whole:
+                break                     # a cut line is where an excerpt ended
+        found.append((options, complete))
+    return found
+
+
+def size_menus(log_path: pathlib.Path) -> dict[str, MenuReading]:
     """The size menu each opened listing showed the run, from the tool replies alone: for
-    each listing key, the sizes in its menu and whether each could be chosen (False when
-    the option is marked disabled, which is how this shop lists a sold-out size).
+    each listing key, the sizes seen in its menu, whether each could be chosen (False when
+    the option is marked disabled, which is how this shop lists a sold-out size), and
+    whether the whole menu was seen.
 
     A reply that reports a page URL says where the browser was; a reply without one, such
     as a find, belongs to the page reported last, since the browser is at one page at a
     time. Only openJiuwen's logs carry these replies; another scaffold's log gives nothing
     here. Added 20 October 2026 for the counterexample check: a bare "No" is supported when
-    an opened listing's menu lacks the size asked about, whether or not the answer names it.
+    an opened listing's complete menu lacks the size asked about, whether or not the answer
+    names it.
     """
-    menus: dict[str, dict[str, bool]] = {}
+    menus: dict[str, MenuReading] = {}
     current = None
     for _tool, text, _args in trace_stats.tool_replies(log_path).values():
         located = PAGE_MARKER.search(text)
@@ -298,12 +359,9 @@ def size_menus(log_path: pathlib.Path) -> dict[str, dict[str, bool]]:
             current = _listing_key(located.group(1))
         if current is None:
             continue
-        plain = text.replace("\\\\n", "\n").replace("\\n", "\n").replace('\\"', '"')
-        for block in SIZE_MENU.findall(plain):
-            menu = menus.setdefault(current, {})
-            for label, flags in MENU_OPTION.findall(block):
-                if label != MENU_PLACEHOLDER:
-                    menu[label] = "[disabled]" not in flags
+        for options, complete in menu_blocks(text, whole_page=located is not None):
+            if options or complete:
+                menus.setdefault(current, MenuReading()).merge(options, complete)
     return menus
 
 

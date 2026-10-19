@@ -421,6 +421,26 @@ class Graded(unittest.TestCase):
         self.assertEqual(form.not_shown(form.from_rules(GO + "Which seller delivers fastest for size M?")),
                          ["delivery time"])
 
+    def test_the_verifiers_probe(self):
+        # 20 Oct 2026, from the verifier's 48 questions on the live page: a shown attribute's
+        # own word, a range of sizes, and "the top", which ranks by nothing unless a count
+        # follows it.
+        for question, kind in (("Which seller has the best availability for size M?", "survey"),
+                               ("Which seller has the widest range of sizes?", "survey"),
+                               ("Which seller offers the broadest choice of sizes?", "survey"),
+                               ("Which seller lists the most sizes?", "survey"),
+                               ("Which seller has the fewest sizes?", "survey"),
+                               ("Which are the top 3 sellers for size M?", "topk_price"),
+                               ("Which are the top three sellers for size M?", "topk_price")):
+            with self.subTest(question=question):
+                parsed = form.from_rules(GO + question)
+                self.assertEqual((parsed.kind(), form.not_shown(parsed)), (kind, []))
+        for question, word in (("Who sells the top Thornwood tee?", "top"),
+                               ("Which is the widest tee?", "widest")):
+            with self.subTest(question=question):
+                self.assertEqual(form.not_shown(form.from_rules(GO + question)),
+                                 [f"what '{word}' ranks by"])
+
     def test_every_frame_fires_and_every_listed_word_stays_quiet(self):
         for question, phrase in (("Who sells the softest tee?", "softest"),
                                  ("Which tee is warmest?", "warmest"),

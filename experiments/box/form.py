@@ -57,7 +57,10 @@ import targeting
 #      the question whatever the word, so "Who sells the softest tee?" is refused rather
 #      than planned by the fallback. The fallback is only for a shopping question with no
 #      shape whose attributes are all shown
-VERSION = 5
+#   6  20 October 2026, from the verifier's probe of the rule: "availability" is a shown
+#      attribute's word, "the widest range of sizes" and "most sizes" rank by size, and
+#      "the top tee" is read like "the best tee" while "the top 3" stays a count
+VERSION = 6
 
 # The vocabulary. A form outside it is refused when it is built, so a model's reply cannot
 # smuggle in a quantifier nothing knows how to plan. "unknown" is the rules' answer to a
@@ -395,10 +398,16 @@ SUPERLATIVE = re.compile(r"\b(?:fastest|quickest|soonest|slowest|longest|shortes
 # degree ("most of the sellers") in NOT_AFTER_MOST. The words of SUPERLATIVE count too,
 # wherever they stand.
 GRADED = re.compile(
-    r"\bthe\s+(?P<the>[a-z]+est)\b"
+    r"\bthe\s+(?P<the>[a-z]+est|top)\b"
     r"|\bwhich\b(?:\s+\w+){0,3}?\s+(?:is|are)\s+(?:the\s+)?(?P<which>[a-z]+(?:est|er))\b"
     r"|\b(?P<than>[a-z]+er)\s+than\b"
     r"|\b(?P<most>(?:most|least)\s+[a-z]+)\b", re.IGNORECASE)
+# "the top 3 sellers" is a count, read by TOPK; "the top tee" ranks by nothing shown.
+TOP_COUNT = re.compile(rf"^\s*{COUNT_WORD}\b", re.IGNORECASE)
+# A generic word takes its attribute from the word after it, or, when that word names a
+# range ("the widest range of sizes", "the best choice of prices"), from the word the range
+# is of (verifier probe, 20 October 2026).
+RANGE_WORDS = frozenset("range choice selection variety number set".split())
 NOT_GRADED = frozenset("rest test west chest guest quest request interest contest forest harvest "
                        "vest nest pest jest crest zest digest suggest protest invest honest "
                        "modest earnest".split())
@@ -414,15 +423,16 @@ PRICE_ADJECTIVES = frozenset("cheap cheaper cheapest dear dearer dearest expensi
                              "priciest costly costlier costliest low lower lowest high higher "
                              "highest".split())
 SIZE_ADJECTIVES = frozenset("large larger largest small smaller smallest big bigger biggest".split())
-GENERIC_GRADED = frozenset("best better worst worse most least top fewest fewer".split())
+GENERIC_GRADED = frozenset("best better worst worse most least top fewest fewer widest wider "
+                           "broadest broader".split())
 PRICE_VERBS = frozenset("charge charges charged charging cost costs costing pay pays paid "
                         "paying".split())
 ATTRIBUTE_WORDS = {"price": "price", "prices": "price", "priced": "price", "cost": "price",
                    "costs": "price", "deal": "price", "value": "rate", "rate": "rate",
                    "rated": "rating", "rating": "rating", "ratings": "rating", "size": "size",
                    "sizes": "size", "stock": "availability", "stocked": "availability",
-                   "available": "availability", "reviews": "review text",
-                   "reviewed": "review text"}
+                   "available": "availability", "availability": "availability",
+                   "reviews": "review text", "reviewed": "review text"}
 VARIANT = ambiguity.whole_words(ambiguity.VARIANTS)
 MENU_WORDS = ambiguity.whole_words(ambiguity.MENU)
 BUYABLE_WORDS = ambiguity.whole_words(ambiguity.BUYABLE)
@@ -581,12 +591,18 @@ def graded_words(question: str) -> list[tuple[str, str, str]]:
             phrase = match.group(0)
         before = re.search(r"([a-z]+)\s+(?:the\s+)?$", question[:match.start()], re.IGNORECASE)
         before = before.group(1).lower() if before else ""
-        after = re.match(r"\s+([a-z]+)", question[match.end():], re.IGNORECASE)
-        after = after.group(1).lower() if after else ""
+        rest = question[match.end():]
+        after = re.match(r"\s+([a-z]+)(?:\s+of\s+([a-z]+))?", rest, re.IGNORECASE)
+        if after and after.group(1).lower() in RANGE_WORDS and after.group(2):
+            after = after.group(2).lower()
+        else:
+            after = after.group(1).lower() if after else ""
         tail = phrase.split()[-1].lower()
         if phrase.lower() in ("most", "least") and (before == "at" or not after or after in NOT_AFTER_MOST):
             continue
         if phrase.lower().split()[0] in ("most", "least") and tail in NOT_AFTER_MOST:
+            continue
+        if phrase.lower() == "top" and TOP_COUNT.match(rest):
             continue
         entry = (before, phrase, after)
         if entry not in found:
