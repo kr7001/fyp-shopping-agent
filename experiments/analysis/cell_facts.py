@@ -543,6 +543,12 @@ def main() -> int:
               + (f": {', '.join(c['wrong_refused'])}" if c["wrong_refused"] else ""))
         print(f"    not wrong {c['other']}, refused {len(c['other_refused'])}"
               + (f": {', '.join(c['other_refused'])}" if c["other_refused"] else ""))
+        # Since 20 Oct 2026 a stored text is compared in the words of the box version that
+        # sent it, and a decision that differs today for a deliberate change says which.
+        for line in c.get("not_reproduced") or []:
+            print(f"    stored text not reproduced: {line}")
+        for line in c.get("expected_today") or []:
+            print(f"    decided differently today, as expected: {line}")
         if c["decided_differently_today"]:
             print(f"    decided differently today: {', '.join(c['decided_differently_today'])}")
     return 0

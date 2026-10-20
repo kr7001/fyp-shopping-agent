@@ -78,12 +78,16 @@ QUANTIFIERS = {
     "argmax_price": "argmin",
 }
 
-# Which bound may be used to skip a member of the population, and why it is valid.
+# Which bound may be used to skip a member of the population, and why it is valid. Since 20
+# October 2026 each reason says the card is the cheapest option that can be bought, in the
+# words strategy text v8 and v9 send the agent: a sold-out size can cost less than the card
+# (igr-app-07, $15.04 against $18.33). Not sent to the agent, and the bounds themselves are
+# unchanged, so the planner's version is not.
 BOUNDS = {
     "total_bound": {
         "field": "advertised price",
-        "valid_because": "the advertised price is the cheapest option in that listing, so "
-                         "nothing inside it can cost less",
+        "valid_because": "the advertised price is the cheapest option in that listing that can "
+                         "be bought, so nothing in it that can be bought costs less",
     },
     "rate_bound": {
         "field": "advertised price divided by the largest pack volume",
@@ -92,8 +96,8 @@ BOUNDS = {
     },
     "availability_bound": {
         "field": "advertised price",
-        "valid_because": "the advertised price is the cheapest option that listing can "
-                         "actually sell, so nothing buyable inside it can cost less",
+        "valid_because": "the advertised price is the cheapest option in that listing that can "
+                         "be bought, so nothing in it that can be bought costs less",
     },
     "refutation": None,
     # Reviews are reached by turning pages, and nothing on a page bounds what is on the
@@ -108,8 +112,8 @@ BOUNDS = {
     },
     "topk_price": {
         "field": "advertised price",
-        "valid_because": "the advertised price is the cheapest option that listing can "
-                         "actually sell, so nothing buyable inside it can cost less",
+        "valid_because": "the advertised price is the cheapest option in that listing that can "
+                         "be bought, so nothing in it that can be bought costs less",
     },
     "named_lookup": None,
     # The advertised price is a lower bound, and nothing a lower bound says rules a

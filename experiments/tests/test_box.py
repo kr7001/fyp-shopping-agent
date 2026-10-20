@@ -855,8 +855,22 @@ class BoxBatchesReplayed(unittest.TestCase):
                          [("20261014T222007", "apparel-all-stocked-1")])
         reading = sufficiency.size_menus(paths.RESULTS / "20261014T222007" / "apparel-all-stocked-1.log")
         self.assertEqual(reading, {"slug:igr-app-03": sufficiency.MenuReading({"S": True, "L": True}, False)})
-        self.assertEqual((s["text_reproduced"], s["same_today"], s["decided_differently_today"]),
-                         (32, 31, ["apparel-softest-1"]))
+        # All 32 stored texts are reproduced under the box version they ran under, v6: each
+        # run's stored form is recomposed with today's code and the rewordings made since
+        # (box v10 and v11, `box.REWORDED`) are swapped back first (20 Oct 2026). Until
+        # then the comparison was with today's words, and 17 runs differed by them alone.
+        self.assertEqual((s["text_reproduced"], s["not_reproduced"]), (32, []))
+        # 29 are decided the same today. The other three differ by deliberate changes,
+        # named: the two "under $" questions read their limit strictly since form v9, and
+        # today's form with the old operator renders each stored text exactly, so the
+        # operator is the whole difference; the softest question is refused since box v7.
+        # Nothing differs for any other reason.
+        self.assertEqual(s["same_today"], 29)
+        self.assertEqual(s["expected_today"], [
+            "apparel-exists-under-27-1: the limit is strict since form v9 (price < 27)",
+            "apparel-exists-under-25-1: the limit is strict since form v9 (price < 25)",
+            "apparel-softest-1: refused today: The shop does not show what 'softest' ranks by"])
+        self.assertEqual((s["decided_differently_today"], s["unexpected_today"]), ([], []))
 
     def test_every_menu_reading_agrees_with_the_fixture(self):
         # The reader validated against the fixture over every run of the three batches: a

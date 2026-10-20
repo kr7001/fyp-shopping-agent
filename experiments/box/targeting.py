@@ -9,8 +9,10 @@ Three strategies, because three kinds of question need different work, and the w
 is that the choice is made from the question rather than applied uniformly.
 
 **total bound.** "Which seller is cheapest for the 2 x 9.5L pack." The search page shows
-each listing's lowest advertised price, and no option inside a listing can cost less than
-that, so the advertised price is a valid lower bound on anything the listing could offer.
+each listing's lowest advertised price, the cheapest option that can be bought, and no
+option of the listing that can be bought costs less than that, so the advertised price is a
+valid lower bound on anything the listing can sell (a sold-out option can cost less, which
+strategy text v8 says too).
 Open in ascending order of it and a listing can be skipped the moment its advertised price
 reaches the best total already found. This is branch and bound, and the fixture reports 4
 of 15 prunable with an oracle floor of 11.

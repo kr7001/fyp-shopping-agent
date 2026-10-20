@@ -31,6 +31,7 @@ import form as form_module  # noqa: E402
 import leaks  # noqa: E402
 import page as page_module  # noqa: E402
 import primitives  # noqa: E402
+import replay_box  # noqa: E402
 import suite  # noqa: E402
 import targeting  # noqa: E402
 import verify_cells  # noqa: E402
@@ -168,37 +169,19 @@ class IsolatedProfile(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # 2. Strategy texts v8 and v9
 
-# The five sentences v8 and v9 reword, as v7 wrote them and as they are written now: four in
-# v8, from the audit, and the fifth in v9, from what the leak counter found.
-REWORDINGS = (
-    ("That price is the cheapest option in that listing, so nothing inside it can cost less.",
-     "That price is the cheapest option in that listing that can be bought, so nothing in it "
-     "that can be bought costs less."),
-    ("The price a listing shows before you choose is its cheapest option, not the one asked "
-     "about, and the reply to choosing an option does not show the new price.",
-     "The price a listing shows before you choose is its cheapest option that can be bought, "
-     "not necessarily the one asked about, and the reply to choosing an option does not show "
-     "the new price."),
-    ("It is not a real price and must never appear in your answer.",
-     "It is not a price read for the option asked about, and must never appear in your answer "
-     "as one."),
-    ("Stopping after one or two openings is the correct outcome here, not a sign that you did "
-     "too little.",
-     "Stopping after one or two openings, once a counterexample is found, is the correct "
-     "outcome here, not a sign that you did too little."),
-    ("An option can be listed and still be unavailable, in which case it is shown as disabled or "
-     "greyed out and cannot be chosen, so it has no price you can use.",
-     "An option can be listed and still be unavailable, in which case it is shown as disabled or "
-     "greyed out and cannot be chosen from the menu, so it has no price you can use."),
-)
+# The rewordings are listed once, in `box.REWORDED`, which `replay_box` reads too. Five of
+# them are in the six clothing texts v1 rendered: four from the audit (v8) and the fifth from
+# what the leak counter found (v9).
+IN_THE_V1_TEXTS = 5
 # The sha1 of the 18 queries in fixtures/v1_clothing_queries.json as frozen at e3880ef from
 # the v1 code, json.dumps(queries, sort_keys=True), read before the amendment.
 V1_QUERIES_SHA1 = "d539dc80468c3331d63f68d308799125eb498b19"
 
 
 def every_text() -> list[str]:
-    """Every text the box sends, from both clothing task files under each reading, on the
-    Thornwood page, and the frozen strategy table the targeting arm sends."""
+    """Every text the box sends, from both clothing task files under each reading and under
+    each arm, on the Thornwood page, the frozen strategy table the targeting arm sends, and
+    the dearest's text, which no task file asks for."""
     page = thornwood_page()
     texts = list(targeting.STRATEGIES.values())
     for name in ("tasks_apparel.json", "tasks_apparel_v2.json"):
@@ -206,9 +189,12 @@ def every_text() -> list[str]:
         for task in spec["tasks"]:
             query = task["query"].format(base=spec["base_url"])
             for reading in (None, "menu", "buyable"):
-                decision = box.decide(query, page if box.results_url(query, required=False) else None,
-                                      reply=reading)
-                texts.append(decision.query or decision.refuse or decision.ask.text)
+                for exhaust in (False, True):
+                    decision = box.decide(query, page if box.results_url(query, required=False) else None,
+                                          reply=reading, exhaust=exhaust)
+                    texts.append(decision.query or decision.refuse or decision.ask.text)
+    texts.append(primitives.argmax_text(form_module.from_rules(GO + "Which seller is the most expensive "
+                                                                    "for size M?"), synthetic_page([12.0])))
     return texts
 
 
@@ -220,61 +206,153 @@ class StrategyTextV8(unittest.TestCase):
 
     def test_the_versions(self):
         self.assertEqual((targeting.VERSION, box.VERSION, form_module.VERSION, primitives.VERSION),
-                         (9, 11, 9, 7))
+                         (9, 12, 9, 8))
 
-    def test_no_text_the_box_sends_holds_a_v7_sentence(self):
+    def test_no_text_the_box_sends_holds_an_old_wording(self):
         texts = every_text()
-        for old, new in REWORDINGS:
+        self.assertEqual(len(box.REWORDED), 8)
+        for since, old, new in box.REWORDED:
             with self.subTest(sentence=old[:50]):
                 self.assertFalse(any(old in text for text in texts))
                 self.assertTrue(any(new in text for text in texts))
-        # The box v2 texts said the same two things in their own words, and say v8's now.
-        for old in ("is its cheapest option, not the one asked about",
-                    "is each listing's cheapest option, so",
-                    "Stopping after one opening is the correct outcome"):
-            with self.subTest(old=old):
-                self.assertFalse(any(old in text for text in texts))
-                self.assertNotIn(old, primitives.argmax_text(
-                    form_module.from_rules(GO + "Which seller is the most expensive for size M?"),
-                    synthetic_page([12.0])))
 
     def test_the_quarantine_and_the_stop_sentences_read_v8(self):
-        self.assertIn(REWORDINGS[2][1], targeting.QUARANTINE)
-        self.assertIn(REWORDINGS[3][1], targeting.BODIES["refutation"])
+        self.assertIn(box.REWORDED[2][2], targeting.QUARANTINE)
+        self.assertIn(box.REWORDED[3][2], targeting.BODIES["refutation"])
         exists = primitives.witness_text(form_module.from_rules(GO + "Is there any seller under $20 for size M?"))
         self.assertIn("Stopping after one opening, when that listing meets the condition, is the "
                       "correct outcome here", exists)
 
+    def test_a_text_is_put_back_in_the_words_of_the_version_that_sent_it(self):
+        text = targeting.BODIES["availability_bound"]
+        v6, v10 = box.as_sent_by(text, 6), box.as_sent_by(text, 10)
+        self.assertIn(box.REWORDED[0][1], v6)
+        self.assertNotIn(box.REWORDED[0][2], v6)
+        # A box v10 run already had v10's words, and only v11's are put back.
+        self.assertIn(box.REWORDED[0][2], v10)
+        self.assertIn("cannot be chosen, so it has no price", v10)
+        self.assertEqual(box.as_sent_by(text, box.VERSION), text)
+        self.assertIsNone(box.as_sent_by(None, 6))
+
 
 class V1Amendment(unittest.TestCase):
     """The fixture `test_box.V1Bytes` pins was amended on 20 October 2026 for v8 and v9, and
-    in the five sentences only: undoing them gives back the queries v1 rendered, to the byte."""
+    in five sentences only: putting them back in v1's words gives back the queries v1
+    rendered, to the byte, by the same list `replay_box` reads (`box.REWORDED`)."""
 
     def setUp(self):
         self.frozen = json.loads((FIXTURES / "v1_clothing_queries.json").read_text())
 
-    def test_undoing_the_five_rewordings_gives_the_v1_queries(self):
-        undone = []
-        for row in self.frozen["queries"]:
-            query = row["query"]
-            for old, new in REWORDINGS:
-                query = query.replace(new, old) if query else query
-            undone.append({**row, "query": query})
+    def test_the_v1_words_give_the_v1_queries(self):
+        undone = [{**row, "query": box.as_sent_by(row["query"], 1)} for row in self.frozen["queries"]]
         digest = hashlib.sha1(json.dumps(undone, sort_keys=True).encode()).hexdigest()
         self.assertEqual(digest, V1_QUERIES_SHA1)
         # The amended fixture is not the v1 one, so the check above is not vacuous.
         self.assertNotEqual(hashlib.sha1(json.dumps(self.frozen["queries"], sort_keys=True).encode())
                             .hexdigest(), V1_QUERIES_SHA1)
 
-    def test_each_rewording_is_in_the_fixture_and_dated(self):
+    def test_each_rewording_of_the_v1_texts_is_in_the_fixture_and_dated(self):
         queries = [row["query"] or "" for row in self.frozen["queries"]]
-        for old, new in REWORDINGS:
-            with self.subTest(sentence=new[:50]):
-                self.assertTrue(any(new in q for q in queries))
+        found = [new for _, old, new in box.REWORDED if any(new in q for q in queries)]
+        self.assertEqual(len(found), IN_THE_V1_TEXTS)
+        for since, old, new in box.REWORDED:
+            with self.subTest(sentence=old[:50]):
                 self.assertFalse(any(old in q for q in queries))
         about = " ".join(self.frozen["_about"])
         self.assertIn("box.VERSION 1", about)          # the v1 provenance is kept
         self.assertIn("Amended on 20 October 2026 for strategy texts v8 and v9", about)
+
+
+def replayed(folder: str, task_id: str, record: dict, tasks_file: str = "tasks_apparel_v2.json",
+             reading: str | None = None) -> dict:
+    """One stored run, its record as the suite writes it, replayed by `replay_box` from a
+    batch folder of its own."""
+    batch = pathlib.Path(folder) / f"20261020T1200{len(list(pathlib.Path(folder).iterdir())):02d}"
+    batch.mkdir()
+    tag = f"{task_id}-1"
+    (batch / f"{tag}.json").write_text(json.dumps({"result": {"final": "No.", "ok": True}}))
+    openjiuwen_log(str(batch), tag, [])
+    row = {"task": task_id, "repeat": 1, "verdict": "correct", "log": f"{tag}.log", "box": record,
+           "reading": reading}
+    (batch / "suite.json").write_text(json.dumps({"tasks_file": tasks_file, "reading": reading,
+                                                  "rows": [row]}))
+    return replay_box.replay(batch)[0]
+
+
+class ReplayUnderTheVersionThatRan(unittest.TestCase):
+    """`replay_box` recomposes a stored plan from its form with today's code and compares it
+    in the words of the box version that ran, with the run's own box-exhaust flag; today's
+    decision is the same, an expected difference for a named deliberate change shown to be
+    the whole difference, or unexpected (20 October 2026)."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.page = thornwood_page()
+        self.v2 = json.loads((paths.TASKS / "tasks_apparel_v2.json").read_text())
+        self.tasks = {t["id"]: t for t in self.v2["tasks"]}
+
+    def exhaust_record(self, task_id: str) -> dict:
+        """The record a dry run of --box-exhaust --reading menu writes for one task."""
+        args = mock.Mock(box=False, box_exhaust=True, reading="menu", targeting=False, exhaustive=False,
+                         confidence="off")
+        with mock.patch.object(suite, "results_page", lambda url: self.page):
+            query, applied = suite.build_query(self.tasks[task_id], self.v2, args)
+        self.assertIn(primitives.OPEN_EVERY, query)
+        return applied["box"]
+
+    def test_a_box_exhaust_run_replays_with_its_flag(self):
+        record = self.exhaust_record("apparel-cheapest-target")
+        row = replayed(self.tmp.name, "apparel-cheapest-target", record, reading="menu")
+        self.assertEqual((row["text_reproduced"], row["today"]), (True, "same"))
+        # Without the flag the plan is the box's, with its stop rule, so it is not the text
+        # the run was sent, and today's decision differs unexpectedly.
+        flagless = {**record, "exhaust": False, "plan": {**record["plan"], "exhaust": False}}
+        row = replayed(self.tmp.name, "apparel-cheapest-target", flagless, reading="menu")
+        self.assertFalse(row["text_reproduced"])
+        self.assertIn("Skip every unopened listing", row["differs"])
+        self.assertEqual(row["today"], "unexpected")
+
+    def v6_record(self, task_id: str) -> dict:
+        """A record as box v6 wrote it on 14 October 2026: its form read "under" as "<=", and
+        its text was that form's plan in the words box v6 sent."""
+        question = self.tasks[task_id]["query"].format(base=self.v2["base_url"])
+        record = box.decide(question, self.page).record()
+        old = form_module.from_record(record["form"], "rules")
+        old = dataclasses.replace(old, filters=tuple(
+            dataclasses.replace(f, op="<=") if f.attribute == "price" else f for f in old.filters))
+        plan = primitives.compose(old, self.page)
+        return {**record, "box_version": 6, "form": old.record(),
+                "query": box.as_sent_by(f"{question}\n\n{plan.text}", 6)}
+
+    def test_a_strict_limit_is_the_expected_difference_and_the_whole_of_it(self):
+        record = self.v6_record("apparel-exists-under-27")
+        self.assertIn("at or below $27.00", record["query"])
+        self.assertIn(box.REWORDED[2][1], record["query"])          # v6's quarantine wording
+        row = replayed(self.tmp.name, "apparel-exists-under-27", record)
+        self.assertEqual((row["text_reproduced"], row["today"], row["change"]),
+                         (True, "expected", "the limit is strict since form v9 (price < 27)"))
+        # A sentence of the stored text changed besides the operator: neither reproduced nor
+        # expected, and the line where it first differs is named.
+        tampered = {**record, "query": record["query"].replace("Do not open any others to confirm.",
+                                                               "Open one more to confirm.")}
+        row = replayed(self.tmp.name, "apparel-exists-under-27", tampered)
+        self.assertFalse(row["text_reproduced"])
+        self.assertIn("Open one more to confirm.", row["differs"])
+        self.assertEqual(row["today"], "unexpected")
+
+    def test_a_question_refused_today_is_an_expected_difference(self):
+        question = self.tasks["apparel-softest"]["query"].format(base=self.v2["base_url"])
+        today = box.decide(question, self.page)
+        self.assertTrue(today.refuse)
+        status, change = replay_box.compared_today(today, {"query": "the fallback's plan", "refuse": None,
+                                                           "box_version": 6})
+        self.assertEqual(status, "expected")
+        self.assertIn("refused today: The shop does not show what 'softest' ranks by", change)
+
+    def test_the_first_difference(self):
+        self.assertEqual(replay_box.first_difference("a\nb\nc", "a\nB\nc"), "line 2: stored 'b', today 'B'")
+        self.assertEqual(replay_box.first_difference("a", "a\nb"), "stored 1 lines, today 2")
 
 
 # ---------------------------------------------------------------------------
@@ -406,6 +484,11 @@ class StrictUnder(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # 4. The box without its stop rule
 
+# The quarantine's first sentence, which says what the bound decides, and the one the box
+# without its stop rule sends in its place (20 October 2026).
+QUARANTINE_LEAD = "Important: the figure this bound produces is a limit used only to decide what to skip."
+EXHAUST_LEAD = ("Important: the advertised price is the price of the cheapest option that can be bought, "
+                "which need not be the option asked about.")
 # Every sentence --box-exhaust may take out of the --box text, and every one it may put in,
 # by kind, on the questions of both clothing task files under each reading. Any other
 # difference fails `test_only_the_stop_sentences_differ`. The count questions, the
@@ -416,9 +499,11 @@ EXHAUST_DIFFERENCES = {
          "Such a listing cannot win whatever its stock.",
          "Stop when no unopened listing has an advertised price below your best available total.",
          "Say how many listings you opened, how many you skipped, and how many you rejected for being "
-         "unavailable."},
+         "unavailable.",
+         QUARANTINE_LEAD},
         {"Open every listing on the page before answering.",
-         "Say how many listings you opened, and how many you rejected for being unavailable."}),
+         "Say how many listings you opened, and how many you rejected for being unavailable.",
+         EXHAUST_LEAD}),
     "refutation": (
         {"Nothing more.", "So hunt for a counterexample rather than surveying:",
          "Open a listing and check for the option asked about.",
@@ -441,10 +526,12 @@ EXHAUST_DIFFERENCES = {
          "Skip every unopened listing whose advertised price is at or above {limit}.",
          "Nothing it can sell costs less than its advertised price, so it cannot meet the condition.",
          "Stopping after one opening, when that listing meets the condition, is the correct outcome here, "
-         "not a sign that you did too little."},
+         "not a sign that you did too little.",
+         QUARANTINE_LEAD},
         {"If the option is available and the price you read is below {limit}, answer yes and name that "
          "listing and the price you read.",
-         "Open every listing on the page before answering."}),
+         "Open every listing on the page before answering.",
+         EXHAUST_LEAD}),
     "topk_price": (
         {"Once you hold 3, skip every unopened listing whose advertised price is at or above the dearest of "
          "those 3 totals.",
@@ -454,11 +541,13 @@ EXHAUST_DIFFERENCES = {
          "and name those that do.",
          "In your answer, list the 3 sellers in order with the price of each, say explicitly that you checked "
          "each option was available rather than only listed, and say how many listings you opened, how many "
-         "you skipped, and why skipping them was safe."},
+         "you skipped, and why skipping them was safe.",
+         QUARANTINE_LEAD},
         {"Open every listing on the page before answering.",
          "If fewer than 3 listings have the option available, say so and name those that do.",
          "In your answer, list the 3 sellers in order with the price of each, say explicitly that you checked "
-         "each option was available rather than only listed, and say how many listings you opened."}),
+         "each option was available rather than only listed, and say how many listings you opened.",
+         EXHAUST_LEAD}),
     "named_lookup": (
         {"Open each of them and nothing else:",
          "Do not skip any of them: the question is about exactly these, so each has to be read, and opening "
@@ -521,7 +610,7 @@ class BoxExhaust(unittest.TestCase):
     def test_no_stop_sentence_survives_and_every_gated_plan_opens_everything(self):
         stops = ("skip every", "Stop when", "stop immediately", "Name it and stop", "nothing else",
                  "Stopping after", "cannot change the answer", "Do not open any others",
-                 "rather than surveying")
+                 "rather than surveying", "decide what to skip")
         for task_id, reading, plain, exhaust in both_arms():
             if plain.plan is None or plain.kind == "results_page":
                 continue

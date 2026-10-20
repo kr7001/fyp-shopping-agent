@@ -89,7 +89,63 @@ import targeting
 #      recorded as `exhaust` in the decision and the plan)
 #   11 20 October 2026. A fifth sentence made true (strategy text v9, primitives v7): a
 #      sold-out size cannot be chosen from the menu, where a script can still force it
-VERSION = 11
+#   12 20 October 2026. The box without its stop rule no longer opens its quarantine by
+#      saying the bound decides what to skip, since it skips nothing; it says what the
+#      advertised price is (primitives v8). The box's own text is unchanged
+VERSION = 12
+
+# Every wording of what the box sends that was changed on purpose since the box v2 batches
+# of 14 October 2026 (box v6), as (the box version that changed it, the words before, the
+# words since), in the order they were made. The one place they are listed: today's text
+# with every change made after a run's own box version swapped back is the text that run
+# was sent (`as_sent_by`), which is how `replay_box` checks a stored plan byte for byte and
+# `test_claim_arms.V1Amendment` checks the fixture frozen from v1 against v1. The strict
+# "under" of form v9 (box v10) changed what a question parses to rather than a sentence, and
+# a stored form keeps the operator it had, so a stored plan recomposed from its form needs
+# no entry for it; deciding a question again today is another matter (`replay_box`). The
+# quarantine's first sentence under the box without its stop rule (box v12) has none either:
+# it changed in that arm alone, the box's own text keeps the old one, and no run of that arm
+# was made before it changed.
+REWORDED = (
+    (10, "That price is the cheapest option in that listing, so nothing inside it can cost less.",
+     "That price is the cheapest option in that listing that can be bought, so nothing in it "
+     "that can be bought costs less."),
+    (10, "The price a listing shows before you choose is its cheapest option, not the one asked "
+         "about, and the reply to choosing an option does not show the new price.",
+     "The price a listing shows before you choose is its cheapest option that can be bought, "
+     "not necessarily the one asked about, and the reply to choosing an option does not show "
+     "the new price."),
+    (10, "It is not a real price and must never appear in your answer.",
+     "It is not a price read for the option asked about, and must never appear in your answer "
+     "as one."),
+    (10, "Stopping after one or two openings is the correct outcome here, not a sign that you did "
+         "too little.",
+     "Stopping after one or two openings, once a counterexample is found, is the correct "
+     "outcome here, not a sign that you did too little."),
+    (10, "Stopping after one opening is the correct outcome here, not a sign that you did too "
+         "little.",
+     "Stopping after one opening, when that listing meets the condition, is the correct outcome "
+     "here, not a sign that you did too little."),
+    (10, "is each listing's cheapest option, so it bounds a price from below",
+     "is each listing's cheapest option that can be bought, so it bounds a price from below"),
+    (10, "and only listings at or below it will count.", "and only listings below it will count."),
+    (11, "is shown as disabled or greyed out and cannot be chosen, so it has no price you can use.",
+     "is shown as disabled or greyed out and cannot be chosen from the menu, so it has no price "
+     "you can use."),
+)
+
+
+def as_sent_by(text: str | None, version: int | None) -> str | None:
+    """The text as box `version` sent it: today's words with every rewording made after that
+    version swapped back, the latest first (REWORDED). A record with no version is taken to
+    be from before all of them; a text from the current version comes back unchanged."""
+    if text is None:
+        return None
+    for since, before, after in reversed(REWORDED):
+        if since > (version or 0):
+            text = text.replace(after, before)
+    return text
+
 
 # The results page the question sends the agent to: the first URL in it.
 URL = re.compile(r"https?://\S+")

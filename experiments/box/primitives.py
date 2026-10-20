@@ -67,7 +67,10 @@ import targeting
 #      rule, for the arm that isolates it (`exhaust_swaps`, `suite.py --box-exhaust`)
 #   7  20 October 2026. A disabled size "cannot be chosen from the menu", where the text
 #      said it could not be chosen at all: a script can force it (strategy text v9)
-VERSION = 7
+#   8  20 October 2026. Under the box without its stop rule the quarantine no longer opens
+#      by saying the bound decides what to skip, since nothing is skipped there; it says
+#      what the advertised price is (`QUARANTINE_LEAD`). The box's own text is unchanged
+VERSION = 8
 
 # The same hazard as every v1 bound strategy: a figure derived from a bound is not a price.
 QUARANTINE = targeting.QUARANTINE
@@ -676,6 +679,15 @@ EXHAUST_STOP = "when every listing on the page has been opened"
 # under this arm, where nothing is skipped.
 SKIPPED = ("say how many listings you opened, how many you skipped, and why skipping them "
            "was safe.")
+# The quarantine opens by saying what the bound is for, deciding what to skip, which this
+# arm never does, so under it the sentence says what the advertised price is instead: true
+# on every listing, igr-app-14's included, whose card is the price of the very size asked
+# about (20 October 2026, from the review of the arm's text). The rest of the quarantine,
+# which prices may be reported, stays as the box sends it.
+QUARANTINE_LEAD = ("Important: the figure this bound produces is a limit used only to decide "
+                   "what to skip.",
+                   "Important: the advertised price is the price of the cheapest option that can "
+                   "be bought, which need not be the option asked about.")
 
 
 def exhaust_swaps(form: form_module.Form, page: page_module.Page) -> list[tuple[str, str]]:
@@ -697,7 +709,8 @@ def exhaust_swaps(form: form_module.Form, page: page_module.Page) -> list[tuple[
                      f"have found. It cannot win.\n"
                      "4. Stop when no unopened listing can beat your best rate.\n")}
         return [(steps[kind], f"3. {OPEN_EVERY}\n"),
-                (f"In your answer, {SKIPPED}", "In your answer, say how many listings you opened.")]
+                (f"In your answer, {SKIPPED}", "In your answer, say how many listings you opened."),
+                QUARANTINE_LEAD]
     if kind == "availability_bound":
         return [("4. Skip every unopened listing whose advertised price is at or above your best "
                  "available total. Such a listing cannot win whatever its stock.\n"
@@ -706,7 +719,8 @@ def exhaust_swaps(form: form_module.Form, page: page_module.Page) -> list[tuple[
                 ("Say how many listings you opened, how many you skipped, and how many you "
                  "rejected for being unavailable.",
                  "Say how many listings you opened, and how many you rejected for being "
-                 "unavailable.")]
+                 "unavailable."),
+                QUARANTINE_LEAD]
     if kind == "refutation":
         return [(" Nothing more.", ""),
                 ("So hunt for a counterexample rather than surveying:\n"
@@ -732,7 +746,8 @@ def exhaust_swaps(form: form_module.Form, page: page_module.Page) -> list[tuple[
                  f"${limit.value:.2f}. Nothing it can sell costs less than its advertised price, "
                  "so it cannot meet the condition.\n", f"4. {OPEN_EVERY}\n"),
                 (" Stopping after one opening, when that listing meets the condition, is the "
-                 "correct outcome here, not a sign that you did too little.", "")]
+                 "correct outcome here, not a sign that you did too little.", ""),
+                QUARANTINE_LEAD]
     if kind == "topk_price":
         k = form.k
         return [(f"4. Once you hold {k}, skip every unopened listing whose advertised price is at "
@@ -743,7 +758,8 @@ def exhaust_swaps(form: form_module.Form, page: page_module.Page) -> list[tuple[
                  "must open every listing, and then say so and name those that do.\n",
                  f"4. {OPEN_EVERY} If fewer than {k} listings have the option available, say so "
                  "and name those that do.\n"),
-                (f"and {SKIPPED}", "and say how many listings you opened.")]
+                (f"and {SKIPPED}", "and say how many listings you opened."),
+                QUARANTINE_LEAD]
     if kind == "named_lookup":
         return [(" Open each of them and nothing else:",
                  " Open every listing on the page before answering, these among them:"),

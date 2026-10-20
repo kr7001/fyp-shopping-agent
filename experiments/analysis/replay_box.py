@@ -15,6 +15,15 @@ so a parser change that would now plan the question differently is listed rather
 hidden. Nothing here reads an answer key for the check; the key is read only to say which
 runs were wrong, as `verify_cells` does.
 
+A stored text is compared under the version that ran (20 October 2026): the plan is
+recomposed with today's code from the stored form, with the stored run's own box-exhaust
+flag, and every rewording made since its box version is swapped back (`box.as_sent_by`)
+before the comparison, so a reworded sentence is not taken for a plan that changed. A text
+that still differs is listed with its first differing line. Today's decision is the same,
+or differs for a deliberate change named here (a question the box now refuses, a limit
+read strictly since form v9, checked to be the only difference), or differs unexpectedly,
+which is listed with its first differing line.
+
     python3 experiments/analysis/replay_box.py experiments/results/<batch> [...]
     python3 experiments/analysis/replay_box.py experiments/results/<batch> --menus   # the reader against the fixture
 """
@@ -22,6 +31,7 @@ runs were wrong, as `verify_cells` does.
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 import pathlib
 import sys
@@ -41,19 +51,75 @@ WRONG = ("wrong", "ambiguous")
 
 def stored_decision(row: dict) -> box_module.Decision:
     """The decision the box made for this row, rebuilt from its record: the page it read,
-    the form it parsed and the plan composed from them again. The question is the first
+    the form it parsed and the plan composed from them again, without its stop rule when
+    the run was the box without its stop rule (`--box-exhaust`). The question is the first
     paragraph of the stored text, with any reading already written into it."""
     record = row["box"]
     page = page_module.from_record(record["page"]) if record.get("page") else None
     form = None
     if record.get("form"):
         form = form_module.from_record(record["form"], record["form"].get("source") or "rules")
-    plan = primitives.compose(form, page) if record.get("plan") else None
+    exhaust = bool(record.get("exhaust"))
+    plan = primitives.compose(form, page, exhaust=exhaust) if record.get("plan") else None
     question = record["query"].split("\n\n", 1)[0]
     return box_module.Decision(question=question, kind=record["kind"], ask=None,
                                reading=record.get("reading"), query=record["query"],
                                plan=plan, page=page, form=form, refuse=record.get("refuse"),
-                               bypass=bool(record.get("bypassed")))
+                               bypass=bool(record.get("bypassed")), exhaust=exhaust)
+
+
+def first_difference(stored: str | None, today: str | None) -> str:
+    """The first line where two texts differ, both sides quoted from just before the first
+    character that differs, for a text that should have reproduced and did not."""
+    old, new = (stored or "").split("\n"), (today or "").split("\n")
+    for n, (a, b) in enumerate(zip(old, new)):
+        if a != b:
+            at = next((i for i, (x, y) in enumerate(zip(a, b)) if x != y), min(len(a), len(b)))
+            start = max(0, at - 40)
+            lead = "..." if start else ""
+            return f"line {n + 1}: stored {lead}{a[start:at + 100]!r}, today {lead}{b[start:at + 100]!r}"
+    if len(old) != len(new):
+        return f"stored {len(old)} lines, today {len(new)}"
+    return "no line differs"
+
+
+def as_sent(text: str | None, record: dict) -> str | None:
+    """Today's text in the words of the box version the stored run was sent under."""
+    return box_module.as_sent_by(text, record.get("box_version"))
+
+
+def reproduction(decision: box_module.Decision, record: dict) -> str:
+    """Empty when the stored text is reproduced from the record under its version, else the
+    first line that differs. A bypassed run's text is the question itself."""
+    if decision.plan is None:
+        return ""
+    rendered = as_sent(f"{decision.question}\n\n{decision.plan.text}", record)
+    return "" if rendered == record["query"] else first_difference(record["query"], rendered)
+
+
+def compared_today(today: box_module.Decision, record: dict) -> tuple[str, str]:
+    """("same", ""), ("expected", the deliberate change), or ("unexpected", the first line
+    that differs): today's decision on the stored question and page, against the stored one.
+
+    Two changes are deliberate and named. A question the box now refuses for an attribute
+    the shop does not show (box v7, form v5, 20 October 2026). And a price limit read
+    strictly since form v9 (box v10): only when the stored form read it as "<=", today's as
+    "<", and today's form with the old operator renders the stored text exactly, so the
+    operator is shown to be the only difference."""
+    if today.query is not None and as_sent(today.query, record) == record["query"]:
+        return "same", ""
+    if today.refuse and not record.get("refuse"):
+        return "expected", f"refused today: {today.refuse.split(',')[0]}"
+    stored_limit = next((f for f in (record.get("form") or {}).get("filters") or []
+                         if f.get("attribute") == "price"), None)
+    limit = today.form.filter("price") if today.form is not None else None
+    if stored_limit and stored_limit.get("op") == "<=" and limit is not None and limit.op == "<":
+        old = dataclasses.replace(today.form, filters=tuple(
+            dataclasses.replace(f, op="<=") if f is limit else f for f in today.form.filters))
+        plan = primitives.compose(old, today.page, exhaust=today.exhaust)
+        if as_sent(f"{today.question}\n\n{plan.text}", record) == record["query"]:
+            return "expected", f"the limit is strict since form v9 (price < {limit.value:g})"
+    return "unexpected", first_difference(record["query"], as_sent(today.query, record))
 
 
 def replay(batch: pathlib.Path) -> list[dict]:
@@ -73,11 +139,11 @@ def replay(batch: pathlib.Path) -> list[dict]:
         result = run.get("result") or {}
         answer = str(result.get("final") or "")
         decision = stored_decision(row)
-        reproduced = (decision.plan is None
-                      or f"{decision.question}\n\n{decision.plan.text}" == record["query"])
+        differs = reproduction(decision, record)
         question = tasks[row["task"]]["query"].format(base=spec["base_url"])
         reply = row.get("reading") or suite.get("reading")
-        today = box_module.decide(question, decision.page, reply=reply)
+        today = box_module.decide(question, decision.page, reply=reply, exhaust=decision.exhaust)
+        status, change = compared_today(today, record)
         verdict = box_module.check(decision, answer, batch / row["log"])
         rescored = verify_cells.rescore(tasks[row["task"]], answer,
                                         result.get("ok") in (True, "True"), row, suite, readings)
@@ -85,20 +151,28 @@ def replay(batch: pathlib.Path) -> list[dict]:
                      "verdict": rescored["verdict"], "ok": verdict["ok"],
                      "flag": verdict["flag"], "why": verdict["why"],
                      "opened": verdict.get("opened"), "primitive": verdict.get("primitive"),
-                     "text_reproduced": reproduced, "same_today": today.query == record["query"]})
+                     "text_reproduced": not differs, "differs": differs,
+                     "same_today": status == "same", "today": status, "change": change})
     return rows
 
 
 def summary(rows: list[dict]) -> dict:
-    """How the check did: the wrong runs it refused, and the others it refused."""
+    """How the check did: the wrong runs it refused, and the others it refused. Then how
+    the replay did: the stored texts reproduced under their version, with any that were not
+    and the line where each first differs; the runs decided the same today; those that
+    differ today for a deliberate change, with the change; and those that differ for any
+    other reason (`decided_differently_today`), each of which wants explaining."""
     wrong = [r for r in rows if r["verdict"] in WRONG]
     other = [r for r in rows if r["verdict"] not in WRONG]
     return {"runs": len(rows),
             "wrong": len(wrong), "wrong_refused": [tag(r) for r in wrong if not r["ok"]],
             "other": len(other), "other_refused": [tag(r) for r in other if not r["ok"]],
             "text_reproduced": sum(r["text_reproduced"] for r in rows),
+            "not_reproduced": [f"{tag(r)}: {r['differs']}" for r in rows if not r["text_reproduced"]],
             "same_today": sum(r["same_today"] for r in rows),
-            "decided_differently_today": [tag(r) for r in rows if not r["same_today"]]}
+            "expected_today": [f"{tag(r)}: {r['change']}" for r in rows if r["today"] == "expected"],
+            "decided_differently_today": [tag(r) for r in rows if r["today"] == "unexpected"],
+            "unexpected_today": [f"{tag(r)}: {r['change']}" for r in rows if r["today"] == "unexpected"]}
 
 
 def tag(row: dict) -> str:
@@ -163,7 +237,11 @@ def report(rows: list[dict]) -> None:
     for r in rows:
         if not r["ok"]:
             print(f"  refused {r['batch']} {tag(r)} ({r['verdict']}): {r['flag']}, {r['why']}")
-    for t in s["decided_differently_today"]:
+    for t in s["not_reproduced"]:
+        print(f"  stored text not reproduced: {t}")
+    for t in s["expected_today"]:
+        print(f"  decided differently today, as expected: {t}")
+    for t in s["unexpected_today"]:
         print(f"  decided differently today: {t}")
 
 
