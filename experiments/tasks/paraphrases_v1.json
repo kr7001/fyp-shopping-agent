@@ -1,238 +1,275 @@
 {
-  "_about": [
-    "Thirty rewordings of the Thornwood questions in tasks_apparel_v2.json, written by the",
-    "verifier on 20 October 2026 in its audit of the box, without looking at the regular",
-    "expressions the rules parse with, and run by it through box.decide at commit 3843e20.",
-    "Copied from the audit's script by value, nothing retyped: id is the audit's number, text",
-    "the question as it wrote it, template the task it rewords, label its own judgement where",
-    "it gave one (clear or ambiguous; null where it wrote -), and audit_expected the outcome",
-    "its script expected of box.decide, in its words: a plan's kind, ASK or REFUSE. That is",
-    "the template's own outcome on every question but 10 and 29, where the audit expected a",
-    "refutation and the template is asked back on (tests/test_probe.py checks this).",
-    "The audit put each question to the box as the lead, a space and the text, on the",
-    "Thornwood results page as the box read it in batch page_from, every row of whose",
-    "suite.json holds the same page record. runners/parse_probe.py --questions does the same,",
-    "so no shop is needed.",
-    "Not tuned: no question has been edited since the audit ran it, and no rule has been",
-    "changed to parse one. A rule written because of one of them makes the set in sample, so",
-    "a later set goes in a new file rather than an edit of this one (LESSONS 19).",
-    "No answer keys: no agent runs on these. They measure parsing only, the rules' form and",
-    "the model's form of each against the rules' form of its template."
-  ],
-  "templates": "tasks_apparel_v2.json",
-  "base_url": "http://localhost:7770",
-  "lead": "Go to {base}/catalogsearch/result/?q=Thornwood .",
-  "page_from": "20261014T213118",
-  "paraphrases": [
-    {
-      "id": 1,
-      "template": "apparel-headline",
-      "label": null,
-      "audit_expected": "results_page",
-      "text": "Looking only at the search results, which Thornwood tee has the lowest listed price and how much is it?"
-    },
-    {
-      "id": 2,
-      "template": "apparel-headline",
-      "label": null,
-      "audit_expected": "results_page",
-      "text": "Without clicking into any listing, which Thornwood tee shows the cheapest price in the search results?"
-    },
-    {
-      "id": 3,
-      "template": "apparel-target-price",
-      "label": "clear",
-      "audit_expected": "availability_bound",
-      "text": "What's the least I'd have to pay for a medium Thornwood tee that's actually in stock?"
-    },
-    {
-      "id": 4,
-      "template": "apparel-target-price",
-      "label": null,
-      "audit_expected": "availability_bound",
-      "text": "I need a size M Thornwood tee. What is the best price I can get from a seller that has it in stock?"
-    },
-    {
-      "id": 5,
-      "template": "apparel-target-price",
-      "label": "clear",
-      "audit_expected": "availability_bound",
-      "text": "Find me the cheapest medium Thornwood tee I can order today. How much is it?"
-    },
-    {
-      "id": 6,
-      "template": "apparel-cheapest-target",
-      "label": null,
-      "audit_expected": "availability_bound",
-      "text": "Which seller should I buy a size M Thornwood tee from if I want to pay as little as possible? It has to be in stock."
-    },
-    {
-      "id": 7,
-      "template": "apparel-cheapest-target",
-      "label": "clear",
-      "audit_expected": "availability_bound",
-      "text": "Who has the lowest price on an in-stock Thornwood tee in M, and what do they charge?"
-    },
-    {
-      "id": 8,
-      "template": "apparel-cheapest-target",
-      "label": null,
-      "audit_expected": "availability_bound",
-      "text": "Which Thornwood listing gives the best deal on size M right now?"
-    },
-    {
-      "id": 9,
-      "template": "apparel-all-stocked",
-      "label": "ambiguous",
-      "audit_expected": "ASK",
-      "text": "Do all the Thornwood sellers carry the tee in size M?"
-    },
-    {
-      "id": 10,
-      "template": "apparel-all-stocked",
-      "label": null,
-      "audit_expected": "refutation",
-      "text": "Is size M available from every Thornwood seller?"
-    },
-    {
-      "id": 11,
-      "template": "apparel-all-stocked",
-      "label": "ambiguous",
-      "audit_expected": "ASK",
-      "text": "Is there a Thornwood seller that doesn't have size M?"
-    },
-    {
-      "id": 12,
-      "template": "apparel-count-stocked",
-      "label": "ambiguous",
-      "audit_expected": "ASK",
-      "text": "How many Thornwood sellers stock a medium?"
-    },
-    {
-      "id": 13,
-      "template": "apparel-count-stocked",
-      "label": "ambiguous",
-      "audit_expected": "ASK",
-      "text": "In how many of the Thornwood listings can you find size M?"
-    },
-    {
-      "id": 14,
-      "template": "apparel-count-stocked",
-      "label": null,
-      "audit_expected": "ASK",
-      "text": "Count the Thornwood listings that have size M."
-    },
-    {
-      "id": 15,
-      "template": "apparel-count-buyable",
-      "label": null,
-      "audit_expected": "survey",
-      "text": "How many Thornwood listings can sell me a size M today?"
-    },
-    {
-      "id": 16,
-      "template": "apparel-count-buyable",
-      "label": "clear",
-      "audit_expected": "survey",
-      "text": "How many of the Thornwood tees are in stock in size M?"
-    },
-    {
-      "id": 17,
-      "template": "apparel-exists-under-27",
-      "label": null,
-      "audit_expected": "exists_price",
-      "text": "Can I get a Thornwood tee in M for less than $27 from anyone?"
-    },
-    {
-      "id": 18,
-      "template": "apparel-exists-under-25",
-      "label": null,
-      "audit_expected": "exists_price",
-      "text": "Is any Thornwood seller selling size M below $25?"
-    },
-    {
-      "id": 19,
-      "template": "apparel-top-3",
-      "label": null,
-      "audit_expected": "topk_price",
-      "text": "List the three lowest prices for an in-stock size M Thornwood tee, with the sellers."
-    },
-    {
-      "id": 20,
-      "template": "apparel-top-3",
-      "label": "clear",
-      "audit_expected": "topk_price",
-      "text": "Give me the 3 cheapest sellers of the Thornwood tee in size M that can actually ship it."
-    },
-    {
-      "id": 21,
-      "template": "apparel-named-pair",
-      "label": null,
-      "audit_expected": "named_lookup",
-      "text": "Is Copperfield Apparel or Elmsworth Clothing Co cheaper for a size M Thornwood tee?"
-    },
-    {
-      "id": 22,
-      "template": "apparel-named-pair",
-      "label": null,
-      "audit_expected": "named_lookup",
-      "text": "How much does Alderney Clothing Co charge for size M?"
-    },
-    {
-      "id": 23,
-      "template": "apparel-cheapest-xl",
-      "label": null,
-      "audit_expected": "availability_bound",
-      "text": "Who is cheapest for an extra large Thornwood tee that is in stock?"
-    },
-    {
-      "id": 24,
-      "template": "apparel-delivery",
-      "label": null,
-      "audit_expected": "REFUSE",
-      "text": "Which Thornwood seller will get a size M tee to me soonest?"
-    },
-    {
-      "id": 25,
-      "template": "apparel-softest",
-      "label": null,
-      "audit_expected": "REFUSE",
-      "text": "Which Thornwood seller has the best reviews?"
-    },
-    {
-      "id": 26,
-      "template": "apparel-cheap-no-figure",
-      "label": null,
-      "audit_expected": "ASK",
-      "text": "Is there an affordable Thornwood tee in medium?"
-    },
-    {
-      "id": 27,
-      "template": "apparel-count-stocked",
-      "label": "ambiguous",
-      "audit_expected": "ASK",
-      "text": "Which Thornwood listings offer an L?"
-    },
-    {
-      "id": 28,
-      "template": "apparel-all-stocked",
-      "label": "ambiguous",
-      "audit_expected": "ASK",
-      "text": "Does every Thornwood listing have an XL option?"
-    },
-    {
-      "id": 29,
-      "template": "apparel-all-stocked",
-      "label": "clear",
-      "audit_expected": "refutation",
-      "text": "Does every Thornwood listing have size M in stock? Answer yes or no."
-    },
-    {
-      "id": 30,
-      "template": "apparel-headline",
-      "label": "clear",
-      "audit_expected": "results_page",
-      "text": "What does the cheapest Thornwood tee on the results page cost?"
-    }
-  ]
+ "_about": [
+  "Thirty rewordings of the Thornwood questions in tasks_apparel_v2.json, written by the",
+  "verifier on 20 October 2026 in its audit of the box, without looking at the regular",
+  "expressions the rules parse with, and run by it through box.decide at commit 3843e20.",
+  "Copied from the audit's script by value, nothing retyped: id is the audit's number, text",
+  "the question as it wrote it, template the task it rewords, label its own judgement where",
+  "it gave one (clear or ambiguous; null where it wrote -), and audit_expected the outcome",
+  "its script expected of box.decide, in its words: a plan's kind, ASK or REFUSE. That is",
+  "the template's own outcome on every question but 10 and 29, where the audit expected a",
+  "refutation and the template is asked back on (tests/test_probe.py checks this).",
+  "The audit put each question to the box as the lead, a space and the text, on the",
+  "Thornwood results page as the box read it in batch page_from, every row of whose",
+  "suite.json holds the same page record. runners/parse_probe.py --questions does the same,",
+  "so no shop is needed.",
+  "Not tuned: no question has been edited since the audit ran it, and no rule has been",
+  "changed to parse one. A rule written because of one of them makes the set in sample, so",
+  "a later set goes in a new file rather than an edit of this one (LESSONS 19).",
+  "No answer keys: no agent runs on these. They measure parsing only, the rules' form and",
+  "the model's form of each against the rules' form of its template.",
+  "Decided on 20 October 2026, before any model call on this file: the comparison against the template's form is reported over the 24 entries with meaning_kept true. On the other 6 a correct parse cannot equal the template's form (meaning_differs says why), so they are reported one by one, read by hand, and never counted in the agreement figures."
+ ],
+ "templates": "tasks_apparel_v2.json",
+ "base_url": "http://localhost:7770",
+ "lead": "Go to {base}/catalogsearch/result/?q=Thornwood .",
+ "page_from": "20261014T213118",
+ "paraphrases": [
+  {
+   "id": 1,
+   "template": "apparel-headline",
+   "label": null,
+   "audit_expected": "results_page",
+   "text": "Looking only at the search results, which Thornwood tee has the lowest listed price and how much is it?",
+   "meaning_kept": true
+  },
+  {
+   "id": 2,
+   "template": "apparel-headline",
+   "label": null,
+   "audit_expected": "results_page",
+   "text": "Without clicking into any listing, which Thornwood tee shows the cheapest price in the search results?",
+   "meaning_kept": true
+  },
+  {
+   "id": 3,
+   "template": "apparel-target-price",
+   "label": "clear",
+   "audit_expected": "availability_bound",
+   "text": "What's the least I'd have to pay for a medium Thornwood tee that's actually in stock?",
+   "meaning_kept": true
+  },
+  {
+   "id": 4,
+   "template": "apparel-target-price",
+   "label": null,
+   "audit_expected": "availability_bound",
+   "text": "I need a size M Thornwood tee. What is the best price I can get from a seller that has it in stock?",
+   "meaning_kept": true
+  },
+  {
+   "id": 5,
+   "template": "apparel-target-price",
+   "label": "clear",
+   "audit_expected": "availability_bound",
+   "text": "Find me the cheapest medium Thornwood tee I can order today. How much is it?",
+   "meaning_kept": true
+  },
+  {
+   "id": 6,
+   "template": "apparel-cheapest-target",
+   "label": null,
+   "audit_expected": "availability_bound",
+   "text": "Which seller should I buy a size M Thornwood tee from if I want to pay as little as possible? It has to be in stock.",
+   "meaning_kept": true
+  },
+  {
+   "id": 7,
+   "template": "apparel-cheapest-target",
+   "label": "clear",
+   "audit_expected": "availability_bound",
+   "text": "Who has the lowest price on an in-stock Thornwood tee in M, and what do they charge?",
+   "meaning_kept": true
+  },
+  {
+   "id": 8,
+   "template": "apparel-cheapest-target",
+   "label": null,
+   "audit_expected": "availability_bound",
+   "text": "Which Thornwood listing gives the best deal on size M right now?",
+   "meaning_kept": true
+  },
+  {
+   "id": 9,
+   "template": "apparel-all-stocked",
+   "label": "ambiguous",
+   "audit_expected": "ASK",
+   "text": "Do all the Thornwood sellers carry the tee in size M?",
+   "meaning_kept": true
+  },
+  {
+   "id": 10,
+   "template": "apparel-all-stocked",
+   "label": null,
+   "audit_expected": "refutation",
+   "text": "Is size M available from every Thornwood seller?",
+   "meaning_kept": false,
+   "meaning_differs": "settles the reading (\"available\"), so a correct parse adds availability = buyable to the template's form"
+  },
+  {
+   "id": 11,
+   "template": "apparel-all-stocked",
+   "label": "ambiguous",
+   "audit_expected": "ASK",
+   "text": "Is there a Thornwood seller that doesn't have size M?",
+   "meaning_kept": true
+  },
+  {
+   "id": 12,
+   "template": "apparel-count-stocked",
+   "label": "ambiguous",
+   "audit_expected": "ASK",
+   "text": "How many Thornwood sellers stock a medium?",
+   "meaning_kept": true
+  },
+  {
+   "id": 13,
+   "template": "apparel-count-stocked",
+   "label": "ambiguous",
+   "audit_expected": "ASK",
+   "text": "In how many of the Thornwood listings can you find size M?",
+   "meaning_kept": true
+  },
+  {
+   "id": 14,
+   "template": "apparel-count-stocked",
+   "label": null,
+   "audit_expected": "ASK",
+   "text": "Count the Thornwood listings that have size M.",
+   "meaning_kept": true
+  },
+  {
+   "id": 15,
+   "template": "apparel-count-buyable",
+   "label": null,
+   "audit_expected": "survey",
+   "text": "How many Thornwood listings can sell me a size M today?",
+   "meaning_kept": true
+  },
+  {
+   "id": 16,
+   "template": "apparel-count-buyable",
+   "label": "clear",
+   "audit_expected": "survey",
+   "text": "How many of the Thornwood tees are in stock in size M?",
+   "meaning_kept": true
+  },
+  {
+   "id": 17,
+   "template": "apparel-exists-under-27",
+   "label": null,
+   "audit_expected": "exists_price",
+   "text": "Can I get a Thornwood tee in M for less than $27 from anyone?",
+   "meaning_kept": true
+  },
+  {
+   "id": 18,
+   "template": "apparel-exists-under-25",
+   "label": null,
+   "audit_expected": "exists_price",
+   "text": "Is any Thornwood seller selling size M below $25?",
+   "meaning_kept": true
+  },
+  {
+   "id": 19,
+   "template": "apparel-top-3",
+   "label": null,
+   "audit_expected": "topk_price",
+   "text": "List the three lowest prices for an in-stock size M Thornwood tee, with the sellers.",
+   "meaning_kept": true
+  },
+  {
+   "id": 20,
+   "template": "apparel-top-3",
+   "label": "clear",
+   "audit_expected": "topk_price",
+   "text": "Give me the 3 cheapest sellers of the Thornwood tee in size M that can actually ship it.",
+   "meaning_kept": true
+  },
+  {
+   "id": 21,
+   "template": "apparel-named-pair",
+   "label": null,
+   "audit_expected": "named_lookup",
+   "text": "Is Copperfield Apparel or Elmsworth Clothing Co cheaper for a size M Thornwood tee?",
+   "meaning_kept": true
+  },
+  {
+   "id": 22,
+   "template": "apparel-named-pair",
+   "label": null,
+   "audit_expected": "named_lookup",
+   "text": "How much does Alderney Clothing Co charge for size M?",
+   "meaning_kept": false,
+   "meaning_differs": "asks one named seller's price, where the template compares two named sellers"
+  },
+  {
+   "id": 23,
+   "template": "apparel-cheapest-xl",
+   "label": null,
+   "audit_expected": "availability_bound",
+   "text": "Who is cheapest for an extra large Thornwood tee that is in stock?",
+   "meaning_kept": true
+  },
+  {
+   "id": 24,
+   "template": "apparel-delivery",
+   "label": null,
+   "audit_expected": "REFUSE",
+   "text": "Which Thornwood seller will get a size M tee to me soonest?",
+   "meaning_kept": true
+  },
+  {
+   "id": 25,
+   "template": "apparel-softest",
+   "label": null,
+   "audit_expected": "REFUSE",
+   "text": "Which Thornwood seller has the best reviews?",
+   "meaning_kept": false,
+   "meaning_differs": "asks about reviews, where the template asks about softness"
+  },
+  {
+   "id": 26,
+   "template": "apparel-cheap-no-figure",
+   "label": null,
+   "audit_expected": "ASK",
+   "text": "Is there an affordable Thornwood tee in medium?",
+   "meaning_kept": true
+  },
+  {
+   "id": 27,
+   "template": "apparel-count-stocked",
+   "label": "ambiguous",
+   "audit_expected": "ASK",
+   "text": "Which Thornwood listings offer an L?",
+   "meaning_kept": false,
+   "meaning_differs": "asks which listings offer size L, where the template counts the listings that offer size M"
+  },
+  {
+   "id": 28,
+   "template": "apparel-all-stocked",
+   "label": "ambiguous",
+   "audit_expected": "ASK",
+   "text": "Does every Thornwood listing have an XL option?",
+   "meaning_kept": false,
+   "meaning_differs": "asks about size XL, where the template asks about size M"
+  },
+  {
+   "id": 29,
+   "template": "apparel-all-stocked",
+   "label": "clear",
+   "audit_expected": "refutation",
+   "text": "Does every Thornwood listing have size M in stock? Answer yes or no.",
+   "meaning_kept": false,
+   "meaning_differs": "settles the reading (\"in stock\"), so a correct parse adds availability = buyable to the template's form"
+  },
+  {
+   "id": 30,
+   "template": "apparel-headline",
+   "label": "clear",
+   "audit_expected": "results_page",
+   "text": "What does the cheapest Thornwood tee on the results page cost?",
+   "meaning_kept": true
+  }
+ ]
 }

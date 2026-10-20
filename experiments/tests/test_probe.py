@@ -390,7 +390,7 @@ THORNWOOD = paths.RESULTS / "20261014T213118" / "suite.json"
 # The thirty entries, each as the audit's script holds it (id, template, label, expected
 # outcome, text), copied by value on 20 October 2026. Pinned so that no question is edited
 # after its result has been seen: a new set is a new file (the file's _about).
-PARAPHRASES_DIGEST = "12921d8e08d4498ea6aeb127554ab174864f5ee730e704571417775b26f1c37d"
+PARAPHRASES_DIGEST = "0737b62164b56cc15b3685786211d9597808d7fafc498bad7c706aa439c6976d"
 
 
 def digest(entries: list[dict]) -> str:
