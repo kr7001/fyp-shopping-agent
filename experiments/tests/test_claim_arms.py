@@ -7,6 +7,7 @@ Every rule has a case where it must fire and one where it must stay quiet (LESSO
 31). Nothing here reaches a model: the suite runs in this process with its runner replaced
 by one that writes a record and a log and returns.
 """
+import base64
 import contextlib
 import dataclasses
 import difflib
@@ -27,6 +28,7 @@ import paths  # noqa: E402
 import ambiguity  # noqa: E402
 import box  # noqa: E402
 import form as form_module  # noqa: E402
+import leaks  # noqa: E402
 import page as page_module  # noqa: E402
 import primitives  # noqa: E402
 import suite  # noqa: E402
@@ -883,6 +885,147 @@ class VoidsOnTheStoredBatch(unittest.TestCase):
         self.assertEqual((runs["apparel-count-buyable-3"].outcome, runs["apparel-count-buyable-3"].reason),
                          (voids.NOT_CORRECT, "step budget"))
         self.assertEqual(sum(run.outcome == voids.ANSWERED for run in runs.values()), 11)
+
+
+# ---------------------------------------------------------------------------
+# 8. Runs that read the prices the gated theme hides
+
+THEME = (paths.REPO / "env" / "gated_theme" / "Magento_ConfigurableProduct" / "templates" / "product"
+         / "view" / "type" / "options" / "configurable.phtml")
+# A stretch of igr-app-08's blob as one stored run's tool reply held it, cut mid-blob, with
+# neither the attribute's name nor its start (20261014T220116/apparel-softest-1).
+EXCERPT = ("W91bnQiOjE3LjEyfSwiYmFzZVByaWNlIjp7ImFtb3VudCI6MTcuMTJ9LCJmaW5hbFByaWNlIjp7ImFtb3VudCI6MTcu"
+           "MTJ9LCJ0aWVyUHJpY2VzIjpbXSwibXNycFByaWNlIjp7ImFtb3VudCI6MH19LCIxMDYyODciOnsiYmFzZU9sZFByaWNl"
+           "Ijp7ImFtb3VudCI6MTguMDh9")
+
+
+def blob(prices: dict[str, float]) -> str:
+    """The attribute the theme writes for these child prices: json_encode, then base64."""
+    table = {child: {key: {"amount": price} for key in ("baseOldPrice", "oldPrice", "basePrice", "finalPrice")}
+             | {"tierPrices": [], "msrpPrice": {"amount": 0}} for child, price in prices.items()}
+    return base64.b64encode(json.dumps(table, separators=(",", ":")).encode()).decode()
+
+
+def tool_log(folder: str, name: str, replies: list[str], said: str = "") -> pathlib.Path:
+    """An openJiuwen log holding these tool replies, and an assistant message saying `said`."""
+    messages = [{"role": "user", "content": "the task"},
+                {"role": "assistant", "content": said, "tool_calls": [
+                    {"id": f"c{n}", "function": {"name": "mcp_playwright-official_browser_evaluate",
+                                                 "arguments": "{}"}} for n in range(len(replies))]}]
+    messages += [{"role": "tool", "tool_call_id": f"c{n}", "content": text} for n, text in enumerate(replies)]
+    path = pathlib.Path(folder) / f"{name}.log"
+    path.write_text(json.dumps({"event_id": "e1", "messages": messages}) + "\n")
+    return path
+
+
+class LeakCounter(unittest.TestCase):
+    """`leaks.py` on the three signs it reads, each planted and each left out, and on how it
+    knows the hidden prices of a batch's market."""
+
+    def setUp(self):
+        self.thornwood = leaks.market_of(paths.FIXTURES / "scaled_apparel.json")
+
+    def test_the_theme_encodes_as_the_counter_reads(self):
+        template = THEME.read_text()
+        self.assertIn("$hidden = base64_encode(json_encode($truePrices));", template)
+        self.assertIn('data-igr="<?= $block->escapeHtmlAttr($hidden) ?>"', template)
+        self.assertIn('id="igr-variant-store"', template)
+
+    def test_the_blob_is_found_whatever_its_alignment_or_cut(self):
+        for children in ({"106279": 16.22, "106280": 15.04}, {"7": 9.5}, {"12345678": 20.0, "9": 1.0},
+                         {"1": 3.0, "22": 4.0, "333": 5.0}):
+            with self.subTest(children=children):
+                encoded = blob(children)
+                self.assertTrue(any(sig in encoded for sig in leaks.SIGNATURES))
+                self.assertTrue(leaks.leaks_in(f"... {encoded[37:]} ...", "", None))
+        self.assertTrue(any(sig in EXCERPT for sig in leaks.SIGNATURES))
+        # Quiet on base64 that is not the blob, and on the keys written out as plain JSON.
+        for clean in (base64.b64encode(b"an image, or a session token: 0123456789" * 3).decode(),
+                      '{"finalPrice":{"amount":18.33}}', "As low as $18.33"):
+            with self.subTest(clean=clean[:30]):
+                self.assertEqual(leaks.leaks_in(clean, clean, None), [])
+
+    def test_the_store_words_are_found_anywhere_in_the_log(self):
+        for word in ("data-igr", "igr-variant-store"):
+            with self.subTest(word=word):
+                self.assertEqual(len(leaks.leaks_in(f'<div id="x" {word}="...">', "", None)), 1)
+        self.assertEqual(leaks.leaks_in("<div hidden>", "", None), [])
+
+    def test_a_hidden_price_counts_in_a_tool_reply_only(self):
+        self.assertEqual(sorted(self.thornwood.hidden)[:3], [1504, 1622, 1655])
+        self.assertEqual(len(self.thornwood.hidden), 12)
+        self.assertEqual(self.thornwood.hidden[1504], ["igr-app-07 M"])
+        with tempfile.TemporaryDirectory() as tmp:
+            forced = tool_log(tmp, "forced", ['### Result\\n"As low as\\\\n        $15.04"'])
+            shown = tool_log(tmp, "shown", ['### Result\\n"As low as\\\\n        $18.33"'])
+            said = tool_log(tmp, "said", ["### Result\\nok"], said="M might be $15.04")
+            for path, count in ((forced, 1), (shown, 0), (said, 0)):
+                with self.subTest(log=path.stem):
+                    log = path.read_text()
+                    self.assertEqual(len(leaks.leaks_in(log, leaks.tool_text(path, log), self.thornwood)), count)
+            # The second agent's log: its observations count, its own calls and answer do not.
+            naive = pathlib.Path(tmp) / "naive.log"
+            naive.write_text('[tool read_page] {"url": "x"}\nAs low as $15.04\n\n'
+                             '[tool finish] {"answer": "M is $16.22 at Fairhaven"}\n')
+            text = naive.read_text()
+            found = leaks.leaks_in(text, leaks.tool_text(naive, text), self.thornwood)
+            self.assertEqual(len(found), 1)
+            self.assertIn("$15.04 (igr-app-07 M)", found[0])
+
+    def test_a_sold_out_price_some_listing_shows_does_not_count(self):
+        # Seller B's sold-out M costs what Seller A's buyable L does, so $12.00 on a page
+        # says nothing; Seller B's sold-out S at $9.99 is shown nowhere and counts.
+        fixture = {"families": [
+            {"parent_sku": "X-01", "variants": [{"option": "L", "price": 12.00, "qty": 3}]},
+            {"parent_sku": "X-02", "variants": [{"option": "M", "price": 12.00, "qty": 0},
+                                                {"option": "S", "price": 9.99, "qty": 0},
+                                                {"option": "XL", "price": 14.00, "qty": 5}]}]}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = pathlib.Path(tmp) / "fixture.json"
+            path.write_text(json.dumps(fixture))
+            market = leaks.market_of(path)
+        self.assertEqual((market.hidden, market.shown_too), ({999: ["x-02 S"]}, ["x-02 M"]))
+        self.assertEqual(leaks.leaks_in("", "As low as $12.00", market), [])
+        self.assertEqual(len(leaks.leaks_in("", "As low as $9.99", market)), 1)
+
+    def test_the_hidden_prices_are_only_looked_for_on_the_batchs_own_market(self):
+        market, why = leaks.batch_market({"tasks_file": "tasks_apparel.json", "draw": "Thornwood:f9faf835ea"})
+        self.assertEqual((market.name, why), ("scaled_apparel.json", ""))
+        claim, _ = leaks.batch_market({"tasks_file": "tasks_claim_apparel.json",
+                                       "draw": suite.draw_id(json.loads((paths.TASKS / "tasks_claim_apparel.json")
+                                                                         .read_text()))})
+        self.assertEqual(claim.name, "claim_apparel.json")
+        for payload, reason in (({"tasks_file": "tasks_apparel.json", "draw": "Thornwood:e923925b0b"}, "draw"),
+                                ({"tasks_file": "tasks_scaled.json", "draw": "Rivenhall:2cf12d1df7"}, "no brand"),
+                                ({"tasks_file": "tasks_heldout.json", "draw": "x"}, "fixture"),
+                                ({}, "no task file")):
+            with self.subTest(payload=payload):
+                market, why = leaks.batch_market(payload)
+                self.assertIsNone(market)
+                self.assertIn(reason, why)
+
+
+LEAK_BATCHES = [paths.RESULTS / name for name in ("20261007T115021", "20261014T220116", "20261007T112057")]
+
+
+@unittest.skipUnless(all(any(b.glob("*.log")) for b in LEAK_BATCHES), "the raw logs live on the laptop, not in git")
+class LeaksOnTheStoredBatches(unittest.TestCase):
+    """The counter on the stored runs where it found something, and on a batch it clears."""
+
+    def found(self, batch: pathlib.Path) -> dict[str, list[str]]:
+        runs, _ = leaks.batch_leaks(batch)
+        return {run.run: run.found for run in runs if run.found}
+
+    def test_the_three_runs(self):
+        cell_2 = self.found(LEAK_BATCHES[0])
+        self.assertEqual(sorted(cell_2), ["apparel-target-price-1"])
+        self.assertEqual(sorted(re.findall(r"\(igr-app-\d\d M\)", " ".join(cell_2["apparel-target-price-1"]))),
+                         ["(igr-app-05 M)", "(igr-app-07 M)", "(igr-app-08 M)", "(igr-app-09 M)", "(igr-app-10 M)"])
+        development = self.found(LEAK_BATCHES[1])
+        self.assertEqual(sorted(development), ["apparel-softest-1", "apparel-top-3-1"])
+        self.assertTrue(all(f.startswith("the blob") for f in development["apparel-softest-1"]))
+        self.assertTrue(all("(igr-app-10 M)" in f for f in development["apparel-top-3-1"]))
+        self.assertEqual(self.found(LEAK_BATCHES[2]), {})
 
 
 if __name__ == "__main__":
