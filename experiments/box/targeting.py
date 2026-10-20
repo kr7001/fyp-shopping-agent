@@ -77,7 +77,17 @@ import re
 #     is correct once a counterexample is found, and how soon one is depends on the market
 #     and the order: on Thornwood under the menu reading the first listing without M is the
 #     ninth in page order. It now says so
-VERSION = 8
+#
+# v9, 20 October 2026, from the leak counter (`analysis/leaks.py`) the same day. "it is shown
+# as disabled or greyed out and cannot be chosen, so it has no price you can use" (the
+# availability bound, and every box v2 text through `primitives.option_steps`). The menu
+# refuses it (Playwright's own selectOption waits on the disabled option and times out,
+# checked on igr-app-07), but two stored runs set the menu's value to a sold-out M by script
+# and the theme's reveal script printed its price (20261007T115021/apparel-target-price-1,
+# 20261014T220116/apparel-top-3-1). It now says it cannot be chosen from the menu, which is
+# true, and still that it has no price the shopper can use, which is true however the figure
+# was reached
+VERSION = 9
 
 # Ordered, and the order matters. A universal question about stock also contains the word
 # "lowest" in some phrasings, so the coverage test is applied before the price tests.
@@ -227,7 +237,7 @@ BODIES = {
         "the reply to choosing an option does not show the new price. Second, check whether "
         "that option can actually be bought. An option can be listed and still be "
         "unavailable, in which case it is shown as disabled or greyed out and cannot be "
-        "chosen, so it has no price you can use.\n"
+        "chosen from the menu, so it has no price you can use.\n"
         "3. A listing only becomes your best candidate if the option is both cheaper and "
         "available. A cheaper unavailable one changes nothing.\n"
         "4. Skip every unopened listing whose advertised price is at or above your best "

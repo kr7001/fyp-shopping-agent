@@ -166,10 +166,11 @@ class IsolatedProfile(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# 2. Strategy text v8
+# 2. Strategy texts v8 and v9
 
-# The four sentences v8 rewords, as v7 wrote them and as v8 writes them.
-V8_REWORDINGS = (
+# The five sentences v8 and v9 reword, as v7 wrote them and as they are written now: four in
+# v8, from the audit, and the fifth in v9, from what the leak counter found.
+REWORDINGS = (
     ("That price is the cheapest option in that listing, so nothing inside it can cost less.",
      "That price is the cheapest option in that listing that can be bought, so nothing in it "
      "that can be bought costs less."),
@@ -185,6 +186,10 @@ V8_REWORDINGS = (
      "too little.",
      "Stopping after one or two openings, once a counterexample is found, is the correct "
      "outcome here, not a sign that you did too little."),
+    ("An option can be listed and still be unavailable, in which case it is shown as disabled or "
+     "greyed out and cannot be chosen, so it has no price you can use.",
+     "An option can be listed and still be unavailable, in which case it is shown as disabled or "
+     "greyed out and cannot be chosen from the menu, so it has no price you can use."),
 )
 # The sha1 of the 18 queries in fixtures/v1_clothing_queries.json as frozen at e3880ef from
 # the v1 code, json.dumps(queries, sort_keys=True), read before the amendment.
@@ -208,17 +213,18 @@ def every_text() -> list[str]:
 
 
 class StrategyTextV8(unittest.TestCase):
-    """The four sentences v8 rewords were false of the gated shop: igr-app-07 advertises
-    $18.33 with M sold out at $15.04, and Thornwood's cheapest M, igr-app-14 at $25.77, is
-    that listing's own card price."""
+    """The five sentences v8 and v9 reword were false of the gated shop: igr-app-07
+    advertises $18.33 with M sold out at $15.04, Thornwood's cheapest M, igr-app-14 at
+    $25.77, is that listing's own card price, and a script can force a sold-out size the
+    menu refuses (20261007T115021/apparel-target-price-1)."""
 
     def test_the_versions(self):
         self.assertEqual((targeting.VERSION, box.VERSION, form_module.VERSION, primitives.VERSION),
-                         (8, 10, 9, 6))
+                         (9, 11, 9, 7))
 
     def test_no_text_the_box_sends_holds_a_v7_sentence(self):
         texts = every_text()
-        for old, new in V8_REWORDINGS:
+        for old, new in REWORDINGS:
             with self.subTest(sentence=old[:50]):
                 self.assertFalse(any(old in text for text in texts))
                 self.assertTrue(any(new in text for text in texts))
@@ -233,25 +239,25 @@ class StrategyTextV8(unittest.TestCase):
                     synthetic_page([12.0])))
 
     def test_the_quarantine_and_the_stop_sentences_read_v8(self):
-        self.assertIn(V8_REWORDINGS[2][1], targeting.QUARANTINE)
-        self.assertIn(V8_REWORDINGS[3][1], targeting.BODIES["refutation"])
+        self.assertIn(REWORDINGS[2][1], targeting.QUARANTINE)
+        self.assertIn(REWORDINGS[3][1], targeting.BODIES["refutation"])
         exists = primitives.witness_text(form_module.from_rules(GO + "Is there any seller under $20 for size M?"))
         self.assertIn("Stopping after one opening, when that listing meets the condition, is the "
                       "correct outcome here", exists)
 
 
 class V1Amendment(unittest.TestCase):
-    """The fixture `test_box.V1Bytes` pins was amended on 20 October 2026 for v8, and in the
-    four sentences only: undoing them gives back the queries v1 rendered, to the byte."""
+    """The fixture `test_box.V1Bytes` pins was amended on 20 October 2026 for v8 and v9, and
+    in the five sentences only: undoing them gives back the queries v1 rendered, to the byte."""
 
     def setUp(self):
         self.frozen = json.loads((FIXTURES / "v1_clothing_queries.json").read_text())
 
-    def test_undoing_the_four_rewordings_gives_the_v1_queries(self):
+    def test_undoing_the_five_rewordings_gives_the_v1_queries(self):
         undone = []
         for row in self.frozen["queries"]:
             query = row["query"]
-            for old, new in V8_REWORDINGS:
+            for old, new in REWORDINGS:
                 query = query.replace(new, old) if query else query
             undone.append({**row, "query": query})
         digest = hashlib.sha1(json.dumps(undone, sort_keys=True).encode()).hexdigest()
@@ -262,13 +268,13 @@ class V1Amendment(unittest.TestCase):
 
     def test_each_rewording_is_in_the_fixture_and_dated(self):
         queries = [row["query"] or "" for row in self.frozen["queries"]]
-        for old, new in V8_REWORDINGS:
+        for old, new in REWORDINGS:
             with self.subTest(sentence=new[:50]):
                 self.assertTrue(any(new in q for q in queries))
                 self.assertFalse(any(old in q for q in queries))
         about = " ".join(self.frozen["_about"])
         self.assertIn("box.VERSION 1", about)          # the v1 provenance is kept
-        self.assertIn("Amended on 20 October 2026 for strategy text v8", about)
+        self.assertIn("Amended on 20 October 2026 for strategy texts v8 and v9", about)
 
 
 # ---------------------------------------------------------------------------

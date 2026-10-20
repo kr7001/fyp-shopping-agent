@@ -65,7 +65,9 @@ import targeting
 #      may be the one asked about, and stopping after one opening is right when that
 #      listing settles it (strategy text v8). And a plan can be composed without its stop
 #      rule, for the arm that isolates it (`exhaust_swaps`, `suite.py --box-exhaust`)
-VERSION = 6
+#   7  20 October 2026. A disabled size "cannot be chosen from the menu", where the text
+#      said it could not be chosen at all: a script can force it (strategy text v9)
+VERSION = 7
 
 # The same hazard as every v1 bound strategy: a figure derived from a bound is not a price.
 QUARANTINE = targeting.QUARANTINE
@@ -217,7 +219,8 @@ def option_steps(form: form_module.Form) -> str:
     if availability is not None and availability.value == "buyable":
         steps.append("Then check whether that option can actually be bought. An option can be "
                      "listed and still be unavailable, in which case it is shown as disabled or "
-                     "greyed out and cannot be chosen, so it has no price you can use.")
+                     "greyed out and cannot be chosen from the menu, so it has no price you can "
+                     "use.")
     elif availability is not None:
         steps.append("An option counts when it is in the listing's menu, whether or not it can "
                      "be chosen.")

@@ -16,9 +16,9 @@ soundness properties, and composes the plan from a retrieval primitive (`primiti
 For the seven kinds v1 had, the text is the strategy body under the box's own account of
 the market, which `tests/test_box.py` pins against a fixture frozen from v1. Until box v10
 it was v1's bytes exactly, so the pilot measured under v1 was a measurement of what v2
-sent; since strategy text v8 (20 October 2026) it differs from them in the four sentences
-v8 made true of the gated shop, and in nothing else, which the fixture's dated amendment
-records.
+sent; since strategy texts v8 and v9 (20 October 2026) it differs from them in the five
+sentences those made true of the gated shop, and in nothing else, which the fixture's
+dated amendment records.
 """
 
 from __future__ import annotations
@@ -87,7 +87,9 @@ import targeting
 #      (strategy text v8). And the box can plan without its stop rule, every listing on
 #      the page opened, for the arm that isolates the stop rule (`decide(exhaust=True)`,
 #      recorded as `exhaust` in the decision and the plan)
-VERSION = 10
+#   11 20 October 2026. A fifth sentence made true (strategy text v9, primitives v7): a
+#      sold-out size cannot be chosen from the menu, where a script can still force it
+VERSION = 11
 
 # The results page the question sends the agent to: the first URL in it.
 URL = re.compile(r"https?://\S+")

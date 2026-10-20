@@ -409,11 +409,12 @@ class V1Bytes(unittest.TestCase):
     reading and under each scripted reading. So the pilot measured under v1 is a
     measurement of the text v2 sends.
 
-    Amended on 20 October 2026 for strategy text v8 (box v10): four sentences of the v1
-    text were not true of the gated shop, and the fixture's entries were rewritten with
-    them reworded, deliberately, with a dated note in its `_about`. Every other byte is
-    still v1's, which `test_claim_arms.V1Amendment` checks against the v1 queries' sha1. So
-    since box v10 the pilot measured a text that differs from today's in those four."""
+    Amended on 20 October 2026 for strategy texts v8 and v9 (box v10 and v11): five
+    sentences of the v1 text were not true of the gated shop, and the fixture's entries
+    were rewritten with them reworded, deliberately, with a dated note in its `_about`.
+    Every other byte is still v1's, which `test_claim_arms.V1Amendment` checks against the
+    v1 queries' sha1. So since box v10 the pilot measured a text that differs from today's
+    in those five."""
 
     def test_every_frozen_entry_is_reproduced(self):
         frozen = json.loads((FIXTURES / "v1_clothing_queries.json").read_text())
