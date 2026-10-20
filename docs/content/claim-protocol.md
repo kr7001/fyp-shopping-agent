@@ -292,3 +292,16 @@ CHAIN
   spots.
 - The browser flags (allowed origins, blocked service workers, a fresh profile) differ from
   the Thornwood cells' conditions. All the claim's arms run under the same flags.
+
+## Errata (after the stamp, wording only)
+
+Added on 20 October at 20:25, after both commands had started. Nothing of substance changes.
+
+- The amendment of 14:08 lists "four further false sentences, the scripted-choice wording".
+  The paragraph above it already counts the scripted-choice sentence among those four, so
+  read together they count it twice. The exact record is `box.REWORDED`: eight rewordings in
+  all, five of them in the six claim questions' texts.
+- "The account's own limit, $100" is the API key's limit. The account itself holds more
+  credit.
+- The claim command started at 20:15. The night command was approved at 20:20, with all
+  three parts and no stop time, as the student chose.
