@@ -31,6 +31,8 @@ import page as page_module  # noqa: E402
 import primitives  # noqa: E402
 import suite  # noqa: E402
 import targeting  # noqa: E402
+import verify_cells  # noqa: E402
+import voids  # noqa: E402
 from form import Filter  # noqa: E402
 from test_box import BASE, FIXTURES, RESULTS_URL, clothing_questions, openjiuwen_log, synthetic_page  # noqa: E402
 
@@ -729,6 +731,158 @@ class ScoringKeyPreflight(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             run = self.batch(self.task_file(folder), "--box")
             self.assertEqual((run.code, run.calls), (0, 1))       # the control ran, the ask did not
+
+
+# ---------------------------------------------------------------------------
+# 7. Void runs, and runs reported without a correct answer
+
+def stamped(*seconds: int) -> str:
+    """A log whose timestamped lines fall at these offsets from 12:00:00, in openJiuwen's
+    line format, which `verify_cells.longest_silence` reads."""
+    return "".join(f"2026-10-20 12:{s // 60:02d}:{s % 60:02d} | common | default_trace_id | INFO | line\n"
+                   for s in seconds)
+
+
+def record_of(final: str = "Alderney Clothing Co at $25.77.", ok: bool = True, error: str | None = None,
+              ended: str | None = None, **extra) -> dict:
+    return {"model": "fake/model", "error": error,
+            "result": {"ok": ok, "final": final, "error": ended}, **extra}
+
+
+class VoidClassifier(unittest.TestCase):
+    """Each rule of `voids.classify` on the fault it exists for, real where the project has
+    one (a 429 from the provider, an empty worker output, the step budget, the clock) and
+    planted where it has none, and on the case beside it where it must stay quiet."""
+
+    RUNS = paths.EXPERIMENTS / "runs"
+
+    def stored(self, path: pathlib.Path) -> dict:
+        return json.loads(path.read_text())
+
+    def test_the_suspended_rule_is_verify_cells_own(self):
+        self.assertIs(voids.verify_cells, verify_cells)
+        limit = verify_cells.SUSPENDED_AFTER_S
+        self.assertEqual(voids.classify(record_of(), stamped(0, limit + 1))[:2], (voids.VOID, "suspended"))
+        self.assertEqual(voids.classify(record_of(), stamped(0, limit))[0], voids.ANSWERED)
+        # It is decided before the answer: a right one in a suspended run is still void.
+        self.assertEqual(voids.classify(record_of("Yes."), stamped(0, 3018))[0], voids.VOID)
+
+    def test_a_provider_error_with_no_final_is_void(self):
+        rate_limited = self.stored(self.RUNS / "20260908T215305-deepseek_deepseek-chat.json")
+        outcome, reason, why = voids.classify(rate_limited, None)
+        self.assertEqual((outcome, reason), (voids.VOID, "provider error"))
+        self.assertIn("Error code: 429", why)
+        # The same run had it reached an answer is not void: the error did not end it.
+        recovered = {**rate_limited, "result": {**rate_limited["result"], "final": "Seller A, $9.89.", "ok": True}}
+        self.assertEqual(voids.classify(recovered, None)[0], voids.ANSWERED)
+        # An LLM call error in the log voids a run with no final whatever it ended on, and
+        # leaves one that answered alone.
+        log = stamped(0, 10) + '{"event_type": "llm_call_error"}\n'
+        self.assertEqual(voids.classify(record_of("", ok=False, ended="task_timeout: exceeded 600s"), log)[:2],
+                         (voids.VOID, "provider error"))
+        self.assertEqual(voids.classify(record_of(), log)[0], voids.ANSWERED)
+        # The second agent records a reply that was not a 200 as its status and body.
+        naive = {"scaffold": "naive", "error": '429 {"error": "rate limited"}',
+                 "result": {"final": "", "ok": False}, "tokens": {"calls": 3}}
+        self.assertEqual(voids.classify(naive, None)[:2], (voids.VOID, "provider error"))
+
+    def test_a_runner_failure_or_no_record_is_void(self):
+        empty_worker = self.stored(self.RUNS / "20260908T221542-google_gemini-2.5-flash-lite.json")
+        self.assertEqual(voids.classify(empty_worker, None)[:2], (voids.VOID, "runner error"))
+        crashed = {"model": "fake/model", "error": "RuntimeError: the browser closed", "result": None}
+        self.assertEqual(voids.classify(crashed, stamped(0, 5))[:2], (voids.VOID, "runner error"))
+        self.assertEqual(voids.classify(None, None, row={"error": "runner wrote no record"})[:2],
+                         (voids.VOID, "no record"))
+        # An agent that reports a tool's failure in words has a final, so it reported.
+        worded = self.stored(self.RUNS / "20260908T214912-deepseek_deepseek-chat.json")
+        self.assertEqual(voids.classify(worded, None)[:2], (voids.NOT_CORRECT, "no answer"))
+
+    def test_the_step_budget_and_the_clock_are_not_correct_and_not_void(self):
+        budget = self.stored(paths.RESULTS / "20261007T115021" / "apparel-target-price-1.json")
+        self.assertEqual(voids.classify(budget, stamped(0, 20))[:2], (voids.NOT_CORRECT, "step budget"))
+        clock = self.stored(paths.RESULTS / "20261008T034455" / "apparel-target-price-1.json")
+        self.assertEqual(clock["result"]["error"], "task_timeout: exceeded 600s")
+        self.assertEqual(voids.classify(clock, stamped(0, 30))[:2], (voids.NOT_CORRECT, "clock"))
+        # That run was in fact silent for 3018 seconds, and the silence comes first.
+        self.assertEqual(voids.classify(clock, stamped(0, 3018))[:2], (voids.VOID, "suspended"))
+        naive = {"scaffold": "naive", "error": None, "result": {"final": "", "ok": False},
+                 "tokens": {"calls": voids.NAIVE_STEP_LIMIT}}
+        self.assertEqual(voids.classify(naive, None)[:2], (voids.NOT_CORRECT, "step budget"))
+        self.assertEqual(voids.classify({**naive, "tokens": {"calls": 12}}, None)[:2],
+                         (voids.NOT_CORRECT, "no answer"))
+        # The second agent's budget is the runner's own figure.
+        self.assertIn(f"STEP_LIMIT = {voids.NAIVE_STEP_LIMIT}\n",
+                      (paths.EXPERIMENTS / "runners" / "naive_agent.py").read_text())
+
+    def test_no_answer_and_an_abstention(self):
+        self.assertEqual(voids.classify(record_of(""), stamped(0, 5))[:2], (voids.NOT_CORRECT, "no answer"))
+        self.assertEqual(voids.classify(record_of(ok=False), stamped(0, 5))[:2], (voids.NOT_CORRECT, "no answer"))
+        self.assertEqual(voids.classify(record_of("I could not determine this reliably."), stamped(0, 5))[:2],
+                         (voids.NOT_CORRECT, "abstention"))
+        # Under a policy the reported answer is the policy's: the gate's abstention counts.
+        self.assertEqual(voids.classify(record_of(), stamped(0, 5),
+                                        reported="I could not determine this reliably. The figure...")[:2],
+                         (voids.NOT_CORRECT, "abstention"))
+        self.assertEqual(voids.classify(record_of(), stamped(0, 5))[:2], (voids.ANSWERED, ""))
+
+    def test_a_batch_prints_its_voids_as_rerun_lines(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            batch = pathlib.Path(tmp) / "20261021T190000"
+            batch.mkdir()
+            runs = {"apparel-target-price-1": (record_of(), stamped(0, 5)),
+                    "apparel-target-price-2": (record_of(), stamped(0, 900)),
+                    "apparel-all-stocked-3": (record_of("", ok=False, ended="[181001] model call failed, "
+                                                        "reason: Error code: 502"), stamped(0, 5)),
+                    "apparel-count-buyable-1": (record_of("Max iterations reached without completion", ok=False,
+                                                          ended="max_iterations_reached"), stamped(0, 5))}
+            for name, (record, log) in runs.items():
+                (batch / f"{name}.json").write_text(json.dumps({**record, "log": f"{name}.log"}))
+                (batch / f"{name}.log").write_text(log)
+            (batch / "apparel-cheapest-target-2.log").write_text(stamped(0, 5))   # no record
+            rows = [{"task": "apparel-headline", "repeat": 1, "verdict": "asked", "answer": "?"}]
+            rows += [{"task": n.rsplit("-", 1)[0], "repeat": int(n.rsplit("-", 1)[1]), "verdict": "correct",
+                      "answer": "x"} for n in runs]
+            (batch / "suite.json").write_text(json.dumps({"tasks_file": "tasks_claim_apparel.json",
+                                                          "box": True, "box_exhaust": False, "reading": "menu",
+                                                          "policy": "off", "rows": rows}))
+            classes = {run.name: (run.outcome, run.reason) for run in voids.batch_runs(batch)}
+            self.assertEqual(classes, {
+                "apparel-target-price-1": (voids.ANSWERED, ""),
+                "apparel-target-price-2": (voids.VOID, "suspended"),
+                "apparel-all-stocked-3": (voids.VOID, "provider error"),
+                "apparel-count-buyable-1": (voids.NOT_CORRECT, "step budget"),
+                "apparel-cheapest-target-2": (voids.VOID, "no record"),
+                "apparel-headline-1": (voids.CLOSED, "asked")})
+            with mock.patch.object(sys, "argv", ["voids.py", str(batch)]), \
+                    contextlib.redirect_stdout(io.StringIO()) as out:
+                self.assertEqual(voids.main(), 0)
+        text = out.getvalue()
+        self.assertIn("re-run the 3 void, each with --tasks experiments/tasks/tasks_claim_apparel.json "
+                      "--repeats 1 --box --reading menu:", text)
+        lines = [line.strip() for line in text.splitlines() if line.strip().startswith("--only")]
+        self.assertEqual(sorted(lines), ["--only apparel-all-stocked --repeat-start 3",
+                                         "--only apparel-cheapest-target --repeat-start 2",
+                                         "--only apparel-target-price --repeat-start 2"])
+        self.assertNotIn("apparel-count-buyable --repeat-start", text)   # not correct is not re-run
+
+
+CELL_5_FIRST = paths.RESULTS / "20261008T034455"
+
+
+@unittest.skipUnless(any(CELL_5_FIRST.glob("*.log")), "the raw logs live on the laptop, not in git")
+class VoidsOnTheStoredBatch(unittest.TestCase):
+    """LESSONS 1: the counter is run on the batch where the fault is known to exist. Cell
+    5's first batch lost three runs to the laptop sleeping, and the rule must find exactly
+    those three, by silence, before any answer is read."""
+
+    def test_cell_5s_three_suspended_runs(self):
+        runs = {run.name: run for run in voids.batch_runs(CELL_5_FIRST)}
+        void = sorted(name for name, run in runs.items() if run.outcome == voids.VOID)
+        self.assertEqual(void, ["apparel-count-buyable-2", "apparel-target-price-1", "apparel-target-price-2"])
+        self.assertTrue(all(runs[name].reason == "suspended" for name in void))
+        self.assertEqual((runs["apparel-count-buyable-3"].outcome, runs["apparel-count-buyable-3"].reason),
+                         (voids.NOT_CORRECT, "step budget"))
+        self.assertEqual(sum(run.outcome == voids.ANSWERED for run in runs.values()), 11)
 
 
 if __name__ == "__main__":
