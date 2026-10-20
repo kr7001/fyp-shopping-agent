@@ -389,7 +389,7 @@ def cmd_seed(m: Magento, args: argparse.Namespace) -> int:
         print("\nDry run, nothing written.")
         return 0
 
-    manifest = write_manifest(m, fixture)
+    manifest = write_manifest(m, fixture, args.fixture or FIXTURES.name)
     print(f"\nManifest: {manifest}")
     print("Reindex before the storefront reflects this:")
     print("  docker exec -it webarena-shopping php /var/www/magento2/bin/magento "
@@ -399,14 +399,18 @@ def cmd_seed(m: Magento, args: argparse.Namespace) -> int:
     return 0
 
 
-def write_manifest(m: Magento, fixture: dict) -> pathlib.Path:
+def write_manifest(m: Magento, fixture: dict, name: str) -> pathlib.Path:
+    """What was seeded, from which fixture, with its ground truth. `name` is the fixture
+    file actually seeded: until 20 October 2026 every manifest said gated_pricing.json,
+    whichever fixture it was, so the manifests of the generated markets name the wrong
+    file and are read by their SKUs instead."""
     MANIFESTS.mkdir(exist_ok=True)
     stamp = dt.datetime.now().strftime("%Y%m%dT%H%M%S")
     path = MANIFESTS / f"{stamp}-gated-pricing.json"
     path.write_text(json.dumps({
         "seeded_at": dt.datetime.now().isoformat(timespec="seconds"),
         "base_url": m.base_url,
-        "fixture": FIXTURES.name,
+        "fixture": name,
         "parent_skus": [f["parent_sku"] for f in fixture["families"]],
         "child_skus": [v["sku"] for f in fixture["families"] for v in f["variants"]],
         "ground_truth": analyse(fixture),

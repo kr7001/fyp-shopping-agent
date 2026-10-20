@@ -13,6 +13,11 @@ from __future__ import annotations
 import json
 import pathlib
 import re
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402,F401  (puts box/ on the path)
+import ambiguity  # noqa: E402  (which questions have two readings, by the box's own rule)
 
 # Bumped when a rule changes a verdict or a kind of key is added. Recorded in every suite
 # payload as `scorer_version` since 14 October 2026; a batch without the field was scored
@@ -86,14 +91,36 @@ def readings_for(tasks_path: pathlib.Path) -> dict:
     return json.loads(sidecar.read_text()).get("readings", {})
 
 
+# The reading every task's own key was written under, fixed before any run: "offer" means
+# in the menu, sold out or not. A sidecar holds the other readings and never this one.
+OWN_READING = "menu"
+
+
+class NoKeyForReading(ValueError):
+    """A run answered under a reading its task file has no key for."""
+
+
 def under_reading(task: dict, reading: str | None, readings: dict) -> dict:
     """The task with the answer key for this reading, or its own key when the reading has
     none for it, so a question that was never ambiguous is scored as before. `reading` is
     the one the run answered under: the user's reply to the box's question, or the reading
     the box took itself when the other had no answer on the shop (since 20 Oct 2026 the
-    row carries it as `reading` with `reading_by`)."""
+    row carries it as `reading` with `reading_by`).
+
+    Since 20 October 2026 a question with two readings, by the box's own rule
+    (`ambiguity.ask`), answered under a reading other than its own, must have that
+    reading's key in the sidecar, or this raises. Until then it fell back to the task's own
+    key without a word, so a buyable batch on a file whose sidecar lacked the entry, or had
+    no sidecar, would have been scored under the menu key (verifier's logic audit). A
+    question with one reading keeps its own key whatever reading its batch ran under, as
+    the stored batches score their clear questions."""
     expect = (readings.get(reading) or {}).get(task["id"]) if reading else None
-    return {**task, "expect": expect} if expect else task
+    if expect:
+        return {**task, "expect": expect}
+    if reading not in (None, OWN_READING) and ambiguity.ask(task["query"]):
+        raise NoKeyForReading(f"{task['id']} has two readings and was answered under "
+                              f"{reading!r}, but its readings sidecar has no key for it")
+    return task
 
 
 def score(task: dict, answer: str, ok: bool) -> dict:

@@ -111,8 +111,11 @@ def menu_table(batch: pathlib.Path) -> list[dict]:
     says the menu is (its sizes in order, a sold-out size disabled), and whether the two
     agree, meaning a complete reading is the menu and a partial one is a prefix of it with
     the same disabled marks. The fixture is read here to validate the reader, never by the
-    box (20 October 2026, after a find excerpt was read as a whole menu)."""
-    truth = verify_cells.ground_truth()
+    box (20 October 2026, after a find excerpt was read as a whole menu). It is the batch's
+    own, named by its task file (`verify_cells.fixture_for`)."""
+    suite = json.loads((batch / "suite.json").read_text())
+    spec = json.loads((paths.TASKS / suite["tasks_file"]).read_text())
+    truth = verify_cells.ground_truth(verify_cells.fixture_for(spec))
     rows = []
     for log_path in sorted(batch.glob("*.log")):
         for key, reading in sufficiency.size_menus(log_path).items():

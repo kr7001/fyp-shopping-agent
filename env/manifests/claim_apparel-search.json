@@ -1,0 +1,29 @@
+{
+  "brand": "Ashcombe",
+  "sku_prefix": "IGR-CLM",
+  "seeded": "20 October 2026",
+  "page_rule": "Page rule: the answer renders outside the first 4 cards, and a listing inside the first 4 advertises less than the answer costs, read off the live page's card, which shows the cheapest size that can be bought. Until 20 October 2026 the rule's implementation took the cheapest of every size, sold out included; corrected before this search began (verifier's logic audit).",
+  "tried": [
+    {
+      "seed": 204,
+      "attempt": 3201,
+      "outcome": "accepted",
+      "answer_card": 11,
+      "first_row": [
+        "Kelsall Supply",
+        "Haldane Textiles",
+        "Quarles Apparel",
+        "Northwick Apparel"
+      ],
+      "misleading": [
+        "Quarles Apparel"
+      ],
+      "misleading_read_as_before": [
+        "Quarles Apparel"
+      ],
+      "floor": 6,
+      "note": "seed 204: answer Copperfield Outfitters at card 11, 1 of the first 4 cards advertise below $23.43, floor 6",
+      "summary": "seed 204, attempt 3201 by the 13 rules: accepted by the page rule. Answer at card 11; 1 of the first 4 cards advertise less than it costs; floor 6"
+    }
+  ]
+}

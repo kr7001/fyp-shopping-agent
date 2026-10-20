@@ -59,11 +59,12 @@ def longest_silence(log: str) -> float:
     return max(((b - a).total_seconds() for a, b in zip(stamps, stamps[1:])), default=0.0)
 
 
-def ground_truth() -> dict:
+def ground_truth(fixture: pathlib.Path = FIXTURE) -> dict:
     """Per listing: seller, the advertised price, what size M is, and every size's price,
     with `buyable` holding only the sizes that can be bought (the generator's
-    `price_for` and `buyable_price_for`, which a test checks this agrees with)."""
-    spec = json.loads(FIXTURE.read_text())
+    `price_for` and `buyable_price_for`, which a test checks this agrees with). Thornwood's
+    by default; a batch's own market through `fixture_for`."""
+    spec = json.loads(fixture.read_text())
     out = {}
     for family in spec["families"]:
         variants = {v["option"]: v for v in family["variants"]}
@@ -76,6 +77,35 @@ def ground_truth() -> dict:
             "buyable": {v["option"]: v["price"] for v in family["variants"] if v["qty"] > 0},
         }
     return out
+
+
+def fixture_for(spec: dict) -> pathlib.Path:
+    """The fixture a task file's market was generated from, read from the file rather than
+    assumed (20 October 2026): the one it names under `fixture`, as the claim market's file
+    does, else Thornwood's, which every clothing file before it was written from. A named
+    fixture must be the file's own market, the same `_instance`, or this refuses: a batch is
+    never judged against another market's truth (LESSONS 7)."""
+    name = spec.get("fixture")
+    if name is None:
+        return FIXTURE
+    path = paths.FIXTURES / name
+    if json.loads(path.read_text())["_instance"] != spec.get("_instance"):
+        raise SystemExit(f"{name} is not this task file's market: their _instance differ")
+    return path
+
+
+def market_urls(spec: dict) -> list[str] | None:
+    """What a run of this task file may count as a listing opened, for a file that names its
+    fixture: the URLs of the fixture's own listings, for every arm, under the box or not, so
+    a page of another market, a Thornwood listing on the claim market, is never counted
+    (LESSONS 2, 33). The URL is the one the shop gives a listing, its SKU as its URL key,
+    which `env/check_market.py` checks against the live results page. None for the files
+    before it, whose counts stay as reported: the box's page record, else the counter's rule."""
+    if spec.get("fixture") is None:
+        return None
+    fixture = json.loads(fixture_for(spec).read_text())
+    return [f"{spec['base_url']}/{family['parent_sku'].lower()}.html"
+            for family in fixture["families"]]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -194,7 +224,7 @@ def rescore(task: dict, answer: str, ok: bool, row: dict, suite: dict,
 
 def verify_run(record_path: pathlib.Path, task: dict, truth: dict,
                stored: dict, suite: dict | None = None,
-               readings: dict | None = None) -> dict:
+               readings: dict | None = None, market: list[str] | None = None) -> dict:
     record = json.loads(record_path.read_text())
     log_path = record_path.with_suffix(".log")
     log = log_path.read_text(errors="replace")
@@ -228,10 +258,11 @@ def verify_run(record_path: pathlib.Path, task: dict, truth: dict,
         cost_lines = len(trace_stats.COST_FIELD.findall(log))
         resummed = trace_stats.cost_reported(log)
 
-    # The market's listings are the ones on the results page the box read, when the row
-    # carries it (every run under the box); without it the counter's own rule applies.
+    # The market's listings: the task file's own fixture's, when it names one (`market`,
+    # every arm alike); else the ones on the results page the box read, when the row
+    # carries it (every run under the box); without either the counter's own rule applies.
     page_record = (stored.get("box") or {}).get("page") or {}
-    market = [item["url"] for item in page_record.get("listings") or []] or None
+    market = market or [item["url"] for item in page_record.get("listings") or []] or None
     opened = sufficiency.listings_opened(log, market)
     opened_seen = sufficiency.listings_opened(observed, market)
     # Product pages the run opened that are not the market's: nothing under the box so
@@ -305,7 +336,8 @@ def verify_batch(batch: pathlib.Path) -> tuple[dict, list[dict]]:
     suite = json.loads((batch / "suite.json").read_text())
     spec = json.loads((paths.TASKS / suite["tasks_file"]).read_text())
     tasks = {t["id"]: t for t in spec["tasks"]}
-    truth = ground_truth()
+    truth = ground_truth(fixture_for(spec))
+    market = market_urls(spec)
     readings = scoring.readings_for(paths.TASKS / suite["tasks_file"])
     stored = {(row["task"], row["repeat"]): row for row in suite["rows"]}
     runs = []
@@ -315,15 +347,16 @@ def verify_batch(batch: pathlib.Path) -> tuple[dict, list[dict]]:
         task_id, repeat = record_path.stem.rsplit("-", 1)
         runs.append(verify_run(record_path, tasks[task_id], truth,
                                stored.get((task_id, int(repeat)), {}),
-                               suite=suite, readings=readings))
+                               suite=suite, readings=readings, market=market))
     return suite, runs
 
 
 def floor_table(tasks_path: pathlib.Path) -> list[dict]:
     """Every task's floor in a task file, from the fixture and the question alone, so the
-    figures can be read before a batch exists and quoted from this command."""
+    figures can be read before a batch exists and quoted from this command. The fixture is
+    the task file's own (`fixture_for`)."""
     spec = json.loads(tasks_path.read_text())
-    truth = ground_truth()
+    truth = ground_truth(fixture_for(spec))
     rows = []
     for task in spec["tasks"]:
         floor = own_floor(task, truth)

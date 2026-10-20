@@ -1,0 +1,26 @@
+{
+  "_about": [
+    "Computed by env/generate_apparel_v2_tasks.py from env/fixtures/claim_apparel.json: the",
+    "scripted user's second reading of the two ambiguous clothing questions in",
+    "tasks_claim_apparel.json, used by suite.py --reading buyable and by verify_cells.py when",
+    "a batch records that reading. Do not hand edit.",
+    "The task's own expect is the menu reading: a sold out size counts as offered. Here",
+    "\"offer\" is read as \"can sell it now\": apparel-count-stocked counts the listings that can",
+    "sell size M now, which is _instance.listings_target_buyable, and apparel-all-stocked is",
+    "yes only if every listing can. The rule readings_apparel.json was written by on 8",
+    "October 2026, computed here rather than copied (buyable_reading). The other questions",
+    "are clear, or are asks no reading answers, so none has a second reading."
+  ],
+  "readings": {
+    "buyable": {
+      "apparel-count-stocked": {
+        "kind": "count",
+        "value": 7
+      },
+      "apparel-all-stocked": {
+        "kind": "boolean",
+        "value": false
+      }
+    }
+  }
+}

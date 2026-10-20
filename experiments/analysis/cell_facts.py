@@ -34,8 +34,10 @@ import trace_stats  # noqa: E402
 
 verify_cells = compare_cells.verify_cells
 RESULTS = compare_cells.RESULTS
-SPEC = json.loads((paths.TASKS / "tasks_apparel.json").read_text())
-TASKS = {t["id"]: t for t in SPEC["tasks"]}
+# The task file and fixture a figure is computed from are its batches' own, read from each
+# batch's suite payload (20 October 2026). Until then this read tasks_apparel.json and the
+# Thornwood fixture whatever the batch, which is right for every stored cell and would be
+# wrong for the first run on the claim market.
 PRICE_TASKS = ("apparel-target-price", "apparel-cheapest-target")
 # The batch run just before cell 1, kept only because its charge settled inside cell 1.
 PILOT = "20261007T111945"
@@ -52,9 +54,10 @@ MENU_UNREAD = ("tested for the word disabled and never read the menu, so an abse
                "counted as available")
 
 
-def m_prices() -> dict[str, float | None]:
-    """Each listing's price for size M, whether or not it can be bought."""
-    fixture = json.loads(verify_cells.FIXTURE.read_text())
+def m_prices(path: pathlib.Path = verify_cells.FIXTURE) -> dict[str, float | None]:
+    """Each listing's price for size M, whether or not it can be bought, in the fixture
+    given: Thornwood's by default, a cell's own through `compare_cells.fixture_of`."""
+    fixture = json.loads(path.read_text())
     out = {}
     for family in fixture["families"]:
         m = next((v for v in family["variants"] if v["option"] == "M"), None)
@@ -103,16 +106,20 @@ def ranked_sellers(answer: str, k: int, truth: dict) -> list[tuple[str, list[flo
     return ranked
 
 
-def menu_unread(log_path: pathlib.Path) -> int:
+def menu_unread(log_path: pathlib.Path, market: list[str] | None = None) -> int:
     """Listings the run opened by navigating and then judged by a search for the word
     "disabled" alone, never reading the menu: between the navigation and the next one (or
     the end of the run) every call is `browser_find` for "disabled". A screenshot in
     between does not count as reading the menu: the Size menu is a native select, drawn
-    closed, so a screenshot shows its one chosen line and none of its options."""
+    closed, so a screenshot shows its one chosen line and none of its options. With
+    `market`, the listing URLs of the batch's own fixture, only those listings count, as in
+    `verify_cells.market_urls` (20 October 2026)."""
     steps = trace_stats.tool_steps(trace_stats.final_messages(log_path))
+    own = None if market is None else {sufficiency.listing_key(url) for url in market}
     count = 0
     for n, step in enumerate(steps):
-        if step["tool"] != "browser_navigate" or not sufficiency.listing_key(step["target"]):
+        key = sufficiency.listing_key(step["target"]) if step["tool"] == "browser_navigate" else None
+        if not key or (own is not None and key not in own):
             continue
         after = []
         for later in steps[n + 1:]:
@@ -152,7 +159,7 @@ def error_kinds(run: dict, truth: dict, m_price: dict) -> list[str]:
                 kinds.append(kind)
     if run.get("batch"):
         log_path = RESULTS / run["batch"] / f"{run['task']}-{run['repeat']}.log"
-        if log_path.exists() and menu_unread(log_path):
+        if log_path.exists() and menu_unread(log_path, run.get("market")):
             kinds.append(MENU_UNREAD)
     if run["task"] == "apparel-count-stocked":
         opened = [s for s in run["skus"] if s in truth]
@@ -214,7 +221,8 @@ def facts(account: bool = True) -> dict:
     page are one computation and cannot disagree. Split out of `main` on 8 October 2026.
     """
     cells, truth = compare_cells.load()
-    m_price = m_prices()
+    m_price = m_prices(compare_cells.fixture_of(
+        [b for batches in compare_cells.CELLS.values() for b in batches]))
     names = list(cells)
     label = {name: name.split()[0] for name in names}
     questions = sorted({r["task"] for r in cells[names[0]]})
@@ -288,7 +296,9 @@ def facts(account: bool = True) -> dict:
             continue
         wrong = refused = right_refused = right = 0
         for run in cells[name]:
-            verdict = policy.gate(TASKS[run["task"]], SPEC, run["answer"],
+            spec = compare_cells.task_file(run["batch"])
+            task = next(t for t in spec["tasks"] if t["id"] == run["task"])
+            verdict = policy.gate(task, spec, run["answer"],
                                   RESULTS / run["batch"] / f"{run['task']}-{run['repeat']}.log")
             if run["rescored"] == "correct":
                 right += 1
@@ -361,7 +371,10 @@ def development_facts(cells: dict, truth: dict, m_price: dict) -> dict:
     cells 1 and 5 asked under the key fixed before the runs with the tests against those
     two cells, its kinds of error, and the box's own check replayed over its batches."""
     names = list(cells)
-    development, _ = compare_cells.load(compare_cells.DEVELOPMENT)
+    development, own = compare_cells.load(compare_cells.DEVELOPMENT)
+    # Set against cells 1 and 5 only on the same market (LESSONS 7, 19).
+    if own != truth:
+        raise SystemExit("the development cell is not on the market of cells 1 to 5")
     out = {}
     for name, runs in development.items():
         batches = compare_cells.DEVELOPMENT[name]

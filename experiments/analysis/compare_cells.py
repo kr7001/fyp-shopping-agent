@@ -73,9 +73,13 @@ READINGS = ("menu", "buyable")
 
 
 def correct(run: dict, reading: str) -> bool:
+    # The buyable key is the batch's own sidecar's (`load_batch`), never a number typed
+    # here: until 20 October 2026 it was Thornwood's 5, whatever market the run was on.
     if reading == "buyable" and run["task"] == "apparel-count-stocked":
+        if not run.get("buyable_key"):
+            raise verify_cells.scoring.NoKeyForReading(f"{run['task']} has no buyable key")
         return verify_cells.scoring.score(
-            {"expect": {"kind": "count", "value": 5}}, run["answer"], run["ok"]
+            {"expect": run["buyable_key"]}, run["answer"], run["ok"]
         )["verdict"] == "correct"
     return run["rescored"] == "correct"
 
@@ -124,23 +128,46 @@ def stratified_exact(strata: list[tuple[int, int, int, int]]) -> float:
     return sum(p for p in dist.values() if p <= p_obs * (1 + 1e-9))
 
 
+def task_file(batch: str) -> dict:
+    """The task file a batch ran, as its suite payload names it."""
+    suite = json.loads((RESULTS / batch / "suite.json").read_text())
+    return json.loads((paths.TASKS / suite["tasks_file"]).read_text())
+
+
 def load_batch(batch: str) -> list[dict]:
-    """Every run in one batch, checked, with its token counts and its batch attached."""
-    _, found = verify_cells.verify_batch(RESULTS / batch)
+    """Every run in one batch, checked, with its token counts and its batch attached, and
+    from the batch's own task file the buyable reading's key for its task and the market's
+    listing URLs (None where the file names no fixture), since 20 October 2026."""
+    suite, found = verify_cells.verify_batch(RESULTS / batch)
+    readings = verify_cells.scoring.readings_for(paths.TASKS / suite["tasks_file"])
+    market = verify_cells.market_urls(task_file(batch))
     for run in found:
         record = json.loads((RESULTS / batch / f"{run['task']}-{run['repeat']}.json")
                             .read_text())
         tokens = record.get("tokens") or (record.get("trace") or {}).get("tokens") or {}
         run["tokens"] = (tokens.get("prompt"), tokens.get("completion"))
         run["batch"] = batch
+        run["buyable_key"] = (readings.get("buyable") or {}).get(run["task"])
+        run["market"] = market
     return found
 
 
+def fixture_of(batches: list[str]) -> pathlib.Path:
+    """The one fixture a set of batches ran on, from their task files, or a refusal: runs
+    on two markets are never one cell (LESSONS 7)."""
+    found = {verify_cells.fixture_for(task_file(batch)) for batch in batches}
+    if len(found) != 1:
+        raise SystemExit(f"batches {batches} ran on more than one market: {sorted(map(str, found))}")
+    return found.pop()
+
+
 def load(which: dict[str, list[str]] | None = None) -> tuple[dict, dict]:
-    """The gated runs of each cell in `which`, CELLS by default, with the fixture's truth."""
-    truth = verify_cells.ground_truth()
+    """The gated runs of each cell in `which`, CELLS by default, with the truth of the
+    market they ran on, read from their task files, which must be one market."""
+    which = CELLS if which is None else which
+    truth = verify_cells.ground_truth(fixture_of([b for batches in which.values() for b in batches]))
     cells = {}
-    for name, batches in (CELLS if which is None else which).items():
+    for name, batches in which.items():
         runs = [run for batch in batches for run in load_batch(batch)]
         # A run the laptop slept through measures the machine, not the agent, and is left
         # out rather than counted as a failure. See `verify_cells.SUSPENDED_AFTER_S`.
@@ -165,7 +192,10 @@ def print_development(cells: dict, truth: dict) -> None:
     """The development cell after the four cells: every run by question, then the tests
     against cells 1 and 5 on the shared questions. In-sample, so no claim."""
     names = list(cells)
-    development, _ = load(DEVELOPMENT)
+    development, own = load(DEVELOPMENT)
+    # Set against cells 1 and 5 only on the same market (LESSONS 7, 19).
+    if own != truth:
+        raise SystemExit("the development cell is not on the market of cells 1 to 5")
     for name, runs in development.items():
         batches = DEVELOPMENT[name]
         suite = json.loads((RESULTS / batches[0] / "suite.json").read_text())

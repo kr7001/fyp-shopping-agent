@@ -1,0 +1,538 @@
+{
+  "seeded_at": "2026-10-20T12:56:38",
+  "base_url": "http://localhost:7770",
+  "fixture": "claim_apparel.json",
+  "parent_skus": [
+    "IGR-CLM-01",
+    "IGR-CLM-02",
+    "IGR-CLM-03",
+    "IGR-CLM-04",
+    "IGR-CLM-05",
+    "IGR-CLM-06",
+    "IGR-CLM-07",
+    "IGR-CLM-08",
+    "IGR-CLM-09",
+    "IGR-CLM-10",
+    "IGR-CLM-11",
+    "IGR-CLM-12",
+    "IGR-CLM-13",
+    "IGR-CLM-14",
+    "IGR-CLM-15"
+  ],
+  "child_skus": [
+    "IGR-CLM-01-S",
+    "IGR-CLM-01-L",
+    "IGR-CLM-01-XL",
+    "IGR-CLM-02-S",
+    "IGR-CLM-02-M",
+    "IGR-CLM-02-XL",
+    "IGR-CLM-03-S",
+    "IGR-CLM-03-L",
+    "IGR-CLM-03-XL",
+    "IGR-CLM-04-S",
+    "IGR-CLM-04-M",
+    "IGR-CLM-04-L",
+    "IGR-CLM-05-S",
+    "IGR-CLM-05-M",
+    "IGR-CLM-05-L",
+    "IGR-CLM-05-XL",
+    "IGR-CLM-06-S",
+    "IGR-CLM-06-L",
+    "IGR-CLM-06-XL",
+    "IGR-CLM-07-S",
+    "IGR-CLM-07-M",
+    "IGR-CLM-07-L",
+    "IGR-CLM-07-XL",
+    "IGR-CLM-08-M",
+    "IGR-CLM-08-XL",
+    "IGR-CLM-09-L",
+    "IGR-CLM-09-XL",
+    "IGR-CLM-10-S",
+    "IGR-CLM-10-M",
+    "IGR-CLM-10-L",
+    "IGR-CLM-10-XL",
+    "IGR-CLM-11-S",
+    "IGR-CLM-11-M",
+    "IGR-CLM-11-XL",
+    "IGR-CLM-12-S",
+    "IGR-CLM-12-M",
+    "IGR-CLM-12-L",
+    "IGR-CLM-12-XL",
+    "IGR-CLM-13-S",
+    "IGR-CLM-13-M",
+    "IGR-CLM-13-L",
+    "IGR-CLM-13-XL",
+    "IGR-CLM-14-S",
+    "IGR-CLM-14-M",
+    "IGR-CLM-14-L",
+    "IGR-CLM-15-S",
+    "IGR-CLM-15-L",
+    "IGR-CLM-15-XL"
+  ],
+  "ground_truth": {
+    "families": {
+      "apparel-01": {
+        "parent_sku": "IGR-CLM-01",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 20.39,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-CLM-01-S",
+            "price": 21.8,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-CLM-01-L",
+            "price": 20.39,
+            "qty": 124,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-CLM-01-XL",
+            "price": 26.1,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S",
+          "XL"
+        ]
+      },
+      "apparel-02": {
+        "parent_sku": "IGR-CLM-02",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 34.55,
+        "from_price_option": "XL",
+        "variants": {
+          "S": {
+            "sku": "IGR-CLM-02-S",
+            "price": 40.0,
+            "qty": 49,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-CLM-02-M",
+            "price": 36.68,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-CLM-02-XL",
+            "price": 34.55,
+            "qty": 82,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "apparel-03": {
+        "parent_sku": "IGR-CLM-03",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 21.62,
+        "from_price_option": "XL",
+        "variants": {
+          "S": {
+            "sku": "IGR-CLM-03-S",
+            "price": 27.26,
+            "qty": 115,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-CLM-03-L",
+            "price": 23.23,
+            "qty": 129,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-CLM-03-XL",
+            "price": 21.62,
+            "qty": 88,
+            "unit_price": null
+          }
+        }
+      },
+      "apparel-04": {
+        "parent_sku": "IGR-CLM-04",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 17.9,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-CLM-04-S",
+            "price": 18.53,
+            "qty": 57,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-CLM-04-M",
+            "price": 17.9,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-CLM-04-L",
+            "price": 19.78,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "L"
+        ]
+      },
+      "apparel-05": {
+        "parent_sku": "IGR-CLM-05",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 29.51,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-CLM-05-S",
+            "price": 31.61,
+            "qty": 120,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-CLM-05-M",
+            "price": 29.51,
+            "qty": 132,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-CLM-05-L",
+            "price": 33.43,
+            "qty": 116,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-CLM-05-XL",
+            "price": 33.78,
+            "qty": 113,
+            "unit_price": null
+          }
+        }
+      },
+      "apparel-06": {
+        "parent_sku": "IGR-CLM-06",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 35.74,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-CLM-06-S",
+            "price": 35.74,
+            "qty": 23,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-CLM-06-L",
+            "price": 35.82,
+            "qty": 125,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-CLM-06-XL",
+            "price": 44.71,
+            "qty": 73,
+            "unit_price": null
+          }
+        }
+      },
+      "apparel-07": {
+        "parent_sku": "IGR-CLM-07",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 25.92,
+        "from_price_option": "XL",
+        "variants": {
+          "S": {
+            "sku": "IGR-CLM-07-S",
+            "price": 28.79,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-CLM-07-M",
+            "price": 26.21,
+            "qty": 85,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-CLM-07-L",
+            "price": 35.45,
+            "qty": 101,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-CLM-07-XL",
+            "price": 25.92,
+            "qty": 125,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      },
+      "apparel-08": {
+        "parent_sku": "IGR-CLM-08",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 27.66,
+        "from_price_option": "M",
+        "variants": {
+          "M": {
+            "sku": "IGR-CLM-08-M",
+            "price": 27.66,
+            "qty": 54,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-CLM-08-XL",
+            "price": 28.96,
+            "qty": 26,
+            "unit_price": null
+          }
+        }
+      },
+      "apparel-09": {
+        "parent_sku": "IGR-CLM-09",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 32.24,
+        "from_price_option": "L",
+        "variants": {
+          "L": {
+            "sku": "IGR-CLM-09-L",
+            "price": 32.24,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-CLM-09-XL",
+            "price": 39.6,
+            "qty": 45,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "apparel-10": {
+        "parent_sku": "IGR-CLM-10",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 18.11,
+        "from_price_option": "XL",
+        "variants": {
+          "S": {
+            "sku": "IGR-CLM-10-S",
+            "price": 23.11,
+            "qty": 83,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-CLM-10-M",
+            "price": 18.78,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-CLM-10-L",
+            "price": 21.12,
+            "qty": 58,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-CLM-10-XL",
+            "price": 18.11,
+            "qty": 57,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "apparel-11": {
+        "parent_sku": "IGR-CLM-11",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 18.74,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-CLM-11-S",
+            "price": 18.74,
+            "qty": 56,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-CLM-11-M",
+            "price": 23.43,
+            "qty": 49,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-CLM-11-XL",
+            "price": 20.25,
+            "qty": 63,
+            "unit_price": null
+          }
+        }
+      },
+      "apparel-12": {
+        "parent_sku": "IGR-CLM-12",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 27.7,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-CLM-12-S",
+            "price": 27.7,
+            "qty": 62,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-CLM-12-M",
+            "price": 28.76,
+            "qty": 36,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-CLM-12-L",
+            "price": 28.57,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-CLM-12-XL",
+            "price": 31.53,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L",
+          "XL"
+        ]
+      },
+      "apparel-13": {
+        "parent_sku": "IGR-CLM-13",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 35.81,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-CLM-13-S",
+            "price": 39.78,
+            "qty": 28,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-CLM-13-M",
+            "price": 35.81,
+            "qty": 109,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-CLM-13-L",
+            "price": 38.22,
+            "qty": 131,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-CLM-13-XL",
+            "price": 36.6,
+            "qty": 96,
+            "unit_price": null
+          }
+        }
+      },
+      "apparel-14": {
+        "parent_sku": "IGR-CLM-14",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 24.68,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-CLM-14-S",
+            "price": 24.68,
+            "qty": 138,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-CLM-14-M",
+            "price": 26.03,
+            "qty": 47,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-CLM-14-L",
+            "price": 24.7,
+            "qty": 28,
+            "unit_price": null
+          }
+        }
+      },
+      "apparel-15": {
+        "parent_sku": "IGR-CLM-15",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 14.37,
+        "from_price_option": "XL",
+        "variants": {
+          "S": {
+            "sku": "IGR-CLM-15-S",
+            "price": 18.37,
+            "qty": 80,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-CLM-15-L",
+            "price": 14.51,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-CLM-15-XL",
+            "price": 14.37,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L",
+          "XL"
+        ]
+      }
+    },
+    "cross_listing": {
+      "S": {
+        "cheapest_listing": "apparel-15",
+        "cheapest_price": 18.37,
+        "listing_a_card_probe_would_pick": "apparel-15",
+        "card_probe_wrong": false
+      },
+      "L": {
+        "cheapest_listing": "apparel-15",
+        "cheapest_price": 14.51,
+        "listing_a_card_probe_would_pick": "apparel-15",
+        "card_probe_wrong": false
+      },
+      "XL": {
+        "cheapest_listing": "apparel-15",
+        "cheapest_price": 14.37,
+        "listing_a_card_probe_would_pick": "apparel-15",
+        "card_probe_wrong": false
+      },
+      "M": {
+        "cheapest_listing": "apparel-04",
+        "cheapest_price": 17.9,
+        "listing_a_card_probe_would_pick": "apparel-04",
+        "card_probe_wrong": false
+      }
+    }
+  }
+}

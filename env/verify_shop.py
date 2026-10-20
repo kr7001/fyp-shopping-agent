@@ -90,11 +90,13 @@ def main() -> int:
     record("search engine healthy", status in {"green", "yellow"},
            f"cluster status {status or 'unreadable'}")
 
-    # Every market this project can run, checked by asking the shop for it.
+    # Every market this project can run, checked by asking the shop for it. The claim
+    # market of 20 October 2026 is checked in full, size by size, by env/check_market.py.
     fixtures = {
         "Rivenhall": "scaled_water.json",
         "Calderwood": "heldout_calderwood.json",
         "Thornwood": "scaled_apparel.json",
+        "Ashcombe": "claim_apparel.json",
     }
     for brand, fixture in fixtures.items():
         path = REPO / "env" / "fixtures" / fixture

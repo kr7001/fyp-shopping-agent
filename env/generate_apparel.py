@@ -58,6 +58,13 @@ state directly and never need the price behind it.
 
     python env/generate_apparel.py --report
     python env/generate_apparel.py --out env/fixtures/scaled_apparel.json
+
+A second market, such as the claim market of 20 October 2026, is drawn by the same rules
+under its own brand and SKU prefix, and `env/pick_apparel_market.py` records the seed search
+that chose it, which the fixture carries:
+
+    python env/generate_apparel.py --seed <seed> --brand <Brand> --sku-prefix IGR-CLM \
+        --out env/fixtures/claim_apparel.json --search-log env/manifests/claim_apparel-search.json
 """
 
 from __future__ import annotations
@@ -66,10 +73,17 @@ import argparse
 import json
 import pathlib
 import random
+import textwrap
 
 HERE = pathlib.Path(__file__).resolve().parent
+REPO = HERE.parent
 DEFAULT_OUT = HERE / "fixtures" / "scaled_apparel.json"
+DEFAULT_TASKS = REPO / "experiments" / "tasks" / "tasks_apparel.json"
 
+# Thornwood's, and the defaults, so every command written before 20 October 2026 still
+# draws Thornwood. Another market passes its own with --brand and --sku-prefix. The seeder
+# makes each listing's URL key from its SKU (`igr-app-07.html`), so a market with its own
+# prefix also has its own URL keys, and seeding it never touches a Thornwood listing.
 BRAND = "Thornwood"
 SKU_PREFIX = "IGR-APP"
 TARGET_SIZE = "M"
@@ -206,7 +220,10 @@ def seller_names(count: int, rng: random.Random) -> list[str]:
     return [f"{first} {rng.choice(NAME_SECOND)}" for first in firsts[:count]]
 
 
-def build_listing(name: str, index: int, rng: random.Random) -> dict:
+def build_listing(name: str, index: int, rng: random.Random, brand: str = BRAND,
+                  sku_prefix: str = SKU_PREFIX) -> dict:
+    # The brand and prefix draw nothing from `rng`, so a seed gives the same sellers, sizes
+    # and prices under any brand: only the names and SKUs change.
     base = rng.uniform(*BASE_PRICE_RANGE)
     offered = [s for s in SIZES if rng.random() > P_SIZE_MISSING]
     if len(offered) < 2:                      # a listing selling one size is not a market
@@ -230,8 +247,8 @@ def build_listing(name: str, index: int, rng: random.Random) -> dict:
 
     return {
         "key": f"apparel-{index:02d}",
-        "parent_sku": f"{SKU_PREFIX}-{index:02d}",
-        "name": f"{BRAND} Heavyweight Cotton Tee - {name}",
+        "parent_sku": f"{sku_prefix}-{index:02d}",
+        "name": f"{brand} Heavyweight Cotton Tee - {name}",
         "seller": name,
         "attribute": "apparel_size",
         "category_ids": [CLOTHING_CATEGORY_ID],
@@ -415,7 +432,8 @@ def check(listings: list[dict], facts: dict) -> list[str]:
     return broken
 
 
-def generate(count: int, seed: int, attempts: int = 80000) -> tuple[list[dict], dict, int]:
+def generate(count: int, seed: int, attempts: int = 80000, brand: str = BRAND,
+             sku_prefix: str = SKU_PREFIX) -> tuple[list[dict], dict, int]:
     for attempt in range(attempts):
         # A string rather than one number. `seed * 1000 + attempt` collides: seed 12
         # at attempt 3682 and seed 13 at attempt 2682 are the same stream and produce the
@@ -423,22 +441,49 @@ def generate(count: int, seed: int, attempts: int = 80000) -> tuple[list[dict], 
         # searching seeds for a clothing market that lands the right way round on the page.
         rng = random.Random(f"{seed}:{attempt}")
         names = seller_names(count, rng)
-        listings = [build_listing(name, i + 1, rng) for i, name in enumerate(names)]
+        listings = [build_listing(name, i + 1, rng, brand, sku_prefix)
+                    for i, name in enumerate(names)]
         facts = measure(listings)
         if not check(listings, facts):
             return listings, facts, attempt
     raise SystemExit(f"no instance satisfied every rule in {attempts} attempts")
 
 
-def to_fixture(listings: list[dict], facts: dict, seed: int, attempt: int) -> dict:
+def search_lines(search: dict, command: str) -> list[str]:
+    """The seed search a market was chosen by, as `_about` lines: how to regenerate it, the
+    day it was seeded, and every seed tried in order with the attempt on which the 13 rules
+    accepted it and what the page rule then found on the live results page. The search ran
+    against the shop, so it cannot be repeated offline: its record is an input, written by
+    `env/pick_apparel_market.py`, and everything else here is computed (20 October 2026).
+    The page rule as the search applied it is stated too, since its reading of the card was
+    corrected that day."""
+    lines = [f"Regenerate with: {command}", *textwrap.wrap(search.get("page_rule") or "", 88),
+             f"Seeded on {search['seeded']}. Every seed env/pick_apparel_market.py tried, in "
+             f"order:"]
+    return lines + [f"  {entry['summary']}" for entry in search["tried"]]
+
+
+def to_fixture(listings: list[dict], facts: dict, seed: int, attempt: int,
+               brand: str = BRAND, sku_prefix: str = SKU_PREFIX,
+               search: dict | None = None, command: str | None = None) -> dict:
+    """The fixture. Thornwood's keys and lines are as they were; a market under another
+    brand or prefix records both, and a market chosen by a recorded seed search carries the
+    search too, in `_generated` and as `_about` lines."""
+    about = [
+        "Generated by env/generate_apparel.py. Do not hand edit.",
+        f"Seed {seed}, accepted on attempt {attempt}. Regenerate with the same seed",
+        "to reproduce this catalogue exactly.",
+        "Seeded with env/seed_variants.py, which reads this same schema.",
+    ]
+    generated = {"seed": seed, "attempt": attempt, "brand": brand}
+    if sku_prefix != SKU_PREFIX:
+        generated["sku_prefix"] = sku_prefix
+    if search is not None:
+        about += search_lines(search, command or "")
+        generated["search"] = search
     return {
-        "_about": [
-            "Generated by env/generate_apparel.py. Do not hand edit.",
-            f"Seed {seed}, accepted on attempt {attempt}. Regenerate with the same seed",
-            "to reproduce this catalogue exactly.",
-            "Seeded with env/seed_variants.py, which reads this same schema.",
-        ],
-        "_generated": {"seed": seed, "attempt": attempt, "brand": BRAND},
+        "_about": about,
+        "_generated": generated,
         "_instance": facts,
         "attribute_set_id": 4,
         "website_ids": [1],
@@ -477,36 +522,24 @@ def report(facts: dict, listings: list[dict]) -> None:
           f"${facts['largest_size_winner']['price']}")
 
 
-def write_tasks(fixture: dict, out: pathlib.Path) -> pathlib.Path:
-    """Write the task file from the fixture, so the two cannot drift apart.
+def origin_lines(fixture: dict) -> tuple[list[str], list[str]]:
+    """What a task file says about where its market came from (the end of `_about`) and the
+    shop it lives in (`_environment`, which `suite.draw_id` hashes).
 
-    They already did once. The first clothing market was generated, its task file written by
-    hand from that market's answers, then the market was regenerated to satisfy a new rule
-    and the task file was not. Fifteen runs were scored against a market that no longer
-    existed, and the control question read 0 of 3, which is the shape of an answer key that
-    has moved rather than an agent that has failed. The fixture is the only source of truth
-    for the answers, so the task file is derived from it here.
-    """
-    inst = fixture["_instance"]
-    brand = fixture["_generated"]["brand"]
-    win, card = inst["winner"], inst["cheapest_card"]
-    absent, large = inst["cheapest_without_target"], inst["largest_size_winner"]
-    sold_out, listed = inst["cheapest_sold_out"], inst["cheapest_listed"]
-    first = lambda name: name.split()[0]
-    search = f"Go to {{base}}/catalogsearch/result/?q={brand} ."
-
-    spec = {
-        "_about": [
-            "Generated by env/generate_apparel.py alongside the fixture. Do not hand edit.",
-            f"Seed {fixture['_generated']['seed']}, accepted on attempt "
-            f"{fixture['_generated']['attempt']}.",
-            f"{inst['listings']} listings, exhaustive {inst['exhaustive_opens']} opens, "
-            f"oracle floor {inst['oracle_min_opens']} opens.",
+    Thornwood's lines are kept word for word, so its task file regenerates byte for byte.
+    They are not true of a market seeded later: "seeded 18 September 2026", and a coverage
+    rule "which did not exist when this market was generated". So a market chosen by a
+    recorded seed search (`_generated.search`) states its own: the day it was seeded, its
+    brand, prefix and URL keys, the same three availability states, and where its answer
+    rendered when the page rule accepted it (20 October 2026)."""
+    inst, generated = fixture["_instance"], fixture["_generated"]
+    search = generated.get("search")
+    if search is None:
+        return ([
             "The second product category in the project, and the held-out test for the",
             "coverage rule frozen on 17 September, which did not exist when this market was",
             "generated.",
-        ],
-        "_environment": [
+        ], [
             "Clothing, seeded 18 September 2026 alongside the water markets rather than",
             "replacing them. Sizes rather than pack volumes, so there is no per-unit",
             "question. Three availability states, since 18 September 2026: a size can be",
@@ -515,7 +548,47 @@ def write_tasks(fixture: dict, out: pathlib.Path) -> pathlib.Path:
             "is what the live marketplaces render.",
             f"The winning listing is index {inst['winner_index']} of "
             f"{inst['listings']}, so it is not in the first row of search results.",
+        ])
+    prefix = generated.get("sku_prefix", SKU_PREFIX)
+    accepted = search["tried"][-1]
+    about = ("Drawn by the same generator and the same 13 rules as Thornwood, and chosen by "
+             "the seed search recorded in the fixture's _generated.search.")
+    environment = (
+        f"Clothing, seeded on {search['seeded']} beside the markets already in the shop, "
+        f"which it leaves as they were, under its own brand, SKU prefix and URL keys "
+        f"({generated['brand']}, {prefix}, {prefix.lower()}-NN.html). Sizes rather than pack "
+        f"volumes, so there is no per-unit question. Three availability states: a size can "
+        f"be absent from the menu, present but disabled because it is sold out, or present "
+        f"and buyable. The middle state needs show_out_of_stock set to 1 in Magento, and is "
+        f"what the live marketplaces render. When the page rule accepted it, the winning "
+        f"listing rendered at card {accepted['answer_card']} of {inst['listings']} on the "
+        f"results page, so it is not in the first row of search results.")
+    return textwrap.wrap(about, 88), textwrap.wrap(environment, 88)
+
+
+def task_spec(fixture: dict) -> dict:
+    """The task file for a fixture, as data: the six questions with every key from the
+    fixture. `write_tasks` writes it, and `generate_apparel_v2_tasks.py` builds a market's
+    own six from it rather than copying another market's file (20 October 2026)."""
+    inst = fixture["_instance"]
+    brand = fixture["_generated"]["brand"]
+    win, card = inst["winner"], inst["cheapest_card"]
+    absent, large = inst["cheapest_without_target"], inst["largest_size_winner"]
+    sold_out, listed = inst["cheapest_sold_out"], inst["cheapest_listed"]
+    first = lambda name: name.split()[0]
+    search = f"Go to {{base}}/catalogsearch/result/?q={brand} ."
+    origin, environment = origin_lines(fixture)
+
+    return {
+        "_about": [
+            "Generated by env/generate_apparel.py alongside the fixture. Do not hand edit.",
+            f"Seed {fixture['_generated']['seed']}, accepted on attempt "
+            f"{fixture['_generated']['attempt']}.",
+            f"{inst['listings']} listings, exhaustive {inst['exhaustive_opens']} opens, "
+            f"oracle floor {inst['oracle_min_opens']} opens.",
+            *origin,
         ],
+        "_environment": environment,
         "base_url": "http://localhost:7770",
         "brand": brand,
         "_instance": inst,
@@ -538,9 +611,9 @@ def write_tasks(fixture: dict, out: pathlib.Path) -> pathlib.Path:
              "expect": {"kind": "price", "value": win["price"]}},
             {"id": "apparel-cheapest-target", "family": "apparel", "gated": True,
              "note": f"Two traps in front of the answer. {absent['seller']} advertises "
-                     f"${absent['from_price']} and does not sell size "
+                     f"${absent['from_price']:.2f} and does not sell size "
                      f"{inst['target_option']} at all. {sold_out['seller']} does sell it, "
-                     f"lists it at ${sold_out['price']}, and cannot ship it, which the page "
+                     f"lists it at ${sold_out['price']:.2f}, and cannot ship it, which the page "
                      f"says only by rendering that option disabled. Neither can be the "
                      f"answer and both look cheaper than it.",
              "query": f"{search} Across the {brand} listings, which seller is cheapest for "
@@ -572,35 +645,99 @@ def write_tasks(fixture: dict, out: pathlib.Path) -> pathlib.Path:
              "expect": {"kind": "count", "value": inst["listings_target_buyable"]}},
         ],
     }
-    out.write_text(json.dumps(spec, indent=2) + "\n")
+
+
+def write_tasks(fixture: dict, out: pathlib.Path) -> pathlib.Path:
+    """Write the task file from the fixture, so the two cannot drift apart.
+
+    They already did once. The first clothing market was generated, its task file written by
+    hand from that market's answers, then the market was regenerated to satisfy a new rule
+    and the task file was not. Fifteen runs were scored against a market that no longer
+    existed, and the control question read 0 of 3, which is the shape of an answer key that
+    has moved rather than an agent that has failed. The fixture is the only source of truth
+    for the answers, so the task file is derived from it here.
+    """
+    out.write_text(json.dumps(task_spec(fixture), indent=2) + "\n")
     return out
+
+
+def over_thornwood(brand: str, sku_prefix: str, *outputs: pathlib.Path | None) -> list[str]:
+    """Thornwood's files among the outputs of a market under another brand or prefix: a
+    write main refuses, since the fixture and its task file are what the development batches
+    read (20 Oct 2026). Empty for Thornwood itself, and when nothing would be overwritten."""
+    if (brand, sku_prefix) == (BRAND, SKU_PREFIX):
+        return []
+    protected = {DEFAULT_OUT.resolve(), DEFAULT_TASKS.resolve()}
+    return [p.name for p in outputs if p is not None and p.resolve() in protected]
+
+
+def load_search(path: pathlib.Path, seed: int, brand: str, sku_prefix: str) -> dict:
+    """A seed search's record, checked against the market it is said to have chosen: its
+    last seed must be the one accepted, and it must be this seed, brand and prefix."""
+    search = json.loads(path.read_text())
+    accepted = search["tried"][-1] if search.get("tried") else {}
+    if (accepted.get("seed"), accepted.get("outcome")) != (seed, "accepted"):
+        raise SystemExit(f"{path.name} does not end with seed {seed} accepted")
+    if (search.get("brand"), search.get("sku_prefix")) != (brand, sku_prefix):
+        raise SystemExit(f"{path.name} is the search for {search.get('brand')} "
+                         f"{search.get('sku_prefix')}, not {brand} {sku_prefix}")
+    return search
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--listings", type=int, default=15)
     parser.add_argument("--seed", type=int, default=11)
+    parser.add_argument("--brand", default=BRAND,
+                        help=f"the word every listing's name starts with and the shop is searched "
+                             f"for, default {BRAND}")
+    parser.add_argument("--sku-prefix", default=SKU_PREFIX,
+                        help=f"the listings' SKU prefix, and so their URL keys, default {SKU_PREFIX}")
     parser.add_argument("--out", type=pathlib.Path, default=DEFAULT_OUT)
     parser.add_argument("--tasks", type=pathlib.Path,
-                        default=HERE.parent / "experiments" / "tasks" / "tasks_apparel.json",
-                        help="task file, written from the same fixture so they cannot drift")
+                        help="task file, written from the same fixture so they cannot drift. "
+                             "Default tasks_apparel.json for Thornwood, and none for another "
+                             "brand unless named")
+    parser.add_argument("--search-log", type=pathlib.Path,
+                        help="the seed search that chose this market, written by "
+                             "env/pick_apparel_market.py, recorded in the fixture")
     parser.add_argument("--report", action="store_true",
                         help="print the instance and write nothing")
     args = parser.parse_args()
 
-    listings, facts, attempt = generate(args.listings, args.seed)
+    # A market under another brand or prefix must never land on Thornwood's files.
+    named = over_thornwood(args.brand, args.sku_prefix, args.out, args.tasks)
+    if named and not args.report:
+        raise SystemExit(f"refusing to write {args.brand} over Thornwood's "
+                         f"{', '.join(named)}: name --out (and --tasks)")
+    if args.tasks is None and (args.brand, args.sku_prefix) == (BRAND, SKU_PREFIX):
+        args.tasks = DEFAULT_TASKS
+
+    listings, facts, attempt = generate(args.listings, args.seed, brand=args.brand,
+                                        sku_prefix=args.sku_prefix)
     if args.report:
         report(facts, listings)
         print(f"\naccepted on attempt {attempt}, seed {args.seed}")
         return 0
 
+    search, command = None, None
+    if args.search_log:
+        search = load_search(args.search_log, args.seed, args.brand, args.sku_prefix)
+        log = args.search_log.resolve()
+        log = log.relative_to(REPO) if log.is_relative_to(REPO) else log
+        # The fixture's own place under env/fixtures, whatever path this run wrote to, so
+        # the line is the same when a test regenerates the fixture somewhere else.
+        command = (f"python3 env/generate_apparel.py --seed {args.seed} --brand {args.brand} "
+                   f"--sku-prefix {args.sku_prefix} --out env/fixtures/{args.out.name} "
+                   f"--search-log {log}")
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    fixture = to_fixture(listings, facts, args.seed, attempt)
+    fixture = to_fixture(listings, facts, args.seed, attempt, args.brand, args.sku_prefix,
+                         search=search, command=command)
     args.out.write_text(json.dumps(fixture, indent=2) + "\n")
-    tasks = write_tasks(fixture, args.tasks)
     report(facts, listings)
     print(f"\nwritten: {args.out}")
-    print(f"written: {tasks}")
+    if args.tasks is not None:
+        print(f"written: {write_tasks(fixture, args.tasks)}")
     return 0
 
 
