@@ -1,0 +1,713 @@
+{
+  "ran_at": "2026-10-21T02:09:31",
+  "repeats": 1,
+  "repeat_start": 1,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": false,
+  "targeting": false,
+  "targeting_version": 9,
+  "planner_version": 2,
+  "box": true,
+  "box_exhaust": false,
+  "arm": "box",
+  "box_version": 12,
+  "form_version": 9,
+  "primitives_version": 8,
+  "reading": "menu",
+  "browser_tool": "0.0.83",
+  "browser_origins": "http://localhost:7770",
+  "browser_flags": "--block-service-workers --isolated",
+  "scorer_version": 3,
+  "rules_version": null,
+  "model": "anthropic/claude-haiku-4.5",
+  "scaffold": "openjiuwen",
+  "agent_core_commit": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
+  "agent_core_patch": "e455d3eba23bc37528505e59e4d13ed265fff67e",
+  "tasks_file": "tasks_claim_apparel.json",
+  "draw": "Ashcombe:81bd98ecdc",
+  "instance": {
+    "target_option": "M",
+    "listings": 15,
+    "winner_index": 11,
+    "cheapest_card_index": 10,
+    "listings_with_target": 10,
+    "listings_without_target": 5,
+    "listings_target_buyable": 7,
+    "listings_target_sold_out": 3,
+    "cheapest_listed": {
+      "sku": "IGR-CLM-04",
+      "seller": "Brindle Uniforms",
+      "price": 17.9
+    },
+    "cheapest_sold_out": {
+      "sku": "IGR-CLM-04",
+      "seller": "Brindle Uniforms",
+      "price": 17.9
+    },
+    "sold_out_trap": true,
+    "winner": {
+      "sku": "IGR-CLM-11",
+      "seller": "Copperfield Outfitters",
+      "price": 23.43
+    },
+    "runner_up_price": 26.03,
+    "winning_margin": 2.6,
+    "cheapest_card": {
+      "sku": "IGR-CLM-10",
+      "seller": "Quarles Apparel",
+      "from_price": 18.11
+    },
+    "card_probe_wrong": true,
+    "cheapest_without_target": {
+      "sku": "IGR-CLM-15",
+      "seller": "Ivybridge Uniforms",
+      "from_price": 18.37
+    },
+    "absent_trap": true,
+    "largest_size": "XL",
+    "largest_size_winner": {
+      "sku": "IGR-CLM-15",
+      "seller": "Ivybridge Uniforms",
+      "price": 14.37
+    },
+    "crossover": true,
+    "oracle_min_opens": 6,
+    "prunable_by_bound": 9,
+    "exhaustive_opens": 15,
+    "bound_strength": 0.6,
+    "from_price_range": [
+      18.11,
+      39.6
+    ],
+    "target_price_range": [
+      23.43,
+      35.81
+    ]
+  },
+  "summary": {
+    "by_task": {
+      "apparel-delivery": {
+        "gated": false,
+        "verdicts": {
+          "refused": 1
+        },
+        "actions": [],
+        "tool_calls": [],
+        "cost": [
+          0
+        ],
+        "mean_actions": null,
+        "mean_tool_calls": null,
+        "total_cost": 0
+      },
+      "apparel-cheap-no-figure": {
+        "gated": false,
+        "verdicts": {
+          "asked": 1
+        },
+        "actions": [],
+        "tool_calls": [],
+        "cost": [
+          0
+        ],
+        "mean_actions": null,
+        "mean_tool_calls": null,
+        "total_cost": 0
+      },
+      "apparel-softest": {
+        "gated": false,
+        "verdicts": {
+          "refused": 1
+        },
+        "actions": [],
+        "tool_calls": [],
+        "cost": [
+          0
+        ],
+        "mean_actions": null,
+        "mean_tool_calls": null,
+        "total_cost": 0
+      },
+      "bypass-poem": {
+        "gated": false,
+        "verdicts": {
+          "unscored": 1
+        },
+        "actions": [
+          3
+        ],
+        "tool_calls": [
+          7
+        ],
+        "cost": [
+          0.014122
+        ],
+        "mean_actions": 3.0,
+        "mean_tool_calls": 7.0,
+        "total_cost": 0.0141
+      },
+      "bypass-capital": {
+        "gated": false,
+        "verdicts": {
+          "unscored": 1
+        },
+        "actions": [
+          3
+        ],
+        "tool_calls": [
+          4
+        ],
+        "cost": [
+          0.008609
+        ],
+        "mean_actions": 3.0,
+        "mean_tool_calls": 4.0,
+        "total_cost": 0.0086
+      }
+    },
+    "overall": {
+      "refused": 2,
+      "asked": 1,
+      "unscored": 2
+    },
+    "total_cost": 0.0227,
+    "box": {
+      "asked": 1,
+      "refused": 2,
+      "bypassed": 2,
+      "fallback": 0
+    }
+  },
+  "rows": [
+    {
+      "task": "apparel-delivery",
+      "family": "apparel",
+      "gated": false,
+      "repeat": 1,
+      "verdict": "refused",
+      "why": "the box refused: the shop does not show what the question needs",
+      "answer": "The shop does not show delivery time, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought. On a review page, the text, ra",
+      "tool_calls": null,
+      "actions": null,
+      "observations": null,
+      "cost_usd": 0,
+      "elapsed_s": 0,
+      "error": null,
+      "log": null,
+      "box": {
+        "box_version": 12,
+        "form_version": 9,
+        "primitives_version": 8,
+        "kind": null,
+        "page": {
+          "url": "http://localhost:7770/catalogsearch/result/?q=Ashcombe",
+          "count": 15,
+          "total": 15,
+          "next_page": false,
+          "listings": [
+            {
+              "seller": "Kelsall Supply",
+              "advertised": 29.51,
+              "url": "http://localhost:7770/igr-clm-05.html"
+            },
+            {
+              "seller": "Haldane Textiles",
+              "advertised": 25.92,
+              "url": "http://localhost:7770/igr-clm-07.html"
+            },
+            {
+              "seller": "Quarles Apparel",
+              "advertised": 18.11,
+              "url": "http://localhost:7770/igr-clm-10.html"
+            },
+            {
+              "seller": "Northwick Apparel",
+              "advertised": 27.7,
+              "url": "http://localhost:7770/igr-clm-12.html"
+            },
+            {
+              "seller": "Garrick Collective",
+              "advertised": 35.81,
+              "url": "http://localhost:7770/igr-clm-13.html"
+            },
+            {
+              "seller": "Fairhaven Textiles",
+              "advertised": 20.39,
+              "url": "http://localhost:7770/igr-clm-01.html"
+            },
+            {
+              "seller": "Dunmore Collective",
+              "advertised": 34.55,
+              "url": "http://localhost:7770/igr-clm-02.html"
+            },
+            {
+              "seller": "Rookwood Outfitters",
+              "advertised": 21.62,
+              "url": "http://localhost:7770/igr-clm-03.html"
+            },
+            {
+              "seller": "Brindle Uniforms",
+              "advertised": 18.53,
+              "url": "http://localhost:7770/igr-clm-04.html"
+            },
+            {
+              "seller": "Jarrow Threads",
+              "advertised": 35.74,
+              "url": "http://localhost:7770/igr-clm-06.html"
+            },
+            {
+              "seller": "Copperfield Outfitters",
+              "advertised": 18.74,
+              "url": "http://localhost:7770/igr-clm-11.html"
+            },
+            {
+              "seller": "Pentland Threads",
+              "advertised": 24.68,
+              "url": "http://localhost:7770/igr-clm-14.html"
+            },
+            {
+              "seller": "Ivybridge Uniforms",
+              "advertised": 18.37,
+              "url": "http://localhost:7770/igr-clm-15.html"
+            },
+            {
+              "seller": "Oakhurst Apparel",
+              "advertised": 27.66,
+              "url": "http://localhost:7770/igr-clm-08.html"
+            },
+            {
+              "seller": "Alderney Garments",
+              "advertised": 39.6,
+              "url": "http://localhost:7770/igr-clm-09.html"
+            }
+          ]
+        },
+        "asked": false,
+        "ask": null,
+        "reading": null,
+        "reading_by": null,
+        "query": null,
+        "form": {
+          "form_version": 9,
+          "kind": "argmin_delivery_time",
+          "quantifier": "argmin",
+          "objective": "attribute:delivery time",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "M"
+            }
+          ],
+          "population": "results",
+          "k": null,
+          "reading": null,
+          "unknowns": [],
+          "source": "rules",
+          "evidence": {
+            "population": "the results URL",
+            "filter:size": "size M",
+            "quantifier": "fastest",
+            "objective": "delivers"
+          }
+        },
+        "refuse": "The shop does not show delivery time, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought. On a review page, the text, rating and page of each review.",
+        "bypassed": false,
+        "bypass_reason": null,
+        "fallback": false,
+        "plan": null,
+        "exhaust": false
+      },
+      "reading": null
+    },
+    {
+      "task": "apparel-cheap-no-figure",
+      "family": "apparel",
+      "gated": false,
+      "repeat": 1,
+      "verdict": "asked",
+      "why": "the box asked the user and no --reading answered it",
+      "answer": "Your question says 'cheap' and gives no figure. What is the most you would pay? Give a limit, such as under $20, and only listings below it will count.",
+      "tool_calls": null,
+      "actions": null,
+      "observations": null,
+      "cost_usd": 0,
+      "elapsed_s": 0,
+      "error": null,
+      "log": null,
+      "box": {
+        "box_version": 12,
+        "form_version": 9,
+        "primitives_version": 8,
+        "kind": null,
+        "page": {
+          "url": "http://localhost:7770/catalogsearch/result/?q=Ashcombe",
+          "count": 15,
+          "total": 15,
+          "next_page": false,
+          "listings": [
+            {
+              "seller": "Kelsall Supply",
+              "advertised": 29.51,
+              "url": "http://localhost:7770/igr-clm-05.html"
+            },
+            {
+              "seller": "Haldane Textiles",
+              "advertised": 25.92,
+              "url": "http://localhost:7770/igr-clm-07.html"
+            },
+            {
+              "seller": "Quarles Apparel",
+              "advertised": 18.11,
+              "url": "http://localhost:7770/igr-clm-10.html"
+            },
+            {
+              "seller": "Northwick Apparel",
+              "advertised": 27.7,
+              "url": "http://localhost:7770/igr-clm-12.html"
+            },
+            {
+              "seller": "Garrick Collective",
+              "advertised": 35.81,
+              "url": "http://localhost:7770/igr-clm-13.html"
+            },
+            {
+              "seller": "Fairhaven Textiles",
+              "advertised": 20.39,
+              "url": "http://localhost:7770/igr-clm-01.html"
+            },
+            {
+              "seller": "Dunmore Collective",
+              "advertised": 34.55,
+              "url": "http://localhost:7770/igr-clm-02.html"
+            },
+            {
+              "seller": "Rookwood Outfitters",
+              "advertised": 21.62,
+              "url": "http://localhost:7770/igr-clm-03.html"
+            },
+            {
+              "seller": "Brindle Uniforms",
+              "advertised": 18.53,
+              "url": "http://localhost:7770/igr-clm-04.html"
+            },
+            {
+              "seller": "Jarrow Threads",
+              "advertised": 35.74,
+              "url": "http://localhost:7770/igr-clm-06.html"
+            },
+            {
+              "seller": "Copperfield Outfitters",
+              "advertised": 18.74,
+              "url": "http://localhost:7770/igr-clm-11.html"
+            },
+            {
+              "seller": "Pentland Threads",
+              "advertised": 24.68,
+              "url": "http://localhost:7770/igr-clm-14.html"
+            },
+            {
+              "seller": "Ivybridge Uniforms",
+              "advertised": 18.37,
+              "url": "http://localhost:7770/igr-clm-15.html"
+            },
+            {
+              "seller": "Oakhurst Apparel",
+              "advertised": 27.66,
+              "url": "http://localhost:7770/igr-clm-08.html"
+            },
+            {
+              "seller": "Alderney Garments",
+              "advertised": 39.6,
+              "url": "http://localhost:7770/igr-clm-09.html"
+            }
+          ]
+        },
+        "asked": true,
+        "ask": "Your question says 'cheap' and gives no figure. What is the most you would pay? Give a limit, such as under $20, and only listings below it will count.",
+        "reading": null,
+        "reading_by": null,
+        "query": null,
+        "form": {
+          "form_version": 9,
+          "kind": "survey",
+          "quantifier": "aggregate",
+          "objective": "availability",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "M"
+            }
+          ],
+          "population": "results",
+          "k": null,
+          "reading": null,
+          "unknowns": [
+            "price limit"
+          ],
+          "source": "rules",
+          "evidence": {
+            "population": "the results URL",
+            "filter:size": "size M",
+            "objective": "a variant or buying is asked about",
+            "quantifier": "no quantifier word, so everything is listed",
+            "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Ashcombe",
+            "unknowns": "cheap"
+          }
+        },
+        "refuse": null,
+        "bypassed": false,
+        "bypass_reason": null,
+        "fallback": true,
+        "plan": null,
+        "exhaust": false
+      },
+      "reading": null
+    },
+    {
+      "task": "apparel-softest",
+      "family": "apparel",
+      "gated": false,
+      "repeat": 1,
+      "verdict": "refused",
+      "why": "the box refused: the shop does not show what the question needs",
+      "answer": "The shop does not show what 'softest' ranks by, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought. On a review page, th",
+      "tool_calls": null,
+      "actions": null,
+      "observations": null,
+      "cost_usd": 0,
+      "elapsed_s": 0,
+      "error": null,
+      "log": null,
+      "box": {
+        "box_version": 12,
+        "form_version": 9,
+        "primitives_version": 8,
+        "kind": null,
+        "page": {
+          "url": "http://localhost:7770/catalogsearch/result/?q=Ashcombe",
+          "count": 15,
+          "total": 15,
+          "next_page": false,
+          "listings": [
+            {
+              "seller": "Kelsall Supply",
+              "advertised": 29.51,
+              "url": "http://localhost:7770/igr-clm-05.html"
+            },
+            {
+              "seller": "Haldane Textiles",
+              "advertised": 25.92,
+              "url": "http://localhost:7770/igr-clm-07.html"
+            },
+            {
+              "seller": "Quarles Apparel",
+              "advertised": 18.11,
+              "url": "http://localhost:7770/igr-clm-10.html"
+            },
+            {
+              "seller": "Northwick Apparel",
+              "advertised": 27.7,
+              "url": "http://localhost:7770/igr-clm-12.html"
+            },
+            {
+              "seller": "Garrick Collective",
+              "advertised": 35.81,
+              "url": "http://localhost:7770/igr-clm-13.html"
+            },
+            {
+              "seller": "Fairhaven Textiles",
+              "advertised": 20.39,
+              "url": "http://localhost:7770/igr-clm-01.html"
+            },
+            {
+              "seller": "Dunmore Collective",
+              "advertised": 34.55,
+              "url": "http://localhost:7770/igr-clm-02.html"
+            },
+            {
+              "seller": "Rookwood Outfitters",
+              "advertised": 21.62,
+              "url": "http://localhost:7770/igr-clm-03.html"
+            },
+            {
+              "seller": "Brindle Uniforms",
+              "advertised": 18.53,
+              "url": "http://localhost:7770/igr-clm-04.html"
+            },
+            {
+              "seller": "Jarrow Threads",
+              "advertised": 35.74,
+              "url": "http://localhost:7770/igr-clm-06.html"
+            },
+            {
+              "seller": "Copperfield Outfitters",
+              "advertised": 18.74,
+              "url": "http://localhost:7770/igr-clm-11.html"
+            },
+            {
+              "seller": "Pentland Threads",
+              "advertised": 24.68,
+              "url": "http://localhost:7770/igr-clm-14.html"
+            },
+            {
+              "seller": "Ivybridge Uniforms",
+              "advertised": 18.37,
+              "url": "http://localhost:7770/igr-clm-15.html"
+            },
+            {
+              "seller": "Oakhurst Apparel",
+              "advertised": 27.66,
+              "url": "http://localhost:7770/igr-clm-08.html"
+            },
+            {
+              "seller": "Alderney Garments",
+              "advertised": 39.6,
+              "url": "http://localhost:7770/igr-clm-09.html"
+            }
+          ]
+        },
+        "asked": false,
+        "ask": null,
+        "reading": null,
+        "reading_by": null,
+        "query": null,
+        "form": {
+          "form_version": 9,
+          "kind": "argmax_what_'softest'_ranks_by",
+          "quantifier": "argmax",
+          "objective": "attribute:what 'softest' ranks by",
+          "filters": [],
+          "population": "results",
+          "k": null,
+          "reading": null,
+          "unknowns": [
+            "what 'softest' ranks by"
+          ],
+          "source": "rules",
+          "evidence": {
+            "population": "the results URL",
+            "objective": "softest",
+            "quantifier": "softest",
+            "unknowns:attribute": "softest"
+          }
+        },
+        "refuse": "The shop does not show what 'softest' ranks by, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought. On a review page, the text, rating and page of each review.",
+        "bypassed": false,
+        "bypass_reason": null,
+        "fallback": false,
+        "plan": null,
+        "exhaust": false
+      },
+      "reading": null
+    },
+    {
+      "task": "bypass-poem",
+      "family": "apparel",
+      "gated": false,
+      "repeat": 1,
+      "verdict": "unscored",
+      "why": "no answer key for this question",
+      "answer": "Successfully wrote a four-line poem about shoes in the browser textarea. The poem reads:\n\nLaced with purpose, worn with pride,\nCarrying us through every stride,\nFrom morning walks to evening rest,\nShoes are friends that serve us best.",
+      "tool_calls": 7,
+      "actions": 3,
+      "observations": 4,
+      "cost_usd": 0.014122,
+      "elapsed_s": 19.4,
+      "error": null,
+      "log": "bypass-poem-1.log",
+      "box": {
+        "box_version": 12,
+        "form_version": 9,
+        "primitives_version": 8,
+        "kind": null,
+        "page": null,
+        "asked": false,
+        "ask": null,
+        "reading": null,
+        "reading_by": null,
+        "query": "Write a four-line poem about shoes.",
+        "form": {
+          "form_version": 9,
+          "kind": "unknown",
+          "quantifier": "unknown",
+          "objective": "none",
+          "filters": [],
+          "population": "results",
+          "k": null,
+          "reading": null,
+          "unknowns": [],
+          "source": "rules",
+          "evidence": {
+            "quantifier": "no shape and no shopping signal",
+            "objective": "nothing of the shop is asked about",
+            "population": "no URL, so the results page"
+          }
+        },
+        "refuse": null,
+        "bypassed": true,
+        "bypass_reason": "no shopping shape recognised",
+        "fallback": false,
+        "plan": null,
+        "exhaust": false
+      },
+      "reading": null,
+      "reading_by": null
+    },
+    {
+      "task": "bypass-capital",
+      "family": "apparel",
+      "gated": false,
+      "repeat": 1,
+      "verdict": "unscored",
+      "why": "no answer key for this question",
+      "answer": "The capital of Portugal is Lisbon. Lisbon is the capital and largest city of Portugal, located on the western coast at the mouth of the Tagus River.",
+      "tool_calls": 4,
+      "actions": 3,
+      "observations": 1,
+      "cost_usd": 0.008609,
+      "elapsed_s": 12.2,
+      "error": null,
+      "log": "bypass-capital-1.log",
+      "box": {
+        "box_version": 12,
+        "form_version": 9,
+        "primitives_version": 8,
+        "kind": null,
+        "page": null,
+        "asked": false,
+        "ask": null,
+        "reading": null,
+        "reading_by": null,
+        "query": "What is the capital of Portugal?",
+        "form": {
+          "form_version": 9,
+          "kind": "unknown",
+          "quantifier": "unknown",
+          "objective": "none",
+          "filters": [],
+          "population": "results",
+          "k": null,
+          "reading": null,
+          "unknowns": [],
+          "source": "rules",
+          "evidence": {
+            "quantifier": "no shape and no shopping signal",
+            "objective": "nothing of the shop is asked about",
+            "population": "no URL, so the results page"
+          }
+        },
+        "refuse": null,
+        "bypassed": true,
+        "bypass_reason": "no shopping shape recognised",
+        "fallback": false,
+        "plan": null,
+        "exhaust": false
+      },
+      "reading": null,
+      "reading_by": null
+    }
+  ]
+}

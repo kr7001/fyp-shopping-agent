@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "records": [
+    {
+      "domain": "localhost",
+      "route_signature": "/catalogsearch/result",
+      "kind": "card_probe",
+      "selectors": {
+        "card_container_selectors": [
+          "#product-item-info_106338",
+          "#product-item-info_106347",
+          "#product-item-info_106358",
+          "#product-item-info_106367",
+          "div.panel.wrapper",
+          "div.nested"
+        ],
+        "title_selectors": [
+          "a.action.towishlist",
+          "div.actions-secondary > a.action.towishlist",
+          "div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_106338 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_106347 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_106358 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_106367 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "a.action.compare",
+          "li.item.link > a.action.compare",
+          "a.action.advanced"
+        ],
+        "price_selectors": [
+          "div.price-box.price-final_price",
+          "div.product.details > div.price-box.price-final_price",
+          "#product-item-info_106338 > div.product.details > div.price-box.price-final_price",
+          "#product-item-info_106347 > div.product.details > div.price-box.price-final_price",
+          "#product-item-info_106358 > div.product.details > div.price-box.price-final_price",
+          "#product-item-info_106367 > div.product.details > div.price-box.price-final_price"
+        ],
+        "author_selectors": [
+          "li.link.authorization-link"
+        ],
+        "summary_selectors": [
+          "a.action.skip.contentarea"
+        ],
+        "primary_link_selectors": [
+          "a.action.towishlist",
+          "div.actions-secondary > a.action.towishlist",
+          "div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_106338 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_106347 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_106358 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_106367 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#id34KfCDh6",
+          "a.action.advanced"
+        ],
+        "button_selectors": [
+          "a.product.photo",
+          "#product-item-info_106338 > a.product.photo",
+          "a.product-item-link",
+          "strong.product.name > a.product-item-link",
+          "div.product.details > strong.product.name > a.product-item-link",
+          "#product-item-info_106338 > div.product.details > strong.product.name > a.product-item-link",
+          "#product-item-info_106347 > a.product.photo",
+          "#product-item-info_106347 > div.product.details > strong.product.name > a.product-item-link",
+          "#product-item-info_106358 > a.product.photo",
+          "#product-item-info_106358 > div.product.details > strong.product.name > a.product-item-link",
+          "#product-item-info_106367 > a.product.photo",
+          "#product-item-info_106367 > div.product.details > strong.product.name > a.product-item-link",
+          "#id34KfCDh6",
+          "li.link.wishlist > a",
+          "li.link.authorization-link > a",
+          "#idePUhtFrt",
+          "a.action.advanced"
+        ]
+      },
+      "success_count": 1,
+      "failure_count": 0,
+      "last_success_at": 1792503257.539105,
+      "quality_score": 0.895,
+      "sample_card_count": 6
+    }
+  ]
+}

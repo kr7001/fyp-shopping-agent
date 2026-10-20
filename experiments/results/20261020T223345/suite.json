@@ -1,0 +1,304 @@
+{
+  "ran_at": "2026-10-20T22:44:36",
+  "repeats": 1,
+  "repeat_start": 1,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": false,
+  "targeting": false,
+  "targeting_version": null,
+  "planner_version": null,
+  "box": false,
+  "box_exhaust": false,
+  "arm": "none",
+  "box_version": null,
+  "form_version": null,
+  "primitives_version": null,
+  "reading": null,
+  "browser_tool": "0.0.83",
+  "browser_origins": "http://localhost:7770",
+  "browser_flags": "--block-service-workers --isolated",
+  "scorer_version": 3,
+  "rules_version": null,
+  "model": "deepseek/deepseek-v4-flash",
+  "scaffold": "openjiuwen",
+  "agent_core_commit": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
+  "agent_core_patch": "e455d3eba23bc37528505e59e4d13ed265fff67e",
+  "tasks_file": "tasks_claim_apparel.json",
+  "draw": "Ashcombe:81bd98ecdc",
+  "instance": {
+    "target_option": "M",
+    "listings": 15,
+    "winner_index": 11,
+    "cheapest_card_index": 10,
+    "listings_with_target": 10,
+    "listings_without_target": 5,
+    "listings_target_buyable": 7,
+    "listings_target_sold_out": 3,
+    "cheapest_listed": {
+      "sku": "IGR-CLM-04",
+      "seller": "Brindle Uniforms",
+      "price": 17.9
+    },
+    "cheapest_sold_out": {
+      "sku": "IGR-CLM-04",
+      "seller": "Brindle Uniforms",
+      "price": 17.9
+    },
+    "sold_out_trap": true,
+    "winner": {
+      "sku": "IGR-CLM-11",
+      "seller": "Copperfield Outfitters",
+      "price": 23.43
+    },
+    "runner_up_price": 26.03,
+    "winning_margin": 2.6,
+    "cheapest_card": {
+      "sku": "IGR-CLM-10",
+      "seller": "Quarles Apparel",
+      "from_price": 18.11
+    },
+    "card_probe_wrong": true,
+    "cheapest_without_target": {
+      "sku": "IGR-CLM-15",
+      "seller": "Ivybridge Uniforms",
+      "from_price": 18.37
+    },
+    "absent_trap": true,
+    "largest_size": "XL",
+    "largest_size_winner": {
+      "sku": "IGR-CLM-15",
+      "seller": "Ivybridge Uniforms",
+      "price": 14.37
+    },
+    "crossover": true,
+    "oracle_min_opens": 6,
+    "prunable_by_bound": 9,
+    "exhaustive_opens": 15,
+    "bound_strength": 0.6,
+    "from_price_range": [
+      18.11,
+      39.6
+    ],
+    "target_price_range": [
+      23.43,
+      35.81
+    ]
+  },
+  "summary": {
+    "by_task": {
+      "apparel-headline": {
+        "gated": false,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          1
+        ],
+        "tool_calls": [
+          3
+        ],
+        "cost": [
+          0.003623
+        ],
+        "mean_actions": 1.0,
+        "mean_tool_calls": 3.0,
+        "total_cost": 0.0036
+      },
+      "apparel-target-price": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 1
+        },
+        "actions": [
+          11
+        ],
+        "tool_calls": [
+          23
+        ],
+        "cost": [
+          0.023331
+        ],
+        "mean_actions": 11.0,
+        "mean_tool_calls": 23.0,
+        "total_cost": 0.0233
+      },
+      "apparel-cheapest-target": {
+        "gated": true,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          39
+        ],
+        "tool_calls": [
+          66
+        ],
+        "cost": [
+          0.235196
+        ],
+        "mean_actions": 39.0,
+        "mean_tool_calls": 66.0,
+        "total_cost": 0.2352
+      },
+      "apparel-all-stocked": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 1
+        },
+        "actions": [
+          5
+        ],
+        "tool_calls": [
+          10
+        ],
+        "cost": [
+          0.019462
+        ],
+        "mean_actions": 5.0,
+        "mean_tool_calls": 10.0,
+        "total_cost": 0.0195
+      },
+      "apparel-count-stocked": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 1
+        },
+        "actions": [
+          8
+        ],
+        "tool_calls": [
+          16
+        ],
+        "cost": [
+          0.051375
+        ],
+        "mean_actions": 8.0,
+        "mean_tool_calls": 16.0,
+        "total_cost": 0.0514
+      },
+      "apparel-count-buyable": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 1
+        },
+        "actions": [
+          26
+        ],
+        "tool_calls": [
+          55
+        ],
+        "cost": [
+          0.137077
+        ],
+        "mean_actions": 26.0,
+        "mean_tool_calls": 55.0,
+        "total_cost": 0.1371
+      }
+    },
+    "overall": {
+      "correct": 2,
+      "wrong": 4
+    },
+    "total_cost": 0.4701,
+    "box": null
+  },
+  "rows": [
+    {
+      "task": "apparel-headline",
+      "family": "apparel",
+      "gated": false,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The Ashcombe tee listing with the lowest price on the results page is the 'Ashcombe Heavyweight Cotton Tee - Quarles Apparel' at $18.11.",
+      "tool_calls": 3,
+      "actions": 1,
+      "observations": 2,
+      "cost_usd": 0.003623,
+      "elapsed_s": 15.7,
+      "error": null,
+      "log": "apparel-headline-1.log"
+    },
+    {
+      "task": "apparel-target-price",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "expected 23.43, saw [26.21, 18.11, 29.51, 28.76]",
+      "answer": "Lowest buyable price for size M of the Ashcombe Heavyweight Cotton Tee is $26.21 at Haldane Textiles. (Quarles Apparel shows the lowest list price $18.11 but its size M option is disabled/out of stock, so it cannot be bought; Kelsall Supply M=$29.51, Northwick Apparel M=$28.76.)",
+      "tool_calls": 23,
+      "actions": 11,
+      "observations": 12,
+      "cost_usd": 0.023331,
+      "elapsed_s": 115.4,
+      "error": null,
+      "log": "apparel-target-price-1.log"
+    },
+    {
+      "task": "apparel-cheapest-target",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The cheapest seller that can supply size M is Copperfield Outfitters at $23.43.",
+      "tool_calls": 66,
+      "actions": 39,
+      "observations": 27,
+      "cost_usd": 0.235196,
+      "elapsed_s": 201.0,
+      "error": null,
+      "log": "apparel-cheapest-target-1.log"
+    },
+    {
+      "task": "apparel-all-stocked",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "answered yes",
+      "answer": "Yes, every Ashcombe listing offers size M.",
+      "tool_calls": 10,
+      "actions": 5,
+      "observations": 5,
+      "cost_usd": 0.019462,
+      "elapsed_s": 37.0,
+      "error": null,
+      "log": "apparel-all-stocked-1.log"
+    },
+    {
+      "task": "apparel-count-stocked",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "counted 15, expected 10",
+      "answer": "All 15 Ashcombe listings offer size M.",
+      "tool_calls": 16,
+      "actions": 8,
+      "observations": 8,
+      "cost_usd": 0.051375,
+      "elapsed_s": 69.9,
+      "error": null,
+      "log": "apparel-count-stocked-1.log"
+    },
+    {
+      "task": "apparel-count-buyable",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "counted 8, expected 7",
+      "answer": "There are 8 Ashcombe listings with size M in stock and available to buy right now.",
+      "tool_calls": 55,
+      "actions": 26,
+      "observations": 29,
+      "cost_usd": 0.137077,
+      "elapsed_s": 191.3,
+      "error": null,
+      "log": "apparel-count-buyable-1.log"
+    }
+  ]
+}

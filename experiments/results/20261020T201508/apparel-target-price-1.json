@@ -1,0 +1,126 @@
+{
+  "ran_at": "2026-10-20T20:16:33",
+  "provider": "openrouter",
+  "model": "anthropic/claude-haiku-4.5",
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Ashcombe . What is the lowest price anyone charges for size M of the Ashcombe tee, among those that can actually be bought?",
+  "elapsed_s": 48.1,
+  "cost_usd": 0.088492,
+  "cost_note": null,
+  "spend_before_usd": 64.26495196,
+  "spend_after_usd": 64.31037631,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "6565c51c40d44a168585beaa06d98874",
+    "final": "The lowest price anyone charges for size M of the Ashcombe Heavyweight Cotton Tee, among those that can actually be bought, is $25.92 from Haldane Textiles.",
+    "page": {
+      "url": "http://localhost:7770/catalogsearch/result/?q=Ashcombe",
+      "title": "Search results for: 'Ashcombe'"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 12,
+    "actions": 7,
+    "observations": 5,
+    "unclassified_tools": [],
+    "assistant_turns": 12,
+    "by_tool": {
+      "browser_navigate": 6,
+      "browser_snapshot": 4,
+      "browser_probe_cards": 1,
+      "browser_click": 1
+    },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Ashcombe",
+      "http://localhost:7770/igr-clm-10.html",
+      "http://localhost:7770/catalogsearch/result/?q=Ashcombe",
+      "http://localhost:7770/igr-clm-07.html",
+      "http://localhost:7770/igr-clm-05.html",
+      "http://localhost:7770/igr-clm-12.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Ashcombe"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "t_g0_16"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-clm-10.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Ashcombe"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-clm-07.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-clm-05.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-clm-12.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_click",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_snapshot"
+    ],
+    "tokens": {
+      "prompt": 352577,
+      "completion": 1999,
+      "total": 354576,
+      "calls": 13
+    },
+    "cost_reported_usd": 0.088492
+  },
+  "spend_delta_usd": 0.045424,
+  "log": "apparel-target-price-1.log",
+  "shop": "gated",
+  "probe": "viewport",
+  "scaffold": "openjiuwen"
+}

@@ -1,0 +1,1316 @@
+{
+  "ran_at": "2026-10-21T01:20:34",
+  "repeats": 1,
+  "repeat_start": 1,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": false,
+  "targeting": false,
+  "targeting_version": 9,
+  "planner_version": 2,
+  "box": true,
+  "box_exhaust": false,
+  "arm": "box",
+  "box_version": 12,
+  "form_version": 9,
+  "primitives_version": 8,
+  "reading": "menu",
+  "browser_tool": "0.0.83",
+  "browser_origins": "http://localhost:7770",
+  "browser_flags": "--block-service-workers --isolated",
+  "scorer_version": 3,
+  "rules_version": null,
+  "model": "anthropic/claude-haiku-4.5",
+  "scaffold": "openjiuwen",
+  "agent_core_commit": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
+  "agent_core_patch": "e455d3eba23bc37528505e59e4d13ed265fff67e",
+  "tasks_file": "tasks_claim_apparel.json",
+  "draw": "Ashcombe:81bd98ecdc",
+  "instance": {
+    "target_option": "M",
+    "listings": 15,
+    "winner_index": 11,
+    "cheapest_card_index": 10,
+    "listings_with_target": 10,
+    "listings_without_target": 5,
+    "listings_target_buyable": 7,
+    "listings_target_sold_out": 3,
+    "cheapest_listed": {
+      "sku": "IGR-CLM-04",
+      "seller": "Brindle Uniforms",
+      "price": 17.9
+    },
+    "cheapest_sold_out": {
+      "sku": "IGR-CLM-04",
+      "seller": "Brindle Uniforms",
+      "price": 17.9
+    },
+    "sold_out_trap": true,
+    "winner": {
+      "sku": "IGR-CLM-11",
+      "seller": "Copperfield Outfitters",
+      "price": 23.43
+    },
+    "runner_up_price": 26.03,
+    "winning_margin": 2.6,
+    "cheapest_card": {
+      "sku": "IGR-CLM-10",
+      "seller": "Quarles Apparel",
+      "from_price": 18.11
+    },
+    "card_probe_wrong": true,
+    "cheapest_without_target": {
+      "sku": "IGR-CLM-15",
+      "seller": "Ivybridge Uniforms",
+      "from_price": 18.37
+    },
+    "absent_trap": true,
+    "largest_size": "XL",
+    "largest_size_winner": {
+      "sku": "IGR-CLM-15",
+      "seller": "Ivybridge Uniforms",
+      "price": 14.37
+    },
+    "crossover": true,
+    "oracle_min_opens": 6,
+    "prunable_by_bound": 9,
+    "exhaustive_opens": 15,
+    "bound_strength": 0.6,
+    "from_price_range": [
+      18.11,
+      39.6
+    ],
+    "target_price_range": [
+      23.43,
+      35.81
+    ]
+  },
+  "summary": {
+    "by_task": {
+      "apparel-exists-under-24": {
+        "gated": true,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          8
+        ],
+        "tool_calls": [
+          17
+        ],
+        "cost": [
+          0.150666
+        ],
+        "mean_actions": 8.0,
+        "mean_tool_calls": 17.0,
+        "total_cost": 0.1507
+      },
+      "apparel-exists-under-23": {
+        "gated": true,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          14
+        ],
+        "tool_calls": [
+          28
+        ],
+        "cost": [
+          0.288001
+        ],
+        "mean_actions": 14.0,
+        "mean_tool_calls": 28.0,
+        "total_cost": 0.288
+      },
+      "apparel-top-3": {
+        "gated": true,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          17
+        ],
+        "tool_calls": [
+          31
+        ],
+        "cost": [
+          0.311272
+        ],
+        "mean_actions": 17.0,
+        "mean_tool_calls": 31.0,
+        "total_cost": 0.3113
+      },
+      "apparel-named-pair": {
+        "gated": true,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          8
+        ],
+        "tool_calls": [
+          15
+        ],
+        "cost": [
+          0.101966
+        ],
+        "mean_actions": 8.0,
+        "mean_tool_calls": 15.0,
+        "total_cost": 0.102
+      },
+      "apparel-cheapest-xl": {
+        "gated": true,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          11
+        ],
+        "tool_calls": [
+          32
+        ],
+        "cost": [
+          0.266229
+        ],
+        "mean_actions": 11.0,
+        "mean_tool_calls": 32.0,
+        "total_cost": 0.2662
+      }
+    },
+    "overall": {
+      "correct": 5
+    },
+    "total_cost": 1.1181,
+    "box": {
+      "asked": 0,
+      "refused": 0,
+      "bypassed": 0,
+      "fallback": 0
+    }
+  },
+  "rows": [
+    {
+      "task": "apparel-exists-under-24",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "answered yes",
+      "answer": "Yes. Copperfield Outfitters has an Ashcombe Heavyweight Cotton Tee in size M available for $23.43, which is under $24.00.",
+      "tool_calls": 17,
+      "actions": 8,
+      "observations": 9,
+      "cost_usd": 0.150666,
+      "elapsed_s": 65.7,
+      "error": null,
+      "log": "apparel-exists-under-24-1.log",
+      "strategy": "exists_price",
+      "box": {
+        "box_version": 12,
+        "form_version": 9,
+        "primitives_version": 8,
+        "kind": "exists_price",
+        "page": {
+          "url": "http://localhost:7770/catalogsearch/result/?q=Ashcombe",
+          "count": 15,
+          "total": 15,
+          "next_page": false,
+          "listings": [
+            {
+              "seller": "Kelsall Supply",
+              "advertised": 29.51,
+              "url": "http://localhost:7770/igr-clm-05.html"
+            },
+            {
+              "seller": "Haldane Textiles",
+              "advertised": 25.92,
+              "url": "http://localhost:7770/igr-clm-07.html"
+            },
+            {
+              "seller": "Quarles Apparel",
+              "advertised": 18.11,
+              "url": "http://localhost:7770/igr-clm-10.html"
+            },
+            {
+              "seller": "Northwick Apparel",
+              "advertised": 27.7,
+              "url": "http://localhost:7770/igr-clm-12.html"
+            },
+            {
+              "seller": "Garrick Collective",
+              "advertised": 35.81,
+              "url": "http://localhost:7770/igr-clm-13.html"
+            },
+            {
+              "seller": "Fairhaven Textiles",
+              "advertised": 20.39,
+              "url": "http://localhost:7770/igr-clm-01.html"
+            },
+            {
+              "seller": "Dunmore Collective",
+              "advertised": 34.55,
+              "url": "http://localhost:7770/igr-clm-02.html"
+            },
+            {
+              "seller": "Rookwood Outfitters",
+              "advertised": 21.62,
+              "url": "http://localhost:7770/igr-clm-03.html"
+            },
+            {
+              "seller": "Brindle Uniforms",
+              "advertised": 18.53,
+              "url": "http://localhost:7770/igr-clm-04.html"
+            },
+            {
+              "seller": "Jarrow Threads",
+              "advertised": 35.74,
+              "url": "http://localhost:7770/igr-clm-06.html"
+            },
+            {
+              "seller": "Copperfield Outfitters",
+              "advertised": 18.74,
+              "url": "http://localhost:7770/igr-clm-11.html"
+            },
+            {
+              "seller": "Pentland Threads",
+              "advertised": 24.68,
+              "url": "http://localhost:7770/igr-clm-14.html"
+            },
+            {
+              "seller": "Ivybridge Uniforms",
+              "advertised": 18.37,
+              "url": "http://localhost:7770/igr-clm-15.html"
+            },
+            {
+              "seller": "Oakhurst Apparel",
+              "advertised": 27.66,
+              "url": "http://localhost:7770/igr-clm-08.html"
+            },
+            {
+              "seller": "Alderney Garments",
+              "advertised": 39.6,
+              "url": "http://localhost:7770/igr-clm-09.html"
+            }
+          ]
+        },
+        "asked": false,
+        "ask": null,
+        "reading": null,
+        "reading_by": null,
+        "query": "Go to http://localhost:7770/catalogsearch/result/?q=Ashcombe . Is there any Ashcombe listing with size M available to buy for under $24? Answer yes or no, and name the seller if yes.\n\nThe results page lists 15 listings on one page; there is no next page.\nListings by advertised price, read from the results page:\n1. Quarles Apparel, advertised $18.11, http://localhost:7770/igr-clm-10.html\n2. Ivybridge Uniforms, advertised $18.37, http://localhost:7770/igr-clm-15.html\n3. Brindle Uniforms, advertised $18.53, http://localhost:7770/igr-clm-04.html\n4. Copperfield Outfitters, advertised $18.74, http://localhost:7770/igr-clm-11.html\n5. Fairhaven Textiles, advertised $20.39, http://localhost:7770/igr-clm-01.html\n6. Rookwood Outfitters, advertised $21.62, http://localhost:7770/igr-clm-03.html\n7. Pentland Threads, advertised $24.68, http://localhost:7770/igr-clm-14.html\n8. Haldane Textiles, advertised $25.92, http://localhost:7770/igr-clm-07.html\n9. Oakhurst Apparel, advertised $27.66, http://localhost:7770/igr-clm-08.html\n10. Northwick Apparel, advertised $27.70, http://localhost:7770/igr-clm-12.html\n11. Kelsall Supply, advertised $29.51, http://localhost:7770/igr-clm-05.html\n12. Dunmore Collective, advertised $34.55, http://localhost:7770/igr-clm-02.html\n13. Jarrow Threads, advertised $35.74, http://localhost:7770/igr-clm-06.html\n14. Garrick Collective, advertised $35.81, http://localhost:7770/igr-clm-13.html\n15. Alderney Garments, advertised $39.60, http://localhost:7770/igr-clm-09.html\n\nNote what this question needs, because the two possible answers cost very different amounts.\nTo answer yes you need exactly ONE listing that meets the condition. Name it and stop. Nothing is gained by finding a second.\nTo answer no you must have ruled out every listing that could meet it.\n1. Read the advertised price of every listing from the search results first. That price is the cheapest option that listing can sell, so nothing it can sell costs less.\n2. Open listings in ascending order of advertised price. For each one, choose size M, then look at the page again and read the price it now shows. The price a listing shows before you choose is its cheapest option that can be bought, not necessarily the one asked about, and the reply to choosing an option does not show the new price. Then check whether that option can actually be bought. An option can be listed and still be unavailable, in which case it is shown as disabled or greyed out and cannot be chosen from the menu, so it has no price you can use.\n3. If the option is available and the price you read is below $24.00, you are finished. Answer yes, name that listing and the price you read, and stop immediately. Do not open any others to confirm.\n4. Skip every unopened listing whose advertised price is at or above $24.00. Nothing it can sell costs less than its advertised price, so it cannot meet the condition.\n5. Only when every listing advertised below $24.00 has been opened and none meets the condition may you answer no.\nIn your answer, say how many listings you opened and which one settled it, or that none of those that could meet the condition did. Stopping after one opening, when that listing meets the condition, is the correct outcome here, not a sign that you did too little.\nImportant: the figure this bound produces is a limit used only to decide what to skip. It is not a price read for the option asked about, and must never appear in your answer as one. Only report a price you read from a listing you opened, for the exact option asked about, read after that option was chosen. Never pair an advertised price with an option unless you saw that price shown while that option was chosen.",
+        "form": {
+          "form_version": 9,
+          "kind": "exists_price",
+          "quantifier": "exists",
+          "objective": "price",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "M"
+            },
+            {
+              "attribute": "availability",
+              "op": "=",
+              "value": "buyable"
+            },
+            {
+              "attribute": "price",
+              "op": "<",
+              "value": 24.0
+            }
+          ],
+          "population": "results",
+          "k": null,
+          "reading": null,
+          "unknowns": [],
+          "source": "rules",
+          "evidence": {
+            "population": "the results URL",
+            "filter:size": "size M",
+            "filter:availability": "available",
+            "filter:price": "under $24",
+            "quantifier": "Is there any",
+            "objective": "under $24"
+          }
+        },
+        "refuse": null,
+        "bypassed": false,
+        "bypass_reason": null,
+        "fallback": false,
+        "plan": {
+          "primitives_version": 8,
+          "primitive": "witness",
+          "kind": "exists_price",
+          "stop_rule": "at the first listing whose option is available below the limit, or when every listing advertised below the limit has been opened",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "M"
+            },
+            {
+              "attribute": "availability",
+              "op": "=",
+              "value": "buyable"
+            },
+            {
+              "attribute": "price",
+              "op": "<",
+              "value": 24.0
+            }
+          ],
+          "candidates": [
+            {
+              "seller": "Quarles Apparel",
+              "url": "http://localhost:7770/igr-clm-10.html"
+            },
+            {
+              "seller": "Ivybridge Uniforms",
+              "url": "http://localhost:7770/igr-clm-15.html"
+            },
+            {
+              "seller": "Brindle Uniforms",
+              "url": "http://localhost:7770/igr-clm-04.html"
+            },
+            {
+              "seller": "Copperfield Outfitters",
+              "url": "http://localhost:7770/igr-clm-11.html"
+            },
+            {
+              "seller": "Fairhaven Textiles",
+              "url": "http://localhost:7770/igr-clm-01.html"
+            },
+            {
+              "seller": "Rookwood Outfitters",
+              "url": "http://localhost:7770/igr-clm-03.html"
+            },
+            {
+              "seller": "Pentland Threads",
+              "url": "http://localhost:7770/igr-clm-14.html"
+            },
+            {
+              "seller": "Haldane Textiles",
+              "url": "http://localhost:7770/igr-clm-07.html"
+            },
+            {
+              "seller": "Oakhurst Apparel",
+              "url": "http://localhost:7770/igr-clm-08.html"
+            },
+            {
+              "seller": "Northwick Apparel",
+              "url": "http://localhost:7770/igr-clm-12.html"
+            },
+            {
+              "seller": "Kelsall Supply",
+              "url": "http://localhost:7770/igr-clm-05.html"
+            },
+            {
+              "seller": "Dunmore Collective",
+              "url": "http://localhost:7770/igr-clm-02.html"
+            },
+            {
+              "seller": "Jarrow Threads",
+              "url": "http://localhost:7770/igr-clm-06.html"
+            },
+            {
+              "seller": "Garrick Collective",
+              "url": "http://localhost:7770/igr-clm-13.html"
+            },
+            {
+              "seller": "Alderney Garments",
+              "url": "http://localhost:7770/igr-clm-09.html"
+            }
+          ],
+          "exhaust": false
+        },
+        "exhaust": false
+      },
+      "reading": null,
+      "reading_by": null
+    },
+    {
+      "task": "apparel-exists-under-23",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "answered no",
+      "answer": "No. There is no Ashcombe listing with size M available to buy for under $23.00. I opened and checked all 6 listings advertised below $23.00: (1) Quarles Apparel ($18.11) - Size M disabled; (2) Ivybridge Uniforms ($18.37) - Size M not available; (3) Brindle Uniforms ($18.53) - Size M disabled; (4) Co",
+      "tool_calls": 28,
+      "actions": 14,
+      "observations": 14,
+      "cost_usd": 0.288001,
+      "elapsed_s": 99.3,
+      "error": null,
+      "log": "apparel-exists-under-23-1.log",
+      "strategy": "exists_price",
+      "box": {
+        "box_version": 12,
+        "form_version": 9,
+        "primitives_version": 8,
+        "kind": "exists_price",
+        "page": {
+          "url": "http://localhost:7770/catalogsearch/result/?q=Ashcombe",
+          "count": 15,
+          "total": 15,
+          "next_page": false,
+          "listings": [
+            {
+              "seller": "Kelsall Supply",
+              "advertised": 29.51,
+              "url": "http://localhost:7770/igr-clm-05.html"
+            },
+            {
+              "seller": "Haldane Textiles",
+              "advertised": 25.92,
+              "url": "http://localhost:7770/igr-clm-07.html"
+            },
+            {
+              "seller": "Quarles Apparel",
+              "advertised": 18.11,
+              "url": "http://localhost:7770/igr-clm-10.html"
+            },
+            {
+              "seller": "Northwick Apparel",
+              "advertised": 27.7,
+              "url": "http://localhost:7770/igr-clm-12.html"
+            },
+            {
+              "seller": "Garrick Collective",
+              "advertised": 35.81,
+              "url": "http://localhost:7770/igr-clm-13.html"
+            },
+            {
+              "seller": "Fairhaven Textiles",
+              "advertised": 20.39,
+              "url": "http://localhost:7770/igr-clm-01.html"
+            },
+            {
+              "seller": "Dunmore Collective",
+              "advertised": 34.55,
+              "url": "http://localhost:7770/igr-clm-02.html"
+            },
+            {
+              "seller": "Rookwood Outfitters",
+              "advertised": 21.62,
+              "url": "http://localhost:7770/igr-clm-03.html"
+            },
+            {
+              "seller": "Brindle Uniforms",
+              "advertised": 18.53,
+              "url": "http://localhost:7770/igr-clm-04.html"
+            },
+            {
+              "seller": "Jarrow Threads",
+              "advertised": 35.74,
+              "url": "http://localhost:7770/igr-clm-06.html"
+            },
+            {
+              "seller": "Copperfield Outfitters",
+              "advertised": 18.74,
+              "url": "http://localhost:7770/igr-clm-11.html"
+            },
+            {
+              "seller": "Pentland Threads",
+              "advertised": 24.68,
+              "url": "http://localhost:7770/igr-clm-14.html"
+            },
+            {
+              "seller": "Ivybridge Uniforms",
+              "advertised": 18.37,
+              "url": "http://localhost:7770/igr-clm-15.html"
+            },
+            {
+              "seller": "Oakhurst Apparel",
+              "advertised": 27.66,
+              "url": "http://localhost:7770/igr-clm-08.html"
+            },
+            {
+              "seller": "Alderney Garments",
+              "advertised": 39.6,
+              "url": "http://localhost:7770/igr-clm-09.html"
+            }
+          ]
+        },
+        "asked": false,
+        "ask": null,
+        "reading": null,
+        "reading_by": null,
+        "query": "Go to http://localhost:7770/catalogsearch/result/?q=Ashcombe . Is there any Ashcombe listing with size M available to buy for under $23? Answer yes or no, and name the seller if yes.\n\nThe results page lists 15 listings on one page; there is no next page.\nListings by advertised price, read from the results page:\n1. Quarles Apparel, advertised $18.11, http://localhost:7770/igr-clm-10.html\n2. Ivybridge Uniforms, advertised $18.37, http://localhost:7770/igr-clm-15.html\n3. Brindle Uniforms, advertised $18.53, http://localhost:7770/igr-clm-04.html\n4. Copperfield Outfitters, advertised $18.74, http://localhost:7770/igr-clm-11.html\n5. Fairhaven Textiles, advertised $20.39, http://localhost:7770/igr-clm-01.html\n6. Rookwood Outfitters, advertised $21.62, http://localhost:7770/igr-clm-03.html\n7. Pentland Threads, advertised $24.68, http://localhost:7770/igr-clm-14.html\n8. Haldane Textiles, advertised $25.92, http://localhost:7770/igr-clm-07.html\n9. Oakhurst Apparel, advertised $27.66, http://localhost:7770/igr-clm-08.html\n10. Northwick Apparel, advertised $27.70, http://localhost:7770/igr-clm-12.html\n11. Kelsall Supply, advertised $29.51, http://localhost:7770/igr-clm-05.html\n12. Dunmore Collective, advertised $34.55, http://localhost:7770/igr-clm-02.html\n13. Jarrow Threads, advertised $35.74, http://localhost:7770/igr-clm-06.html\n14. Garrick Collective, advertised $35.81, http://localhost:7770/igr-clm-13.html\n15. Alderney Garments, advertised $39.60, http://localhost:7770/igr-clm-09.html\n\nNote what this question needs, because the two possible answers cost very different amounts.\nTo answer yes you need exactly ONE listing that meets the condition. Name it and stop. Nothing is gained by finding a second.\nTo answer no you must have ruled out every listing that could meet it.\n1. Read the advertised price of every listing from the search results first. That price is the cheapest option that listing can sell, so nothing it can sell costs less.\n2. Open listings in ascending order of advertised price. For each one, choose size M, then look at the page again and read the price it now shows. The price a listing shows before you choose is its cheapest option that can be bought, not necessarily the one asked about, and the reply to choosing an option does not show the new price. Then check whether that option can actually be bought. An option can be listed and still be unavailable, in which case it is shown as disabled or greyed out and cannot be chosen from the menu, so it has no price you can use.\n3. If the option is available and the price you read is below $23.00, you are finished. Answer yes, name that listing and the price you read, and stop immediately. Do not open any others to confirm.\n4. Skip every unopened listing whose advertised price is at or above $23.00. Nothing it can sell costs less than its advertised price, so it cannot meet the condition.\n5. Only when every listing advertised below $23.00 has been opened and none meets the condition may you answer no.\nIn your answer, say how many listings you opened and which one settled it, or that none of those that could meet the condition did. Stopping after one opening, when that listing meets the condition, is the correct outcome here, not a sign that you did too little.\nImportant: the figure this bound produces is a limit used only to decide what to skip. It is not a price read for the option asked about, and must never appear in your answer as one. Only report a price you read from a listing you opened, for the exact option asked about, read after that option was chosen. Never pair an advertised price with an option unless you saw that price shown while that option was chosen.",
+        "form": {
+          "form_version": 9,
+          "kind": "exists_price",
+          "quantifier": "exists",
+          "objective": "price",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "M"
+            },
+            {
+              "attribute": "availability",
+              "op": "=",
+              "value": "buyable"
+            },
+            {
+              "attribute": "price",
+              "op": "<",
+              "value": 23.0
+            }
+          ],
+          "population": "results",
+          "k": null,
+          "reading": null,
+          "unknowns": [],
+          "source": "rules",
+          "evidence": {
+            "population": "the results URL",
+            "filter:size": "size M",
+            "filter:availability": "available",
+            "filter:price": "under $23",
+            "quantifier": "Is there any",
+            "objective": "under $23"
+          }
+        },
+        "refuse": null,
+        "bypassed": false,
+        "bypass_reason": null,
+        "fallback": false,
+        "plan": {
+          "primitives_version": 8,
+          "primitive": "witness",
+          "kind": "exists_price",
+          "stop_rule": "at the first listing whose option is available below the limit, or when every listing advertised below the limit has been opened",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "M"
+            },
+            {
+              "attribute": "availability",
+              "op": "=",
+              "value": "buyable"
+            },
+            {
+              "attribute": "price",
+              "op": "<",
+              "value": 23.0
+            }
+          ],
+          "candidates": [
+            {
+              "seller": "Quarles Apparel",
+              "url": "http://localhost:7770/igr-clm-10.html"
+            },
+            {
+              "seller": "Ivybridge Uniforms",
+              "url": "http://localhost:7770/igr-clm-15.html"
+            },
+            {
+              "seller": "Brindle Uniforms",
+              "url": "http://localhost:7770/igr-clm-04.html"
+            },
+            {
+              "seller": "Copperfield Outfitters",
+              "url": "http://localhost:7770/igr-clm-11.html"
+            },
+            {
+              "seller": "Fairhaven Textiles",
+              "url": "http://localhost:7770/igr-clm-01.html"
+            },
+            {
+              "seller": "Rookwood Outfitters",
+              "url": "http://localhost:7770/igr-clm-03.html"
+            },
+            {
+              "seller": "Pentland Threads",
+              "url": "http://localhost:7770/igr-clm-14.html"
+            },
+            {
+              "seller": "Haldane Textiles",
+              "url": "http://localhost:7770/igr-clm-07.html"
+            },
+            {
+              "seller": "Oakhurst Apparel",
+              "url": "http://localhost:7770/igr-clm-08.html"
+            },
+            {
+              "seller": "Northwick Apparel",
+              "url": "http://localhost:7770/igr-clm-12.html"
+            },
+            {
+              "seller": "Kelsall Supply",
+              "url": "http://localhost:7770/igr-clm-05.html"
+            },
+            {
+              "seller": "Dunmore Collective",
+              "url": "http://localhost:7770/igr-clm-02.html"
+            },
+            {
+              "seller": "Jarrow Threads",
+              "url": "http://localhost:7770/igr-clm-06.html"
+            },
+            {
+              "seller": "Garrick Collective",
+              "url": "http://localhost:7770/igr-clm-13.html"
+            },
+            {
+              "seller": "Alderney Garments",
+              "url": "http://localhost:7770/igr-clm-09.html"
+            }
+          ],
+          "exhaust": false
+        },
+        "exhaust": false
+      },
+      "reading": null,
+      "reading_by": null
+    },
+    {
+      "task": "apparel-top-3",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named every seller in order with its price",
+      "answer": "The three cheapest sellers for size M of the Ashcombe Heavyweight Cotton Tee are: (1) Copperfield Outfitters at $23.43, (2) Pentland Threads at $26.03, and (3) Haldane Textiles at $26.21. Each option was verified to be available (not disabled) by selecting size M on the product page and confirming t",
+      "tool_calls": 31,
+      "actions": 17,
+      "observations": 14,
+      "cost_usd": 0.311272,
+      "elapsed_s": 111.3,
+      "error": null,
+      "log": "apparel-top-3-1.log",
+      "strategy": "topk_price",
+      "box": {
+        "box_version": 12,
+        "form_version": 9,
+        "primitives_version": 8,
+        "kind": "topk_price",
+        "page": {
+          "url": "http://localhost:7770/catalogsearch/result/?q=Ashcombe",
+          "count": 15,
+          "total": 15,
+          "next_page": false,
+          "listings": [
+            {
+              "seller": "Kelsall Supply",
+              "advertised": 29.51,
+              "url": "http://localhost:7770/igr-clm-05.html"
+            },
+            {
+              "seller": "Haldane Textiles",
+              "advertised": 25.92,
+              "url": "http://localhost:7770/igr-clm-07.html"
+            },
+            {
+              "seller": "Quarles Apparel",
+              "advertised": 18.11,
+              "url": "http://localhost:7770/igr-clm-10.html"
+            },
+            {
+              "seller": "Northwick Apparel",
+              "advertised": 27.7,
+              "url": "http://localhost:7770/igr-clm-12.html"
+            },
+            {
+              "seller": "Garrick Collective",
+              "advertised": 35.81,
+              "url": "http://localhost:7770/igr-clm-13.html"
+            },
+            {
+              "seller": "Fairhaven Textiles",
+              "advertised": 20.39,
+              "url": "http://localhost:7770/igr-clm-01.html"
+            },
+            {
+              "seller": "Dunmore Collective",
+              "advertised": 34.55,
+              "url": "http://localhost:7770/igr-clm-02.html"
+            },
+            {
+              "seller": "Rookwood Outfitters",
+              "advertised": 21.62,
+              "url": "http://localhost:7770/igr-clm-03.html"
+            },
+            {
+              "seller": "Brindle Uniforms",
+              "advertised": 18.53,
+              "url": "http://localhost:7770/igr-clm-04.html"
+            },
+            {
+              "seller": "Jarrow Threads",
+              "advertised": 35.74,
+              "url": "http://localhost:7770/igr-clm-06.html"
+            },
+            {
+              "seller": "Copperfield Outfitters",
+              "advertised": 18.74,
+              "url": "http://localhost:7770/igr-clm-11.html"
+            },
+            {
+              "seller": "Pentland Threads",
+              "advertised": 24.68,
+              "url": "http://localhost:7770/igr-clm-14.html"
+            },
+            {
+              "seller": "Ivybridge Uniforms",
+              "advertised": 18.37,
+              "url": "http://localhost:7770/igr-clm-15.html"
+            },
+            {
+              "seller": "Oakhurst Apparel",
+              "advertised": 27.66,
+              "url": "http://localhost:7770/igr-clm-08.html"
+            },
+            {
+              "seller": "Alderney Garments",
+              "advertised": 39.6,
+              "url": "http://localhost:7770/igr-clm-09.html"
+            }
+          ]
+        },
+        "asked": false,
+        "ask": null,
+        "reading": null,
+        "reading_by": null,
+        "query": "Go to http://localhost:7770/catalogsearch/result/?q=Ashcombe . Which three sellers are cheapest for size M among listings that can actually supply it, and at what prices?\n\nThe results page lists 15 listings on one page; there is no next page.\nListings by advertised price, read from the results page:\n1. Quarles Apparel, advertised $18.11, http://localhost:7770/igr-clm-10.html\n2. Ivybridge Uniforms, advertised $18.37, http://localhost:7770/igr-clm-15.html\n3. Brindle Uniforms, advertised $18.53, http://localhost:7770/igr-clm-04.html\n4. Copperfield Outfitters, advertised $18.74, http://localhost:7770/igr-clm-11.html\n5. Fairhaven Textiles, advertised $20.39, http://localhost:7770/igr-clm-01.html\n6. Rookwood Outfitters, advertised $21.62, http://localhost:7770/igr-clm-03.html\n7. Pentland Threads, advertised $24.68, http://localhost:7770/igr-clm-14.html\n8. Haldane Textiles, advertised $25.92, http://localhost:7770/igr-clm-07.html\n9. Oakhurst Apparel, advertised $27.66, http://localhost:7770/igr-clm-08.html\n10. Northwick Apparel, advertised $27.70, http://localhost:7770/igr-clm-12.html\n11. Kelsall Supply, advertised $29.51, http://localhost:7770/igr-clm-05.html\n12. Dunmore Collective, advertised $34.55, http://localhost:7770/igr-clm-02.html\n13. Jarrow Threads, advertised $35.74, http://localhost:7770/igr-clm-06.html\n14. Garrick Collective, advertised $35.81, http://localhost:7770/igr-clm-13.html\n15. Alderney Garments, advertised $39.60, http://localhost:7770/igr-clm-09.html\n\nUse this retrieval strategy, and follow it rather than opening listings in the order they appear.\n1. Read the advertised price of every listing from the search results first. That price is the cheapest option that listing can sell, so nothing it can sell costs less.\n2. Open listings in ascending order of advertised price. For each one, choose size M, then look at the page again and read the price it now shows. The price a listing shows before you choose is its cheapest option that can be bought, not necessarily the one asked about, and the reply to choosing an option does not show the new price. Then check whether that option can actually be bought. An option can be listed and still be unavailable, in which case it is shown as disabled or greyed out and cannot be chosen from the menu, so it has no price you can use.\n3. Keep the 3 cheapest available totals you have found so far, each with its seller. A cheaper unavailable one changes nothing.\n4. Once you hold 3, skip every unopened listing whose advertised price is at or above the dearest of those 3 totals. Such a listing cannot enter the 3 whatever its stock.\n5. Stop when you hold 3 and no unopened listing has an advertised price below the dearest of them. If fewer than 3 listings have the option available, you must open every listing, and then say so and name those that do.\nIn your answer, list the 3 sellers in order with the price of each, say explicitly that you checked each option was available rather than only listed, and say how many listings you opened, how many you skipped, and why skipping them was safe.\nImportant: the figure this bound produces is a limit used only to decide what to skip. It is not a price read for the option asked about, and must never appear in your answer as one. Only report a price you read from a listing you opened, for the exact option asked about, read after that option was chosen. Never pair an advertised price with an option unless you saw that price shown while that option was chosen.",
+        "form": {
+          "form_version": 9,
+          "kind": "topk_price",
+          "quantifier": "topk",
+          "objective": "price",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "M"
+            },
+            {
+              "attribute": "availability",
+              "op": "=",
+              "value": "buyable"
+            }
+          ],
+          "population": "results",
+          "k": 3,
+          "reading": null,
+          "unknowns": [],
+          "source": "rules",
+          "evidence": {
+            "population": "the results URL",
+            "filter:size": "size M",
+            "filter:availability": "supply",
+            "quantifier": "three sellers",
+            "objective": "three sellers",
+            "k": "three sellers"
+          }
+        },
+        "refuse": null,
+        "bypassed": false,
+        "bypass_reason": null,
+        "fallback": false,
+        "plan": {
+          "primitives_version": 8,
+          "primitive": "bound_prune",
+          "kind": "topk_price",
+          "stop_rule": "when the 3 cheapest available totals are held and no unopened listing advertises below the dearest of them",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "M"
+            },
+            {
+              "attribute": "availability",
+              "op": "=",
+              "value": "buyable"
+            }
+          ],
+          "candidates": [
+            {
+              "seller": "Quarles Apparel",
+              "url": "http://localhost:7770/igr-clm-10.html"
+            },
+            {
+              "seller": "Ivybridge Uniforms",
+              "url": "http://localhost:7770/igr-clm-15.html"
+            },
+            {
+              "seller": "Brindle Uniforms",
+              "url": "http://localhost:7770/igr-clm-04.html"
+            },
+            {
+              "seller": "Copperfield Outfitters",
+              "url": "http://localhost:7770/igr-clm-11.html"
+            },
+            {
+              "seller": "Fairhaven Textiles",
+              "url": "http://localhost:7770/igr-clm-01.html"
+            },
+            {
+              "seller": "Rookwood Outfitters",
+              "url": "http://localhost:7770/igr-clm-03.html"
+            },
+            {
+              "seller": "Pentland Threads",
+              "url": "http://localhost:7770/igr-clm-14.html"
+            },
+            {
+              "seller": "Haldane Textiles",
+              "url": "http://localhost:7770/igr-clm-07.html"
+            },
+            {
+              "seller": "Oakhurst Apparel",
+              "url": "http://localhost:7770/igr-clm-08.html"
+            },
+            {
+              "seller": "Northwick Apparel",
+              "url": "http://localhost:7770/igr-clm-12.html"
+            },
+            {
+              "seller": "Kelsall Supply",
+              "url": "http://localhost:7770/igr-clm-05.html"
+            },
+            {
+              "seller": "Dunmore Collective",
+              "url": "http://localhost:7770/igr-clm-02.html"
+            },
+            {
+              "seller": "Jarrow Threads",
+              "url": "http://localhost:7770/igr-clm-06.html"
+            },
+            {
+              "seller": "Garrick Collective",
+              "url": "http://localhost:7770/igr-clm-13.html"
+            },
+            {
+              "seller": "Alderney Garments",
+              "url": "http://localhost:7770/igr-clm-09.html"
+            }
+          ],
+          "exhaust": false
+        },
+        "exhaust": false
+      },
+      "reading": null,
+      "reading_by": null
+    },
+    {
+      "task": "apparel-named-pair",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named every seller in order with its price",
+      "answer": "Between Copperfield Outfitters and Pentland Threads for size M: Copperfield Outfitters is cheaper at $23.43. Pentland Threads costs $26.03 for size M. Pages opened: http://localhost:7770/igr-clm-11.html (Copperfield Outfitters) and http://localhost:7770/igr-clm-14.html (Pentland Threads).",
+      "tool_calls": 15,
+      "actions": 8,
+      "observations": 7,
+      "cost_usd": 0.101966,
+      "elapsed_s": 59.0,
+      "error": null,
+      "log": "apparel-named-pair-1.log",
+      "strategy": "named_lookup",
+      "box": {
+        "box_version": 12,
+        "form_version": 9,
+        "primitives_version": 8,
+        "kind": "named_lookup",
+        "page": {
+          "url": "http://localhost:7770/catalogsearch/result/?q=Ashcombe",
+          "count": 15,
+          "total": 15,
+          "next_page": false,
+          "listings": [
+            {
+              "seller": "Kelsall Supply",
+              "advertised": 29.51,
+              "url": "http://localhost:7770/igr-clm-05.html"
+            },
+            {
+              "seller": "Haldane Textiles",
+              "advertised": 25.92,
+              "url": "http://localhost:7770/igr-clm-07.html"
+            },
+            {
+              "seller": "Quarles Apparel",
+              "advertised": 18.11,
+              "url": "http://localhost:7770/igr-clm-10.html"
+            },
+            {
+              "seller": "Northwick Apparel",
+              "advertised": 27.7,
+              "url": "http://localhost:7770/igr-clm-12.html"
+            },
+            {
+              "seller": "Garrick Collective",
+              "advertised": 35.81,
+              "url": "http://localhost:7770/igr-clm-13.html"
+            },
+            {
+              "seller": "Fairhaven Textiles",
+              "advertised": 20.39,
+              "url": "http://localhost:7770/igr-clm-01.html"
+            },
+            {
+              "seller": "Dunmore Collective",
+              "advertised": 34.55,
+              "url": "http://localhost:7770/igr-clm-02.html"
+            },
+            {
+              "seller": "Rookwood Outfitters",
+              "advertised": 21.62,
+              "url": "http://localhost:7770/igr-clm-03.html"
+            },
+            {
+              "seller": "Brindle Uniforms",
+              "advertised": 18.53,
+              "url": "http://localhost:7770/igr-clm-04.html"
+            },
+            {
+              "seller": "Jarrow Threads",
+              "advertised": 35.74,
+              "url": "http://localhost:7770/igr-clm-06.html"
+            },
+            {
+              "seller": "Copperfield Outfitters",
+              "advertised": 18.74,
+              "url": "http://localhost:7770/igr-clm-11.html"
+            },
+            {
+              "seller": "Pentland Threads",
+              "advertised": 24.68,
+              "url": "http://localhost:7770/igr-clm-14.html"
+            },
+            {
+              "seller": "Ivybridge Uniforms",
+              "advertised": 18.37,
+              "url": "http://localhost:7770/igr-clm-15.html"
+            },
+            {
+              "seller": "Oakhurst Apparel",
+              "advertised": 27.66,
+              "url": "http://localhost:7770/igr-clm-08.html"
+            },
+            {
+              "seller": "Alderney Garments",
+              "advertised": 39.6,
+              "url": "http://localhost:7770/igr-clm-09.html"
+            }
+          ]
+        },
+        "asked": false,
+        "ask": null,
+        "reading": null,
+        "reading_by": null,
+        "query": "Go to http://localhost:7770/catalogsearch/result/?q=Ashcombe . Between Copperfield Outfitters and Pentland Threads, which is cheaper for size M, and what is that price?\n\nThe results page lists 15 listings on one page; there is no next page.\nListings by advertised price, read from the results page:\n1. Quarles Apparel, advertised $18.11, http://localhost:7770/igr-clm-10.html\n2. Ivybridge Uniforms, advertised $18.37, http://localhost:7770/igr-clm-15.html\n3. Brindle Uniforms, advertised $18.53, http://localhost:7770/igr-clm-04.html\n4. Copperfield Outfitters, advertised $18.74, http://localhost:7770/igr-clm-11.html\n5. Fairhaven Textiles, advertised $20.39, http://localhost:7770/igr-clm-01.html\n6. Rookwood Outfitters, advertised $21.62, http://localhost:7770/igr-clm-03.html\n7. Pentland Threads, advertised $24.68, http://localhost:7770/igr-clm-14.html\n8. Haldane Textiles, advertised $25.92, http://localhost:7770/igr-clm-07.html\n9. Oakhurst Apparel, advertised $27.66, http://localhost:7770/igr-clm-08.html\n10. Northwick Apparel, advertised $27.70, http://localhost:7770/igr-clm-12.html\n11. Kelsall Supply, advertised $29.51, http://localhost:7770/igr-clm-05.html\n12. Dunmore Collective, advertised $34.55, http://localhost:7770/igr-clm-02.html\n13. Jarrow Threads, advertised $35.74, http://localhost:7770/igr-clm-06.html\n14. Garrick Collective, advertised $35.81, http://localhost:7770/igr-clm-13.html\n15. Alderney Garments, advertised $39.60, http://localhost:7770/igr-clm-09.html\n\nThe question is about 2 named listings. Open each of them and nothing else:\n- Copperfield Outfitters, http://localhost:7770/igr-clm-11.html\n- Pentland Threads, http://localhost:7770/igr-clm-14.html\nIn each one, choose size M, then look at the page again and read the price it now shows. The price a listing shows before you choose is its cheapest option that can be bought, not necessarily the one asked about, and the reply to choosing an option does not show the new price.\nDo not skip any of them: the question is about exactly these, so each has to be read, and opening others cannot change the answer.\nIn your answer, give the figure you read for each named listing, then answer the question from those figures. Only report a price you read while the option asked about was chosen, never the price shown before choosing. Say which pages you opened.",
+        "form": {
+          "form_version": 9,
+          "kind": "named_lookup",
+          "quantifier": "lookup",
+          "objective": "price",
+          "filters": [
+            {
+              "attribute": "seller",
+              "op": "in",
+              "value": [
+                "Copperfield Outfitters",
+                "Pentland Threads"
+              ]
+            },
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "M"
+            }
+          ],
+          "population": "results",
+          "k": null,
+          "reading": null,
+          "unknowns": [],
+          "source": "rules",
+          "evidence": {
+            "population": "the results URL",
+            "filter:size": "size M",
+            "filter:seller": "Copperfield Outfitters, Pentland Threads",
+            "quantifier": "Copperfield Outfitters, Pentland Threads",
+            "objective": "a price is asked for"
+          }
+        },
+        "refuse": null,
+        "bypassed": false,
+        "bypass_reason": null,
+        "fallback": false,
+        "plan": {
+          "primitives_version": 8,
+          "primitive": "lookup",
+          "kind": "named_lookup",
+          "stop_rule": "when every named listing has been opened",
+          "filters": [
+            {
+              "attribute": "seller",
+              "op": "in",
+              "value": [
+                "Copperfield Outfitters",
+                "Pentland Threads"
+              ]
+            },
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "M"
+            }
+          ],
+          "candidates": [
+            {
+              "seller": "Copperfield Outfitters",
+              "url": "http://localhost:7770/igr-clm-11.html"
+            },
+            {
+              "seller": "Pentland Threads",
+              "url": "http://localhost:7770/igr-clm-14.html"
+            }
+          ],
+          "exhaust": false
+        },
+        "exhaust": false
+      },
+      "reading": null,
+      "reading_by": null
+    },
+    {
+      "task": "apparel-cheapest-xl",
+      "family": "apparel",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named the expected option",
+      "answer": "The cheapest seller for size XL is Quarles Apparel at $18.11. I verified that XL is available (not disabled in the dropdown) at this seller. I opened 6 listings, skipped 9 listings (all with advertised prices at or above $21.62), and rejected 3 listings for being unavailable in XL size (Ivybridge Un",
+      "tool_calls": 32,
+      "actions": 11,
+      "observations": 21,
+      "cost_usd": 0.266229,
+      "elapsed_s": 130.9,
+      "error": null,
+      "log": "apparel-cheapest-xl-1.log",
+      "strategy": "availability_bound",
+      "box": {
+        "box_version": 12,
+        "form_version": 9,
+        "primitives_version": 8,
+        "kind": "availability_bound",
+        "page": {
+          "url": "http://localhost:7770/catalogsearch/result/?q=Ashcombe",
+          "count": 15,
+          "total": 15,
+          "next_page": false,
+          "listings": [
+            {
+              "seller": "Kelsall Supply",
+              "advertised": 29.51,
+              "url": "http://localhost:7770/igr-clm-05.html"
+            },
+            {
+              "seller": "Haldane Textiles",
+              "advertised": 25.92,
+              "url": "http://localhost:7770/igr-clm-07.html"
+            },
+            {
+              "seller": "Quarles Apparel",
+              "advertised": 18.11,
+              "url": "http://localhost:7770/igr-clm-10.html"
+            },
+            {
+              "seller": "Northwick Apparel",
+              "advertised": 27.7,
+              "url": "http://localhost:7770/igr-clm-12.html"
+            },
+            {
+              "seller": "Garrick Collective",
+              "advertised": 35.81,
+              "url": "http://localhost:7770/igr-clm-13.html"
+            },
+            {
+              "seller": "Fairhaven Textiles",
+              "advertised": 20.39,
+              "url": "http://localhost:7770/igr-clm-01.html"
+            },
+            {
+              "seller": "Dunmore Collective",
+              "advertised": 34.55,
+              "url": "http://localhost:7770/igr-clm-02.html"
+            },
+            {
+              "seller": "Rookwood Outfitters",
+              "advertised": 21.62,
+              "url": "http://localhost:7770/igr-clm-03.html"
+            },
+            {
+              "seller": "Brindle Uniforms",
+              "advertised": 18.53,
+              "url": "http://localhost:7770/igr-clm-04.html"
+            },
+            {
+              "seller": "Jarrow Threads",
+              "advertised": 35.74,
+              "url": "http://localhost:7770/igr-clm-06.html"
+            },
+            {
+              "seller": "Copperfield Outfitters",
+              "advertised": 18.74,
+              "url": "http://localhost:7770/igr-clm-11.html"
+            },
+            {
+              "seller": "Pentland Threads",
+              "advertised": 24.68,
+              "url": "http://localhost:7770/igr-clm-14.html"
+            },
+            {
+              "seller": "Ivybridge Uniforms",
+              "advertised": 18.37,
+              "url": "http://localhost:7770/igr-clm-15.html"
+            },
+            {
+              "seller": "Oakhurst Apparel",
+              "advertised": 27.66,
+              "url": "http://localhost:7770/igr-clm-08.html"
+            },
+            {
+              "seller": "Alderney Garments",
+              "advertised": 39.6,
+              "url": "http://localhost:7770/igr-clm-09.html"
+            }
+          ]
+        },
+        "asked": false,
+        "ask": null,
+        "reading": null,
+        "reading_by": null,
+        "query": "Go to http://localhost:7770/catalogsearch/result/?q=Ashcombe . Across the Ashcombe listings, which seller is cheapest for size XL, and what is that price? Only count a listing that can actually supply that size.\n\nThe results page lists 15 listings on one page; there is no next page.\nListings by advertised price, read from the results page:\n1. Quarles Apparel, advertised $18.11, http://localhost:7770/igr-clm-10.html\n2. Ivybridge Uniforms, advertised $18.37, http://localhost:7770/igr-clm-15.html\n3. Brindle Uniforms, advertised $18.53, http://localhost:7770/igr-clm-04.html\n4. Copperfield Outfitters, advertised $18.74, http://localhost:7770/igr-clm-11.html\n5. Fairhaven Textiles, advertised $20.39, http://localhost:7770/igr-clm-01.html\n6. Rookwood Outfitters, advertised $21.62, http://localhost:7770/igr-clm-03.html\n7. Pentland Threads, advertised $24.68, http://localhost:7770/igr-clm-14.html\n8. Haldane Textiles, advertised $25.92, http://localhost:7770/igr-clm-07.html\n9. Oakhurst Apparel, advertised $27.66, http://localhost:7770/igr-clm-08.html\n10. Northwick Apparel, advertised $27.70, http://localhost:7770/igr-clm-12.html\n11. Kelsall Supply, advertised $29.51, http://localhost:7770/igr-clm-05.html\n12. Dunmore Collective, advertised $34.55, http://localhost:7770/igr-clm-02.html\n13. Jarrow Threads, advertised $35.74, http://localhost:7770/igr-clm-06.html\n14. Garrick Collective, advertised $35.81, http://localhost:7770/igr-clm-13.html\n15. Alderney Garments, advertised $39.60, http://localhost:7770/igr-clm-09.html\n\nUse this retrieval strategy, and follow it rather than opening listings in the order they appear.\n1. Read the advertised price of every listing from the search results first. That price is the cheapest option in that listing that can be bought, so nothing in it that can be bought costs less.\n2. Open listings in ascending order of advertised price. For each one, do two separate things. First, choose the option asked about, then look at the page again and read the price it now shows. The price a listing shows before you choose is its cheapest option that can be bought, not necessarily the one asked about, and the reply to choosing an option does not show the new price. Second, check whether that option can actually be bought. An option can be listed and still be unavailable, in which case it is shown as disabled or greyed out and cannot be chosen from the menu, so it has no price you can use.\n3. A listing only becomes your best candidate if the option is both cheaper and available. A cheaper unavailable one changes nothing.\n4. Skip every unopened listing whose advertised price is at or above your best available total. Such a listing cannot win whatever its stock.\n5. Stop when no unopened listing has an advertised price below your best available total.\nIn your answer, name the seller, give the price, and say explicitly that you checked the option was available rather than only listed. Say how many listings you opened, how many you skipped, and how many you rejected for being unavailable.\nImportant: the figure this bound produces is a limit used only to decide what to skip. It is not a price read for the option asked about, and must never appear in your answer as one. Only report a price you read from a listing you opened, for the exact option asked about, read after that option was chosen. Never pair an advertised price with an option unless you saw that price shown while that option was chosen.",
+        "form": {
+          "form_version": 9,
+          "kind": "availability_bound",
+          "quantifier": "argmin",
+          "objective": "price",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "XL"
+            },
+            {
+              "attribute": "availability",
+              "op": "=",
+              "value": "buyable"
+            }
+          ],
+          "population": "results",
+          "k": null,
+          "reading": null,
+          "unknowns": [],
+          "source": "rules",
+          "evidence": {
+            "population": "the results URL",
+            "filter:size": "size XL",
+            "filter:availability": "supply",
+            "quantifier": "cheapest",
+            "objective": "cheapest"
+          }
+        },
+        "refuse": null,
+        "bypassed": false,
+        "bypass_reason": null,
+        "fallback": false,
+        "plan": {
+          "primitives_version": 8,
+          "primitive": "bound_prune",
+          "kind": "availability_bound",
+          "stop_rule": "when no unopened listing advertises below the best total found that can actually be supplied",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "XL"
+            },
+            {
+              "attribute": "availability",
+              "op": "=",
+              "value": "buyable"
+            }
+          ],
+          "candidates": [
+            {
+              "seller": "Quarles Apparel",
+              "url": "http://localhost:7770/igr-clm-10.html"
+            },
+            {
+              "seller": "Ivybridge Uniforms",
+              "url": "http://localhost:7770/igr-clm-15.html"
+            },
+            {
+              "seller": "Brindle Uniforms",
+              "url": "http://localhost:7770/igr-clm-04.html"
+            },
+            {
+              "seller": "Copperfield Outfitters",
+              "url": "http://localhost:7770/igr-clm-11.html"
+            },
+            {
+              "seller": "Fairhaven Textiles",
+              "url": "http://localhost:7770/igr-clm-01.html"
+            },
+            {
+              "seller": "Rookwood Outfitters",
+              "url": "http://localhost:7770/igr-clm-03.html"
+            },
+            {
+              "seller": "Pentland Threads",
+              "url": "http://localhost:7770/igr-clm-14.html"
+            },
+            {
+              "seller": "Haldane Textiles",
+              "url": "http://localhost:7770/igr-clm-07.html"
+            },
+            {
+              "seller": "Oakhurst Apparel",
+              "url": "http://localhost:7770/igr-clm-08.html"
+            },
+            {
+              "seller": "Northwick Apparel",
+              "url": "http://localhost:7770/igr-clm-12.html"
+            },
+            {
+              "seller": "Kelsall Supply",
+              "url": "http://localhost:7770/igr-clm-05.html"
+            },
+            {
+              "seller": "Dunmore Collective",
+              "url": "http://localhost:7770/igr-clm-02.html"
+            },
+            {
+              "seller": "Jarrow Threads",
+              "url": "http://localhost:7770/igr-clm-06.html"
+            },
+            {
+              "seller": "Garrick Collective",
+              "url": "http://localhost:7770/igr-clm-13.html"
+            },
+            {
+              "seller": "Alderney Garments",
+              "url": "http://localhost:7770/igr-clm-09.html"
+            }
+          ],
+          "exhaust": false
+        },
+        "exhaust": false
+      },
+      "reading": null,
+      "reading_by": null
+    }
+  ]
+}
