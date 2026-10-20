@@ -15,8 +15,18 @@ for the box, so they can see the sellers a question names. A call that fails is 
 on its row and the probe goes on, with no retry, and the result file is written whatever
 stops the loop, so what was paid for is on disk (verifier findings, 14 October 2026).
 
+With `--questions FILE` it probes a paraphrase file instead (20 October 2026): questions
+reworded by someone who had not read the rules, each held against the rules' form of the
+question it rewords, its template. The census asks whether the model agrees with the rules
+on the questions the rules were written on; this asks which of the two still finds the
+template's form when the words change. The rules read the results page as the box read it
+in the stored batch the file names, so no shop is needed, and that half is free: the dry
+run prints it, with what `box.decide` does with each question, the number of calls and an
+estimate from the census's charge per call.
+
     python experiments/runners/parse_probe.py --dry-run     # prints the prompts, calls nothing
     python experiments/runners/parse_probe.py               # paid: one call per question
+    python experiments/runners/parse_probe.py --questions experiments/tasks/paraphrases_v1.json --dry-run
 """
 
 from __future__ import annotations
@@ -32,10 +42,13 @@ import requests
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
+import box
 import form
 import page as page_module
 import plan_probe  # the key, the model name and the account usage, read the same way
 import planner
+import primitives
+import targeting
 
 RESULTS = paths.RESULTS
 ENDPOINT = plan_probe.ENDPOINT
@@ -164,14 +177,15 @@ def agree(rules: form.Form, model: form.Form) -> bool:
     return not stated
 
 
-def probe_one(name: str, question: str, model: str, key: str) -> dict:
-    """One question: the rules' form on the page it names, the model's form, whether the
-    two agree, and what the call cost. A request that fails, an HTTP error, a timeout or
-    a body that is not JSON, is recorded on the row with no cost rather than ending the
-    probe, and a success whose body holds no completion is recorded the same way, with
-    whatever it was charged. No retry, so the figure stays one call per question."""
-    page = results_page(question)
-    rules = form.from_rules(question, page)
+def propose(question: str, model: str, key: str) -> tuple[form.Form | None, str | None, bool,
+                                                         float | None]:
+    """The model's form of one question, the error when there is none, whether the call
+    itself failed, and what it was charged. A request that fails, an HTTP error, a timeout
+    or a body that is not JSON, is a failed call with no cost rather than the end of the
+    probe, and a success whose body holds no completion is one too, with whatever it was
+    charged. No retry, so the figure stays one call per question. Taken out of `probe_one`
+    on 20 October 2026 so the paraphrase probe fails the same way; the census's own
+    behaviour is unchanged."""
     charged: list[float | None] = []
 
     def call(prompt: str) -> str:
@@ -192,6 +206,15 @@ def probe_one(name: str, question: str, model: str, key: str) -> dict:
         charged.append(fault.cost)
     except ValueError as fault:         # a reply that is not a form in the vocabulary
         error = str(fault)
+    return proposed, error, failed, charged[0] if charged else None
+
+
+def probe_one(name: str, question: str, model: str, key: str) -> dict:
+    """One question: the rules' form on the page it names, the model's form, whether the
+    two agree, and what the call cost, a failed call recorded on the row (`propose`)."""
+    page = results_page(question)
+    rules = form.from_rules(question, page)
+    proposed, error, failed, cost = propose(question, model, key)
     return {"file": name, "question": question,
             "rules": rules.record(), "rules_problems": form.verify(rules, page),
             "model": proposed.record() if proposed else None,
@@ -199,7 +222,7 @@ def probe_one(name: str, question: str, model: str, key: str) -> dict:
                                else [] if failed else [error]),
             "error": error, "call_failed": failed,
             "agree": proposed is not None and agree(rules, proposed),
-            "cost_usd": charged[0] if charged else None}
+            "cost_usd": cost}
 
 
 def print_row(row: dict) -> None:
@@ -236,14 +259,332 @@ def report(rows: list[dict], model: str, key: str, before: float | None) -> path
     return out
 
 
+# ---------------------------------------------------------------------------
+# Reworded questions, `--questions FILE` (20 October 2026)
+
+# Bumped when the comparison of a reworded question with its template changes: what the
+# expected form is, the tiers, or the words for the box's outcome. Result files made under
+# different versions are not pooled.
+#
+#   1  20 October 2026. The expected form is the rules' form of the template on the stored
+#      page, read in the census table's four tiers, and the outcome in the task files' words
+COMPARISON_VERSION = 1
+
+# The census whose charge per call prices a probe of other questions: one call each, text
+# only, and the same prompt but for the question and the op "<", which form v9 added to the
+# schema's list.
+CENSUS = "parse-probe-20261014T112047.json"
+
+# How far a form agrees with the expected one. Each tier includes those before it, as the
+# census table in docs/content/today.md was read: the quantifier picks the primitive, the
+# objective is what it compares, the population what it ranges over, and every field is
+# `agree`, which adds k and the filters. tests/test_probe.py reproduces that table from the
+# stored census with these.
+TIERS = {"quantifier": "same quantifier",
+         "objective": "same quantifier and objective",
+         "population": "same on those and the population",
+         "every field": "same on every field"}
+
+# What the box can do with a question, in the words of the task files' "box" field, and
+# "error" for a plan `box.decide` refuses to compose because it is unsound.
+OUTCOMES = ("plan", "fallback", "ask", "refuse", "bypass", "error")
+
+
+def tiers(expected: form.Form, got: form.Form | None) -> dict[str, bool]:
+    """Which tiers `got` reaches against `expected`. No form reaches none."""
+    if got is None:
+        return dict.fromkeys(TIERS, False)
+    quantifier = got.quantifier == expected.quantifier
+    objective = quantifier and got.objective == expected.objective
+    population = objective and got.population == expected.population
+    return {"quantifier": quantifier, "objective": objective, "population": population,
+            "every field": population and agree(expected, got)}
+
+
+def load_questions(path: pathlib.Path) -> tuple[dict, list[dict]]:
+    """The paraphrase file, and each entry with the question as the box gets it, the file's
+    lead, a space and the text, as the audit put them, and its template's question. Of the
+    task file the templates come from only each task's id and query are read, never an
+    answer. A template the task file does not hold, or one that does not start with the
+    lead, is refused: the question would be compared with nothing, or in another frame."""
+    spec = json.loads(path.read_text())
+    tasks = json.loads((paths.TASKS / spec["templates"]).read_text())["tasks"]
+    templates = {task["id"]: task["query"].format(base=spec["base_url"]) for task in tasks}
+    lead = spec["lead"].format(base=spec["base_url"])
+    entries = []
+    for entry in spec["paraphrases"]:
+        template = templates.get(entry["template"])
+        if template is None:
+            raise ValueError(f"paraphrase {entry['id']} rewords {entry['template']!r}, which "
+                             f"{spec['templates']} does not hold")
+        if not template.startswith(f"{lead} "):
+            raise ValueError(f"paraphrase {entry['id']}: its template {entry['template']} does "
+                             f"not start with the lead {lead!r}")
+        entries.append({**entry, "question": f"{lead} {entry['text']}",
+                        "template_question": template})
+    return spec, entries
+
+
+def stored_page(suite: pathlib.Path) -> page_module.Page:
+    """The results page as the box read it in a stored batch, from the `box.page` record of
+    its suite.json. Every row must hold the same one, so the page is the batch's and not
+    one row's."""
+    rows = json.loads(suite.read_text())["rows"]
+    records = {json.dumps(row["box"]["page"], sort_keys=True) for row in rows
+               if row.get("box") and row["box"].get("page")}
+    if len(records) != 1:
+        raise ValueError(f"{suite} holds {len(records)} different page records, not one")
+    return page_module.from_record(json.loads(records.pop()))
+
+
+def outcome(question: str, page: page_module.Page) -> dict:
+    """What `box.decide` does with the question, with no reply, in the words of the task
+    files' "box" field: plan, ask, refuse, fallback or bypass, and the kind planned. For an
+    ask, the kind is the one planned once the menu reading answers it, as
+    tests/test_apparel_v2.py reads it, and None for the ask for a price limit, which no
+    reading answers. A plan `decide` refuses to compose, by raising, is "error"."""
+    try:
+        decision = box.decide(question, page)
+    except ValueError as fault:
+        return {"outcome": "error", "kind": None, "ask": None, "reading_by": None,
+                "detail": str(fault)}
+    found = {"outcome": "plan", "kind": decision.kind, "ask": None,
+             "reading_by": decision.reading_by, "detail": None}
+    if decision.bypass:
+        found.update(outcome="bypass", detail=box.BYPASS_REASON)
+    elif decision.refuse:
+        found.update(outcome="refuse", detail=decision.refuse)
+    elif decision.query is None:
+        found.update(outcome="ask", detail=decision.ask.text,
+                     ask="reading" if decision.ask.readings else "price limit")
+        if decision.ask.readings:
+            try:
+                found["kind"] = box.decide(question, page, reply="menu").kind
+            except ValueError as fault:
+                found["detail"] += f" Read as the menu, it is refused: {fault}"
+    elif decision.form.fallback:
+        found["outcome"] = "fallback"
+    return found
+
+
+def same_outcome(a: dict, b: dict) -> bool:
+    """The same outcome, kind and ask, as the task files' "box" field would record them."""
+    return (a["outcome"], a["kind"], a["ask"]) == (b["outcome"], b["kind"], b["ask"])
+
+
+def meets_audit(expected: str, found: dict) -> bool:
+    """Whether the outcome is the one the audit expected, by the audit's own rule: "ASK" is
+    met by any ask, "REFUSE" by a refusal and "BYPASS" by a bypass, and any other word is
+    the kind a plan must have, the fallback's included."""
+    words = {"ASK": "ask", "REFUSE": "refuse", "BYPASS": "bypass"}
+    if expected in words:
+        return found["outcome"] == words[expected]
+    return found["outcome"] in ("plan", "fallback") and found["kind"] == expected
+
+
+def outcome_words(found: dict) -> str:
+    """An outcome in a few words, for the printed rows."""
+    if found["outcome"] == "ask":
+        return ("ask for a price limit" if found["ask"] == "price limit"
+                else f"ask for a reading, then {found['kind']}")
+    if found["outcome"] in ("plan", "fallback"):
+        chosen = ", the box chose the reading" if found["reading_by"] == "box" else ""
+        return f"{found['outcome']} {found['kind']}{chosen}"
+    return found["outcome"]
+
+
+def rules_half(entry: dict, page: page_module.Page) -> tuple[dict, form.Form]:
+    """One paraphrase's free half: the expected form, the rules' form of the paraphrase and
+    the tiers it reaches, and what the box does with the paraphrase and with its template.
+    The expected form comes back too, for the model's half."""
+    expected = form.from_rules(entry["template_question"], page)
+    rules = form.from_rules(entry["question"], page)
+    row = {"id": entry["id"], "template": entry["template"], "label": entry["label"],
+           "audit_expected": entry["audit_expected"], "text": entry["text"],
+           "question": entry["question"], "expected": expected.record(),
+           "rules": rules.record(), "rules_problems": form.verify(rules, page),
+           "rules_tiers": tiers(expected, rules),
+           "box": outcome(entry["question"], page),
+           "template_box": outcome(entry["template_question"], page)}
+    return row, expected
+
+
+def model_half(row: dict, expected: form.Form, page: page_module.Page, model: str,
+               key: str) -> dict:
+    """The row with the model's form added, one call, and the tiers that form reaches."""
+    proposed, error, failed, cost = propose(row["question"], model, key)
+    return {**row, "model": proposed.record() if proposed else None,
+            "model_problems": (form.verify(proposed, page) if proposed
+                               else [] if failed else [error]),
+            "model_tiers": tiers(expected, proposed),
+            "error": error, "call_failed": failed, "cost_usd": cost}
+
+
+def reached(found: dict[str, bool]) -> str:
+    met = [tier for tier in TIERS if found[tier]]
+    return "agrees on " + (", ".join(met) if met else "nothing")
+
+
+def print_paraphrase(row: dict) -> None:
+    """One paraphrase: its words, the form expected, the rules' form and, once the model has
+    been called, the model's, each with the tiers it reaches, and what the box does."""
+    print(f"{row['id']:>2} {row['template']}, labelled {row['label'] or '-'}: {row['text']}")
+    print(f"     expected: {summary(row['expected'])}")
+    print(f"     rules:    {summary(row['rules'])}")
+    print(f"               {reached(row['rules_tiers'])}; {'; '.join(row['rules_problems']) or 'sound'}")
+    if "model_tiers" in row:
+        print(f"     model:    {summary(row['model']) if row['model'] else 'no form: ' + str(row['error'])}")
+        print(f"               {reached(row['model_tiers'])}; {'; '.join(row['model_problems']) or 'sound'}")
+        print(f"               {'$%.5f' % row['cost_usd'] if row['cost_usd'] is not None else 'cost unknown'}")
+    met = "met" if meets_audit(row["audit_expected"], row["box"]) else "not met"
+    print(f"     box:      {outcome_words(row['box'])}; the template: "
+          f"{outcome_words(row['template_box'])}; the audit expected {row['audit_expected']}, {met}")
+
+
+def question_totals(rows: list[dict], with_model: bool) -> dict:
+    """Every count the summary prints and the result file keeps, from the rows, so the two
+    cannot differ."""
+    def count(test) -> int:
+        return sum(1 for row in rows if test(row))
+
+    totals = {"paraphrases": len(rows),
+              "rules": {tier: count(lambda r: r["rules_tiers"][tier]) for tier in TIERS}}
+    if with_model:
+        totals["model"] = {tier: count(lambda r: r["model_tiers"][tier]) for tier in TIERS}
+        totals["model_only"] = {tier: count(lambda r: r["model_tiers"][tier] and not r["rules_tiers"][tier])
+                                for tier in TIERS}
+        totals["rules_only"] = {tier: count(lambda r: r["rules_tiers"][tier] and not r["model_tiers"][tier])
+                                for tier in TIERS}
+    totals["box"] = {name: count(lambda r: r["box"]["outcome"] == name) for name in OUTCOMES}
+    totals["box_as_template"] = count(lambda r: same_outcome(r["box"], r["template_box"]))
+    totals["box_as_audit_expected"] = count(lambda r: meets_audit(r["audit_expected"], r["box"]))
+    for label in ("ambiguous", "clear"):
+        totals[f"labelled_{label}"] = {
+            "paraphrases": count(lambda r: r["label"] == label),
+            "asked": count(lambda r: r["label"] == label and r["box"]["outcome"] == "ask")}
+    return totals
+
+
+def print_totals(totals: dict, with_model: bool) -> None:
+    n = totals["paraphrases"]
+    print(f"\nagainst the expected form, the rules' form of each template, {n} paraphrases:")
+    if with_model:
+        print(f"  {'':34} {'rules':>5} {'model':>5} {'model only':>10} {'rules only':>10}")
+    for tier, name in TIERS.items():
+        line = f"  {name:34} {totals['rules'][tier]:>5}"
+        if with_model:
+            line += (f" {totals['model'][tier]:>5} {totals['model_only'][tier]:>10} "
+                     f"{totals['rules_only'][tier]:>10}")
+        print(f"{line} of {n}")
+    print(f"box.decide under the rules: "
+          f"{', '.join(f'{name} {got}' for name, got in totals['box'].items())}")
+    print(f"  the same outcome and kind as its template's  {totals['box_as_template']} of {n}")
+    print(f"  the outcome the audit expected               {totals['box_as_audit_expected']} of {n}")
+    for label in ("ambiguous", "clear"):
+        got = totals[f"labelled_{label}"]
+        print(f"  labelled {label} by the verifier: {got['paraphrases']}, asked back on {got['asked']}")
+
+
+def census_charge(path: pathlib.Path | None = None) -> tuple[float, int, str]:
+    """What the census was charged in all, over how many charged calls, and to which model."""
+    census = json.loads((path or paths.RESULTS / CENSUS).read_text())
+    charged = [row["cost_usd"] for row in census["rows"] if row["cost_usd"] is not None]
+    return sum(charged), len(charged), census["model"]
+
+
+def print_estimate(calls: int, model: str) -> None:
+    total, charged, census_model = census_charge()
+    per_call = total / charged
+    print(f"{calls} calls to {model}, text only, no browser. Nothing was sent.")
+    print(f"estimate: ${calls * per_call:.4f}, {calls} calls at ${per_call:.5f}, the census's charge "
+          f"per call ({CENSUS}: ${total:.4f} for {charged} calls to {census_model})")
+    if model != census_model:
+        print(f"warning: the census called {census_model}, so its charge does not price {model}")
+
+
+def report_questions(rows: list[dict], path: pathlib.Path, spec: dict, page: page_module.Page,
+                     model: str, key: str, before: float | None) -> pathlib.Path:
+    """The summary and the result file of a paid paraphrase probe, for however many ran,
+    with every version the rows depend on."""
+    after = plan_probe.usage(key)
+    spent = round(after - before, 4) if (before is not None and after is not None) else None
+    charged_total = sum(r["cost_usd"] for r in rows if r["cost_usd"] is not None)
+    failed = sum(1 for r in rows if r["call_failed"])
+    totals = question_totals(rows, with_model=True)
+    print_totals(totals, with_model=True)
+    print(f"model forms failing verification: "
+          f"{sum(1 for r in rows if r['model_problems'])} of {len(rows)}")
+    print(f"charged per call, summed: ${charged_total:.5f}")
+    print(f"account delta: {('$%.4f' % spent) if spent is not None else 'unknown'}")
+    print(f"calls failed: {failed} of {len(rows)}")
+
+    stamp = dt.datetime.now().strftime("%Y%m%dT%H%M%S")
+    out = RESULTS / f"parse-probe-{path.stem}-{stamp}.json"
+    out.write_text(json.dumps({
+        "ran_at": stamp, "questions": path.name, "comparison_version": COMPARISON_VERSION,
+        "model": model, "temperature": 0, "form_version": form.VERSION,
+        "box_version": box.VERSION, "primitives_version": primitives.VERSION,
+        "planner_version": planner.VERSION, "strategy_version": targeting.VERSION,
+        "commit": repository_commit(), "page_from": spec["page_from"], "page": page.record(),
+        "spend_usd": spent, "charged_usd": charged_total, "calls_failed": failed,
+        "totals": totals, "rows": rows}, indent=2) + "\n")
+    print(f"written: {out}")
+    return out
+
+
+def probe_questions(path: pathlib.Path, model: str, dry_run: bool) -> int:
+    """The paraphrase probe. The rules' half of every question first, free, on the stored
+    page each question must name; then, in a paid run, the model's half, one call each with
+    no retry and the result file written whatever stops the loop, as the census."""
+    spec, entries = load_questions(path)
+    page = stored_page(paths.RESULTS / spec["page_from"] / "suite.json")
+    for entry in entries:
+        named = box.results_url(entry["question"])
+        if named != page.url:
+            raise ValueError(f"paraphrase {entry['id']} names {named}, not the stored page {page.url}")
+    halves = [rules_half(entry, page) for entry in entries]
+    if dry_run:
+        for n, (row, _) in enumerate(halves, 1):
+            print(f"=== prompt {n} of {len(halves)}, paraphrase {row['id']} of {row['template']}")
+            print(form.prompt(row["question"]))
+            print()
+        print(f"=== the rules' half, free, on the page the box read in batch {spec['page_from']}")
+        for row, _ in halves:
+            print_paraphrase(row)
+        print_totals(question_totals([row for row, _ in halves], with_model=False), with_model=False)
+        print_estimate(len(halves), model)
+        return 0
+
+    key = plan_probe.load_key()
+    if not key:
+        print("no OPENROUTER_API_KEY")
+        return 1
+    before = plan_probe.usage(key)
+    rows: list[dict] = []
+    try:
+        for row, expected in halves:
+            rows.append(model_half(row, expected, page, model, key))
+            print_paraphrase(rows[-1])
+    finally:
+        # Whatever stopped the loop, the rows that ran and their charges are on disk.
+        report_questions(rows, path, spec, page, model, key, before)
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--dry-run", action="store_true",
                         help="print every prompt that would be sent, and send nothing")
     parser.add_argument("--model", default=None)
+    parser.add_argument("--questions", type=pathlib.Path, default=None,
+                        help="a paraphrase file, such as experiments/tasks/paraphrases_v1.json: "
+                             "probe its questions instead of the census, each against the "
+                             "rules' form of the question it rewords")
     args = parser.parse_args()
 
     model = args.model or plan_probe.model_name()
+    if args.questions is not None:
+        return probe_questions(args.questions, model, args.dry_run)
     questions = census()
     if args.dry_run:
         for n, (name, question) in enumerate(questions, 1):
