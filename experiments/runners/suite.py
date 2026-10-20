@@ -399,6 +399,27 @@ def reading_answered(box_record: dict | None, flag: str | None) -> str | None:
     return box_record.get("reading") if box_record else flag
 
 
+def unscorable(tasks: list[dict], spec: dict, args, readings: dict) -> list[str]:
+    """The tasks a batch could not score, each with the reading its runs would be scored
+    under: the `--reading` reply where the box asks, the box's own reading where it takes
+    one, the task's own key otherwise (`reading_answered`), wherever `score.under_reading`
+    has no key for it. Since d16aa48 (20 October 2026) a question with two readings
+    answered under one its sidecar lacks raises there, and the suite scores each run right
+    after it, so the batch would end after that run had been paid for. A slot the box
+    closes, an ask with no reply or a refusal, runs nothing and is scored by nothing."""
+    missing = []
+    for task in tasks:
+        query, applied = build_query(task, spec, args)
+        if query is None:
+            continue
+        reading = reading_answered(applied["box"], args.reading)
+        try:
+            scoring.under_reading(task, reading, readings)
+        except scoring.NoKeyForReading:
+            missing.append(f"{task['id']} under the {reading} reading")
+    return missing
+
+
 def print_dry_task(task: dict, query: str | None, applied: dict) -> None:
     """One task of the dry run: the exact text, through the same function the paid loop
     uses, so what is read here is what the agent gets (LESSONS 17). An ask is printed as
@@ -606,6 +627,12 @@ def main() -> int:
     # The scripted user's other readings of the ambiguous questions, for scoring under
     # `--reading`. Empty when the task file has no sidecar.
     readings = scoring.readings_for(args.tasks)
+    # Every key a run will be scored against, found before the first run and in the dry
+    # run, so a missing one stops the batch before anything is spent (20 October 2026).
+    missing = unscorable(tasks, spec, args, readings)
+    if missing:
+        parser.error(f"{args.tasks.name} has no answer key for the reading these runs would "
+                     f"be scored under, so nothing runs: {'; '.join(missing)}")
 
     # Which agent code answers, read once before anything runs and printed in the header
     # so the dry run shows it too. Only openJiuwen lives in the submodule.

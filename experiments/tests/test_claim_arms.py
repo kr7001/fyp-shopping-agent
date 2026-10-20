@@ -8,6 +8,7 @@ Every rule has a case where it must fire and one where it must stay quiet (LESSO
 by one that writes a record and a log and returns.
 """
 import contextlib
+import dataclasses
 import difflib
 import hashlib
 import io
@@ -55,16 +56,27 @@ def sentences(text: str | None) -> list[str]:
     return found
 
 
+@dataclasses.dataclass
+class SuiteRun:
+    code: int                       # main's return, or the exit code of a refusal
+    out: str                        # what it printed, stdout then stderr
+    batch: pathlib.Path | None      # the batch folder, None when nothing was written
+    calls: int                      # how many runs the runner was started for
+    owner: tempfile.TemporaryDirectory
+
+
 def run_suite(*argv: str, page: page_module.Page | None = None,
-              answer: str = "Rookwood Uniforms advertises the lowest price, $11.87.") -> tuple:
+              answer: str = "Rookwood Uniforms advertises the lowest price, $11.87.") -> SuiteRun:
     """`suite.main()` in this process with the agent replaced: each run's runner writes the
     record and the log a real one would, and nothing is sent anywhere. The results go to a
-    temporary folder. Returns the exit code, what was printed and the batch folder, with
-    the folder's owner, which the caller keeps alive."""
+    temporary folder, kept alive by the returned `owner`. A refusal by the argument parser
+    is returned as its exit code, with its message in `out`."""
     owner = tempfile.TemporaryDirectory()
     results = pathlib.Path(owner.name)
+    calls = []
 
     def runner(command, cwd=None, env=None, stdout=None, stderr=None, check=False):
+        calls.append(command)
         record = pathlib.Path(command[command.index("--out") + 1])
         record.write_text(json.dumps({"model": "fake/model", "elapsed_s": 1.0, "cost_usd": 0.0,
                                       "error": None, "result": {"ok": True, "final": answer}}))
@@ -77,10 +89,15 @@ def run_suite(*argv: str, page: page_module.Page | None = None,
             mock.patch.object(suite.subprocess, "run", runner), \
             mock.patch.object(suite, "agent_code_identity", return_value=identity), \
             mock.patch.object(suite, "results_page", lambda url: page), \
-            contextlib.redirect_stdout(io.StringIO()) as out:
-        code = suite.main()
+            contextlib.redirect_stdout(io.StringIO()) as out, \
+            contextlib.redirect_stderr(io.StringIO()) as err:
+        try:
+            code = suite.main()
+        except SystemExit as refused:
+            code = refused.code
     batches = sorted(p for p in results.iterdir() if p.is_dir())
-    return code, out.getvalue(), (batches[0] if batches else None), owner
+    return SuiteRun(code, out.getvalue() + err.getvalue(), batches[0] if batches else None,
+                    len(calls), owner)
 
 
 def dry_run(*argv: str) -> subprocess.CompletedProcess:
@@ -137,11 +154,11 @@ class IsolatedProfile(unittest.TestCase):
                       naive.stdout)
 
     def test_the_payload_records_it(self):
-        code, _, batch, owner = run_suite("--tasks", str(paths.TASKS / "tasks_apparel.json"),
-                                          "--repeats", "1", "--only", "apparel-headline")
-        self.addCleanup(owner.cleanup)
-        payload = json.loads((batch / "suite.json").read_text())
-        self.assertEqual((code, payload["browser_flags"]), (0, "--block-service-workers --isolated"))
+        run = run_suite("--tasks", str(paths.TASKS / "tasks_apparel.json"), "--repeats", "1",
+                        "--only", "apparel-headline")
+        self.addCleanup(run.owner.cleanup)
+        payload = json.loads((run.batch / "suite.json").read_text())
+        self.assertEqual((run.code, payload["browser_flags"]), (0, "--block-service-workers --isolated"))
 
 
 # ---------------------------------------------------------------------------
@@ -336,30 +353,44 @@ class StrictUnder(unittest.TestCase):
         self.assertIn("such as under $20, and only listings below it will count", asked.text)
         self.assertNotIn("at or below", asked.text)
 
-    def test_only_the_two_under_questions_change_their_form(self):
-        # The v8 pattern, as form v8 wrote it, run beside v9's over every question in every
-        # task file: the same figure is read from the same words everywhere, and the
-        # operator changes only where the words are strict, on the two "under $" questions.
+    # The seven task files of the audit, 58 questions, and the claim market's, written after
+    # it by a generator that already read "under" strictly (d16aa48).
+    AUDITED = ("tasks.json", "tasks_apparel.json", "tasks_apparel_v2.json", "tasks_heldout.json",
+               "tasks_heldout_gated.json", "tasks_reviews.json", "tasks_scaled.json")
+
+    def strict_questions(self, name: str) -> tuple[int, list[str]]:
+        """How many questions a task file holds, and those whose limit is strict. Beside
+        it, form v8's pattern: the same figure is read from the same words everywhere."""
         v8 = re.compile(r"\b(?:under|below|less than|at most|no more than|not more than|cheaper "
                         r"than|up to|within)\s*\$?\s*(?P<a>\d+(?:\.\d{1,2})?)\b"
                         r"|\$?(?P<b>\d+(?:\.\d{1,2})?)\s+or\s+(?:less|under|below|cheaper)\b",
                         re.IGNORECASE)
+        spec = json.loads((paths.TASKS / name).read_text())
         strict = []
-        questions = 0
-        for path in sorted(paths.TASKS.glob("tasks*.json")):
-            spec = json.loads(path.read_text())
-            for task in spec["tasks"]:
-                questions += 1
-                query = task["query"].format(base=spec.get("base_url", BASE))
-                old, new = v8.search(query), form_module.CEILING.search(query)
-                self.assertEqual(bool(old), bool(new), task["id"])
-                if new:
-                    self.assertEqual(old.span(), new.span(), task["id"])
-                limit = form_module.from_rules(query).filter("price")
-                if limit is not None and limit.op == "<":
-                    strict.append(task["id"])
-        self.assertEqual(questions, 58)
-        self.assertEqual(sorted(strict), ["apparel-exists-under-25", "apparel-exists-under-27"])
+        for task in spec["tasks"]:
+            query = task["query"].format(base=spec.get("base_url", BASE))
+            old, new = v8.search(query), form_module.CEILING.search(query)
+            self.assertEqual(bool(old), bool(new), task["id"])
+            if new:
+                self.assertEqual(old.span(), new.span(), task["id"])
+            limit = form_module.from_rules(query).filter("price")
+            if limit is not None and limit.op == "<":
+                strict.append(task["id"])
+        return len(spec["tasks"]), strict
+
+    def test_only_the_two_under_questions_change_their_form(self):
+        # The operator changes only where the words are strict: of the audit's 58 forms,
+        # the two "under $" questions on Thornwood.
+        counted = [self.strict_questions(name) for name in self.AUDITED]
+        self.assertEqual(sum(n for n, _ in counted), 58)
+        self.assertEqual(sorted(task for _, strict in counted for task in strict),
+                         ["apparel-exists-under-25", "apparel-exists-under-27"])
+        # On the claim market the two existence questions, whose keys its generator
+        # computed with a strict limit, read the same way.
+        self.assertEqual(sorted(self.strict_questions("tasks_claim_apparel.json")[1]),
+                         ["apparel-exists-under-23", "apparel-exists-under-24"])
+        self.assertEqual(sorted(p.name for p in paths.TASKS.glob("tasks*.json")),
+                         sorted(self.AUDITED + ("tasks_claim_apparel.json",)))
 
 
 # ---------------------------------------------------------------------------
@@ -536,10 +567,10 @@ class BoxExhaust(unittest.TestCase):
         page = thornwood_page()
         tasks = ("--tasks", str(paths.TASKS / "tasks_apparel.json"), "--repeats", "1",
                  "--only", "apparel-cheapest-target", "apparel-headline")
-        code, out, batch, owner = run_suite(*tasks, "--box-exhaust", page=page)
-        self.addCleanup(owner.cleanup)
-        self.assertEqual(code, 0)
-        payload = json.loads((batch / "suite.json").read_text())
+        run = run_suite(*tasks, "--box-exhaust", page=page)
+        self.addCleanup(run.owner.cleanup)
+        self.assertEqual(run.code, 0)
+        payload = json.loads((run.batch / "suite.json").read_text())
         self.assertEqual((payload["arm"], payload["box_exhaust"], payload["box"]), ("box-exhaust", True, False))
         self.assertEqual((payload["box_version"], payload["form_version"], payload["primitives_version"],
                           payload["targeting_version"]),
@@ -550,16 +581,16 @@ class BoxExhaust(unittest.TestCase):
                          (True, True, primitives.EXHAUST_STOP))
         self.assertIn(primitives.OPEN_EVERY, gated["query"])
         self.assertTrue(rows["apparel-headline"]["box"]["exhaust"])
-        self.assertIn("arm: box-exhaust\n", out)
+        self.assertIn("arm: box-exhaust\n", run.out)
         # The box itself, and no box at all, record their own arms.
-        code, out, batch, owner = run_suite(*tasks, "--box", page=page)
-        self.addCleanup(owner.cleanup)
-        payload = json.loads((batch / "suite.json").read_text())
+        run = run_suite(*tasks, "--box", page=page)
+        self.addCleanup(run.owner.cleanup)
+        payload = json.loads((run.batch / "suite.json").read_text())
         self.assertEqual((payload["arm"], payload["box_exhaust"], payload["box"]), ("box", False, True))
         self.assertFalse(payload["rows"][0]["box"]["exhaust"])
-        code, out, batch, owner = run_suite(*tasks)
-        self.addCleanup(owner.cleanup)
-        payload = json.loads((batch / "suite.json").read_text())
+        run = run_suite(*tasks)
+        self.addCleanup(run.owner.cleanup)
+        payload = json.loads((run.batch / "suite.json").read_text())
         self.assertEqual((payload["arm"], payload["box_version"]), ("none", None))
         self.assertEqual(suite.arm_of(mock.Mock(box=False, box_exhaust=False, targeting=True, exhaustive=True)),
                          "targeting+exhaustive")
@@ -575,9 +606,10 @@ class RepeatStart(unittest.TestCase):
         return sorted(p.stem for p in batch.glob("apparel-headline-*.json"))
 
     def test_the_records_and_rows_carry_the_given_repeats(self):
-        code, out, batch, owner = run_suite(*self.TASKS, "--repeats", "2", "--repeat-start", "3")
-        self.addCleanup(owner.cleanup)
-        self.assertEqual(code, 0)
+        run = run_suite(*self.TASKS, "--repeats", "2", "--repeat-start", "3")
+        self.addCleanup(run.owner.cleanup)
+        batch = run.batch
+        self.assertEqual((run.code, run.calls), (0, 2))
         self.assertEqual(self.runs(batch), ["apparel-headline-3", "apparel-headline-4"])
         payload = json.loads((batch / "suite.json").read_text())
         self.assertEqual([row["repeat"] for row in payload["rows"]], [3, 4])
@@ -588,27 +620,27 @@ class RepeatStart(unittest.TestCase):
             record = json.loads((batch / f"apparel-headline-{repeat}.json").read_text())
             self.assertEqual(record["log"], f"apparel-headline-{repeat}.log")
             self.assertTrue((batch / f"apparel-headline-{repeat}.log").exists())
-        self.assertIn("1 tasks x 2 repeats = 2 runs, repeats 3 to 4 -> ", out)
+        self.assertIn("1 tasks x 2 repeats = 2 runs, repeats 3 to 4 -> ", run.out)
 
     def test_the_default_is_unchanged(self):
-        code, out, batch, owner = run_suite(*self.TASKS, "--repeats", "2")
-        self.addCleanup(owner.cleanup)
-        self.assertEqual(self.runs(batch), ["apparel-headline-1", "apparel-headline-2"])
-        payload = json.loads((batch / "suite.json").read_text())
+        run = run_suite(*self.TASKS, "--repeats", "2")
+        self.addCleanup(run.owner.cleanup)
+        self.assertEqual(self.runs(run.batch), ["apparel-headline-1", "apparel-headline-2"])
+        payload = json.loads((run.batch / "suite.json").read_text())
         self.assertEqual([row["repeat"] for row in payload["rows"]], [1, 2])
         self.assertEqual(payload["repeat_start"], 1)
-        self.assertIn("1 tasks x 2 repeats = 2 runs -> ", out)
-        self.assertNotIn("repeats 1 to", out)
+        self.assertIn("1 tasks x 2 repeats = 2 runs -> ", run.out)
+        self.assertNotIn("repeats 1 to", run.out)
 
     def test_a_round_of_one_with_the_box(self):
         # The claim's rounds: --repeats 1 per arm, the round's number as the repeat, and an
         # ask closed by the box carries it too.
         page = thornwood_page()
-        code, _, batch, owner = run_suite("--tasks", str(paths.TASKS / "tasks_apparel.json"),
-                                          "--only", "apparel-headline", "apparel-all-stocked",
-                                          "--repeats", "1", "--repeat-start", "2", "--box", page=page)
-        self.addCleanup(owner.cleanup)
-        payload = json.loads((batch / "suite.json").read_text())
+        run = run_suite("--tasks", str(paths.TASKS / "tasks_apparel.json"),
+                        "--only", "apparel-headline", "apparel-all-stocked",
+                        "--repeats", "1", "--repeat-start", "2", "--box", page=page)
+        self.addCleanup(run.owner.cleanup)
+        payload = json.loads((run.batch / "suite.json").read_text())
         self.assertEqual({(row["task"], row["repeat"], row["verdict"] == "asked") for row in payload["rows"]},
                          {("apparel-headline", 2, False), ("apparel-all-stocked", 2, True)})
 
@@ -616,6 +648,87 @@ class RepeatStart(unittest.TestCase):
         run = dry_run(*self.TASKS, "--repeats", "1", "--repeat-start", "0")
         self.assertEqual(run.returncode, 2)
         self.assertIn("--repeat-start numbers the first repeat", run.stderr)
+
+
+# ---------------------------------------------------------------------------
+# 6. A key for every reading a run is scored under, found before anything runs
+
+class ScoringKeyPreflight(unittest.TestCase):
+    """Since d16aa48 `score.under_reading` raises for a question with two readings answered
+    under one its sidecar has no key for, and the suite scores each run right after it. So
+    every task is resolved under the reading its runs would be scored under before the
+    first run, and in the dry run, and a missing key refuses the batch with nothing spent."""
+
+    BEST_PRICE = {"id": "apparel-best-price", "family": "apparel", "gated": True,
+                  "query": "Go to {base}/catalogsearch/result/?q=Thornwood . Which Thornwood seller has "
+                           "the best price for size M?",
+                  "expect": {"kind": "contains", "any": ["Alderney"], "not_any": [], "price": 25.77}}
+
+    def task_file(self, folder: str, extra: tuple = (), buyable: dict | None = None) -> pathlib.Path:
+        """A copy of two Thornwood questions, the control and the ambiguous "every listing
+        offer size M", with any extra tasks, and a readings sidecar only when `buyable`."""
+        spec = json.loads((paths.TASKS / "tasks_apparel.json").read_text())
+        spec["tasks"] = [t for t in spec["tasks"] if t["id"] in ("apparel-headline", "apparel-all-stocked")]
+        spec["tasks"] += list(extra)
+        path = pathlib.Path(folder) / "tasks_preflight.json"
+        path.write_text(json.dumps(spec))
+        if buyable is not None:
+            (pathlib.Path(folder) / "readings_preflight.json").write_text(
+                json.dumps({"readings": {"buyable": buyable}}))
+        return path
+
+    def batch(self, tasks: pathlib.Path, *flags: str) -> SuiteRun:
+        run = run_suite("--tasks", str(tasks), "--repeats", "1", *flags, page=thornwood_page())
+        self.addCleanup(run.owner.cleanup)
+        return run
+
+    def test_a_missing_buyable_key_is_refused_before_anything_runs(self):
+        with tempfile.TemporaryDirectory() as folder:
+            tasks = self.task_file(folder)
+            for dry in ((), ("--dry-run",)):
+                with self.subTest(dry=bool(dry)):
+                    run = self.batch(tasks, "--box", "--reading", "buyable", *dry)
+                    self.assertEqual((run.code, run.calls, run.batch), (2, 0, None))
+                    self.assertIn("tasks_preflight.json has no answer key for the reading", run.out)
+                    self.assertIn("apparel-all-stocked under the buyable reading", run.out)
+                    self.assertNotIn("apparel-headline under", run.out)
+
+    def test_the_same_file_passes_under_the_menu_reading_and_with_its_key(self):
+        with tempfile.TemporaryDirectory() as folder:
+            tasks = self.task_file(folder)
+            menu = self.batch(tasks, "--box", "--reading", "menu")
+            self.assertEqual((menu.code, menu.calls), (0, 2))
+            self.assertEqual(self.batch(tasks, "--box", "--reading", "menu", "--dry-run").code, 0)
+            # Without the box no reading is a condition, and every run takes its own key.
+            self.assertEqual(self.batch(tasks).calls, 2)
+        with tempfile.TemporaryDirectory() as folder:
+            tasks = self.task_file(folder, buyable={"apparel-all-stocked": {"kind": "boolean", "value": False}})
+            buyable = self.batch(tasks, "--box", "--reading", "buyable")
+            self.assertEqual((buyable.code, buyable.calls), (0, 2))
+
+    def test_the_reading_the_box_takes_itself_needs_its_key_too(self):
+        # "has the best price for size M" has a price only for a size that can be sold, so
+        # the box reads it as buyable without asking: it is scored under the buyable key
+        # with or without --reading.
+        with tempfile.TemporaryDirectory() as folder:
+            tasks = self.task_file(folder, extra=(self.BEST_PRICE,))
+            refused = self.batch(tasks, "--box", "--only", "apparel-best-price")
+            self.assertEqual((refused.code, refused.calls), (2, 0))
+            self.assertIn("apparel-best-price under the buyable reading", refused.out)
+            # The box without its stop rule decides the reading the same way.
+            self.assertEqual(self.batch(tasks, "--box-exhaust", "--only", "apparel-best-price").code, 2)
+        with tempfile.TemporaryDirectory() as folder:
+            tasks = self.task_file(folder, extra=(self.BEST_PRICE,),
+                                   buyable={"apparel-best-price": {"kind": "contains", "any": ["Alderney"],
+                                                                   "not_any": [], "price": 25.77},
+                                            "apparel-all-stocked": {"kind": "boolean", "value": False}})
+            run = self.batch(tasks, "--box", "--only", "apparel-best-price")
+            self.assertEqual((run.code, run.calls), (0, 1))
+
+    def test_an_asked_question_with_no_reply_runs_nothing_and_needs_no_key(self):
+        with tempfile.TemporaryDirectory() as folder:
+            run = self.batch(self.task_file(folder), "--box")
+            self.assertEqual((run.code, run.calls), (0, 1))       # the control ran, the ask did not
 
 
 if __name__ == "__main__":
