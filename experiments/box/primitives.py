@@ -58,7 +58,14 @@ import targeting
 #   5  20 October 2026. Absence of a size counts only from a complete menu reading; a
 #      find excerpt cut inside the menu shows the sizes it lists and nothing else
 #      (verifier finding: an excerpt of S, M was read as a menu without L and XL)
-VERSION = 5
+#   6  20 October 2026, the verifier's audit of the claim plan. A strict limit, "under
+#      $27", is read as below $27.00 by the witness text, its stop rule, its check's floor
+#      and the filter's sentence and check (`Limit`, form v9). The texts say what the shop
+#      does: before choosing, a listing shows its cheapest size that can be bought, which
+#      may be the one asked about, and stopping after one opening is right when that
+#      listing settles it (strategy text v8). And a plan can be composed without its stop
+#      rule, for the arm that isolates it (`exhaust_swaps`, `suite.py --box-exhaust`)
+VERSION = 6
 
 # The same hazard as every v1 bound strategy: a figure derived from a bound is not a price.
 QUARANTINE = targeting.QUARANTINE
@@ -90,11 +97,13 @@ class Plan:
     stop_rule: str
     instruction: str                                # the primitive's text alone
     text: str                                       # the preamble, then the instruction
+    exhaust: bool = False                           # composed without its stop rule, `exhaust_swaps`
 
     def record(self) -> dict:
         return {"primitives_version": VERSION, "primitive": self.primitive, "kind": self.kind,
                 "stop_rule": self.stop_rule, "filters": [f.record() for f in self.filters],
-                "candidates": [{"seller": c.seller, "url": c.url} for c in self.candidates]}
+                "candidates": [{"seller": c.seller, "url": c.url} for c in self.candidates],
+                "exhaust": self.exhaust}
 
 
 # ---------------------------------------------------------------------------
@@ -135,9 +144,36 @@ def opened_all(page: page_module.Page, opened: set[str]) -> bool:
     return len(opened) >= len(page.listings)
 
 
-def ceiling_of(form: form_module.Form) -> float | None:
+@dataclasses.dataclass(frozen=True)
+class Limit:
+    """The price limit a question set, and whether the figure itself is allowed: "under
+    $27" is strict, below $27, and "at most $27" is not (form v9, 20 October 2026). The
+    witness text, the filter's sentence, the witness check's floor and the filter's check
+    all read the operator here, so they cannot disagree about a price at the limit."""
+    value: float
+    strict: bool
+
+    def admits(self, price: float) -> bool:
+        """Whether a price meets the limit, within half a cent, because the page's price
+        is a float and an answer's is parsed text."""
+        return price < self.value - 0.005 if self.strict else price <= self.value + 0.005
+
+    @property
+    def within(self) -> str:
+        """How the text says a price meets the limit."""
+        return "below" if self.strict else "at or below"
+
+    @property
+    def beyond(self) -> str:
+        """How the text says an advertised price rules a listing out."""
+        return "at or above" if self.strict else "above"
+
+
+def limit_of(form: form_module.Form) -> Limit | None:
     limit = form.filter("price")
-    return float(limit.value) if limit is not None and limit.op == "<=" else None
+    if limit is None or limit.op not in ("<", "<="):
+        return None
+    return Limit(float(limit.value), strict=limit.op == "<")
 
 
 def option_phrase(form: form_module.Form) -> str:
@@ -169,12 +205,14 @@ def named_listings(form: form_module.Form, page: page_module.Page) -> list[tuple
 # The filter modifier, applied inside the other primitives
 
 def option_steps(form: form_module.Form) -> str:
-    """Choose the option and look again, then check it can be bought. The same facts the v7
-    availability strategy states, in the same words, since they were checked on the shop."""
+    """Choose the option and look again, then check it can be bought. The same facts the
+    availability strategy states, in the same words, since they were checked on the shop,
+    and corrected with it in strategy text v8 (20 October 2026): before choosing, a listing
+    shows its cheapest size that can be bought, which may be the one asked about."""
     steps = [f"choose {option_phrase(form)}, then look at the page again and read the price it "
-             "now shows. The price a listing shows before you choose is its cheapest option, "
-             "not the one asked about, and the reply to choosing an option does not show the "
-             "new price."]
+             "now shows. The price a listing shows before you choose is its cheapest option "
+             "that can be bought, not necessarily the one asked about, and the reply to "
+             "choosing an option does not show the new price."]
     availability = form.filter("availability")
     if availability is not None and availability.value == "buyable":
         steps.append("Then check whether that option can actually be bought. An option can be "
@@ -195,10 +233,10 @@ class FilterModifier:
     @staticmethod
     def instruction(form: form_module.Form, page: page_module.Page) -> str:
         text = option_steps(form)
-        limit = ceiling_of(form)
+        limit = limit_of(form)
         if limit is not None:
-            text += (f" Count a listing only if the price you read for that option is at or "
-                     f"below ${limit:.2f}.")
+            text += (f" Count a listing only if the price you read for that option is "
+                     f"{limit.within} ${limit.value:.2f}.")
         return text
 
     @staticmethod
@@ -209,24 +247,30 @@ class FilterModifier:
     def check(form: form_module.Form, page: page_module.Page, answer: str, opened: set[str],
               text: str, menus: dict | None = None) -> dict:
         """The price the answer names is within the limit the question set. A No is not held
-        to it: the price it quotes is the one that failed."""
-        limit = ceiling_of(form)
+        to it: the price it quotes is the one that failed. Under a strict limit, "under
+        $27", an answer naming $27.00 is outside it (form v9, 20 October 2026)."""
+        limit = limit_of(form)
         if limit is None:
             return ok("no price limit to hold the answer to")
         prices = scoring.prices_in(answer)
         if not prices or denies(answer):
             return ok("the answer names no price above the limit")
-        if prices[0] > limit + 0.005:
+        if not limit.admits(prices[0]):
+            allows = "less than" if limit.strict else "at most"
             return flag("answer_above_limit", f"names ${prices[0]:.2f} where the question "
-                                              f"allows at most ${limit:.2f}")
-        return ok(f"the price named is at or below ${limit:.2f}")
+                                              f"allows {allows} ${limit.value:.2f}")
+        return ok(f"the price named is {limit.within} ${limit.value:.2f}")
 
 
 # ---------------------------------------------------------------------------
 # The texts v1 did not have
 
 def witness_text(form: form_module.Form) -> str:
-    limit = ceiling_of(form)
+    """The witness's text. The limit's three sentences follow its operator (form v9): under
+    "under $27" a price must be below $27.00 and a listing advertised at $27.00 is ruled
+    out; under "at most $27" the text reads as it always did."""
+    limit = limit_of(form)
+    figure = f"${limit.value:.2f}"
     return (
         "Note what this question needs, because the two possible answers cost very "
         "different amounts.\n"
@@ -238,17 +282,18 @@ def witness_text(form: form_module.Form) -> str:
         "less.\n"
         f"2. Open listings in ascending order of advertised price. For each one, "
         f"{option_steps(form)}\n"
-        f"3. If the option is available and the price you read is at or below ${limit:.2f}, "
+        f"3. If the option is available and the price you read is {limit.within} {figure}, "
         "you are finished. Answer yes, name that listing and the price you read, and stop "
         "immediately. Do not open any others to confirm.\n"
-        f"4. Skip every unopened listing whose advertised price is above ${limit:.2f}. "
+        f"4. Skip every unopened listing whose advertised price is {limit.beyond} {figure}. "
         "Nothing it can sell costs less than its advertised price, so it cannot meet the "
         "condition.\n"
-        f"5. Only when every listing advertised at or below ${limit:.2f} has been opened "
+        f"5. Only when every listing advertised {limit.within} {figure} has been opened "
         "and none meets the condition may you answer no.\n"
         "In your answer, say how many listings you opened and which one settled it, or that "
-        "none of those that could meet the condition did. Stopping after one opening is the "
-        "correct outcome here, not a sign that you did too little." + QUARANTINE)
+        "none of those that could meet the condition did. Stopping after one opening, when "
+        "that listing meets the condition, is the correct outcome here, not a sign that you "
+        "did too little." + QUARANTINE)
 
 
 def topk_text(form: form_module.Form, page: page_module.Page) -> str:
@@ -278,9 +323,9 @@ def topk_text(form: form_module.Form, page: page_module.Page) -> str:
 def argmax_text(form: form_module.Form, page: page_module.Page) -> str:
     return (
         "Open every listing in the search results. The advertised price on the results page "
-        "is each listing's cheapest option, so it bounds a price from below and cannot tell "
-        "you which listing charges most for the option asked about: no listing can be "
-        "skipped.\n"
+        "is each listing's cheapest option that can be bought, so it bounds a price from "
+        "below and cannot tell you which listing charges most for the option asked about: no "
+        "listing can be skipped.\n"
         f"For each one, {FilterModifier.instruction(form, page)}\n"
         "In your answer, name the seller, give the price, and say how many listings you "
         "opened.")
@@ -345,7 +390,7 @@ class Witness:
 
     @staticmethod
     def stop_rule(form: form_module.Form) -> str:
-        return planner.STOP_RULES[form.kind()]
+        return planner.STOP_RULES[form.kind()].replace("{within}", limit_of(form).within)
 
     @staticmethod
     def check(form: form_module.Form, page: page_module.Page, answer: str, opened: set[str],
@@ -361,6 +406,10 @@ class Witness:
         coverages, so it cannot pass with less than either reading needs. Until the same
         day, "Seller A sells size M at $10.15, so there is a seller under $20.00" was read
         as a yes through its witness, and one naming nothing was flagged outright.
+
+        The listings the limit does not rule out follow its operator (form v9, 20 October
+        2026): under "under $27" a listing advertised at $27.00 cannot sell below it and is
+        ruled out, as verify_cells' floor rules it out; under "at most $27" it is owed.
         """
         if affirms(answer):
             named = named_in(answer, page)
@@ -372,9 +421,9 @@ class Witness:
                         f"answers yes naming {named[0].seller if named else 'no listing'} "
                         f"without having opened it, having opened {len(opened)} of "
                         f"{len(page.listings)}")
-        limit = ceiling_of(form)
-        floor = (policy.at_or_below(page, limit, at_least=0) if limit is not None
-                 else len(page.listings))
+        limit = limit_of(form)
+        floor = (sum(1 for item in page.listings if limit.admits(item.advertised))
+                 if limit is not None else len(page.listings))
         if len(opened) >= floor:
             return ok("every listing the limit does not rule out was opened")
         if denies(answer):
@@ -605,14 +654,132 @@ def candidates(form: form_module.Form, page: page_module.Page) -> list[page_modu
     return list(page.listings)
 
 
-def compose(form: form_module.Form, page: page_module.Page) -> Plan:
+# ---------------------------------------------------------------------------
+# The block without its stop rule (`suite.py --box-exhaust`, 20 October 2026)
+#
+# The fourth arm of the claim run. It isolates the stop rule for research question 3: the
+# agent gets every sentence the box sends, the preamble, the filters, the look-again step,
+# the quarantine, the reading written into the question, and only the sentences that say
+# when to stop, what to skip and how few openings suffice become "open every listing on the
+# page before answering". So a difference between this arm and the box is the stop rule's.
+# Each swap names the exact words it replaces, and `without_stop_rule` refuses a text in
+# which any of them is not found once, so a change to a text cannot leave a stop sentence
+# behind unnoticed.
+
+OPEN_EVERY = "Open every listing on the page before answering."
+EXHAUST_STOP = "when every listing on the page has been opened"
+
+# What every bound text asks the answer to report about its skipping, and what it asks
+# under this arm, where nothing is skipped.
+SKIPPED = ("say how many listings you opened, how many you skipped, and why skipping them "
+           "was safe.")
+
+
+def exhaust_swaps(form: form_module.Form, page: page_module.Page) -> list[tuple[str, str]]:
+    """The stop sentences of the text the box sends for this form, each with what it
+    becomes under OPEN_EVERY. Empty for a plan that already opens every listing (a count, a
+    listing of everything, the dearest) and for the results-page control, which opens
+    none, so their text is the box's byte for byte."""
+    kind = form.kind()
+    if kind in ("total_bound", "rate_bound"):
+        steps = {"total_bound": (
+                     "3. After each one, skip every unopened listing whose advertised price is "
+                     "already at or above the best total you have found. Such a listing cannot "
+                     "win, so opening it cannot change the answer.\n"
+                     "4. Stop as soon as no unopened listing has an advertised price below your "
+                     "best total.\n"),
+                 "rate_bound": (
+                     f"3. Skip any unopened listing whose advertised price divided by "
+                     f"{targeting.LARGEST_PACK_LITRES} is already at or above the best rate you "
+                     f"have found. It cannot win.\n"
+                     "4. Stop when no unopened listing can beat your best rate.\n")}
+        return [(steps[kind], f"3. {OPEN_EVERY}\n"),
+                (f"In your answer, {SKIPPED}", "In your answer, say how many listings you opened.")]
+    if kind == "availability_bound":
+        return [("4. Skip every unopened listing whose advertised price is at or above your best "
+                 "available total. Such a listing cannot win whatever its stock.\n"
+                 "5. Stop when no unopened listing has an advertised price below your best "
+                 "available total.\n", f"4. {OPEN_EVERY}\n"),
+                ("Say how many listings you opened, how many you skipped, and how many you "
+                 "rejected for being unavailable.",
+                 "Say how many listings you opened, and how many you rejected for being "
+                 "unavailable.")]
+    if kind == "refutation":
+        return [(" Nothing more.", ""),
+                ("So hunt for a counterexample rather than surveying:\n"
+                 "1. Open a listing and check for the option asked about.\n"
+                 "2. If it lacks the option, you are finished. Answer No, name that listing as "
+                 "your evidence, and stop immediately. Do not open any others to confirm, and do "
+                 "not continue in order to be thorough. Opening more cannot change the answer.\n",
+                 "1. Open every listing on the page before answering, and check each for the "
+                 "option asked about.\n"
+                 "2. If one lacks the option, answer No and name that listing as your evidence.\n"),
+                (" Stopping after one or two openings, once a counterexample is found, is the "
+                 "correct outcome here, not a sign that you did too little.\n"
+                 "Note that the previous version of this instruction was followed to the letter "
+                 "and not to its point: the agent enumerated and then opened ten listings when "
+                 "the first counterexample had already settled the question.", "")]
+    if kind == "exists_price":
+        limit = limit_of(form)
+        return [(" Name it and stop. Nothing is gained by finding a second.", ""),
+                ("you are finished. Answer yes, name that listing and the price you read, and stop "
+                 "immediately. Do not open any others to confirm.\n",
+                 "answer yes and name that listing and the price you read.\n"),
+                (f"4. Skip every unopened listing whose advertised price is {limit.beyond} "
+                 f"${limit.value:.2f}. Nothing it can sell costs less than its advertised price, "
+                 "so it cannot meet the condition.\n", f"4. {OPEN_EVERY}\n"),
+                (" Stopping after one opening, when that listing meets the condition, is the "
+                 "correct outcome here, not a sign that you did too little.", "")]
+    if kind == "topk_price":
+        k = form.k
+        return [(f"4. Once you hold {k}, skip every unopened listing whose advertised price is at "
+                 f"or above the dearest of those {k} totals. Such a listing cannot enter the {k} "
+                 "whatever its stock.\n"
+                 f"5. Stop when you hold {k} and no unopened listing has an advertised price below "
+                 f"the dearest of them. If fewer than {k} listings have the option available, you "
+                 "must open every listing, and then say so and name those that do.\n",
+                 f"4. {OPEN_EVERY} If fewer than {k} listings have the option available, say so "
+                 "and name those that do.\n"),
+                (f"and {SKIPPED}", "and say how many listings you opened.")]
+    if kind == "named_lookup":
+        return [(" Open each of them and nothing else:",
+                 " Open every listing on the page before answering, these among them:"),
+                (", and opening others cannot change the answer.", ".")]
+    return []
+
+
+def without_stop_rule(instruction: str, swaps: list[tuple[str, str]]) -> str:
+    """The instruction with each stop sentence swapped. A sentence not found exactly once is
+    refused rather than skipped."""
+    for old, new in swaps:
+        if instruction.count(old) != 1:
+            raise ValueError(f"the stop sentence {old[:70]!r} is in the text "
+                             f"{instruction.count(old)} times, not once")
+        instruction = instruction.replace(old, new)
+    return instruction
+
+
+def compose(form: form_module.Form, page: page_module.Page, exhaust: bool = False) -> Plan:
     """The plan for a form: the primitive its quantifier chooses, carrying the filters,
-    rendered as the preamble and then the primitive's instruction."""
+    rendered as the preamble and then the primitive's instruction.
+
+    With `exhaust` the stop rule is replaced by OPEN_EVERY (`exhaust_swaps`) and recorded as
+    EXHAUST_STOP. A review question turns review pages rather than opening the page's
+    listings, and no text is written for it without its stop rule, so it is refused."""
     primitive = primitive_for(form)
     instruction = primitive.instruction(form, page)
+    stop_rule = primitive.stop_rule(form)
+    if exhaust:
+        if primitive is Depth:
+            raise ValueError("--box-exhaust opens every listing on the page, and a review "
+                             "question has no such stop rule to replace")
+        swaps = exhaust_swaps(form, page)
+        instruction = without_stop_rule(instruction, swaps)
+        stop_rule = EXHAUST_STOP if swaps else stop_rule
     return Plan(primitive=primitive.name, kind=form.kind(), filters=form.filters,
-                candidates=tuple(candidates(form, page)), stop_rule=primitive.stop_rule(form),
-                instruction=instruction, text=f"{preamble(page)}\n\n{instruction}")
+                candidates=tuple(candidates(form, page)), stop_rule=stop_rule,
+                instruction=instruction, text=f"{preamble(page)}\n\n{instruction}",
+                exhaust=exhaust)
 
 
 def check(form: form_module.Form, page: page_module.Page, answer: str, text: str,

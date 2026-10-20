@@ -153,7 +153,9 @@ class NewForms(unittest.TestCase):
                 parsed = form.from_rules(question)
                 self.assertEqual((parsed.quantifier, parsed.objective, parsed.kind(), parsed.reading),
                                  ("exists", "price", "exists_price", "buyable"))
-                self.assertEqual(parsed.filter("price"), Filter("price", "<=", 20.0))
+                # Strict since form v9 (20 Oct 2026): "under" and "less than" exclude the
+                # figure; "$20 or less" below keeps it. `test_claim_arms.StrictUnder`.
+                self.assertEqual(parsed.filter("price"), Filter("price", "<", 20.0))
                 self.assertEqual(parsed.filter("size"), Filter("size", "=", "M"))
                 self.assertEqual(parsed.filter("availability"), Filter("availability", "=", "buyable"))
         # "$20 or less" is the same limit.
@@ -223,7 +225,7 @@ class NewForms(unittest.TestCase):
         white = form.from_rules(GO + "Which seller is cheapest for a tee in white, size M?")
         self.assertEqual(white.filter("colour"), Filter("colour", "=", "white"))
         capped = form.from_rules(CHEAPEST_M[:-1] + " under $30?")
-        self.assertEqual(capped.filter("price"), Filter("price", "<=", 30.0))
+        self.assertEqual(capped.filter("price"), Filter("price", "<", 30.0))   # strict, form v9
         self.assertEqual(form.verify(capped), [])
         # Plain cheapest carries no such filter.
         plain = form.from_rules(CHEAPEST_M)
@@ -579,7 +581,9 @@ class Compose(unittest.TestCase):
     def test_the_new_texts_carry_their_stop_rule_and_the_quarantine(self):
         exists = primitives.compose(form.from_rules(GO + "Is there any seller under $20 for size M?"), self.page)
         self.assertEqual(exists.primitive, "witness")
-        self.assertIn("at or below $20.00", exists.instruction)
+        # "under" is strict since form v9 (20 Oct 2026); `test_claim_arms.StrictUnder`.
+        self.assertIn("the price you read is below $20.00", exists.instruction)
+        self.assertNotIn("at or below $20.00", exists.instruction)
         self.assertIn("choose size M, then look at the page again", exists.instruction)
         self.assertIn("disabled or greyed out", exists.instruction)
         self.assertTrue(exists.instruction.endswith(targeting.QUARANTINE))

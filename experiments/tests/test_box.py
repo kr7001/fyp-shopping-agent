@@ -407,7 +407,13 @@ class V1Bytes(unittest.TestCase):
     """The six clothing questions render byte for byte what box v1 rendered, frozen in
     `fixtures/v1_clothing_queries.json` from the v1 code before box.py changed, under no
     reading and under each scripted reading. So the pilot measured under v1 is a
-    measurement of the text v2 sends."""
+    measurement of the text v2 sends.
+
+    Amended on 20 October 2026 for strategy text v8 (box v10): four sentences of the v1
+    text were not true of the gated shop, and the fixture's entries were rewritten with
+    them reworded, deliberately, with a dated note in its `_about`. Every other byte is
+    still v1's, which `test_claim_arms.V1Amendment` checks against the v1 queries' sha1. So
+    since box v10 the pilot measured a text that differs from today's in those four."""
 
     def test_every_frozen_entry_is_reproduced(self):
         frozen = json.loads((FIXTURES / "v1_clothing_queries.json").read_text())
@@ -967,7 +973,10 @@ class BoxCheck(unittest.TestCase):
             with self.subTest(written=written):
                 decision = box.decide(self.go + f"Is there any seller under {written} for size M?", three)
                 self.assertEqual(decision.kind, "exists_price")
-                self.assertIn("at or below $20.00", decision.plan.instruction)
+                # "under" is a strict limit since form v9 (20 Oct 2026), so the text says
+                # below and never at or below; `test_claim_arms.StrictUnder`.
+                self.assertIn("the price you read is below $20.00", decision.plan.instruction)
+                self.assertNotIn("at or below $20.00", decision.plan.instruction)
                 verdict = box.check(decision, answer, openjiuwen_log(self.tmp.name, f"limit-{n}", opened))
                 self.assertEqual((verdict["ok"], verdict["flag"], verdict.get("primitive"), verdict["opened"]),
                                  (True, None, "witness", 2))
@@ -1458,7 +1467,9 @@ class SuiteQuery(unittest.TestCase):
         self.assertEqual(words.count("--allowed-origins"), 1)
         self.assertEqual(words[words.index("--allowed-origins") + 1], "http://localhost:7770")
         self.assertEqual(words.count("--block-service-workers"), 1)
-        self.assertEqual(suite.BROWSER_FLAGS, "--block-service-workers")
+        # Since 20 Oct 2026 the profile is in memory too (`--isolated`, verifier finding:
+        # every run had shared one profile on disk); `test_claim_arms.IsolatedProfile`.
+        self.assertEqual(suite.BROWSER_FLAGS, "--block-service-workers --isolated")
         self.assertEqual(words[words.index("--user-agent") + 1], page.GATED_UA)
         self.assertEqual(words[:2], ["-y", f"@playwright/mcp@{suite.BROWSER_TOOL}"])
         # The default shop sets no MCP arguments, so it is not confined, and says so; the
@@ -1467,7 +1478,7 @@ class SuiteQuery(unittest.TestCase):
         self.assertNotIn("PLAYWRIGHT_MCP_ARGS", suite.browser_env("default", "viewport"))
         self.assertEqual(suite.browser_conditions("openjiuwen", "gated"),
                          {"browser_tool": "0.0.83", "browser_origins": "http://localhost:7770",
-                          "browser_flags": "--block-service-workers"})
+                          "browser_flags": "--block-service-workers --isolated"})
         for scaffold, shop in (("openjiuwen", "default"), ("naive", "gated"), ("naive", "default")):
             with self.subTest(scaffold=scaffold, shop=shop):
                 self.assertEqual(suite.browser_conditions(scaffold, shop),

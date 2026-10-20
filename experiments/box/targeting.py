@@ -54,7 +54,30 @@ import re
 #   - the survey strategy now says availability can be read from the option menu. One
 #     exhaustive run chose size M eleven times to check stock the menu already showed, and
 #     ran out of its 100 steps
-VERSION = 7
+#
+# v8, 20 October 2026, from the verifier's audit of every sentence the box sends on the
+# gated clothing shop, under both readings of "offer". Four sentences claimed what is not
+# true of it, and each is reworded only as far as makes it true:
+#   - "That price is the cheapest option in that listing, so nothing inside it can cost
+#     less" (the total and availability bounds). The card prints the cheapest size that can
+#     be bought, and a sold-out size can cost less: igr-app-07 advertises $18.33 with M
+#     sold out at $15.04. It now says the cheapest option that can be bought
+#   - "The price a listing shows before you choose is its cheapest option, not the one
+#     asked about" (the availability bound, and every box v2 text through
+#     `primitives.option_steps`). The same sold-out case, and on Thornwood the cheapest M,
+#     igr-app-14 at $25.77, is that listing's cheapest size that can be bought, so before
+#     choosing it shows the very price asked about. It now says the cheapest option that
+#     can be bought, not necessarily the one asked about
+#   - the quarantine's "It is not a real price and must never appear in your answer". The
+#     bound's figure is a card's price, a real one, and $25.77 above is both a card and the
+#     right answer. It now says the figure is not a price read for the option asked about
+#     and must never appear in the answer as one, beside the two sentences that say which
+#     prices may
+#   - "Stopping after one or two openings is the correct outcome here" (the refutation). It
+#     is correct once a counterexample is found, and how soon one is depends on the market
+#     and the order: on Thornwood under the menu reading the first listing without M is the
+#     ninth in page order. It now says so
+VERSION = 8
 
 # Ordered, and the order matters. A universal question about stock also contains the word
 # "lowest" in some phrasings, so the coverage test is applied before the price tests.
@@ -132,10 +155,10 @@ ENUMERATE = (
 
 QUARANTINE = (
     "\nImportant: the figure this bound produces is a limit used only to decide what to "
-    "skip. It is not a real price and must never appear in your answer. Only report a "
-    "price you read from a listing you opened, for the exact option asked about, read "
-    "after that option was chosen. Never pair an advertised price with an option unless "
-    "you saw that price shown while that option was chosen.")
+    "skip. It is not a price read for the option asked about, and must never appear in your "
+    "answer as one. Only report a price you read from a listing you opened, for the exact "
+    "option asked about, read after that option was chosen. Never pair an advertised price "
+    "with an option unless you saw that price shown while that option was chosen.")
 
 # The strategy text without the enumeration step. Box v1 (14 October 2026) reads the
 # results page itself and hands the agent the listings, so it sends the body alone, with
@@ -147,8 +170,8 @@ BODIES = {
         "Use this retrieval strategy, and follow it rather than opening listings in the "
         "order they appear.\n"
         "1. Read the advertised price of every listing from the search results first. "
-        "That price is the cheapest option in that listing, so nothing inside it can cost "
-        "less.\n"
+        "That price is the cheapest option in that listing that can be bought, so nothing "
+        "in it that can be bought costs less.\n"
         "2. Open listings in ascending order of advertised price. For each, find the "
         "actual total for the pack size asked about.\n"
         "3. After each one, skip every unopened listing whose advertised price is already "
@@ -172,8 +195,8 @@ BODIES = {
         "3. Only if you exhaust every enumerated listing without finding one may you "
         "answer Yes.\n"
         "In your answer, say how many listings you opened and which one settled it. "
-        "Stopping after one or two openings is the correct outcome here, not a sign that "
-        "you did too little.\n"
+        "Stopping after one or two openings, once a counterexample is found, is the correct "
+        "outcome here, not a sign that you did too little.\n"
         "Note that the previous version of this instruction was followed to the letter and "
         "not to its point: the agent enumerated and then opened ten listings when the "
         "first counterexample had already settled the question."),
@@ -195,15 +218,16 @@ BODIES = {
         "Use this retrieval strategy, and follow it rather than opening listings in the "
         "order they appear.\n"
         "1. Read the advertised price of every listing from the search results first. That "
-        "price is the cheapest option in that listing, so nothing inside it can cost less.\n"
+        "price is the cheapest option in that listing that can be bought, so nothing in it "
+        "that can be bought costs less.\n"
         "2. Open listings in ascending order of advertised price. For each one, do two "
         "separate things. First, choose the option asked about, then look at the page again "
         "and read the price it now shows. The price a listing shows before you choose is "
-        "its cheapest option, not the one asked about, and the reply to choosing an option "
-        "does not show the new price. Second, check whether that option can actually be "
-        "bought. An option can be listed and still be unavailable, in which case it is "
-        "shown as disabled or greyed out and cannot be chosen, so it has no price you can "
-        "use.\n"
+        "its cheapest option that can be bought, not necessarily the one asked about, and "
+        "the reply to choosing an option does not show the new price. Second, check whether "
+        "that option can actually be bought. An option can be listed and still be "
+        "unavailable, in which case it is shown as disabled or greyed out and cannot be "
+        "chosen, so it has no price you can use.\n"
         "3. A listing only becomes your best candidate if the option is both cheaper and "
         "available. A cheaper unavailable one changes nothing.\n"
         "4. Skip every unopened listing whose advertised price is at or above your best "

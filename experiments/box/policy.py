@@ -178,14 +178,6 @@ def bound_floor(page, price: float, answer: str = "") -> int:
     return max(1, below + int(at_the_price))
 
 
-def at_or_below(page, price: float, at_least: int = 1) -> int:
-    """How many listings the page advertises at or below a price: under a limit, the ones
-    the limit does not rule out, so each had to be opened before a no. Within half a cent,
-    because the page's price is a float and the answer's is parsed text. Used by box v2's
-    witness check (14 Oct 2026); the floor under an answered price is `bound_floor`."""
-    return max(at_least, sum(1 for item in page.listings if item.advertised <= price + 0.005))
-
-
 def gate_from_page(question: str, page, answer: str, log_path: pathlib.Path) -> dict:
     """`gate`, with the market size and the floor read from the results page the box
     fetched instead of from the answer key, so the check uses only what the agent could

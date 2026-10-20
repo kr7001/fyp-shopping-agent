@@ -87,8 +87,26 @@ BROWSER_TOOL = "0.0.83"
 # `browser_flags`. `--allowed-origins` confines network requests and nothing else: in
 # 20261014T220116 the bypassed poem run wrote its poem into a `data:text/html,...` URL and
 # navigated to it, which makes no network request, so no breach, recorded here.
+#
+# And from the same `--help`, read again on 20 October 2026:
+#
+#   --isolated                            keep the browser profile in memory, do
+#                                         not save it to disk.
+#
+# Without it the tool keeps one profile on disk and reuses it. Every openJiuwen run since
+# 8 September 2026 shared the one at ~/Library/Caches/ms-playwright-mcp/mcp-chrome-b6e84f7,
+# created at 21:48 that evening by the first run (experiments/runs/20260908T214912), and
+# last written at 22:28 on 14 October by the last box batch. Read on 20 October, by cookie
+# name and date and never by value, it holds Magento's PHPSESSID, created on 8 September
+# and renewed to a year ahead on every visit, Magento's recently-viewed and
+# recently-compared cookies, a browsing history and local storage. So whatever one run did
+# to the shop's session, a product added to the compare list for one, was there for every
+# later run of every arm: a state that outlives the run (LESSONS 11). With the flag each
+# run starts from an empty profile and writes nothing. Every batch before 20 October ran on
+# the shared profile, which their payloads show by a `browser_flags` without it (verifier
+# finding, 20 October 2026).
 ALLOWED_ORIGINS = "http://localhost:7770"
-BROWSER_FLAGS = "--block-service-workers"
+BROWSER_FLAGS = "--block-service-workers --isolated"
 MCP_ARGS_GATED = (f'-y @playwright/mcp@{BROWSER_TOOL} --user-agent "{GATED_UA}" '
                   f'--allowed-origins {ALLOWED_ORIGINS} {BROWSER_FLAGS}')
 
@@ -292,20 +310,24 @@ def build_query(task: dict, spec: dict, args) -> tuple[str | None, dict]:
     """The exact text the agent receives, and what produced it.
 
     One function for the dry run and the paid loop, so the text the verifier reads is the
-    text the agent gets (LESSONS 17). Applied in order: the box, targeting, the exhaustive
-    instruction, the confidence prompt. The text is None when the box asked and no
-    `--reading` answered it, or when it refused. A question the box bypasses comes back as
-    its own text, which is what the agent then gets. The dict holds the strategy kind, the
-    box's record, the page it read and its decision, each None when not used.
+    text the agent gets (LESSONS 17). Applied in order: the box, or the box without its stop
+    rule under `--box-exhaust`, targeting, the exhaustive instruction, the confidence
+    prompt. The text is None when the box asked and no `--reading` answered it, or when it
+    refused. A question the box bypasses comes back as its own text, which is what the
+    agent then gets. The dict holds the strategy kind, the box's record, the page it read
+    and its decision, each None when not used.
     """
     query = task["query"].format(base=spec["base_url"])
     applied = {"strategy": None, "box": None, "page": None, "decision": None}
-    if args.box:
+    # Read with a default: a caller that builds its own namespace, as the tests do, may
+    # predate the flag (20 October 2026).
+    exhaust = getattr(args, "box_exhaust", False)
+    if args.box or exhaust:
         # A question with no URL names no page to read. The box decides whether that is
         # because it is not about the shop (a bypass) or an error.
         url = box_module.results_url(query, required=False)
         page = results_page(url) if url else None
-        decision = box_module.decide(query, page, reply=args.reading)
+        decision = box_module.decide(query, page, reply=args.reading, exhaust=exhaust)
         applied.update(strategy=decision.kind, box=decision.record(), page=page,
                        decision=decision)
         if decision.query is None:
@@ -325,6 +347,20 @@ def build_query(task: dict, spec: dict, args) -> tuple[str | None, dict]:
     if args.confidence != "off":
         query = policy_module.confidence_query(query, args.confidence)
     return query, applied
+
+
+def arm_of(args) -> str:
+    """Which retrieval instruction the batch adds to every question, the arm's name in its
+    payload (20 October 2026): the box, the box without its stop rule, the targeting
+    strategies, the open-everything instruction, the last two together, or none. The
+    other conditions of an arm (probe, scaffold, shop, model) have their own fields."""
+    if getattr(args, "box_exhaust", False):
+        return "box-exhaust"
+    if args.box:
+        return "box"
+    named = [name for name, on in (("targeting", args.targeting),
+                                   ("exhaustive", args.exhaustive)) if on]
+    return "+".join(named) or "none"
 
 
 def asked_row(task: dict, repeat: int, box_record: dict) -> dict:
@@ -455,6 +491,12 @@ def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repeats", type=int, default=5)
+    # The claim runs each arm as three rounds of `--repeats 1` with the arm order rotated,
+    # so a round's runs must say which round they are: repeat N, N+1 and so on, in the
+    # run's file names, its log and its suite.json row (20 October 2026).
+    parser.add_argument("--repeat-start", type=int, default=1, metavar="N",
+                        help="number the repeats from N, so a batch run as one round of "
+                             "several carries that round's repeat numbers. Default 1")
     parser.add_argument("--tasks", type=pathlib.Path, default=paths.TASKS / "tasks.json")
     parser.add_argument("--only", nargs="*", help="task ids to run, default all")
     parser.add_argument("--targeting", action="store_true",
@@ -493,6 +535,12 @@ def main() -> int:
                              "ambiguous question, and otherwise plans the retrieval. The "
                              "contribution. Excludes --targeting, --exhaustive and, until "
                              "its browser is confined to the shop, --scaffold naive")
+    parser.add_argument("--box-exhaust", action="store_true",
+                        help="the box without its stop rule: the same text as --box for every "
+                             "question, except that every gated plan opens every listing on "
+                             "the page before answering. The arm that isolates the stop rule "
+                             "for research question 3. Excludes --box, --targeting and "
+                             "--exhaustive, and everything --box excludes")
     parser.add_argument("--reading", choices=("menu", "buyable"),
                         help="the scripted user's reply when the box asks. menu: a size in "
                              "the listing's menu counts, sold out or not, which is the "
@@ -510,10 +558,19 @@ def main() -> int:
     if args.box and (args.targeting or args.exhaustive):
         parser.error("--box cannot be combined with --targeting or --exhaustive: the box "
                      "plans the retrieval itself")
-    if args.reading and not args.box:
+    # The arm without the stop rule is its own arm (20 October 2026): with --box it would
+    # be two arms in one batch, and with --targeting or --exhaustive a mixture of plans.
+    if args.box_exhaust and (args.box or args.targeting or args.exhaustive):
+        parser.error("--box-exhaust cannot be combined with --box, --targeting or "
+                     "--exhaustive: it is an arm of its own")
+    # From here on --box-exhaust is the box as far as every rule about the box goes.
+    boxed = args.box or args.box_exhaust
+    if args.reading and not boxed:
         parser.error("--reading is the scripted reply to the box's question, so it needs "
-                     "--box")
-    if args.box and args.policy in ("retry", "investigate"):
+                     "--box or --box-exhaust")
+    if args.repeat_start < 1:
+        parser.error("--repeat-start numbers the first repeat, so it is 1 or more")
+    if boxed and args.policy in ("retry", "investigate"):
         parser.error("--box supports --policy off or gate only in v1: the retry arms "
                      "rebuild the query without the box's plan")
     # The naive loop launches its own browser with a user agent and nothing else
@@ -523,7 +580,7 @@ def main() -> int:
     # under the box that browser could be sent to a live site, which this project never
     # does. Refused until the second agent's browser is confined too (14 October 2026,
     # verifier finding).
-    if args.box and args.scaffold == "naive":
+    if boxed and args.scaffold == "naive":
         parser.error("--box cannot be combined with --scaffold naive: the second agent's "
                      "browser is not confined to the shop, since it launches its own without "
                      "--allowed-origins, and a question the box bypasses could take it off "
@@ -559,11 +616,18 @@ def main() -> int:
     stamp = dt.datetime.now().strftime("%Y%m%dT%H%M%S")
     out_dir = RESULTS / stamp
     total = len(tasks) * args.repeats
-    print(f"{len(tasks)} tasks x {args.repeats} repeats = {total} runs -> {out_dir}")
+    # The repeat numbers the runs carry (`--repeat-start`). The header names them only when
+    # they do not start at 1, so a default batch prints what it always printed.
+    repeats = range(args.repeat_start, args.repeat_start + args.repeats)
+    numbered = (f", repeats {repeats[0]} to {repeats[-1]}"
+                if args.repeat_start != 1 and args.repeats > 0 else "")
+    print(f"{len(tasks)} tasks x {args.repeats} repeats = {total} runs{numbered} -> {out_dir}")
     print("agent code: " + " ".join(f"{key}={value}" for key, value in agent_code.items()))
     # The browser's conditions in the header too, so the dry run shows what a paid run
     # under the same flags would record.
     print("browser: " + " ".join(f"{key}={value}" for key, value in browser.items()))
+    # The arm, so a dry run of the box and of the box without its stop rule say which.
+    print(f"arm: {arm_of(args)}")
 
     if args.dry_run:
         # The exact text, through the same function the paid loop uses, so what is read
@@ -583,7 +647,7 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     rows, done = [], 0
     for task in tasks:
-        for repeat in range(1, args.repeats + 1):
+        for repeat in repeats:
             done += 1
             tag = f"{task['id']}-{repeat}"
             query, applied = build_query(task, spec, args)
@@ -638,7 +702,7 @@ def main() -> int:
             }
             if strategy:
                 row["strategy"] = strategy
-            if args.box:
+            if boxed:
                 # The page the box read, whether it asked, the reading answered under and
                 # who chose it, and the exact query, so a run under the box says what
                 # produced it.
@@ -663,8 +727,8 @@ def main() -> int:
             rows.append(row)
             conf = f" conf={row.get('confidence')}" if args.confidence != "off" else ""
             conf += f" [{strategy}]" if strategy else ""
-            conf += " [bypass]" if args.box and applied["box"]["bypassed"] else ""
-            if args.box and applied["box"].get("reading_by") == "box":
+            conf += " [bypass]" if boxed and applied["box"]["bypassed"] else ""
+            if boxed and applied["box"].get("reading_by") == "box":
                 conf += f" [reading taken by the box: {applied['box']['reading']}]"
             print(f"[{done}/{total}] {tag:32} {row['verdict']:10} "
                   f"calls={row['tool_calls']} act={row['actions']}{conf} "
@@ -672,22 +736,31 @@ def main() -> int:
 
     summary = summarise(rows)
     payload = {"ran_at": dt.datetime.now().isoformat(timespec="seconds"),
-               "repeats": args.repeats, "policy": args.policy,
+               "repeats": args.repeats,
+               # The first repeat's number, see `--repeat-start`. Absent before 20 Oct
+               # 2026, when every batch numbered its repeats from 1.
+               "repeat_start": args.repeat_start,
+               "policy": args.policy,
                "confidence": args.confidence,
                "exhaustive": args.exhaustive,
                "targeting": args.targeting,
                # The box plans through the same classifier and planner, so both versions
                # are recorded under it too.
                "targeting_version": (targeting_module.VERSION
-                                     if args.targeting or args.box else None),
+                                     if args.targeting or boxed else None),
                "planner_version": (planner_module.VERSION
-                                   if args.targeting or args.box else None),
+                                   if args.targeting or boxed else None),
+               # `box` is --box alone. The box without its stop rule is its own arm, so a
+               # reader that selects box batches by this field never pools it with them
+               # (LESSONS 7); `arm` names every arm (20 October 2026).
                "box": args.box,
-               "box_version": box_module.VERSION if args.box else None,
+               "box_exhaust": args.box_exhaust,
+               "arm": arm_of(args),
+               "box_version": box_module.VERSION if boxed else None,
                # Box v2 parses through form.py and plans through primitives.py, each
                # versioned on its own, so a run says which of each produced it.
-               "form_version": form_module.VERSION if args.box else None,
-               "primitives_version": primitives_module.VERSION if args.box else None,
+               "form_version": form_module.VERSION if boxed else None,
+               "primitives_version": primitives_module.VERSION if boxed else None,
                "reading": args.reading,
                # The pinned browser tool, the origins the browser may request and the
                # flags it runs with, see `browser_conditions`: `browser_tool`,

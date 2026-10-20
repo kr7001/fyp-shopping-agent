@@ -118,10 +118,11 @@ def ask(question: str) -> Ask | None:
 
 
 # The numerical case (box v2, 14 October 2026): a price word with no figure. The threshold
-# changes which listings count, and only the user has it.
+# changes which listings count, and only the user has it. "under $20" is a strict limit
+# since form v9 (20 October 2026), so the example says "below it", where it said "at or
+# below it" while the box read every limit that way.
 THRESHOLD = ("Your question says '{word}' and gives no figure. What is the most you would "
-             "pay? Give a limit, such as under $20, and only listings at or below it will "
-             "count.")
+             "pay? Give a limit, such as under $20, and only listings below it will count.")
 
 
 def threshold_ask(word: str) -> Ask:

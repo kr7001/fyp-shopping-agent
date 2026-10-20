@@ -204,8 +204,11 @@ STOP_RULES = {
     "depth_search": "at the first review that mentions it, or not before the last page",
     "survey": "when every enumerated listing has been opened",
     "results_page": "once every listing on the results page has been read",
-    "exists_price": "at the first listing whose option is available at or below the limit, "
-                    "or when every listing advertised at or below the limit has been opened",
+    # {within} is the limit's own comparison, "below" for "under $27" and "at or below" for
+    # "at most $27" (form v9, 20 October 2026), filled in by `primitives.Witness` as {k} is
+    # by the bound. A limit that is not strict renders the words this entry always held.
+    "exists_price": "at the first listing whose option is available {within} the limit, "
+                    "or when every listing advertised {within} the limit has been opened",
     "topk_price": "when the {k} cheapest available totals are held and no unopened listing "
                   "advertises below the dearest of them",
     "named_lookup": "when every named listing has been opened",

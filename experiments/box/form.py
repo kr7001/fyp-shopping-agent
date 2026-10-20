@@ -65,7 +65,12 @@ import targeting
 #      best of the market by price rather than the survey fallback
 #   8  20 October 2026. "top price" is dropped from `BEST_PRICE` (verifier): it can mean
 #      the highest, so it asks or is refused like any graded word, never the cheapest
-VERSION = 8
+#   9  20 October 2026. "under", "below", "less than" and "cheaper than" set a strict
+#      limit, price < L, where "at most", "no more than", "not more than", "up to",
+#      "within" and "$L or less" keep price <= L (`CEILING`, the op "<"). Until now every
+#      one read as at or below, while the coverage floor in verify_cells and the
+#      generator's witnesses read "under $27" as strictly below (verifier finding)
+VERSION = 9
 
 # The vocabulary. A form outside it is refused when it is built, so a model's reply cannot
 # smuggle in a quantifier nothing knows how to plan. "unknown" is the rules' answer to a
@@ -80,7 +85,7 @@ POPULATIONS = ("listing", "results", "reviews")
 # have to be told apart. Any other attribute is "attribute:<name>". "none" goes with the
 # quantifier "unknown" and with nothing else.
 OBJECTIVES = ("price", "advertised price", "rate", "availability", "size", "mention", "none")
-OPS = ("=", "<=", ">=", "in", "contains")
+OPS = ("=", "<", "<=", ">=", "in", "contains")
 SOURCES = ("rules", "model")
 
 # What an objective needs to read. A rate is a price over a pack size, and a mention is
@@ -346,10 +351,17 @@ TOPK_COUNT = re.compile(rf"\b(?<!\bthe\s)(?<!\bthese\s)(?<!\bthose\s)(?P<count>{
 EXISTS = re.compile(r"\b(?:is|are)\s+there\s+(?:any|a|an|one)\b"
                     r"|\b(?:does|do|is|are|can|could|will|would)\s+any(?:one|body)?\b"
                     r"|\banyone\b", re.IGNORECASE)
-# A price limit, read as "at or below". "$20 or less" and "under $20" both give 20.
-CEILING = re.compile(r"\b(?:under|below|less than|at most|no more than|not more than|cheaper "
-                     r"than|up to|within)\s*\$?\s*(?P<a>\d+(?:\.\d{1,2})?)\b"
-                     r"|\$?(?P<b>\d+(?:\.\d{1,2})?)\s+or\s+(?:less|under|below|cheaper)\b",
+# A price limit, and whether the figure itself is allowed (form v9, 20 October 2026).
+# "under $20", "below", "less than" and "cheaper than" are strict: a price must be below
+# 20 (`strict`, the op "<"). "at most $20", "no more than", "not more than", "up to" and
+# "within" allow 20 itself (`upto`), and so does "$20 or less", "or under", "or below" and
+# "or cheaper", which name the figure as one of the prices allowed (`orless`); those are
+# the op "<=". Until v9 all of them read as at or below.
+CEILING = re.compile(r"\b(?:under|below|less than|cheaper than)\s*\$?\s*"
+                     r"(?P<strict>\d+(?:\.\d{1,2})?)\b"
+                     r"|\b(?:at most|no more than|not more than|up to|within)\s*\$?\s*"
+                     r"(?P<upto>\d+(?:\.\d{1,2})?)\b"
+                     r"|\$?(?P<orless>\d+(?:\.\d{1,2})?)\s+or\s+(?:less|under|below|cheaper)\b",
                      re.IGNORECASE)
 RATING = re.compile(r"\brat(?:ing|ed)\s+(?:of\s+)?(?:at\s+least|above|over|no\s+less\s+than)\s+"
                     r"(?P<a>\d(?:\.\d)?)\b"
@@ -535,7 +547,9 @@ def filters_in(question: str, reading: str | None, evidence: dict) -> list[Filte
             else buyable.group(0)
     ceiling = CEILING.search(question)
     if ceiling:
-        filters.append(Filter("price", "<=", float(ceiling.group("a") or ceiling.group("b"))))
+        op = "<" if ceiling.group("strict") else "<="
+        value = ceiling.group("strict") or ceiling.group("upto") or ceiling.group("orless")
+        filters.append(Filter("price", op, float(value)))
         evidence["filter:price"] = ceiling.group(0)
     rating = RATING.search(question)
     if rating:
@@ -851,7 +865,7 @@ every), "argmin" (the cheapest or best), "argmax" (the dearest), "topk" (the k c
   "objective": the attribute compared or returned: "price" (of the option asked about), \
 "advertised price" (the results page's figure), "rate" (price per unit), "availability", \
 "size", "mention" (what reviews say), or "attribute:<name>" for anything else,
-  "filters": a list of {"attribute": ..., "op": one of "=", "<=", ">=", "in", "contains", \
+  "filters": a list of {"attribute": ..., "op": one of "=", "<", "<=", ">=", "in", "contains", \
 "value": ...} that a candidate must meet, such as size = "M", price <= 20, availability = \
 "buyable", seller in ["A", "B"], review text contains "leaks",
   "population": one of "listing" (one or more named product pages), "results" (the listings \

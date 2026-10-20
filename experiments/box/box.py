@@ -13,9 +13,12 @@ a market's instance record or a generated catalogue. `tests/test_box.py` checks 
 
 Version 2 parses the question into a logical form (`form.py`), holds the form to five
 soundness properties, and composes the plan from a retrieval primitive (`primitives.py`).
-For the seven kinds v1 had, the text is the same bytes v1 sent, the frozen v7 strategy body
-under the box's own account of the market, which `tests/test_box.py` pins against a fixture
-frozen from v1. So the pilot measured under v1 stays a measurement of what v2 sends.
+For the seven kinds v1 had, the text is the strategy body under the box's own account of
+the market, which `tests/test_box.py` pins against a fixture frozen from v1. Until box v10
+it was v1's bytes exactly, so the pilot measured under v1 was a measurement of what v2
+sent; since strategy text v8 (20 October 2026) it differs from them in the four sentences
+v8 made true of the gated shop, and in nothing else, which the fixture's dated amendment
+records.
 """
 
 from __future__ import annotations
@@ -78,7 +81,13 @@ import targeting
 #      the other way without asking, and the record says the box chose it
 #      (`Decision.reading_by`): a price question asked with "has size M" has a price only
 #      for a size that can be sold. "best price" is the cheapest (form v7)
-VERSION = 9
+#   10 20 October 2026, the verifier's audit of the claim plan. "under $27" is a strict
+#      limit (form v9, primitives v6), and so is the threshold ask's example. Four
+#      sentences the box sends are made true of the gated shop under both readings
+#      (strategy text v8). And the box can plan without its stop rule, every listing on
+#      the page opened, for the arm that isolates the stop rule (`decide(exhaust=True)`,
+#      recorded as `exhaust` in the decision and the plan)
+VERSION = 10
 
 # The results page the question sends the agent to: the first URL in it.
 URL = re.compile(r"https?://\S+")
@@ -105,6 +114,7 @@ class Decision:
     refuse: str | None = None   # why no plan was made: what the shop does not show
     bypass: bool = False        # the agent gets the question unchanged, see BYPASS_REASON
     reading_by: str | None = None   # who chose the reading: "user" by a reply, "box" when the other reading was refused
+    exhaust: bool = False       # decided for the arm without the stop rule, `--box-exhaust`
 
     def record(self) -> dict:
         return {"box_version": VERSION, "form_version": form_module.VERSION,
@@ -115,7 +125,8 @@ class Decision:
                 "form": self.form.record() if self.form else None, "refuse": self.refuse,
                 "bypassed": self.bypass, "bypass_reason": BYPASS_REASON if self.bypass else None,
                 "fallback": bool(self.form and self.form.fallback),
-                "plan": self.plan.record() if self.plan else None}
+                "plan": self.plan.record() if self.plan else None,
+                "exhaust": self.exhaust}
 
 
 def results_url(question: str, required: bool = True) -> str | None:
@@ -129,7 +140,8 @@ def results_url(question: str, required: bool = True) -> str | None:
     return found.group(0).rstrip(".,;:)")
 
 
-def decide(question: str, page: page_module.Page | None, reply: str | None = None) -> Decision:
+def decide(question: str, page: page_module.Page | None, reply: str | None = None,
+           exhaust: bool = False) -> Decision:
     """An ask, a refusal or a plan for one question.
 
     With no reply, an ambiguous question comes back as an ask and nothing is planned. A
@@ -163,6 +175,10 @@ def decide(question: str, page: page_module.Page | None, reply: str | None = Non
     The box decides whether it would ask before it looks at any reply, so a reply given to
     a question it does not put, the scripted user's `--reading` included, is ignored, as a
     reply to a clear question is.
+
+    With `exhaust` (20 October 2026) everything above is decided the same way, and a plan
+    is composed without its stop rule: every listing on the page is opened before the
+    answer (`primitives.exhaust_swaps`). The decision says which, whatever its outcome.
     """
     asked = ambiguity.ask(question)
     reading_by = None
@@ -171,14 +187,15 @@ def decide(question: str, page: page_module.Page | None, reply: str | None = Non
         missing = form_module.not_shown(form, page) if page is not None else []
         if form.quantifier != "unknown" and missing:
             return Decision(question=question, kind=None, ask=None, reading=None, query=None,
-                            plan=None, page=page, form=form, refuse=form_module.refusal(missing))
+                            plan=None, page=page, form=form, refuse=form_module.refusal(missing),
+                            exhaust=exhaust)
         answerable = [key for key in asked.readings if not form_module.not_shown(
             form_module.from_rules(ambiguity.with_reading(question, asked, key), page), page)]
         if page is not None and len(answerable) == 1 and len(asked.readings) == 2:
             reply, reading_by = answerable[0], "box"
         elif reply is None:
             return Decision(question=question, kind=None, ask=asked, reading=None, query=None,
-                            plan=None, page=page)
+                            plan=None, page=page, exhaust=exhaust)
     reading = None
     if asked is not None:
         if reply not in asked.readings:
@@ -192,28 +209,28 @@ def decide(question: str, page: page_module.Page | None, reply: str | None = Non
     if form.quantifier == "unknown":
         return Decision(question=question, kind=None, ask=asked, reading=reading,
                         query=question, plan=None, page=page, form=form, bypass=True,
-                        reading_by=reading_by)
+                        reading_by=reading_by, exhaust=exhaust)
     if page is None:
         raise ValueError("the question names no results page to read")
     missing = form_module.not_shown(form, page)
     if missing:
         return Decision(question=question, kind=None, ask=asked, reading=reading, query=None,
                         plan=None, page=page, form=form, refuse=form_module.refusal(missing),
-                        reading_by=reading_by)
+                        reading_by=reading_by, exhaust=exhaust)
     if "price limit" in form.unknowns:
         return Decision(question=question, kind=None,
                         ask=ambiguity.threshold_ask(form.evidence["unknowns"]),
                         reading=reading, query=None, plan=None, page=page, form=form,
-                        reading_by=reading_by)
+                        reading_by=reading_by, exhaust=exhaust)
     problems = form_module.verify(form, page)
     if problems:
         # The refusal `planner.planned_query` makes, for the same reason: paying a model to
         # execute a plan already known to be unsound buys nothing.
         raise ValueError("refusing to execute an unsound plan: " + "; ".join(problems))
-    plan = primitives.compose(form, page)
+    plan = primitives.compose(form, page, exhaust=exhaust)
     return Decision(question=question, kind=form.kind(), ask=asked, reading=reading,
                     query=f"{question}\n\n{plan.text}", plan=plan, page=page, form=form,
-                    reading_by=reading_by)
+                    reading_by=reading_by, exhaust=exhaust)
 
 
 def stated_figures(decision: Decision) -> set[int]:
@@ -226,7 +243,8 @@ def stated_figures(decision: Decision) -> set[int]:
     answer echoing that was refused as unsupported (verifier finding, 14 October 2026).
     The form's limit is the same figure however the question wrote it. A limit parsed by
     the rules is a float; one a model proposed is whatever its JSON held, and only a number
-    is read.
+    is read. Strict or not, "under $27" or "at most $27" (form v9), the plan writes the
+    figure as "$27.00", so the operator is not read here and both are exempted.
     """
     stated = set(sufficiency.prices_in(decision.question))
     filters = decision.form.filters if decision.form is not None else ()

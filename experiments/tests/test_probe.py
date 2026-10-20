@@ -30,7 +30,11 @@ GO = f"Go to {RESULTS_URL} . "
 
 class Agree(unittest.TestCase):
     def setUp(self):
-        self.rules = form.from_rules(GO + "Is there any seller under $20 for size M?")
+        # "at most", which the rules read as <= 20 as the models below state it. Until form
+        # v9 (20 Oct 2026) this said "under $20", which is now the strict < 20, and every
+        # model here would disagree on the operator whatever else these tests vary.
+        self.rules = form.from_rules(GO + "Is there any seller at most $20 for size M?")
+        self.assertEqual(self.rules.filter("price"), Filter("price", "<=", 20.0))
         # Size and the limit came from the words. Availability is the silent default.
         self.assertEqual(self.rules.filter("availability"), Filter("availability", "=", "buyable"))
         self.assertNotIn("filter:availability", self.rules.evidence)
@@ -72,7 +76,8 @@ class Agree(unittest.TestCase):
         self.assertFalse(parse_probe.agree(
             self.rules, self.model(Filter("price", ">=", 20), Filter("size", "=", "M"))))
         # With an availability word in the question the filter is derived, not a default.
-        worded = form.from_rules(GO + "Is there any seller under $20 for size M in stock?")
+        # "at most", so the price filter agrees and only the availability one can differ.
+        worded = form.from_rules(GO + "Is there any seller at most $20 for size M in stock?")
         self.assertIn("filter:availability", worded.evidence)
         self.assertFalse(parse_probe.agree(
             worded, self.model(Filter("price", "<=", 20), Filter("size", "=", "M"))))

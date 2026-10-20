@@ -1,0 +1,622 @@
+"""The claim run's arms and conditions, from the verifier's logic audit of the claim plan on
+20 October 2026: the browser's profile kept in memory, strategy text v8, a strict "under",
+the box without its stop rule (`--box-exhaust`), and repeat numbers that say which round a
+run belongs to.
+
+Every rule has a case where it must fire and one where it must stay quiet (LESSONS 24 and
+31). Nothing here reaches a model: the suite runs in this process with its runner replaced
+by one that writes a record and a log and returns.
+"""
+import contextlib
+import difflib
+import hashlib
+import io
+import json
+import pathlib
+import re
+import shlex
+import subprocess
+import sys
+import tempfile
+import unittest
+from unittest import mock
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import paths  # noqa: E402
+import ambiguity  # noqa: E402
+import box  # noqa: E402
+import form as form_module  # noqa: E402
+import page as page_module  # noqa: E402
+import primitives  # noqa: E402
+import suite  # noqa: E402
+import targeting  # noqa: E402
+from form import Filter  # noqa: E402
+from test_box import BASE, FIXTURES, RESULTS_URL, clothing_questions, openjiuwen_log, synthetic_page  # noqa: E402
+
+GO = f"Go to {RESULTS_URL} . "
+SUITE = paths.EXPERIMENTS / "runners" / "suite.py"
+
+
+def thornwood_page() -> page_module.Page:
+    """The Thornwood results page as the box read it on 14 October 2026, from the committed
+    record of that batch, so these tests need neither the shop nor its fixture."""
+    payload = json.loads((paths.RESULTS / "20261014T213118" / "suite.json").read_text())
+    return page_module.from_record(next(row["box"]["page"] for row in payload["rows"]
+                                        if (row.get("box") or {}).get("page")))
+
+
+def sentences(text: str | None) -> list[str]:
+    """The sentences of a text, a step's number left out, in order."""
+    found = []
+    for line in (text or "").split("\n"):
+        for part in re.split(r"(?<=[.?!:])\s+(?=[A-Z0-9\"'])", line.strip()):
+            if part and not re.fullmatch(r"\d+\.", part):
+                found.append(part)
+    return found
+
+
+def run_suite(*argv: str, page: page_module.Page | None = None,
+              answer: str = "Rookwood Uniforms advertises the lowest price, $11.87.") -> tuple:
+    """`suite.main()` in this process with the agent replaced: each run's runner writes the
+    record and the log a real one would, and nothing is sent anywhere. The results go to a
+    temporary folder. Returns the exit code, what was printed and the batch folder, with
+    the folder's owner, which the caller keeps alive."""
+    owner = tempfile.TemporaryDirectory()
+    results = pathlib.Path(owner.name)
+
+    def runner(command, cwd=None, env=None, stdout=None, stderr=None, check=False):
+        record = pathlib.Path(command[command.index("--out") + 1])
+        record.write_text(json.dumps({"model": "fake/model", "elapsed_s": 1.0, "cost_usd": 0.0,
+                                      "error": None, "result": {"ok": True, "final": answer}}))
+        stdout.write("2026-10-20 12:00:00 | fake | default_trace_id | INFO | the run\n")
+        return subprocess.CompletedProcess(command, 0)
+
+    identity = {"agent_core_commit": "a" * 40, "agent_core_patch": "b" * 40}
+    with mock.patch.object(sys, "argv", ["suite.py", *argv]), \
+            mock.patch.object(suite, "RESULTS", results), \
+            mock.patch.object(suite.subprocess, "run", runner), \
+            mock.patch.object(suite, "agent_code_identity", return_value=identity), \
+            mock.patch.object(suite, "results_page", lambda url: page), \
+            contextlib.redirect_stdout(io.StringIO()) as out:
+        code = suite.main()
+    batches = sorted(p for p in results.iterdir() if p.is_dir())
+    return code, out.getvalue(), (batches[0] if batches else None), owner
+
+
+def dry_run(*argv: str) -> subprocess.CompletedProcess:
+    return subprocess.run([sys.executable, str(SUITE), *argv, "--dry-run"],
+                          capture_output=True, text=True)
+
+
+# ---------------------------------------------------------------------------
+# 1. The browser profile in memory
+
+class IsolatedProfile(unittest.TestCase):
+    """Every openJiuwen run since 8 September 2026 shared one Playwright MCP profile on disk,
+    PHPSESSID and history included, so a state one run left was there for the next. Since
+    20 October the gated shop's browser keeps its profile in memory (`--isolated`)."""
+
+    def test_the_gated_env_carries_the_three_flags(self):
+        words = shlex.split(suite.browser_env("gated")["PLAYWRIGHT_MCP_ARGS"])
+        for flag in ("--allowed-origins", "--block-service-workers", "--isolated"):
+            with self.subTest(flag=flag):
+                self.assertEqual(words.count(flag), 1)
+        self.assertEqual(words[words.index("--allowed-origins") + 1], suite.ALLOWED_ORIGINS)
+        flags = suite.browser_conditions("openjiuwen", "gated")["browser_flags"]
+        self.assertEqual(flags.split(), ["--block-service-workers", "--isolated"])
+
+    def test_the_default_shop_and_the_naive_scaffold_are_unchanged(self):
+        self.assertNotIn("PLAYWRIGHT_MCP_ARGS", suite.browser_env("default"))
+        for scaffold, shop in (("openjiuwen", "default"), ("naive", "gated"), ("naive", "default")):
+            with self.subTest(scaffold=scaffold, shop=shop):
+                self.assertEqual(suite.browser_conditions(scaffold, shop),
+                                 {"browser_tool": None, "browser_origins": None, "browser_flags": None})
+        # The second agent's command is what it was: its own browser, the user agent and
+        # nothing of the MCP's.
+        commands = []
+
+        def runner(command, **kwargs):
+            commands.append(command)
+            return subprocess.CompletedProcess(command, 0)
+
+        task = {"id": "t", "query": "q"}
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(suite.subprocess, "run", runner):
+            suite.run_once(task, BASE, pathlib.Path(tmp), "t-1", query="q", scaffold="naive")
+        self.assertEqual(commands[0][-2:], ["--user-agent", page_module.GATED_UA])
+        self.assertFalse(any("--isolated" in word for word in commands[0]))
+
+    def test_the_dry_run_header_says_so(self):
+        run = dry_run("--tasks", str(paths.TASKS / "tasks_apparel.json"), "--repeats", "1",
+                      "--only", "apparel-headline")
+        self.assertEqual(run.returncode, 0, run.stderr)
+        self.assertIn("browser: browser_tool=0.0.83 browser_origins=http://localhost:7770 "
+                      "browser_flags=--block-service-workers --isolated\n", run.stdout)
+        naive = dry_run("--tasks", str(paths.TASKS / "tasks_apparel.json"), "--repeats", "1",
+                        "--only", "apparel-headline", "--scaffold", "naive")
+        self.assertIn("browser: browser_tool=None browser_origins=None browser_flags=None\n",
+                      naive.stdout)
+
+    def test_the_payload_records_it(self):
+        code, _, batch, owner = run_suite("--tasks", str(paths.TASKS / "tasks_apparel.json"),
+                                          "--repeats", "1", "--only", "apparel-headline")
+        self.addCleanup(owner.cleanup)
+        payload = json.loads((batch / "suite.json").read_text())
+        self.assertEqual((code, payload["browser_flags"]), (0, "--block-service-workers --isolated"))
+
+
+# ---------------------------------------------------------------------------
+# 2. Strategy text v8
+
+# The four sentences v8 rewords, as v7 wrote them and as v8 writes them.
+V8_REWORDINGS = (
+    ("That price is the cheapest option in that listing, so nothing inside it can cost less.",
+     "That price is the cheapest option in that listing that can be bought, so nothing in it "
+     "that can be bought costs less."),
+    ("The price a listing shows before you choose is its cheapest option, not the one asked "
+     "about, and the reply to choosing an option does not show the new price.",
+     "The price a listing shows before you choose is its cheapest option that can be bought, "
+     "not necessarily the one asked about, and the reply to choosing an option does not show "
+     "the new price."),
+    ("It is not a real price and must never appear in your answer.",
+     "It is not a price read for the option asked about, and must never appear in your answer "
+     "as one."),
+    ("Stopping after one or two openings is the correct outcome here, not a sign that you did "
+     "too little.",
+     "Stopping after one or two openings, once a counterexample is found, is the correct "
+     "outcome here, not a sign that you did too little."),
+)
+# The sha1 of the 18 queries in fixtures/v1_clothing_queries.json as frozen at e3880ef from
+# the v1 code, json.dumps(queries, sort_keys=True), read before the amendment.
+V1_QUERIES_SHA1 = "d539dc80468c3331d63f68d308799125eb498b19"
+
+
+def every_text() -> list[str]:
+    """Every text the box sends, from both clothing task files under each reading, on the
+    Thornwood page, and the frozen strategy table the targeting arm sends."""
+    page = thornwood_page()
+    texts = list(targeting.STRATEGIES.values())
+    for name in ("tasks_apparel.json", "tasks_apparel_v2.json"):
+        spec = json.loads((paths.TASKS / name).read_text())
+        for task in spec["tasks"]:
+            query = task["query"].format(base=spec["base_url"])
+            for reading in (None, "menu", "buyable"):
+                decision = box.decide(query, page if box.results_url(query, required=False) else None,
+                                      reply=reading)
+                texts.append(decision.query or decision.refuse or decision.ask.text)
+    return texts
+
+
+class StrategyTextV8(unittest.TestCase):
+    """The four sentences v8 rewords were false of the gated shop: igr-app-07 advertises
+    $18.33 with M sold out at $15.04, and Thornwood's cheapest M, igr-app-14 at $25.77, is
+    that listing's own card price."""
+
+    def test_the_versions(self):
+        self.assertEqual((targeting.VERSION, box.VERSION, form_module.VERSION, primitives.VERSION),
+                         (8, 10, 9, 6))
+
+    def test_no_text_the_box_sends_holds_a_v7_sentence(self):
+        texts = every_text()
+        for old, new in V8_REWORDINGS:
+            with self.subTest(sentence=old[:50]):
+                self.assertFalse(any(old in text for text in texts))
+                self.assertTrue(any(new in text for text in texts))
+        # The box v2 texts said the same two things in their own words, and say v8's now.
+        for old in ("is its cheapest option, not the one asked about",
+                    "is each listing's cheapest option, so",
+                    "Stopping after one opening is the correct outcome"):
+            with self.subTest(old=old):
+                self.assertFalse(any(old in text for text in texts))
+                self.assertNotIn(old, primitives.argmax_text(
+                    form_module.from_rules(GO + "Which seller is the most expensive for size M?"),
+                    synthetic_page([12.0])))
+
+    def test_the_quarantine_and_the_stop_sentences_read_v8(self):
+        self.assertIn(V8_REWORDINGS[2][1], targeting.QUARANTINE)
+        self.assertIn(V8_REWORDINGS[3][1], targeting.BODIES["refutation"])
+        exists = primitives.witness_text(form_module.from_rules(GO + "Is there any seller under $20 for size M?"))
+        self.assertIn("Stopping after one opening, when that listing meets the condition, is the "
+                      "correct outcome here", exists)
+
+
+class V1Amendment(unittest.TestCase):
+    """The fixture `test_box.V1Bytes` pins was amended on 20 October 2026 for v8, and in the
+    four sentences only: undoing them gives back the queries v1 rendered, to the byte."""
+
+    def setUp(self):
+        self.frozen = json.loads((FIXTURES / "v1_clothing_queries.json").read_text())
+
+    def test_undoing_the_four_rewordings_gives_the_v1_queries(self):
+        undone = []
+        for row in self.frozen["queries"]:
+            query = row["query"]
+            for old, new in V8_REWORDINGS:
+                query = query.replace(new, old) if query else query
+            undone.append({**row, "query": query})
+        digest = hashlib.sha1(json.dumps(undone, sort_keys=True).encode()).hexdigest()
+        self.assertEqual(digest, V1_QUERIES_SHA1)
+        # The amended fixture is not the v1 one, so the check above is not vacuous.
+        self.assertNotEqual(hashlib.sha1(json.dumps(self.frozen["queries"], sort_keys=True).encode())
+                            .hexdigest(), V1_QUERIES_SHA1)
+
+    def test_each_rewording_is_in_the_fixture_and_dated(self):
+        queries = [row["query"] or "" for row in self.frozen["queries"]]
+        for old, new in V8_REWORDINGS:
+            with self.subTest(sentence=new[:50]):
+                self.assertTrue(any(new in q for q in queries))
+                self.assertFalse(any(old in q for q in queries))
+        about = " ".join(self.frozen["_about"])
+        self.assertIn("box.VERSION 1", about)          # the v1 provenance is kept
+        self.assertIn("Amended on 20 October 2026 for strategy text v8", about)
+
+
+# ---------------------------------------------------------------------------
+# 3. A strict "under"
+
+class StrictUnder(unittest.TestCase):
+    """"under $27" is below $27, as verify_cells' floor and the generator's witnesses read
+    it; "at most $27" includes $27. Every reader of the operator agrees: the form, the
+    witness text and stop rule, the witness check's floor, the filter's sentence and check,
+    `box.stated_figures` and the threshold ask's example."""
+
+    STRICT = ("under $27", "below $27", "less than $27", "cheaper than $27")
+    INCLUSIVE = ("at most $27", "no more than $27", "not more than $27", "up to $27", "within $27",
+                 "$27 or less", "$27 or under", "$27 or below", "$27 or cheaper")
+
+    def limit(self, words: str) -> Filter:
+        return form_module.from_rules(GO + f"Is there any seller with size M {words}?").filter("price")
+
+    def test_the_form_reads_each_word(self):
+        for words in self.STRICT:
+            with self.subTest(words=words):
+                self.assertEqual(self.limit(words), Filter("price", "<", 27.0))
+        for words in self.INCLUSIVE:
+            with self.subTest(words=words):
+                self.assertEqual(self.limit(words), Filter("price", "<=", 27.0))
+
+    def test_the_witness_text_and_stop_rule_follow_the_operator(self):
+        page = synthetic_page([10.15, 27.00, 30.00])
+        strict = primitives.compose(form_module.from_rules(GO + "Is there any seller under $27 for size M?"), page)
+        inclusive = primitives.compose(form_module.from_rules(GO + "Is there any seller at most $27 for size M?"), page)
+        for needle in ("the price you read is below $27.00", "advertised price is at or above $27.00",
+                       "every listing advertised below $27.00"):
+            with self.subTest(needle=needle):
+                self.assertIn(needle, strict.instruction)
+                self.assertNotIn(needle, inclusive.instruction)
+        for needle in ("the price you read is at or below $27.00", "advertised price is above $27.00",
+                       "every listing advertised at or below $27.00"):
+            with self.subTest(needle=needle):
+                self.assertIn(needle, inclusive.instruction)
+                self.assertNotIn(needle, strict.instruction)
+        self.assertIn("available below the limit", strict.stop_rule)
+        # A limit that includes its figure renders the words the stop rule always held.
+        self.assertEqual(inclusive.stop_rule,
+                         "at the first listing whose option is available at or below the limit, "
+                         "or when every listing advertised at or below the limit has been opened")
+        self.assertNotIn("{within}", strict.stop_rule + inclusive.stop_rule)
+
+    def test_the_witness_floor_at_the_limit(self):
+        # A listing advertised at exactly $27.00 cannot sell below it, so under "under $27"
+        # a No owes Seller A only; under "at most $27" it owes Seller B too.
+        page = synthetic_page([10.15, 27.00, 30.00])
+        only_a = f"Page URL: {page.listings[0].url}\nPrice: $28.00"
+        no = "No. None of the sellers has size M within the limit."
+        strict = primitives.check(form_module.from_rules(GO + "Is there any seller under $27 for size M?", page),
+                                  page, no, only_a)
+        inclusive = primitives.check(form_module.from_rules(GO + "Is there any seller at most $27 for size M?", page),
+                                     page, no, only_a)
+        self.assertEqual((strict["ok"], inclusive["ok"]), (True, False))
+        self.assertEqual(inclusive["flag"], "existence_denied_without_coverage")
+        self.assertIn("of the 2 listings", inclusive["why"])
+
+    def test_the_filter_check_at_the_limit(self):
+        page = synthetic_page([10.15, 27.00, 30.00])
+        opened = f"Page URL: {page.listings[1].url}\nPrice: $27.00"
+        yes = "Yes. Seller B has size M at $27.00."
+        strict = primitives.check(form_module.from_rules(GO + "Is there any seller under $27 for size M?", page),
+                                  page, yes, opened)
+        inclusive = primitives.check(form_module.from_rules(GO + "Is there any seller at most $27 for size M?", page),
+                                     page, yes, opened)
+        self.assertEqual((strict["ok"], strict["flag"]), (False, "answer_above_limit"))
+        self.assertIn("allows less than $27.00", strict["why"])
+        self.assertTrue(inclusive["ok"])
+        # One cent under the limit meets the strict one.
+        self.assertTrue(primitives.check(form_module.from_rules(GO + "Is there any seller under $27 for size M?", page),
+                                         page, "Yes. Seller B has size M at $26.99.", opened)["ok"])
+
+    def test_the_figure_is_the_questions_own_either_way(self):
+        page = synthetic_page([10.15, 27.00, 30.00])
+        for words in ("under $27", "at most $27"):
+            with self.subTest(words=words):
+                decision = box.decide(GO + f"Is there any seller {words} for size M?", page)
+                self.assertEqual(box.stated_figures(decision), {2700})
+
+    def test_the_threshold_ask_says_below(self):
+        asked = ambiguity.threshold_ask("cheap")
+        self.assertIn("such as under $20, and only listings below it will count", asked.text)
+        self.assertNotIn("at or below", asked.text)
+
+    def test_only_the_two_under_questions_change_their_form(self):
+        # The v8 pattern, as form v8 wrote it, run beside v9's over every question in every
+        # task file: the same figure is read from the same words everywhere, and the
+        # operator changes only where the words are strict, on the two "under $" questions.
+        v8 = re.compile(r"\b(?:under|below|less than|at most|no more than|not more than|cheaper "
+                        r"than|up to|within)\s*\$?\s*(?P<a>\d+(?:\.\d{1,2})?)\b"
+                        r"|\$?(?P<b>\d+(?:\.\d{1,2})?)\s+or\s+(?:less|under|below|cheaper)\b",
+                        re.IGNORECASE)
+        strict = []
+        questions = 0
+        for path in sorted(paths.TASKS.glob("tasks*.json")):
+            spec = json.loads(path.read_text())
+            for task in spec["tasks"]:
+                questions += 1
+                query = task["query"].format(base=spec.get("base_url", BASE))
+                old, new = v8.search(query), form_module.CEILING.search(query)
+                self.assertEqual(bool(old), bool(new), task["id"])
+                if new:
+                    self.assertEqual(old.span(), new.span(), task["id"])
+                limit = form_module.from_rules(query).filter("price")
+                if limit is not None and limit.op == "<":
+                    strict.append(task["id"])
+        self.assertEqual(questions, 58)
+        self.assertEqual(sorted(strict), ["apparel-exists-under-25", "apparel-exists-under-27"])
+
+
+# ---------------------------------------------------------------------------
+# 4. The box without its stop rule
+
+# Every sentence --box-exhaust may take out of the --box text, and every one it may put in,
+# by kind, on the questions of both clothing task files under each reading. Any other
+# difference fails `test_only_the_stop_sentences_differ`. The count questions, the
+# results-page control, the asks, the refusals and the bypasses differ in nothing.
+EXHAUST_DIFFERENCES = {
+    "availability_bound": (
+        {"Skip every unopened listing whose advertised price is at or above your best available total.",
+         "Such a listing cannot win whatever its stock.",
+         "Stop when no unopened listing has an advertised price below your best available total.",
+         "Say how many listings you opened, how many you skipped, and how many you rejected for being "
+         "unavailable."},
+        {"Open every listing on the page before answering.",
+         "Say how many listings you opened, and how many you rejected for being unavailable."}),
+    "refutation": (
+        {"Nothing more.", "So hunt for a counterexample rather than surveying:",
+         "Open a listing and check for the option asked about.",
+         "If it lacks the option, you are finished.",
+         "Answer No, name that listing as your evidence, and stop immediately.",
+         "Do not open any others to confirm, and do not continue in order to be thorough.",
+         "Opening more cannot change the answer.",
+         "Stopping after one or two openings, once a counterexample is found, is the correct outcome here, "
+         "not a sign that you did too little.",
+         "Note that the previous version of this instruction was followed to the letter and not to its point: "
+         "the agent enumerated and then opened ten listings when the first counterexample had already settled "
+         "the question."},
+        {"Open every listing on the page before answering, and check each for the option asked about.",
+         "If one lacks the option, answer No and name that listing as your evidence."}),
+    "exists_price": (
+        {"Name it and stop.", "Nothing is gained by finding a second.",
+         "If the option is available and the price you read is below {limit}, you are finished.",
+         "Answer yes, name that listing and the price you read, and stop immediately.",
+         "Do not open any others to confirm.",
+         "Skip every unopened listing whose advertised price is at or above {limit}.",
+         "Nothing it can sell costs less than its advertised price, so it cannot meet the condition.",
+         "Stopping after one opening, when that listing meets the condition, is the correct outcome here, "
+         "not a sign that you did too little."},
+        {"If the option is available and the price you read is below {limit}, answer yes and name that "
+         "listing and the price you read.",
+         "Open every listing on the page before answering."}),
+    "topk_price": (
+        {"Once you hold 3, skip every unopened listing whose advertised price is at or above the dearest of "
+         "those 3 totals.",
+         "Such a listing cannot enter the 3 whatever its stock.",
+         "Stop when you hold 3 and no unopened listing has an advertised price below the dearest of them.",
+         "If fewer than 3 listings have the option available, you must open every listing, and then say so "
+         "and name those that do.",
+         "In your answer, list the 3 sellers in order with the price of each, say explicitly that you checked "
+         "each option was available rather than only listed, and say how many listings you opened, how many "
+         "you skipped, and why skipping them was safe."},
+        {"Open every listing on the page before answering.",
+         "If fewer than 3 listings have the option available, say so and name those that do.",
+         "In your answer, list the 3 sellers in order with the price of each, say explicitly that you checked "
+         "each option was available rather than only listed, and say how many listings you opened."}),
+    "named_lookup": (
+        {"Open each of them and nothing else:",
+         "Do not skip any of them: the question is about exactly these, so each has to be read, and opening "
+         "others cannot change the answer."},
+        {"Open every listing on the page before answering, these among them:",
+         "Do not skip any of them: the question is about exactly these, so each has to be read."}),
+}
+# The questions whose plan already opens every listing, so both arms send the same bytes.
+ALREADY_EXHAUST = ("apparel-count-stocked", "apparel-count-buyable")
+
+
+def both_arms():
+    """(task id, reading, the --box decision, the --box-exhaust decision) for every question
+    of both clothing task files under each reading, on the Thornwood page."""
+    page = thornwood_page()
+    for name in ("tasks_apparel.json", "tasks_apparel_v2.json"):
+        spec = json.loads((paths.TASKS / name).read_text())
+        for task in spec["tasks"]:
+            query = task["query"].format(base=spec["base_url"])
+            seen = page if box.results_url(query, required=False) else None
+            for reading in (None, "menu", "buyable"):
+                yield (task["id"], reading, box.decide(query, seen, reply=reading),
+                       box.decide(query, seen, reply=reading, exhaust=True))
+
+
+class BoxExhaust(unittest.TestCase):
+
+    def test_only_the_stop_sentences_differ(self):
+        kinds = set()
+        for task_id, reading, plain, exhaust in both_arms():
+            with self.subTest(task=task_id, reading=reading):
+                record, other = plain.record(), exhaust.record()
+                self.assertEqual((record["exhaust"], other["exhaust"]), (False, True))
+                self.assertEqual({k: v for k, v in record.items() if k not in ("exhaust", "query", "plan")},
+                                 {k: v for k, v in other.items() if k not in ("exhaust", "query", "plan")})
+                if plain.kind not in EXHAUST_DIFFERENCES:
+                    self.assertEqual(exhaust.query, plain.query)
+                    continue
+                kinds.add(plain.kind)
+                diff = list(difflib.ndiff(sentences(plain.query), sentences(exhaust.query)))
+                removed = {d[2:] for d in diff if d.startswith("- ")}
+                added = {d[2:] for d in diff if d.startswith("+ ")}
+                limit = primitives.limit_of(plain.form)
+                fill = {"limit": f"${limit.value:.2f}" if limit else ""}
+                want_removed, want_added = EXHAUST_DIFFERENCES[plain.kind]
+                self.assertEqual(removed, {s.format(**fill) for s in want_removed})
+                self.assertEqual(added, {s.format(**fill) for s in want_added})
+                self.assertEqual((exhaust.plan.stop_rule, exhaust.plan.exhaust),
+                                 (primitives.EXHAUST_STOP, True))
+        self.assertEqual(kinds, set(EXHAUST_DIFFERENCES))
+
+    def test_the_count_questions_are_byte_identical(self):
+        for task_id, reading, plain, exhaust in both_arms():
+            if task_id in ALREADY_EXHAUST and plain.query is not None:
+                with self.subTest(task=task_id, reading=reading):
+                    self.assertEqual(plain.kind, "survey")
+                    self.assertEqual(exhaust.query, plain.query)
+                    self.assertEqual(exhaust.plan.stop_rule, plain.plan.stop_rule)
+
+    def test_no_stop_sentence_survives_and_every_gated_plan_opens_everything(self):
+        stops = ("skip every", "Stop when", "stop immediately", "Name it and stop", "nothing else",
+                 "Stopping after", "cannot change the answer", "Do not open any others",
+                 "rather than surveying")
+        for task_id, reading, plain, exhaust in both_arms():
+            if plain.plan is None or plain.kind == "results_page":
+                continue
+            with self.subTest(task=task_id, reading=reading):
+                self.assertIn("pen every listing", exhaust.plan.instruction)
+                for stop in stops:
+                    self.assertNotIn(stop.lower(), exhaust.plan.instruction.lower())
+
+    def test_a_stop_sentence_not_found_is_refused(self):
+        with self.assertRaises(ValueError) as refused:
+            primitives.without_stop_rule("Read the page.", [("Stop when done.", "")])
+        self.assertIn("0 times, not once", str(refused.exception))
+        self.assertEqual(primitives.without_stop_rule("Read. Stop when done.", [(" Stop when done.", "")]),
+                         "Read.")
+
+    def test_a_review_question_has_no_listing_stop_rule_to_replace(self):
+        reviews = form_module.from_rules(f"Go to {BASE}/review/product/list/id/230/ . Do any buyers report "
+                                         "that this product leaks? Answer yes or no.")
+        page = synthetic_page([12.0])
+        self.assertEqual(primitives.compose(reviews, page).primitive, "depth")
+        with self.assertRaises(ValueError):
+            primitives.compose(reviews, page, exhaust=True)
+
+    def test_the_check_is_the_boxs_in_both_arms(self):
+        page = thornwood_page()
+        question = clothing_questions()["apparel-cheapest-target"]
+        answer = "Alderney Clothing Co is cheapest for size M at $25.77."
+        with tempfile.TemporaryDirectory() as tmp:
+            log = openjiuwen_log(tmp, "run", [item.url for item in page.by_price()[:8]], "Price: $25.77")
+            plain = box.check(box.decide(question, page), answer, log)
+            exhaust = box.check(box.decide(question, page, exhaust=True), answer, log)
+        self.assertEqual(plain, exhaust)
+
+    def test_the_flags_it_excludes(self):
+        tasks = ("--tasks", str(paths.TASKS / "tasks_apparel.json"), "--repeats", "1",
+                 "--only", "apparel-headline")
+        for other in (("--box",), ("--exhaustive",), ("--targeting",)):
+            with self.subTest(other=other):
+                run = dry_run(*tasks, "--box-exhaust", *other)
+                self.assertEqual(run.returncode, 2)
+                self.assertIn("--box-exhaust cannot be combined with --box, --targeting or --exhaustive",
+                              run.stderr)
+        naive = dry_run(*tasks, "--box-exhaust", "--scaffold", "naive")
+        self.assertEqual(naive.returncode, 2)
+        self.assertIn("the second agent's browser is not confined", naive.stderr)
+        retry = dry_run(*tasks, "--box-exhaust", "--policy", "retry")
+        self.assertEqual(retry.returncode, 2)
+        alone = dry_run(*tasks, "--reading", "menu")
+        self.assertEqual(alone.returncode, 2)
+        self.assertIn("needs --box or --box-exhaust", alone.stderr)
+
+    def test_the_payload_and_the_rows_record_the_arm(self):
+        page = thornwood_page()
+        tasks = ("--tasks", str(paths.TASKS / "tasks_apparel.json"), "--repeats", "1",
+                 "--only", "apparel-cheapest-target", "apparel-headline")
+        code, out, batch, owner = run_suite(*tasks, "--box-exhaust", page=page)
+        self.addCleanup(owner.cleanup)
+        self.assertEqual(code, 0)
+        payload = json.loads((batch / "suite.json").read_text())
+        self.assertEqual((payload["arm"], payload["box_exhaust"], payload["box"]), ("box-exhaust", True, False))
+        self.assertEqual((payload["box_version"], payload["form_version"], payload["primitives_version"],
+                          payload["targeting_version"]),
+                         (box.VERSION, form_module.VERSION, primitives.VERSION, targeting.VERSION))
+        rows = {row["task"]: row for row in payload["rows"]}
+        gated = rows["apparel-cheapest-target"]["box"]
+        self.assertEqual((gated["exhaust"], gated["plan"]["exhaust"], gated["plan"]["stop_rule"]),
+                         (True, True, primitives.EXHAUST_STOP))
+        self.assertIn(primitives.OPEN_EVERY, gated["query"])
+        self.assertTrue(rows["apparel-headline"]["box"]["exhaust"])
+        self.assertIn("arm: box-exhaust\n", out)
+        # The box itself, and no box at all, record their own arms.
+        code, out, batch, owner = run_suite(*tasks, "--box", page=page)
+        self.addCleanup(owner.cleanup)
+        payload = json.loads((batch / "suite.json").read_text())
+        self.assertEqual((payload["arm"], payload["box_exhaust"], payload["box"]), ("box", False, True))
+        self.assertFalse(payload["rows"][0]["box"]["exhaust"])
+        code, out, batch, owner = run_suite(*tasks)
+        self.addCleanup(owner.cleanup)
+        payload = json.loads((batch / "suite.json").read_text())
+        self.assertEqual((payload["arm"], payload["box_version"]), ("none", None))
+        self.assertEqual(suite.arm_of(mock.Mock(box=False, box_exhaust=False, targeting=True, exhaustive=True)),
+                         "targeting+exhaustive")
+
+
+# ---------------------------------------------------------------------------
+# 5. Repeat numbers that start where the round does
+
+class RepeatStart(unittest.TestCase):
+    TASKS = ("--tasks", str(paths.TASKS / "tasks_apparel.json"), "--only", "apparel-headline")
+
+    def runs(self, batch: pathlib.Path) -> list[str]:
+        return sorted(p.stem for p in batch.glob("apparel-headline-*.json"))
+
+    def test_the_records_and_rows_carry_the_given_repeats(self):
+        code, out, batch, owner = run_suite(*self.TASKS, "--repeats", "2", "--repeat-start", "3")
+        self.addCleanup(owner.cleanup)
+        self.assertEqual(code, 0)
+        self.assertEqual(self.runs(batch), ["apparel-headline-3", "apparel-headline-4"])
+        payload = json.loads((batch / "suite.json").read_text())
+        self.assertEqual([row["repeat"] for row in payload["rows"]], [3, 4])
+        self.assertEqual([row["log"] for row in payload["rows"]],
+                         ["apparel-headline-3.log", "apparel-headline-4.log"])
+        self.assertEqual((payload["repeats"], payload["repeat_start"]), (2, 3))
+        for repeat in (3, 4):
+            record = json.loads((batch / f"apparel-headline-{repeat}.json").read_text())
+            self.assertEqual(record["log"], f"apparel-headline-{repeat}.log")
+            self.assertTrue((batch / f"apparel-headline-{repeat}.log").exists())
+        self.assertIn("1 tasks x 2 repeats = 2 runs, repeats 3 to 4 -> ", out)
+
+    def test_the_default_is_unchanged(self):
+        code, out, batch, owner = run_suite(*self.TASKS, "--repeats", "2")
+        self.addCleanup(owner.cleanup)
+        self.assertEqual(self.runs(batch), ["apparel-headline-1", "apparel-headline-2"])
+        payload = json.loads((batch / "suite.json").read_text())
+        self.assertEqual([row["repeat"] for row in payload["rows"]], [1, 2])
+        self.assertEqual(payload["repeat_start"], 1)
+        self.assertIn("1 tasks x 2 repeats = 2 runs -> ", out)
+        self.assertNotIn("repeats 1 to", out)
+
+    def test_a_round_of_one_with_the_box(self):
+        # The claim's rounds: --repeats 1 per arm, the round's number as the repeat, and an
+        # ask closed by the box carries it too.
+        page = thornwood_page()
+        code, _, batch, owner = run_suite("--tasks", str(paths.TASKS / "tasks_apparel.json"),
+                                          "--only", "apparel-headline", "apparel-all-stocked",
+                                          "--repeats", "1", "--repeat-start", "2", "--box", page=page)
+        self.addCleanup(owner.cleanup)
+        payload = json.loads((batch / "suite.json").read_text())
+        self.assertEqual({(row["task"], row["repeat"], row["verdict"] == "asked") for row in payload["rows"]},
+                         {("apparel-headline", 2, False), ("apparel-all-stocked", 2, True)})
+
+    def test_a_start_below_one_is_refused(self):
+        run = dry_run(*self.TASKS, "--repeats", "1", "--repeat-start", "0")
+        self.assertEqual(run.returncode, 2)
+        self.assertIn("--repeat-start numbers the first repeat", run.stderr)
+
+
+if __name__ == "__main__":
+    unittest.main()
