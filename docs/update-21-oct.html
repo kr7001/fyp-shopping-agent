@@ -7,7 +7,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
-/* Layout: one left-aligned document column. Prose sits at 72ch, tables, charts and the diagram widen to 1040px, a 20px side gutter at every width, and everything stacks to one column under 640px. */
+/* Layout: one left-aligned document column at 80% of the screen width, prose and tables alike, a 20px side gutter, and everything stacks to one column on a phone. Light only, at the student's request. */
 :root{
   /* colour, six named tokens. Neutrals carry a hint of the teal. */
   --paper:#f6f8f7;    /* the page */
@@ -27,23 +27,11 @@
   --font-display:"Newsreader",Georgia,"Times New Roman",serif;
   --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
   --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
-  --measure:72ch;
-  --wide:1040px;
+  --measure:100%;
+  --wide:80vw;
+  color-scheme:light;
   --gutter:20px;
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    color-scheme:dark;
-    --paper:#111816; --ink:#e7edeb; --rule:#2a3532; --teal:#62b8bc; --moss:#6fc08f; --brick:#e2807a;
-    --paper-2:#192220; --ink-2:#b3bfbb; --ink-3:#8b9893; --teal-soft:#1c3436; --teal-2:#256e74; --grey-bar:#8a9893;
-  }
-}
-:root[data-theme="dark"]{
-  color-scheme:dark;
-  --paper:#111816; --ink:#e7edeb; --rule:#2a3532; --teal:#62b8bc; --moss:#6fc08f; --brick:#e2807a;
-  --paper-2:#192220; --ink-2:#b3bfbb; --ink-3:#8b9893; --teal-soft:#1c3436; --teal-2:#256e74; --grey-bar:#8a9893;
-}
-
 *,*::before,*::after{box-sizing:border-box}
 body{
   margin:0;background:var(--paper);color:var(--ink);
@@ -52,6 +40,9 @@ body{
   -webkit-text-size-adjust:100%;
 }
 .page{max-width:var(--wide);margin-inline:auto}
+@media (max-width:700px){.page{max-width:none}}
+.lead-list{font-size:1.06rem;line-height:1.5;margin:0 0 1rem;padding-left:1.2em}
+.lead-list li{margin:.35em 0}
 p,ul,ol,dl,h1,h2,h3,h4,.prose{max-width:var(--measure)}
 p{margin:0 0 .9em}
 ul,ol{margin:0 0 .9em;padding-left:1.2em}
@@ -168,7 +159,7 @@ tr.hl td{background:var(--teal-soft)}
 /* timeline */
 .week{margin:1.4rem 0 .4rem}
 .tl{list-style:none;margin:0 0 .4rem;padding:0;border-left:1px solid var(--rule);max-width:none}
-.tl li{display:grid;grid-template-columns:7.2rem 1fr;gap:2px 16px;padding:9px 0 9px 18px;position:relative;margin:0}
+.tl li{display:grid;grid-template-columns:8.2rem 1fr;gap:2px 16px;padding:9px 0 9px 18px;position:relative;margin:0}
 .tl li::before{content:"";position:absolute;left:-4px;top:19px;width:7px;height:7px;border-radius:50%;background:var(--rule)}
 .tl li.key::before{background:var(--teal);width:11px;height:11px;left:-6px;top:17px}
 .tl .d{font-family:var(--font-mono);font-size:.78rem;font-weight:500;color:var(--ink-3);padding-top:4px;white-space:nowrap}
@@ -265,6 +256,7 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
     <a href="#decisions">Decisions</a>
     <a href="#checks">Checks</a>
     <a href="#adds-up">What it adds up to</a>
+    <a href="#questions">Questions</a>
     <a href="#plan">Plan</a>
     <a href="#sources">Sources</a>
     <button class="btn" type="button" id="toggle-all" aria-pressed="false">Open every details box</button>
@@ -274,12 +266,18 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
 <section class="sec" id="big-picture">
   <p class="eyebrow">The big picture</p>
   <h2>A shopping agent answers from the page it can see</h2>
-  <p class="lead">When the price, size or stock a question needs only appears after a click, which this project calls interaction-gated information, agents often answer anyway, wrongly and without saying they are unsure. In the last two weeks this project pinned that failure to its cause in a real open-source agent. It built a block that sits in front of any agent, plans what to open and when to stop, asks the user when a question is ambiguous, and checks the answer. It then tested the block on a market it had never seen, under a plan fixed in writing before the market existed. On that held-out market the block was right on all 12 test runs where the shipped agent was right on 4. It opened a median of 6 listings instead of 15, at less than half the cost of opening every listing. All three tests fixed in advance came out in its favour.</p>
+  <ul class="lead-list">
+    <li>When a price, size or stock level only appears after a click, which this project calls interaction-gated information, shopping agents often answer anyway, wrongly and with no sign of doubt.</li>
+    <li>The project traced this to its cause in a real open-source agent, which trusts the four product cards on screen and stops looking.</li>
+    <li>It built a block that sits in front of any agent. The block plans what to open and when to stop, asks the user when a question is ambiguous, and checks the answer.</li>
+    <li>It tested the block on a new clothing market it had never seen, with the test plan written down before the market existed.</li>
+    <li>The block was right on 12 of 12 runs where the shipped agent was right on 4. It opened a median of 6 listings instead of 15, at less than half the cost of opening every listing. All three tests planned in advance passed, and they passed again on a second model.</li>
+  </ul>
 
   <div class="tiles" role="list" aria-label="Headline figures from the held-out claim run">
     <div class="tile" role="listitem">
-      <div class="label">Correct on the held-out market</div>
-      <div class="value">12 <small>of 12</small></div>
+      <div class="label">Right answers on the new market</div>
+      <div class="value">12 <small>of 12 runs</small></div>
       <div class="vs">The block. Shipped agent <b>4 of 12</b>. Open everything <b>12 of 12</b>.</div>
     </div>
     <div class="tile" role="listitem">
@@ -293,12 +291,23 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
       <div class="vs">The block. Open everything <b>$0.48</b>. Shipped agent <b>$0.18</b>.</div>
     </div>
     <div class="tile" role="listitem">
-      <div class="label">Pre-registered tests significant</div>
+      <div class="label">Tests planned in advance that passed</div>
       <div class="value">3 <small>of 3</small></div>
-      <div class="vs">After Holm's correction. H1 p = 0.001, H2 p = 0.00025, H3 p = 0.000016.</div>
+      <div class="vs">Right more often than the shipped agent, and fewer listings and lower cost than opening everything. If the block were no better, results this strong would turn up by chance about 1 time in 1,000 at most.</div>
     </div>
   </div>
-  <p class="note">Ashcombe market, the night of 20 October, Claude Haiku 4.5. Correct is counted on the four questions whose answer does not depend on how the word "offer" is read, 3 runs each. Listings opened and cost are over the five gated questions.</p>
+  <details class="dx">
+    <summary>What "3 of 3 tests passed" means</summary>
+    <div class="body">
+      <p>Before the run, the plan named three comparisons and the test to use for each. Fixing them in advance stops anyone from choosing, after seeing the data, the comparisons that happen to look good.</p>
+      <ul>
+        <li><strong>H1.</strong> The block is right more often than the shipped agent. 12 of 12 runs against 4 of 12, p = 0.001.</li>
+        <li><strong>H2.</strong> The block opens fewer listings than "open everything". A median of 6 against 15, p = 0.00025.</li>
+        <li><strong>H3.</strong> The block costs less a run than "open everything". A median of $0.20 against $0.41, p = 0.000016.</li>
+      </ul>
+      <p>A p-value says how often a difference this large would appear by chance if the block were in fact no better. p = 0.001 means about 1 time in 1,000. Three tests give three chances to be fooled, so Holm's correction raises each p-value to allow for that. After it the three are 0.001, 0.0005 and 0.00005, all far below the usual cut-off of 0.05.</p>
+    </div>
+  </details>
 
   <details class="dx">
     <summary>The problem in one example</summary>
@@ -320,7 +329,27 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
 <section class="sec" id="claim">
   <p class="eyebrow">The main result</p>
   <h2>The held-out claim run</h2>
-  <p>Four arms ran the same six questions as the design market, one results-page control and five gated questions, in three rounds with the arm order rotated. Every arm used Claude Haiku 4.5, the same browser, the same flags and the same budget. The run plan was committed before the market existed. 66 runs, $17.84, no broken runs.</p>
+  <p>The test ran on Ashcombe, a new clothing market of 15 tee listings from 15 sellers, generated after the block was frozen. The block had been designed on Thornwood, an earlier clothing market of the same kind. Four arms, meaning four versions of the agent, each ran the questions three times, in three rounds with the arm order rotated. Every arm used Claude Haiku 4.5, the same browser, the same settings and the same budget. The run plan was committed before the market existed.</p>
+  <p>Correct is counted per run. The headline uses the four questions whose answer does not depend on how the word "offer" is read, so each arm has 4 questions &times; 3 runs = 12 runs. Listings opened and cost are over all five questions that need hidden information. 66 runs in all, $17.84, no broken runs.</p>
+  <details class="dx">
+    <summary>How the 66 runs add up</summary>
+    <div class="body">
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Arm</th><th>Questions</th><th class="num">Runs</th></tr></thead>
+          <tbody>
+            <tr><td>Shipped</td><td>6 (the results-page control and the five gated questions), 3 runs each</td><td class="num">18</td></tr>
+            <tr><td>Open everything</td><td>the 5 gated questions, 3 runs each</td><td class="num">15</td></tr>
+            <tr><td>The block, "listed in the menu" reading</td><td>6, 3 runs each</td><td class="num">18</td></tr>
+            <tr><td>The block, "can sell it now" reading</td><td>the 2 "offer" questions, 3 runs each</td><td class="num">6</td></tr>
+            <tr><td>The block without its stop rule</td><td>the 3 questions where the stop rule acts, 3 runs each</td><td class="num">9</td></tr>
+            <tr><td><strong>Total</strong></td><td></td><td class="num"><strong>66</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">"Open everything" did not run the results-page control. That question needs no listing opened, and Test 4 on Thornwood left it out too, so the claim kept the same design.</p>
+    </div>
+  </details>
 
   <div class="charts2">
     <div>
@@ -357,16 +386,20 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
     </div>
   </div>
 
-  <p>The block and the block without its stop rule were both right 9 of 9 times on these three questions, so the stop rule saves cost without costing correctness. Over the three questions about 47% of the block's cost saving over "open everything" comes from the stop rule itself. The rest comes from handing the agent the list of listings and the plan. On "does every listing offer M" the no-stop arm still said one counterexample settles it, so it stopped as early as the block. That question does not test the stop rule.</p>
+  <p>The block and the block without its stop rule were both right 9 of 9 times on these three questions (3 questions &times; 3 runs), so the stop rule saves cost without costing correctness. Over the three questions about 47% of the block's cost saving over "open everything" comes from the stop rule itself. The rest comes from handing the agent the list of listings and the plan. On "does every listing offer M" the no-stop arm still said one counterexample settles it, so it stopped as early as the block. That question does not test the stop rule.</p>
 
-  <h3>Limits of the claim</h3>
-  <ul class="limits">
-    <li>One held-out market, which is one draw.</li>
-    <li>One model. The DeepSeek repeat tests a second.</li>
-    <li>The question wording was written for this project. Only the market data is new.</li>
-    <li>Markets are built so that the first screen misleads. The claim is about shops where gating happens.</li>
-    <li>The answer check has known blind spots. It cannot see a misread price, a miscount once everything is open, or a "No" that names a listing without checking its menu.</li>
-  </ul>
+  <details class="dx">
+    <summary>Limits of the claim</summary>
+    <div class="body">
+      <ol>
+        <li><strong>One new market.</strong> Ashcombe is one draw from the generator. A second new market would show the result is not luck of the draw.</li>
+        <li><strong>Two models.</strong> Claude Haiku 4.5, and DeepSeek V4 Flash in the repeat. Other models may behave differently.</li>
+        <li><strong>The same six questions.</strong> The block's rules were written while looking at these questions. The new market changes the products and prices, not the wording. A question asked another way may not be recognised. The rules handled 13 of 24 rewordings.</li>
+        <li><strong>A market built to mislead.</strong> The markets are generated so the cheapest-looking listing on the first screen is not the answer, because that is the situation being studied. When the first screen happens to be right, the block's extra checking costs more for no gain, as on the size XL question.</li>
+        <li><strong>What the final check cannot see.</strong> The block's check confirms the agent opened the listings the answer needs. It cannot tell whether the agent then misread a price on a page it did open, miscounted after opening everything, or pointed to a listing as proof without reading its size menu.</li>
+      </ol>
+    </div>
+  </details>
 
   <details class="dx">
     <summary>Per-question numbers</summary>
@@ -377,7 +410,7 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
           <thead><tr><th>Question</th><th class="num">Shipped</th><th class="num">Open everything</th><th class="num">The block</th></tr></thead>
           <tbody>
             <tr><td><code>target-price</code> lowest price for size M among listings that can sell it</td><td class="num">0</td><td class="num">3</td><td class="num">3</td></tr>
-            <tr><td><code>cheapest-target</code> which seller is cheapest for size M, and at what price</td><td class="num">1</td><td class="num">3</td><td class="num">3</td></tr>
+            <tr><td><code>cheapest-target</code> which seller is cheapest for size M, counting only listings that can sell it now</td><td class="num">1</td><td class="num">3</td><td class="num">3</td></tr>
             <tr><td><code>all-stocked</code> does every listing offer size M</td><td class="num">3</td><td class="num">3</td><td class="num">3</td></tr>
             <tr><td><code>count-buyable</code> how many listings have M in stock and buyable now</td><td class="num">0</td><td class="num">3</td><td class="num">3</td></tr>
             <tr><td><code>count-stocked</code> how many listings offer size M, reported separately because its answer depends on the reading</td><td class="num">0</td><td class="num">1</td><td class="num">0<sup>a</sup></td></tr>
@@ -385,21 +418,21 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
           </tbody>
         </table>
       </div>
-      <p class="note"><sup>a</sup> Under the key's reading, "listed in the menu". See the ask-back finding below. Under the other reading the block was right 3 of 3. "Open everything" ran only the five gated questions.</p>
-      <p>Median listings opened per question. "Open everything" opened all 15 on every question. The shipped agent opened 4 on most questions, the four cards in its viewport.</p>
+      <p class="note"><sup>a</sup> Under the key's reading, "listed in the menu". See the ask-back finding below. Under the other reading the block was right 3 of 3. "Open everything" did not run the results-page control, which needs no listing opened. Test 4 on Thornwood left it out too, so the claim kept the same design.</p>
+      <p>Median listings opened per question, 3 runs each, beside the fewest listings that can prove the answer. That is the six advertised at or below the winning price for the two price questions, one listing without size M for "does every", and all 15 for a count.</p>
       <div class="tablewrap">
         <table>
-          <thead><tr><th>Question</th><th class="num">The block</th><th>Why</th></tr></thead>
+          <thead><tr><th>Question</th><th class="num">The answer needs</th><th class="num">Shipped</th><th class="num">Open everything</th><th class="num">The block</th><th class="num">Block without its stop rule</th></tr></thead>
           <tbody>
-            <tr><td><code>target-price</code></td><td class="num">6</td><td>exactly the six the answer needs</td></tr>
-            <tr><td><code>cheapest-target</code></td><td class="num">6</td><td>exactly the six the answer needs</td></tr>
-            <tr><td><code>all-stocked</code></td><td class="num">2</td><td>one counterexample settles it</td></tr>
-            <tr><td><code>count-buyable</code></td><td class="num">15</td><td>a count cannot stop early</td></tr>
-            <tr><td><code>count-stocked</code></td><td class="num">15</td><td>a count cannot stop early</td></tr>
+            <tr><td><code>target-price</code></td><td class="num">6</td><td class="num">4</td><td class="num">15</td><td class="num">6</td><td class="num">15</td></tr>
+            <tr><td><code>cheapest-target</code></td><td class="num">6</td><td class="num">4</td><td class="num">15</td><td class="num">6</td><td class="num">15</td></tr>
+            <tr><td><code>all-stocked</code></td><td class="num">1</td><td class="num">4</td><td class="num">15</td><td class="num">2</td><td class="num">2</td></tr>
+            <tr><td><code>count-buyable</code></td><td class="num">15</td><td class="num">1</td><td class="num">15</td><td class="num">15</td><td class="num muted">same text as the block</td></tr>
+            <tr><td><code>count-stocked</code></td><td class="num">15</td><td class="num">4</td><td class="num">15</td><td class="num">15</td><td class="num muted">same text as the block</td></tr>
           </tbody>
         </table>
       </div>
-      <p>Opened what the answer needs, five gated questions, 3 runs each. The block 14 of 15 (one all-stocked run's counterexample was only seen in a cut view), open everything 15 of 15, shipped 2 of 15.</p>
+      <p>Opened what the answer needs, five gated questions, 3 runs each: the block 14 of 15, open everything 15 of 15, shipped 2 of 15. The block's one miss was a "does every listing offer M" run. It answered No, which is right, but pointed to a listing where size M is only sold out. Under the reading the user gave, "listed in the menu, sold out or not", a sold-out M still counts as offered, so that proof does not hold.</p>
       <pre class="cmd">python3 experiments/analysis/claim.py experiments/results/claim-20261020.manifest</pre>
     </div>
   </details>
@@ -519,12 +552,12 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
 <section class="sec" id="weeks">
   <p class="eyebrow">Week by week</p>
   <h2>Two weeks, from the cause to the held-out run</h2>
-  <p>Week 1 found why the shipped agent stops early and made every number trustworthy. Week 2 built the block and tested it fairly. The larger dots mark the moments that matter.</p>
+  <p>Week 1 found why the shipped agent stops early and made every number trustworthy. Week 2 built the block and tested it fairly. Each week's steps are in the order they happened, and the larger dots mark the moments that matter. The decision log in the repository has the exact date and time of each.</p>
 
   <h3 class="week">Week 1, 7 to 13 October. Find the cause, and make every number trustworthy</h3>
   <ol class="tl">
     <li class="key">
-      <span class="d">7 Oct</span>
+      <span class="d">Tests 1 to 3</span>
       <div>
         <div class="s">Three tests on the design market, Thornwood. The cause of the shipped agent's early stop is one default.<span class="k">cause found</span></div>
         <details class="dq"><summary>What each test showed</summary><div class="body">
@@ -540,7 +573,7 @@ python3 experiments/analysis/compare_cells.py</pre>
       </div>
     </li>
     <li>
-      <span class="d">8 Oct</span>
+      <span class="d">Test 4</span>
       <div>
         <div class="s">Test 4. The shipped agent told to open every listing is the ceiling, at three times the cost.</div>
         <details class="dq"><summary>Detail</summary><div class="body">
@@ -549,7 +582,7 @@ python3 experiments/analysis/compare_cells.py</pre>
       </div>
     </li>
     <li class="key">
-      <span class="d">8 Oct</span>
+      <span class="d">Finding</span>
       <div>
         <div class="s">The word "offer" has two readings. No amount of browsing fixes that.<span class="k">ambiguity found</span></div>
         <details class="dq"><summary>Detail</summary><div class="body">
@@ -558,16 +591,16 @@ python3 experiments/analysis/compare_cells.py</pre>
       </div>
     </li>
     <li>
-      <span class="d">8 Oct</span>
+      <span class="d">Re-check</span>
       <div>
         <div class="s">Every figure from the first three tests re-derived from the raw run files. Three figures in the 7 October update were wrong and were corrected.</div>
         <details class="dq"><summary>Detail</summary><div class="body">
-          <p>The tests were redone as exact tests stratified by question. The same day a workbench began enforcing the project's rules. A spend guard refuses any paid run without a declared cost, a verifier's pass at the exact commit, and the student's click. A lessons file records every mistake already paid for, 38 lessons by 20 October, with the rule each produced. Three AI modules have one job each, the coder, the verifier and the insights writer.</p>
+          <p>The tests were redone as exact tests stratified by question. A workbench began enforcing the project's rules. A spend guard refuses any paid run without a declared cost, a verifier's pass at the exact commit, and the student's click. A lessons file records every mistake already paid for, 38 lessons by 20 October, with the rule each produced. Three AI modules have one job each, the coder, the verifier and the insights writer.</p>
         </div></details>
       </div>
     </li>
     <li>
-      <span class="d">9 to 10 Oct</span>
+      <span class="d">Rebuild</span>
       <div>
         <div class="s">Repository reorganised by job, 41 unit tests, one project site whose figures are generated from the run files.</div>
         <details class="dq"><summary>Detail</summary><div class="body">
@@ -580,16 +613,16 @@ python3 experiments/analysis/compare_cells.py</pre>
   <h3 class="week">Week 2, 14 to 21 October. Build the block, then test it fairly</h3>
   <ol class="tl">
     <li>
-      <span class="d">14 Oct</span>
+      <span class="d">Pilot</span>
       <div>
         <div class="s">Block version 1 specified, built and piloted. 2 runs, both correct.</div>
         <details class="dq"><summary>Detail</summary><div class="body">
-          <p>On the cheapest question it opened exactly the 8 listings that mattered for $0.39. Test 4 had opened 15 for about $0.59. Research for version 2 followed the same day. The sources are in the last section of this page.</p>
+          <p>On the cheapest question it opened exactly the 8 listings that mattered for $0.39. Test 4 had opened 15 for about $0.59. Research for version 2 followed. The sources are in the last section of this page.</p>
         </div></details>
       </div>
     </li>
     <li class="key">
-      <span class="d">14 Oct</span>
+      <span class="d">Build</span>
       <div>
         <div class="s">Block version 2 designed and built. Any shopping question becomes a logical form, and rules compose the plan from seven building blocks.<span class="k">the block built</span></div>
         <details class="dq"><summary>Detail</summary><div class="body">
@@ -599,7 +632,7 @@ python3 experiments/analysis/compare_cells.py</pre>
       </div>
     </li>
     <li>
-      <span class="d">14 Oct, evening</span>
+      <span class="d">Development</span>
       <div>
         <div class="s">Development batch on Thornwood, in sample. The block correct 13 of 15, a median of 8 listings, $0.26 a run. $6.96 in all.</div>
         <details class="dq"><summary>Detail</summary><div class="body">
@@ -609,7 +642,7 @@ python3 experiments/analysis/compare_cells.py</pre>
       </div>
     </li>
     <li>
-      <span class="d">20 Oct, early</span>
+      <span class="d">Verification</span>
       <div>
         <div class="s">Verification rounds on the block's answer check. The new size-menu reader failed twice, both fixed, then 180 menu readings validated with 0 wrong.</div>
         <details class="dq"><summary>Detail</summary><div class="body">
@@ -618,7 +651,7 @@ python3 experiments/analysis/compare_cells.py</pre>
       </div>
     </li>
     <li>
-      <span class="d">20 Oct</span>
+      <span class="d">Audit</span>
       <div>
         <div class="s">Deep logic audit before any further spending. 9 problems that would have weakened the result, all fixed before the run.</div>
         <details class="dq"><summary>Detail</summary><div class="body">
@@ -627,7 +660,7 @@ python3 experiments/analysis/compare_cells.py</pre>
       </div>
     </li>
     <li>
-      <span class="d">20 Oct, noon</span>
+      <span class="d">Plan</span>
       <div>
         <div class="s">The claim run's protocol committed before the held-out market existed. The market was then generated by a fixed rule.</div>
         <details class="dq"><summary>Detail</summary><div class="body">
@@ -636,7 +669,7 @@ python3 experiments/analysis/compare_cells.py</pre>
       </div>
     </li>
     <li class="key">
-      <span class="d">20 Oct, evening</span>
+      <span class="d">Claim run</span>
       <div>
         <div class="s">The claim run. 66 runs, 4 arms, 3 rotated rounds, $17.84, no broken runs.<span class="k">the held-out run</span></div>
         <details class="dq"><summary>Detail</summary><div class="body">
@@ -645,7 +678,7 @@ python3 experiments/analysis/compare_cells.py</pre>
       </div>
     </li>
     <li>
-      <span class="d">20 to 21 Oct, night</span>
+      <span class="d">Repeat</span>
       <div>
         <div class="s">The AI parser on 30 reworded questions ($0.06), then the claim's design repeated on DeepSeek V4 Flash and the newer question shapes.</div>
         <details class="dq" open><summary>Detail</summary><div class="body">
@@ -662,21 +695,21 @@ python3 experiments/analysis/compare_cells.py</pre>
   <p>Tests 1 to 6 ran on Thornwood, the market the block was designed on. Test 7 is the held-out claim. Test 8 is the parser check. Test 9 repeats the claim on a second model, and Test 10 tries the newer question shapes.</p>
   <div class="tablewrap">
     <table>
-      <thead><tr><th>Test</th><th>Date</th><th>Market</th><th>What it is</th><th>Correct</th><th>Opened what it needs</th><th class="num">Cost a run</th></tr></thead>
+      <thead><tr><th>Test</th><th>Week</th><th>Market</th><th>What it is</th><th>Correct</th><th>Opened what it needs</th><th class="num">Cost a run</th></tr></thead>
       <tbody>
-        <tr><td>1</td><td>7 Oct</td><td>Thornwood</td><td>openJiuwen as shipped</td><td class="num">4 of 15</td><td class="num">3 of 15</td><td class="num">$0.18</td></tr>
-        <tr><td>2</td><td>7 Oct</td><td>Thornwood</td><td>card reader's viewport limit off</td><td class="num">11 of 15</td><td class="num">15 of 15</td><td class="num">$0.48</td></tr>
-        <tr><td>3</td><td>7 Oct</td><td>Thornwood</td><td>a second agent, same model</td><td class="num">9 of 15</td><td class="num">12 of 15</td><td class="num">$0.13</td></tr>
-        <tr><td>4</td><td>8 Oct</td><td>Thornwood</td><td>told to open every listing</td><td class="num">11 of 15</td><td class="num">15 of 15</td><td class="num">$0.52</td></tr>
-        <tr><td>5</td><td>14 Oct</td><td>Thornwood</td><td>block v1 pilot</td><td class="num">2 of 2</td><td class="num">2 of 2</td><td class="num">$0.31</td></tr>
-        <tr><td>6</td><td>14 Oct</td><td>Thornwood</td><td>block v2, development (in sample)</td><td class="num">13 of 15</td><td class="num">14 of 15</td><td class="num">$0.26</td></tr>
-        <tr class="hl"><td>7</td><td>20 Oct</td><td>Ashcombe (held out)</td><td>claim run, 4 arms</td><td class="num">block 12/12, shipped 4/12, open everything 12/12</td><td class="num">block 14 of 15<sup>*</sup></td><td class="num">block $0.23</td></tr>
-        <tr><td>8</td><td>20 Oct</td><td>Thornwood page</td><td>AI parser on 24 reworded questions</td><td class="num">21 of 24 kind (rules 17)</td><td class="num muted">&ndash;</td><td class="num">$0.06 total</td></tr>
-        <tr><td>9</td><td>20 to 21 Oct</td><td>Ashcombe (held out)</td><td>The claim design on a second model, DeepSeek V4 Flash</td><td class="num">block 12/12, shipped 5/12, open everything 11/12</td><td class="num">block 15 of 15</td><td class="num">block $0.03</td></tr><tr><td>10</td><td>21 Oct</td><td>Ashcombe</td><td>The newer question shapes, the block and the shipped agent</td><td class="num">block 14/15, shipped 9/15</td><td class="num">block 15 of 15, shipped 8 of 15</td><td class="num">block $0.23, shipped $0.18</td></tr>
+        <tr><td>1</td><td>1</td><td>Thornwood</td><td>openJiuwen as shipped</td><td class="num">4 of 15</td><td class="num">3 of 15</td><td class="num">$0.18</td></tr>
+        <tr><td>2</td><td>1</td><td>Thornwood</td><td>card reader's viewport limit off</td><td class="num">11 of 15</td><td class="num">15 of 15</td><td class="num">$0.48</td></tr>
+        <tr><td>3</td><td>1</td><td>Thornwood</td><td>a second agent, same model</td><td class="num">9 of 15</td><td class="num">12 of 15</td><td class="num">$0.13</td></tr>
+        <tr><td>4</td><td>1</td><td>Thornwood</td><td>told to open every listing</td><td class="num">11 of 15</td><td class="num">15 of 15</td><td class="num">$0.52</td></tr>
+        <tr><td>5</td><td>2</td><td>Thornwood</td><td>block v1 pilot</td><td class="num">2 of 2</td><td class="num">2 of 2</td><td class="num">$0.31</td></tr>
+        <tr><td>6</td><td>2</td><td>Thornwood</td><td>block v2, development (in sample)</td><td class="num">13 of 15</td><td class="num">14 of 15</td><td class="num">$0.26</td></tr>
+        <tr class="hl"><td>7</td><td>2</td><td>Ashcombe (held out)</td><td>claim run, 4 arms</td><td class="num">block 12/12, shipped 4/12, open everything 12/12</td><td class="num">block 14 of 15<sup>*</sup></td><td class="num">block $0.23</td></tr>
+        <tr><td>8</td><td>2</td><td>Thornwood page</td><td>AI parser on 24 reworded questions</td><td class="num">21 of 24 kind (rules 17)</td><td class="num muted">&ndash;</td><td class="num">$0.06 total</td></tr>
+        <tr><td>9</td><td>2</td><td>Ashcombe (held out)</td><td>The claim design on a second model, DeepSeek V4 Flash</td><td class="num">block 12/12, shipped 5/12, open everything 11/12</td><td class="num">block 15 of 15</td><td class="num">block $0.03</td></tr><tr><td>10</td><td>2</td><td>Ashcombe</td><td>The newer question shapes, the block and the shipped agent</td><td class="num">block 14/15, shipped 9/15</td><td class="num">block 15 of 15, shipped 8 of 15</td><td class="num">block $0.23, shipped $0.18</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="note"><sup>*</sup> Opened what it needs on the five gated questions, 3 runs each. The block 14 of 15, one all-stocked run's counterexample was only seen in a cut view. Open everything 15 of 15, shipped 2 of 15.</p>
+  <p class="note"><sup>*</sup> Opened what it needs on the five gated questions, 3 runs each. The block 14 of 15: one run proved "does every listing offer M" with a listing where M is only sold out, which under the stated reading still counts as offered. Open everything 15 of 15, shipped 2 of 15.</p>
 
   <div class="testlist">
     <details class="dq"><summary>Test 1, openJiuwen as shipped</summary><div class="body"><p>The floor, and research question 2 on Thornwood. It reads the four product cards visible in the browser window and trusts them, so it opened what the answer needs in only 3 of 15 runs and was correct in 4.</p></div></details>
@@ -910,11 +943,26 @@ python3 experiments/analysis/compare_cells.py</pre>
   </div>
 </section>
 
+<section class="sec" id="questions">
+  <p class="eyebrow">For today's meeting</p>
+  <h2>Questions for the professor</h2>
+  <ol>
+    <li><strong>Budget.</strong> $5.26 of the $100 is left. Could the second $100 of the $200 requested be released, for a second new market and, if there is time, reviews?</li>
+    <li><strong>Is one new market enough?</strong> The claim rests on one held-out market and two models. Would a second market strengthen the abstract more than reviews would?</li>
+    <li><strong>Reviews.</strong> Is it acceptable to present reviews as a designed extension rather than a measured result?</li>
+    <li><strong>The title.</strong> The registered title is about ambiguity and injection defences. The results are mostly about a retrieval policy, with ambiguity as one finding. Should the registered title stay, or move closer to the working title?</li>
+    <li><strong>The ask-back finding.</strong> Asking the user only helped when the agent then applied the answer, which Haiku did not under one reading. Is that worth presenting as a finding in its own right?</li>
+    <li><strong>Open source.</strong> Should the market generator be offered to WebArena-Verified now, and are there NUS rules on licensing FYP code?</li>
+    <li><strong>AI assistance.</strong> How should the use of an AI coding assistant be declared in the report?</li>
+    <li><strong>The abstract.</strong> Which assessment criteria should it speak to most? And would a discussion of possible improvements at next week's meeting be welcome?</li>
+  </ol>
+</section>
+
 <section class="sec" id="plan">
   <p class="eyebrow">To 6 November</p>
   <h2>The plan, and the recommendation on reviews</h2>
   <div class="callout">
-    <p><strong>Recommendation. Stop building new features now and write.</strong> Make reviews a designed extension, described in the report as the next step with the building block already in the design. Build it only if the report is on track by 28 October and the professor tops up the budget.</p>
+    <p><strong>Recommendation. Stop building new features now and write.</strong> Make reviews a designed extension, described in the report as the next step with the building block already in the design. Build it only if the abstract is on track by next week's meeting on 28 October and the budget is topped up.</p>
   </div>
   <h3>Why</h3>
   <ul>
@@ -925,10 +973,10 @@ python3 experiments/analysis/compare_cells.py</pre>
   </ul>
   <h3>Timeline</h3>
   <ol class="dates">
-    <li><span class="d">21 Oct</span><span>The meeting. Ask for the second $100 of the $200 requested. $100 was granted.</span></li>
-    <li><span class="d">21 to 24 Oct</span><span>Write up the claim and the DeepSeek repeat. Record the new error kind. Open an issue with WebArena-Verified describing the gated-variant extension, with no claim until merged.</span></li>
-    <li><span class="d">25 to 27 Oct</span><span>Last experiments, only if they close a gap the results show, for example the ask-back follow-through on a second fresh market. Freeze experiments on 27 October.</span></li>
-    <li><span class="d">27 Oct to 5 Nov</span><span>Write the abstract. The problem and method can be drafted now, and the results come from this page. Report sections in parallel.</span></li>
+    <li><span class="d">21 Oct</span><span>Today's meeting. Ask for the second $100 of the $200 requested, as $100 was granted.</span></li>
+    <li><span class="d">21 to 27 Oct</span><span>Write the abstract's first draft from this page's results. Record the new error kind. Open an issue with WebArena-Verified describing the gated-variant extension, with no claim until a pull request is merged. Run a last experiment only if it closes a gap the results show and the budget allows.</span></li>
+    <li><span class="d">28 Oct</span><span>Next meeting. The abstract's first draft is ready, and a discussion with the professor of how to improve the project, if that suits.</span></li>
+    <li><span class="d">28 Oct to 5 Nov</span><span>Revise the abstract from the feedback, with the report's sections in parallel.</span></li>
     <li><span class="d">6 Nov</span><span>Abstract due.</span></li>
   </ol>
 </section>
