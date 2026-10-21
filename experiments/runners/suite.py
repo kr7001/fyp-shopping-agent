@@ -403,7 +403,7 @@ def unscorable(tasks: list[dict], spec: dict, args, readings: dict) -> list[str]
     """The tasks a batch could not score, each with the reading its runs would be scored
     under: the `--reading` reply where the box asks, the box's own reading where it takes
     one, the task's own key otherwise (`reading_answered`), wherever `score.under_reading`
-    has no key for it. Since d16aa48 (20 October 2026) a question with two readings
+    has no key for it. Since 335dda6 (20 October 2026) a question with two readings
     answered under one its sidecar lacks raises there, and the suite scores each run right
     after it, so the batch would end after that run had been paid for. A slot the box
     closes, an ask with no reply or a refusal, runs nothing and is scored by nothing."""
@@ -615,7 +615,7 @@ def main() -> int:
     spec = json.loads(args.tasks.read_text())
     # An id that names no task is an error, by name. Until 14 Oct 2026 it was dropped
     # without a word, so a misspelt --only ran the rest as if nothing were missing
-    # (verifier finding at 7d2ec2e).
+    # (verifier finding at 39f15e9).
     known = {t["id"] for t in spec["tasks"]}
     unknown = [task_id for task_id in args.only or [] if task_id not in known]
     if unknown:

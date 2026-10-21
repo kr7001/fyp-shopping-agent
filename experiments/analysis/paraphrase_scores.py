@@ -8,7 +8,7 @@
 question it holds the rules' form and the model's form against the rules' form of the
 question it rewords (the expected form), in four tiers, and records what box.decide does
 with the question and with its template. The paraphrase file the run probed decided, on
-20 October 2026 before any model call (05fab56), that the comparison is reported over the
+20 October 2026 before any model call (37a8f66), that the comparison is reported over the
 entries whose meaning is the template's, `meaning_kept`: 24 of the 30 in
 paraphrases_v1.json. On the other 6 a correct parse cannot equal the template's form, so
 they are read one by one and never counted (the file's _about).

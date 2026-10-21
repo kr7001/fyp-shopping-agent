@@ -1,6 +1,6 @@
 """`experiments/analysis/paraphrase_scores.py`: a paraphrase probe's figures over the entries
 whose meaning is the template's, and the others listed, as paraphrases_v1.json fixed before
-any model call (05fab56). Written on 20 October 2026, before the first paid paraphrase run.
+any model call (37a8f66). Written on 20 October 2026, before the first paid paraphrase run.
 
 Two kinds of test. A synthetic result file whose every count is worked out by hand in the
 comments. And the rules' half of the real probe, made by parse_probe's own loop with a faked

@@ -173,7 +173,7 @@ class IsolatedProfile(unittest.TestCase):
 # them are in the six clothing texts v1 rendered: four from the audit (v8) and the fifth from
 # what the leak counter found (v9).
 IN_THE_V1_TEXTS = 5
-# The sha1 of the 18 queries in fixtures/v1_clothing_queries.json as frozen at e3880ef from
+# The sha1 of the 18 queries in fixtures/v1_clothing_queries.json as frozen at 34c0356 from
 # the v1 code, json.dumps(queries, sort_keys=True), read before the amendment.
 V1_QUERIES_SHA1 = "d539dc80468c3331d63f68d308799125eb498b19"
 
@@ -442,7 +442,7 @@ class StrictUnder(unittest.TestCase):
         self.assertNotIn("at or below", asked.text)
 
     # The seven task files of the audit, 58 questions, and the claim market's, written after
-    # it by a generator that already read "under" strictly (d16aa48).
+    # it by a generator that already read "under" strictly (335dda6).
     AUDITED = ("tasks.json", "tasks_apparel.json", "tasks_apparel_v2.json", "tasks_heldout.json",
                "tasks_heldout_gated.json", "tasks_reviews.json", "tasks_scaled.json")
 
@@ -753,7 +753,7 @@ class RepeatStart(unittest.TestCase):
 # 6. A key for every reading a run is scored under, found before anything runs
 
 class ScoringKeyPreflight(unittest.TestCase):
-    """Since d16aa48 `score.under_reading` raises for a question with two readings answered
+    """Since 335dda6 `score.under_reading` raises for a question with two readings answered
     under one its sidecar has no key for, and the suite scores each run right after it. So
     every task is resolved under the reading its runs would be scored under before the
     first run, and in the dry run, and a missing key refuses the batch with nothing spent."""

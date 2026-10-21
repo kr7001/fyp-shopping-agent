@@ -2,7 +2,7 @@
  "_about": [
   "Thirty rewordings of the Thornwood questions in tasks_apparel_v2.json, written by the",
   "verifier on 20 October 2026 in its audit of the box, without looking at the regular",
-  "expressions the rules parse with, and run by it through box.decide at commit 3843e20.",
+  "expressions the rules parse with, and run by it through box.decide at commit 58f9faa.",
   "Copied from the audit's script by value, nothing retyped: id is the audit's number, text",
   "the question as it wrote it, template the task it rewords, label its own judgement where",
   "it gave one (clear or ambiguous; null where it wrote -), and audit_expected the outcome",

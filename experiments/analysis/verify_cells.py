@@ -432,7 +432,7 @@ def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: boo
     # A run with no answer key is read by hand, never judged: score.py v2's "none" kind,
     # a question the box is expected to ask on, refuse or bypass, that ran anyway. It is
     # counted on its own line and kept out of every correct-of ratio, which until 14 Oct
-    # 2026 showed it as 0 of 1 correct (verifier finding at 7d2ec2e). The floor and
+    # 2026 showed it as 0 of 1 correct (verifier finding at 39f15e9). The floor and
     # coverage lines still count it, since what it opened is a fact whatever its key.
     def keyed(rows):
         return [r for r in rows if r["rescored"] != "unscored"]
@@ -456,7 +456,7 @@ def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: boo
     # it is listed here rather than silently missing from the runs above: the box asked
     # the user, or (box v2) refused because the shop does not show what the question
     # needs. Each row with its text, since the text is the whole outcome. Refused rows
-    # went unmentioned until 14 Oct 2026 (verifier finding at 7d2ec2e).
+    # went unmentioned until 14 Oct 2026 (verifier finding at 39f15e9).
     for verdict, what in (("asked", "the box asked the user and no agent ran"),
                           ("refused", "the box refused and no agent ran")):
         closed = [row for row in suite["rows"] if row.get("verdict") == verdict]

@@ -201,7 +201,7 @@ def stand_in_log(batch: pathlib.Path, tag: str) -> None:
 
 
 class BoxRowsInTheReport(unittest.TestCase):
-    """Verifier finding, 14 Oct 2026, at 7d2ec2e: the report listed asked rows but said
+    """Verifier finding, 14 Oct 2026, at 39f15e9: the report listed asked rows but said
     nothing of refused ones, and showed a run with no answer key (score.py v2's "none"
     kind, verdict "unscored") as 0 of 1 correct. Each case is on the scratch batch above,
     with the pilot's two scored runs beside the new rows, so what must stay as it was is

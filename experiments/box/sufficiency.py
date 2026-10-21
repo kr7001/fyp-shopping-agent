@@ -45,7 +45,7 @@ RESULTS = paths.RESULTS
 # Which rule set scored a run. Bumped when a rule is added or its decision changes, so a
 # recorded verdict says what judged it rather than leaving it to be inferred from a date.
 #
-#   1  the six rules frozen at 0f2b791 and measured on two held-out batches
+#   1  the six rules frozen at c736bc0 and measured on two held-out batches
 #   2  adds superlative_without_coverage, written 17 September 2026 from the principle
 #      rather than from the runs it would catch, and frozen before the next market exists
 #   3  adds count_without_coverage, written 18 September 2026 alongside the clothing market

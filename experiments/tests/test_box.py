@@ -1436,7 +1436,7 @@ class SuiteQuery(unittest.TestCase):
         self.assertIn("--box cannot be combined with --targeting or --exhaustive", run.stderr)
 
     def test_an_unknown_task_id_in_only_is_refused_by_name(self):
-        # Verifier finding, 14 Oct 2026, at 7d2ec2e: an id that named no task was dropped
+        # Verifier finding, 14 Oct 2026, at 39f15e9: an id that named no task was dropped
         # without a word, so a misspelt --only ran the rest as if nothing were missing.
         command = [sys.executable, str(paths.EXPERIMENTS / "runners" / "suite.py"),
                    "--tasks", str(paths.TASKS / "tasks_apparel.json"), "--repeats", "1",
