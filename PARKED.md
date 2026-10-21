@@ -8,4 +8,4 @@ each one is either promoted into the objective, kept, or dropped. Add one with `
 - 2026-10-08: The October deck overflows sideways at phone width. It is laid out at a fixed slide width.
 - 2026-10-08: The README's 18 September table still shows "3.7 listings opened" for the second agent's void runs.
 - 2026-10-08: Reviews. Nine questions exist and have never been run.
-- 2026-10-20: `suite.py --box --dry-run` crashes in `page.parse` ("no product cards") on `tasks.json` and `tasks_reviews.json`, whose questions name a listing page or a review page rather than a results page. Pre-existing at 6175992 and 2ce22cf (verifier finding). The box reads results pages only; those files have never run under it.
+- 2026-10-20: `suite.py --box --dry-run` crashes in `page.parse` ("no product cards") on `tasks.json` and `tasks_reviews.json`, whose questions name a listing page or a review page rather than a results page. Pre-existing at e979e7e and 82fe453 (verifier finding). The box reads results pages only; those files have never run under it.

@@ -1,92 +1,153 @@
 # Removing Claude as a co-author from the history
 
+Done on 21 October 2026, at the student's request. This page records what was run, so the
+rewrite can be checked or undone. The overnight draft of these steps is in this file's history.
 
-Prepared overnight on 21 October 2026. Nothing here has been run. Do it only when no paid
-batch is running (check with `pgrep -fl suite.py`, which must print nothing).
+## Outcome
 
-### What it touches, measured tonight
+| | Before | After |
+| --- | --- | --- |
+| Commits on `dev` | 225, tip `bddd6e1` | 225, tip `21e808d` |
+| Commits on `main` | 139, tip `ee0a7eb` | 139, tip `8cad71a` |
+| Messages with a `Co-Authored-By: Claude` line | 219 | 0 |
+| Trees, authors, committers and dates | | the same in all 225 pairs |
+| Ids that changed | | 223 of 225 |
 
-- 219 of the 221 commits on `dev` end with a `Co-Authored-By: Claude ...` line, in three
-  variants (Claude Opus 5 on 102 commits, Claude Fable 5.1 on 62, Claude Opus 5.5 on 55).
-  `main`, the two tags (`rq2-baseline`, `rq3-gate-heldout`) and `backup/before-rewrite` share
-  most of that history.
-- Removing a line from a commit message changes that commit's id and every id after it. So
-  every commit id changes, although no file content changes (the trees stay identical).
-- The project cites commit ids as evidence. The protocol says the plan was committed at
-  `3843e20` before the market existed, and the decision log, `LESSONS.md` and the site cite
-  about 25 more. After the rewrite those ids still exist in your backup but not on GitHub.
+Removing a line from a message changes that commit's id and the id of every commit after it.
+The first two commits carried no line and kept their ids. The other 223 ids changed, while no
+file did. Commits made after the rewrite carry no Claude line, by the rule in force since
+00:12 on 21 October.
 
-### The choice
+## What was run
 
-- **Option A, rewrite**, keeping every cited id traceable. This is the same method the project
-  used for the first rewrite on 10 October (README, "Old commit ids are mapped to new ones").
-  It publishes a map from old ids to new, updates the ids quoted in the log, the notes, the
-  protocol and the code, and leaves run records and archived pages as written.
-- **Option B, no rewrite.** Commits from now on carry no Claude line (already in effect since
-  00:12 on 21 October). Credit Claude in the README and the report. This has no risk and keeps
-  every id valid, but GitHub would still list Claude on the old commits.
-
-Option A is safe if done in this order. Choose B if you would rather not touch history again
-before the abstract.
-
-### Option A, step by step (about 20 minutes)
-
-1. Install the tool: `brew install git-filter-repo`
-2. Back up everything: `git clone --mirror git@github.com:kr7001/fyp-shopping-agent.git ~/fyp-backup-before-coauthor-rewrite.git`
-3. In the project folder, remove the three finished agent worktrees and their branches:
-   `git worktree remove --force .claude/worktrees/agent-a01850863544fa058` (and the same for
-   `agent-a35e53ef628c48029` and `agent-ab608abc551d4b6ce`), then
-   `git branch -D worktree-agent-a01850863544fa058 worktree-agent-a35e53ef628c48029 worktree-agent-ab608abc551d4b6ce`.
-4. Do the rewrite in a fresh clone, never in the working folder (which holds the run logs, the
-   `.env` and the agent submodule):
-   ```
-   git clone git@github.com:kr7001/fyp-shopping-agent.git ~/fyp-rewrite && cd ~/fyp-rewrite
-   git checkout -B main origin/main && git checkout -B dev origin/dev && git fetch --tags
-   git log --all --format=%B | grep -c "Co-Authored-By: Claude"     # expect about 219 plus main's
-   git rev-parse dev^{tree} > /tmp/tree-before.txt
-   ```
-5. Remove only the Claude lines, nothing else:
+1. **Backup.** The old history, exactly as GitHub had it, is in a mirror outside the
+   repository, never pushed:
+   `git clone --mirror git@github.com:kr7001/fyp-shopping-agent.git ~/fyp-backup-before-coauthor-rewrite.git`
+2. **Worktrees.** The three finished agent worktrees under `.claude/worktrees/` and their
+   `worktree-agent-*` branches were removed from the working folder.
+3. **The rewrite**, in a fresh clone at `~/fyp-rewrite`, never in the working folder, which
+   holds the run logs, the `.env` and the agent submodule:
    ```
    git filter-repo --force --message-callback '
    import re
    return re.sub(rb"\n*Co-Authored-By: Claude[^\n]*", b"", message).rstrip(b"\n") + b"\n"
    '
    ```
-6. Check it did exactly that:
+   By default git filter-repo also rewrites commit ids quoted inside messages to the new ids.
+   Fifteen messages quote one, so their references still lead to the right commit.
+4. **The check.** Each old commit was compared with its new one through the map: the same
+   tree, the same parents, the same author, committer and dates, and the same message once
+   the Claude line is removed and quoted ids are mapped. All 225 pairs passed. The script is
+   below.
+5. **The push**, replacing GitHub's history. The leases name the exact old tips, so the push
+   would have been refused had GitHub changed since the backup:
    ```
-   git log --all --format=%B | grep -c "Co-Authored-By: Claude"     # must be 0
-   git rev-parse dev^{tree} | diff - /tmp/tree-before.txt && echo "files identical"
-   git log --format=%s dev | wc -l                                  # still 221 or more
+   git push --force-with-lease=dev:bddd6e198b1b8c544d364df9b09f8b0fe6bbcd38 \
+            --force-with-lease=main:ee0a7eb1df8ed947cf409fcd2d84253501a7193d origin dev main
    ```
-7. Keep the map from old ids to new: `cp .git/filter-repo/commit-map docs/archive/commit-map-2026-10-21.txt`
-8. Update the ids quoted in the prose (README.md, LESSONS.md, docs/content/*.md including the
-   protocol, and comments in experiments/ and env/), and leave `experiments/results/`,
-   `docs/archive/` and `.verification/` as written. Ask me to do this step: it is a scripted
-   replacement from the map, and I will show you the diff before you commit it.
-9. Add one line to the README decision log: "21 October 2026: Claude co-author lines removed
-   from the history at the student's request. Ids before this date map through
-   docs/archive/commit-map-2026-10-21.txt. Claude's role is credited under 'How this project
-   was built'."
-10. Push, replacing GitHub's history (this is the irreversible step):
-    ```
-    git remote add origin git@github.com:kr7001/fyp-shopping-agent.git
-    git push --force-with-lease origin dev main
-    git push --force origin --tags
-    ```
-11. Bring the working folder onto the new history, which keeps its ignored files (logs, `.env`):
-    ```
-    cd ~/projects/shopping-agent-against-information-gated-retrieval
-    git fetch origin --tags --force
-    git checkout dev && git reset --hard origin/dev
-    git status            # only your own uncommitted files (docs/report-4.*) should show
-    ```
-12. Any paid run after this needs a fresh verifier stamp, because the stamp names a commit id.
+6. **The working folder**, moved onto the new history without changing a file:
+   ```
+   git fetch origin
+   git reset origin/dev            # mixed: the trees are identical, so no file changes
+   git branch -f main origin/main
+   ```
+   The overnight draft said `git reset --hard`. That would have discarded the uncommitted
+   edits to `docs/report-4.html`, `docs/report-4.js` and `docs/site-data.js`. A mixed reset
+   kept them.
+7. **Tags.** GitHub had none. The two local tags were moved through the map.
+   `rq3-gate-heldout` now points at `6c218b3`. `rq2-baseline`, an annotated tag, was
+   re-created with `git mktag` from its own tag object, so its tagger, date and message are
+   unchanged, and it points at `abe8d7f`.
+8. **The map and the quoted ids.** The map is `docs/archive/commit-map-2026-10-21.txt`. Ids
+   quoted in the decision log, the notes, these guides, `PARKED.md`, `docs/content/` and the
+   code comments were replaced through it by the second script below. The site data,
+   `docs/site-data.js`, was not rebuilt, and the next `make site` brings the new ids with it.
 
-### What to put in the README and the report instead
+## What was left as written
 
-A short section, "How this project was built": the student designed the research, made every
-decision and reviewed every result. Claude Code (Anthropic), used with Claude Opus and Fable
-models, wrote most of the code under the student's direction, ran the independent
-verification passes, and drafted documentation. The decision log records what was decided,
-when and why. Check your faculty's rules on declaring AI assistance, and use their wording if
-they give one.
+- Run records in `experiments/results/`, the archived pages in `docs/archive/` and the
+  verifier's stamps in `.verification/` keep the ids they were written with. The map
+  resolves them. An id from before 10 October goes through `docs/archive/commit-map.txt`
+  first, then the new map.
+- The claim protocol, `docs/content/claim-protocol.md`, is the pre-registration. It is left
+  exactly as it stood before the rewrite, so it still quotes `ea17804` and `c09bd87`. They are
+  now `9cf54a5` and `51f3b0f`.
+- `backup/before-rewrite`, the local branch kept from the rewrite of 10 October, is untouched
+  and has never been pushed. Its commits from before 10 October still carry the lines.
+
+## Worth knowing
+
+- GitHub still serves an old commit to anyone who has its exact id, until it clears out
+  commits that no branch reaches. GitHub Support can clear them sooner on request. Nothing on
+  GitHub leads to them: the repository has no forks and no pull requests.
+- A paid run from now on needs a fresh verifier stamp, because a stamp names a commit id.
+- To undo, push the mirror's two branches back. The command names GitHub's address, because
+  the mirror's own remote is set to mirror and refuses a push of named branches:
+  `git -C ~/fyp-backup-before-coauthor-rewrite.git push --force git@github.com:kr7001/fyp-shopping-agent.git dev main`
+
+## Credit
+
+The README's "How this project was built" says who did what, and so does the footer of the
+update of 21 October. Check the faculty's rules on declaring AI assistance in the final report,
+and use their wording if they give one.
+
+## The two scripts
+
+The pair check, run from the repository root. It needs the backup mirror, and it checks that
+the map covers every commit on both sides:
+
+```python
+import pathlib, re, subprocess
+OLD = pathlib.Path.home() / "fyp-backup-before-coauthor-rewrite.git"
+MAP = pathlib.Path("docs/archive/commit-map-2026-10-21.txt")
+FMT = "%H%x00%T%x00%P%x00%an%x00%ae%x00%ad%x00%cn%x00%ce%x00%cd%x00%B%x1e"
+
+def commits(repo):
+    out = subprocess.run(["git", "-C", str(repo), "log", "--all", f"--format={FMT}", "--date=raw"],
+                         capture_output=True, text=True, check=True).stdout
+    rows = (r.strip("\n").split("\x00") for r in out.split("\x1e") if r.strip("\n"))
+    return {f[0]: (f[1], f[2].split(), tuple(f[3:9]), f[9]) for f in rows}
+
+rows = [l.split() for l in MAP.read_text().splitlines() if l.strip() and not l.startswith("#")]
+pairs = dict(rows[1:])
+HEX = re.compile(r"(?<![0-9a-fA-F])[0-9a-f]{7,40}(?![0-9a-fA-F])")
+def mapped(message):
+    def swap(m):
+        hits = [o for o in pairs if o.startswith(m.group(0))]
+        return pairs[hits[0]][:len(m.group(0))] if len(hits) == 1 else m.group(0)
+    return HEX.sub(swap, re.sub(r"\n*Co-Authored-By: Claude[^\n]*", "", message).rstrip("\n"))
+
+old, new = commits(OLD), commits(".")
+bad = [o for o, n in pairs.items()
+       if old[o][0] != new[n][0] or [pairs[p] for p in old[o][1]] != new[n][1]
+       or old[o][2] != new[n][2] or mapped(old[o][3]) != new[n][3].rstrip("\n")]
+print(len(pairs), "pairs,", len(bad), "differ")
+# The map must cover every commit on both sides, or a missing pair would go unnoticed.
+tips = subprocess.run(["git", "rev-list", "21e808d", "8cad71a"], capture_output=True, text=True,
+                      check=True).stdout.split()
+print("every old commit mapped:", set(pairs) == set(old), "| every new one:", set(pairs.values()) == set(tips))
+```
+
+The id replacement, run from the repository root with the files to change as arguments. It
+replaces a run of 7 to 40 lowercase hex characters when it starts exactly one old id, by the
+new id cut to the same length. Run it once per file. A second run on the decision log or on
+this guide would rewrite the old ids they quote on purpose:
+
+```python
+import pathlib, re, sys
+MAP = pathlib.Path("docs/archive/commit-map-2026-10-21.txt")
+rows = [l.split() for l in MAP.read_text().splitlines() if l.strip() and not l.startswith("#")]
+pairs = {o: n for o, n in rows[1:] if o != n}
+HEX = re.compile(r"(?<![0-9a-fA-F])[0-9a-f]{7,40}(?![0-9a-fA-F])")
+for name in sys.argv[1:]:
+    path, changes = pathlib.Path(name), []
+    def swap(m):
+        hits = [o for o in pairs if o.startswith(m.group(0))]
+        if len(hits) != 1:
+            return m.group(0)
+        changes.append(m.group(0))
+        return pairs[hits[0]][:len(m.group(0))]
+    text = path.read_text()
+    path.write_text(HEX.sub(swap, text))
+    print(name, len(changes))
+```

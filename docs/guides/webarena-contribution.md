@@ -1,6 +1,6 @@
 # Contributing the gated-variant shop to WebArena-Verified
 
-Prepared 21 October 2026 from the repository at `05663e9` and from GitHub, Docker Hub and Magento's sources. Nothing here touches tonight's batch or costs money.
+Prepared 21 October 2026 from the repository at `29932b1` and from GitHub, Docker Hub and Magento's sources. Nothing here touches tonight's batch or costs money.
 
 ## 1. The contribution, in two sentences
 
@@ -116,7 +116,7 @@ In the original WebArena format the `eval` block would be this, but `must_includ
 
 Begin once tonight's batch is verified and disk space checked. Stop the project container (never `rm` it), as the scripts assume port 7770.
 
-- [ ] Read the two options you set by hand. Commit `f183b46` records only "the page size is 36", and `show_out_of_stock` was never scripted.
+- [ ] Read the two options you set by hand. Commit `a3c1c02` records only "the page size is 36", and `show_out_of_stock` was never scripted.
 
 ```bash
 docker exec webarena-shopping mysql -u magentouser -pMyPassword magentodb -e "SELECT scope, scope_id, path, value FROM core_config_data WHERE path LIKE 'catalog/frontend/grid_per_page%' OR path = 'cataloginventory/options/show_out_of_stock'"

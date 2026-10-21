@@ -15,7 +15,7 @@ Last week's plan for week 1 (9 to 15 October) had seven items. Status at 2 am on
 | Back up the raw logs privately | **Not done.** Needs a drive or a private folder the student chooses. 452 logs, 1.7 GB | `find experiments/results -name '*.log'` lists 452 files |
 | Fix the two September scripts that pool across model and agent | **Not done.** Deferred behind the box. The site's September table is built per model and agent already | Problems page |
 | `--dry-run` prints the exact text | **Done** | `make dry TASKS=tasks_apparel.json` |
-| The coder builds the box, with tests | **Built** overnight from the spec, 90 tests pass, the frozen strategy text proven byte-identical | commits `5cac414` and `45b4425` |
+| The coder builds the box, with tests | **Built** overnight from the spec, 90 tests pass, the frozen strategy text proven byte-identical | commits `867851f` and `8adeece` |
 | The scripted user | **Done**: `--reading menu` or `--reading buyable` | the spec, decision 4 |
 | Verifier pass, then the stamp | **Pending** the build | |
 
@@ -164,7 +164,7 @@ are right). In sample for the rules, which were written on these 37 questions.
 Added on 20 October, after the verifier passed the three batches. The student said yes to a
 smaller split than the $13.65 proposed above: the six old questions three times under the
 "menu" reading, declared $6. The ten new questions once, declared $3. The two "offer"
-questions three times under the "buyable" reading, declared $2. All three at commit `d3725ce`,
+questions three times under the "buyable" reading, declared $2. All three at commit `146c582`,
 box v6, the verifier's stamp of 21:30. Charged $4.0702, $2.1899 and $0.7037, from `make verify
 BATCH=experiments/results/20261014T213118`, `...T220116` and `...T222007`.
 

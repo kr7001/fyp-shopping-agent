@@ -125,7 +125,7 @@ figures were out of sample when the retry arm ran. The composition fix and
 `understated_population` were both written from failures in that arm, so the 12 of 12
 above is in sample for them.
 
-So the rules were frozen at commit `0f2b791` and a fresh baseline was run, 5 tasks x 3
+So the rules were frozen at commit `c736bc0` and a fresh baseline was run, 5 tasks x 3
 repeats, $3.41, on data that did not exist when the rules were written. Replayed with
 `replay_gate.py --suite`, which reads that directory alone:
 

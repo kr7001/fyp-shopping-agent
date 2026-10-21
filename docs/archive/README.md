@@ -14,6 +14,8 @@ written so the record of what was claimed, and when, stays intact. The current s
 | `checkpoint-slides.md` | The slide script for the 18 September checkpoint |
 | `updates/` | Supervisor updates 1 to 3 and the 9 September walkthrough |
 | `style.css`, `app.js` | What those pages need to render |
+| `commit-map.txt` | Old commit ids to new, from the rewrite of 10 October that took the paper out and added Magento's licence notice |
+| `commit-map-2026-10-21.txt` | Old commit ids to new, from the rewrite of 21 October that took the Claude co-author lines out of the messages. An id from before 10 October goes through `commit-map.txt` first, then this map |
 
 Figures here are as they were on each page's date. Where a figure was later corrected, the
 README decision log says so. Commands on these pages name the folder layout before

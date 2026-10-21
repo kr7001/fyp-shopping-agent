@@ -36,8 +36,8 @@ run, or the top-k question is left out of it and stated as a limit.*
 ## The second agent is not confined to the shop
 
 openJiuwen on the gated shop runs with `--allowed-origins http://localhost:7770` and, since
-`2ce22cf`, `--block-service-workers`. The second agent drives its own browser and has neither,
-so `--box` with `--scaffold naive` is refused (`bb89137`) and no bypassed question may run
+`82fe453`, `--block-service-workers`. The second agent drives its own browser and has neither,
+so `--box` with `--scaffold naive` is refused (`d06ebfc`) and no bypassed question may run
 under it. The project never lets an agent onto a live site. *Before the second agent runs
 under the box.*
 
