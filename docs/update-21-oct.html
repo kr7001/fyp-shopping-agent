@@ -151,7 +151,10 @@ tr.hl td{background:var(--teal-soft)}
 .legend i{width:14px;height:10px;border-radius:2px;display:inline-block}
 .tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);font-size:.82rem;line-height:1.35;padding:6px 9px;border-radius:4px;max-width:280px;z-index:5;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 .tip b{display:block;font-size:.95rem}
-.charts2{display:grid;grid-template-columns:3fr 2fr;gap:14px;align-items:start}
+.charts2{display:grid;grid-template-columns:3fr 2fr;gap:14px;align-items:stretch}
+.charts2>div{display:flex;flex-direction:column}
+.charts2 .chart{flex:1;display:flex;flex-direction:column}
+.charts2 #chart-main-svg{flex:1;display:flex;align-items:center}
 @media (max-width:860px){.charts2{grid-template-columns:1fr}}
 .limits{margin:1rem 0 0;padding:0;list-style:none;max-width:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:6px 18px;font-size:.92rem;color:var(--ink-2)}
 .limits li{padding-left:12px;border-left:2px solid var(--rule);margin:0}
@@ -236,41 +239,24 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
 <div class="page">
 
 <header class="top">
-  <p class="eyebrow">Final Year Project, NUS Data Science and Analytics · Progress report for the supervisor meeting</p>
+  <p class="eyebrow">FYP Progress Update</p>
   <h1>Interaction-Gated Shopping Agents</h1>
   <div class="meta">
-    <span><b>Kayleen Lee Kai Rong</b></span>
-    <span>Supervisor <b>A/Prof. Markus Kirchberg</b></span>
     <span>Meeting <b>21 October 2026</b></span>
     <span>Covers <b>7 to 21 October</b></span>
     <span>Abstract due <b>6 November 2026</b></span>
   </div>
-  <p class="small" style="margin-top:.9rem">Registered title, Ambiguity Without Adversary, Why Injection Defences Miss a Common Agent Failure in Commerce. Working title, Retrieval Policies for Shopping Agents Under Interaction-Gated Information. Every figure on this page was checked against the raw run files by the project's independent verifier unless marked otherwise.</p>
-  <nav class="toc" aria-label="Contents">
-    <a href="#big-picture">Big picture</a>
-    <a href="#claim">Held-out result</a>
-    <a href="#night-results">Night results</a>
-    <a href="#weeks">Week by week</a>
-    <a href="#tests">Tests</a>
-    <a href="#block">The block</a>
-    <a href="#decisions">Decisions</a>
-    <a href="#checks">Checks</a>
-    <a href="#adds-up">What it adds up to</a>
-    <a href="#questions">Questions</a>
-    <a href="#plan">Plan</a>
-    <a href="#sources">Sources</a>
-    <button class="btn" type="button" id="toggle-all" aria-pressed="false">Open every details box</button>
-  </nav>
+  <p class="small" style="margin-top:.9rem">Working title: Retrieval Policies for Shopping Agents Under Interaction-Gated Information.</p>
 </header>
 
 <section class="sec" id="big-picture">
   <p class="eyebrow">The big picture</p>
   <h2>A shopping agent answers from the page it can see</h2>
   <ul class="lead-list">
-    <li>When a price, size or stock level only appears after a click, which this project calls interaction-gated information, shopping agents often answer anyway, wrongly and with no sign of doubt.</li>
-    <li>The project traced this to its cause in a real open-source agent, which trusts the four product cards on screen and stops looking.</li>
-    <li>It built a block that sits in front of any agent. The block plans what to open and when to stop, asks the user when a question is ambiguous, and checks the answer.</li>
-    <li>It tested the block on a new clothing market it had never seen, with the test plan written down before the market existed.</li>
+    <li>When a price, size or stock level only appears after a click (interaction-gated information), shopping agents often answer anyway, wrongly and with no sign of doubt.</li>
+    <li>Two weeks ago, I found that a real open-source browser agent (openjiuwen), trusts the four product cards on screen and stops looking, and proceeded to fix the issue.</li>
+    <li>This week, I built <b>a block</b> that sits before any agent. It decides what to open and when to stop, asks the user when a question is ambiguous, and checks the answer.</li>
+    <li>The block is tested on a new clothing market it had never seen, with the test plan written down before the market existed (no bias).</li>
     <li>The block was right on 12 of 12 runs where the shipped agent was right on 4. It opened a median of 6 listings instead of 15, at less than half the cost of opening every listing. All three tests planned in advance passed, and they passed again on a second model.</li>
   </ul>
 
@@ -293,28 +279,19 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
     <div class="tile" role="listitem">
       <div class="label">Tests planned in advance that passed</div>
       <div class="value">3 <small>of 3</small></div>
-      <div class="vs">Right more often than the shipped agent, and fewer listings and lower cost than opening everything. If the block were no better, results this strong would turn up by chance about 1 time in 1,000 at most.</div>
+      <div class="vs">More accurate than shipped agent, open fewer listings and cost less than open everything</div>
     </div>
   </div>
   <details class="dx">
     <summary>What "3 of 3 tests passed" means</summary>
     <div class="body">
-      <p>Before the run, the plan named three comparisons and the test to use for each. Fixing them in advance stops anyone from choosing, after seeing the data, the comparisons that happen to look good.</p>
+      <p>Before the run, the plan named three comparisons and the test to use for each. Fixing them in advance stops anyone from choosing after seeing the data, and makes the compairson look good.</p>
       <ul>
         <li><strong>H1.</strong> The block is right more often than the shipped agent. 12 of 12 runs against 4 of 12, p = 0.001.</li>
         <li><strong>H2.</strong> The block opens fewer listings than "open everything". A median of 6 against 15, p = 0.00025.</li>
         <li><strong>H3.</strong> The block costs less a run than "open everything". A median of $0.20 against $0.41, p = 0.000016.</li>
       </ul>
       <p>A p-value says how often a difference this large would appear by chance if the block were in fact no better. p = 0.001 means about 1 time in 1,000. Three tests give three chances to be fooled, so Holm's correction raises each p-value to allow for that. After it the three are 0.001, 0.0005 and 0.00005, all far below the usual cut-off of 0.05.</p>
-    </div>
-  </details>
-
-  <details class="dx">
-    <summary>The problem in one example</summary>
-    <div class="body">
-      <p>The test shop is a self-hosted copy of the WebArena e-commerce site, which runs on Magento, with a market this project generated. The market holds 15 listings of the same tee from 15 sellers. The results page shows one price per listing, the cheapest size that can be bought. A size's own price and stock appear only after choosing that size inside the listing. So the question "which seller is cheapest for size M?" cannot be answered from the results page.</p>
-      <p>On the held-out market, Ashcombe, the cheapest-looking card (Quarles, $18.11) sits in the first row. The answer is Copperfield Outfitters at $23.43, shown 11th. Six listings must be opened to be sure.</p>
-      <p>The real-world motivation was observed by hand in August 2026, with no automation. A live marketplace listing advertised four pack sizes but showed one price at a time. A live AI shopping assistant asked for the cheapest 9.5 L carton named a seller as 27% cheaper and was wrong, with no sign of doubt. The page's structured data published a single price rather than the range, so the information was missing rather than contradicted.</p>
     </div>
   </details>
   <details class="dx">
@@ -329,8 +306,13 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
 <section class="sec" id="claim">
   <p class="eyebrow">The main result</p>
   <h2>The held-out claim run</h2>
-  <p>The test ran on Ashcombe, a new clothing market of 15 tee listings from 15 sellers, generated after the block was frozen. The block had been designed on Thornwood, an earlier clothing market of the same kind. Four arms, meaning four versions of the agent, each ran the questions three times, in three rounds with the arm order rotated. Every arm used Claude Haiku 4.5, the same browser, the same settings and the same budget. The run plan was committed before the market existed.</p>
-  <p>Correct is counted per run. The headline uses the four questions whose answer does not depend on how the word "offer" is read, so each arm has 4 questions &times; 3 runs = 12 runs. Listings opened and cost are over all five questions that need hidden information. 66 runs in all, $17.84, no broken runs.</p>
+  <ul class="lead-list">
+    <li>The test ran on <b>Ashcombe</b>, a new clothing market of 15 tee listings from 15 sellers, generated after the block was frozen.</li>
+    <li>The block had been designed on <b>Thornwood</b>, an earlier clothing market of the same kind.</li>
+    <li>4 arms (four versions of the agent), each ran the questions 3 times, in 3 rounds with the arm order rotated.</li>
+    <li>Every arm used Claude Haiku 4.5, the same browser, the same settings and the same budget.</li>
+  </ul>
+  <p><i>Note: The headline uses the only 4/6 questions whose answer does not depend on how the word "offer" is read (ambuigty) and not the control, so each arm has 4 questions &times; 3 runs = 12 runs. 66 runs in all, $17.84, no broken runs.</i></p>
   <details class="dx">
     <summary>How the 66 runs add up</summary>
     <div class="body">
@@ -338,16 +320,16 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
         <table>
           <thead><tr><th>Arm</th><th>Questions</th><th class="num">Runs</th></tr></thead>
           <tbody>
-            <tr><td>Shipped</td><td>6 (the results-page control and the five gated questions), 3 runs each</td><td class="num">18</td></tr>
-            <tr><td>Open everything</td><td>the 5 gated questions, 3 runs each</td><td class="num">15</td></tr>
-            <tr><td>The block, "listed in the menu" reading</td><td>6, 3 runs each</td><td class="num">18</td></tr>
-            <tr><td>The block, "can sell it now" reading</td><td>the 2 "offer" questions, 3 runs each</td><td class="num">6</td></tr>
-            <tr><td>The block without its stop rule</td><td>the 3 questions where the stop rule acts, 3 runs each</td><td class="num">9</td></tr>
+            <tr><td>Shipped</td><td><b>6 (the results-page control and the five gated questions)</b> x 3 runs</td><td class="num">18</td></tr>
+            <tr><td>Open everything</td><td><b>5 gated questions (exclude control)</b> x 3 runs</td><td class="num">15</td></tr>
+            <tr><td>The block, offer="listed in the menu" reading</td><td><b>6</b> x 3 runs</td><td class="num">18</td></tr>
+            <tr><td>The block, offer="selling now" reading</td><td><b>the 2 "offer" questions</b> x 3 runs</td><td class="num">6</td></tr>
+            <tr><td>The block without its stop rule</td><td><b>the 3 questions where the stop rule acts</b> x 3 runs</td><td class="num">9</td></tr>
             <tr><td><strong>Total</strong></td><td></td><td class="num"><strong>66</strong></td></tr>
           </tbody>
         </table>
       </div>
-      <p class="note">"Open everything" did not run the results-page control. That question needs no listing opened, and Test 4 on Thornwood left it out too, so the claim kept the same design.</p>
+      <p class="note">"Open everything" did not run the results-page control. That question needs no listing opened, saving run cost.</p>
     </div>
   </details>
 
@@ -373,7 +355,7 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
       </div>
       <figure class="chart" id="chart-stop" style="margin-top:0">
         <p class="title" id="chart-stop-title">The stop rule's own effect, mean cost a run</p>
-        <p class="sub">The three questions where the stop rule acts. Exploratory, not one of the three tests.</p>
+        <p class="sub">3 questions impact of the stop rule, which saves cost in exploratory.</p>
         <div class="legend" aria-hidden="true">
           <span><i style="background:var(--teal)"></i>The block</span>
           <span><i style="background:var(--teal-2)"></i>Block without its stop rule</span>
@@ -385,8 +367,11 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
       </figure>
     </div>
   </div>
-
-  <p>The block and the block without its stop rule were both right 9 of 9 times on these three questions (3 questions &times; 3 runs), so the stop rule saves cost without costing correctness. Over the three questions about 47% of the block's cost saving over "open everything" comes from the stop rule itself. The rest comes from handing the agent the list of listings and the plan. On "does every listing offer M" the no-stop arm still said one counterexample settles it, so it stopped as early as the block. That question does not test the stop rule.</p>
+  <ul class="lead-list">
+    <li>The block and the block without its stop rule were both right <b>9 of 9 times</b> on these three questions, so the stop rule saves cost without costing correctness.</li>
+    <li>Over the three questions about 47% of the block's cost saving over "open everything" comes from the stop rule itself.</li>
+    <li>(Inavlid test) On "does every listing offer M" the no-stop arm still said one counterexample settles it, so it stopped as early as the block.</li>
+  </ul>
 
   <details class="dx">
     <summary>Limits of the claim</summary>
