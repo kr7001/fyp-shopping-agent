@@ -1,0 +1,383 @@
+{
+  "_about": [
+    "Held-out rewordings for the second claim run, of the question templates in docs/content/claim2-protocol.md, section 'Questions (templates, to fix)', as read on 22 October 2026. Each entry copies its template's wording by value into template_text (sha256 of the 15 template table rows: eaaab56a07897e36d87d970bad79d4e8f1d81179347a9b6323fd9d48bedae2cf), so a later change to a template is visible. A draft written by the verifier in its scratchpad, before the claim market exists, for the coder to move to experiments/tasks/paraphrases_v2.json.",
+    "Blind to the model parser. While writing these the verifier did not open experiments/box/form.py, experiments/box/normalise.py, experiments/box/ambiguity.py, experiments/runners/parse_probe.py, experiments/tests/test_model_parser.py, anything under the scratchpad's frontdoor/ or ver/ folders, or any git diff or commit touching them, and saw neither the parser's rules nor its model prompt. Of experiments/tasks/paraphrases_v1.json it read only the _about, the field names, the values of the template and audit_expected fields and the count of meaning_kept values, never its texts, labels or meaning_differs. The one parser detail it saw is the subject line of commit e9e644d, shown in the session's git context without being opened, which names 'the negated universal'. Apart from that, the verifier opened only OBJECTIVE.md, the headings and the 'Questions' section of the protocol, and the structure of v1. A script then loaded v1's texts and printed only similarity numbers, to check that no wording was reused: entry 8 scored 0.86 against some v1 text and was reworded without seeing it, after which the highest score is 0.69. Ids 31 to 36 were written at 18:06 +0800 on 22 October 2026 under the same rules, opening nothing new: only this draft, the protocol's 'Questions' section by script (its 15 template rows still hash as recorded above), and v1 through the same numbers-only script. Two candidates scored above the ceiling (0.698 and 0.776) and were replaced without seeing v1; the six written score at most 0.579, under a ceiling of 0.69 applied to each, and the highest over all 36 entries is still entry 8's 0.6947, the 0.69 given above.",
+    "Thirty-six entries. Ids 1 to 30: two rewordings of each of the protocol's 13 gated templates (8 tee, 5 water) and of each of its 2 'should not plan' templates. Ids 31 to 36, added at the coordinator's request at 18:06 +0800 on 22 October 2026: one more rewording that keeps the meaning for each of the six templates that had only one (tee-headline, tee-cheapest-target, tee-all-stocked, tee-exists-under, water-target-price, water-all-stocked), so every template now has two that keep its meaning. {brand} and ${limit} are kept as placeholders.",
+    "Fields. id; template, the protocol's id; template_text, its wording as read; text, the rewording; meaning_kept, true when a correct answer to text is the template's answer, so the template's keys apply unchanged, with meaning_differs, one sentence, only where it is false; label, the verifier's own judgement, clear or ambiguous, of whether text has two readings that give different answers on a shop where a size or pack can be listed but sold out; expected, what a correct block should do with text (plan: hand openJiuwen a retrieval plan; ask: ask the user back before retrieving anything; decline: make no plan), with expected_why, one sentence.",
+    "Counts: 30 keep their template's meaning and 6 do not; 27 clear and 9 ambiguous; expected 23 plan, 9 ask and 4 decline. Each of the 15 templates has exactly two entries with meaning_kept true.",
+    "templates, base_url, lead and page_from are null: the templates are not yet in a tasks file, and the claim market and its results page do not exist yet. They are to be set when they do.",
+    "Not tuned: no entry has been put to the rules or to the model parser. A rule or prompt changed because of one of these entries makes the set in sample, so a later set goes in a new file rather than an edit of this one (LESSONS 19, as v1's _about cites it)."
+  ],
+  "templates": null,
+  "base_url": null,
+  "lead": null,
+  "page_from": null,
+  "paraphrases": [
+    {
+      "id": 1,
+      "template": "tee-headline",
+      "template_text": "Of the {brand} tee listings shown, which one advertises the lowest price on the results page, and what is that price?",
+      "text": "Just going by the prices on the search results, which {brand} tee listing is the cheapest, and what price does it show?",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "It asks only for the lowest advertised price on the results page, which the first page already shows, so it should plan an answer from that page with no listing opened."
+    },
+    {
+      "id": 2,
+      "template": "tee-headline",
+      "template_text": "Of the {brand} tee listings shown, which one advertises the lowest price on the results page, and what is that price?",
+      "text": "Which of these {brand} tees is the cheapest, and how much is it?",
+      "meaning_kept": false,
+      "meaning_differs": "It drops 'advertises ... on the results page', so the lowest price a tee can actually be bought for, which differs from the lowest advertised price when the advertised size is sold out, becomes a second reading.",
+      "label": "ambiguous",
+      "expected": "ask",
+      "expected_why": "The lowest advertised price and the lowest price a tee can actually be bought for differ when an advertised size is sold out, and no size is given, so it should ask which is meant before retrieving anything."
+    },
+    {
+      "id": 3,
+      "template": "tee-target-price",
+      "template_text": "What is the lowest price anyone charges for size M of the {brand} tee, among those that can actually be bought?",
+      "text": "What's the cheapest a medium {brand} tee goes for, counting only sellers who actually have mediums in stock?",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Actually have mediums in stock' leaves one reading, and M's price and stock have to be read inside the listings, so it should plan."
+    },
+    {
+      "id": 4,
+      "template": "tee-target-price",
+      "template_text": "What is the lowest price anyone charges for size M of the {brand} tee, among those that can actually be bought?",
+      "text": "hey, could you find me the lowest price on the {brand} t-shirt in size M? only from places where M isn't sold out, thanks",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Where M isn't sold out' leaves one reading, and M's price and stock have to be read inside the listings, so it should plan."
+    },
+    {
+      "id": 5,
+      "template": "tee-cheapest-target",
+      "template_text": "Across the {brand} tee listings, which seller is cheapest for size M, and what is that price? Only count a listing that can actually supply that size.",
+      "text": "i need a medium in the {brand} tee and want to go with whoever's cheapest for it, but only sellers that can actually send me one, so who is it and what do they charge",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Can actually send me one' leaves one reading, and the seller and price for M have to be read inside the listings, so it should plan."
+    },
+    {
+      "id": 6,
+      "template": "tee-cheapest-target",
+      "template_text": "Across the {brand} tee listings, which seller is cheapest for size M, and what is that price? Only count a listing that can actually supply that size.",
+      "text": "Which seller has the cheapest {brand} tee in extra large, and how much? Only ones that actually have extra large in stock.",
+      "meaning_kept": false,
+      "meaning_differs": "It asks about extra large instead of size M, so the template's keys, computed for M, do not apply.",
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Actually have extra large in stock' leaves one reading, so it should plan as for its template, but for XL instead of M."
+    },
+    {
+      "id": 7,
+      "template": "tee-all-stocked",
+      "template_text": "Does every {brand} tee listing offer size M? Answer yes or no.",
+      "text": "Do all of the {brand} tee listings have a medium? Just a yes or no, please.",
+      "meaning_kept": true,
+      "label": "ambiguous",
+      "expected": "ask",
+      "expected_why": "'Have a medium' can mean M is among a listing's sizes or M is in stock, and the yes or no differs when M is listed but sold out, so it should ask."
+    },
+    {
+      "id": 8,
+      "template": "tee-all-stocked",
+      "template_text": "Does every {brand} tee listing offer size M? Answer yes or no.",
+      "text": "Do any of the {brand} tee listings not have a medium?",
+      "meaning_kept": false,
+      "meaning_differs": "It asks whether some listing lacks M, the negation of the template's 'Does every {brand} tee listing offer size M?', so its yes or no is the reverse of the template's under either reading.",
+      "label": "ambiguous",
+      "expected": "ask",
+      "expected_why": "'Not have a medium' can mean M is not among a listing's sizes or M is not in stock, and the answer differs when M is listed but sold out, so it should ask."
+    },
+    {
+      "id": 9,
+      "template": "tee-count-stocked",
+      "template_text": "How many of the {brand} tee listings offer size M?",
+      "text": "Could you count for me how many of the {brand} tee listings have it in medium?",
+      "meaning_kept": true,
+      "label": "ambiguous",
+      "expected": "ask",
+      "expected_why": "'Have it in medium' can mean M is among a listing's sizes or M is in stock, and the count differs when M is listed but sold out, so it should ask."
+    },
+    {
+      "id": 10,
+      "template": "tee-count-stocked",
+      "template_text": "How many of the {brand} tee listings offer size M?",
+      "text": "Size medium in the {brand} tee, how many of the listings carry that?",
+      "meaning_kept": true,
+      "label": "ambiguous",
+      "expected": "ask",
+      "expected_why": "'Carry' can mean a listing offers M at all or has M in stock, and the count differs when M is listed but sold out, so it should ask."
+    },
+    {
+      "id": 11,
+      "template": "tee-count-buyable",
+      "template_text": "How many of the {brand} tee listings have size M in stock and available to buy right now?",
+      "text": "Right now, how many of the {brand} tee listings could I actually buy a medium from?",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Right now ... could I actually buy' leaves one reading, and M's stock has to be read inside each listing, so it should plan."
+    },
+    {
+      "id": 12,
+      "template": "tee-count-buyable",
+      "template_text": "How many of the {brand} tee listings have size M in stock and available to buy right now?",
+      "text": "How many {brand} tee listings have a size M that isn't sold out at the moment?",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'A size M that isn't sold out' leaves one reading, and M's stock has to be read inside each listing, so it should plan."
+    },
+    {
+      "id": 13,
+      "template": "tee-exists-under",
+      "template_text": "Is there any {brand} tee listing with size M available to buy for under ${limit}? Answer yes or no, and name the seller if yes.",
+      "text": "I've only got ${limit} to spend. Is there a {brand} tee in medium that I can actually buy for less than that? Yes or no, and if yes, which seller?",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Can actually buy for less than that' leaves one reading, and M's price and stock have to be read inside the listings, so it should plan."
+    },
+    {
+      "id": 14,
+      "template": "tee-exists-under",
+      "template_text": "Is there any {brand} tee listing with size M available to buy for under ${limit}? Answer yes or no, and name the seller if yes.",
+      "text": "can I get a medium {brand} tee for ${limit} or less from anyone who has it in stock? if so who",
+      "meaning_kept": false,
+      "meaning_differs": "'${limit} or less' also accepts a medium priced at exactly ${limit}, which the template's 'under ${limit}' excludes.",
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Has it in stock' leaves one reading, so it should plan as for its template, but with a price of exactly ${limit} allowed."
+    },
+    {
+      "id": 15,
+      "template": "tee-top-3",
+      "template_text": "Which three sellers are cheapest for size M of the {brand} tee among listings that can actually supply it, and at what prices?",
+      "text": "Give me the three cheapest sellers for a medium {brand} tee, only ones with mediums in stock, and what each one charges.",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Only ones with mediums in stock' leaves one reading, and the M prices and stock have to be read inside the listings, so it should plan."
+    },
+    {
+      "id": 16,
+      "template": "tee-top-3",
+      "template_text": "Which three sellers are cheapest for size M of the {brand} tee among listings that can actually supply it, and at what prices?",
+      "text": "For a {brand} tee in size M, which 3 sellers have the lowest prices, not counting any that can't actually supply an M, and what are those prices?",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Not counting any that can't actually supply an M' leaves one reading, and the M prices and stock have to be read inside the listings, so it should plan."
+    },
+    {
+      "id": 17,
+      "template": "water-target-price",
+      "template_text": "What is the lowest price anyone charges for the 2 x 9.5L pack of {brand} water, among those that can actually be bought?",
+      "text": "What's the lowest price going for the pack of two 9.5 litre bottles of {brand} water, among sellers that actually have it in stock?",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Among sellers that actually have it in stock' leaves one reading, and the pack's price and stock have to be read inside the listings, so it should plan."
+    },
+    {
+      "id": 18,
+      "template": "water-target-price",
+      "template_text": "What is the lowest price anyone charges for the 2 x 9.5L pack of {brand} water, among those that can actually be bought?",
+      "text": "How much is the cheapest 2x9.5L pack of {brand} water?",
+      "meaning_kept": false,
+      "meaning_differs": "It drops 'among those that can actually be bought', so the lowest price the pack is listed at, on a listing where it is sold out, becomes a second reading.",
+      "label": "ambiguous",
+      "expected": "ask",
+      "expected_why": "The lowest price the pack is listed at and the lowest it can actually be bought for differ when the cheapest listing has it sold out, so it should ask which is meant."
+    },
+    {
+      "id": 19,
+      "template": "water-cheapest-target",
+      "template_text": "Across the {brand} water listings, which seller is cheapest for the 2 x 9.5L pack, and what is that price? Only count a listing that can actually supply that pack.",
+      "text": "which seller is cheapest for the two 9.5 litre bottles of {brand} water? i only care about ones that can actually ship that pack, and tell me the price too",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Can actually ship that pack' leaves one reading, and the pack's price and stock have to be read inside the listings, so it should plan."
+    },
+    {
+      "id": 20,
+      "template": "water-cheapest-target",
+      "template_text": "Across the {brand} water listings, which seller is cheapest for the 2 x 9.5L pack, and what is that price? Only count a listing that can actually supply that pack.",
+      "text": "Of the {brand} water listings, whose 2 x 9.5 litre pack is cheaper than everybody else's, counting only listings that have that pack in stock, and what does it cost?",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Only listings that have that pack in stock' leaves one reading, and the pack's price and stock have to be read inside the listings, so it should plan."
+    },
+    {
+      "id": 21,
+      "template": "water-all-stocked",
+      "template_text": "Does every {brand} water listing stock the 2 x 9.5L pack? Answer yes or no.",
+      "text": "Is the 2 x 9.5L pack available on every one of the {brand} water listings? Yes or no is fine.",
+      "meaning_kept": true,
+      "label": "ambiguous",
+      "expected": "ask",
+      "expected_why": "'Available on every one of the ... listings' can mean every listing offers the pack or every listing has it in stock, and the yes or no differs when it is listed but sold out somewhere, so it should ask."
+    },
+    {
+      "id": 22,
+      "template": "water-all-stocked",
+      "template_text": "Does every {brand} water listing stock the 2 x 9.5L pack? Answer yes or no.",
+      "text": "right now, can i buy the 2 x 9.5L pack off every single {brand} water listing? yes or no pls",
+      "meaning_kept": false,
+      "meaning_differs": "'right now, can i buy' fixes the in-stock reading, so it has one answer where the template has two.",
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'right now, can i buy' leaves one reading, the pack in stock on every listing, which has to be read inside the listings, so it should plan."
+    },
+    {
+      "id": 23,
+      "template": "water-count-buyable",
+      "template_text": "How many of the {brand} water listings have the 2 x 9.5L pack in stock and available to buy right now?",
+      "text": "How many of the {brand} water listings could sell me the 2 x 9.5 L pack today, as in actually have it in stock?",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'As in actually have it in stock' leaves one reading, and the pack's stock has to be read inside each listing, so it should plan."
+    },
+    {
+      "id": 24,
+      "template": "water-count-buyable",
+      "template_text": "How many of the {brand} water listings have the 2 x 9.5L pack in stock and available to buy right now?",
+      "text": "Out of all the {brand} water listings, how many have the 9.5 litre twin pack in stock at the moment?",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'In stock at the moment' leaves one reading, and the pack's stock has to be read inside each listing, so it should plan."
+    },
+    {
+      "id": 25,
+      "template": "water-best-per-litre",
+      "template_text": "Across all the {brand} water listings and all their pack sizes, which seller offers the lowest price per litre among packs that can actually be bought?",
+      "text": "Which {brand} water seller gives me the most water for my money? Look at every pack size on every listing, but only packs I can actually buy.",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Only packs I can actually buy' leaves one reading, and each pack's price and stock have to be read inside the listings, so it should plan."
+    },
+    {
+      "id": 26,
+      "template": "water-best-per-litre",
+      "template_text": "Across all the {brand} water listings and all their pack sizes, which seller offers the lowest price per litre among packs that can actually be bought?",
+      "text": "Could you work out who's cheapest per litre for {brand} water across all the listings and every pack size? Skip any pack that's sold out, please.",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Skip any pack that's sold out' leaves one reading, and each pack's price and stock have to be read inside the listings, so it should plan."
+    },
+    {
+      "id": 27,
+      "template": "decline-delivery",
+      "template_text": "Which {brand} seller delivers fastest for size M of the tee?",
+      "text": "If I order a medium {brand} tee, which seller will get it to me the quickest?",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "decline",
+      "expected_why": "How fast a seller delivers is not a price, size or stock fact the block retrieves, so it should make no plan, as for its template."
+    },
+    {
+      "id": 28,
+      "template": "decline-delivery",
+      "template_text": "Which {brand} seller delivers fastest for size M of the tee?",
+      "text": "i need the {brand} tee in size M by this weekend, which seller ships fastest?",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "decline",
+      "expected_why": "Which seller ships fastest is not a price, size or stock fact the block retrieves, so it should make no plan, as for its template."
+    },
+    {
+      "id": 29,
+      "template": "decline-taste",
+      "template_text": "Which {brand} water tastes best?",
+      "text": "Out of the {brand} waters here, which one has the nicest taste?",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "decline",
+      "expected_why": "Taste is opinion that no listing field or retrieval settles, so it should make no plan, as for its template."
+    },
+    {
+      "id": 30,
+      "template": "decline-taste",
+      "template_text": "Which {brand} water tastes best?",
+      "text": "Honestly, which {brand} water would you say tastes better than the rest?",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "decline",
+      "expected_why": "Which water tastes better is opinion that no listing field or retrieval settles, so it should make no plan, as for its template."
+    },
+    {
+      "id": 31,
+      "template": "tee-headline",
+      "template_text": "Of the {brand} tee listings shown, which one advertises the lowest price on the results page, and what is that price?",
+      "text": "Which {brand} tee on the search page has the smallest price tag before you click in, and what is it?",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Before you click in' keeps it to the prices the results page shows, so it should plan an answer from that page with no listing opened."
+    },
+    {
+      "id": 32,
+      "template": "tee-cheapest-target",
+      "template_text": "Across the {brand} tee listings, which seller is cheapest for size M, and what is that price? Only count a listing that can actually supply that size.",
+      "text": "Which shop sells the {brand} tee in medium for the least? Name the shop and the price, and leave out any shop that's out of stock in medium.",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Leave out any shop that's out of stock in medium' leaves one reading, and the shop and price for M have to be read inside the listings, so it should plan."
+    },
+    {
+      "id": 33,
+      "template": "tee-all-stocked",
+      "template_text": "Does every {brand} tee listing offer size M? Answer yes or no.",
+      "text": "There's a medium on every {brand} tee listing, isn't there? Yes or no is all I need.",
+      "meaning_kept": true,
+      "label": "ambiguous",
+      "expected": "ask",
+      "expected_why": "'There's a medium on every ... listing' can mean M is among every listing's sizes or M is in stock on every listing, and the yes or no differs when M is listed but sold out, so it should ask (the tag 'isn't there' asks for confirmation and does not reverse the answer)."
+    },
+    {
+      "id": 34,
+      "template": "tee-exists-under",
+      "template_text": "Is there any {brand} tee listing with size M available to buy for under ${limit}? Answer yes or no, and name the seller if yes.",
+      "text": "Could I order a medium {brand} tee for below ${limit} from anyone right now? I need a yes or no, plus the seller's name if it's a yes.",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'Could I order ... right now' leaves one reading, M in stock and priced below ${limit}, and M's price and stock have to be read inside the listings, so it should plan."
+    },
+    {
+      "id": 35,
+      "template": "water-target-price",
+      "template_text": "What is the lowest price anyone charges for the 2 x 9.5L pack of {brand} water, among those that can actually be bought?",
+      "text": "What's the cheapest I can get the {brand} water 2-pack of 9.5 litre bottles for, from a seller that hasn't run out of it?",
+      "meaning_kept": true,
+      "label": "clear",
+      "expected": "plan",
+      "expected_why": "'From a seller that hasn't run out of it' leaves one reading, and the pack's price and stock have to be read inside the listings, so it should plan."
+    },
+    {
+      "id": 36,
+      "template": "water-all-stocked",
+      "template_text": "Does every {brand} water listing stock the 2 x 9.5L pack? Answer yes or no.",
+      "text": "Does each {brand} water listing sell the 9.5L bottles as a two-pack? Quick yes or no.",
+      "meaning_kept": true,
+      "label": "ambiguous",
+      "expected": "ask",
+      "expected_why": "'Sell the 9.5L bottles as a two-pack' can mean each listing offers that pack at all or can sell one now, and the yes or no differs when the pack is listed but sold out somewhere, so it should ask."
+    }
+  ]
+}
