@@ -380,6 +380,102 @@ class VerifyRunFields(unittest.TestCase):
         self.assertEqual((ranked["key_kind"], ranked["ranked"]), ("ranked", 3))
 
 
+class TwoProducts(unittest.TestCase):
+    """`verify_cells` on a market of two products, the tee and the water of Larchmere (22
+    October 2026): each question is held to its product's listings, its count and its floor,
+    by the run's own scope record or the task file's product, and the water's floors are the
+    ones `own_floor` writes down for it (rules 10 to 13)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tasks_path = paths.TASKS / "tasks_aplus_dev.json"
+        cls.spec = json.loads(cls.tasks_path.read_text())
+        cls.fixture = verify_cells.fixture_for(cls.spec)
+        cls.truth = verify_cells.ground_truth(cls.fixture)
+        cls.instance = cls.spec["_instance"]
+        cls.tasks = {t["id"]: t for t in cls.spec["tasks"]}
+        cls.of = {product: {sku for sku, t in cls.truth.items() if t["product"] == product}
+                  for product in ("tee", "water")}
+
+    def test_the_truth_holds_each_listings_product_and_each_packs_litres(self):
+        self.assertEqual({p: len(skus) for p, skus in self.of.items()}, {"tee": 21, "water": 21})
+        litres = {option: value for sku in self.of["water"] for option, value in self.truth[sku]["litres"].items()}
+        self.assertEqual(litres, {"24 x 350ml": 8.4, "12 x 550ml": 6.6, "6 x 1.25L": 7.5, "2 x 9.5L": 19.0})
+        self.assertTrue(all(not self.truth[sku]["litres"] for sku in self.of["tee"]))
+        self.assertEqual(verify_cells.variant_state({"sizes": {"2 x 9.5L": 1.0}, "buyable": {}}, "2 x 9.5L"),
+                         "sold out")
+        self.assertIsNone(verify_cells.variant_state({"sizes": {}, "buyable": {}}, "2 x 9.5L"))
+        self.assertEqual(verify_cells.question_variant(self.tasks["water-count-buyable"]), "2 x 9.5L")
+
+    def test_each_floor_is_over_its_products_listings(self):
+        # Planted: `market_for` returning the whole fixture, the tee's floor counted water
+        # listings and every count was 42.
+        rows = {row["task"]: row for row in verify_cells.floor_table(self.tasks_path)}
+        for task_id, row in rows.items():
+            with self.subTest(task=task_id):
+                product = self.tasks[task_id]["product"]
+                self.assertEqual((row["market"], row["of"]), (f"the fixture's {product} listings", 21))
+                self.assertLessEqual(set(row["all_of"]) | set(row["one_of"]), self.of[product])
+        tee, water = self.instance["tee"], self.instance["water"]
+        self.assertEqual((rows["tee-target-price"]["floor"], rows["water-target-price"]["floor"]),
+                         (tee["oracle_min_opens"], water["oracle_min_opens"]))
+        self.assertEqual((rows["tee-count-stocked"]["floor"], rows["water-count-buyable"]["floor"]), (21, 21))
+        self.assertEqual((len(rows["tee-all-stocked"]["one_of"]), len(rows["water-all-stocked"]["one_of"])),
+                         (tee["listings_without_target"], water["listings_without_target"]))
+
+    def test_the_best_per_litre_floor_is_every_listing_that_could_still_win(self):
+        # Rule 13, worked again here from the fixture: the winning rate over the water's
+        # buyable packs, the largest pack's litres, and every listing whose advertised price
+        # over them is at or below the winning rate. Planted: the rule removed, no floor.
+        water = {sku: self.truth[sku] for sku in self.of["water"]}
+        rates = {(sku, option): price / t["litres"][option] for sku, t in water.items()
+                 for option, price in t["buyable"].items()}
+        best = min(rates.values())
+        largest = max(litres for t in water.values() for litres in t["litres"].values())
+        could = {sku for sku, t in water.items() if t["from"] / largest <= best + 1e-9}
+        floor = verify_cells.own_floor(self.tasks["water-best-per-litre"], water)
+        self.assertEqual((floor.count, set(floor.all_of)), (len(could), could))
+        self.assertAlmostEqual(best, self.instance["water"]["best_per_litre"]["price_per_litre"], places=3)
+        self.assertEqual(largest, 19.0)
+        winner = self.instance["water"]["best_per_litre"]["sku"].lower()
+        self.assertIn(winner, floor.all_of)
+        self.assertTrue(floor.rule.startswith("best per litre, 0.924 a litre, packs up to 19 L"))
+
+    def verify(self, task_id: str, opened: list[str], stored: dict) -> dict:
+        tmp = pathlib.Path(self.enterContext(tempfile.TemporaryDirectory()))
+        record = tmp / f"{task_id}-1.json"
+        record.write_text(json.dumps({"result": {"ok": True, "final": "Ambleside."}, "scaffold": "openjiuwen",
+                                      "shop": "gated", "probe": "viewport", "cost_usd": 0.0}))
+        record.with_suffix(".log").write_text("\n".join(f"Page URL: {self.spec['base_url']}/{sku}.html"
+                                                         for sku in opened))
+        return verify_cells.verify_run(record, self.tasks[task_id], self.truth, stored, {}, {},
+                                       market=verify_cells.market_urls(self.spec))
+
+    def test_a_run_is_held_to_its_questions_product(self):
+        # A water question's run that opened a water listing and a tee: one opened, the tee
+        # outside its market. Planted: `verify_run` without `market_for`, both counted.
+        water, tee = sorted(self.of["water"])[0], sorted(self.of["tee"])[0]
+        run = self.verify("water-count-buyable", [water, tee], {})
+        self.assertEqual((run["opened"], run["outside_market"], run["market_from"], run["market_size"], run["floor"]),
+                         (1, [tee], "the fixture's water listings", 21, 21))
+        # The run's own scope record decides when the box planned over one product.
+        urls = [f"{self.spec['base_url']}/{sku}.html" for sku in sorted(self.of["water"])]
+        scoped = {"box": {"scope": {"product": "water", "applied": True, "urls": urls}}}
+        run = self.verify("water-count-buyable", [water, tee], scoped)
+        self.assertEqual((run["opened"], run["market_from"], run["scope_differs"]),
+                         (1, "the run's scope record, the water", None))
+        # A box that planned over the other product is a problem, said so in the report.
+        crossed = {"box": {"scope": {"product": "tee", "applied": True,
+                                     "urls": [f"{self.spec['base_url']}/{sku}.html" for sku in sorted(self.of["tee"])]}}}
+        run = self.verify("water-count-buyable", [water, tee], crossed)
+        self.assertEqual(run["scope_differs"], "the box planned over the tee, and the task is about the water")
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            result = verify_cells.report(pathlib.Path("larchmere"), {"rows": []}, [run], False)
+        self.assertIn("water-count-buyable-1: the box planned over the tee, and the task is about the water",
+                      result["problems"])
+        self.assertIn("market          1 runs held to the run's scope record, the tee, 21 listings\n", out.getvalue())
+
+
 class Rescore(unittest.TestCase):
     """`rescore.py` writes the scorer's version into the payload it rewrites (20 Oct 2026;
     until then a rescored batch kept the version of the scorer that first judged it), keeps

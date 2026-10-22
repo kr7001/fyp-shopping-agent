@@ -60,10 +60,13 @@ def longest_silence(log: str) -> float:
 
 
 def ground_truth(fixture: pathlib.Path = FIXTURE) -> dict:
-    """Per listing: seller, the advertised price, what size M is, and every size's price,
-    with `buyable` holding only the sizes that can be bought (the generator's
-    `price_for` and `buyable_price_for`, which a test checks this agrees with). Thornwood's
-    by default; a batch's own market through `fixture_for`."""
+    """Per listing: seller, the advertised price, what size M is, and every variant's price,
+    a size's or a pack's, with `buyable` holding only those that can be bought (the
+    generator's `price_for` and `buyable_price_for`, which a test checks this agrees with).
+    Since 22 October 2026 also its product, the fixture's own (the tee or the water, None for
+    a fixture that names none), and each pack's litres, for the per-litre floor. Size M's
+    state, `m`, is kept for the clothing analyses that read it; any other variant's is
+    `variant_state`. Thornwood's by default; a batch's own market through `fixture_for`."""
     spec = json.loads(fixture.read_text())
     out = {}
     for family in spec["families"]:
@@ -71,12 +74,56 @@ def ground_truth(fixture: pathlib.Path = FIXTURE) -> dict:
         m = variants.get("M")
         out[family["parent_sku"].lower()] = {
             "seller": family["seller"],
+            "product": family.get("product"),
             "from": min(v["price"] for v in family["variants"] if v["qty"] > 0),
             "m": None if m is None else ("buyable" if m["qty"] > 0 else "sold out"),
             "sizes": {v["option"]: v["price"] for v in family["variants"]},
             "buyable": {v["option"]: v["price"] for v in family["variants"] if v["qty"] > 0},
+            "litres": {v["option"]: v["units"] * v["volume_ml"] / 1000 for v in family["variants"]
+                       if v.get("volume_ml") and v.get("units")},
         }
     return out
+
+
+def variant_state(entry: dict, option: str) -> str | None:
+    """What a listing has of a variant, a size or a pack: "buyable", "sold out", or None
+    when its menu does not list it."""
+    if option not in entry["sizes"]:
+        return None
+    return "buyable" if option in entry["buyable"] else "sold out"
+
+
+def question_variant(task: dict) -> str | None:
+    """The variant a question names, the size or the pack, as the box's parser reads it."""
+    named = form_module.from_rules(task["query"]).filter("size")
+    return named.value if named is not None and isinstance(named.value, str) else None
+
+
+def scope_differs(task: dict, stored: dict | None) -> str | None:
+    """Why the box's scope is not the task's product, when the box planned over one product
+    and the task file names another; None when they agree or either names none."""
+    scope = ((stored or {}).get("box") or {}).get("scope") or {}
+    if scope.get("applied") and task.get("product") and scope.get("product") != task["product"]:
+        return f"the box planned over the {scope.get('product')}, and the task is about the {task['product']}"
+    return None
+
+
+def market_for(task: dict, truth: dict, stored: dict | None = None) -> tuple[dict, str]:
+    """The listings a run of this task is held to, its floor's and its count's, and where
+    they came from (22 October 2026, the second claim market, of two products). The run's
+    own scope record, when the box planned it over one product's listings (box v17); else
+    the fixture's listings of the product the task names (`product`, the task file's own);
+    else every listing of the fixture, as for every market of one product before."""
+    scope = ((stored or {}).get("box") or {}).get("scope") or {}
+    if scope.get("applied") and scope.get("urls"):
+        keep = {url.rsplit("/", 1)[-1].removesuffix(".html") for url in scope["urls"]}
+        return ({sku: t for sku, t in truth.items() if sku in keep},
+                f"the run's scope record, the {scope.get('product')}")
+    product = task.get("product")
+    if product and any(t.get("product") for t in truth.values()):
+        return ({sku: t for sku, t in truth.items() if t.get("product") == product},
+                f"the fixture's {product} listings")
+    return truth, "every listing of the fixture"
 
 
 def fixture_for(spec: dict) -> pathlib.Path:
@@ -150,6 +197,26 @@ def own_floor(task: dict, truth: dict) -> Floor:
     8. How many: every listing.
     9. Any other shape: no rule. The count is None and the report lists it as a problem,
        "no floor rule for <id>", rather than raising.
+
+    Written down on 22 October 2026, before the code (LESSONS 5), for the second claim
+    market: a tee and a water under one brand, 42 listings, every question about one of the
+    two. Every rule above ranges over the listings of the question's product alone, which
+    the caller passes as `truth` (`market_for`): a tee question's floor counts no water
+    listing, and a water question's no tee. Where the question names a variant, the size or
+    the pack, it is that variant's, never size M's. For the water, whose variant is a pack:
+
+    10. The cheapest 2 x 9.5L, rule 2 with the pack for the size: every water listing
+        advertised at or below the winning price, the cheapest any water listing can sell
+        the pack for.
+    11. Does every water listing stock it, rule 7: 1, and covered means a water listing
+        without the pack in its menu was opened.
+    12. How many water listings have it, rule 8: every water listing.
+    13. The best price per litre over the packs that can be bought: every listing whose
+        advertised price per litre could still win, its advertised price, the cheapest pack
+        it can sell, over the largest pack's litres being at or below the winning price per
+        litre; the winner is among them. A listing above that cannot hold a pack as cheap
+        per litre as the winner's, since every pack it sells costs its advertised price or
+        more and holds the largest pack's litres or fewer.
     """
     if not task["gated"]:
         return Floor(0, rule="not gated")
@@ -192,6 +259,15 @@ def own_floor(task: dict, truth: dict) -> Floor:
         return Floor(1, one_of=without, rule=f"every listing, size {size}")
     if form.quantifier == "count":
         return Floor(len(every), all_of=every, rule="how many")
+    if form.quantifier == "argmin" and form.objective == "rate":
+        rates = [price / t["litres"][option] for t in truth.values()
+                 for option, price in t["buyable"].items() if t["litres"].get(option)]
+        largest = max((litres for t in truth.values() for litres in t["litres"].values()), default=None)
+        if rates and largest:
+            best = min(rates)
+            needed = frozenset(sku for sku, t in truth.items() if t["from"] / largest <= best + 1e-9)
+            return Floor(len(needed), all_of=needed,
+                         rule=f"best per litre, {best:.3f} a litre, packs up to {largest:g} L")
     return Floor(None)
 
 
@@ -272,13 +348,19 @@ def verify_run(record_path: pathlib.Path, task: dict, truth: dict,
     # carries it (every run under the box); without either the counter's own rule applies.
     page_record = (stored.get("box") or {}).get("page") or {}
     market = market or [item["url"] for item in page_record.get("listings") or []] or None
+    # On a market of two products the run is held to its question's product (`market_for`):
+    # a tee opened on a water question is outside it, and its floor counts the water alone.
+    product_truth, market_from = market_for(task, truth, stored)
+    if market is not None and product_truth is not truth:
+        base = market[0].rsplit("/", 1)[0]
+        market = [f"{base}/{sku}.html" for sku in product_truth]
     opened = sufficiency.listings_opened(log, market)
     opened_seen = sufficiency.listings_opened(observed, market)
     # Product pages the run opened that are not the market's: nothing under the box so
     # far, and the thing LESSONS 1 was about.
     outside = sufficiency.listings_opened(log) - opened
     skus = sorted(key.split(":", 1)[1] for key in opened)
-    floor = own_floor(task, truth)
+    floor = own_floor(task, product_truth)
     # The key the run was scored under: the sidecar's reading when it has a key for this
     # task under the reading the run was answered under (`run_reading`), otherwise the
     # task's own.
@@ -288,10 +370,11 @@ def verify_run(record_path: pathlib.Path, task: dict, truth: dict,
                       None)
     trace = record.get("trace") or {}
     rescored = rescore(task, answer, ok, stored, suite or {}, readings or {})
-    # Kept as it was, an opened listing without size M whatever the question asks, so the
-    # field reads the same on every stored batch. The floor's own counterexample set is
-    # `floor.one_of`, which `covered` applies.
-    without_m = [s for s in skus if truth.get(s, {}).get("m") is None and s in truth]
+    # An opened listing without the variant the question names, its size or its pack, and
+    # size M's when it names none, as it was for every question until 22 October 2026. The
+    # floor's own counterexample set is `floor.one_of`, which `covered` applies.
+    variant = question_variant(task) or "M"
+    without_m = [s for s in skus if s in truth and variant_state(truth[s], variant) is None]
 
     return {
         "task": task["id"], "gated": task["gated"],
@@ -310,6 +393,9 @@ def verify_run(record_path: pathlib.Path, task: dict, truth: dict,
         "ranked": len(task["expect"]["items"]) if task["expect"]["kind"] == "ranked" else None,
         "scored_under": scored_under,
         "floor": floor.count, "floor_rule": floor.rule,
+        "market_from": market_from, "market_size": len(product_truth),
+        # A box that planned over another product than the task's (box v17): a problem.
+        "scope_differs": scope_differs(task, stored),
         "met_floor": floor.count is not None and len(opened) >= floor.count,
         "met_eight": len(opened) >= 8,
         "counterexample_seen": bool(without_m),
@@ -375,10 +461,11 @@ def floor_table(tasks_path: pathlib.Path) -> list[dict]:
     truth = ground_truth(fixture_for(spec))
     rows = []
     for task in spec["tasks"]:
-        floor = own_floor(task, truth)
+        held, market_from = market_for(task, truth)
+        floor = own_floor(task, held)
         rows.append({"task": task["id"], "gated": task["gated"], "rule": floor.rule,
                      "floor": floor.count, "all_of": sorted(floor.all_of),
-                     "one_of": sorted(floor.one_of)})
+                     "one_of": sorted(floor.one_of), "market": market_from, "of": len(held)})
     return rows
 
 
@@ -389,6 +476,12 @@ def print_floor_table(rows: list[dict]) -> None:
                 (f"one of {row['one_of']}" if row["one_of"] else "")
         print(f"  {row['task']:26} {'-' if row['floor'] is None else row['floor']:>3}  "
               f"{row['rule']:34} {which}")
+    # Over which listings, when any task's are fewer than the whole market's (22 October 2026).
+    markets = {(row["market"], row["of"]) for row in rows}
+    if len(markets) > 1 or any(market != "every listing of the fixture" for market, _ in markets):
+        print("\neach floor is over the listings of its question's product:")
+        for row in rows:
+            print(f"  {row['task']:26} {row['market']}, {row['of']}")
 
 
 def closed_parse_charges(suite: dict) -> list[float | None]:
@@ -435,6 +528,8 @@ def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: boo
                     f"so this run did not see the gated shop")
         if r["shop"] != "gated":
             problem(f"{tag}: record says shop {r['shop']}")
+        if r.get("scope_differs"):
+            problem(f"{tag}: {r['scope_differs']}")
         if r["cost_lines"] is not None and r["cost_lines"] != r["completions"]:
             problem(f"{tag}: {r['completions']} completions but {r['cost_lines']} charges")
         if cost_differs(r):
@@ -489,6 +584,12 @@ def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: boo
     print(f"runs {len(runs)}  settings: shop={sorted({r['shop'] for r in runs})} "
           f"probe={sorted({str(r['probe']) for r in runs})} "
           f"probe line={sorted({str(r['probe_line']) for r in runs})}")
+    # Which listings each run was held to, its count and its floor, shown when any run's are
+    # fewer than its market's, as on a market of two products (22 October 2026).
+    markets = collections.Counter((r.get("market_from"), r.get("market_size")) for r in runs)
+    if any(where not in (None, "every listing of the fixture") for where, _ in markets):
+        print("market          " + "; ".join(f"{n} runs held to {where}, {size} listings"
+                                             for (where, size), n in sorted(markets.items(), key=str)))
     # A slot the box closed without running the agent has no run record to re-derive, so
     # it is listed here rather than silently missing from the runs above: the box asked
     # the user, or (box v2) refused because the shop does not show what the question
