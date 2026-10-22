@@ -198,8 +198,16 @@ def larchmere() -> tuple[str | None, page.Page | None, dict]:
     except OSError:
         return "the local shop did not answer within 10 s", None, {}
     families = json.loads(fixture.read_text())["families"]
-    return None, page.read(url, "fetch"), {f"{BASE}/{fam['parent_sku'].lower()}.html": fam["product"]
-                                          for fam in families}
+    live = page.read(url, "fetch")
+    # The comparison means something only on the fixture's own market: a shop reseeded since
+    # the fixture was written is an environment to check (`env/check_aplus_market.py`), not
+    # a fault of the scope, and is said so rather than failed here.
+    sellers = {f"{BASE}/{fam['parent_sku'].lower()}.html": fam["seller"] for fam in families}
+    differ = sum(1 for item in live.listings if sellers.get(item.url) != item.seller)
+    if differ or len(live.listings) != len(families):
+        return (f"the live Larchmere market is not the fixture's: {differ} of {len(live.listings)} listings "
+                f"differ by seller or address, so the shop was reseeded after aplus_dev.json was written"), None, {}
+    return None, live, {f"{BASE}/{fam['parent_sku'].lower()}.html": fam["product"] for fam in families}
 
 
 class Larchmere(unittest.TestCase):
