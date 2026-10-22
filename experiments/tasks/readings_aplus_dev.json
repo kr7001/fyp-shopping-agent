@@ -1,0 +1,26 @@
+{
+  "_about": [
+    "Computed by env/generate_aplus_tasks.py from env/fixtures/aplus_dev.json: the scripted",
+    "user's second reading of the three questions in tasks_aplus_dev.json with two readings,",
+    "used by suite.py --reading buyable and by verify_cells.py when a batch records that",
+    "reading. Do not hand edit.",
+    "The task's own expect is the menu reading: a sold-out size or pack counts as offered or",
+    "stocked. Here it does not: \"offer\" and \"stock\" are read as \"can sell it now\"."
+  ],
+  "readings": {
+    "buyable": {
+      "tee-all-stocked": {
+        "kind": "boolean",
+        "value": false
+      },
+      "tee-count-stocked": {
+        "kind": "count",
+        "value": 13
+      },
+      "water-all-stocked": {
+        "kind": "boolean",
+        "value": false
+      }
+    }
+  }
+}

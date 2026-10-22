@@ -50,7 +50,10 @@ GATED_UA = page_module.GATED_UA
 # The reveal waits 60 ms after a size changes (LESSONS 13); the check waits far longer.
 REVEAL_WAIT_MS = 600
 # A size's label on the ordinary theme: the size, then the surcharge against the price box.
-LABEL = re.compile(r"^(?P<size>\S+)(?:\s+(?P<sign>[+-])\$(?P<amount>\d+\.\d\d))?$")
+# The size may hold spaces since 22 October 2026, for a pack such as "2 x 9.5L +$32.50": the
+# first version took the label up to its first space, so it read that one as a pack with no
+# surcharge. A tee's label reads as it did.
+LABEL = re.compile(r"^(?P<size>.+?)(?:\s+(?P<sign>[+-])\$(?P<amount>\d+\.\d\d))?$")
 SURCHARGE = re.compile(r"[+-]\$\d")
 # The page's own configuration blocks. Magento's loader removes them from the document once
 # it has applied them, so they are read from the HTML the server sent, never from the DOM
@@ -130,14 +133,19 @@ def leaked(text: str, listing: dict) -> list[str]:
 
     A price is looked for as the page prints it, "12.30", and as its price table writes it
     in JSON, "12.3": on Thornwood the ordinary theme's table had 12.3 and 31.6, and the
-    first version of this, looking for two decimals only, missed both (20 October 2026)."""
+    first version of this, looking for two decimals only, missed both (20 October 2026).
+
+    A figure with a volume written straight after it is a pack, not a price: a water
+    listing selling a pack at $9.50 would otherwise leak through its own "2 x 9.5L" label
+    (22 October 2026, LESSONS 24's "8.4 litres" read as $8.40). Only a unit joined to the
+    figure is skipped, so "$12.30 L" on a tee page, a price then the size L, still counts."""
     advertised = money(listing["advertised"])
     found = []
     for _, price, _ in listing["sizes"]:
         if money(price) == advertised or money(price) in found:
             continue
         forms = {money(price), repr(round(price, 2))}
-        if any(re.search(rf"(?<![\d.]){re.escape(form)}(?!\d)", text) for form in forms):
+        if any(re.search(rf"(?<![\d.]){re.escape(form)}(?!\d|L\b|ml\b)", text) for form in forms):
             found.append(money(price))
     return sorted(found)
 

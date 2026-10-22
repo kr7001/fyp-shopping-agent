@@ -1,0 +1,87 @@
+{
+  "brand": "Larchmere",
+  "sku_prefix": "IGR-DEV",
+  "seeded": "22 October 2026",
+  "tried": [
+    {
+      "seed": 900,
+      "attempts": {
+        "tee": 7022,
+        "water": 1294
+      },
+      "outcome": "accepted",
+      "live_order": [
+        "IGR-DEV-15",
+        "IGR-DEV-18",
+        "IGR-DEV-29",
+        "IGR-DEV-31",
+        "IGR-DEV-39",
+        "IGR-DEV-06",
+        "IGR-DEV-16",
+        "IGR-DEV-03",
+        "IGR-DEV-10",
+        "IGR-DEV-12",
+        "IGR-DEV-22",
+        "IGR-DEV-41",
+        "IGR-DEV-17",
+        "IGR-DEV-21",
+        "IGR-DEV-23",
+        "IGR-DEV-04",
+        "IGR-DEV-05",
+        "IGR-DEV-35",
+        "IGR-DEV-19",
+        "IGR-DEV-37",
+        "IGR-DEV-40",
+        "IGR-DEV-13",
+        "IGR-DEV-14",
+        "IGR-DEV-24",
+        "IGR-DEV-27",
+        "IGR-DEV-11",
+        "IGR-DEV-20",
+        "IGR-DEV-38",
+        "IGR-DEV-33",
+        "IGR-DEV-32",
+        "IGR-DEV-02",
+        "IGR-DEV-07",
+        "IGR-DEV-28",
+        "IGR-DEV-42",
+        "IGR-DEV-01",
+        "IGR-DEV-09",
+        "IGR-DEV-30",
+        "IGR-DEV-34",
+        "IGR-DEV-25",
+        "IGR-DEV-26",
+        "IGR-DEV-36",
+        "IGR-DEV-08"
+      ],
+      "live_order_is": "two forms, average lengths x1.0",
+      "broken": [],
+      "answer_cards": {
+        "tee-target-price": [
+          11
+        ],
+        "tee-cheapest-target": [
+          11
+        ],
+        "tee-exists-under": [
+          11
+        ],
+        "tee-top-3": [
+          11,
+          21,
+          12
+        ],
+        "water-target-price": [
+          14
+        ],
+        "water-cheapest-target": [
+          14
+        ],
+        "water-best-per-litre": [
+          39
+        ]
+      },
+      "summary": "seed 900, tee draw 7022 and water draw 1294 by every rule on the predicted pages: accepted on the live pages, whose order is the predicted one (two forms, average lengths x1.0)"
+    }
+  ]
+}
