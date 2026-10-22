@@ -68,6 +68,11 @@ import voids  # noqa: E402
 #   1  20 October 2026, before the claim run
 VERSION = 1
 
+# The question sets the analysis reads. These are the first claim's (claim-protocol.md), the
+# default. Since 22 October 2026 a protocol may name its own in a file (`--sets`,
+# `apply_sets`), so the second claim's tee-* and water-* ids, its reading-independent set and
+# its "offer" set are named there and not here; the first claim's analysis is the same, byte
+# for byte (`tests/test_claim_analysis.py`).
 CONTROL = "apparel-headline"
 TARGET_PRICE = "apparel-target-price"
 CHEAPEST = "apparel-cheapest-target"
@@ -97,6 +102,51 @@ NAMES = {("none", None): SHIPPED, ("exhaustive", None): OPEN, ("box", "menu"): B
 # The questions each arm asks in each of the three rounds: the command's S, E, B and X.
 DESIGN = {SHIPPED: QUESTIONS, OPEN: GATED, BLOCK: QUESTIONS, BUYABLE: OFFER, NO_STOP: STOP_RULE}
 ROUNDS = (1, 2, 3)
+# The sets a file names, by key, in the first claim's terms, and which name each set's
+# questions by id: `control` the questions answered from the results page, `gated` every
+# other one analysed, `invariant` the gated ones whose answer does not depend on a reading,
+# `offer` those that turn on one, `stop_rule` where the stop rule acts, `count_stocked` the
+# one question tabled by key, and `design` the questions each arm asks, by the arm's name.
+SET_KEYS = ("control", "gated", "invariant", "offer", "stop_rule", "count_stocked", "design")
+
+
+def apply_sets(sets: dict) -> None:
+    """Analyse under the question sets a protocol names (22 October 2026), in place of the
+    first claim's: every set by its questions' ids, checked to be the gated questions' own
+    before anything is read, and `design` by the protocol's arm names. The first claim's
+    sets are the default and need no file."""
+    global CONTROL, GATED, QUESTIONS, INVARIANT, OFFER, STOP_RULE, COUNT_STOCKED, DESIGN
+    missing = [key for key in SET_KEYS if key not in sets]
+    if missing:
+        raise SystemExit(f"the question sets name no {', '.join(missing)}")
+    control, gated = tuple(sets["control"]), tuple(sets["gated"])
+    if len(control) != 1:
+        raise SystemExit(f"the question sets name {len(control)} control questions, where the "
+                         f"analysis reads one")
+    for key in ("invariant", "offer", "stop_rule"):
+        stray = sorted(set(sets[key]) - set(gated))
+        if stray:
+            raise SystemExit(f"the {key} set names questions that are not gated: {stray}")
+    if sets["count_stocked"] not in sets["offer"]:
+        raise SystemExit(f"count_stocked, {sets['count_stocked']}, is not in the offer set")
+    for arm, questions in sets["design"].items():
+        if arm not in ARMS:
+            raise SystemExit(f"the design names an arm the analysis has not: {arm!r}")
+        stray = sorted(set(questions) - set(control + gated))
+        if stray:
+            raise SystemExit(f"the design has {arm} ask questions no set names: {stray}")
+    CONTROL, GATED = control[0], gated
+    QUESTIONS = control + gated
+    INVARIANT, OFFER, STOP_RULE = (tuple(sets[key]) for key in ("invariant", "offer", "stop_rule"))
+    COUNT_STOCKED = sets["count_stocked"]
+    DESIGN = {arm: tuple(questions) for arm, questions in sets["design"].items()}
+
+
+def read_sets(path: pathlib.Path) -> dict:
+    """The question sets a file names: its `claim_sets` when it has them, as a task file may,
+    or the whole file."""
+    data = json.loads(path.read_text())
+    return data.get("claim_sets", data)
 # What the protocol holds fixed besides the arm: "openJiuwen as shipped" on the gated shop,
 # its own card probe, and nothing added to the question but the arm's instruction. A run
 # under anything else is not one of the five arms.
@@ -738,9 +788,12 @@ def compare_ranks(a: list[dict], b: list[dict], questions, measure: str) -> dict
     return {**result, "observed": observed, "expected": expected, "p": p}
 
 
-def primary(arms: dict[str, list[dict]], h1_questions=INVARIANT, h23_questions=GATED,
+def primary(arms: dict[str, list[dict]], h1_questions=None, h23_questions=None,
             block: list[dict] | None = None, key=lambda run: correct(run)) -> dict:
-    """H1, H2 and H3 with Holm's correction over the three."""
+    """H1, H2 and H3 with Holm's correction over the three. The questions are the sets'
+    unless given, read when called, so a protocol's own sets apply (`apply_sets`)."""
+    h1_questions = INVARIANT if h1_questions is None else h1_questions
+    h23_questions = GATED if h23_questions is None else h23_questions
     block = arms.get(BLOCK, []) if block is None else block
     tests = {"H1": {"a": BLOCK, "b": SHIPPED, "questions": list(h1_questions),
                     **compare_correct(block, arms.get(SHIPPED, []), h1_questions, key)},
@@ -1235,7 +1288,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", type=pathlib.Path,
                         help="write the figures here; by default next to a manifest, as "
                              "<name>.analysis.json, and nowhere for a list of folders")
+    parser.add_argument("--sets", type=pathlib.Path,
+                        help="a protocol's question sets, as JSON (see `apply_sets`), or a "
+                             "task file holding them under claim_sets; the first claim's by "
+                             "default")
     args = parser.parse_args(argv)
+    if args.sets:
+        apply_sets(read_sets(args.sets))
     manifest = None
     if len(args.sources) == 1 and args.sources[0].is_file():
         manifest = parse_manifest(args.sources[0].read_text())

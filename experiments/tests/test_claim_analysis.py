@@ -883,5 +883,69 @@ class InSampleThornwood(unittest.TestCase):
                          ["20261014T222007/apparel-all-stocked-1: counterexample_not_opened"])
 
 
+class QuestionSets(unittest.TestCase):
+    """The question sets a protocol names (22 October 2026): the first claim's by default,
+    and a file's under `--sets`, so the second claim's tee-* and water-* ids are named
+    without a code change."""
+    NAMES = ("CONTROL", "GATED", "QUESTIONS", "INVARIANT", "OFFER", "STOP_RULE", "COUNT_STOCKED", "DESIGN")
+    SECOND = {"control": ["tee-headline"],
+              "gated": ["tee-target-price", "tee-cheapest-target", "tee-all-stocked", "tee-count-stocked",
+                        "water-target-price", "water-all-stocked", "water-best-per-litre"],
+              "invariant": ["tee-target-price", "tee-cheapest-target", "water-target-price",
+                            "water-best-per-litre"],
+              "offer": ["tee-all-stocked", "tee-count-stocked", "water-all-stocked"],
+              "stop_rule": ["tee-target-price", "water-target-price"],
+              "count_stocked": "tee-count-stocked",
+              "design": {claim.SHIPPED: ["tee-headline", "tee-target-price"], claim.BLOCK: ["water-target-price"]}}
+
+    def setUp(self):
+        saved = {name: getattr(claim, name) for name in self.NAMES}
+        self.addCleanup(lambda: [setattr(claim, name, value) for name, value in saved.items()])
+
+    def test_a_protocols_sets_are_the_ones_analysed(self):
+        # Planted: `primary` reading its questions when the module was loaded, H1 kept the
+        # first claim's four.
+        claim.apply_sets(self.SECOND)
+        self.assertEqual((claim.CONTROL, claim.QUESTIONS[:2], claim.OFFER, claim.COUNT_STOCKED),
+                         ("tee-headline", ("tee-headline", "tee-target-price"),
+                          ("tee-all-stocked", "tee-count-stocked", "water-all-stocked"), "tee-count-stocked"))
+        tests = claim.primary({})
+        self.assertEqual(tests["H1"]["questions"], self.SECOND["invariant"])
+        self.assertEqual(tests["H2"]["questions"], self.SECOND["gated"])
+        self.assertEqual(claim.DESIGN, {claim.SHIPPED: ("tee-headline", "tee-target-price"),
+                                        claim.BLOCK: ("water-target-price",)})
+
+    def test_the_first_claims_sets_as_a_file_change_nothing(self):
+        first = {"control": [claim.CONTROL], "gated": list(claim.GATED), "invariant": list(claim.INVARIANT),
+                 "offer": list(claim.OFFER), "stop_rule": list(claim.STOP_RULE),
+                 "count_stocked": claim.COUNT_STOCKED,
+                 "design": {arm: list(questions) for arm, questions in claim.DESIGN.items()}}
+        before = {name: getattr(claim, name) for name in self.NAMES}
+        claim.apply_sets(json.loads(json.dumps(first)))
+        self.assertEqual({name: getattr(claim, name) for name in self.NAMES}, before)
+
+    def test_sets_that_do_not_hold_together_are_refused_before_anything_is_read(self):
+        for label, change, words in (
+                ("a key missing", {"design": None}, "name no design"),
+                ("an invariant question not gated", {"invariant": ["tee-headline"]}, "not gated"),
+                ("count-stocked outside the offer set", {"count_stocked": "tee-target-price"}, "not in the offer set"),
+                ("an arm the analysis has not", {"design": {"the block (model)": ["tee-headline"]}},
+                 "an arm the analysis has not"),
+                ("two controls", {"control": ["tee-headline", "water-target-price"]}, "2 control questions")):
+            with self.subTest(fault=label):
+                sets = {key: value for key, value in {**self.SECOND, **change}.items() if value is not None}
+                with self.assertRaisesRegex(SystemExit, words):
+                    claim.apply_sets(sets)
+                self.assertEqual(claim.CONTROL, "apparel-headline")     # nothing was applied
+
+    def test_a_task_file_may_hold_them(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = pathlib.Path(tmp) / "tasks_x.json"
+            path.write_text(json.dumps({"tasks": [], "claim_sets": self.SECOND}))
+            self.assertEqual(claim.read_sets(path), self.SECOND)
+            path.write_text(json.dumps(self.SECOND))
+            self.assertEqual(claim.read_sets(path), self.SECOND)
+
+
 if __name__ == "__main__":
     unittest.main()
