@@ -62,3 +62,29 @@ Options, to decide before running experiments:
    prices over AJAX, matching live behaviour. Real work, but it removes the objection
 
 Option 1 plus 2 is probably enough. Option 3 only if a reviewer pushes.
+
+## 21 October 2026: the claim market's listing pages, microdata re-checked
+
+On the Ashcombe claim market, fetched with the gated user agent, a listing whose sizes differ
+in price publishes one plain schema.org Offer and no range. `igr-clm-11`, whose size M costs
+$23.43, publishes:
+
+```
+$ curl -s -A "Mozilla/5.0 IGRGated/1.0" http://localhost:7770/igr-clm-11.html | grep -o 'itemprop="[a-zA-Z]*"[^>]*'
+itemprop="name"
+itemprop="sku"
+itemprop="offers" itemscope itemtype="http://schema.org/Offer"
+itemprop="price" content="18.74" /
+itemprop="priceCurrency" content="USD" /
+```
+
+The 18.74 is the card's advertised price, the cheapest size that can be bought. The page has
+no `application/ld+json` block, and the Ashcombe results page carries no structured data at
+all (verifier, 21 October). The catalogue outside the project's own `IGR-` products is
+unchanged:
+
+```
+$ docker exec webarena-shopping mysql -umagentouser -pMyPassword magentodb -N -e \
+    "SELECT type_id, COUNT(*) FROM catalog_product_entity WHERE sku NOT LIKE 'IGR-%' GROUP BY type_id;"
+simple	104368
+```

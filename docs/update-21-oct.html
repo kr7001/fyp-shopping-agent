@@ -232,6 +232,8 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
   details{break-inside:avoid}
   .tip,.btn{display:none}
 }
+.plan-list{margin:0;padding-left:1.1rem;list-style:disc}
+.dates .plan-list li{display:list-item;border:0;padding:0;margin:.15rem 0}
 </style>
 </head>
 <body>
@@ -255,14 +257,14 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
   <ul class="lead-list">
     <li>When a price, size or stock level only appears after a click (interaction-gated information), shopping agents often answer anyway, wrongly and with no sign of doubt.</li>
     <li>Two weeks ago, I found that a real open-source browser agent (openjiuwen), trusts the four product cards on screen and stops looking, and proceeded to fix the issue.</li>
-    <li>This week, I built <b>a block</b> that sits before any agent. It decides what to open and when to stop, asks the user when a question is ambiguous, and checks the answer.</li>
-    <li>The block is tested on a new clothing market it had never seen, with the test plan written down before the market existed (no bias).</li>
-    <li>The block was right on 12 of 12 runs where the shipped agent was right on 4. It opened a median of 6 listings instead of 15, at less than half the cost of opening every listing. All three tests planned in advance passed, and they passed again on a second model.</li>
+    <li>This week, I built <b>a block</b> that sits in front of the shopping agent. It decides what to open and when to stop, asks the user when a question is ambiguous, and refuses questions the shop cannot answer.</li>
+    <li>The block is tested on a new clothing market it had never seen, with the test plan committed before the market was generated.</li>
+    <li>On the four questions whose answer does not depend on how "offer" is read, the block was right on 12 of 12 runs where the shipped agent was right on 4. It opened a median of 6 listings instead of 15, at less than half the cost of opening every listing. All three tests planned in advance passed, and they passed again on a second model.</li>
   </ul>
 
   <div class="tiles" role="list" aria-label="Headline figures from the held-out claim run">
     <div class="tile" role="listitem">
-      <div class="label">Right answers on the new market</div>
+      <div class="label">Right answers on the new market, four questions</div>
       <div class="value">12 <small>of 12 runs</small></div>
       <div class="vs">The block. Shipped agent <b>4 of 12</b>. Open everything <b>12 of 12</b>.</div>
     </div>
@@ -285,11 +287,11 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
   <details class="dx">
     <summary>What "3 of 3 tests passed" means</summary>
     <div class="body">
-      <p>Before the run, the plan named three comparisons and the test to use for each. Fixing them in advance stops anyone from choosing after seeing the data, and makes the compairson look good.</p>
+      <p>Before the run, the plan named three comparisons and the test to use for each. Fixing them in advance stops anyone choosing, after seeing the data, the comparison that looks best.</p>
       <ul>
         <li><strong>H1.</strong> The block is right more often than the shipped agent. 12 of 12 runs against 4 of 12, p = 0.001.</li>
         <li><strong>H2.</strong> The block opens fewer listings than "open everything". A median of 6 against 15, p = 0.00025.</li>
-        <li><strong>H3.</strong> The block costs less a run than "open everything". A median of $0.20 against $0.41, p = 0.000016.</li>
+        <li><strong>H3.</strong> The block costs less a run than "open everything". A median of $0.20 against $0.40, p = 0.000016.</li>
       </ul>
       <p>A p-value says how often a difference this large would appear by chance if the block were in fact no better. p = 0.001 means about 1 time in 1,000. Three tests give three chances to be fooled, so Holm's correction raises each p-value to allow for that. After it the three are 0.001, 0.0005 and 0.00005, all far below the usual cut-off of 0.05.</p>
     </div>
@@ -322,8 +324,8 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
           <tbody>
             <tr><td>Shipped</td><td><b>6 (the results-page control and the five gated questions)</b> x 3 runs</td><td class="num">18</td></tr>
             <tr><td>Open everything</td><td><b>5 gated questions (exclude control)</b> x 3 runs</td><td class="num">15</td></tr>
-            <tr><td>The block, offer="listed in the menu" reading</td><td><b>6</b> x 3 runs</td><td class="num">18</td></tr>
-            <tr><td>The block, offer="selling now" reading</td><td><b>the 2 "offer" questions</b> x 3 runs</td><td class="num">6</td></tr>
+            <tr><td>The block, offer "including out of stock" reading</td><td><b>6</b> x 3 runs</td><td class="num">18</td></tr>
+            <tr><td>The block, offer "excluding out of stock" reading</td><td><b>the 2 "offer" questions</b> x 3 runs</td><td class="num">6</td></tr>
             <tr><td>The block without its stop rule</td><td><b>the 3 questions where the stop rule acts</b> x 3 runs</td><td class="num">9</td></tr>
             <tr><td><strong>Total</strong></td><td></td><td class="num"><strong>66</strong></td></tr>
           </tbody>
@@ -370,23 +372,21 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
   <ul class="lead-list">
     <li>The block and the block without its stop rule were both right <b>9 of 9 times</b> on these three questions, so the stop rule saves cost without costing correctness.</li>
     <li>Over the three questions about 47% of the block's cost saving over "open everything" comes from the stop rule itself.</li>
-    <li>(Inavlid test) On "does every listing offer M" the no-stop arm still said one counterexample settles it, so it stopped as early as the block.</li>
+    <li>(Invalid test) On "does every listing offer M" the no-stop arm still said one counterexample settles it, so it stopped as early as the block.</li>
   </ul>
 
-  <details class="dx">
-    <summary>Limits of the claim</summary>
+<details class="dx">
+    <summary>The four arms</summary>
     <div class="body">
       <ol>
-        <li><strong>One new market.</strong> Ashcombe is one draw from the generator. A second new market would show the result is not luck of the draw.</li>
-        <li><strong>Two models.</strong> Claude Haiku 4.5, and DeepSeek V4 Flash in the repeat. Other models may behave differently.</li>
-        <li><strong>The same six questions.</strong> The block's rules were written while looking at these questions. The new market changes the products and prices, not the wording. A question asked another way may not be recognised. The rules handled 13 of 24 rewordings.</li>
-        <li><strong>A market built to mislead.</strong> The markets are generated so the cheapest-looking listing on the first screen is not the answer, because that is the situation being studied. When the first screen happens to be right, the block's extra checking costs more for no gain, as on the size XL question.</li>
-        <li><strong>What the final check cannot see.</strong> The block's check confirms the agent opened the listings the answer needs. It cannot tell whether the agent then misread a price on a page it did open, miscounted after opening everything, or pointed to a listing as proof without reading its size menu.</li>
+        <li><strong>Shipped.</strong> openJiuwen as shipped.</li>
+        <li><strong>Open everything.</strong> As shipped, with "open every listing" added.</li>
+        <li><strong>The block.</strong> Block in front of the shipped agent. It asks about "offer".</li>
+        <li><strong>The block without its stop rule.</strong> The same text with the stop rule replaced by "open every listing", on the three questions where the stop rule acts.</li>
       </ol>
     </div>
   </details>
-
-  <details class="dx">
+<details class="dx">
     <summary>Per-question numbers</summary>
     <div class="body">
       <p>Correct runs out of 3 per question, each arm scored against its own key. Correct in the headline measure counts the first four rows.</p>
@@ -395,19 +395,19 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
           <thead><tr><th>Question</th><th class="num">Shipped</th><th class="num">Open everything</th><th class="num">The block</th></tr></thead>
           <tbody>
             <tr><td><code>target-price</code> lowest price for size M among listings that can sell it</td><td class="num">0</td><td class="num">3</td><td class="num">3</td></tr>
-            <tr><td><code>cheapest-target</code> which seller is cheapest for size M, counting only listings that can sell it now</td><td class="num">1</td><td class="num">3</td><td class="num">3</td></tr>
+            <tr><td><code>cheapest-target</code> which seller is cheapest for size M, counting only listings that can sell it</td><td class="num">1</td><td class="num">3</td><td class="num">3</td></tr>
             <tr><td><code>all-stocked</code> does every listing offer size M</td><td class="num">3</td><td class="num">3</td><td class="num">3</td></tr>
             <tr><td><code>count-buyable</code> how many listings have M in stock and buyable now</td><td class="num">0</td><td class="num">3</td><td class="num">3</td></tr>
-            <tr><td><code>count-stocked</code> how many listings offer size M, reported separately because its answer depends on the reading</td><td class="num">0</td><td class="num">1</td><td class="num">0<sup>a</sup></td></tr>
+            <tr><td><code>count-stocked</code> how many listings offer size M, reported separately because question was ambiguous</td><td class="num">0</td><td class="num">1</td><td class="num">0<sup>a</sup></td></tr>
             <tr><td><code>headline</code> the results-page control</td><td class="num">3</td><td class="num muted">not run</td><td class="num">3</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="note"><sup>a</sup> Under the key's reading, "listed in the menu". See the ask-back finding below. Under the other reading the block was right 3 of 3. "Open everything" did not run the results-page control, which needs no listing opened. Test 4 on Thornwood left it out too, so the claim kept the same design.</p>
-      <p>Median listings opened per question, 3 runs each, beside the fewest listings that can prove the answer. That is the six advertised at or below the winning price for the two price questions, one listing without size M for "does every", and all 15 for a count.</p>
+      <p class="note"><sup>a</sup> Under the key's reading, "including out of stock". See the "offer" box below.</p>
+      <p>Median listings opened, beside the fewest listings that prove the answer.</p>
       <div class="tablewrap">
         <table>
-          <thead><tr><th>Question</th><th class="num">The answer needs</th><th class="num">Shipped</th><th class="num">Open everything</th><th class="num">The block</th><th class="num">Block without its stop rule</th></tr></thead>
+          <thead><tr><th>Question</th><th class="num">Fewest that prove it<sup>b</sup></th><th class="num">Shipped</th><th class="num">Open everything</th><th class="num">The block</th><th class="num">Block without its stop rule</th></tr></thead>
           <tbody>
             <tr><td><code>target-price</code></td><td class="num">6</td><td class="num">4</td><td class="num">15</td><td class="num">6</td><td class="num">15</td></tr>
             <tr><td><code>cheapest-target</code></td><td class="num">6</td><td class="num">4</td><td class="num">15</td><td class="num">6</td><td class="num">15</td></tr>
@@ -417,36 +417,36 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
           </tbody>
         </table>
       </div>
-      <p>Opened what the answer needs, five gated questions, 3 runs each: the block 14 of 15, open everything 15 of 15, shipped 2 of 15. The block's one miss was a "does every listing offer M" run. It answered No, which is right, but pointed to a listing where size M is only sold out. Under the reading the user gave, "listed in the menu, sold out or not", a sold-out M still counts as offered, so that proof does not hold.</p>
+      <p class="note"><sup>b</sup> The proof, not the search. For "does every listing offer M", one listing without M in its menu proves No. Opening in order, the first listing has M sold out, which still counts as offered, so a search needs 2. That is what the block opened.</p>
       <pre class="cmd">python3 experiments/analysis/claim.py experiments/results/claim-20261020.manifest</pre>
     </div>
   </details>
-
   <details class="dx">
     <summary>The three tests, the interval and the sensitivity checks</summary>
     <div class="body">
-      <p>All three tests were fixed before the run, two-sided, with Holm's correction over the three.</p>
       <div class="tablewrap">
         <table>
-          <thead><tr><th>Test</th><th>Comparison</th><th>Method</th><th class="num">p</th><th class="num">Holm p</th></tr></thead>
+          <thead><tr><th>Test</th><th>Comparison</th><th class="num">p</th><th class="num">Holm p</th></tr></thead>
           <tbody>
-            <tr><td>H1, correct</td><td>block 12 of 12 vs shipped 4 of 12</td><td>stratified exact test by question</td><td class="num">0.0010</td><td class="num"><span class="good">0.0010</span></td></tr>
-            <tr><td>H2, listings opened</td><td>block median 6 vs open everything 15</td><td>stratified exact rank test (van Elteren)</td><td class="num">0.00025</td><td class="num"><span class="good">0.0005</span></td></tr>
-            <tr><td>H3, cost a run</td><td>block median $0.197 vs open everything $0.405</td><td>same test as H2</td><td class="num">0.0000163</td><td class="num"><span class="good">0.0000488</span></td></tr>
+            <tr><td>H1, correct</td><td>block 12 of 12 vs shipped 4 of 12</td><td class="num">0.0010</td><td class="num"><span class="good">0.0010</span></td></tr>
+            <tr><td>H2, listings opened</td><td>block median 6 vs open everything 15</td><td class="num">0.00025</td><td class="num"><span class="good">0.0005</span></td></tr>
+            <tr><td>H3, cost a run</td><td>block median $0.197 vs open everything $0.405</td><td class="num">0.0000163</td><td class="num"><span class="good">0.0000488</span></td></tr>
           </tbody>
         </table>
       </div>
-      <p><strong>Correct, block vs open everything.</strong> 12 of 12 against 12 of 12. The Newcombe 95% interval for the difference runs from &minus;0.24 to +0.24. With 12 runs each this does not show the two are equally accurate. It shows only that neither got any wrong here.</p>
-      <p><strong>Sensitivity.</strong> Every one of six re-analyses keeps all three tests significant, with a Holm p of at most 0.0065. The six are without both offer questions, under each reading of count-stocked, distinct runs only, with the voids included, and without the run that saw a hidden price.</p>
-      <p><strong>Medians and means.</strong> The chart shows the mean cost a run ($0.23 against $0.48). H3 is a rank test, so it is reported with medians ($0.197 against $0.405).</p>
+      <ul>
+        <li><strong>How each test works.</strong> Each compares the two arms question by question, then combines the questions, so an easy question cannot carry the result. H1 counts right answers. H2 and H3 rank the runs from fewest to most listings, or cheapest to dearest. All three were chosen before the run.</li>
+        <li><strong>Block vs open everything on correct.</strong> 12 of 12 each. Too few runs to call them equal, only that neither got one wrong.</li>
+        <li><strong>Sensitivity.</strong> The tests were run again six times, each time changing one debatable choice, for example dropping both "offer" questions or the run that saw a hidden price. All three still pass every time, so no single choice produces the result.</li>
+        <li><strong>Means and medians.</strong> The chart shows mean cost, $0.23 against $0.48. H3 uses medians.</li>
+      </ul>
       <pre class="cmd">python3 experiments/analysis/claim.py experiments/results/claim-20261020.manifest</pre>
     </div>
   </details>
-
   <details class="dx">
     <summary>The stop rule's own effect, the numbers</summary>
     <div class="body">
-      <p>The block against the block without its stop rule, on the three questions where the rule acts. "Open everything" is shown for scale. Unadjusted and exploratory.</p>
+      <p>The block against the block without its stop rule, "open everything" for scale. Exploratory, 3 runs a question.</p>
       <div class="tablewrap">
         <table>
           <thead><tr><th>Question</th><th class="num">Block, mean cost</th><th class="num">No stop rule</th><th class="num">Open everything</th><th class="num">Block, median listings</th><th class="num">No stop rule</th></tr></thead>
@@ -457,63 +457,66 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
           </tbody>
         </table>
       </div>
-      <p>Both arms right 9 of 9. The fourth arm exists so the saving can be traced to the stop rule rather than to handing the agent the list. On Thornwood, 41% of the browser actions the block saved had come from the list alone.</p>
+      <p>Both right 9 of 9. Fewer listings opened is the solid part. With 3 runs a question, the per-question costs, and so the 47% split, are approximate.</p>
     </div>
   </details>
-
   <details class="dx">
-    <summary>Two findings that go against the block</summary>
+    <summary>The word "offer" has two meanings, so the block asks</summary>
     <div class="body">
-      <p><span class="bad">The ask-back was not applied under one reading.</span> On "how many listings offer size M" the block asked which reading was meant and was told "listed in the menu, sold out or not". In all three runs the agent still treated a sold-out size as not offered and answered 7 instead of 10. Under the other reading it was right 3 of 3, and on Thornwood it had followed the "listed" reading 3 of 3. The verifier traced it. At the first listing with a sold-out M, which on Ashcombe is the first one opened, each run decided "disabled, so it does not offer M" without applying the stated reading. This is recorded as a new kind of error, the user's stated reading not applied.</p>
-      <p><span class="bad">One run of 66 read a hidden price.</span> The shipped agent forced a sold-out size open with a script. The page then showed that size's price and the agent reported it ($17.90, wrong). The page source carries every size's price encoded, and the gated theme reveals it when a script forces the menu. The theme was left as it is, open to every arm alike, and the run was counted.</p>
-    </div>
-  </details>
-
-  <details class="dx">
-    <summary>The four arms</summary>
-    <div class="body">
-      <ol>
-        <li><strong>Shipped.</strong> openJiuwen as shipped.</li>
-        <li><strong>Open everything.</strong> As shipped, with "open every listing" added.</li>
-        <li><strong>The block.</strong> Block v12 in front of the shipped agent. It asks about "offer" and is answered with the key's reading, "listed in the menu". The two offer questions also run once more under the other reading.</li>
-        <li><strong>The block without its stop rule.</strong> The same text with the stop rule replaced by "open every listing", on the three questions where the stop rule acts. This separates the stop rule from handing the agent the list of listings.</li>
-      </ol>
-      <p>Cost of the claim run, $17.84 as the provider's charges summed. The account moved $17.83.</p>
+      <p>"Does a seller offer size M?" can fairly mean either:</p>
+      <ul>
+        <li><strong>Including out of stock.</strong> M is in the size menu, even if it is sold out. On Ashcombe, 10 listings.</li>
+        <li><strong>Excluding out of stock.</strong> M is in the menu and in stock. 7 listings.</li>
+      </ul>
+      <p>The answer key, fixed before any run, uses "including out of stock". The block does not guess: it asks the user which meaning, then passes the answer to the agent. To test that, it was told "including" in the main arm and "excluding" in an extra arm. The other arms are never asked and are marked against the key.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Question, on Claude Haiku 4.5</th><th class="num">Shipped</th><th class="num">Open everything</th><th class="num">Block, told "including"</th><th class="num">Block, told "excluding"</th></tr></thead>
+          <tbody>
+            <tr><td>Does every listing offer M? The answer is No either way, because one listing has no M at all</td><td class="num">3 of 3</td><td class="num">3 of 3</td><td class="num">3 of 3</td><td class="num">3 of 3</td></tr>
+            <tr><td>How many listings offer M? 10 including out of stock, 7 excluding</td><td class="num">0 of 3</td><td class="num">1 of 3</td><td class="num"><span class="bad">0 of 3</span></td><td class="num">3 of 3</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><strong>Haiku ignored the answer once.</strong> Told "including", it still skipped sold-out sizes and counted 7 every run. Told "excluding", it was right every run. DeepSeek V4 Flash, given the same text in its own repeat, counted 10 in all three runs.</li>
+      </ul>
     </div>
   </details>
 </section>
 
 <section class="sec" id="night-results">
-  <p class="eyebrow">The night of 20 to 21 October</p>
+  <p class="eyebrow">Second model repeat</p>
   <h2>The DeepSeek repeat and the newer question shapes</h2>
-  <p>After the claim run, the same design was repeated on a second model, DeepSeek V4 Flash, reported on its own and never pooled with Haiku. The newer question shapes then ran on the claim market, the block and the shipped agent, three rounds. Both were checked against the raw run files by the verifier.</p>
-  <h3>On a second model, the result holds</h3>
-  <p>DeepSeek V4 Flash ran the same 66-run design on the same market for $4.56. All three tests fixed in advance came out in the block's favour again, after the correction for running three tests.</p>
+  <h3>On a cheaper model, the result holds</h3>
+  <p>DeepSeek V4 Flash was run because it costs far less than Haiku, to see whether the block still works on a cheap model. Same 66-run design, same market. All three tests passed again.</p>
   <div class="tablewrap">
     <table>
-      <thead><tr><th>DeepSeek V4 Flash</th><th class="num">Correct</th><th class="num">Opened what it needs</th><th class="num">Listings opened (median)</th><th class="num">Cost a run (mean)</th></tr></thead>
+      <thead><tr><th>Arm</th><th class="num">Correct, Haiku</th><th class="num">Correct, DeepSeek</th><th class="num">Cost a run, Haiku</th><th class="num">Cost a run, DeepSeek</th></tr></thead>
       <tbody>
-        <tr><td>Shipped agent</td><td class="num">5 of 12</td><td class="num">6 of 15</td><td class="num">4</td><td class="num">$0.10</td></tr>
-        <tr><td>Open everything</td><td class="num">11 of 12</td><td class="num">14 of 15</td><td class="num">15</td><td class="num">$0.12</td></tr>
-        <tr><td>The block</td><td class="num">12 of 12</td><td class="num">15 of 15</td><td class="num">6</td><td class="num">$0.03</td></tr>
+        <tr><td>Shipped agent</td><td class="num">4 of 12</td><td class="num">5 of 12</td><td class="num">$0.18</td><td class="num">$0.10</td></tr>
+        <tr><td>Open everything</td><td class="num">12 of 12</td><td class="num">11 of 12</td><td class="num">$0.48</td><td class="num">$0.12</td></tr>
+        <tr><td>The block</td><td class="num">12 of 12</td><td class="num">12 of 12</td><td class="num">$0.23</td><td class="num">$0.03</td></tr>
+        <tr><td><strong>All 66 runs</strong></td><td></td><td></td><td class="num"><strong>$17.84</strong></td><td class="num"><strong>$4.56</strong></td></tr>
       </tbody>
     </table>
   </div>
   <ul>
-    <li><strong>The ask-back worked on DeepSeek.</strong> Told "listed in the menu, sold out or not", it counted 10 listings in all three runs, on exactly the same text where Haiku counted 7. So the failure on Haiku is that model not applying the answer, not the block.</li>
-    <li><strong>One test is weaker on DeepSeek.</strong> Without the two "offer" questions, the block against the shipped agent is 9 of 9 against 5 of 9, which is not significant (p = 0.10). DeepSeek's shipped agent opens more listings than Haiku's and gets the price questions right more often.</li>
+    <li><strong>The cheapest setup is the block on DeepSeek.</strong> 12 of 12 right at $0.03 a run, about an eighth of the block on Haiku and a quarter of open everything on DeepSeek.</li>
+    <li><strong>The ask-back worked here.</strong> Told "including out of stock", DeepSeek counted 10 in all three runs, where Haiku counted 7 on the same text.</li>
   </ul>
   <details class="dx">
     <summary>The tests, and what to keep in mind</summary>
     <div class="body">
-      <p>H1, correct, the block against shipped: 12 of 12 against 5 of 12, p = 0.005 (Holm 0.005). H2, listings opened, the block against open everything: median 6 against 15, p = 0.001 (Holm 0.002). H3, cost a run: median $0.028 against $0.109, p = 0.000016 (Holm 0.000049).</p>
-      <p>Six different providers served DeepSeek's calls, at different prices, and the mix differed between arms. H3 also holds on token counts, which carry no price. The stop rule's cost comparison does not, so it is not quoted for DeepSeek. Its listings comparison is 6 against 15 (p = 0.0025, exploratory).</p>
-      <p>One run is marked as an abstention by the scorer, but it answered correctly. The scorer matched the words "unable to" in "rejected 8 for being unable to supply size M". No test changes. One shipped run read listings by script rather than opening them, which the listing counter does not count, and one shipped run decoded the hidden prices from the page source.</p>
+      <ul>
+        <li><strong>H1</strong> 12 of 12 against 5 of 12, p = 0.005. <strong>H2</strong> median 6 against 15 listings, p = 0.001. <strong>H3</strong> median $0.028 against $0.109, p = 0.000016. All hold after Holm's correction.</li>
+        <li><strong>Prices are mixed.</strong> Six providers served the calls at different prices. H3 also holds on token counts, so it is not a price artefact.</li>
+      </ul>
       <pre class="cmd">python3 experiments/analysis/claim.py $(grep '^batch|' experiments/results/night-20261020.manifest | grep model=deepseek | cut -d'|' -f2)</pre>
     </div>
   </details>
   <h3>The newer question shapes</h3>
-  <p>The five newer shapes ran on the claim market with Haiku, the block and the shipped agent, three rounds each, for $6.23, with $1.81 more for single runs of the questions the block should not plan. This part is exploratory, with no test fixed in advance. The block got 14 of 15 right and the shipped agent 9 of 15.</p>
+  <p>Five newer question shapes on Ashcombe with Haiku, the block and the shipped agent, 3 runs each, $6.23. Exploratory, no test fixed in advance. The block 14 of 15 right, the shipped agent 9 of 15.</p>
   <div class="tablewrap">
     <table>
       <thead><tr><th>Question</th><th class="num">Shipped</th><th class="num">The block</th></tr></thead>
@@ -526,18 +529,28 @@ footer.end{padding-top:1.6rem;font-size:.86rem;color:var(--ink-2)}
       </tbody>
     </table>
   </div>
-  <p class="note">* Two of the shipped agent's right answers here were right for the wrong reason. They said only one listing was under $23, where six are, after opening 4 and 1 listings. Its one run that opened enough answered wrongly.</p>
   <ul>
-    <li><strong>The block costs more when the shortcut happens to be right.</strong> On this market the cheapest-looking card is the right answer for size XL. Both were right 3 of 3 times, but the block checked before trusting the card and cost $0.32 a run against $0.09.</li>
-    <li><strong>It saves money on questions the shop cannot answer.</strong> The block refused "which seller delivers fastest" and "the softest tee" for $0, and asked for a threshold on "a cheap tee". The shipped agent spent $0.65 on delivery and ended stuck. It did say the shop shows no delivery times, but also that there were 4 sellers instead of 15. It spent $0.96 on "softest" and crashed with no answer. On "a cheap tee in size M" it answered a confident yes, citing $18.74, which is a card price and not the price of size M ($23.43).</li>
-    <li><strong>One block run saw a hidden price.</strong> It forced a sold-out size open with a script and saw that size's price, but still answered correctly.</li>
+    <li><strong>The block costs more when the first screen is right.</strong> For size XL the cheapest-looking card is the answer. Both right 3 of 3, but the block opened listings first: $0.32 a run against $0.09.</li>
+    <li><strong>It saves money on what the shop cannot answer.</strong> It refused "fastest delivery" and "softest tee" for $0. The shipped agent spent $0.65 and $0.96 on them and gave no usable answer.</li>
   </ul>
+<details class="dx">
+    <summary>Limits of these results</summary>
+    <div class="body">
+      <ol>
+        <li><strong>One new market.</strong> Ashcombe is one draw from the generator. A second new market would show the result is not luck of the draw.</li>
+        <li><strong>Two models.</strong> Claude Haiku 4.5, and DeepSeek V4 Flash in the repeat. Other models may behave differently.</li>
+        <li><strong>The same six questions.</strong> The block's rules were written while looking at these questions. The new market changes the products and prices, not the wording. A question asked another way may not be recognised. Of 24 rewordings that keep the meaning, the block treated only 13 the same as the original wording.</li>
+        <li><strong>A market built to mislead.</strong> The markets are generated so the cheapest-looking listing on the first screen is not the answer, because that is the situation being studied. When the first screen is right, the block still opens listings and costs more for no gain, as on the size XL question above.</li>
+        <li><strong>What "opened what it needs" cannot see.</strong> This measure, computed after each run, confirms the agent opened the listings the answer needs. It cannot tell whether the agent then misread a price on a page it did open, miscounted after opening everything, or pointed to a listing as proof without reading its size menu.</li>
+      </ol>
+    </div>
+  </details>
 </section>
 
 <section class="sec" id="weeks">
   <p class="eyebrow">Week by week</p>
   <h2>Two weeks, from the cause to the held-out run</h2>
-  <p>Week 1 found why the shipped agent stops early and made every number trustworthy. Week 2 built the block and tested it fairly. Each week's steps are in the order they happened, and the larger dots mark the moments that matter. The decision log in the repository has the exact date and time of each.</p>
+  <p>Week 1 found why the shipped agent stops early and fixed it. Week 2 built the block and tested it fairly. Each week's steps are in the order they happened, and the larger dots mark the moments that matter.</p>
 
   <h3 class="week">Week 1, 7 to 13 October. Find the cause, and make every number trustworthy</h3>
   <ol class="tl">
@@ -569,9 +582,9 @@ python3 experiments/analysis/compare_cells.py</pre>
     <li class="key">
       <span class="d">Finding</span>
       <div>
-        <div class="s">The word "offer" has two readings. No amount of browsing fixes that.<span class="k">ambiguity found</span></div>
+        <div class="s">The word "offer" has two readings.<span class="k">ambiguity found</span></div>
         <details class="dq"><summary>Detail</summary><div class="body">
-          <p>"How many listings offer size M?" can mean "listed in the size menu, sold out or not", which is the answer key's reading with the answer 10, or "can sell it now", with the answer 5. Every agent that explained itself read it the second way. There was nothing more to open. The question itself has two readings. This inspired the block's ask-back.</p>
+          <p>"How many listings offer size M?" can mean "including out of stock", which is the answer key's reading with the answer 10, or "excluding out of stock", with the answer 5. Every agent that explained itself read it the second way. There was nothing more to open. The question itself has two readings. This inspired the block's ask-back.</p>
         </div></details>
       </div>
     </li>
@@ -704,7 +717,7 @@ python3 experiments/analysis/compare_cells.py</pre>
     <details class="dq"><summary>Test 5, block v1 pilot</summary><div class="body"><p>Two runs, both correct. On the cheapest question it opened exactly the 8 listings that mattered for $0.39, where Test 4 opened 15 for about $0.59.</p></div></details>
     <details class="dq"><summary>Test 6, block v2 development batch</summary><div class="body"><p>In sample on Thornwood, so a strong hint rather than a result. Correct 13 of 15, a median of 8 listings, $0.26 a run. The block asked on both "offer" questions and on none of the others, and was right under each reading once told. $6.96 for the batch.</p><pre class="cmd">make facts   # section H</pre></div></details>
     <details class="dq"><summary>Test 7, the claim run</summary><div class="body"><p>The held-out test under the pre-registered protocol. Four arms, three rotated rounds, 66 runs, $17.84. The full result is in the main-result section above.</p><pre class="cmd">python3 experiments/analysis/claim.py experiments/results/claim-20261020.manifest</pre></div></details>
-    <details class="dq"><summary>Test 8, the AI parser on reworded questions</summary><div class="body"><p>Thirty rewordings written blind by the verifier, 24 of which keep the question's meaning, scored by a rule fixed before any call. The AI parser recognised the kind of question 21 times of 24 where the rules managed 17, and was less exact on the details. The table is in the block section.</p><pre class="cmd">python3 experiments/analysis/paraphrase_scores.py experiments/results/parse-probe-paraphrases_v1-20261020T223344.json</pre></div></details>
+    <details class="dq"><summary>Test 8, the AI parser on reworded questions</summary><div class="body"><p>Thirty rewordings written blind by the verifier, 24 of which keep the question's meaning, scored by a rule fixed before any call. The AI parser recognised the kind of question 21 times of 24 where the rules managed 17, and was less exact on the details. The table is in the block section.</p><p>The AI parser's three misses on the kind of question:</p><div class="tablewrap"><table><thead><tr><th>Reworded question</th><th>What it means</th><th>The AI parser read it as</th><th>The mistake</th><th>What the block would do</th></tr></thead><tbody><tr><td>Is there a Thornwood seller that doesn't have size M?</td><td>"Does every seller have M?", turned around</td><td>Find a seller</td><td>Missed the negation</td><td>Refuse: no plan for that kind</td></tr><tr><td>Is Copperfield Apparel or Elmsworth Clothing Co cheaper for a size M Thornwood tee?</td><td>Look up the two named sellers</td><td>The cheapest, among those two sellers</td><td>None in practice, same answer. Counted only because the form differs</td><td>Plan and answer correctly</td></tr><tr><td>Is there an affordable Thornwood tee in medium?</td><td>"Affordable" has no figure, so ask for a maximum price</td><td>A filter "price = affordable", and "medium" not mapped to M</td><td>Did not flag a vague word</td><td>Refuse: no plan for that kind</td></tr></tbody></table></div><p class="note">None would give a confident wrong answer, because the block refuses a form it has no plan for.</p><pre class="cmd">python3 experiments/analysis/paraphrase_scores.py experiments/results/parse-probe-paraphrases_v1-20261020T223344.json</pre></div></details>
     <details class="dq"><summary>Test 9, the claim design on DeepSeek V4 Flash</summary><div class="body"><p>The same four arms, rotated order, measures and analysis as Test 7, on DeepSeek V4 Flash, reported on its own and never pooled with Haiku. 66 runs, $4.56. All three tests fixed in advance came out in the block's favour again: correct 12 of 12 against 5 of 12 (p = 0.005), listings opened median 6 against 15 (p = 0.001), cost median $0.028 against $0.109 (p = 0.000016). Without the two "offer" questions, the correctness test is 9 of 9 against 5 of 9, which is not significant (p = 0.10). Six providers served the calls, in a different mix per arm.</p></div></details>
     <details class="dq"><summary>Test 10, the newer question shapes</summary><div class="body"><p>Five newer shapes on the claim market with Haiku, the block and the shipped agent, three rounds each, exploratory with no test fixed in advance. 30 runs for $6.23, plus 10 single runs of the questions the block should not plan for $1.81. The block 14 of 15 correct, the shipped agent 9 of 15. The block refused two questions the shop cannot answer and asked back on one, all for $0.</p></div></details>
   </div>
@@ -725,7 +738,7 @@ python3 experiments/analysis/compare_cells.py</pre>
     </li>
     <li>
       <h4>Check</h4>
-      <p>After the agent answers, decide from the page and the agent's own log whether the answer is supported by what was opened. Refuse it if not. The check never reads an answer key.</p>
+      <p>After the agent answers, decide from the page and the agent's own log whether the answer is supported by what was opened. Refuse it if not. The check never reads an answer key. It was switched off in the claim run. Replayed over those runs afterwards, it refused the one correct answer whose proof did not hold, and none of the three miscounts, which it cannot see by design.</p>
     </li>
   </ol>
 
@@ -758,7 +771,6 @@ python3 experiments/analysis/compare_cells.py</pre>
           <thead><tr><th>Question</th><th>Strategy</th><th>Building block</th></tr></thead>
           <tbody>
             <tr><td>answered on the results page</td><td>read the page, open nothing</td><td>&ndash;</td></tr>
-            <tr><td>reviews</td><td>read pages in order, stop at the first mention or the last page</td><td>depth</td></tr>
             <tr><td>does every listing have it</td><td>look for one counterexample</td><td>counterexample</td></tr>
             <tr><td>cheapest, possibly buyable</td><td>open from the lowest advertised price, skip what cannot win</td><td>bound and prune</td></tr>
             <tr><td>is there any under a price</td><td>cheapest first, stop at the first that satisfies</td><td>witness</td></tr>
@@ -802,8 +814,106 @@ python3 experiments/analysis/compare_cells.py</pre>
   </details>
 </section>
 
+
+<section class="sec" id="adds-up">
+  <p class="eyebrow">What this adds up to</p>
+  <h2>Five contributions</h2>
+
+  <div class="contrib">
+    <article>
+      <div class="what">RQ2 · the failure</div>
+      <div>
+        <h3>A measured, explained failure</h3>
+        <p>A real open-source agent trusts the four cards on screen and answers wrongly with no doubt: correct in 4 of 12 on the held-out market. The cause is one card-reader default. A second agent shows the other errors are not specific to one agent.</p>
+      </div>
+    </article>
+    <article>
+      <div class="what">RQ3 · the method</div>
+      <div>
+        <h3>A method that fixes it at low cost</h3>
+        <p>As correct as opening everything, with under half the listings and under half the cost, on a held-out market with tests fixed in advance. It held again on DeepSeek V4 Flash.</p>
+      </div>
+    </article>
+    <article>
+      <div class="what">Finding</div>
+      <div>
+        <h3>Clarification only helps if the agent applies the answer</h3>
+        <p>Haiku ignored the user's stated meaning in all three runs, and DeepSeek applied it on the same text. A new kind of error.</p>
+      </div>
+    </article>
+    <article>
+      <div class="what">Environment</div>
+      <div>
+        <h3>A shop where gating exists</h3>
+        <p>WebArena had no products with per-size prices. This project adds generated gated markets with computed answer keys. A candidate for WebArena-Verified, claimed only if merged.</p>
+      </div>
+    </article>
+    <article>
+      <div class="what">Way of working</div>
+      <div>
+        <h3>Pre-registration, a verifier and a spend guard</h3>
+        <p>They caught flaws before any money was spent, such as a browser session shared across arms, that could have voided the result.</p>
+      </div>
+    </article>
+  </div>
+
+  <h3>Return on effort and money</h3>
+  <p>Spent so far, $94.74 of the $100. The audit, the market, the verification and all the analysis cost $0.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Paid test</th><th>The question it answered</th><th class="num">Cost</th></tr></thead>
+      <tbody>
+        <tr><td>Test 2, viewport limit off</td><td>What causes the early stop</td><td class="num">$0.48 a run</td></tr>
+        <tr><td>Test 3, a second agent</td><td>Is it only this agent</td><td class="num">$0.13 a run</td></tr>
+        <tr><td>Test 4, open every listing</td><td>Where the ceiling is</td><td class="num">$0.52 a run</td></tr>
+        <tr class="hl"><td>Test 7, the claim run</td><td>Does the block reach correct answers with fewer listings, on a market it has never seen</td><td class="num">$17.84 in all</td></tr>
+        <tr><td>Test 9, the DeepSeek repeat</td><td>Is the result a quirk of one model</td><td class="num">$4.56 in all</td></tr>
+        <tr><td>Test 10, the newer shapes</td><td>Does the block handle more than the six template questions</td><td class="num">$8.04 in all</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="sec" id="plan">
+  <p class="eyebrow">To 6 November</p>
+  <h2>Plan for final steps</h2>
+  <h3>Timeline</h3>
+  <ol class="dates">
+    <li><span class="d">21 Oct</span><span>Meeting. Request for the last $100 of the $200 requested.</span></li>
+    <li><span class="d">21 to 27 Oct</span><span><ul class="plan-list">
+      <li><strong>The model front door.</strong> A model reads the question into the block's record, checked against the block's vocabulary, and writes its own ask-back on ambiguous questions. The rules still plan, stop and check. Tested free on the 30 rewordings first.</li>
+      <li><strong>A second, bigger held-out market</strong>: more than 15 listings, mixed product types. Same protocol, written down before the market exists.</li>
+      <li><strong>At least one pre-registered run</strong> on that market, DeepSeek pinned to one provider and Haiku, with the newer question shapes and reworded questions included.</li>
+      <li>Open an issue with WebArena-Verified describing the gated-variant extension. No claim until a pull request is merged.</li>
+      <li>Finalize first abstract draft.</li>
+    </ul></span></li>
+    <li><span class="d">28 Oct</span><span>Meeting. The new run's results, and first draft of abstract.</span></li>
+    <li><span class="d">28 Oct to 3 Nov</span><span>Write and finalise the abstract from all the results. No new experiments.</span></li>
+    <li><span class="d">4 Nov</span><span>Meeting. Final abstract  and final changes before submission.</span></li>
+    <li><span class="d">6 Nov</span><span>Abstract due.</span></li>
+  </ol>
+</section>
+
+<section class="sec" id="questions">
+  <p class="eyebrow">Questions</p>
+  <h2>Questions for the professor</h2>
+  <ol>
+    <li><strong>The remaining budget: make the block stronger instead of adding reviews?</strong>:
+      <ul>
+        <li><strong>A model at the block's front door.</strong> Today fixed rules read the question: they recognise its kind in 17 of 24 rewordings, and the block asks back only on "offer"-type words. A model would read any wording, 21 of 24 in the offline test, and ask back on other ambiguous questions. The rules still plan, stop and check.</li>
+        <li><strong>Tested where it is harder.</strong> A new held-out market with more listings, mixed product types, and reworded questions. If time remains, the block in front of a second, simpler agent too.</li>
+        <li><strong>Reviews as future work.</strong> They need a new environment and new strategies, a large build for one more question type.</li>
+      </ul>
+      Is that the right trade for an applied project?</li>
+    <li><strong>The ask-back finding.</strong> The block asked the user the right question, but on one question Haiku then ignored the answer, while DeepSeek used it. So asking only helps if the agent acts on the reply. Is that worth presenting as a finding in its own right?</li>
+    <li><strong>Open source.</strong> Should the market generator be offered to WebArena-Verified now, and are there NUS rules on licensing FYP code?</li>
+    <li><strong>AI assistance.</strong> How should the use of an AI coding assistant be declared in the report?</li>
+    <li><strong>The abstract.</strong> Which assessment criteria should it speak to most? And would a discussion of possible improvements of the abstract at next week's meeting be welcome?</li>
+  </ol>
+</section>
+
 <section class="sec" id="decisions">
-  <p class="eyebrow">Decisions and why</p>
+  <p class="eyebrow">Appendix A</p>
   <h2>The choices that shaped the result</h2>
   <p>Ten decisions carry most of the weight. Open each for its reason. The rest are in the collapsible below, and the full dated list is in the repository at <code>docs/decisions-20-oct.html</code>.</p>
   <div class="dec">
@@ -843,7 +953,7 @@ python3 experiments/analysis/compare_cells.py</pre>
 </section>
 
 <section class="sec" id="checks">
-  <p class="eyebrow">How the work is checked</p>
+  <p class="eyebrow">Appendix B</p>
   <h2>Nothing is spent, and no figure is published, without a check</h2>
   <ul>
     <li><strong>Pre-registration.</strong> The claim protocol fixed the arms, the measures, the tests and the exclusions before the market existed. Every later change is dated with its reason.</li>
@@ -868,106 +978,8 @@ python3 experiments/analysis/compare_cells.py</pre>
   </details>
 </section>
 
-<section class="sec" id="adds-up">
-  <p class="eyebrow">What this adds up to</p>
-  <h2>Five contributions, and what each dollar bought</h2>
-  <p>This is the section to know by heart. Each contribution below is a thing the report can claim, with the evidence on this page behind it.</p>
-
-  <div class="contrib">
-    <article>
-      <div class="what">RQ2 · the failure</div>
-      <div>
-        <h3>A measured, explained failure</h3>
-        <p>A production open-source shopping agent stops at the four product cards in its viewport and answers confidently and wrongly. On Thornwood it opened what the answer needed in 3 of 15 runs, and on the held-out market it was correct in 4 of 12. The cause is one default in its card reader. Switching it off takes opened-what-it-needs to 15 of 15. A second agent built from scratch shows the remaining errors, ambiguity and reading a price too early, are not specific to one agent.</p>
-      </div>
-    </article>
-    <article>
-      <div class="what">RQ3 · the method</div>
-      <div>
-        <h3>A method that fixes it at low cost</h3>
-        <p>The block reaches the correctness of exhaustive exploration while opening fewer than half the listings at less than half the cost, on a held-out market under pre-registered tests. The same three tests held again on a second model, DeepSeek V4 Flash. About half of the saving comes from the stop rule itself, with the rest from handing the agent the list and the plan.</p>
-      </div>
-    </article>
-    <article>
-      <div class="what">Finding</div>
-      <div>
-        <h3>Clarification only helps if the agent applies the answer</h3>
-        <p>Asking the user back resolves an ambiguous question only if the agent then applies the answer. On the held-out market Haiku did not apply it under one reading, in all three runs, while DeepSeek did on exactly the same text. This is a new, recorded kind of error, and it is a result in its own right.</p>
-      </div>
-    </article>
-    <article>
-      <div class="what">Environment</div>
-      <div>
-        <h3>A shop where gating exists</h3>
-        <p>The WebArena shop had no products whose variants have different prices. All 104,368 products are simple products. This project adds generated markets with gated per-variant prices and stock, answer keys computed from the data, and a live checker. It is a candidate contribution to WebArena-Verified, claimed only if a pull request is merged.</p>
-      </div>
-    </article>
-    <article>
-      <div class="what">Way of working</div>
-      <div>
-        <h3>Pre-registration, a verifier and a spend guard</h3>
-        <p>Together they caught several result-breaking flaws before any money was spent. Without them the claim run would have run with a shared browser session across arms, false instructions to the agent, and a brand that collides with a seller name. Any of those could have been used to dismiss the result.</p>
-      </div>
-    </article>
-  </div>
-
-  <h3>Return on effort and money</h3>
-  <p>Spent so far, $94.74 of the $100. It stood at $82.08 of $100 when the claim run ended. The held-out claim run cost $17.84. The audit, the market, the verification and all the analysis cost $0.</p>
-  <div class="tablewrap">
-    <table>
-      <thead><tr><th>Paid test</th><th>The question it answered</th><th class="num">Cost</th></tr></thead>
-      <tbody>
-        <tr><td>Test 2, viewport limit off</td><td>What causes the early stop</td><td class="num">$0.48 a run</td></tr>
-        <tr><td>Test 3, a second agent</td><td>Is it only this agent</td><td class="num">$0.13 a run</td></tr>
-        <tr><td>Test 4, open every listing</td><td>Where the ceiling is</td><td class="num">$0.52 a run</td></tr>
-        <tr class="hl"><td>Test 7, the claim run</td><td>Does the block reach correct answers with fewer listings, on a market it has never seen</td><td class="num">$17.84 in all</td></tr>
-        <tr><td>Test 9, the DeepSeek repeat</td><td>Is the result a quirk of one model</td><td class="num">$4.56 in all</td></tr>
-        <tr><td>Test 10, the newer shapes</td><td>Does the block handle more than the six template questions</td><td class="num">$8.04 in all</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<section class="sec" id="questions">
-  <p class="eyebrow">For today's meeting</p>
-  <h2>Questions for the professor</h2>
-  <ol>
-    <li><strong>Budget.</strong> $5.26 of the $100 is left. Could the second $100 of the $200 requested be released, for a second new market and, if there is time, reviews?</li>
-    <li><strong>Is one new market enough?</strong> The claim rests on one held-out market and two models. Would a second market strengthen the abstract more than reviews would?</li>
-    <li><strong>Reviews.</strong> Is it acceptable to present reviews as a designed extension rather than a measured result?</li>
-    <li><strong>The title.</strong> The registered title is about ambiguity and injection defences. The results are mostly about a retrieval policy, with ambiguity as one finding. Should the registered title stay, or move closer to the working title?</li>
-    <li><strong>The ask-back finding.</strong> Asking the user only helped when the agent then applied the answer, which Haiku did not under one reading. Is that worth presenting as a finding in its own right?</li>
-    <li><strong>Open source.</strong> Should the market generator be offered to WebArena-Verified now, and are there NUS rules on licensing FYP code?</li>
-    <li><strong>AI assistance.</strong> How should the use of an AI coding assistant be declared in the report?</li>
-    <li><strong>The abstract.</strong> Which assessment criteria should it speak to most? And would a discussion of possible improvements at next week's meeting be welcome?</li>
-  </ol>
-</section>
-
-<section class="sec" id="plan">
-  <p class="eyebrow">To 6 November</p>
-  <h2>The plan, and the recommendation on reviews</h2>
-  <div class="callout">
-    <p><strong>Recommendation. Stop building new features now and write.</strong> Make reviews a designed extension, described in the report as the next step with the building block already in the design. Build it only if the abstract is on track by next week's meeting on 28 October and the budget is topped up.</p>
-  </div>
-  <h3>Why</h3>
-  <ul>
-    <li>The core result is in and verified.</li>
-    <li>Reviews need a new page reader, a new check, new answer keys and their own held-out run. That is about 2 to 3 days of build and verification, and about $8 to $15.</li>
-    <li>The abstract is stronger with one result that is deep and checked than with two that are thin.</li>
-    <li>The remaining budget after tonight is small. $5.26 is left on the key.</li>
-  </ul>
-  <h3>Timeline</h3>
-  <ol class="dates">
-    <li><span class="d">21 Oct</span><span>Today's meeting. Ask for the second $100 of the $200 requested, as $100 was granted.</span></li>
-    <li><span class="d">21 to 27 Oct</span><span>Write the abstract's first draft from this page's results. Record the new error kind. Open an issue with WebArena-Verified describing the gated-variant extension, with no claim until a pull request is merged. Run a last experiment only if it closes a gap the results show and the budget allows.</span></li>
-    <li><span class="d">28 Oct</span><span>Next meeting. The abstract's first draft is ready, and a discussion with the professor of how to improve the project, if that suits.</span></li>
-    <li><span class="d">28 Oct to 5 Nov</span><span>Revise the abstract from the feedback, with the report's sections in parallel.</span></li>
-    <li><span class="d">6 Nov</span><span>Abstract due.</span></li>
-  </ol>
-</section>
-
 <section class="sec" id="sources">
-  <p class="eyebrow">Research that shaped it</p>
+  <p class="eyebrow">Appendix C</p>
   <h2>Sources, and what each changed</h2>
   <details class="dx">
     <summary>The sources table</summary>
@@ -977,7 +989,7 @@ python3 experiments/analysis/compare_cells.py</pre>
           <thead><tr><th>Source</th><th>What it says</th><th>What it changed</th></tr></thead>
           <tbody>
             <tr><td>WebMall (SIGIR 2026), DeepShop (2025), WebShop (2022)</td><td>Shopping tasks come in a few shapes. Agents fail most on vague requirements and filters</td><td>The list of question shapes and the seven building blocks</td></tr>
-            <tr><td>DiscoBench (2026), SAGE-Agent (ACL 2026)</td><td>Ask only when ambiguity changes the answer. Score over-asking and under-asking</td><td>The ask-back, with the clear questions as the control for over-asking</td></tr>
+            <tr><td>DiscoBench (2026), SAGE-Agent (Findings of ACL 2026)</td><td>Ask only when ambiguity changes the answer. Score over-asking and under-asking</td><td>The ask-back, with the clear questions as the control for over-asking</td></tr>
             <tr><td>Dialogue to Discovery (2026)</td><td>Ask about an attribute only when the catalogue splits on it</td><td>When not to ask</td></tr>
             <tr><td>AB-RAG, Stop-RAG, TASR (2025 to 2026)</td><td>Stop retrieving based on the model's own confidence</td><td>The gap. The block's stop rule reads a bound from the page and can refuse a confident wrong answer</td></tr>
             <tr><td>Calibrate-Then-Act (2026), branch and bound</td><td>Weigh another look against what it could change</td><td>The cheapest strategy is branch and bound with the advertised price as the bound</td></tr>
@@ -991,10 +1003,6 @@ python3 experiments/analysis/compare_cells.py</pre>
   </details>
 </section>
 
-<footer class="end">
-  <p>Prepared for the supervisor meeting of 21 October 2026. The commands in the details boxes reproduce every figure from the repository's raw run files.</p>
-  <p><strong>How this was built.</strong> Kayleen Lee Kai Rong designed the research, made every decision and reviewed every result. Claude Code (Anthropic), used with Claude Opus and Claude Fable models, wrote most of the code under the student's direction, ran the independent verification passes, and drafted the documentation, this page included. The repository's decision log records what was decided, when and why.</p>
-</footer>
 
 </div>
 
@@ -1179,7 +1187,7 @@ python3 experiments/analysis/compare_cells.py</pre>
     5: { t: '5. Compose', p: ['The block picks the building block for the kind of answer. Lookup, witness, counterexample, bound and prune, exhaust, depth or filter.'] },
     6: { t: '6. Render', p: ['The exact text the agent receives. The listing count, the listings sorted by advertised price with their URLs, and the strategy with its stop rule. The same input gives the same text every time.'] },
     7: { t: '7. The agent', p: ['openJiuwen, unmodified, with its browser confined to the shop. It receives the rendered text as its task and answers.'] },
-    8: { t: '8. Check the answer', p: ['From the page and the agent’s own log, the block decides whether the answer is supported by what was opened, and refuses it if not. The check never reads an answer key.'] }
+    8: { t: '8. Check the answer', p: ['From the page and the agent’s own log, the check decides whether the answer is supported by what was opened, and refuses it if not. It never reads an answer key. It was switched off in the claim run, where "opened what it needs" was measured after each run instead. Replayed over those runs afterwards, it refused the one correct answer whose proof did not hold, and none of the three miscounts, which it cannot see by design.'] }
   };
   var tabs = Array.prototype.slice.call(document.querySelectorAll('#flow .step'));
   var panel = document.getElementById('step-panel');
@@ -1218,7 +1226,7 @@ python3 experiments/analysis/compare_cells.py</pre>
 
   /* ---------- open or close every details box ---------- */
   var all = document.getElementById('toggle-all');
-  all.addEventListener('click', function () {
+  if (all) all.addEventListener('click', function () {
     var open = all.getAttribute('aria-pressed') !== 'true';
     Array.prototype.forEach.call(document.querySelectorAll('details'), function (d) { d.open = open; });
     all.setAttribute('aria-pressed', open ? 'true' : 'false');
