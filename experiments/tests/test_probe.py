@@ -457,10 +457,11 @@ class StoredPage(unittest.TestCase):
         spec = json.loads(PARAPHRASES.read_text())
         page_ = parse_probe.stored_page(THORNWOOD)
         # The record was written before page records kept titles (22 October 2026), so the
-        # page read back has none, and is otherwise the record.
+        # page read back has none, and before they kept the pages read and the reader (box
+        # v16): one page, its own, and no reader. It is otherwise the record.
         stored = rows[0]["box"]["page"]
-        self.assertEqual(page_.record(), {**stored, "listings": [{**item, "title": None}
-                                                                 for item in stored["listings"]]})
+        self.assertEqual(page_.record(), {**stored, "pages": [stored["url"]], "reader": None,
+                                          "listings": [{**item, "title": None} for item in stored["listings"]]})
         self.assertFalse(normalise.titles_kept(page_))
         self.assertEqual(page_.url, box.results_url(spec["lead"].format(base=spec["base_url"])))
 
@@ -744,7 +745,8 @@ class QuestionsFakedModel(unittest.TestCase):
                          (parse_probe.COMPARISON_VERSION, form.VERSION, box.VERSION,
                           primitives.VERSION, planner.VERSION, targeting.VERSION))
         stored = json.loads(THORNWOOD.read_text())["rows"][0]["box"]["page"]
-        self.assertEqual(p["page"], {**stored, "listings": [{**item, "title": None} for item in stored["listings"]]})
+        self.assertEqual(p["page"], {**stored, "pages": [stored["url"]], "reader": None,
+                                     "listings": [{**item, "title": None} for item in stored["listings"]]})
         # The probe says what its figures cannot show: in sample, and no titles kept.
         self.assertTrue(p["in_sample"])
         self.assertEqual(len(p["limits"]), 2)

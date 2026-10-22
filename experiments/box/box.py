@@ -7,9 +7,10 @@ evidence. It asks the user back, when the question has two reasonable readings a
 readings give different answers, or names a price with no figure. Or it refuses, when the
 question needs an attribute this shop does not show, and says what is missing instead.
 
-It may use only what the agent itself could see: the question, the first results page as
-`page.py` read it, and the user's reply to its own question. Never a task file's answers,
-a market's instance record or a generated catalogue. `tests/test_box.py` checks that.
+It may use only what the agent itself could see: the question, the results pages as
+`page.py` read them, every page of the search since box v16 (the first alone until then),
+and the user's reply to its own question. Never a task file's answers, a market's instance
+record or a generated catalogue. `tests/test_box.py` checks that.
 
 Version 2 parses the question into a logical form (`form.py`), holds the form to five
 soundness properties, and composes the plan from a retrieval primitive (`primitives.py`).
@@ -121,7 +122,14 @@ import targeting
 #      page's attributes, declines the question with the usual statement of what the shop
 #      shows (`normalise.declines`), where 14 let the rules' form decide; the record says the
 #      model's form declined (`Parse.declined`). The rules path is unchanged
-VERSION = 15
+#   16 22 October 2026, for the second claim run, whose market spans two results pages. The
+#      box reads every results page, following the pager, in a headless browser by default
+#      (`page.read`, `--page-reader`), and records which reader read which pages. Property
+#      1 holds over every page: no plan is made over a read with a later page unread
+#      (`form.verify`). A search on several pages is said to be one, with every listing of
+#      every page in the plan (`primitives.preamble`, the unlisted ask). Every text for a
+#      search on one page is unchanged
+VERSION = 16
 
 # Who may read the question for the box: the rules, the default, or a model through a call
 # the caller injects.
@@ -386,7 +394,7 @@ def decide_by_rules(question: str, page: page_module.Page | None, reply: str | N
     names = unlisted(form, question, page)
     if names:
         return Decision(question=question, kind=None,
-                        ask=ambiguity.unlisted_ask(names, len(page.listings)),
+                        ask=ambiguity.unlisted_ask(names, len(page.listings), len(page.pages)),
                         reading=reading, query=None, plan=None, page=page, form=form,
                         reading_by=reading_by, exhaust=exhaust)
     if "price limit" in form.unknowns:
@@ -506,7 +514,8 @@ def decide_by_model(question: str, page: page_module.Page | None, reply: str | N
         return decided(form, ask=asked, refuse=form_module.refusal(missing), **closed)
     names = unlisted(form, question, page)
     if names:
-        return decided(form, ask=ambiguity.unlisted_ask(names, len(page.listings)), **closed)
+        return decided(form, ask=ambiguity.unlisted_ask(names, len(page.listings), len(page.pages)),
+                       **closed)
     other = [entry for entry in form.ambiguities if not normalise.reads_availability(entry)]
     if other:
         return decided(form, ask=ambiguity.generic_ask(other[0].word, other[0].readings), **closed)

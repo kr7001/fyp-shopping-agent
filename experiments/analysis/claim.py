@@ -107,11 +107,12 @@ SETTING = {"scaffold": "openjiuwen", "shop": "gated", "probe": "viewport", "poli
 # answer here is scored again by today's score.py, whatever scored it at the time.
 CONDITIONS = ("model", "scaffold", "shop", "probe", "draw", "tasks_file", "policy", "confidence",
               "targeting_version", "planner_version", "box_version", "form_version",
-              "primitives_version", "browser_tool", "browser_origins", "browser_flags",
+              "primitives_version", "page_reader", "browser_tool", "browser_origins", "browser_flags",
               "agent_core_commit", "agent_core_patch")
 # Of those, the ones only an arm under the box has, so they differ between arms by design.
+# The page reader is the box's since box v16 (22 October 2026); every batch before has none.
 BOX_CONDITIONS = ("targeting_version", "planner_version", "box_version", "form_version",
-                  "primitives_version")
+                  "primitives_version", "page_reader")
 # The fields a run record carries for itself; the rest are its batch's.
 RUN_CONDITIONS = ("model", "scaffold", "shop", "probe")
 ALPHA = 0.05

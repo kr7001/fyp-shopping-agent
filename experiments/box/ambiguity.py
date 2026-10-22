@@ -163,12 +163,17 @@ def generic_ask(word: str, readings: tuple[str, ...]) -> Ask:
 # ask stands as the outcome.
 UNLISTED = ("Your question names {names}, which the results page does not list among its "
             "{count} listings. Which of them do you mean?")
+# The same over a search of several pages, all of which the box reads (box v16).
+UNLISTED_PAGES = ("Your question names {names}, which the {pages} results pages do not list "
+                  "among their {count} listings. Which of them do you mean?")
 
 
-def unlisted_ask(names: list[str], count: int) -> Ask:
-    """The question put to the user about the names the page does not list."""
+def unlisted_ask(names: list[str], count: int, pages: int = 1) -> Ask:
+    """The question put to the user about the names the pages do not list."""
     listed = " and ".join(names) if len(names) < 3 else ", ".join(names[:-1]) + f" and {names[-1]}"
-    return Ask(verb=names[0], text=UNLISTED.format(names=listed, count=count), readings={})
+    text = (UNLISTED.format(names=listed, count=count) if pages <= 1
+            else UNLISTED_PAGES.format(names=listed, count=count, pages=pages))
+    return Ask(verb=names[0], text=text, readings={})
 
 
 def with_reading(question: str, asked: Ask, reading: str) -> str:

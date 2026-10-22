@@ -369,12 +369,15 @@ class OlderScriptsKnowTheParser(unittest.TestCase):
     def test_a_rerun_line_carries_the_parser_and_its_model(self):
         # Planted: `rerun_flags` without the parser, a model batch's re-run line was a rules one.
         model = self.payload_folder(box=True, reading="menu", parser="model", parser_model="vendor/parser-x")
+        # With the page reader each batch's own, by box v16's rule: none recorded is the fetch.
         self.assertEqual(voids.rerun_flags(model), "--tasks experiments/tasks/tasks_claim_apparel.json --repeats 1 "
-                                                   "--box --reading menu --parser model --parser-model vendor/parser-x")
+                                                   "--box --reading menu --parser model --parser-model vendor/parser-x "
+                                                   "--page-reader fetch")
         rules = self.payload_folder(box=True, reading="menu", parser="rules", parser_model=None)
         self.assertNotIn("--parser", voids.rerun_flags(rules))
         before = self.payload_folder(box=True)
-        self.assertEqual(voids.rerun_flags(before), "--tasks experiments/tasks/tasks_claim_apparel.json --repeats 1 --box")
+        self.assertEqual(voids.rerun_flags(before), "--tasks experiments/tasks/tasks_claim_apparel.json --repeats 1 --box "
+                                                    "--page-reader fetch")
 
     def test_a_batch_line_under_the_model_parser_is_its_own_arm(self):
         # Planted: `intended` without the parser, the model's line stood for the box's.

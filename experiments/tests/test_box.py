@@ -282,12 +282,50 @@ class Decide(unittest.TestCase):
                          f"{q}\n\n{box.preamble(self.page)}\n\n{targeting.BODIES[decision.kind]}")
         self.assertNotIn(targeting.ENUMERATE, decision.query)
 
-    def test_a_next_page_is_told_to_the_agent(self):
+    def test_a_page_with_a_later_page_unread_is_not_planned_over(self):
+        # Until box v16 the agent was told "there is a next page, open it too before
+        # deciding" and planned over the first page alone. Since then the box reads every
+        # page, and property 1 holds over all of them: a read that stopped with a page
+        # unread is no enumeration. Planted: the check removed, the headline was planned
+        # over 3 listings of 40.
         paged = page.Page(url=RESULTS_URL, listings=self.page.listings, total=40, next_page=True)
-        decision = box.decide(self.questions["apparel-headline"], paged)
-        self.assertIn("The results page lists 3 listings on one page; there is a next page, "
-                      "open it too before deciding.", decision.query)
-        self.assertNotIn("there is no next page", decision.query)
+        for task_id in ("apparel-headline", "apparel-target-price", "apparel-count-buyable"):
+            with self.subTest(task=task_id), self.assertRaisesRegex(
+                    ValueError, "the population is not enumerated first: the search runs to a "
+                                "results page the box did not read"):
+                box.decide(self.questions[task_id], paged, reply="menu")
+
+    def test_every_listing_of_every_page_is_in_the_plan(self):
+        # Two pages read to the end: one population, said to be on two pages, every listing
+        # in the plan by advertised price, and the bound over all of them.
+        later = [page.Listing(seller=f"Seller {chr(68 + n)}", title=f"Example Tee - Seller {chr(68 + n)}",
+                              url=f"{BASE}/example-tee-{n + 4:02d}.html", advertised=price)
+                 for n, price in enumerate([11.10, 40.00])]
+        both = page.Page(url=RESULTS_URL, listings=self.page.listings + later, total=5, next_page=False,
+                         pages=(RESULTS_URL, f"{BASE}/catalogsearch/result/index/?p=2&q=Example"))
+        decision = box.decide(self.questions["apparel-target-price"], both)
+        self.assertIn("The search results list 5 listings on 2 pages; there is no further page.\n"
+                      "Listings by advertised price, read from the results pages:\n"
+                      "1. Seller D, advertised $11.10, http://localhost:7770/example-tee-04.html\n"
+                      "2. Seller B, advertised $12.25, http://localhost:7770/example-tee-02.html\n", decision.query)
+        self.assertIn("5. Seller E, advertised $40.00, http://localhost:7770/example-tee-05.html", decision.query)
+        self.assertEqual([c.seller for c in decision.plan.candidates],
+                         ["Seller D", "Seller B", "Seller C", "Seller A", "Seller E"])
+        self.assertEqual(form_module.verify(decision.form, both), [])
+        # One page keeps v1's sentence, byte for byte.
+        one = box.decide(self.questions["apparel-target-price"], self.page)
+        self.assertIn("The results page lists 3 listings on one page; there is no next page.\n"
+                      "Listings by advertised price, read from the results page:\n", one.query)
+        # A seller on the second page is found, and one on neither is asked about over both.
+        # Planted: the ask's text for one page kept for two, "the results page" said it.
+        pair = f"Go to {RESULTS_URL} . Between Seller E and Seller B, who is cheaper for size M?"
+        self.assertEqual(box.decide(pair, both).kind, "named_lookup")
+        missing = box.decide(pair.replace("Seller E", "Seller Q"), both)
+        self.assertEqual(missing.ask.text, "Your question names Seller Q, which the 2 results pages do not "
+                                           "list among their 5 listings. Which of them do you mean?")
+        self.assertEqual(box.decide(pair.replace("Seller E", "Seller Q"), self.page).ask.text,
+                         "Your question names Seller Q, which the results page does not list among its 3 "
+                         "listings. Which of them do you mean?")
 
     def test_an_unknown_reply_raises(self):
         with self.assertRaises(ValueError):
@@ -1314,6 +1352,10 @@ class SuiteQuery(unittest.TestCase):
                 "query": "Go to {base}/catalogsearch/result/?q=Example . Which seller has the "
                          "best price for size M?",
                 "expect": {"kind": "contains", "any": ["Seller B"], "price": 12.25}}
+        # The made-up page, injected: until 22 October 2026 this read the live shop's own
+        # search for "Example", whose first page then stood in for it.
+        suite.PAGES[RESULTS_URL] = self.page
+        self.addCleanup(suite.PAGES.pop, RESULTS_URL, None)
         query, applied = suite.build_query(task, self.spec, self.args(box=True, reading="menu"))
         fields = suite.box_fields(applied["box"])
         self.assertEqual((fields["reading"], fields["reading_by"], fields["box"]["asked"]),

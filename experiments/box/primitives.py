@@ -92,8 +92,20 @@ def preamble(page: page_module.Page) -> str:
     The listings come sorted by advertised price because every bound strategy opens them
     in that order, and their URLs come with them. Finding those was the box's work: the
     cells it is compared with had to find them, and that is stated as a difference rather
-    than hidden. Box v1's text, byte for byte.
+    than hidden. Box v1's text, byte for byte, for a search on one page.
+
+    A search on several pages, which the box reads to the end since box v16 (22 October
+    2026), is said to be one, with every listing of every page below, so no sentence tells
+    the agent the listings are on one page when they are not.
     """
+    if len(page.pages) > 1:
+        pager = ("there is a further page, open it too before deciding." if page.next_page
+                 else "there is no further page.")
+        lines = [f"The search results list {len(page.listings)} listings on {len(page.pages)} "
+                 f"pages; {pager}", "Listings by advertised price, read from the results pages:"]
+        lines += [f"{n}. {item.seller}, advertised ${item.advertised:.2f}, {item.url}"
+                  for n, item in enumerate(page.by_price(), 1)]
+        return "\n".join(lines)
     pager = ("there is a next page, open it too before deciding." if page.next_page
              else "there is no next page.")
     lines = [f"The results page lists {len(page.listings)} listings on one page; {pager}",

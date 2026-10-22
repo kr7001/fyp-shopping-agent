@@ -68,6 +68,7 @@ class SuiteRun:
     batch: pathlib.Path | None      # the batch folder, None when nothing was written
     calls: int                      # how many runs the runner was started for
     owner: tempfile.TemporaryDirectory
+    readers: list = dataclasses.field(default_factory=list)   # the reader each page read asked for
 
 
 def run_suite(*argv: str, page: page_module.Page | None = None,
@@ -78,7 +79,11 @@ def run_suite(*argv: str, page: page_module.Page | None = None,
     is returned as its exit code, with its message in `out`."""
     owner = tempfile.TemporaryDirectory()
     results = pathlib.Path(owner.name)
-    calls = []
+    calls, readers = [], []
+
+    def results_page(url, reader=None):
+        readers.append(reader)
+        return page
 
     def runner(command, cwd=None, env=None, stdout=None, stderr=None, check=False):
         calls.append(command)
@@ -93,7 +98,7 @@ def run_suite(*argv: str, page: page_module.Page | None = None,
             mock.patch.object(suite, "RESULTS", results), \
             mock.patch.object(suite.subprocess, "run", runner), \
             mock.patch.object(suite, "agent_code_identity", return_value=identity), \
-            mock.patch.object(suite, "results_page", lambda url: page), \
+            mock.patch.object(suite, "results_page", results_page), \
             contextlib.redirect_stdout(io.StringIO()) as out, \
             contextlib.redirect_stderr(io.StringIO()) as err:
         try:
@@ -102,7 +107,7 @@ def run_suite(*argv: str, page: page_module.Page | None = None,
             code = refused.code
     batches = sorted(p for p in results.iterdir() if p.is_dir())
     return SuiteRun(code, out.getvalue() + err.getvalue(), batches[0] if batches else None,
-                    len(calls), owner)
+                    len(calls), owner, readers)
 
 
 def dry_run(*argv: str) -> subprocess.CompletedProcess:
@@ -207,10 +212,10 @@ class StrategyTextV8(unittest.TestCase):
     def test_the_versions(self):
         # Box 13, form 10 and primitives 9 on 22 October 2026, the model's front door, then
         # box 14, form 11 and primitives 10 the same day, the verifier's fixes to it
-        # (test_model_parser.py), and box 15, the model's decline, for the second claim run.
-        # The strategy texts are v9 still.
+        # (test_model_parser.py), and box 15, the model's decline, and 16, every results
+        # page read, for the second claim run. The strategy texts are v9 still.
         self.assertEqual((targeting.VERSION, box.VERSION, form_module.VERSION, primitives.VERSION),
-                         (9, 15, 11, 10))
+                         (9, 16, 11, 10))
 
     def test_no_text_the_box_sends_holds_an_old_wording(self):
         texts = every_text()
@@ -300,7 +305,7 @@ class ReplayUnderTheVersionThatRan(unittest.TestCase):
         """The record a dry run of --box-exhaust --reading menu writes for one task."""
         args = mock.Mock(box=False, box_exhaust=True, reading="menu", targeting=False, exhaustive=False,
                          confidence="off")
-        with mock.patch.object(suite, "results_page", lambda url: self.page):
+        with mock.patch.object(suite, "results_page", lambda url, reader=None: self.page):
             query, applied = suite.build_query(self.tasks[task_id], self.v2, args)
         self.assertIn(primitives.OPEN_EVERY, query)
         return applied["box"]
@@ -958,8 +963,9 @@ class VoidClassifier(unittest.TestCase):
                     contextlib.redirect_stdout(io.StringIO()) as out:
                 self.assertEqual(voids.main(), 0)
         text = out.getvalue()
+        # A box batch from before box v16 read its page over HTTP, so its re-runs do too.
         self.assertIn("re-run the 3 void, each with --tasks experiments/tasks/tasks_claim_apparel.json "
-                      "--repeats 1 --box --reading menu:", text)
+                      "--repeats 1 --box --reading menu --page-reader fetch:", text)
         lines = [line.strip() for line in text.splitlines() if line.strip().startswith("--only")]
         self.assertEqual(sorted(lines), ["--only apparel-all-stocked --repeat-start 3",
                                          "--only apparel-cheapest-target --repeat-start 2",
@@ -1125,6 +1131,62 @@ class LeaksOnTheStoredBatches(unittest.TestCase):
         self.assertTrue(all(f.startswith("the blob") for f in development["apparel-softest-1"]))
         self.assertTrue(all("(igr-app-10 M)" in f for f in development["apparel-top-3-1"]))
         self.assertEqual(self.found(LEAK_BATCHES[2]), {})
+
+
+# ---------------------------------------------------------------------------
+# The results pages' reader, a condition of every box batch (box v16, 22 October 2026)
+
+class PageReader(unittest.TestCase):
+    TASKS = ("--tasks", str(paths.TASKS / "tasks_apparel.json"), "--repeats", "1", "--only", "apparel-headline")
+
+    def run_with(self, *flags):
+        run = run_suite(*self.TASKS, *flags, page=thornwood_page())
+        self.addCleanup(run.owner.cleanup)
+        payload = json.loads((run.batch / "suite.json").read_text()) if run.batch else None
+        return run, payload
+
+    def test_the_box_reads_by_the_rendered_reader_unless_told_and_says_which(self):
+        # Planted: the suite reading by the default whatever the flag, the fetch batch read
+        # by the rendered reader.
+        run, payload = self.run_with("--box")
+        self.assertEqual((run.code, set(run.readers), payload["page_reader"]), (0, {"rendered"}, "rendered"))
+        self.assertIn("arm: box\npage reader: rendered, every results page\n", run.out)
+        run, payload = self.run_with("--box", "--page-reader", "fetch")
+        self.assertEqual((set(run.readers), payload["page_reader"]), ({"fetch"}, "fetch"))
+        self.assertIn("page reader: fetch, every results page\n", run.out)
+        run, payload = self.run_with("--box-exhaust", "--page-reader", "fetch")
+        self.assertEqual(payload["page_reader"], "fetch")
+        # No box, no reader: none read, none recorded, none printed, and none may be named.
+        run, payload = self.run_with()
+        self.assertEqual((run.readers, payload["page_reader"]), ([], None))
+        self.assertNotIn("page reader", run.out)
+        run, _ = self.run_with("--page-reader", "fetch")
+        self.assertEqual(run.code, 2)
+        self.assertIn("--page-reader is how the box reads the results pages, so it needs --box", run.out)
+
+    def test_a_rerun_line_carries_the_reader(self):
+        # Planted: `rerun_flags` without the reader, the fetch batch's line read rendered.
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = pathlib.Path(tmp)
+            for payload, flag in (({"box": True, "page_reader": "fetch"}, True),
+                                  ({"box": True}, True),
+                                  ({"box_exhaust": True, "page_reader": "rendered"}, False),
+                                  ({"box": True, "page_reader": "rendered"}, False),
+                                  ({"page_reader": None}, False)):
+                with self.subTest(payload=payload):
+                    (folder / "suite.json").write_text(json.dumps({"tasks_file": "tasks_apparel.json", **payload}))
+                    self.assertEqual("--page-reader fetch" in voids.rerun_flags(folder), flag)
+
+    def test_two_readers_are_two_conditions_of_an_arm(self):
+        import claim  # noqa: E402  (the claim analysis, only here)
+        self.assertIn("page_reader", claim.CONDITIONS)
+        self.assertIn("page_reader", claim.BOX_CONDITIONS)
+        slots = [{"measured": True, "outcome": "answered", "arm": "box", "model": "m",
+                  "conditions": {key: None for key in claim.CONDITIONS}} for _ in range(2)]
+        claim.one_condition_each(slots)
+        slots[1]["conditions"] = dict(slots[1]["conditions"], page_reader="rendered")
+        with self.assertRaisesRegex(SystemExit, "page_reader"):
+            claim.one_condition_each(slots)
 
 
 if __name__ == "__main__":

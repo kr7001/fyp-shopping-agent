@@ -435,6 +435,13 @@ def verify(form: Form, page: page_module.Page | None = None) -> list[str]:
     if form.negated and (form.objective != "availability" or form.filter("size") is None):
         problems.append("a negated universal is planned only over the availability of a size "
                         "it names")
+    # Property 1 over every results page (box v16, 22 October 2026). The box's enumeration
+    # is the pages it read, and a plan lists every listing it holds, so a read that stopped
+    # with a later page unread enumerates the population in part. The box reads every page
+    # (`page.read`), so this fires only past its page limit, or on a page made by hand.
+    if page is not None and page.next_page and form.population == "results":
+        problems.append("the population is not enumerated first: the search runs to a "
+                        "results page the box did not read")
     problems += [f"the shop does not show {attribute}" for attribute in not_shown(form, page)]
     return problems
 

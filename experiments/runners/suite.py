@@ -376,9 +376,11 @@ def add(*values) -> float | int | None:
 PAGES: dict[str, page_module.Page] = {}
 
 
-def results_page(url: str) -> page_module.Page:
+def results_page(url: str, reader: str = page_module.READERS[0]) -> page_module.Page:
+    """Every results page of the search, read once per batch by the batch's reader
+    (`--page-reader`, box v16): one batch, one reader, so the cache is by address alone."""
     if url not in PAGES:
-        PAGES[url] = page_module.fetch(url)
+        PAGES[url] = page_module.read(url, reader)
     return PAGES[url]
 
 
@@ -406,7 +408,10 @@ def build_query(task: dict, spec: dict, args, call=None) -> tuple[str | None, di
         # A question with no URL names no page to read. The box decides whether that is
         # because it is not about the shop (a bypass) or an error.
         url = box_module.results_url(query, required=False)
-        page = results_page(url) if url else None
+        # Every results page, by the batch's reader (box v16). A namespace a test builds may
+        # predate the flag, and reads by the default.
+        reader = getattr(args, "page_reader", None) or page_module.READERS[0]
+        page = results_page(url, reader) if url else None
         # Anything but the word "model" is the rules: a namespace a test builds, a mock
         # among them, may have no parser of its own. The command line allows only the two.
         parser = "model" if getattr(args, "parser", "rules") == "model" else "rules"
@@ -740,6 +745,12 @@ def main() -> int:
                         help='with --parser model and --dry-run only: a JSON file {"replies": '
                              '{task id: reply text}} of recorded or stubbed model replies, so '
                              "the dry run shows the plan each gives while sending nothing")
+    parser.add_argument("--page-reader", choices=page_module.READERS, default=None,
+                        help="how the box reads the results pages, every one of them since "
+                             "box v16. rendered, the default: in a headless browser with the "
+                             "agent's user agent, run in the Playwright venv. fetch: each "
+                             "page's HTML over HTTP, the box's reader until box v16, when it "
+                             "read the first page alone. Needs --box or --box-exhaust")
     parser.add_argument("--dry-run", action="store_true",
                         help="print the exact text each task would send, and run nothing")
     args = parser.parse_args()
@@ -763,6 +774,11 @@ def main() -> int:
                      "--box or --box-exhaust")
     if args.repeat_start < 1:
         parser.error("--repeat-start numbers the first repeat, so it is 1 or more")
+    # The reader is the box's (box v16), so with no box it would name a reading nobody made.
+    if args.page_reader and not boxed:
+        parser.error("--page-reader is how the box reads the results pages, so it needs --box "
+                     "or --box-exhaust")
+    args.page_reader = (args.page_reader or page_module.READERS[0]) if boxed else None
     if boxed and args.policy in ("retry", "investigate"):
         parser.error("--box supports --policy off or gate only in v1: the retry arms "
                      "rebuild the query without the box's plan")
@@ -839,6 +855,9 @@ def main() -> int:
     print("browser: " + " ".join(f"{key}={value}" for key, value in browser.items()))
     # The arm, so a dry run of the box and of the box without its stop rule say which.
     print(f"arm: {arm_of(args)}")
+    # How the box reads the results pages (box v16), a condition of every box batch.
+    if boxed:
+        print(f"page reader: {args.page_reader}, every results page")
     # Under the model parser, who reads the question and with what. Not printed under the
     # rules, so a rules batch's header is what it always was.
     if model_parser:
@@ -1021,6 +1040,10 @@ def main() -> int:
                "parse_charges_unknown": (sum(1 for row in rows if row.get("parse_cost_usd") is None)
                                          if model_parser else None),
                "reading": args.reading,
+               # Which reader read the results pages, every one of them (box v16, 22 October
+               # 2026); None without the box. A box batch without the field read the first
+               # page alone over HTTP.
+               "page_reader": args.page_reader,
                # The pinned browser tool, the origins the browser may request and the
                # flags it runs with, see `browser_conditions`: `browser_tool`,
                # `browser_origins` and `browser_flags`.

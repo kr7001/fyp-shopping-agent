@@ -244,6 +244,11 @@ def rerun_flags(folder: pathlib.Path) -> str:
         flags.append("--parser model")
         if payload.get("parser_model"):
             flags.append(f"--parser-model {payload['parser_model']}")
+    # How the box read the results pages (box v16). A box batch without the field read the
+    # first page over HTTP, which the fetch reader does today, page after page; the rendered
+    # reader is the default and needs no flag.
+    if (payload.get("box") or payload.get("box_exhaust")) and payload.get("page_reader") != "rendered":
+        flags.append("--page-reader fetch")
     if payload.get("scaffold") == "naive":
         flags.append("--scaffold naive")
     probes = {json.loads(p.read_text()).get("probe") for p in folder.glob("*.json") if p.name != "suite.json"}
