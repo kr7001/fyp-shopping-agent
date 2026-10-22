@@ -284,6 +284,25 @@ def results_in_browser(browser, brand: str) -> tuple[int, bool]:
 # ------------------------------------------------------------------------------ the report
 
 
+def page_differences(live: dict, stored: dict) -> list[str]:
+    """How the live results page differs from a page record a batch stored, on the fields
+    the stored record kept, empty when they agree. A record written before 22 October 2026
+    kept no listing titles, so a title is compared only where the stored record has one;
+    until this day the two were compared whole, and every record before box v14 differed
+    from the live page by its titles alone. Which reader read a page is a condition of the
+    run, not a property of the shop, so it is never compared."""
+    found = [f"{key}: {stored[key]!r} stored, {live.get(key)!r} live"
+             for key in ("url", "count", "total", "next_page", "pages")
+             if key in stored and live.get(key) != stored[key]]
+    if len(live["listings"]) != len(stored["listings"]):
+        found.append(f"{len(stored['listings'])} listings stored, {len(live['listings'])} live")
+    for n, (old, new) in enumerate(zip(stored["listings"], live["listings"]), 1):
+        kept = {key: new.get(key) for key in old}
+        if kept != old:
+            found.append(f"listing {n}: {old} stored, {kept} live")
+    return found
+
+
 def stored_page(batch: pathlib.Path) -> dict:
     """The page record a batch stored, the same on every row that has one, or refused."""
     suite = json.loads((batch / "suite.json").read_text())
@@ -324,11 +343,11 @@ def main() -> int:
                              f"results page, {label}: " + "; ".join(problems))
         if label == "gated" and args.page_record:
             stored = stored_page(args.page_record)
-            same = live == stored
-            record(same, f"results page equals the page record of {args.page_record.name}: "
-                         f"{len(stored['listings'])} sellers, advertised prices and URLs in order"
-                   if same else f"results page differs from {args.page_record.name}: "
-                                f"{[(a, b) for a, b in zip(stored['listings'], live['listings']) if a != b]}")
+            differences = page_differences(live, stored)
+            record(not differences, f"results page equals the page record of {args.page_record.name}: "
+                                    f"{len(stored['listings'])} sellers, advertised prices and URLs in order"
+                   if not differences else f"results page differs from {args.page_record.name}: "
+                                           + "; ".join(differences))
     record(orders["gated"] == orders["plain"],
            "the two user agents list the listings in the same order")
 

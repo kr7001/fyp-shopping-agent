@@ -275,6 +275,31 @@ class LiveCheckComparisons(unittest.TestCase):
     def test_a_correct_results_page_passes(self):
         self.assertEqual(check_market.results_problems(self.record, self.fixture), [])
 
+    def test_a_stored_page_record_is_compared_on_the_fields_it_kept(self):
+        # A record from before 22 October 2026 kept no titles, and the live page has them
+        # since box v14, so the two were compared whole and always differed. Planted: the
+        # whole records compared again, the first case failed.
+        live = copy.deepcopy(self.record)
+        for item in live["listings"]:
+            item["title"] = f"Thornwood Tee - {item['seller']}"
+        live["reader"] = "fetch"
+        self.assertEqual(check_market.page_differences(live, self.record), [])
+        with_titles = copy.deepcopy(live)
+        with_titles["reader"] = "rendered"
+        self.assertEqual(check_market.page_differences(live, with_titles), [])
+        # Fires on a price, a title, a missing listing and a total, each by name.
+        for name, plant, words in (
+                ("a price", lambda r: r["listings"][3].update(advertised=99.0), "listing 4:"),
+                ("a title", lambda r: r["listings"][0].update(title="Another Tee"), "listing 1:"),
+                ("a listing gone", lambda r: (r["listings"].pop(), r.update(count=14)), "15 listings stored, 14 live"),
+                ("a total", lambda r: r.update(total=40), "total: 15 stored, 40 live")):
+            with self.subTest(fault=name):
+                changed = copy.deepcopy(live)
+                plant(changed)
+                found = check_market.page_differences(changed, with_titles)
+                self.assertTrue(found)
+                self.assertTrue(any(words in line for line in found), found)
+
     def test_each_planted_fault_on_the_results_page_fires(self):
         faults = {
             "a next page": lambda r: r.update(next_page=True),
