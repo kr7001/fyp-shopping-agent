@@ -439,7 +439,7 @@ class TwoProducts(unittest.TestCase):
         self.assertEqual(largest, 19.0)
         winner = self.instance["water"]["best_per_litre"]["sku"].lower()
         self.assertIn(winner, floor.all_of)
-        self.assertTrue(floor.rule.startswith("best per litre, 0.924 a litre, packs up to 19 L"))
+        self.assertEqual(floor.rule, f"best per litre, {best:.3f} a litre, packs up to 19 L")
 
     def verify(self, task_id: str, opened: list[str], stored: dict) -> dict:
         tmp = pathlib.Path(self.enterContext(tempfile.TemporaryDirectory()))

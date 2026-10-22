@@ -186,30 +186,44 @@ class VariantLabels(unittest.TestCase):
                          "correct")
 
     def test_every_water_question_of_the_development_market(self):
-        # One right and one wrong answer to each, written with the packs' labels, scored
-        # under the task file's own keys. Each wrong one is wrong for the reason named.
+        # One right and one wrong answer to each, written with the packs' labels from the
+        # task file's own keys, so they follow the market when it is drawn again. Each
+        # wrong one is wrong for the reason its key gives.
         spec = json.loads((paths.TASKS / "tasks_aplus_dev.json").read_text())
         keys = {task["id"]: task for task in spec["tasks"] if task["id"].startswith("water-")}
+
+        def expect(task_id: str) -> dict:
+            return keys[task_id]["expect"]
+
+        price, cheapest, every = expect("water-target-price"), expect("water-cheapest-target"), \
+            expect("water-all-stocked")
+        count, litre = expect("water-count-buyable"), expect("water-best-per-litre")
+        winner, loser = litre["any"][0], litre["not_any"][-1]
         answers = {
-            "water-target-price": ("The lowest price for the 2 x 9.5L pack that can be bought is $17.61, at "
-                                   "Chandler Direct; the 6 x 1.25L pack is not the one asked about.",
-                                   "The cheapest pack is the 6 x 1.25L at $6.84."),
-            "water-cheapest-target": ("Chandler Direct is the cheapest for the 2 x 9.5L pack, at $17.61.",
-                                      "Pembroke is the cheapest for the 2 x 9.5L pack."),
-            "water-all-stocked": ("No. Five water listings have no 2 x 9.5L pack in their menu.",
-                                  "Yes, every listing lists the 2 x 9.5L pack."),
-            "water-count-buyable": ("The 2 x 9.5L pack is in stock and can be bought at 12 listings.",
-                                    "The 2 x 9.5L pack is in stock at 16 listings."),
-            "water-best-per-litre": ("Ambleside's 6 x 1.25L pack has the lowest price per litre, $0.91/L; "
-                                     "Chandler Direct's 2 x 9.5L is close behind at $0.93/L.",
-                                     "Chandler Direct's 2 x 9.5L pack is the best value per litre; "
-                                     "Ambleside's 6 x 1.25L is close behind."),
+            "water-target-price": (f"The lowest price for the 2 x 9.5L pack that can be bought is "
+                                   f"${price['value']:.2f}; the 6 x 1.25L pack is not the one asked about.",
+                                   f"The cheapest pack is the 6 x 1.25L at ${price['trap']:.2f}."),
+            "water-cheapest-target": (f"{cheapest['any'][0]} is the cheapest for the 2 x 9.5L pack, at "
+                                      f"${cheapest['price']:.2f}.",
+                                      f"{cheapest['not_any'][0]} is the cheapest for the 2 x 9.5L pack."),
+            "water-all-stocked": ("No. Some water listings have no 2 x 9.5L pack in their menu."
+                                  if not every["value"] else "Yes, every listing stocks the 2 x 9.5L pack.",
+                                  "Yes, every listing lists the 2 x 9.5L pack." if not every["value"]
+                                  else "No. Some water listings have no 2 x 9.5L pack."),
+            "water-count-buyable": (f"The 2 x 9.5L pack is in stock and can be bought at {count['value']} listings.",
+                                    f"The 2 x 9.5L pack is in stock at {count['value'] + 4} listings."),
+            "water-best-per-litre": (f"{winner}'s 6 x 1.25L pack has the lowest price per litre; {loser}'s "
+                                     f"2 x 9.5L is close behind.",
+                                     f"{loser}'s 2 x 9.5L pack is the best value per litre; {winner}'s "
+                                     f"6 x 1.25L is close behind."),
         }
         self.assertEqual(sorted(answers), sorted(keys))
         for task_id, (right, wrong) in answers.items():
             with self.subTest(task=task_id):
                 self.assertEqual(score.score(keys[task_id], right, True)["verdict"], "correct")
                 self.assertEqual(score.score(keys[task_id], wrong, True)["verdict"], "wrong")
+        # The count's right answer was 2 until score v5, its pack's figure.
+        self.assertEqual(score.without_labels("The 2 x 9.5L pack")[:4], "The ")
 
 
 class NamedBest(unittest.TestCase):
