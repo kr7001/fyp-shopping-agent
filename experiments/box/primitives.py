@@ -80,7 +80,11 @@ import targeting
 #      page does not list as "not on the results page the box read: find it in the results",
 #      which was false; the box asks the user instead (`lookup_text`, `box.unlisted`). No
 #      stored run and no question on its own market's page was sent that text
-VERSION = 10
+#  11  22 October 2026, box v16 and v17. The preamble says a search on several pages is one
+#      (box v16), and on a page of several products lists only the listings of the product
+#      the question asks about, saying how many the search holds (`preamble`, box v17).
+#      Every text for a search on one page of one product is unchanged
+VERSION = 11
 
 # The same hazard as every v1 bound strategy: a figure derived from a bound is not a price.
 QUARANTINE = targeting.QUARANTINE
@@ -97,7 +101,25 @@ def preamble(page: page_module.Page) -> str:
     A search on several pages, which the box reads to the end since box v16 (22 October
     2026), is said to be one, with every listing of every page below, so no sentence tells
     the agent the listings are on one page when they are not.
+
+    A page the box kept one product's listings of (box v17, `box.Scope`) says how many the
+    search holds, which product the question asks about, and lists that product's alone.
     """
+    if page.scope is not None:
+        several = len(page.pages) > 1
+        pager = ("there is a further page, open it too before deciding." if page.next_page
+                 else "there is no further page.") if several else (
+            "there is a next page, open it too before deciding." if page.next_page
+            else "there is no next page.")
+        where = (f"The search results list {page.of} listings on {len(page.pages)} pages; {pager}"
+                 if several else f"The results page lists {page.of} listings on one page; {pager}")
+        lines = [f"{where} {len(page.listings)} of them are the {page.scope} the question asks "
+                 f"about, by their titles, and only those are part of the question.",
+                 f"Listings of the {page.scope} by advertised price, read from the results "
+                 f"page{'s' if several else ''}:"]
+        lines += [f"{n}. {item.seller}, advertised ${item.advertised:.2f}, {item.url}"
+                  for n, item in enumerate(page.by_price(), 1)]
+        return "\n".join(lines)
     if len(page.pages) > 1:
         pager = ("there is a further page, open it too before deciding." if page.next_page
                  else "there is no further page.")

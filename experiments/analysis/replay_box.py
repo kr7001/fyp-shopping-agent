@@ -52,7 +52,8 @@ WRONG = ("wrong", "ambiguous")
 def stored_decision(row: dict) -> box_module.Decision:
     """The decision the box made for this row, rebuilt from its record: the page it read,
     the form it parsed and the plan composed from them again, without its stop rule when
-    the run was the box without its stop rule (`--box-exhaust`). The question is the first
+    the run was the box without its stop rule (`--box-exhaust`), and over the one product's
+    listings the record's scope kept, when it kept some (box v17). The question is the first
     paragraph of the stored text, with any reading already written into it."""
     record = row["box"]
     page = page_module.from_record(record["page"]) if record.get("page") else None
@@ -60,12 +61,15 @@ def stored_decision(row: dict) -> box_module.Decision:
     if record.get("form"):
         form = form_module.from_record(record["form"], record["form"].get("source") or "rules")
     exhaust = bool(record.get("exhaust"))
-    plan = primitives.compose(form, page, exhaust=exhaust) if record.get("plan") else None
+    # Over the listings the plan ranged over (box v17): one product's, when it was scoped.
+    scope = box_module.Scope.from_record(record.get("scope"))
+    planned = scope.apply(page) if scope is not None else page
+    plan = primitives.compose(form, planned, exhaust=exhaust) if record.get("plan") else None
     question = record["query"].split("\n\n", 1)[0]
     return box_module.Decision(question=question, kind=record["kind"], ask=None,
                                reading=record.get("reading"), query=record["query"],
                                plan=plan, page=page, form=form, refuse=record.get("refuse"),
-                               bypass=bool(record.get("bypassed")), exhaust=exhaust)
+                               bypass=bool(record.get("bypassed")), exhaust=exhaust, scope=scope)
 
 
 def parsed_by(record: dict) -> dict:
@@ -134,7 +138,7 @@ def compared_today(today: box_module.Decision, record: dict) -> tuple[str, str]:
     if stored_limit and stored_limit.get("op") == "<=" and limit is not None and limit.op == "<":
         old = dataclasses.replace(today.form, filters=tuple(
             dataclasses.replace(f, op="<=") if f is limit else f for f in today.form.filters))
-        plan = primitives.compose(old, today.page, exhaust=today.exhaust)
+        plan = primitives.compose(old, today.planned, exhaust=today.exhaust)
         if as_sent(f"{today.question}\n\n{plan.text}", record) == record["query"]:
             return "expected", f"the limit is strict since form v9 (price < {limit.value:g})"
     return "unexpected", first_difference(record["query"], as_sent(today.query, record))

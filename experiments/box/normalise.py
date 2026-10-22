@@ -68,7 +68,11 @@ from form import Filter, Form  # noqa: E402
 #      the shop does not show declines the question (`declines`). And since a model could
 #      then decline a question about a price by naming such an attribute, a form that does
 #      not ask about a price, where the question's own words do, is refused (`conflicts`)
-VERSION = 3
+#   4  22 October 2026, box v17. A title filter is held to the listings the plan would
+#      range over: on a page of two products, those of the one the question names, so one
+#      naming that product restates them and is dropped, and one that tells the products
+#      apart on the whole page is never taken for a restatement of it (`normalise`)
+VERSION = 4
 
 # The clothing listings whose price depends on the size chosen name their sizes S, M, L and
 # XL: the options of the shop's configurable attribute apparel_size, read from its database
@@ -220,18 +224,23 @@ def restates(value, words: set[str]) -> bool:
                                or (word.endswith("es") and word[:-2] in words) for word in found)
 
 
-def normalise(form: Form, question: str, page: page_module.Page | None) -> tuple[Form, list[str]]:
+def normalise(form: Form, question: str, page: page_module.Page | None,
+              planned: page_module.Page | None = None) -> tuple[Form, list[str]]:
     """The model's form in the shop's and the page's own words, and a line for each change.
 
     Sizes are the shop's four. Sellers are the page's names. A title filter that every
-    listing on the page meets is dropped, since it narrows nothing. A population "listing"
-    with no product page named is the results page. A price word in the unknowns, or an
-    ambiguity that is only a price word, is the missing price limit, quoting the question's
-    word. A limit written as text is a number. Every change is in the form's evidence too.
+    listing the plan would range over meets is dropped, since it narrows nothing: every
+    listing on the page, or on a page of two products the listings of the one the question
+    names (`planned`, `box.Scope`, normalisation v4), so a filter that tells the products
+    apart is never taken for a restatement of the whole page. A population "listing" with no
+    product page named is the results page. A price word in the unknowns, or an ambiguity
+    that is only a price word, is the missing price limit, quoting the question's word. A
+    limit written as text is a number. Every change is in the form's evidence too.
     """
     changes: list[str] = []
     evidence = dict(form.evidence)
-    words = restated(page) if page is not None else None
+    held = planned if planned is not None else page
+    words = restated(held) if held is not None else None
     filters = []
     for condition in form.filters:
         if condition.attribute == "size":
@@ -242,7 +251,8 @@ def normalise(form: Form, question: str, page: page_module.Page | None) -> tuple
             condition = urls(condition, changes, evidence)
         elif condition.attribute == "title" and condition.op in ("=", "contains") \
                 and words is not None and restates(condition.value, words[0]):
-            names = (f"every listing's title names '{words[1]}'" if words[1] else "")
+            names = ((f"every listing of the {held.scope} the question names has '{words[1]}' in its title"
+                      if held.scope else f"every listing's title names '{words[1]}'") if words[1] else "")
             searched = f"the results page is the search for '{words[2]}'" if words[2] else ""
             line = (f"dropped title {condition.op} {condition.value!r}: "
                     f"{' and '.join(part for part in (names, searched) if part)}")
@@ -643,7 +653,8 @@ class ModelRead:
     declines: tuple[str, ...] = ()
 
 
-def read(question: str, page: page_module.Page | None, call) -> ModelRead:
+def read(question: str, page: page_module.Page | None, call,
+         planned: page_module.Page | None = None) -> ModelRead:
     """One call through `call(prompt) -> str`, the reply parsed, normalised and checked. A
     call that raises, whatever it raises, is a failed call: the call is the caller's, a
     request to a provider. A reply that is not a form is refused with its fault. A fault in
@@ -656,7 +667,7 @@ def read(question: str, page: page_module.Page | None, call) -> ModelRead:
         raw = form_module.parse_reply(reply)
     except ValueError as fault:
         return ModelRead(reply, None, None, (), f"the model's reply is not a form: {fault}")
-    normalised, changes = normalise(raw, question, page)
+    normalised, changes = normalise(raw, question, page, planned)
     found = problems(normalised, question, page)
     return ModelRead(reply, raw, normalised, tuple(changes), "; ".join(found) or None,
                      tuple(declines(normalised, found, page)))

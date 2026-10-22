@@ -129,7 +129,14 @@ import targeting
 #      (`form.verify`). A search on several pages is said to be one, with every listing of
 #      every page in the plan (`primitives.preamble`, the unlisted ask). Every text for a
 #      search on one page is unchanged
-VERSION = 16
+#   17 22 October 2026, for the second claim run, whose market mixes a tee and a water under
+#      one brand. One step after the parse and before planning, the same under either
+#      parser: the product the question names, matched against the titles' head nouns,
+#      scopes a plan over the results to that product's listings, and the record keeps the
+#      listing set and why (`Scope`, `product_scope`). A question that names none of the
+#      products, or more than one, is planned over every listing, and the record says so.
+#      Neither parser reads the question differently. A page of one product is unchanged
+VERSION = 17
 
 # Who may read the question for the box: the rules, the default, or a model through a call
 # the caller injects.
@@ -247,6 +254,12 @@ class Decision:
     reading_by: str | None = None   # who chose the reading: "user" by a reply, "box" when the other reading was refused
     exhaust: bool = False       # decided for the arm without the stop rule, `--box-exhaust`
     parse: Parse | None = None  # who read the question, see `Parse`; None is the rules alone
+    scope: Scope | None = None  # which listings a plan ranges over (box v17); None with no page
+
+    @property
+    def planned(self) -> page_module.Page | None:
+        """The page as the plan ranges over it, scoped to one product's listings or whole."""
+        return self.scope.apply(self.page) if self.scope is not None else self.page
 
     def record(self) -> dict:
         return {"box_version": VERSION, "form_version": form_module.VERSION,
@@ -259,7 +272,8 @@ class Decision:
                 "fallback": bool(self.form and self.form.fallback),
                 "plan": self.plan.record() if self.plan else None,
                 "exhaust": self.exhaust,
-                "parse": (self.parse or Parse()).record()}
+                "parse": (self.parse or Parse()).record(),
+                "scope": self.scope.record() if self.scope is not None else None}
 
 
 def results_url(question: str, required: bool = True) -> str | None:
@@ -271,6 +285,96 @@ def results_url(question: str, required: bool = True) -> str | None:
             raise ValueError("the question names no results page to read")
         return None
     return found.group(0).rstrip(".,;:)")
+
+
+# ---------------------------------------------------------------------------
+# The product a question asks about (box v17)
+
+@dataclasses.dataclass(frozen=True)
+class Scope:
+    """Which listings a plan ranges over, decided from the question and the page alone (box
+    v17, 22 October 2026). On a page whose titles name two or more products, the tee and the
+    water of one brand, a question that names one of them is planned over that product's
+    listings only. One that names none, or more than one, is planned over every listing,
+    since guessing would plan over the wrong market without a word, and the reason is kept.
+    A page of one product is never scoped. Neither parser reads the question differently
+    for it: it is a step of the block, after the parse and before the plan, so the rules
+    against the model measures rewording, not product filtering. A lookup names its own
+    listings and a review question reads reviews, so only a plan over the results takes it
+    (`for_form`)."""
+    product: str | None = None          # the product the question names, None when none or several
+    products: tuple[str, ...] = ()      # the products the titles name, by head noun, in page order
+    kept: tuple[str, ...] = ()          # that product's listings, by URL, in page order
+    reason: str = ""
+    applied: bool = False               # whether the plan ranges over `kept` alone
+
+    def for_form(self, form: form_module.Form | None) -> "Scope":
+        """This scope as a plan from `form` takes it: applied to a plan over the results."""
+        ranges = form is not None and form.population == "results" and form.quantifier != "lookup"
+        if self.product is None or not ranges:
+            return dataclasses.replace(self, applied=False)
+        return dataclasses.replace(self, applied=True)
+
+    def apply(self, page: page_module.Page | None) -> page_module.Page | None:
+        """The page as the plan ranges over it: the product's listings alone when applied."""
+        if page is None or not self.applied:
+            return page
+        keep = set(self.kept)
+        return dataclasses.replace(page, listings=[item for item in page.listings if item.url in keep],
+                                   scope=self.product, of=len(page.listings))
+
+    def record(self) -> dict:
+        return {"product": self.product, "products": list(self.products), "applied": self.applied,
+                "kept": len(self.kept) if self.product else None, "urls": list(self.kept),
+                "reason": self.reason}
+
+    @classmethod
+    def from_record(cls, data: dict | None) -> "Scope | None":
+        """The scope back from its record, so a stored plan is recomposed over the listings
+        it ranged over; None for a record before box v17, which planned over every one."""
+        if not data:
+            return None
+        return cls(product=data.get("product"), products=tuple(data.get("products") or ()),
+                   kept=tuple(data.get("urls") or ()), reason=data.get("reason") or "",
+                   applied=bool(data.get("applied")))
+
+
+def head_noun(title: str | None) -> str | None:
+    """The product a listing's title names: the last word of its name, before any comma and
+    before the seller. "Larchmere Heavyweight Cotton Tee, Unisex - Seller" is the tee and
+    "Larchmere Natural Spring Water, Still - Seller" the water, as every title of the six the
+    development market writes does (checked on its two live pages, 22 October 2026)."""
+    if not title:
+        return None
+    words = re.findall(r"[A-Za-z]+", title.rsplit(" - ", 1)[0].split(",", 1)[0])
+    return words[-1].lower() if words else None
+
+
+def product_scope(question: str, page: page_module.Page | None) -> Scope:
+    """The product the question names among those the page's titles name (`Scope`). The
+    question's words are matched against the head nouns, a plural included, URLs aside."""
+    if page is None or not page.listings:
+        return Scope(reason="no results page")
+    if any(item.title is None for item in page.listings):
+        return Scope(reason="the page record kept no titles, so no product can be told apart")
+    nouns = [head_noun(item.title) for item in page.listings]
+    products = tuple(dict.fromkeys(noun for noun in nouns if noun))
+    if len(products) < 2 or None in nouns:
+        return Scope(products=products, reason=(
+            f"every listing's title names the same product, the {products[0]}" if len(products) == 1
+            and None not in nouns else "not every title names a product"))
+    words = form_module.URL.sub(" ", question)
+    named = [noun for noun in products if re.search(rf"\b{re.escape(noun)}(?:e?s)?\b", words, re.IGNORECASE)]
+    listed = ", ".join(products)
+    if len(named) != 1:
+        return Scope(products=products, reason=(
+            f"the question names none of the products the titles name ({listed}), so every "
+            f"listing is planned over" if not named else
+            f"the question names {' and '.join(named)}, so every listing is planned over"))
+    kept = tuple(item.url for item, noun in zip(page.listings, nouns) if noun == named[0])
+    return Scope(product=named[0], products=products, kept=kept, reason=(
+        f"the question names the {named[0]}, the product of {len(kept)} of the "
+        f"{len(page.listings)} listings by their titles ({listed})"))
 
 
 def unlisted(form: form_module.Form, question: str, page: page_module.Page | None) -> list[str]:
@@ -340,16 +444,28 @@ def decide(question: str, page: page_module.Page | None, reply: str | None = Non
     With `parser` "model" (box v13, 22 October 2026) a model reads the question, through
     `call(prompt) -> str`, and the rules still verify, plan, stop and check: see
     `decide_by_model`. The rules, the default, decide as every box before v13 did.
+
+    Under either parser, a plan over the results ranges over the listings of the product
+    the question names, on a page of several products (box v17, `Scope`): one step from the
+    question and the page, taken after the question is read and before the plan, and
+    recorded on every decision with a page.
     """
-    if parser == "rules":
-        return decide_by_rules(question, page, reply, exhaust)
-    if parser != "model":
+    if parser not in PARSERS:
         raise ValueError(f"parser {parser!r} is not one of {PARSERS}")
-    return decide_by_model(question, page, reply, exhaust, call)
+    # One step for both parsers, from the question and the page alone (box v17).
+    scope = product_scope(question, page) if page is not None else None
+    if parser == "rules":
+        decision = decide_by_rules(question, page, reply, exhaust, scope)
+    else:
+        decision = decide_by_model(question, page, reply, exhaust, call, scope)
+    # A decision that planned nothing records the scope as the question and page gave it.
+    if scope is not None and decision.scope is None:
+        decision = dataclasses.replace(decision, scope=scope.for_form(None))
+    return decision
 
 
 def decide_by_rules(question: str, page: page_module.Page | None, reply: str | None = None,
-                    exhaust: bool = False) -> Decision:
+                    exhaust: bool = False, scope: Scope | None = None) -> Decision:
     """`decide` with the rules reading the question. The body is box v12's own, and every
     text the rules render is the same bytes, `tests/test_box.py` pins them, but one: since
     box v14 a lookup naming a seller or listing the page does not list is asked about
@@ -402,19 +518,23 @@ def decide_by_rules(question: str, page: page_module.Page | None, reply: str | N
                         ask=ambiguity.threshold_ask(form.evidence["unknowns"]),
                         reading=reading, query=None, plan=None, page=page, form=form,
                         reading_by=reading_by, exhaust=exhaust)
-    problems = form_module.verify(form, page)
+    # The plan ranges over the product the question names (box v17), the same step under
+    # either parser; the form is the rules' own, read from the whole page.
+    applied = scope.for_form(form) if scope is not None else None
+    planned = applied.apply(page) if applied is not None else page
+    problems = form_module.verify(form, planned)
     if problems:
         # The refusal `planner.planned_query` makes, for the same reason: paying a model to
         # execute a plan already known to be unsound buys nothing.
         raise ValueError("refusing to execute an unsound plan: " + "; ".join(problems))
-    plan = primitives.compose(form, page, exhaust=exhaust)
+    plan = primitives.compose(form, planned, exhaust=exhaust)
     return Decision(question=question, kind=form.kind(), ask=asked, reading=reading,
                     query=f"{question}\n\n{plan.text}", plan=plan, page=page, form=form,
-                    reading_by=reading_by, exhaust=exhaust)
+                    reading_by=reading_by, exhaust=exhaust, scope=applied)
 
 
 def decide_by_model(question: str, page: page_module.Page | None, reply: str | None,
-                    exhaust: bool, call) -> Decision:
+                    exhaust: bool, call, scope: Scope | None = None) -> Decision:
     """`decide` with a model reading the question and the rules doing the rest (box v13,
     22 October 2026).
 
@@ -447,19 +567,23 @@ def decide_by_model(question: str, page: page_module.Page | None, reply: str | N
     if call is None:
         raise ValueError("the model parser needs a call to send its prompt through")
     if page is None or form_module.from_rules(question, page).quantifier == "unknown":
-        decision = decide_by_rules(question, page, reply, exhaust)
+        decision = decide_by_rules(question, page, reply, exhaust, scope)
         why = ("the question names no results page, so the box has nothing to plan from and "
                "the model was not called" if page is None
                else "the rules found no shopping question, so the model was not called")
         return dataclasses.replace(decision, parse=Parse(
             parser="model", used="rules", fallback_reason=why,
             rules_form=form_module.from_rules(decision.question, page)))
-    read = normalise.read(question, page, call)
+    # A title filter is held to the listings the plan would range over, so one naming the
+    # product the question names restates them, and one that tells products apart on the
+    # whole page is not taken for a restatement of it (normalisation v4).
+    named = dataclasses.replace(scope, applied=True).apply(page) if scope is not None and scope.product else None
+    read = normalise.read(question, page, call, planned=named)
     asked_question, asked_reply = question, reply
     changes = list(read.changes)
 
     def by_rules(reason: str, model_form: form_module.Form | None) -> Decision:
-        decision = decide_by_rules(asked_question, page, asked_reply, exhaust)
+        decision = decide_by_rules(asked_question, page, asked_reply, exhaust, scope)
         return dataclasses.replace(decision, parse=Parse(
             parser="model", used="rules", fallback_reason=reason,
             prompt_version=form_module.PROMPT_VERSION,
@@ -521,19 +645,21 @@ def decide_by_model(question: str, page: page_module.Page | None, reply: str | N
         return decided(form, ask=ambiguity.generic_ask(other[0].word, other[0].readings), **closed)
     if "price limit" in form.unknowns:
         return decided(form, ask=ambiguity.threshold_ask(form.evidence["unknowns"]), **closed)
-    found = normalise.plan_problems(form, page)
+    applied = scope.for_form(form) if scope is not None else None
+    planned = applied.apply(page) if applied is not None else page
+    found = normalise.plan_problems(form, planned)
     if found:
         return by_rules("; ".join(dict.fromkeys(found)), form)
     # A sound form can still have no text under the arm without its stop rule: a review
     # question turns pages, and `primitives.compose` refuses it there. That is the model's
     # form failing too, so the rules decide, and refuse it the same way if they read it so.
     try:
-        plan = primitives.compose(form, page, exhaust=exhaust)
+        plan = primitives.compose(form, planned, exhaust=exhaust)
     except ValueError as fault:
         return by_rules(f"no plan can be composed from it: {fault}", form)
     return decided(form, question=question, kind=form.kind(), ask=asked, reading=reading,
                    query=f"{question}\n\n{plan.text}", plan=plan, form=form,
-                   reading_by=reading_by)
+                   reading_by=reading_by, scope=applied)
 
 
 def stated_figures(decision: Decision) -> set[int]:
@@ -570,12 +696,15 @@ def check(decision: Decision, answer: str, log_path: pathlib.Path) -> dict:
 
     What counts as opened is a listing of the market the box read, the page's own URLs
     (20 October 2026); a bypassed run has no page, so the counter's own rule applies. The
-    size menus the run saw are read from its log for the counterexample check.
+    size menus the run saw are read from its log for the counterexample check. Since box v17
+    the market is the one the plan ranged over (`Decision.planned`): on a page of two
+    products, the listings of the one the question names.
     """
     text = sufficiency.observed_text(log_path)
-    market = [item.url for item in decision.page.listings] if decision.page else None
+    planned = decision.planned
+    market = [item.url for item in planned.listings] if planned else None
     if decision.kind in targeting.BODIES:
-        verdict = policy.gate_from_page(decision.question, decision.page, answer, log_path)
+        verdict = policy.gate_from_page(decision.question, planned, answer, log_path)
     else:
         seen = sufficiency.evidence(text)
         stated = stated_figures(decision)
@@ -583,10 +712,10 @@ def check(decision: Decision, answer: str, log_path: pathlib.Path) -> dict:
                 "any": seen["any"] | stated}
         verdict = {**sufficiency.check(answer, seen),
                    "opened": len(sufficiency.listings_opened(text, market)),
-                   "population": len(decision.page.listings) if decision.page else None,
-                   "floor": None, "floor_from": "page" if decision.page else None}
+                   "population": len(planned.listings) if planned else None,
+                   "floor": None, "floor_from": "page" if planned else None}
     if verdict["ok"] and decision.plan is not None:
-        own = primitives.check(decision.form, decision.page, answer, text,
+        own = primitives.check(decision.form, planned, answer, text,
                                menus=sufficiency.size_menus(log_path))
         verdict = {**verdict, "ok": own["ok"], "flag": own["flag"], "why": own["why"],
                    "primitive": own["primitive"]}

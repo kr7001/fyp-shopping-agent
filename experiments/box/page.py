@@ -106,18 +106,26 @@ class Page:
     next_page: bool             # a later results page exists that was not read
     pages: tuple[str, ...] = ()     # every results page read, in order (box v16)
     reader: str | None = None       # which of `READERS` read them, None for an older record
+    # The product the box kept the listings of, and how many the pages held, when a plan
+    # ranges over one product of several (`box.Scope`, box v17). None on every page read.
+    scope: str | None = None
+    of: int | None = None
 
     def record(self) -> dict:
         """What the box read, for the run record, so the verifier can check it against
         the live shop. Each listing's title since 22 October 2026, so the model parser's
         title normalisation can be replayed from the record; null in a page read back from
         an older record, which kept none. And since box v16 every results page read, and
-        which reader read them."""
-        return {"url": self.url, "count": len(self.listings), "total": self.total,
-                "next_page": self.next_page, "pages": list(self.pages or (self.url,)),
-                "reader": self.reader,
-                "listings": [{"seller": item.seller, "advertised": item.advertised,
-                              "url": item.url, "title": item.title} for item in self.listings]}
+        which reader read them. A run record holds the page as read; a page the box kept
+        one product's listings of says so, should one ever be recorded."""
+        record = {"url": self.url, "count": len(self.listings), "total": self.total,
+                  "next_page": self.next_page, "pages": list(self.pages or (self.url,)),
+                  "reader": self.reader,
+                  "listings": [{"seller": item.seller, "advertised": item.advertised,
+                                "url": item.url, "title": item.title} for item in self.listings]}
+        if self.scope is not None:
+            record.update(scope=self.scope, of=self.of)
+        return record
 
     def by_price(self) -> list[Listing]:
         """Cheapest advertised first, the order every bound strategy opens listings in."""
