@@ -245,9 +245,14 @@ The protocol's four (docs/content/claim2-protocol.md, "Acceptance rules"):
    counts_need_page_2     and every count question, under each of its readings, counts at
                           least one listing on page 2, so a count over page 1 alone is short.
                           (Version 2. "Every 'every listing' question needs both pages" was
-                          proposed too and cannot be met: a "no" needs page 2 only when every
-                          counterexample is there, the tee rules alone make at least four, and
-                          page 2 holds six listings. The protocol's wording says so.) A page
+                          proposed too and cannot be met at 21 and 21 listings. Both answer
+                          no, and a no needs page 2 only when every listing without the
+                          variant renders there: at least four tees without size M in the
+                          menu (the tee rule some_missing_target) and a water without the
+                          2 x 9.5L (the water rule of that name), beside a tee that can sell
+                          size M and a water that can sell the 2 x 9.5L, which the counts put
+                          on page 2. That is seven listings, nine read as what can be bought,
+                          and page 2 holds six. The protocol's wording says so.) A page
                           rule
 3. readings_differ        size M is listed but sold out on at least one tee listing, and the
                           2 x 9.5L on at least one water listing, so the menu and the buyable

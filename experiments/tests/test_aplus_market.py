@@ -661,6 +661,38 @@ class PageRules(DevMarket):
         low["price"] = round(apparel.from_price(tees[0]) * 1.09, 2)
         self.assertNotIn("headline_on_page_1", aplus.page_problems(families, self.order))
 
+    def test_no_order_can_hold_the_every_listing_questions_to_page_2(self):
+        # Why rule 2 leaves them out, as MARKET_RULES says: each answers no, and a no needs
+        # page 2 only when every listing without the variant renders there, beside the tee
+        # and the water the counts put on page 2. The fewest the rules allow, by planting.
+        def fewest_absent(product: str, option: str, check) -> int:
+            for n in range(len(self.groups[product]) + 1):
+                # All but n of the listings without the option given it, listed but sold out.
+                draw = copy.deepcopy(self.groups[product])
+                like = next(v for listing in draw for v in listing["variants"] if v["option"] == option)
+                for listing in [l for l in draw if apparel.price_for(l, option) is None][n:]:
+                    listing["variants"].append(dict(like, price=999.0, qty=0))
+                if "some_missing_target" not in check(draw):
+                    return n
+            raise AssertionError(f"some_missing_target fires on every {product} draw")
+
+        tee = fewest_absent(aplus.TEE, aplus.TEE_TARGET, lambda d: apparel.check(d, apparel.measure(d)))
+        water = fewest_absent(aplus.WATER, aplus.WATER_TARGET,
+                              lambda d: aplus.water_check(d, aplus.water_measure(d)))
+        self.assertEqual((tee, water), (4, 1))
+        # The listings the buyable counts need on page 2 are none of those.
+        counted = {(q, r): c for q, r, c in aplus.COUNTED}
+        for question, product, option in (("tee-count-buyable", aplus.TEE, aplus.TEE_TARGET),
+                                          ("water-count-buyable", aplus.WATER, aplus.WATER_TARGET)):
+            without = [l for l in self.groups[product] if apparel.buyable_price_for(l, option) is None]
+            self.assertFalse(any(counted[(question, "buyable")](l) for l in without))
+        # Read as what can be bought, readings_differ's sold-out listing of each is one more.
+        menu, bought, page_2 = tee + water + 2, tee + water + 4, len(self.families) - aplus.PAGE_SIZE
+        self.assertGreater(menu, page_2)
+        words = dict(enumerate("zero one two three four five six seven eight nine ten".split()))
+        self.assertIn(f"That is {words[menu]} listings, {words[bought]} read as what can be bought, "
+                      f"and page 2 holds {words[page_2]}.", " ".join(aplus.MARKET_RULES.split()))
+
 
 class Guards(unittest.TestCase):
     """What the generator, the picker and the task writer refuse, asked without drawing,
