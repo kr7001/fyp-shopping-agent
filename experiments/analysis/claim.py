@@ -442,19 +442,22 @@ def page_calls(log_path: pathlib.Path, market: list[str] | None
 def flagged_arm(payload: dict) -> str:
     """The arm a payload's flags make, by `suite.arm_of`'s rule, for a batch made before the
     payload named its arm (20 October 2026) and to check one that does. The parser is one of
-    the flags since 22 October 2026: a payload without it was read by the rules."""
+    the flags since 22 October 2026: a payload without it was read by the rules. So is the
+    open-everything wording: a payload without it said every listing."""
     return suite_module.arm_of(argparse.Namespace(**{
         name: bool(payload.get(name)) for name in ("box", "box_exhaust", "targeting", "exhaustive")},
-        parser=payload.get("parser") or "rules"))
+        parser=payload.get("parser") or "rules", exhaustive_wording=payload.get("exhaustive_wording")))
 
 
-def arm_of(payload: dict, run: dict | None = None) -> str:
+def arm_of(payload: dict, run: dict | None = None, names: dict | None = None) -> str:
     """The protocol's name for the arm a run was made under, from its batch's payload: the
     retrieval instruction (`arm`, or the flags of a batch before that field), the reading
     under the box, and the setting the protocol holds fixed, the shop and probe read from
-    the run's own record when there is one."""
+    the run's own record when there is one. `names` is a protocol's own, the first claim's
+    `NAMES` by default."""
+    names = NAMES if names is None else names
     recorded = payload.get("arm") or flagged_arm(payload)
-    reading = payload.get("reading") if recorded in ("box", "box-exhaust") else None
+    reading = payload.get("reading") if recorded.startswith("box") else None
     setting = {"scaffold": payload.get("scaffold") or "openjiuwen",
                "policy": payload.get("policy") or "off",
                "confidence": payload.get("confidence") or "off",
@@ -462,21 +465,23 @@ def arm_of(payload: dict, run: dict | None = None) -> str:
                "shop": (run or {}).get("shop"), "probe": (run or {}).get("probe")}
     odd = [f"{key} {value}" for key, value in setting.items()
            if value is not None and value != SETTING[key]]
-    name = NAMES.get((recorded, reading))
+    name = names.get((recorded, reading))
     if name is None or odd:
         return "other: " + ", ".join([f"arm {recorded}"] + ([f"reading {reading}"] if reading else [])
                                      + odd)
     return name
 
 
-def conditions_of(payload: dict, run: dict) -> dict:
+def conditions_of(payload: dict, run: dict, keys: tuple = CONDITIONS) -> dict:
     """Every condition this run was made under: the run record's own fields where it has
-    them, its batch's payload for the rest."""
+    them, its batch's payload for the rest. `keys` are the first claim's `CONDITIONS` unless
+    a protocol names more."""
     return {key: run.get(key) if key in RUN_CONDITIONS and run.get(key) is not None
-            else payload.get(key) for key in CONDITIONS}
+            else payload.get(key) for key in keys}
 
 
-def load_folder(folder: pathlib.Path) -> tuple[dict, list[dict], list[str]]:
+def load_folder(folder: pathlib.Path, names: dict | None = None,
+                condition_keys: tuple = CONDITIONS) -> tuple[dict, list[dict], list[str]]:
     """One batch: its payload, a slot for every run voids.py finds in it, and any problem.
 
     Each slot is classed by voids.py first, from the log and the record and before any
@@ -496,7 +501,11 @@ def load_folder(folder: pathlib.Path) -> tuple[dict, list[dict], list[str]]:
     tasks = {task["id"]: task for task in spec["tasks"]}
     readings = scoring.readings_for(paths.TASKS / payload["tasks_file"])
     buyable = readings.get("buyable") or {}
-    ambiguous = {task for keys in readings.values() for task in keys}
+    # The questions with two readings: those the sidecar names under `two_readings`, since
+    # the A+ market's sidecar holds a key for every question (22 October 2026); before it,
+    # those it holds a key for, as the first claim's sidecar does.
+    named = scoring.two_readings_for(paths.TASKS / payload["tasks_file"])
+    ambiguous = set(named) if named is not None else {task for keys in readings.values() for task in keys}
     truth = verify_cells.ground_truth(verify_cells.fixture_for(spec))
     market = verify_cells.market_urls(spec)
     rows = {(row["task"], row["repeat"]): row for row in payload.get("rows", [])}
@@ -517,11 +526,16 @@ def load_folder(folder: pathlib.Path) -> tuple[dict, list[dict], list[str]]:
                 "asked": bool(record.get("asked")), "measured": False,
                 # The box made a plan and the agent ran on it: what replay_box replays.
                 "planned": record.get("query") is not None and bool(row.get("log")),
-                "reading": row.get("reading") or payload.get("reading")}
+                "reading": row.get("reading") or payload.get("reading"),
+                # The reading the run was answered under, from its own box record (score v4),
+                # and the template a held-out rewording rewords (22 October 2026).
+                "answered": verify_cells.run_reading(row, payload) if row else None,
+                "template": task.get("template"), "refused": bool(record.get("refuse"))}
         measured = checked.get((run.task, run.repeat))
         if measured is not None:
             slot.update(measure(measured, folder, row, slot["reading"], task, buyable.get(run.task),
-                                truth, market, seen.get(f"{run.task}-{run.repeat}", [])))
+                                truth, market, seen.get(f"{run.task}-{run.repeat}", []),
+                                answered=slot["answered"]))
             if measured["tool_calls"] is not None and measured["tool_calls"] != slot["calls"]:
                 problems.append(f"{folder.name}/{run.task}-{run.repeat}: the record counts "
                                 f"{measured['tool_calls']} tool calls, the page count {slot['calls']}")
@@ -532,23 +546,29 @@ def load_folder(folder: pathlib.Path) -> tuple[dict, list[dict], list[str]]:
                                 f"{measured['stored']}, re-scored {measured['rescored']}")
         elif run.outcome == voids.CLOSED:
             closed = "closed by the box"
+            # What the slot cost: nothing under the rules, and under the model parser the
+            # parse, which its row records (`suite.asked_row`), unknown where the provider gave
+            # no charge (22 October 2026). No agent ran, so it used no agent tokens.
+            charged = row.get("cost_usd", 0.0)
             slot.update({"measured": True, "answer": row.get("answer") or "", "ok": False,
                          "own": closed, "buyable": closed if run.task in buyable else None,
-                         "opened": 0, "skus": [], "covered": False, "missed": [], "cost": 0.0,
+                         "verdict": closed, "tokens_total": 0,
+                         "opened": 0, "skus": [], "covered": False, "missed": [],
+                         "cost": None if charged is None else float(charged),
                          "calls": 0, "actions": 0, "pages": {"calls": {}, "actions": {}},
                          "agent_asks": 0, "leaks": [], "outside": [], "tokens": (None, None),
                          "model": payload.get("model"), "scaffold": payload.get("scaffold"),
                          "shop": None, "probe": None})
         slot["model"] = slot.get("model") or payload.get("model")
-        slot["arm"] = arm_of(payload, slot if slot["measured"] else None)
-        slot["conditions"] = conditions_of(payload, slot)
+        slot["arm"] = arm_of(payload, slot if slot["measured"] else None, names)
+        slot["conditions"] = conditions_of(payload, slot, condition_keys)
         slots.append(slot)
     return payload, slots, problems
 
 
 def measure(run: dict, folder: pathlib.Path, row: dict, reading: str | None, task: dict,
             buyable_key: dict | None, truth: dict, market: list[str] | None,
-            leak: list[str]) -> dict:
+            leak: list[str], answered: str | None = None) -> dict:
     """What one run did, from verify_cells' re-derivation and the log: the answer under the
     task's own key and, for the two offer questions, under the buyable key; the market's
     listings opened, and whether they were what the answer needs under the reading the run
@@ -561,11 +581,20 @@ def measure(run: dict, folder: pathlib.Path, row: dict, reading: str | None, tas
     own = market or [item["url"] for item in page.get("listings") or []] or None
     calls, actions, names = page_calls(folder / f"{run['task']}-{run['repeat']}.log", own)
     answer, ok = run["answer"], run["ok"]
+    own = scoring.score(task, answer, ok)["verdict"]
+    under_buyable = scoring.score({"expect": buyable_key}, answer, ok)["verdict"] if buyable_key else None
+    total = (tokens.get("prompt") or 0) + (tokens.get("completion") or 0) if tokens else None
     return {
         "measured": True, "answer": answer, "ok": ok,
-        "own": scoring.score(task, answer, ok)["verdict"],
-        "buyable": (scoring.score({"expect": buyable_key}, answer, ok)["verdict"]
-                    if buyable_key else None),
+        "own": own,
+        "buyable": under_buyable,
+        # Under the key for the reading the run was answered under, as score v4 scores it: the
+        # task's own unless the box record holds another, the buyable key then, and unscored
+        # where the sidecar has none. A protocol named in a file reads this (22 October 2026).
+        "verdict": (own if answered in (None, scoring.OWN_READING)
+                    else under_buyable if answered == "buyable" and under_buyable is not None
+                    else "unscored"),
+        "tokens_total": total or None,
         "opened": run["opened"], "skus": run["skus"],
         "covered": compare_cells.covered(run, reading or scoring.OWN_READING, truth),
         "missed": run["missed"], "floor_rule": run["floor_rule"],
@@ -655,7 +684,7 @@ def brief(slot: dict) -> dict:
             "reason": slot["reason"], "evidence": slot["why"]}
 
 
-def one_condition_each(slots: list[dict]) -> dict[tuple[str, str], dict]:
+def one_condition_each(slots: list[dict], keys: tuple = CONDITIONS) -> dict[tuple[str, str], dict]:
     """Each arm's conditions, by arm and model, or a refusal naming the conditions that
     differ: runs of one arm under two conditions are two arms and are never pooled
     (LESSONS 7). Only runs with a record are read, since a run with none, a void the runner
@@ -668,7 +697,7 @@ def one_condition_each(slots: list[dict]) -> dict[tuple[str, str], dict]:
     for (arm, model), runs in found.items():
         seen = {json.dumps(run["conditions"], sort_keys=True) for run in runs}
         if len(seen) > 1:
-            differ = sorted({key for run in runs for key in CONDITIONS
+            differ = sorted({key for run in runs for key in keys
                              if run["conditions"][key] != runs[0]["conditions"][key]})
             values = {key: sorted({str(run["conditions"][key]) for run in runs}) for key in differ}
             raise SystemExit(f"{arm} under {model} has runs under more than one condition, so they "
@@ -697,8 +726,10 @@ def mean(values: list[float]) -> float | None:
     return statistics.mean(values) if values else None
 
 
-def summary(runs: list[dict]) -> dict:
-    """One arm's runs on one question, or pooled, as the tables show them."""
+def summary(runs: list[dict], key=None) -> dict:
+    """One arm's runs on one question, or pooled, as the tables show them. `key` says whether
+    a run was correct, the task's own key by default (`correct`)."""
+    key = correct if key is None else key
     def per(kind: str, what: str) -> float | None:
         return mean([run["pages"][what].get(kind, 0) for run in runs])
 
@@ -709,7 +740,7 @@ def summary(runs: list[dict]) -> dict:
     missed = collections.Counter(sku for run in runs for sku in run["missed"])
     reasons = collections.Counter(run["reason"] for run in runs if run["outcome"] == voids.NOT_CORRECT)
     return {"runs": len(runs), "distinct": len(compare_cells.distinct(runs)),
-            "correct": sum(correct(run) for run in runs),
+            "correct": sum(key(run) for run in runs),
             "correct_buyable": (sum(correct(run, "own" if run["buyable"] is None else "buyable")
                                     for run in runs) if offer else None),
             "opened": [run["opened"] for run in runs],
@@ -848,13 +879,17 @@ def coding_id(run: dict) -> str:
     return hashlib.sha1(f"{run['batch']}/{run['task']}-{run['repeat']}".encode()).hexdigest()[:8]
 
 
-def count_stocked(arms: dict[str, list[dict]]) -> dict:
+def count_stocked(arms: dict[str, list[dict]], task: str | None = None, order: list[str] | None = None) -> dict:
     """count-stocked as a table of arm by key, the box's ask counted as one user turn, and
     every answer on a sheet for its declared reading to be coded by hand without seeing the
-    arm: ordered by an id made from the run's name, the arm kept apart in `coding_key`."""
+    arm: ordered by an id made from the run's name, the arm kept apart in `coding_key`. A
+    protocol named in a file gives its own count question with two readings and arm order."""
+    task = COUNT_STOCKED if task is None else task
     table, sheet, key = {}, [], {}
-    for arm in ordered(arms):
-        runs = [run for run in arms[arm] if run["task"] == COUNT_STOCKED]
+    for arm in (ordered(arms) if order is None else order):
+        if arm not in arms:
+            continue
+        runs = [run for run in arms[arm] if run["task"] == task]
         if not runs:
             continue
         table[arm] = {"runs": len(runs), "menu_key": sum(correct(run) for run in runs),
@@ -867,12 +902,13 @@ def count_stocked(arms: dict[str, list[dict]]) -> dict:
     return {"table": table, "sheet": sorted(sheet, key=lambda row: row["id"]), "coding_key": key}
 
 
-def asks(arms: dict[str, list[dict]]) -> dict:
+def asks(arms: dict[str, list[dict]], order: list[str] | None = None) -> dict:
     """Asks on the clear and on the ambiguous questions, by arm: the box's asks and any ask
     the agent made itself. Ambiguous means the task has a second reading in its sidecar,
-    written before any run, not whatever the box's own rule says."""
+    written before any run, not whatever the box's own rule says: since the A+ market's,
+    whose sidecar keys every question, the ones it names under `two_readings`."""
     out = {}
-    for arm in ordered(arms):
+    for arm in (ordered(arms) if order is None else [a for a in order if a in arms]):
         runs = arms[arm]
         out[arm] = {}
         for label, wanted in (("clear", False), ("ambiguous", True)):
@@ -882,7 +918,7 @@ def asks(arms: dict[str, list[dict]]) -> dict:
     return out
 
 
-def answer_check(arms: dict[str, list[dict]]) -> dict:
+def answer_check(arms: dict[str, list[dict]], order: list[str] | None = None) -> dict:
     """The block's answer check replayed from the logs (replay_box), per arm under the box,
     over the runs counted here: the wrong answers it refused and the correct ones, each
     judged under the reading the run answered, as replay_box judges it. An arm without the
@@ -892,7 +928,7 @@ def answer_check(arms: dict[str, list[dict]]) -> dict:
     by voids.py's rule, so such a batch is named and left out of the replay, and the figures
     say how many of the arm's runs under the box were replayed."""
     out = {}
-    for arm in ordered(arms):
+    for arm in (ordered(arms) if order is None else [a for a in order if a in arms]):
         runs = arms[arm]
         counted = {(run["batch"], run["task"], run["repeat"]) for run in runs}
         rows, failed = [], []
@@ -1283,6 +1319,575 @@ def render_test(t: dict) -> str:
 
 
 # ---------------------------------------------------------------------------
+# A protocol named in a file: the second claim (22 October 2026)
+#
+# The first claim's analysis above is written for its five arms and six questions, and is
+# the default. A protocol may instead name its arms, question sets, design and primary tests
+# in a file (`--protocol`, experiments/tasks/claim2_analysis.json for the second claim), fixed
+# before any of its data exists. The machinery is the first claim's: the same slots from
+# voids.py and verify_cells, the same exclusions, the same tests and the same Holm. What a
+# run counts as correct is the key for the reading it was answered under (score v4), which
+# under the first claim's arms was always the task's own.
+
+# Bumped when a figure the protocol path prints would change for the same runs and file.
+#   1  22 October 2026, before the second claim run
+PROTOCOL_ANALYSIS_VERSION = 1
+# The conditions a protocol's arms are held to: the first claim's and the model parser's,
+# the open-everything wording, the agent's limits. Of them, the ones an arm has by design.
+PROTOCOL_CONDITIONS = CONDITIONS + ("parser", "parser_model", "parser_temperature", "prompt_version",
+                                    "normalise_version", "exhaustive_wording")
+PROTOCOL_ARM_CONDITIONS = BOX_CONDITIONS + ("parser", "parser_model", "parser_temperature", "prompt_version",
+                                            "normalise_version", "exhaustive_wording")
+TEST_MEASURES = ("correct", "opened", "cost", "tokens_total")
+SENSITIVITIES = ("without the two-reading questions", "distinct runs only", "with the voids included",
+                 "without the runs that saw a hidden price")
+# The sets a protocol file must name, and the one the design calls every template question.
+PROTOCOL_SETS = ("control", "decline", "gated", "two_readings", "reading_independent",
+                 "count_two_readings", "held_out")
+
+
+@dataclasses.dataclass
+class Protocol:
+    """A protocol file, checked, and its sets resolved against the claim's task file."""
+    path: pathlib.Path
+    config: dict
+    names: dict                     # (recorded arm, reading) -> the protocol's arm name
+    arms: tuple                     # the arms, in the file's order
+    sets: dict                      # name -> question ids, `held_out` from the task file
+    templates_of: dict              # a held-out rewording's id -> its template's
+    keyed: frozenset                # the questions with an answer key
+    design: dict                    # arm -> the questions it asks every round
+    rounds: tuple
+    tests: dict
+    require: dict
+    models: tuple
+
+
+def check_protocol(config: dict) -> list[str]:
+    """Why a protocol file cannot be analysed, before any batch is read: every arm a test,
+    the design or the comparison names is one of its arms, every set one it names, every
+    measure and sensitivity one this analysis has, and every required condition one a run
+    records."""
+    found = []
+    arms = config.get("arms") or {}
+    sets = config.get("sets") or {}
+    for key in PROTOCOL_SETS:
+        if key not in sets:
+            found.append(f"the protocol names no {key} set")
+    for name, arm in arms.items():
+        if not isinstance(arm, dict) or "arm" not in arm or "reading" not in arm:
+            found.append(f"arm {name!r} does not say what its payloads record (arm, reading)")
+    pairs = [(arm.get("arm"), arm.get("reading")) for arm in arms.values() if isinstance(arm, dict)]
+    if len(set(pairs)) != len(pairs):
+        found.append("two arms record the same instruction and reading")
+    for name, test in (config.get("tests") or {}).items():
+        for side in ("a", "b"):
+            if test.get(side) not in arms:
+                found.append(f"{name} compares an arm the protocol has not: {test.get(side)!r}")
+        if test.get("measure") not in TEST_MEASURES or test.get("also", "tokens_total") not in TEST_MEASURES:
+            found.append(f"{name} measures what this analysis does not: {test.get('measure')!r}")
+        if test.get("on") not in sets:
+            found.append(f"{name} is on a set the protocol does not name: {test.get('on')!r}")
+        if test.get("strata") not in ("question", "template"):
+            found.append(f"{name} is stratified by {test.get('strata')!r}, not by question or template")
+        if test.get("strata") == "template" and test.get("on") != "held_out":
+            found.append(f"{name} is stratified by template, which only the held-out rewordings have")
+    if len(config.get("tests") or {}) < 1:
+        found.append("the protocol names no primary test")
+    for arm, groups in ((config.get("design") or {}).get("asks") or {}).items():
+        if arm not in arms:
+            found.append(f"the design has an arm the protocol has not ask questions: {arm!r}")
+        for group in groups:
+            if group != "templates" and group not in sets:
+                found.append(f"the design has {arm} ask a set the protocol does not name: {group!r}")
+    against = config.get("against_open_everything") or {}
+    if against and (against.get("a") not in arms or against.get("b") not in arms or against.get("on") not in sets):
+        found.append("the comparison with open everything names an arm or set the protocol has not")
+    for name in config.get("sensitivity") or []:
+        if name not in SENSITIVITIES:
+            found.append(f"no sensitivity this analysis can run is called {name!r}")
+    for key in config.get("require") or {}:
+        if key not in PROTOCOL_CONDITIONS:
+            found.append(f"the protocol requires {key!r}, which no run records")
+    return found
+
+
+def resolve_protocol(path: pathlib.Path, config: dict, spec: dict) -> Protocol:
+    """The protocol file's sets as question ids of the claim's task file `spec`. The held-out
+    rewordings are its tasks with a template, read by id and template only. Every id a set
+    names must be a task of the file, or this refuses."""
+    tasks = {task["id"]: task for task in spec["tasks"]}
+    sets = {}
+    for key, value in config["sets"].items():
+        if key == "held_out":
+            sets[key] = tuple(task_id for task_id, task in tasks.items() if task.get(value))
+        elif isinstance(value, str):
+            sets[key] = value
+        else:
+            sets[key] = tuple(value)
+    named = {q for key, value in sets.items() if not isinstance(value, str) for q in value}
+    named |= {value for value in sets.values() if isinstance(value, str)}
+    stray = sorted(named - set(tasks))
+    if stray:
+        raise SystemExit(f"the protocol's sets name questions {spec.get('fixture') or 'the task file'} "
+                         f"does not hold: {stray}")
+    templates_of = {task_id: tasks[task_id]["template"] for task_id in sets["held_out"]}
+    templates = tuple(task_id for task_id, task in tasks.items() if not task.get("template"))
+    design = {}
+    for arm, groups in config["design"]["asks"].items():
+        design[arm] = tuple(dict.fromkeys(q for group in groups
+                                          for q in (templates if group == "templates" else sets[group])))
+    keyed = frozenset(task_id for task_id, task in tasks.items() if task["expect"].get("kind") != "none")
+    return Protocol(path=path, config=config,
+                    names={(arm["arm"], arm["reading"]): name for name, arm in config["arms"].items()},
+                    arms=tuple(config["arms"]), sets=sets, templates_of=templates_of, keyed=keyed,
+                    design=design, rounds=tuple(config["design"]["rounds"]), tests=config["tests"],
+                    require=config.get("require") or {}, models=tuple(config.get("models") or ()))
+
+
+def answered_correct(run: dict) -> bool:
+    """Correct under the key for the reading the run was answered under (score v4)."""
+    return run.get("verdict") == "correct"
+
+
+def scored(runs: list[dict]) -> list[dict]:
+    """The runs a key judged. A run with no key for the reading it answered is unscored and
+    is never counted as wrong (LESSONS 34): a test of correct leaves it out, and the analysis
+    lists it as a problem, since suite.py refuses a batch that could produce one."""
+    return [run for run in runs if run.get("verdict") != "unscored"]
+
+
+def protocol_tests(arms: dict[str, list[dict]], protocol: Protocol, drop: frozenset = frozenset()) -> dict:
+    """The protocol's primary tests, two-sided, with Holm over all of them. A test of correct
+    counts only the questions with a key. A test stratified by template sets each held-out
+    rewording's runs under its template's stratum. `drop` leaves questions out, and a
+    rewording of a dropped template with them, for a sensitivity."""
+    tests = {}
+    for name, spec in protocol.tests.items():
+        questions = [q for q in protocol.sets[spec["on"]] if q not in drop
+                     and protocol.templates_of.get(q) not in drop
+                     and (spec["measure"] != "correct" or q in protocol.keyed)]
+        a, b = arms.get(spec["a"], []), arms.get(spec["b"], [])
+        if spec["strata"] == "template":
+            strata = list(dict.fromkeys(protocol.templates_of[q] for q in questions))
+            a = [{**run, "task": protocol.templates_of[run["task"]]} for run in a if run["task"] in questions]
+            b = [{**run, "task": protocol.templates_of[run["task"]]} for run in b if run["task"] in questions]
+        else:
+            strata = questions
+        if spec["measure"] == "correct":
+            result = compare_correct(scored(a), scored(b), strata, answered_correct)
+            if spec["strata"] == "template":
+                result["test"] = "stratified exact test by template (compare_cells.stratified_exact)"
+        else:
+            result = compare_ranks(a, b, strata, spec["measure"])
+        result.update({"a": spec["a"], "b": spec["b"], "on": spec["on"], "strata": spec["strata"],
+                       "questions": strata})
+        if spec.get("also"):
+            result["also"] = {**compare_ranks(a, b, strata, spec["also"]), "a": spec["a"], "b": spec["b"]}
+        tests[name] = result
+    adjusted = holm({name: test["p"] for name, test in tests.items()})
+    for name, test in tests.items():
+        test["p_holm"] = adjusted[name]
+        test["rejected"] = adjusted[name] <= ALPHA
+    return tests
+
+
+def protocol_against(arms: dict[str, list[dict]], protocol: Protocol) -> dict | None:
+    """Correct, the protocol's block against open everything, by question and pooled, as
+    counts and Newcombe intervals for the difference. Never a test of equivalence."""
+    spec = protocol.config.get("against_open_everything")
+    if not spec:
+        return None
+    a, b = scored(arms.get(spec["a"], [])), scored(arms.get(spec["b"], []))
+    rows = []
+    for q in protocol.sets[spec["on"]]:
+        ra = [run for run in a if run["task"] == q]
+        rb = [run for run in b if run["task"] == q]
+        if ra and rb:
+            rows.append(difference(q, sum(map(answered_correct, ra)), len(ra),
+                                   sum(map(answered_correct, rb)), len(rb)))
+    pooled = difference("pooled", sum(r["a"][0] for r in rows), sum(r["a"][1] for r in rows),
+                        sum(r["b"][0] for r in rows), sum(r["b"][1] for r in rows))
+    return {"a": spec["a"], "b": spec["b"], "on": spec["on"], "per_question": rows, "pooled": pooled}
+
+
+def declines(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
+    """What each arm did with the questions the block should not plan, the templates and
+    their rewordings: refused, asked, planned, or sent to the agent without a plan."""
+    wanted = set(protocol.sets["decline"])
+    out = {}
+    for arm in protocol.arms:
+        runs = [run for run in arms.get(arm, []) if run["task"] in wanted
+                or protocol.templates_of.get(run["task"]) in wanted]
+        if not runs:
+            continue
+        closed = [run for run in runs if run["outcome"] == voids.CLOSED]
+        out[arm] = {"runs": len(runs), "refused": sum(run["refused"] for run in closed),
+                    "asked": sum(not run["refused"] for run in closed),
+                    "planned": sum(run["planned"] for run in runs),
+                    "answered without a plan": sum(1 for run in runs if run["outcome"] != voids.CLOSED
+                                                   and not run["planned"])}
+    return out
+
+
+def held_out_table(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
+    """The held-out rewordings by template, each arm that asked them: correct under the key
+    for the reading answered, of the runs, and how many the box asked about or refused."""
+    out = {}
+    for arm in protocol.arms:
+        runs = [run for run in arms.get(arm, []) if run["task"] in protocol.templates_of]
+        if not runs:
+            continue
+        rows = {}
+        for template in dict.fromkeys(protocol.templates_of.values()):
+            mine = [run for run in runs if protocol.templates_of[run["task"]] == template]
+            if mine:
+                rows[template] = {"runs": len(mine), "keyed": template in protocol.keyed,
+                                  "scored": len(scored(mine)), "correct": sum(map(answered_correct, mine)),
+                                  "asked": sum(run["asked"] for run in mine),
+                                  "refused": sum(run["refused"] for run in mine),
+                                  "opened_median": statistics.median(run["opened"] for run in mine)}
+        out[arm] = rows
+    return out
+
+
+def protocol_sensitivity(arms: dict[str, list[dict]], voided: list[dict], protocol: Protocol) -> dict:
+    """The primary tests again under each sensitivity the protocol names."""
+    out = {}
+    for name in protocol.config.get("sensitivity") or []:
+        if name == "without the two-reading questions":
+            out[name] = protocol_tests(arms, protocol, frozenset(protocol.sets["two_readings"]))
+        elif name == "distinct runs only":
+            out[name] = protocol_tests({arm: compare_cells.distinct(runs) for arm, runs in arms.items()}, protocol)
+        elif name == "with the voids included":
+            out[name] = protocol_tests({arm: runs + [s for s in voided if s["measured"] and s["arm"] == arm]
+                                        for arm, runs in arms.items()}, protocol)
+        elif name == "without the runs that saw a hidden price":
+            out[name] = protocol_tests({arm: [run for run in runs if not run["leaks"]]
+                                        for arm, runs in arms.items()}, protocol)
+    return out
+
+
+def protocol_model(model: str | None, population: dict, conditions: dict, protocol: Protocol) -> dict:
+    """Everything for one model's arms under a protocol file. Two models are never pooled."""
+    kept = [s for s in population["kept"] if s["model"] == model]
+    present = {s["arm"] for s in kept}
+    arms = {arm: [s for s in kept if s["arm"] == arm]
+            for arm in [a for a in protocol.arms if a in present] + sorted(present - set(protocol.arms))}
+    voided = [s for s in population["voided"] if s["model"] == model]
+    mine = {arm: conditions[(arm, model)] for arm in arms if (arm, model) in conditions}
+    held, differ = {}, {}
+    for key in PROTOCOL_CONDITIONS:
+        if key in PROTOCOL_ARM_CONDITIONS:
+            continue
+        seen = {arm: c[key] for arm, c in mine.items()}
+        if len(set(map(str, seen.values()))) <= 1:
+            held[key] = next(iter(seen.values()), None)
+        else:
+            differ[key] = seen
+    if "draw" in differ:
+        raise SystemExit(f"the arms under {model} ran on more than one market draw, so they are "
+                         f"never set against each other: {differ['draw']}")
+    by_arm = {arm: {key: c[key] for key in PROTOCOL_ARM_CONDITIONS} for arm, c in mine.items()}
+    required = [f"{arm} ran with {key} {c[key]}, where the protocol requires {value}"
+                for arm, c in mine.items() for key, value in protocol.require.items() if c[key] != value]
+    filled = collections.Counter((s["arm"], s["task"], s["repeat"]) for s in kept)
+    # A slot left empty by a void is excluded by rule and listed as such; one with no run at
+    # all, void or not, the command never ran, which is a problem (22 October 2026).
+    voided_slots = {(s["arm"], s["task"], s["repeat"]) for s in voided}
+    design = {"slots": 0, "filled": 0, "missing": [], "never_run": [], "outside": []}
+    for arm, questions in protocol.design.items():
+        for task in questions:
+            for repeat in protocol.rounds:
+                design["slots"] += 1
+                if filled[(arm, task, repeat)]:
+                    design["filled"] += 1
+                else:
+                    design["missing"].append(f"{arm}, {task} repeat {repeat}")
+                    if (arm, task, repeat) not in voided_slots:
+                        design["never_run"].append(f"{arm}, {task} repeat {repeat}")
+    design["outside"] = sorted(f"{arm}, {task} repeat {repeat}" for (arm, task, repeat) in filled
+                               if task not in protocol.design.get(arm, ()) or repeat not in protocol.rounds)
+    templates = [q for q in protocol.sets["control"] + protocol.sets["gated"] + protocol.sets["decline"]]
+    tables_ = {}
+    for arm, runs in arms.items():
+        rows = {q: summary([run for run in runs if run["task"] == q], answered_correct)
+                for q in templates if any(run["task"] == q for run in runs)}
+        gated = [run for run in runs if run["task"] in protocol.sets["gated"]]
+        if gated:
+            rows["pooled, gated"] = summary(gated, answered_correct)
+        for q, row in rows.items():
+            asked = gated if q == "pooled, gated" else [run for run in runs if run["task"] == q]
+            row["tokens_mean"] = mean([run["tokens_total"] for run in asked if run.get("tokens_total") is not None])
+            # A question with no key (the declines) has no correct answer to count: "-", not 0.
+            # A run unscored under the reading it answered is no wrong answer either.
+            row["keyed"] = all(run["task"] in protocol.keyed for run in asked)
+            row["scored"] = len(scored(asked))
+        tables_[arm] = rows
+    return {
+        "named": model in protocol.models,
+        "arms": {arm: {"batches": sorted({s["batch"] for s in runs}), "runs": len(runs),
+                       "repeats": sorted({s["repeat"] for s in runs}),
+                       "distinct": len(compare_cells.distinct(runs)), "conditions": mine.get(arm)}
+                 for arm, runs in arms.items()},
+        "conditions": {"held": held, "differ": differ, "by_arm": by_arm, "required": required},
+        "exclusions": {"voids": [brief(s) for s in voided],
+                       "replaced": [r for r in population["replaced"] if r["model"] == model],
+                       "missing": [m for m in population["missing"] if m["model"] == model],
+                       "not_correct": [brief(s) for s in kept if s["outcome"] == voids.NOT_CORRECT],
+                       "design": design},
+        "tables": tables_,
+        "held_out": held_out_table(arms, protocol),
+        "primary": protocol_tests(arms, protocol),
+        "against_open_everything": protocol_against(arms, protocol),
+        "secondary": {"count_two_readings": count_stocked(arms, protocol.sets["count_two_readings"], list(protocol.arms)),
+                      "asks": asks(arms, list(protocol.arms)), "declines": declines(arms, protocol),
+                      "answer_check": answer_check(arms, list(protocol.arms))},
+        "sensitivity": protocol_sensitivity(arms, voided, protocol),
+        "runs": [{key: s.get(key) for key in ("arm", "batch", "task", "template", "repeat", "outcome", "reason",
+                                              "own", "buyable", "verdict", "answered", "opened", "skus",
+                                              "covered", "missed", "cost", "tokens_total", "calls", "actions",
+                                              "asked", "refused", "agent_asks", "leaks", "outside", "answer")}
+                 for s in kept],
+    }
+
+
+def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib.Path) -> dict:
+    """Every figure under a protocol file, as data: `render_protocol` prints it."""
+    config = json.loads(path.read_text())
+    broken = check_protocol(config)
+    if broken:
+        raise SystemExit(f"{path.name} cannot be analysed: " + "; ".join(broken))
+    names = {(arm["arm"], arm["reading"]): name for name, arm in config["arms"].items()}
+    problems = list(manifest.problems) if manifest else []
+    if manifest is not None and (len(manifest.starts) != 1 or len(manifest.ends) != 1):
+        problems.append(f"the manifest holds {len(manifest.starts)} start and {len(manifest.ends)} "
+                        f"end lines, where one run of the command writes one of each")
+    loaded = []
+    for line in lines:
+        if line.folder is None or not (line.folder / "suite.json").exists():
+            problems.append(f"a {line.kind} line names no batch folder with a suite.json "
+                            f"({line.folder}), so it is not read")
+            continue
+        payload, slots, found = load_folder(line.folder, names, PROTOCOL_CONDITIONS)
+        problems += found
+        if line.kind == "batch" and line.args:
+            arm, reading, wanted = intended(line.args)
+            recorded = payload.get("arm") or flagged_arm(payload)
+            if recorded != arm or payload.get("reading") != reading:
+                problems.append(f"{line.folder.name}: the manifest's arguments ask for arm {arm}, "
+                                f"reading {reading}; its payload says {recorded}, "
+                                f"{payload.get('reading')}. The payload's is used")
+        loaded.append((line, payload, slots))
+    files = sorted({payload["tasks_file"] for _, payload, _ in loaded})
+    if len(files) != 1:
+        raise SystemExit(f"the batches read {len(files)} task files ({', '.join(files)}), where the "
+                         f"protocol's sets are one task file's ids")
+    protocol = resolve_protocol(path, config, json.loads((paths.TASKS / files[0]).read_text()))
+    population = assemble(loaded, manifest is not None)
+    problems += population["problems"]
+    every = [slot for _, _, slots in loaded for slot in slots]
+    conditions = one_condition_each(population["kept"] + population["voided"], PROTOCOL_CONDITIONS)
+    models = sorted({slot["model"] for slot in population["kept"]} | {m["model"] for m in population["missing"]},
+                    key=str)
+    out = {"analysis_version": VERSION, "protocol_analysis_version": PROTOCOL_ANALYSIS_VERSION,
+           "scorer_version": scoring.VERSION, "protocol": config["protocol"],
+           "protocol_file": shown_path(path), "protocol_version": config.get("version"), "tasks_file": files[0],
+           "sets": {key: list(value) if not isinstance(value, str) else value
+                    for key, value in protocol.sets.items()},
+           "design": {arm: len(questions) * len(protocol.rounds) for arm, questions in protocol.design.items()},
+           "source": source(lines, manifest, every), "problems": problems, "models": {},
+           "models_named": list(protocol.models)}
+    for model in models:
+        result = protocol_model(model, population, conditions, protocol)
+        out["problems"] += [f"{model}: {text}" for text in result["conditions"]["required"]]
+        # A condition that is no arm's own and differs between arms makes two experiments of
+        # one (LESSONS 7, 10), and the design's slots are the protocol's, fixed before the run.
+        out["problems"] += [f"{model}: {key} differs between the arms: "
+                            + "; ".join(f"{arm} {value}" for arm, value in seen.items())
+                            for key, seen in result["conditions"]["differ"].items()]
+        design = result["exclusions"]["design"]
+        out["problems"] += [f"{model}: the design's slot {label} has no run, void or not"
+                            for label in design["never_run"]]
+        out["problems"] += [f"{model}: {run['batch']}/{run['task']}-{run['repeat']} has no key for the reading "
+                            f"it answered, {run['answered']}, so it is unscored and in no test of correct"
+                            for run in result["runs"] if run["verdict"] == "unscored" and run["task"] in protocol.keyed]
+        out["problems"] += [f"{model}: a run the design does not ask for, {label}" for label in design["outside"]]
+        out["models"][str(model)] = result
+    out["problems"] += [f"the protocol's model {model} has no run" for model in protocol.models
+                        if model not in out["models"]]
+    return out
+
+
+def shown_path(path: pathlib.Path) -> str:
+    """A file as the report names it: from the repository's root when it is in it."""
+    try:
+        return str(path.resolve().relative_to(paths.REPO))
+    except ValueError:
+        return str(path)
+
+
+def render_protocol(result: dict) -> str:
+    out = []
+    say = out.append
+    say(f"The claim analysis under {result['protocol_file']} (version {result['protocol_version']}), for "
+        f"{result['protocol']}: claim.py v{result['analysis_version']}, protocol analysis "
+        f"v{result['protocol_analysis_version']}, every answer scored again by score.py v{result['scorer_version']}")
+    sets = result["sets"]
+    say(f"Task file {result['tasks_file']}: {len(sets['control'])} control, {len(sets['gated'])} gated, "
+        f"{len(sets['decline'])} the block should not plan, {len(sets['held_out'])} held-out rewordings; two "
+        f"readings: {', '.join(sets['two_readings'])}; reading-independent: {len(sets['reading_independent'])}")
+    say("The design, slots each model: " + "; ".join(f"{arm} {n}" for arm, n in result["design"].items())
+        + f"; models named: {', '.join(result['models_named'])}")
+    src = result["source"]
+    kinds = collections.Counter(line["kind"] for line in src["lines"])
+    say("Read " + ", ".join(f"{n} {kind}{'s' if n > 1 else ''}" if kind == "folder" else
+                            f"{n} {kind} line{'s' if n > 1 else ''}" for kind, n in kinds.items())
+        + f"; the provider's charges summed over every run in them, voids included: ${src['charges']:.4f}")
+    if "starts" in src:
+        start = src["starts"][0] if src["starts"] else {}
+        end = src["ends"][-1] if src["ends"] else {}
+        say(f"Started {start.get('at', '-')}, ended {end.get('at', '-')}; the account moved "
+            + (f"${src['account_moved']:.4f}" if src["account_moved"] is not None else "(not read)")
+            + f"; cap ${src['cap']}" + (f"; stops: {'; '.join(src['stops'])}" if src["stops"] else "; no stop"))
+    say(f"\nProblems found: {len(result['problems'])}")
+    for text in result["problems"]:
+        say(f"  {text}")
+    for model, m in result["models"].items():
+        say(f"\n{'=' * 100}\nModel {model}" + ("" if m["named"] else ", which the protocol does not name")
+            + ". Each model is its own result and is never pooled with another.")
+        render_protocol_model(m, say)
+    return "\n".join(out)
+
+
+def render_protocol_model(m: dict, say) -> None:
+    say("\nArms, each from its batches' payloads:")
+    for arm, a in m["arms"].items():
+        say(f"  {arm:30} {a['runs']:>3} runs, {a['distinct']:>3} distinct, repeats "
+            f"{', '.join(map(str, a['repeats']))}   batches {', '.join(a['batches'])}")
+    say(held_line(m["conditions"]["held"]))
+    for key, seen in m["conditions"]["differ"].items():
+        say(f"  DIFFERS between arms, {key}: " + "; ".join(f"{arm} {value}" for arm, value in seen.items()))
+    for arm, c in m["conditions"]["by_arm"].items():
+        shown = "; ".join(f"{key} {value}" for key, value in c.items() if value is not None)
+        say(f"  {arm:30} {shown or 'no arm-specific condition'}")
+    for text in m["conditions"]["required"]:
+        say(f"  NOT AS REQUIRED: {text}")
+
+    e = m["exclusions"]
+    say("\nExclusions, decided from the logs and the records before any answer was read:")
+    say(f"  voids {len(e['voids'])}" + "".join(f"\n    {v['batch']}/{v['task']}-{v['repeat']} ({v['arm']}): "
+                                               f"{v['reason']}, {v['evidence']}" for v in e["voids"]))
+    for r in e["replaced"]:
+        say(f"    replaced by its re-run in {r['by']}: {r['batch']}/{r['task']}-{r['repeat']}")
+    say(f"  missing {len(e['missing'])}" + "".join(f"\n    {x['batch']}/{x['task']}-{x['repeat']} "
+                                                   f"({x['arm']}): {x['why']}" for x in e["missing"]))
+    reasons = collections.Counter(x["reason"] for x in e["not_correct"])
+    say("  not correct, kept and reported apart: "
+        + (", ".join(f"{reason} {n}" for reason, n in sorted(reasons.items())) or "none"))
+    d = e["design"]
+    say(f"  the protocol's design, {d['slots']} slots: {d['filled']} filled, {len(d['missing'])} empty"
+        + (f": {'; '.join(d['missing'][:12])}" + (" ..." if len(d["missing"]) > 12 else "") if d["missing"] else "")
+        + (f"; outside the design: {'; '.join(d['outside'])}" if d["outside"] else ""))
+
+    say("\n1. Each arm by question, then pooled over the gated questions. The unit is a run.")
+    say("   correct: under the key for the reading the run was answered under, of the runs a key judged; - for "
+        "a question with no key. opened: the listings of the question's product opened, median [each run]. "
+        "needs: opened what the answer needs.")
+    say("   $/run: the provider's charge, the model parser's included. tokens: the agent's, thousands, mean; "
+        "the model parser's are not recorded. actions: browser actions a run, "
+        "all/results page/listings. asks: the box's and the agent's. step, clock, none, abst: not correct "
+        "for the step budget, the clock, no answer, an abstention.")
+    for arm, questions in m["tables"].items():
+        say(f"  {arm}")
+        say(f"    {'question':22} {'runs':>4} {'correct':>7}  {'opened':26} {'needs':>5} {'$/run':>6} "
+            f"{'tokens':>7} {'actions':>15} {'asks':>4} {'step':>4} {'clock':>5} {'none':>4} {'abst':>4} {'leak':>4}")
+        for q, s in questions.items():
+            opened = (f"{s['opened_median']:g} " if s["opened_median"] is not None else "- ") + \
+                (str(s["opened"]) if len(s["opened"]) <= 5 else "")
+            actions = f"{number(s['actions'])}/{number(s['actions_results'])}/{number(s['actions_listings'])}"
+            tokens = "-" if s["tokens_mean"] is None else f"{s['tokens_mean'] / 1000:.0f}k"
+            correct = f"{s['correct']}/{s['scored']}" if s["keyed"] else "-"
+            say(f"    {q:22} {s['runs']:>4} {correct:>7}  {opened:26} "
+                f"{str(s['covered']) + '/' + str(s['runs']):>5} {money(s['cost_mean']):>6} {tokens:>7} {actions:>15} "
+                f"{s['asks']:>4} {s['step']:>4} {s['clock']:>5} {s['no_answer']:>4} {s['abstention']:>4} "
+                f"{s['leaks']:>4}")
+
+    say(f"\n2. Primary tests, two-sided, with Holm's correction over the {len(m['primary'])}")
+    for name, t in m["primary"].items():
+        say(f"  {name} {t['measure']}, {t['a']} against {t['b']}, on {t['on']}, by {t['strata']}: "
+            + ", ".join(t["questions"]))
+        if not t["per_question"]:
+            say("     not computed: an arm has no runs on these questions, so Holm counts it as p = 1")
+            continue
+        say("     " + render_test(t))
+        say(f"     {t['test']}: " + (f"rank sum {number(t['observed'])} against {number(t['expected'])} "
+                                      f"expected, " if t.get("observed") is not None else "")
+            + f"p = {p_text(t['p'])}, Holm p = {p_text(t['p_holm'])}"
+            + ("  rejected at 0.05" if t["rejected"] else "  not rejected at 0.05"))
+        also = t.get("also")
+        if also:
+            label = "the agent's tokens" if also["measure"] == "tokens_total" else also["measure"]
+            say(f"     and on {label}, outside Holm: "
+                + (render_test(also) + f"; p = {p_text(also['p'])}" if also["per_question"] else "not computed"))
+
+    o = m["against_open_everything"]
+    if o:
+        say(f"\n3. Correct, {o['a']} against {o['b']}, on {o['on']}: counts and Newcombe's 95% hybrid "
+            "score interval for the difference. Never a test of equivalence.")
+        for row in o["per_question"] + [o["pooled"]]:
+            say(f"     {row['task']:22} {row['a'][0]}/{row['a'][1]} against {row['b'][0]}/{row['b'][1]}"
+                + (f", difference {row['difference']:+.2f}, interval {row['interval'][0]:+.3f} to "
+                   f"{row['interval'][1]:+.3f}" if row["interval"] else ", no interval: an arm has no runs"))
+
+    say("\n4. The held-out rewordings, by template: correct of the runs a key judged, asked, refused, opened median")
+    for arm, rows in m["held_out"].items():
+        say(f"  {arm}")
+        for template, r in rows.items():
+            correct = f"{r['correct']}/{r['scored']}" if r["keyed"] else "-"
+            say(f"     {template:22} {correct:>5}  asked {r['asked']}  refused {r['refused']}  "
+                f"opened {r['opened_median']:g}" + ("" if r["keyed"] else "  (no key)"))
+
+    s = m["secondary"]
+    say("\n5. Secondary and exploratory")
+    cs = s["count_two_readings"]
+    say("  a. The count with two readings, arm by key. The box's ask is one user turn.")
+    for arm, row in cs["table"].items():
+        say(f"     {arm:30} {row['runs']} runs: correct under the menu key {row['menu_key']}, "
+            f"under the buyable key {row['buyable_key']}; user turns {row['user_turns']}")
+    say(f"     The answers, for their declared reading to be coded by hand without seeing the arm "
+        f"({len(cs['sheet'])}; the arm of each id is in the JSON, coding_key):")
+    for row in cs["sheet"]:
+        say(f"       [{row['id']}] declared reading: ______  " + " ".join(row["answer"].split()))
+    say("  b. Asks, the box's and the agent's own, on the clear and the two-reading questions")
+    for arm, row in s["asks"].items():
+        say(f"     {arm:30} clear {row['clear']['asks']} of {row['clear']['runs']} runs, two readings "
+            f"{row['ambiguous']['asks']} of {row['ambiguous']['runs']}")
+    say("  c. The questions the block should not plan, with their rewordings")
+    for arm, row in s["declines"].items():
+        say(f"     {arm:30} {row['runs']} runs: refused {row['refused']}, asked {row['asked']}, planned "
+            f"{row['planned']}, sent without a plan {row['answered without a plan']}")
+    say("  d. The answer check replayed from the logs (replay_box), each run judged under the reading it answered")
+    for arm, row in s["answer_check"].items():
+        if row is None:
+            say(f"     {arm:30} no plan, so nothing to replay")
+            continue
+        say(f"     {arm:30} {row['runs']} of the {row['planned']} runs the box planned: wrong "
+            f"{row['wrong']}, refused {len(row['wrong_refused'])}; correct {row['correct']}, refused "
+            f"{len(row['correct_refused'])}; other {row['other']}, refused {len(row['other_refused'])}")
+        for name in ("not_reproduced", "decided_differently", "not_replayed"):
+            for text in row[name]:
+                say(f"       {name.replace('_', ' ')}: {text}")
+
+    names = list(m["primary"])
+    say("\n6. Sensitivity: the primary tests again, p (Holm p)")
+    say(f"     {'':44} " + " ".join(f"{name:>22}" for name in names))
+    for name, tests in m["sensitivity"].items():
+        say(f"     {name:44} " + " ".join(f"{p_text(t['p']) + ' (' + p_text(t['p_holm']) + ')':>22}"
+                                          for t in tests.values()))
+
+
+# ---------------------------------------------------------------------------
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -1295,7 +1900,14 @@ def main(argv: list[str] | None = None) -> int:
                         help="a protocol's question sets, as JSON (see `apply_sets`), or a "
                              "task file holding them under claim_sets; the first claim's by "
                              "default")
+    parser.add_argument("--protocol", type=pathlib.Path,
+                        help="a protocol file naming its arms, sets, design and primary tests, "
+                             "experiments/tasks/claim2_analysis.json for the second claim; the "
+                             "first claim's analysis by default")
     args = parser.parse_args(argv)
+    if args.sets and args.protocol:
+        parser.error("--sets is the first claim's analysis under other question sets; a protocol "
+                     "file names its own")
     if args.sets:
         apply_sets(read_sets(args.sets))
     manifest = None
@@ -1307,8 +1919,12 @@ def main(argv: list[str] | None = None) -> int:
     else:
         lines = [Line("folder", resolve(str(path))) for path in args.sources]
         target = args.json
-    result = analyse(lines, manifest)
-    print(render(result))
+    if args.protocol:
+        result = analyse_protocol(lines, manifest, args.protocol)
+        print(render_protocol(result))
+    else:
+        result = analyse(lines, manifest)
+        print(render(result))
     if target is not None:
         target.write_text(json.dumps(result, indent=2, default=str) + "\n")
         print(f"\nthe same figures as JSON: {target}")

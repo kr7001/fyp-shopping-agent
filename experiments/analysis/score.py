@@ -154,6 +154,17 @@ def readings_for(tasks_path: pathlib.Path) -> dict:
     return json.loads(sidecar.read_text()).get("readings", {})
 
 
+def two_readings_for(tasks_path: pathlib.Path) -> list[str] | None:
+    """The questions of a task file that have two readings, as its sidecar names them under
+    `two_readings` (the A+ market's, 22 October 2026, whose sidecar holds a buyable key for
+    every question, so being in it no longer says that a question has two). None for a
+    sidecar without the field, or no sidecar: there every question in it has two."""
+    sidecar = tasks_path.with_name(tasks_path.name.replace("tasks_", "readings_", 1))
+    if sidecar == tasks_path or not sidecar.exists():
+        return None
+    return json.loads(sidecar.read_text()).get("two_readings")
+
+
 # The reading every task's own key was written under, fixed before any run: "offer" means
 # in the menu, sold out or not. A sidecar holds the other readings and never this one.
 OWN_READING = "menu"

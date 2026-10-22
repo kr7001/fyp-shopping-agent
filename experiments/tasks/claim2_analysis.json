@@ -1,0 +1,59 @@
+{
+  "_about": [
+    "The second claim run's analysis, fixed on 22 October 2026 before any of its data exists, as the first claim's was before its run: docs/content/claim2-protocol.md, 'Arms' and 'Measures and analysis'. Read by claim.py --protocol experiments/tasks/claim2_analysis.json <the claim command's manifest>.",
+    "arms: each protocol arm by what its batches' payloads record, the retrieval instruction suite.arm_of names and the scripted user's reading under the box, with the suite flags that make it. Every arm runs with --max-steps 300 --clock 1800, which 'require' holds the runs to.",
+    "sets: question ids of the claim market's task file, which env/generate_aplus_tasks.py --rewordings writes. 'held_out' is no list: it is every task of that file with a 'template', the meaning-kept rewordings of experiments/tasks/paraphrases_v2.json, read by id and template only.",
+    "tests: the four primary tests, two-sided, Holm over the four. H1 and H4 are stratified exact tests of correct, by question and by template; H2 and H3 van Elteren's stratified exact rank test, by question, and H3 is reported on the agent's tokens beside its cost, outside Holm (the model parser's tokens are not recorded, its charge is in the cost).",
+    "design: the questions each arm asks, every round. 'templates' are the market's fifteen questions; the rewordings are asked under the block alone, since only H4 reads them. The number of rounds is the protocol's to fix from the dry run's estimate.",
+    "models: each its own result, never pooled. The ids are those the runs record (MODEL_NAME); a model the runs record that is not named here is analysed and said to be unnamed, and a model named here with no run is a problem."
+  ],
+  "protocol": "docs/content/claim2-protocol.md",
+  "version": 1,
+  "arms": {
+    "shipped": {"arm": "none", "reading": null,
+                "flags": "--max-steps 300 --clock 1800"},
+    "open everything (product)": {"arm": "exhaustive-product", "reading": null,
+                                  "flags": "--exhaustive --exhaustive-wording product --max-steps 300 --clock 1800"},
+    "the block (rules)": {"arm": "box", "reading": "menu",
+                          "flags": "--box --parser rules --reading menu --max-steps 300 --clock 1800"},
+    "the block (model)": {"arm": "box-model", "reading": "menu",
+                          "flags": "--box --parser model --reading menu --max-steps 300 --clock 1800"}
+  },
+  "require": {"max_steps": 300, "clock_s": 1800},
+  "models": ["deepseek/deepseek-v4-flash", "anthropic/claude-haiku-4.5"],
+  "sets": {
+    "control": ["tee-headline"],
+    "decline": ["decline-delivery", "decline-taste"],
+    "gated": ["tee-target-price", "tee-cheapest-target", "tee-all-stocked", "tee-count-stocked",
+              "tee-count-buyable", "tee-exists-under", "tee-top-3", "water-target-price",
+              "water-cheapest-target", "water-all-stocked", "water-count-buyable", "water-best-per-litre"],
+    "two_readings": ["tee-all-stocked", "tee-count-stocked", "water-all-stocked"],
+    "reading_independent": ["tee-target-price", "tee-cheapest-target", "tee-count-buyable",
+                            "tee-exists-under", "tee-top-3", "water-target-price",
+                            "water-cheapest-target", "water-count-buyable", "water-best-per-litre"],
+    "count_two_readings": "tee-count-stocked",
+    "held_out": "template"
+  },
+  "design": {
+    "rounds": [1, 2, 3],
+    "asks": {
+      "shipped": ["templates"],
+      "open everything (product)": ["gated"],
+      "the block (rules)": ["templates", "held_out"],
+      "the block (model)": ["templates", "held_out"]
+    }
+  },
+  "tests": {
+    "H1": {"measure": "correct", "a": "the block (model)", "b": "shipped", "on": "reading_independent",
+           "strata": "question"},
+    "H2": {"measure": "opened", "a": "the block (model)", "b": "open everything (product)", "on": "gated",
+           "strata": "question"},
+    "H3": {"measure": "cost", "a": "the block (model)", "b": "open everything (product)", "on": "gated",
+           "strata": "question", "also": "tokens_total"},
+    "H4": {"measure": "correct", "a": "the block (model)", "b": "the block (rules)", "on": "held_out",
+           "strata": "template"}
+  },
+  "against_open_everything": {"a": "the block (model)", "b": "open everything (product)", "on": "reading_independent"},
+  "sensitivity": ["without the two-reading questions", "distinct runs only", "with the voids included",
+                  "without the runs that saw a hidden price"]
+}
