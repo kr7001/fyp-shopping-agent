@@ -226,10 +226,8 @@ class Decide(unittest.TestCase):
         self.page = synthetic_page([31.40, 12.25, 19.50])
 
     def test_the_synthetic_market_is_nobodys(self):
-        sellers, prices = market_facts()
         for item in self.page.listings:
-            self.assertNotIn(item.seller, sellers)
-            self.assertNotIn(f"{item.advertised:.2f}", prices)
+            self.assertEqual(market_overlap(item.seller, item.url), [])
 
     def test_clear_questions_plan_and_ambiguous_ones_ask(self):
         for task_id, q in self.questions.items():
@@ -1631,8 +1629,33 @@ def answer_reads(source: str) -> list[str]:
     return found + sorted(n for n in names if n == "FIXTURES")
 
 
+def market_listings() -> dict[str, set[str]]:
+    """What makes a listing a generated market's: its seller, its address on the shop and its
+    SKU, from every fixture. A made-up page is nobody's when none of its listings is one of
+    these, by what it is (LESSONS 2). Until 22 October 2026 the made-up pages were held to
+    every market's prices too, and a price two markets can share by chance is not what a
+    listing is: the Larchmere fixture gave a variant the 14.85 of a made-up seller."""
+    found: dict[str, set[str]] = {"sellers": set(), "urls": set(), "skus": set()}
+    for fixture in paths.FIXTURES.glob("*.json"):
+        for family in json.loads(fixture.read_text())["families"]:
+            sku = family["parent_sku"].lower()
+            found["skus"].add(sku)
+            found["urls"].add(f"{BASE}/{sku}.html")
+            found["sellers"].add(family.get("seller") or family["name"].rsplit(" - ", 1)[-1])
+    return found
+
+
+def market_overlap(seller: str, url: str) -> list[str]:
+    """What of a made-up listing, its seller or its address, is a generated market's own."""
+    market = market_listings()
+    sku = url.rsplit("/", 1)[-1].lower().removesuffix(".html")
+    return ([f"seller {seller!r}"] if seller in market["sellers"] else []) + \
+           ([f"listing {url}"] if url in market["urls"] or sku in market["skus"] else [])
+
+
 def market_facts() -> tuple[set[str], set[str]]:
-    """Every seller and every price in every market this project has generated."""
+    """Every seller and every price in every market this project has generated, for the
+    checks that no seller or price is copied into the box's own code (`copied_facts`)."""
     sellers, prices = set(), set()
     for fixture in paths.FIXTURES.glob("*.json"):
         for family in json.loads(fixture.read_text())["families"]:

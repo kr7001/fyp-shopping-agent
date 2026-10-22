@@ -20,7 +20,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402
 import box  # noqa: E402
 import page  # noqa: E402
-from test_box import market_facts  # noqa: E402
+from test_box import market_listings, market_overlap  # noqa: E402
 
 BASE = "http://localhost:7770"
 
@@ -80,11 +80,9 @@ class Parser(unittest.TestCase):
         self.cards = [card(seller, amount, slug) for seller, amount, slug in CARDS]
 
     def test_the_synthetic_market_is_nobodys(self):
-        sellers, prices = market_facts()
-        for seller, amount, _ in CARDS:
+        for seller, _, slug in CARDS:
             with self.subTest(seller=seller):
-                self.assertNotIn(seller, sellers)
-                self.assertNotIn(f"{float(amount):.2f}", prices)
+                self.assertEqual(market_overlap(seller, f"{BASE}/{slug}"), [])
 
     def test_three_cards_parse_in_order(self):
         got = page.parse(results_page(self.cards, ONE_PAGE), "x")
@@ -205,10 +203,19 @@ class EveryPage(unittest.TestCase):
     the pager's next link, by either reader, and holds each page to its own toolbar."""
 
     def test_the_later_sellers_are_nobodys(self):
-        sellers, prices = market_facts()
-        for seller, amount, _ in LATER:
-            self.assertNotIn(seller, sellers)
-            self.assertNotIn(f"{float(amount):.2f}", prices)
+        # By what a market's listing is, its seller, its address or its SKU, never by a price,
+        # which two markets can share by chance (LESSONS 2): on 22 October 2026 the Larchmere
+        # fixture gave a variant 14.85, the price of a made-up seller here.
+        for seller, _, slug in LATER:
+            with self.subTest(seller=seller):
+                self.assertEqual(market_overlap(seller, f"{BASE}/{slug}"), [])
+        # Fires on a market's own listing, by its seller, its address or its SKU.
+        market = market_listings()
+        seller, url = sorted(market["sellers"])[0], sorted(market["urls"])[0]
+        self.assertEqual(market_overlap(seller, f"{BASE}/nobody.html"), [f"seller {seller!r}"])
+        self.assertEqual(market_overlap("Nobody", url), [f"listing {url}"])
+        self.assertEqual(market_overlap("Nobody", url.upper().replace("HTTP://LOCALHOST:7770", BASE)),
+                         [f"listing {url.upper().replace('HTTP://LOCALHOST:7770', BASE)}"])
 
     def test_the_pages_are_read_to_the_end_as_one_search(self):
         site = two_pages()

@@ -23,7 +23,7 @@ import form  # noqa: E402
 import page  # noqa: E402
 import replay_box  # noqa: E402
 from form import Filter  # noqa: E402
-from test_box import BASE, market_facts, openjiuwen_log  # noqa: E402
+from test_box import BASE, market_overlap, openjiuwen_log  # noqa: E402
 from test_model_parser import f, reply, stub  # noqa: E402
 
 URL = f"{BASE}/catalogsearch/result/?q=Example"
@@ -55,10 +55,8 @@ class TheProductScope(unittest.TestCase):
         self.page = two_products()
 
     def test_the_made_up_market_is_nobodys(self):
-        sellers, prices = market_facts()
-        for _, seller, price in LISTINGS:
-            self.assertNotIn(seller, sellers)
-            self.assertNotIn(f"{price:.2f}", prices)
+        for item in self.page.listings:
+            self.assertEqual(market_overlap(item.seller, item.url), [])
 
     def test_a_question_naming_one_product_is_planned_over_its_listings_alone(self):
         # Planted: `Scope.for_form` never applying, both plans ranged over all six.
