@@ -108,7 +108,15 @@ import targeting
 #      the model's readings otherwise. A negated universal is planned (primitives v9).
 #      Every decision records who read the question and both forms (`Parse`). With the
 #      rules, the default, every text is the same as under box v12
-VERSION = 13
+#   14 22 October 2026, the verifier's audit of 13. An availability ambiguity the model
+#      flags and the question's own words settle takes their reading, where 13 dropped it
+#      (normalisation v2). A model's form that contradicts the question's words, a figure,
+#      a comparison, a size, a direction, a negation, a seller, is not used. A lookup that
+#      names a seller or listing the page does not list is asked about, under either
+#      parser, where it was sent to the agent as "not on the results page the box read:
+#      find it in the results" (primitives v10); no question on its own market's page did.
+#      The page record keeps each listing's title. Every other rules text is unchanged
+VERSION = 14
 
 # Who may read the question for the box: the rules, the default, or a model through a call
 # the caller injects.
@@ -249,6 +257,30 @@ def results_url(question: str, required: bool = True) -> str | None:
     return found.group(0).rstrip(".,;:)")
 
 
+def unlisted(form: form_module.Form, question: str, page: page_module.Page | None) -> list[str]:
+    """The sellers and listing URLs a lookup names that the results page does not list, so
+    that no plan can open them (box v14, 22 October 2026, verifier finding): the form's own
+    names and URLs the page lacks, and the two names of a comparison frame ("between A and
+    B", `form.NAMED_PAIR`) the page lacks, since the rules keep the page's names a question
+    gives and drop the rest. Empty for any form that is not a lookup, and with no page."""
+    if form.quantifier != "lookup" or page is None:
+        return []
+    sellers = {item.seller.lower() for item in page.listings}
+    urls = {item.url for item in page.listings}
+    found: list[str] = []
+    named = form.filter("seller")
+    if named is not None and isinstance(named.value, tuple):
+        found += [name for name in named.value if name.lower() not in sellers]
+    links = form.filter("url")
+    if links is not None and isinstance(links.value, tuple):
+        found += [url for url in links.value if url not in urls]
+    pair = form_module.NAMED_PAIR.search(question)
+    if pair:
+        found += [name for name in (pair.group("a"), pair.group("b"))
+                  if name.lower() not in sellers and name.lower() not in {f.lower() for f in found}]
+    return found
+
+
 def decide(question: str, page: page_module.Page | None, reply: str | None = None,
            exhaust: bool = False, parser: str = "rules", call=None) -> Decision:
     """An ask, a refusal or a plan for one question.
@@ -302,8 +334,10 @@ def decide(question: str, page: page_module.Page | None, reply: str | None = Non
 
 def decide_by_rules(question: str, page: page_module.Page | None, reply: str | None = None,
                     exhaust: bool = False) -> Decision:
-    """`decide` with the rules reading the question. The body is box v12's own, unchanged,
-    so every text the rules render is the same bytes; `tests/test_box.py` pins them."""
+    """`decide` with the rules reading the question. The body is box v12's own, and every
+    text the rules render is the same bytes, `tests/test_box.py` pins them, but one: since
+    box v14 a lookup naming a seller or listing the page does not list is asked about
+    (`unlisted`) rather than sent with a sentence that was false."""
     asked = ambiguity.ask(question)
     reading_by = None
     if asked is not None:
@@ -340,6 +374,12 @@ def decide_by_rules(question: str, page: page_module.Page | None, reply: str | N
     if missing:
         return Decision(question=question, kind=None, ask=asked, reading=reading, query=None,
                         plan=None, page=page, form=form, refuse=form_module.refusal(missing),
+                        reading_by=reading_by, exhaust=exhaust)
+    names = unlisted(form, question, page)
+    if names:
+        return Decision(question=question, kind=None,
+                        ask=ambiguity.unlisted_ask(names, len(page.listings)),
+                        reading=reading, query=None, plan=None, page=page, form=form,
                         reading_by=reading_by, exhaust=exhaust)
     if "price limit" in form.unknowns:
         return Decision(question=question, kind=None,
@@ -416,19 +456,14 @@ def decide_by_model(question: str, page: page_module.Page | None, reply: str | N
     if read.failure is not None:
         return by_rules(read.failure, read.form)
     form = read.form
+    # The model's flag on the shop's own ambiguity is asked about with its word, where the
+    # lexicon has no ask of its own. One the question's own words settle never reaches
+    # here: normalisation applied their reading (`normalise.settle`, box v14), where box v13
+    # dropped the flag and the reading with it.
     asked = ambiguity.ask(question)
     flagged = normalise.availability_ambiguity(form)
     if asked is None and flagged is not None:
-        settled = ambiguity.CLEAR.search(question)
-        if settled is not None:
-            line = (f"ambiguity {flagged.word!r} dropped: the question settles it, "
-                    f"{settled.group(0)!r}")
-            evidence = dict(form.evidence)
-            normalise.note(evidence, "ambiguities", line)
-            form = dataclasses.replace(normalise.without_availability(form), evidence=evidence)
-            changes.append(line)
-        else:
-            asked = ambiguity.availability_ask(flagged.word)
+        asked = ambiguity.availability_ask(flagged.word)
     reading_by = None
     if asked is not None:
         answerable = [key for key in asked.readings
@@ -452,6 +487,9 @@ def decide_by_model(question: str, page: page_module.Page | None, reply: str | N
     missing = form_module.not_shown(form, page)
     if missing:
         return decided(form, ask=asked, refuse=form_module.refusal(missing), **closed)
+    names = unlisted(form, question, page)
+    if names:
+        return decided(form, ask=ambiguity.unlisted_ask(names, len(page.listings)), **closed)
     other = [entry for entry in form.ambiguities if not normalise.reads_availability(entry)]
     if other:
         return decided(form, ask=ambiguity.generic_ask(other[0].word, other[0].readings), **closed)

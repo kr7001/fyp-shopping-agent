@@ -135,14 +135,19 @@ def agent_model() -> str:
 def parser_call(model: str, key: str, charges: list):
     """The model parser's call for one run: one request to `model` through
     `parse_probe.call_model` (temperature 0, no retry), the provider's charge for it
-    appended to `charges`. A reply that is no completion raises as a failed call with its
-    charge kept, as the parse probe keeps it; a request that fails before any reply leaves
-    no charge, as in the probe. Either way the box then uses the rules' form and says why."""
+    appended to `charges`. A reply that is no completion raises as a failed call with the
+    charge its body states, if any. A request that fails otherwise, a timeout, an HTTP error
+    or a body that is not JSON, may or may not have been charged, and nothing says which, so
+    its charge is unknown, None, never $0 (verifier finding, 22 October 2026). Either way
+    the box then uses the rules' form and says why."""
     def call(prompt: str) -> str:
         try:
             text, cost = parse_probe.call_model(key, model, prompt)
         except parse_probe.UnexpectedReply as fault:
             charges.append(fault.cost)
+            raise
+        except Exception:
+            charges.append(None)
             raise
         charges.append(cost)
         return text
@@ -488,35 +493,41 @@ def unscorable(tasks: list[dict], spec: dict, args, readings: dict) -> list[str]
     """The tasks a batch could not score, each with the reading its runs would be scored
     under: the `--reading` reply where the box asks, the box's own reading where it takes
     one, the task's own key otherwise (`reading_answered`), wherever `score.under_reading`
-    has no key for it. Since 335dda6 (20 October 2026) a question with two readings
-    answered under one its sidecar lacks raises there, and the suite scores each run right
-    after it, so the batch would end after that run had been paid for. A slot the box
-    closes, an ask with no reply or a refusal, runs nothing and is scored by nothing.
+    has no key for it. A run answered under a reading with no key would be unscored, so the
+    batch is refused before anything is spent rather than paying for runs nothing judges. A
+    slot the box closes, an ask with no reply or a refusal, runs nothing and is scored by
+    nothing.
 
     Under the model parser (22 October 2026) the decision waits on each run's reply, so it
     cannot be known before anything is spent. The rules' decision is checked as above,
-    which costs nothing, and so is the one reading the model's form can lead the box to that
-    the rules' might not: a question with two readings answered as buyable, by the box or
-    by a reply. Between them every reading a run can be scored under has its key."""
+    which costs nothing. And on every question the model reads, any question with a page
+    that the rules do not bypass, the model can flag the in-the-menu-or-buyable ambiguity,
+    asked and answered by `--reading`, or lead the box to take the buyable reading itself,
+    whatever the word list makes of the question; so each such question with a key needs a
+    key under every reading other than its own that the run could then be answered under
+    (verifier finding, 22 October 2026: a model's ask was scored under the task's own key)."""
     missing = []
     rules = argparse.Namespace(**{**vars(args), "parser": "rules"})
+    model = getattr(args, "parser", "rules") == "model"
     for task in tasks:
         query, applied = build_query(task, spec, rules)
-        if query is None:
-            continue
-        reading = reading_answered(applied["box"], args.reading)
-        try:
-            scoring.under_reading(task, reading, readings)
-        except scoring.NoKeyForReading:
-            missing.append(f"{task['id']} under the {reading} reading")
-    if getattr(args, "parser", "rules") == "model":
-        for task in tasks:
+        if query is not None:
+            reading = reading_answered(applied["box"], args.reading)
             try:
-                scoring.under_reading(task, "buyable", readings)
+                scoring.under_reading(task, reading, readings)
             except scoring.NoKeyForReading:
-                found = f"{task['id']} under the buyable reading"
+                missing.append(f"{task['id']} under the {reading} reading")
+        read_by_model = model and applied["page"] is not None and not (applied["box"] or {}).get("bypassed")
+        if not read_by_model:
+            continue
+        for reading in sorted({"buyable", args.reading} - {None, scoring.OWN_READING}):
+            try:
+                scoring.under_reading(task, reading, readings)
+            except scoring.NoKeyForReading:
+                found = f"{task['id']} under the {reading} reading"
                 if found not in missing:
-                    missing.append(found + ", which the model parser's form can lead the box to")
+                    missing.append(f"{found}, which the model parser can lead any question it "
+                                   f"reads to")
     return missing
 
 
@@ -909,11 +920,11 @@ def main() -> int:
                     page=applied["page"], decision=applied["decision"])
 
             # Scored against the key for the reading the run answered under, the user's
-            # reply or the box's own choice, when the sidecar has one for this task, and
-            # against the task's own key otherwise.
+            # reply or the box's own choice, the sidecar's when that reading is not the
+            # task's own, and unscored, never the task's own key, when the sidecar has
+            # none (score.py v4; `unscorable` refuses such a batch before it runs).
             answered = reading_answered(applied["box"], args.reading)
-            verdict = scoring.score(scoring.under_reading(task, answered, readings),
-                                    answer, bool(result.get("ok")))
+            verdict = scoring.score_under(task, answered, readings, answer, bool(result.get("ok")))
             row = {
                 "task": task["id"], "family": task["family"], "gated": task["gated"],
                 "repeat": repeat,
@@ -1059,8 +1070,11 @@ def summarise(rows: list[dict]) -> dict:
         entry["total_cost"] = round(sum(entry["cost"]), 4) if entry["cost"] else None
 
     overall = collections.Counter(row["verdict"] for row in rows)
+    # The total is the known part. A run whose cost is unknown, a charge the provider did
+    # not state, is counted beside it rather than dropped without a word (22 October 2026).
     return {"by_task": by_task, "overall": dict(overall),
             "total_cost": round(sum(r["cost_usd"] for r in rows if r["cost_usd"]), 4),
+            "cost_unknown_runs": sum(1 for r in rows if r["cost_usd"] is None),
             "box": box_counts(rows)}
 
 
@@ -1114,7 +1128,12 @@ def print_summary(summary: dict, rows: list[dict]) -> None:
         counts = summary["box"]
         print(f"box: asked {counts['asked']}, refused {counts['refused']}, "
               f"bypassed {counts['bypassed']}, fallback {counts['fallback']}")
-    print("total cost: $", summary["total_cost"])
+    unknown = summary.get("cost_unknown_runs")
+    if unknown:
+        print("total cost: $", summary["total_cost"],
+              f"known; {unknown} runs whose cost is unknown are not in it")
+    else:
+        print("total cost: $", summary["total_cost"])
 
     gated = [r for r in rows if r["gated"] and r["actions"] is not None]
     correct = [r["actions"] for r in gated if r["verdict"] == "correct"]

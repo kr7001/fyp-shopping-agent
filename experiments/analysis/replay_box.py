@@ -68,6 +68,24 @@ def stored_decision(row: dict) -> box_module.Decision:
                                bypass=bool(record.get("bypassed")), exhaust=exhaust)
 
 
+def parsed_by(record: dict) -> dict:
+    """How the run's question is read again today: by the rules, as every batch before 22
+    October 2026 was, or, for a run made under the model parser, by the model parser with
+    the run's own stored reply as its call, so the decision is made again with no call
+    (LESSONS 29). A run whose call failed has no reply, and fails again the same way."""
+    parse = record.get("parse") or {}
+    if parse.get("parser") != "model":
+        return {}
+    stored = parse.get("reply")
+
+    def call(prompt: str) -> str:
+        if stored is None:
+            raise RuntimeError("the stored run's parse call failed, so it holds no reply")
+        return stored
+
+    return {"parser": "model", "call": call}
+
+
 def first_difference(stored: str | None, today: str | None) -> str:
     """The first line where two texts differ, both sides quoted from just before the first
     character that differs, for a text that should have reproduced and did not."""
@@ -142,7 +160,8 @@ def replay(batch: pathlib.Path) -> list[dict]:
         differs = reproduction(decision, record)
         question = tasks[row["task"]]["query"].format(base=spec["base_url"])
         reply = row.get("reading") or suite.get("reading")
-        today = box_module.decide(question, decision.page, reply=reply, exhaust=decision.exhaust)
+        today = box_module.decide(question, decision.page, reply=reply, exhaust=decision.exhaust,
+                                  **parsed_by(record))
         status, change = compared_today(today, record)
         verdict = box_module.check(decision, answer, batch / row["log"])
         rescored = verify_cells.rescore(tasks[row["task"]], answer,

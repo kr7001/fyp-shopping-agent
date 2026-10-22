@@ -17,7 +17,6 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402,F401  (puts box/ on the path)
-import ambiguity  # noqa: E402  (which questions have two readings, by the box's own rule)
 
 # Bumped when a rule changes a verdict or a kind of key is added. Recorded in every suite
 # payload as `scorer_version` since 14 October 2026; a batch without the field was scored
@@ -36,7 +35,12 @@ import ambiguity  # noqa: E402  (which questions have two readings, by the box's
 #      out of answers and showed as "control correct 0 of 1"). Replayed over every stored
 #      run, that one verdict changes, failed to unscored; the batch's suite.json keeps the
 #      stored verdict until it is rescored
-VERSION = 3
+#   4  22 October 2026, from the verifier's audit of the model's front door. The key a run
+#      is scored under is the one for the reading its own box record holds, and a run
+#      answered under a reading its task file has no key for is unscored, with the reason,
+#      never scored under the task's own key (`under_reading`, `score_under`). Re-scored
+#      over every stored run that day, no verdict changes
+VERSION = 4
 
 # Phrases that mean the agent declined rather than answered. Kept narrow on
 # purpose: "not" alone is far too broad, "could not determine" is not.
@@ -101,26 +105,43 @@ class NoKeyForReading(ValueError):
 
 
 def under_reading(task: dict, reading: str | None, readings: dict) -> dict:
-    """The task with the answer key for this reading, or its own key when the reading has
-    none for it, so a question that was never ambiguous is scored as before. `reading` is
-    the one the run answered under: the user's reply to the box's question, or the reading
-    the box took itself when the other had no answer on the shop (since 20 Oct 2026 the
-    row carries it as `reading` with `reading_by`).
+    """The task with the answer key for the reading the run was answered under.
 
-    Since 20 October 2026 a question with two readings, by the box's own rule
-    (`ambiguity.ask`), answered under a reading other than its own, must have that
-    reading's key in the sidecar, or this raises. Until then it fell back to the task's own
-    key without a word, so a buyable batch on a file whose sidecar lacked the entry, or had
-    no sidecar, would have been scored under the menu key (verifier's logic audit). A
-    question with one reading keeps its own key whatever reading its batch ran under, as
-    the stored batches score their clear questions."""
-    expect = (readings.get(reading) or {}).get(task["id"]) if reading else None
+    `reading` is what the box did, read from the run's own box record: the reading its
+    record holds, the user's reply to an ask it put or the reading it took itself, and None
+    when it applied none (`suite.reading_answered`, `verify_cells.run_reading`). Never a
+    batch's `--reading` flag, which is a reply only where the box asked, and never the word
+    list's guess at whether the question has two readings. No reading, and the menu reading
+    every task's own key was written under (`OWN_READING`), take the task's own key, as does
+    a question with no key at all. Any other reading takes the sidecar's key for it, and
+    with none there the run cannot be scored: this raises, and never falls back to the
+    task's own key, since the question the agent was sent was not the task's question.
+
+    Until 20 October 2026 such a reading fell back to the task's own key without a word;
+    from then until 22 October it raised only on a question the word list (`ambiguity.ask`)
+    reads two ways, so a model's ask on a question the word list reads as clear, answered
+    as buyable, was scored under the menu key (verifier finding, 22 October 2026: a correct
+    7 for "is size M an option" was scored wrong against the menu's 10). Re-scored over
+    every stored run on 22 October 2026, no verdict changes: every stored run answered
+    under the buyable reading is on a question the sidecar holds a key for."""
+    if reading in (None, OWN_READING) or task["expect"].get("kind") == "none":
+        return task
+    expect = (readings.get(reading) or {}).get(task["id"])
     if expect:
         return {**task, "expect": expect}
-    if reading not in (None, OWN_READING) and ambiguity.ask(task["query"]):
-        raise NoKeyForReading(f"{task['id']} has two readings and was answered under "
-                              f"{reading!r}, but its readings sidecar has no key for it")
-    return task
+    raise NoKeyForReading(f"{task['id']} was answered under the {reading!r} reading, and its "
+                          f"readings sidecar has no key for that reading")
+
+
+def score_under(task: dict, reading: str | None, readings: dict, answer: str, ok: bool) -> dict:
+    """A run's verdict under the key for the reading it was answered under, or "unscored",
+    with the reason, when its task file has no key for that reading (22 October 2026)."""
+    try:
+        keyed = under_reading(task, reading, readings)
+    except NoKeyForReading as fault:
+        return {"verdict": "unscored", "why": f"no answer key for this run: {fault}",
+                "prices": prices_in(answer or "")}
+    return score(keyed, answer, ok)
 
 
 def score(task: dict, answer: str, ok: bool) -> dict:

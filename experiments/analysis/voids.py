@@ -237,6 +237,13 @@ def rerun_flags(folder: pathlib.Path) -> str:
     for name in ("reading", "policy", "confidence"):
         if payload.get(name) not in (None, "off"):
             flags.append(f"--{name} {payload[name]}")
+    # The parser and its model are part of the arm since 22 October 2026 (box v13), so a
+    # re-run of a model-parser run is one too (LESSONS 29). A batch without the field was
+    # read by the rules, the default, which needs no flag.
+    if payload.get("parser") == "model":
+        flags.append("--parser model")
+        if payload.get("parser_model"):
+            flags.append(f"--parser-model {payload['parser_model']}")
     if payload.get("scaffold") == "naive":
         flags.append("--scaffold naive")
     probes = {json.loads(p.read_text()).get("probe") for p in folder.glob("*.json") if p.name != "suite.json"}

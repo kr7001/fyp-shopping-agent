@@ -306,10 +306,15 @@ def parse_manifest(text: str) -> Manifest:
 
 
 def intended(args: str) -> tuple[str, str | None, list[tuple[str, int]]]:
-    """What a batch line asked for, from its arguments: the arm, the reading, the slots."""
+    """What a batch line asked for, from its arguments: the arm, the reading, the slots. The
+    parser is part of the box's arm since 22 October 2026, named as `suite.arm_of` names it
+    ("box-model", "box-exhaust-model"), so a line under the model parser never stands for
+    a batch of the box under the rules (LESSONS 29)."""
     named = flags(args.split())
     arm = ("box-exhaust" if "box-exhaust" in named else "box" if "box" in named
            else "exhaustive" if "exhaustive" in named else "none")
+    if arm in ("box", "box-exhaust") and (named.get("parser") or ["rules"])[0] == "model":
+        arm += "-model"
     reading = (named.get("reading") or [None])[0]
     try:
         start = int((named.get("repeat-start") or ["1"])[0])

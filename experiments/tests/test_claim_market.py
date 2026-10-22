@@ -529,14 +529,20 @@ class ReadingsRefusal(unittest.TestCase):
                 with self.assertRaises(score.NoKeyForReading):
                     score.under_reading(self.by["apparel-all-stocked"], "buyable", readings)
 
-    def test_it_stays_quiet_on_the_tasks_own_reading_and_on_clear_questions(self):
+    def test_it_stays_quiet_on_the_tasks_own_reading_and_fires_on_clear_questions_too(self):
         stocked = self.by["apparel-count-stocked"]
         self.assertIs(score.under_reading(stocked, "menu", {}), stocked)
         self.assertIs(score.under_reading(stocked, None, {}), stocked)
+        # Since score.py v4 (22 October 2026) a clear question answered under the buyable
+        # reading needs its key too: the reading is the run's, taken from what the box did,
+        # and a model's ask can put it on a question the word list reads as clear. Until
+        # then these fell back to their own keys (verifier finding).
         for task_id in ("apparel-headline", "apparel-target-price", "apparel-count-buyable",
                         "apparel-exists-under-24", "apparel-named-pair"):
             with self.subTest(task=task_id):
-                self.assertIs(score.under_reading(self.by[task_id], "buyable", {}), self.by[task_id])
+                with self.assertRaises(score.NoKeyForReading):
+                    score.under_reading(self.by[task_id], "buyable", {})
+                self.assertIs(score.under_reading(self.by[task_id], None, {}), self.by[task_id])
 
     def test_the_buyable_count_comes_from_the_runs_own_sidecar(self):
         run = {"task": "apparel-count-stocked", "answer": "7 listings", "ok": True,

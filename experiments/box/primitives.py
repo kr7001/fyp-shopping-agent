@@ -76,7 +76,11 @@ import targeting
 #      in its own text (`NEGATED_REFUTATION`), checked by the counterexample check turned
 #      over (`Counterexample.negated_check`), with its stop sentences for the box without
 #      its stop rule. Every other text and check is unchanged
-VERSION = 9
+#  10  22 October 2026, the verifier's audit of 9. A lookup no longer sends a seller the
+#      page does not list as "not on the results page the box read: find it in the results",
+#      which was false; the box asks the user instead (`lookup_text`, `box.unlisted`). No
+#      stored run and no question on its own market's page was sent that text
+VERSION = 10
 
 # The same hazard as every v1 bound strategy: a figure derived from a bound is not a price.
 QUARANTINE = targeting.QUARANTINE
@@ -367,14 +371,19 @@ NEGATED_REFUTATION = (
 
 
 def lookup_text(form: form_module.Form, page: page_module.Page) -> str:
+    """The lookup's text: each named listing with its URL. A listing the page does not list
+    has no text: the box asks the user about it before it plans (`box.unlisted`, primitives
+    v10). Until 22 October 2026 it was sent as "not on the results page the box read: find it
+    in the results", which was false, since the box reads the whole page (verifier finding)."""
     named = named_listings(form, page)
     if not named:
         raise ValueError("a lookup names no listing")
+    if any(url is None for _, url in named):
+        raise ValueError("a lookup names a listing the results page does not list; the box "
+                         "asks about it before planning")
     lines = [f"The question is about {len(named)} named "
              f"listing{'s' if len(named) != 1 else ''}. Open each of them and nothing else:"]
-    lines += [f"- {label}, {url}" if url else
-              f"- {label}, not on the results page the box read: find it in the results"
-              for label, url in named]
+    lines += [f"- {label}, {url}" for label, url in named]
     lines += [f"In each one, {FilterModifier.instruction(form, page)}",
               "Do not skip any of them: the question is about exactly these, so each has to "
               "be read, and opening others cannot change the answer.",

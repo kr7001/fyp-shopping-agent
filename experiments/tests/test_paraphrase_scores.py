@@ -309,14 +309,23 @@ class TheRealRulesHalf(unittest.TestCase):
             with self.subTest(tier=tier):
                 self.assertEqual(totals["model"][tier],
                                  totals["rules"][tier] + totals["model_only"][tier] - totals["rules_only"][tier])
-        # Failing verification among the 24: 5's added colour filter (the shop shows no
+        # Failing the box's gate among the 24: 5's added colour filter (the shop shows no
         # colour), 6's reply that is no form, and 24's form, the expected one, since the shop
-        # shows no delivery time. Among the six 25's fails too. 7's call failed, and 27's,
-        # one of the six. Counted over all thirty these would read 4 and 2.
+        # shows no delivery time. Since normalisation v2 (22 October 2026) the gate also
+        # refuses a form that contradicts the question's own words, and the planted replies
+        # are the templates' forms given for reworded questions, so three more: 4's planted
+        # dearest, where its words say "best price"; 11's universal, which drops the
+        # paraphrase's "doesn't"; and 1's results-page form, which lacks the "listed" the
+        # rules read in "the lowest listed price" as the menu, a reading of theirs the gate
+        # holds every model form to, so the rules decide that one, as they did before the
+        # model parser. 7's call failed, and 27's, one of the six.
         kept = self.found["meaning_kept"]
-        self.assertEqual((kept["model_forms_failing_verification"], kept["calls_failed"]), (3, 1))
+        self.assertEqual((kept["model_forms_failing_verification"], kept["calls_failed"]), (6, 1))
         self.assertEqual(self.result["calls_failed"], 2)
         self.assertEqual(self.found["problems"], [])
+        refused = sorted(row["id"] for row in self.result["rows"]
+                         if row["model_problems"] and row["id"] not in DIFFER)
+        self.assertEqual(refused, [1, 4, 5, 6, 11, 24])
 
     def test_the_six_listed_with_why(self):
         differ = self.found["meaning_differs"]["rows"]

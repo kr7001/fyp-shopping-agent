@@ -52,7 +52,7 @@ NEXT = re.compile(r'class="action\s+next"')
 @dataclasses.dataclass(frozen=True)
 class Listing:
     seller: str
-    title: str
+    title: str | None   # None only for a listing read back from a record that kept no title
     url: str
     advertised: float   # the price the card shows, the cheapest option the listing has
 
@@ -66,11 +66,13 @@ class Page:
 
     def record(self) -> dict:
         """What the box read, for the run record, so the verifier can check it against
-        the live shop."""
+        the live shop. Each listing's title since 22 October 2026, so the model parser's
+        title normalisation can be replayed from the record; null in a page read back from
+        an older record, which kept none."""
         return {"url": self.url, "count": len(self.listings), "total": self.total,
                 "next_page": self.next_page,
                 "listings": [{"seller": item.seller, "advertised": item.advertised,
-                              "url": item.url} for item in self.listings]}
+                              "url": item.url, "title": item.title} for item in self.listings]}
 
     def by_price(self) -> list[Listing]:
         """Cheapest advertised first, the order every bound strategy opens listings in."""
@@ -79,9 +81,11 @@ class Page:
 
 def from_record(data: dict) -> Page:
     """The page back from the record `Page.record` wrote into a run record, so a stored
-    run's check can be replayed on the page the box read (20 October 2026). The record keeps
-    no title, so each listing's title is its seller here, which no plan reads."""
-    listings = [Listing(seller=item["seller"], title=item["seller"], url=item["url"],
+    run's check can be replayed on the page the box read (20 October 2026). A record written
+    before 22 October 2026 kept no title, and its listings come back with none, None, where
+    until then they took their seller's name; no plan reads a title, and the model parser's
+    title normalisation knows there is none to read (`normalise.titles_kept`)."""
+    listings = [Listing(seller=item["seller"], title=item.get("title"), url=item["url"],
                         advertised=float(item["advertised"])) for item in data["listings"]]
     return Page(url=data["url"], listings=listings, total=data.get("total"),
                 next_page=bool(data.get("next_page")))

@@ -156,6 +156,21 @@ def generic_ask(word: str, readings: tuple[str, ...]) -> Ask:
     return Ask(verb=word, text=GENERIC.format(word=word, readings=listed), readings={})
 
 
+# The ask for a seller or a listing the question names and the results page does not list
+# (box v14, 22 October 2026, verifier finding). Until then the plan told the agent the
+# listing was "not on the results page the box read: find it in the results", which was
+# false, since the box reads the whole page. No reading a scripted reply could choose, so the
+# ask stands as the outcome.
+UNLISTED = ("Your question names {names}, which the results page does not list among its "
+            "{count} listings. Which of them do you mean?")
+
+
+def unlisted_ask(names: list[str], count: int) -> Ask:
+    """The question put to the user about the names the page does not list."""
+    listed = " and ".join(names) if len(names) < 3 else ", ".join(names[:-1]) + f" and {names[-1]}"
+    return Ask(verb=names[0], text=UNLISTED.format(names=listed, count=count), readings={})
+
+
 def with_reading(question: str, asked: Ask, reading: str) -> str:
     """The question with the chosen reading written into it, so the agent sees no ambiguity."""
     if reading not in asked.readings:

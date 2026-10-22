@@ -200,6 +200,18 @@ def short(run: dict) -> str:
     return f"{run['task'].replace('apparel-', '')}-{run['repeat']}"
 
 
+def charges(folder: pathlib.Path) -> float:
+    """What one batch was charged, section G's figure: every run record's cost, and under the
+    model parser the parse of each slot the box closed, an ask or a refusal, which ran no
+    agent and so has no record; its row holds the charge (`verify_cells.closed_parse_charges`,
+    22 October 2026). None of section G's batches has such a slot, so their totals are as
+    they were."""
+    records = [json.loads(p.read_text()) for p in folder.glob("apparel-*.json")]
+    payload = json.loads((folder / "suite.json").read_text())
+    return (sum(r.get("cost_usd") or 0 for r in records)
+            + sum(charge or 0 for charge in verify_cells.closed_parse_charges(payload)))
+
+
 def account_usage() -> float | None:
     """Lifetime spend on the OpenRouter key, or None if it cannot be read."""
     try:
@@ -352,7 +364,7 @@ def facts(account: bool = True) -> dict:
         records = [json.loads(p.read_text()) for p in (RESULTS / batch).glob("apparel-*.json")]
         befores = [r["spend_before_usd"] for r in records if r.get("spend_before_usd")]
         first[batch] = min(befores) if befores else None
-        totals[batch] = sum(r.get("cost_usd") or 0 for r in records)
+        totals[batch] = charges(RESULTS / batch)
     now = account_usage() if account else None
     for i, batch in enumerate(order):
         nxt = first[order[i + 1]] if i + 1 < len(order) else now

@@ -274,6 +274,32 @@ class BoxRowsInTheReport(unittest.TestCase):
         self.assertEqual(len(result["problems"]), 1)
         self.assertIn("box counts", result["problems"][0])
 
+    def test_the_parse_of_a_slot_the_box_closed_is_in_the_cost(self):
+        # Under the model parser an ask or a refusal ran no agent but paid for its parse,
+        # which only its row holds, so `make verify` and section G missed it (verifier
+        # finding, 22 October 2026). Planted: `closed_parse_charges` returning nothing, the
+        # charged figures below came out as the records' alone.
+        text, result = self.report()
+        records = sum(r["cost"] or 0 for r in self.runs)
+        self.assertAlmostEqual(result["cost"], records)
+        line = next(l for l in text.splitlines() if l.startswith("cost "))
+        self.assertNotIn("slots the box closed", line)
+        charged = json.loads(json.dumps(self.suite))
+        closed = [row for row in charged["rows"] if row["verdict"] in ("asked", "refused")]
+        closed[0]["parse_cost_usd"], closed[1]["parse_cost_usd"] = 0.003, None
+        text, result = self.report(charged)
+        self.assertAlmostEqual(result["cost"], records + 0.003)
+        self.assertIn("; it holds the parse of 2 slots the box closed, $0.0030, 1 of them unknown\n", text)
+        # Section G reads each batch's charges the same way.
+        self.assertAlmostEqual(cell_facts.charges(self.batch),
+                               sum(json.loads(p.read_text()).get("cost_usd") or 0
+                                   for p in self.batch.glob("apparel-*.json")))
+        with tempfile.TemporaryDirectory() as tmp:
+            copy = pathlib.Path(tmp) / "scratch"
+            shutil.copytree(self.batch, copy)
+            (copy / "suite.json").write_text(json.dumps(charged))
+            self.assertAlmostEqual(cell_facts.charges(copy), cell_facts.charges(self.batch) + 0.003)
+
     def test_a_batch_without_box_counts_prints_none(self):
         # The pilot ran under box v1, whose payload has no counts; its report is as before.
         without = json.loads(json.dumps(self.suite))

@@ -80,3 +80,9 @@ Who enforces: **C** coder, **V** verifier, **I** insights, **G** the workbench g
 | # | What happened | Rule | Who |
 |---|---|---|---|
 | 39 | A fault planted by editing a file was reported as not caught. Two plants in `suite.py`, each 38 bytes shorter than the original and written within the same second, shared one stale `.pyc`, so the tests ran the earlier plant instead of the one being checked | Plant a fault by editing a file only with a fresh bytecode cache for every run (`PYTHONPYCACHEPREFIX` set to an empty folder), and check afterwards that the file is restored byte for byte | C, V |
+
+## Scoring a run, from the verifier's audit of the model's front door, 22 October 2026
+
+| # | What happened | Rule | Who |
+|---|---|---|---|
+| 40 | The scorer chose a run's answer key by the word list's guess at whether the question had two readings, not by what the box did on the run. Under the model parser a model's ask on a question the word list read as clear, answered as buyable, would have been scored under the menu key: a correct 7 marked wrong against the menu's 10. Caught before any paid run | Score a run under the reading its own box record holds, never a guess about the question or the batch's flag. With no key for that reading the run is unscored, never scored under another key, and the pre-run check refuses a batch that could produce one | C, V |

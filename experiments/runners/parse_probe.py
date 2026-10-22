@@ -175,8 +175,10 @@ def agree(rules: form.Form, model: form.Form) -> bool:
     parse has five such rows, a brand as a title filter among them, and they are what the
     DIFF lines are printed for, to be read by hand.
     """
-    if (rules.quantifier, rules.objective, rules.population, rules.k) != \
-            (model.quantifier, model.objective, model.population, model.k):
+    # The negation is part of the quantifier since comparison v2 (22 October 2026): "is
+    # there a listing without M" is not "does every listing have M" (verifier finding).
+    if (rules.quantifier, rules.negated, rules.objective, rules.population, rules.k) != \
+            (model.quantifier, model.negated, model.objective, model.population, model.k):
         return False
     stated = {(f.attribute, f.op): comparable(f.value) for f in model.filters}
     for condition in rules.filters:
@@ -297,7 +299,20 @@ def report(rows: list[dict], model: str, key: str, before: float | None) -> path
 #
 #   1  20 October 2026. The expected form is the rules' form of the template on the stored
 #      page, read in the census table's four tiers, and the outcome in the task files' words
-COMPARISON_VERSION = 1
+#   2  22 October 2026, the verifier's audit. The negation is compared with the quantifier,
+#      in every tier and in `agree`: a negated universal reaches no tier against a form that
+#      is not negated. A file made under 1 holds no negated form, so its tiers are the same
+#      read again under 2 (`paraphrase_scores.scores` checks that before it reads one)
+COMPARISON_VERSION = 2
+# Comparisons a file may have been made under and still be read today, each because no
+# figure changes for a file made under it: its stored tiers are re-derived under today's
+# comparison and must all agree.
+READ_AGAIN = (1,)
+
+# Paraphrase files the model parser was tuned on, and what was tuned on each. A probe of one
+# is in sample whatever the version, and says so with every figure (LESSONS 19).
+IN_SAMPLE = {"paraphrases_v1.json": "prompt version 2 and normalisation versions 1 and 2 were "
+                                    "written from this file's model failures, on 22 October 2026"}
 
 # The census whose charge per call prices a probe of other questions: one call each, text
 # only, and the same prompt but for the question and the op "<", which form v9 added to the
@@ -323,7 +338,7 @@ def tiers(expected: form.Form, got: form.Form | None) -> dict[str, bool]:
     """Which tiers `got` reaches against `expected`. No form reaches none."""
     if got is None:
         return dict.fromkeys(TIERS, False)
-    quantifier = got.quantifier == expected.quantifier
+    quantifier = (got.quantifier, got.negated) == (expected.quantifier, expected.negated)
     objective = quantifier and got.objective == expected.objective
     population = objective and got.population == expected.population
     return {"quantifier": quantifier, "objective": objective, "population": population,
@@ -376,9 +391,9 @@ def outcome(question: str, page: page_module.Page, reply: str | None = None) -> 
     With `reply`, a model's reply already paid for, the box decides under the model parser
     with that reply as its call, so no second call is made (22 October 2026), and the
     outcome says whose form it used and why the rules' when it was. An ask that offers no
-    reading is "other" when the form it was asked from holds a word the model reads two
-    ways other than the shop's own, which the box asks about before a price limit, and
-    "price limit" otherwise."""
+    reading is "unlisted" when the form names a seller or listing the page does not list,
+    "other" when the form holds a word the model reads two ways other than the shop's own,
+    and "price limit" otherwise, the order in which the box asks them."""
     parsed = {} if reply is None else {"parser": "model", "call": lambda prompt: reply}
     try:
         decision = box.decide(question, page, **parsed)
@@ -392,11 +407,14 @@ def outcome(question: str, page: page_module.Page, reply: str | None = None) -> 
     elif decision.refuse:
         found.update(outcome="refuse", detail=decision.refuse)
     elif decision.query is None:
-        # The box asks about another word before it asks for a price limit (`box.decide`).
+        # The box asks about a seller or listing the page does not list, then about another
+        # word, then for a price limit, in that order (`box.decide`, box v14).
+        unlisted = decision.form is not None and bool(box.unlisted(decision.form, decision.question, page))
         other = decision.form is not None and any(
             not normalise.reads_availability(entry) for entry in decision.form.ambiguities)
         found.update(outcome="ask", detail=decision.ask.text,
-                     ask="reading" if decision.ask.readings else "other" if other else "price limit")
+                     ask="reading" if decision.ask.readings else "unlisted" if unlisted
+                     else "other" if other else "price limit")
         if decision.ask.readings:
             try:
                 found["kind"] = box.decide(question, page, reply="menu", **parsed).kind
@@ -429,6 +447,8 @@ def outcome_words(found: dict) -> str:
     if found["outcome"] == "ask":
         if found["ask"] == "other":
             return "ask about another reading the model found"
+        if found["ask"] == "unlisted":
+            return "ask about a seller or listing the page does not list"
         return ("ask for a price limit" if found["ask"] == "price limit"
                 else f"ask for a reading, then {found['kind']}")
     if found["outcome"] in ("plan", "fallback"):
@@ -612,10 +632,27 @@ def report_questions(rows: list[dict], path: pathlib.Path, spec: dict, page: pag
         "box_version": box.VERSION, "primitives_version": primitives.VERSION,
         "planner_version": planner.VERSION, "strategy_version": targeting.VERSION,
         "commit": repository_commit(), "page_from": spec["page_from"], "page": page.record(),
+        "limits": limits(path, page), "in_sample": path.name in IN_SAMPLE,
         "spend_usd": spent, "charged_usd": charged_total, "calls_failed": failed,
         "totals": totals, "rows": rows}, indent=2) + "\n")
     print(f"written: {out}")
     return out
+
+
+def limits(path: pathlib.Path, page: page_module.Page) -> list[str]:
+    """What a probe of this file on this page cannot show, printed before its figures and
+    kept in its result file: that the parser was tuned on the file, so its figures are
+    development evidence only (LESSONS 19), and that the stored page kept no titles, so a
+    title filter is known to restate the page only by the search word (22 October 2026)."""
+    found = []
+    if path.name in IN_SAMPLE:
+        found.append(f"in sample: {IN_SAMPLE[path.name]}, so these figures are development "
+                     f"evidence only, never a claim (LESSONS 19)")
+    if not normalise.titles_kept(page):
+        found.append("the stored page record keeps no listing titles, so a title filter is "
+                     "dropped as restating the page only when it restates the search word, "
+                     "where the box on a live page would also drop the product's own words")
+    return found
 
 
 def probe_questions(path: pathlib.Path, model: str, dry_run: bool) -> int:
@@ -629,6 +666,8 @@ def probe_questions(path: pathlib.Path, model: str, dry_run: bool) -> int:
         if named != page.url:
             raise ValueError(f"paraphrase {entry['id']} names {named}, not the stored page {page.url}")
     halves = [rules_half(entry, page) for entry in entries]
+    for line in limits(path, page):
+        print(f"note: {line}")
     if dry_run:
         for n, (row, _) in enumerate(halves, 1):
             print(f"=== prompt {n} of {len(halves)}, paraphrase {row['id']} of {row['template']}")

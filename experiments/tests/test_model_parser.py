@@ -233,8 +233,13 @@ class PromptV2(unittest.TestCase):
         # Each example's form, given to the box as the reply to its own question on a page
         # with the example's sellers, is used as written, unchanged, and gives the outcome
         # the example is there to show: a plan of its kind, an ask, or, for the attribute
-        # the shop does not show, the rules' refusal.
+        # the shop does not show, the rules' refusal. The page also lists the jacket the
+        # URL example names, since a lookup of a listing the page does not list is asked
+        # about (box v14, `box.unlisted`).
         page_ = named_page()
+        jacket = page.Listing(seller="Quarry Street Outfitters", title="Example Jacket - Quarry Street Outfitters",
+                              url="http://localhost:7770/example-jacket-04.html", advertised=48.00)
+        page_ = dataclasses.replace(page_, listings=page_.listings + [jacket], total=page_.total + 1)
         asks = {"Is size L offered by every Example listing?": "reading",
                 "How many Example listings carry an extra large?": "reading",
                 "Find me an inexpensive Example jacket in size M.": "price limit",
@@ -518,13 +523,22 @@ class Checks(unittest.TestCase):
             with self.subTest(fault=label):
                 found = self.problems(question, **fields)
                 self.assertTrue(any(words in p for p in found), found)
-        # Quiet: the plans the rules make, written by a model.
-        for fields in (dict(filters=[size]), dict(filters=[size, f("availability", "=", "buyable")]),
-                       dict(quantifier="exists", filters=[size, f("price", "<", 20)]),
-                       dict(quantifier="lookup", filters=[f("seller", "in", ["Mellow Fields"]), size]),
-                       dict(objective="advertised price")):
+        # Quiet: the plans the rules make, written by a model, each for a question that says
+        # what the form holds (since normalisation v2 a form must not state what its question
+        # does not: `Conflicts`).
+        for asked, fields in (
+                (question, dict(filters=[size])),
+                (GO + "Which seller is cheapest for size M in stock?",
+                 dict(filters=[size, f("availability", "=", "buyable")])),
+                (GO + "Is there any seller under $20 for size M?",
+                 dict(quantifier="exists", filters=[size, f("price", "<", 20)])),
+                (GO + "Is Mellow Fields cheaper than Harbour Lane Goods for size M?",
+                 dict(quantifier="lookup", filters=[f("seller", "in", ["Mellow Fields", "Harbour Lane Goods"]),
+                                                    size])),
+                (GO + "Which listing advertises the lowest price on the results page?",
+                 dict(objective="advertised price"))):
             with self.subTest(sound=fields):
-                self.assertEqual(self.problems(question, **fields), [])
+                self.assertEqual(self.problems(asked, **fields), [])
 
     def test_the_rules_own_forms_pass_every_check(self):
         # The checks hold a model's form to what the rules' forms already are: every form
@@ -613,14 +627,26 @@ class ModelPath(unittest.TestCase):
         # A review question has no text without its stop rule, and `compose` refuses it
         # there; under the model parser that is the model's form failing, so the rules
         # decide, rather than the batch stopping after the parse was paid for.
+        # The question is one the rules read as a survey of the listings, not of reviews, so
+        # their form has a text under the arm.
+        question = ("Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . "
+                    "Does the Thornwood tee shrink in the wash?")
         reviews = stub(reply(quantifier="exists", objective="mention", population="reviews",
-                             filters=[f("review text", "contains", "leaks")]))
-        decision = box.decide(MEDIUM, self.thornwood, parser="model", call=reviews, exhaust=True)
-        self.assertEqual((decision.parse.used, decision.kind, decision.plan.exhaust), ("rules", "total_bound", True))
+                             filters=[f("review text", "contains", "shrink")]))
+        decision = box.decide(question, self.thornwood, parser="model", call=reviews, exhaust=True)
+        self.assertEqual((decision.parse.used, decision.kind, decision.plan.exhaust), ("rules", "survey", True))
         self.assertIn("no plan can be composed from it: --box-exhaust opens every listing",
                       decision.parse.fallback_reason)
         # The same form with the stop rule is planned as the model read it.
-        self.assertEqual(box.decide(MEDIUM, self.thornwood, parser="model", call=reviews).kind, "depth_search")
+        self.assertEqual(box.decide(question, self.thornwood, parser="model", call=reviews).kind, "depth_search")
+        # On a question that never mentions reviews the same form is refused before it gets
+        # that far, for words the question does not use (normalisation v2, `conflicts`).
+        misread = box.decide(MEDIUM, self.thornwood, parser="model", call=stub(reply(
+            quantifier="exists", objective="mention", population="reviews",
+            filters=[f("review text", "contains", "leaks")])), exhaust=True)
+        self.assertEqual((misread.parse.used, misread.kind), ("rules", "total_bound"))
+        self.assertIn("looks for 'leaks' in the reviews, words the question does not use",
+                      misread.parse.fallback_reason)
 
     def test_no_call_is_made_without_a_page_or_a_shopping_question(self):
         poem = "Write a short poem about shoes."
@@ -698,11 +724,38 @@ class ModelPath(unittest.TestCase):
                         ambiguities=[{"word": "have", "readings": ["listed", "buyable"]}])
         decision = box.decide(question, self.page, parser="model", call=stub(flagged))
         self.assertEqual((decision.ask, decision.kind, decision.form.ambiguities), (None, "survey", ()))
-        self.assertIn("ambiguity 'have' dropped: the question settles it, 'in stock'", decision.parse.changes)
+        settled = "ambiguity 'have' is settled by the question's 'in stock': availability = buyable"
+        self.assertIn(settled, decision.parse.changes)
         self.assertIn("normalised:ambiguities", decision.form.evidence)
-        # The same flag where the question does not settle it is asked about.
+        # The settled reading is applied, not only the flag dropped. The prompt tells a model
+        # that flags the ambiguity to leave availability out, and until normalisation v2 a
+        # reply that did so lost "in stock": a count of what can be bought became a count of
+        # what is listed (verifier finding, 22 October 2026). Planted: `settle` dropping the
+        # flag and keeping the form's filters, the reply that omits availability lost it and
+        # the box fell back to the rules.
+        omitted = reply(quantifier="count", objective="availability", filters=[f("size", "=", "M")],
+                        ambiguities=[{"word": "have", "readings": ["listed", "buyable"]}])
+        for text in (flagged, omitted):
+            with self.subTest(reply=text):
+                decision = box.decide(question, self.page, parser="model", call=stub(text))
+                self.assertEqual((decision.parse.used, decision.ask, decision.form.filters),
+                                 ("model", None, (Filter("size", "=", "M"), Filter("availability", "=", "buyable"))))
+                self.assertEqual(decision.form.filters, box.decide(question, self.page).form.filters)
+                self.assertEqual(decision.form.evidence["filter:availability"], "in stock")
+        # A menu phrase settles it the other way, as the rules read one.
+        menu = GO + "How many listings have size M listed, sold out or not?"
+        listed = box.decide(menu, self.page, parser="model", call=stub(omitted))
+        self.assertEqual((listed.parse.used, listed.ask, listed.form.filters),
+                         ("model", None, (Filter("size", "=", "M"), Filter("availability", "=", "listed"))))
+        self.assertEqual(listed.form.filters, box.decide(menu, self.page).form.filters)
+        # The same flag where the question does not settle it is asked about, and a flag on a
+        # word the question never uses settles nothing (`settle` reads only the question's).
         unsettled = GO + "How many listings have a medium?"
         self.assertIsNotNone(box.decide(unsettled, self.page, parser="model", call=stub(flagged)).ask)
+        elsewhere = reply(quantifier="count", objective="availability", filters=[f("size", "=", "M")],
+                          ambiguities=[{"word": "sell", "readings": ["listed", "buyable"]}])
+        self.assertNotIn(settled.replace("'have'", "'sell'"),
+                         box.decide(question, self.page, parser="model", call=stub(elsewhere)).parse.changes)
 
     def test_any_other_ambiguity_is_asked_with_a_template_quoting_the_models_readings(self):
         question = GO + "What is the price of the tee in size M?"
@@ -890,7 +943,26 @@ def replying(cost: float | None = 0.004):
     return call_model
 
 
+def keyed_tasks(folder: pathlib.Path) -> pathlib.Path:
+    """tasks_apparel.json copied with a sidecar holding a buyable key for every task, which a
+    model-parser batch needs (score v4, `suite.unscorable`): the clothing file's own sidecar
+    holds one for its two questions with two readings only. The added keys are each task's
+    own, a stand-in that lets the batch start; these tests check charges and records, never
+    a verdict."""
+    tasks = folder / "tasks_keyed.json"
+    tasks.write_text((paths.TASKS / "tasks_apparel.json").read_text())
+    own = json.loads((paths.TASKS / "readings_apparel.json").read_text())["readings"]["buyable"]
+    spec = json.loads(tasks.read_text())
+    keys = {task["id"]: own.get(task["id"], task["expect"]) for task in spec["tasks"]}
+    (folder / "readings_keyed.json").write_text(json.dumps({"readings": {"buyable": keys}}))
+    return tasks
+
+
 class SuiteParser(unittest.TestCase):
+    def setUp(self):
+        folder = pathlib.Path(self.enterContext(tempfile.TemporaryDirectory()))
+        self.keyed = ("--tasks", str(keyed_tasks(folder)), "--repeats", "1")
+
     def run_model(self, *argv, call_model=None) -> tuple:
         with mock.patch.object(parse_probe, "call_model", call_model or replying()), \
                 mock.patch.object(plan_probe, "load_key", return_value="fake-key"):
@@ -900,7 +972,7 @@ class SuiteParser(unittest.TestCase):
         return run, payload
 
     def test_the_flags_it_needs(self):
-        only = TASKS + ("--only", "apparel-headline")
+        only = self.keyed + ("--only", "apparel-headline")
         for argv, words in (((*only, "--parser", "model", "--dry-run"), "--parser model reads the question for the box"),
                             ((*only, "--box", "--parser-model", "x/y", "--dry-run"),
                              "--parser-model names the model of --parser model"),
@@ -935,19 +1007,19 @@ class SuiteParser(unittest.TestCase):
         self.assertEqual(run.code, 0, run.out)
         sent.assert_not_called()
         self.assertIn("parser rules: argmin price over results, filters: none\n", run.out)
-        self.assertIn("parser model (prompt v2, normalisation v1), reply from replies.json: argmin price over "
-                      "results, filters: size = M\n", run.out)
+        self.assertIn(f"parser model (prompt v2, normalisation v{normalise.VERSION}), reply from replies.json: "
+                      "argmin price over results, filters: size = M\n", run.out)
         self.assertIn("  normalised: size = 'medium' is size = 'M'\n", run.out)
         self.assertEqual(run.out.count(f"{MEDIUM}\n\nThe results page lists 15 listings"), 2)
         self.assertIn("the counts take the model parser's decision on the 1 tasks a reply was given for", run.out)
         # Without a replies file the model's half says there is nothing to show.
-        run, _ = self.run_model(*TASKS, "--only", "apparel-headline", "--box", "--parser", "model", "--dry-run",
+        run, _ = self.run_model(*self.keyed, "--only", "apparel-headline", "--box", "--parser", "model", "--dry-run",
                                 call_model=sent)
         self.assertIn("no reply, since a dry run sends nothing", run.out)
         sent.assert_not_called()
 
     def test_a_paid_run_charges_each_run_its_parse_and_records_both_parsers(self):
-        run, payload = self.run_model(*TASKS, "--only", "apparel-cheapest-target", "apparel-all-stocked",
+        run, payload = self.run_model(*self.keyed, "--only", "apparel-cheapest-target", "apparel-all-stocked",
                                       "--box", "--parser", "model")
         self.assertEqual((run.code, run.calls), (0, 1))
         rows = {row["task"]: row for row in payload["rows"]}
@@ -968,7 +1040,7 @@ class SuiteParser(unittest.TestCase):
         self.assertEqual(payload["summary"]["total_cost"], 0.008)
         self.assertIn("[parsed by the model, $0.004]", run.out)
         # The same batch under the rules: no parse, no charge, and the parser named.
-        run, payload = self.run_model(*TASKS, "--only", "apparel-cheapest-target", "apparel-all-stocked", "--box")
+        run, payload = self.run_model(*self.keyed, "--only", "apparel-cheapest-target", "apparel-all-stocked", "--box")
         rows = {row["task"]: row for row in payload["rows"]}
         self.assertEqual((payload["arm"], payload["parser"], payload["parser_model"], payload["prompt_version"]),
                          ("box", "rules", None, None))
@@ -982,17 +1054,24 @@ class SuiteParser(unittest.TestCase):
         def not_a_completion(key, model, prompt):
             raise parse_probe.UnexpectedReply("the reply holds no choices", 0.002)
 
-        only = (*TASKS, "--only", "apparel-cheapest-target", "--box", "--parser", "model")
+        only = (*self.keyed, "--only", "apparel-cheapest-target", "--box", "--parser", "model")
+        # A request that fails may still have been charged, and nothing says how much, so its
+        # cost is unknown, never $0 (verifier finding, 22 October 2026). Planted: `parser_call`
+        # recording 0.0 for it, the first case failed. A reply that is no completion states
+        # its charge, which is kept.
         for label, call_model, cost, words in (
-                ("a request that fails", timing_out, 0.0, "the model call failed: Timeout: read timed out"),
+                ("a request that fails", timing_out, None, "the model call failed: Timeout: read timed out"),
                 ("a reply that is no completion", not_a_completion, 0.002,
                  "the model call failed: UnexpectedReply: the reply holds no choices")):
             with self.subTest(fault=label):
-                _, payload = self.run_model(*only, call_model=call_model)
+                run, payload = self.run_model(*only, call_model=call_model)
                 row = payload["rows"][0]
-                self.assertEqual((row["cost_usd"], row["parse_cost_usd"]), (cost, cost))
+                self.assertEqual((row["cost_usd"], row["parse_cost_usd"], payload["parse_charges_unknown"]),
+                                 (cost, cost, int(cost is None)))
                 self.assertEqual(row["box"]["parse"]["used"], "rules")
                 self.assertIn(words, row["box"]["parse"]["fallback_reason"])
+                self.assertEqual(payload["summary"]["cost_unknown_runs"], int(cost is None))
+                self.assertEqual("runs whose cost is unknown are not in it" in run.out, cost is None)
         # A charge the provider did not state makes the run's cost unknown, not the agent's alone.
         _, payload = self.run_model(*only, call_model=replying(cost=None))
         row = payload["rows"][0]
@@ -1014,19 +1093,30 @@ class SuiteParser(unittest.TestCase):
             suite.charge_parse({"cost_usd": 0.05}, 0.004, missing)
             self.assertFalse(missing.exists())
 
-    def test_a_model_batch_needs_the_buyable_key_of_every_question_with_two_readings(self):
+    def test_a_model_batch_needs_the_buyable_key_of_every_question_the_model_reads(self):
         with tempfile.TemporaryDirectory() as tmp:
             copy = pathlib.Path(tmp) / "tasks_nokeys.json"
             copy.write_text((paths.TASKS / "tasks_apparel.json").read_text())
             run, _ = self.run_model("--tasks", str(copy), "--repeats", "1", "--box", "--parser", "model", "--dry-run")
             self.assertEqual(run.code, 2)
-            self.assertIn("apparel-all-stocked under the buyable reading, which the model parser's form can lead "
-                          "the box to", run.out)
+            self.assertIn("apparel-all-stocked under the buyable reading, which the model parser can lead any "
+                          "question it reads to", run.out)
             # The same copy under the rules, which ask and run nothing without a reading.
             run, _ = self.run_model("--tasks", str(copy), "--repeats", "1", "--box", "--dry-run")
             self.assertEqual(run.code, 0, run.out)
-        # The clothing file has the buyable keys in its sidecar.
+        # The clothing file's sidecar holds the buyable keys of its two questions with two
+        # readings, and the model can lead any question it reads to that reading, whatever
+        # the word list makes of it (verifier finding, 22 October 2026). So a model batch on
+        # it is refused for the other four, by name, and one with a key for every question
+        # starts. Planted: the check reading the word list's two-reading questions only, the
+        # refusal did not come.
         run, _ = self.run_model(*TASKS, "--box", "--parser", "model", "--dry-run")
+        self.assertEqual(run.code, 2)
+        for task in ("apparel-headline", "apparel-target-price", "apparel-cheapest-target", "apparel-count-buyable"):
+            self.assertIn(f"{task} under the buyable reading", run.out)
+        for task in ("apparel-all-stocked", "apparel-count-stocked"):
+            self.assertNotIn(f"{task} under the buyable reading", run.out)
+        run, _ = self.run_model(*self.keyed, "--box", "--parser", "model", "--dry-run")
         self.assertEqual(run.code, 0, run.out)
 
     def test_the_arm_names_the_parser_and_no_reader_pools_the_two(self):

@@ -17,6 +17,7 @@ work in.
 
 from __future__ import annotations
 
+import argparse
 import collections
 import json
 import pathlib
@@ -62,6 +63,18 @@ def draw_suffix(payload: dict) -> str:
 
 
 def arm_name(payload: dict) -> str:
+    # The box is an arm of its own, and the box read by the model parser another, as
+    # `suite.arm_of` names them. Until 22 October 2026 a box batch fell through to the last
+    # line and was called "unmodified", which the site's batch table then showed for
+    # 20261014T213118 (verifier finding). A payload without `arm` predates 20 October 2026
+    # and is named from its flags; without `parser` it was read by the rules. No box batch
+    # holds a water question, so no figure of the water study moves.
+    if payload.get("box") or payload.get("box_exhaust"):
+        base = payload.get("arm") or suite.arm_of(argparse.Namespace(
+            box=bool(payload.get("box")), box_exhaust=bool(payload.get("box_exhaust")),
+            targeting=False, exhaustive=False, parser=payload.get("parser") or "rules"))
+        policy = payload.get("policy") or "off"
+        return base if policy == "off" else f"{base}+{policy}"
     if payload.get("targeting"):
         policy = payload.get("policy", "off")
         # A suite predating the version field ran the strategies that pruned within the

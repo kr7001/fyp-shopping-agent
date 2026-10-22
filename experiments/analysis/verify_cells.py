@@ -209,17 +209,26 @@ def covered(floor: Floor, opened: set[str]) -> bool:
 tool_replies = trace_stats.tool_replies
 
 
+def run_reading(row: dict, suite: dict) -> str | None:
+    """The reading a stored run was answered under. Under the box it is the one the run's own
+    box record holds, the user's reply to an ask the box put or the reading it took itself,
+    and None when it applied none: a batch's `--reading` is a reply only where the box
+    asked (22 October 2026, verifier finding). A row with no box record keeps the old rule,
+    its own reading and then the batch's, which no stored batch without the box has."""
+    if row.get("box"):
+        return row["box"].get("reading")
+    return row.get("reading") or suite.get("reading")
+
+
 def rescore(task: dict, answer: str, ok: bool, row: dict, suite: dict,
             readings: dict) -> dict:
-    """Score against the key the batch was scored against.
+    """Score against the key for the reading the run was answered under (`run_reading`).
 
     A batch run with `--reading buyable` scores its ambiguous questions against the
     sidecar key for that reading, so re-scoring against the task's own key would report
-    every such run as a mismatch. The row's reading wins, then the batch's, and a reading
-    the sidecar has no entry for falls back to the task's own key, as the suite does.
-    """
-    reading = row.get("reading") or suite.get("reading")
-    return scoring.score(scoring.under_reading(task, reading, readings), answer, ok)
+    every such run as a mismatch. A reading the sidecar has no key for leaves the run
+    unscored, with the reason, never scored under the task's own key (score.py v4)."""
+    return scoring.score_under(task, run_reading(row, suite), readings, answer, ok)
 
 
 def verify_run(record_path: pathlib.Path, task: dict, truth: dict,
@@ -271,8 +280,9 @@ def verify_run(record_path: pathlib.Path, task: dict, truth: dict,
     skus = sorted(key.split(":", 1)[1] for key in opened)
     floor = own_floor(task, truth)
     # The key the run was scored under: the sidecar's reading when it has a key for this
-    # task under the batch's or the row's reading, otherwise the task's own.
-    reading = stored.get("reading") or (suite or {}).get("reading")
+    # task under the reading the run was answered under (`run_reading`), otherwise the
+    # task's own.
+    reading = run_reading(stored, suite or {})
     scored_under = reading if ((readings or {}).get(reading) or {}).get(task["id"]) else None
     probe_line = next((line for line in log.splitlines() if line.startswith("card probe:")),
                       None)
@@ -381,6 +391,14 @@ def print_floor_table(rows: list[dict]) -> None:
               f"{row['rule']:34} {which}")
 
 
+def closed_parse_charges(suite: dict) -> list[float | None]:
+    """What the model parser charged for each slot the box closed without running the
+    agent, from the slot's row: a figure, or None where the provider did not say. Empty for
+    every batch made under the rules, whose closed slots cost nothing."""
+    return [row.get("parse_cost_usd") for row in suite.get("rows", [])
+            if row.get("verdict") in ("asked", "refused") and "parse_cost_usd" in row]
+
+
 def cost_differs(run: dict) -> bool:
     """Whether a run's record disagrees with the charges its own log re-sums to. The log
     holds the agent's charges only, so it is held to the agent's part of the cost, which
@@ -457,6 +475,11 @@ def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: boo
 
     unscored = [r for r in runs if r["rescored"] == "unscored"]
     cost = sum(r["cost"] or 0 for r in runs)
+    # Under the model parser a slot the box closed, an ask or a refusal, ran no agent but
+    # paid for its parse, and no run record holds that charge: the slot's row does
+    # (`suite.asked_row`, 22 October 2026). None of them before that day.
+    parsed = closed_parse_charges(suite)
+    cost += sum(charge or 0 for charge in parsed)
     before = [r["spend_before"] for r in runs if r["spend_before"] is not None]
     # The reading the batch was scored under, shown only when it had one, so the output
     # for every batch before the box stays as it was.
@@ -494,7 +517,10 @@ def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: boo
     opened = sorted(r["opened"] for r in gated)
     print(f"listings opened per gated run {opened}, median {statistics.median(opened)}")
     print(f"cost            ${cost:.4f} from the records, "
-          f"{len(runs) - sum(1 for r in runs if r['cost'])} runs without a figure")
+          f"{len(runs) - sum(1 for r in runs if r['cost'])} runs without a figure"
+          + (f"; it holds the parse of {len(parsed)} slots the box closed, "
+             f"${sum(c or 0 for c in parsed):.4f}, {sum(1 for c in parsed if c is None)} of "
+             f"them unknown" if parsed else ""))
     if before:
         print(f"account spend   before the first run ${min(before):.4f}")
     print(f"runs with an error: {[(r['task'], r['repeat'], r['error']) for r in runs if r['error']] or 'none'}")

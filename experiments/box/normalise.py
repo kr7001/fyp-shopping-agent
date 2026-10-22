@@ -18,6 +18,13 @@ of no particular size; a price limit that is not a number. The rules never write
 form, so these hold a model's form to what the rules' forms already are. A form that fails
 is not used, and the box falls back to the rules' form (`box.decide`).
 
+And a model can write a form that contradicts the question's own words: 30 for "under $24",
+"<=" for "under", L for "medium", five for "three", the dearest for "cheapest", "listed" for
+"in stock", a negation dropped. Every field the rules derive from the words, which their
+evidence records, is held against the model's, and every figure, size, seller and negation
+the model states must be the question's own (`conflicts`, 22 October 2026, verifier
+finding). A form that contradicts them is not used either.
+
 It calls no model and reads no file. `call` is the caller's, and only `read` uses it.
 """
 
@@ -31,6 +38,7 @@ import urllib.parse
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402,F401  (puts box/, runners/, analysis/, water/ on the path)
+import ambiguity  # noqa: E402
 import form as form_module  # noqa: E402
 import page as page_module  # noqa: E402
 from form import Filter, Form  # noqa: E402
@@ -44,13 +52,22 @@ from form import Filter, Form  # noqa: E402
 #      question's own, every filter is one its plan carries, a limit is a number below which
 #      prices count, an existence question has its limit, a size filter names one size, an
 #      availability filter is listed or buyable, no attribute is filtered twice
-VERSION = 1
+#   2  22 October 2026, the verifier's audit of 1. An availability ambiguity the question's
+#      own words settle takes their reading, where 1 dropped it and so lost "in stock"
+#      (`settle`). A form that contradicts the question's words is refused (`conflicts`). A
+#      seller the form names must be one the question names in full, and a seller or URL
+#      value is a word, never a number turned into one. "x-large" is XL, and a size is one
+#      the shop names or a pack size with a figure in it. A title is read only where the
+#      page record kept it. A negation is read in the sentences that ask (`asking`)
+VERSION = 2
 
 # The clothing listings whose price depends on the size chosen name their sizes S, M, L and
 # XL: the options of the shop's configurable attribute apparel_size, read from its database
-# on 22 October 2026. The words are the student's list of synonyms (22 October 2026).
+# on 22 October 2026. The words are the student's list of synonyms (22 October 2026), with
+# x-large, the same word written short, since 2.
 SIZES = ("S", "M", "L", "XL")
-SIZE_WORDS = {"small": "S", "medium": "M", "large": "L", "extra large": "XL", "extra-large": "XL"}
+SIZE_WORDS = {"small": "S", "medium": "M", "large": "L", "extra large": "XL", "extra-large": "XL",
+              "x-large": "XL", "x large": "XL"}
 # A model's availability values, as the rules write them.
 AVAILABILITY = ("buyable", "listed")
 # What reads as a price limit written as text: "20", "$20", "20.00".
@@ -131,8 +148,12 @@ def sellers(condition: Filter, page: page_module.Page | None, changes: list[str]
             evidence: dict) -> Filter:
     """A seller filter as a set of the page's own names. One seller written with "=" or
     "contains" is a set of one, the shape every plan reads. A name the page does not have,
-    or has more than one fit for, is kept as written and recorded as unmatched."""
-    value = condition.value if isinstance(condition.value, tuple) else (str(condition.value),)
+    or has more than one fit for, is kept as written and recorded as unmatched. A value that
+    is not a word, a number, is left as it is for the checks to refuse, never printed into
+    a name (normalisation v2)."""
+    if not isinstance(condition.value, (str, tuple)):
+        return condition
+    value = condition.value if isinstance(condition.value, tuple) else (condition.value,)
     lines = []
     if condition.op != "in":
         lines.append(f"seller {condition.op} {condition.value!r} is seller in {list(value)!r}")
@@ -153,22 +174,29 @@ def sellers(condition: Filter, page: page_module.Page | None, changes: list[str]
 
 
 def urls(condition: Filter, changes: list[str], evidence: dict) -> Filter:
-    """A url filter as a set: one URL written with "=" is a set of one."""
-    if condition.op == "in" or isinstance(condition.value, tuple):
+    """A url filter as a set: one URL written with "=" is a set of one. A value that is not a
+    word is left for the checks to refuse."""
+    if condition.op == "in" or not isinstance(condition.value, str):
         return condition
     line = f"url {condition.op} {condition.value!r} is url in [{condition.value!r}]"
     changes.append(line)
     note(evidence, "url", line)
-    return Filter("url", "in", (str(condition.value),))
+    return Filter("url", "in", (condition.value,))
+
+
+def titles_kept(page: page_module.Page) -> bool:
+    """Whether the page holds its listings' titles. One read back from a run record made
+    before 22 October 2026 does not (`page.from_record` gives such a listing no title), so
+    there only the search word can be known to restate anything."""
+    return bool(page.listings) and all(item.title is not None for item in page.listings)
 
 
 def restated(page: page_module.Page) -> tuple[set[str], str, str]:
     """The words a title filter would only restate: those every listing's title shares before
     its seller, the product named on the results page, and those the page was searched for.
-    With the two phrases, for the evidence. A page read back from a run record keeps no
-    title (`page.from_record` gives each listing its seller's name), so there the shared words
-    are those of the sellers' names, which a filter on the product never is."""
-    names = [item.title.rsplit(" - ", 1)[0] for item in page.listings]
+    With the two phrases, for the evidence. A page whose titles were not kept gives the
+    search words alone (`titles_kept`)."""
+    names = [item.title.rsplit(" - ", 1)[0] for item in page.listings] if titles_kept(page) else []
     shared = set.intersection(*(set(WORD.findall(name.lower())) for name in names)) if names else set()
     product = " ".join(word for word in WORD.findall(names[0].lower()) if word in shared) if names else ""
     searched = " ".join(urllib.parse.parse_qs(urllib.parse.urlparse(page.url).query).get("q", []))
@@ -257,11 +285,41 @@ def normalise(form: Form, question: str, page: page_module.Page | None) -> tuple
             changes.append(line)
             note(evidence, "unknowns", line)
             evidence["unknowns"] = word.group(0)
+    filters, ambiguities = settle(filters, ambiguities, question, changes, evidence)
 
     normalised = dataclasses.replace(form, filters=tuple(filters), population=population,
                                      unknowns=tuple(unknowns), ambiguities=tuple(ambiguities),
                                      evidence=evidence)
     return normalised, changes
+
+
+def settle(filters: list[Filter], ambiguities: list, question: str, changes: list[str],
+           evidence: dict) -> tuple[list[Filter], list]:
+    """An availability ambiguity the question's own words settle (`ambiguity.CLEAR`) takes
+    their reading, as the rules read such a question (`form.filters_in`): a menu phrase is
+    availability = listed, and a buyable one buyable, the menu first. The prompt tells a
+    model that flags the ambiguity to leave availability out, so until normalisation v2,
+    which dropped the flag and kept nothing, "in stock" was lost and the count of what can
+    be bought became a count of what is listed (verifier finding, 22 October 2026)."""
+    # Only a flag on a word of the question: one on a word it never uses is a misreading,
+    # which the checks then refuse (`ask_problems`), rather than a reading to settle.
+    flagged = next((entry for entry in ambiguities
+                    if reads_availability(entry) and words_in(entry.word, question)), None)
+    clear = ambiguity.CLEAR.search(question) if flagged is not None else None
+    if clear is None:
+        return filters, ambiguities
+    menu = form_module.MENU_WORDS.search(question)
+    buyable = form_module.BUYABLE_WORDS.search(question)
+    value, words = ("listed", menu.group(0)) if menu else ("buyable", (buyable or clear).group(0))
+    before = next((f for f in filters if f.attribute == "availability"), None)
+    line = (f"ambiguity {flagged.word!r} is settled by the question's {words!r}: availability = "
+            f"{value}" + (f", where the form said {before.value!r}" if before and before.value != value else ""))
+    changes.append(line)
+    note(evidence, "ambiguities", line)
+    evidence["filter:availability"] = words
+    return ([f for f in filters if f.attribute != "availability"] + [Filter("availability", "=", value)],
+            [entry for entry in ambiguities
+             if not (reads_availability(entry) and words_in(entry.word, question))])
 
 
 # ---------------------------------------------------------------------------
@@ -357,17 +415,172 @@ def plan_problems(form: Form, page: page_module.Page | None) -> list[str]:
     size = form.filter("size")
     if size is not None and (size.op != "=" or not isinstance(size.value, str)):
         found.append(f"a size filter names one size, not size {size.op} {size.value!r}")
+    elif size is not None and not (size.value.isalnum() or any(c.isdigit() for c in size.value)):
+        # `primitives.option_phrase` would call it "the x-large pack" (normalisation v2).
+        found.append(f"a size is one the shop names or a pack size with a figure in it, not "
+                     f"size {size.value!r}")
     availability = form.filter("availability")
     if availability is not None and (availability.op != "=" or availability.value not in AVAILABILITY):
         found.append(f"availability is listed or buyable, not {availability.op} {availability.value!r}")
+    # A seller or a URL is a word, never a number printed into one (normalisation v2).
+    for attribute in ("seller", "url"):
+        named = form.filter(attribute)
+        if named is not None and not isinstance(named.value, (str, tuple)):
+            found.append(f"a {attribute} filter names {attribute}s, not {attribute} {named.op} "
+                         f"{named.value!r}")
+    return found
+
+
+# A negation, as a question writes one, and the phrases that hold "no" or "not" without
+# negating anything a form carries: "answer yes or no", "no more than $20", "sold out or
+# not", "whether or not".
+NEGATION = re.compile(r"\b(?:not|no|never|none|nobody|nothing|without|lacks?|lacking|missing|"
+                      r"leaves?\s+out|left\s+out|omits?|omitted|excludes?|excluded)\b|n't\b",
+                      re.IGNORECASE)
+NOT_A_NEGATION = re.compile(r"\byes\s+or\s+no\b|\b(?:no|not)\s+(?:more|less)\s+than\b|\bor\s+not\b",
+                            re.IGNORECASE)
+# What asks whether something exists: "is there", "are there", "any".
+EXISTENCE = re.compile(r"\b(?:is|are)\s+there\b|\bany(?:one|body)?\b", re.IGNORECASE)
+
+
+def asking(question: str) -> str:
+    """The sentences that ask, the ones ending in "?", URLs aside, or the whole text when
+    none does. An instruction after the question says how to answer it, and its "not"
+    negates nothing a form carries: "Is every size in stock? Answer yes or no, and name any
+    size that is not." is the plain universal, which the whole text read as dropping a
+    negation (22 October 2026, over every question the project holds; it was the one)."""
+    text = form_module.URL.sub(" ", question)
+    asked = [sentence for sentence in re.split(r"(?<=[.?!])\s+", text) if sentence.rstrip().endswith("?")]
+    return " ".join(asked) if asked else text
+
+
+def comparable(value):
+    """A filter value as two forms are compared on it: a number as a number, so 24 and 24.0
+    are one limit, a word as itself, and the values of "in" as a set."""
+    if isinstance(value, tuple):
+        return frozenset(comparable(v) for v in value)
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return float(value)
+    try:
+        return float(str(value).strip())
+    except ValueError:
+        return str(value).strip()
+
+
+def said(condition: Filter) -> str:
+    value = list(condition.value) if isinstance(condition.value, tuple) else condition.value
+    return f"{condition.attribute} {condition.op} {value!r}"
+
+
+def figures(question: str) -> set[float]:
+    """Every figure the question states, URLs aside: its numbers and its number words."""
+    text = form_module.URL.sub(" ", question)
+    found = {float(n) for n in re.findall(r"\d+(?:\.\d+)?", text)}
+    found |= {float(n) for word, n in form_module.NUMBER_WORDS.items()
+              if re.search(rf"\b{word}\b", text, re.IGNORECASE)}
+    return found
+
+
+def sizes_named(question: str) -> set[str]:
+    """The shop's sizes the question names, as a size (M, case kept) or by a size word."""
+    found = {size for word, size in SIZE_WORDS.items() if words_in(word, question)}
+    return found | {size for size in SIZES if re.search(rf"(?<![\w-]){size}(?![\w-])", question)}
+
+
+def conflicts(form: Form, question: str, page: page_module.Page | None) -> list[str]:
+    """How the model's form contradicts the question's own words, empty when it does not
+    (normalisation v2, 22 October 2026, verifier finding).
+
+    Every filter the rules derive from the words, which their evidence records under
+    "filter:<attribute>", must be the model's too, the same comparison and the same value:
+    a limit, its "<" for "under", a size, an availability, the sellers or URLs named. The
+    silent default, availability = buyable on an existence question with no availability
+    word, is not the question's words and is not held, as `parse_probe.agree` leaves it. A
+    review's words are held separately, below, since the rules' clause is a guess at them.
+    Then what the rules' form cannot hold the model to, the model may still not invent: the
+    direction of a superlative the words chose, the number of a "three cheapest", every
+    figure and size the model states, which the question must state, every seller and URL
+    the model names, which the question must name in full, and the negation: a universal
+    the question writes with "not" or "lacks" is not the plain universal, and a negated
+    form needs a question that asks whether some listing lacks something."""
+    rules = form_module.from_rules(question, page)
+    found = []
+    for condition in rules.filters:
+        words = rules.evidence.get(f"filter:{condition.attribute}")
+        if words is None or condition.attribute == "review text":
+            continue
+        mine = form.filter(condition.attribute)
+        if mine is None:
+            found.append(f"the question's {words!r} gives {said(condition)}, and the form has no "
+                         f"{condition.attribute} filter")
+        elif condition.attribute in ("seller", "url") and isinstance(mine.value, tuple):
+            # The rules keep only the names the page has, so a model may name more of the
+            # question's, which the box then asks about (`box.unlisted`), but never fewer.
+            left_out = comparable(condition.value) - comparable(mine.value)
+            if left_out:
+                found.append(f"the question's {words!r} names {sorted(left_out)}, which the form "
+                             f"leaves out")
+        elif (mine.op, comparable(mine.value)) != (condition.op, comparable(condition.value)):
+            found.append(f"the question's {words!r} gives {said(condition)}, where the form says "
+                         f"{said(mine)}")
+    # A direction of price only: the rules make any superlative on an attribute the shop does
+    # not show "argmax" of it ("soonest", "the least I'd pay" read as a graded word), which
+    # says nothing of cheapest or dearest.
+    cheapest, dearest = ("argmin", "topk"), ("argmax",)
+    priced = ("price", "advertised price", "rate")
+    if rules.objective in priced and form.objective in priced and (
+            (rules.quantifier in cheapest and form.quantifier in dearest)
+            or (rules.quantifier in dearest and form.quantifier in cheapest)):
+        asked = "cheapest" if rules.quantifier in cheapest else "dearest"
+        other = "dearest" if asked == "cheapest" else "cheapest"
+        found.append(f"the question's {rules.evidence.get('quantifier')!r} asks for the {asked}, "
+                     f"where the form asks for the {other}")
+    if rules.quantifier == "topk" and (form.quantifier, form.k) != ("topk", rules.k):
+        found.append(f"the question's {rules.evidence.get('k')!r} asks for {rules.k}, where the "
+                     f"form asks for {form.k if form.quantifier == 'topk' else 'none in particular'}")
+    stated = figures(question)
+    if form.quantifier == "topk" and form.k is not None and float(form.k) not in stated:
+        found.append(f"the form asks for the {form.k} cheapest, a number the question does not state")
+    limit = form.filter("price")
+    if limit is not None and isinstance(limit.value, (int, float)) and not isinstance(limit.value, bool) \
+            and not any(abs(float(limit.value) - figure) < 0.005 for figure in stated):
+        found.append(f"the form sets a price limit of {limit.value:g}, a figure the question does "
+                     f"not state")
+    text = NOT_A_NEGATION.sub(" ", asking(question))
+    negation = NEGATION.search(text)
+    if form.negated and not (negation and EXISTENCE.search(text)):
+        found.append("the form is negated, where the question does not ask whether some listing "
+                     "lacks something")
+    if form.quantifier == "forall" and not form.negated and negation:
+        found.append(f"the question's {negation.group(0)!r} is a negation, which the form's "
+                     f"universal drops")
+    size = form.filter("size")
+    if size is not None and isinstance(size.value, str) and not (
+            size.value in sizes_named(question) if size.value in SIZES else words_in(size.value, question)):
+        found.append(f"the form asks about size {size.value}, which the question does not name")
+    for attribute, named_by in (("seller", lambda name: words_in(name, question)),
+                                ("url", lambda url: url in question)):
+        condition = form.filter(attribute)
+        if condition is not None and isinstance(condition.value, tuple):
+            for name in condition.value:
+                if not named_by(name):
+                    found.append(f"the form names the {attribute} {name!r}, which the question "
+                                 f"does not name in full")
+    mention = form.filter("review text")
+    if mention is not None and isinstance(mention.value, str):
+        words = [word for word in WORD.findall(mention.value.lower()) if word not in FILLER]
+        if not words or not all(words_in(word, question) for word in words):
+            found.append(f"the form looks for {mention.value!r} in the reviews, words the "
+                         f"question does not use")
     return found
 
 
 def problems(form: Form, question: str, page: page_module.Page | None) -> list[str]:
     """Why the box must not use this model form at all, empty when it may: what the asks
-    need, and, unless the form names a missing price limit, which the box asks for before
-    any plan, what a plan needs. Each problem once, in order."""
-    found = ask_problems(form, question, page)
+    need, how it contradicts the question's own words, and, unless the form names a missing
+    price limit, which the box asks for before any plan, what a plan needs. Each problem
+    once, in order."""
+    found = ask_problems(form, question, page) + conflicts(form, question, page)
     if "price limit" not in form.unknowns:
         found += plan_problems(form, page)
     return list(dict.fromkeys(found))

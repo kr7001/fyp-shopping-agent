@@ -148,9 +148,17 @@ class Parser(unittest.TestCase):
         record = page.parse(results_page(self.cards, ONE_PAGE), "x").record()
         self.assertEqual((record["url"], record["count"], record["total"], record["next_page"]),
                          ("x", 3, 3, False))
+        # The title too since 22 October 2026, so the model parser's title normalisation
+        # can be replayed from a run record; a record from before keeps none and reads
+        # back with none (`page.from_record`).
         self.assertEqual(record["listings"][1],
                          {"seller": "Mellow Fields", "advertised": 12.25,
-                          "url": f"{BASE}/mellow-fields-tee.html"})
+                          "url": f"{BASE}/mellow-fields-tee.html",
+                          "title": "Example Heavyweight Tee - Mellow Fields"})
+        back = page.from_record(record)
+        self.assertEqual((back.record(), back.listings[1].title), (record, "Example Heavyweight Tee - Mellow Fields"))
+        old = {**record, "listings": [{k: v for k, v in item.items() if k != "title"} for item in record["listings"]]}
+        self.assertEqual([item.title for item in page.from_record(old).listings], [None, None, None])
 
 
 def shop_answers() -> bool:

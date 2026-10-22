@@ -37,9 +37,14 @@ import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import form  # noqa: E402
 import parse_probe  # noqa: E402  (the comparison: tiers, question_totals, the printing)
 
-# Bumped when a figure this prints would change for the same result file.
+# Bumped when a figure this prints would change for the same result file, or what it reads.
 #   1  20 October 2026, before the first paid paraphrase run
-VERSION = 1
+#   2  22 October 2026. A file made under an earlier comparison that parse_probe can still
+#      read (`parse_probe.READ_AGAIN`) is scored when every tier it stores re-derives the
+#      same under today's comparison, and refused otherwise; the paraphrase file's v1
+#      result is one, made under comparison 1. And the limits a result file states, that it
+#      is in sample or that its page kept no titles, are printed before the figures
+VERSION = 2
 
 # The run's conditions, as the result file names them, printed and kept in the JSON. The
 # prompt and the normalisation joined on 22 October 2026 (box v13): a file written before
@@ -83,9 +88,15 @@ def scores(result: dict, spec: dict) -> dict:
     or template, or the same id twice), since the flags would then describe another
     question. Reported beside the figures: an entry with no row, from a run that stopped
     early, and a stored tier that `parse_probe.tiers` computes otherwise."""
-    if result.get("comparison_version") != parse_probe.COMPARISON_VERSION:
-        raise SystemExit(f"the result was compared under version {result.get('comparison_version')}, "
+    version = result.get("comparison_version")
+    if version != parse_probe.COMPARISON_VERSION and version not in parse_probe.READ_AGAIN:
+        raise SystemExit(f"the result was compared under version {version}, "
                          f"parse_probe is at {parse_probe.COMPARISON_VERSION}: not scored together")
+    if version != parse_probe.COMPARISON_VERSION:
+        moved = [text for row in result["rows"] for text in recomputed(row)]
+        if moved:
+            raise SystemExit(f"the result was compared under version {version}, and read again "
+                             f"under {parse_probe.COMPARISON_VERSION} its tiers move: {moved[0]}")
     entries = {entry["id"]: entry for entry in spec["paraphrases"]}
     unflagged = sorted(n for n, entry in entries.items() if not isinstance(entry.get("meaning_kept"), bool))
     if unflagged:
@@ -108,6 +119,9 @@ def scores(result: dict, spec: dict) -> dict:
     return {
         "version": VERSION, "comparison_version": parse_probe.COMPARISON_VERSION,
         "conditions": {key: result.get(key) for key in CONDITIONS},
+        # What the probe itself said its figures cannot show (parse_probe.limits); none in a
+        # file written before 22 October 2026.
+        "limits": list(result.get("limits") or []),
         "problems": problems,
         "with_model": with_model,
         "meaning_kept": {
@@ -135,6 +149,8 @@ def render(found: dict) -> str:
               f"(paraphrase_scores.py v{found['version']}, comparison v{found['comparison_version']})")
         print("run: " + "; ".join(f"{key} {c[key]:.5f}" if isinstance(c[key], float) else f"{key} {c[key]}"
                                   for key in CONDITIONS if key != "questions"))
+        for line in found["limits"]:
+            print(f"note: {line}")
         print(f"\nProblems found: {len(found['problems'])}")
         for text in found["problems"]:
             print(f"  {text}")

@@ -1209,14 +1209,21 @@ class ReadingsSidecar(unittest.TestCase):
                          self.spec["_instance"]["listings_target_buyable"])
         self.assertEqual(self.readings["buyable"]["apparel-all-stocked"]["value"], False)
 
-    def test_under_reading_uses_the_sidecar_key_and_falls_back_to_the_tasks_own(self):
+    def test_under_reading_uses_the_sidecar_key_and_never_falls_back_to_the_tasks_own(self):
         stocked = next(t for t in self.spec["tasks"] if t["id"] == "apparel-count-stocked")
         headline = next(t for t in self.spec["tasks"] if t["id"] == "apparel-headline")
         self.assertEqual(score.under_reading(stocked, "buyable", self.readings)["expect"],
                          {"kind": "count", "value": 5})
         self.assertEqual(score.under_reading(stocked, "menu", self.readings)["expect"]["value"], 10)
         self.assertIs(score.under_reading(stocked, None, self.readings), stocked)
-        self.assertIs(score.under_reading(headline, "buyable", self.readings), headline)
+        # A run answered under the buyable reading with no key for it is unscored, never
+        # scored under the task's own key, whatever the word list makes of the question
+        # (score.py v4, 22 October 2026; until then a clear question fell back to its own).
+        with self.assertRaises(score.NoKeyForReading):
+            score.under_reading(headline, "buyable", self.readings)
+        self.assertEqual(score.score_under(headline, "buyable", self.readings, "Seller A at $1.00.", True)
+                         ["verdict"], "unscored")
+        self.assertIs(score.under_reading(headline, None, self.readings), headline)
         self.assertEqual(score.readings_for(paths.TASKS / "tasks.json"), {})
 
 

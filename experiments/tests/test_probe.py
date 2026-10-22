@@ -456,7 +456,12 @@ class StoredPage(unittest.TestCase):
         rows = json.loads(THORNWOOD.read_text())["rows"]
         spec = json.loads(PARAPHRASES.read_text())
         page_ = parse_probe.stored_page(THORNWOOD)
-        self.assertEqual(page_.record(), rows[0]["box"]["page"])
+        # The record was written before page records kept titles (22 October 2026), so the
+        # page read back has none, and is otherwise the record.
+        stored = rows[0]["box"]["page"]
+        self.assertEqual(page_.record(), {**stored, "listings": [{**item, "title": None}
+                                                                 for item in stored["listings"]]})
+        self.assertFalse(normalise.titles_kept(page_))
         self.assertEqual(page_.url, box.results_url(spec["lead"].format(base=spec["base_url"])))
 
     def test_two_page_records_or_none_are_refused(self):
@@ -738,7 +743,21 @@ class QuestionsFakedModel(unittest.TestCase):
                           p["primitives_version"], p["planner_version"], p["strategy_version"]),
                          (parse_probe.COMPARISON_VERSION, form.VERSION, box.VERSION,
                           primitives.VERSION, planner.VERSION, targeting.VERSION))
-        self.assertEqual(p["page"], json.loads(THORNWOOD.read_text())["rows"][0]["box"]["page"])
+        stored = json.loads(THORNWOOD.read_text())["rows"][0]["box"]["page"]
+        self.assertEqual(p["page"], {**stored, "listings": [{**item, "title": None} for item in stored["listings"]]})
+        # The probe says what its figures cannot show: in sample, and no titles kept.
+        self.assertTrue(p["in_sample"])
+        self.assertEqual(len(p["limits"]), 2)
+        self.assertTrue(p["limits"][0].startswith("in sample: prompt version 2 and normalisation"))
+        self.assertIn("keeps no listing titles", p["limits"][1])
+        # And says both before its figures, not only in the file.
+        for line in p["limits"]:
+            self.assertIn(f"note: {line}\n", self.printed.split("calls failed")[0])
+        # A file the parser was not written from, on a page that kept its titles, has neither.
+        titled = page.Page(url=p["page"]["url"], total=None, next_page=False, listings=[
+            page.Listing(seller="Seller A", title="Example Tee - Seller A", url="http://localhost:7770/a.html",
+                         advertised=1.0)])
+        self.assertEqual(parse_probe.limits(paths.TASKS / "paraphrases_v9.json", titled), [])
         self.assertRegex(p["commit"], r"^[0-9a-f]{40}$")
         # Which prompt and which normalisation made the model's forms (22 October 2026).
         self.assertEqual((p["prompt_version"], p["normalise_version"]),

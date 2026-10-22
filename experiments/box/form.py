@@ -80,7 +80,11 @@ import targeting
 #      `prompt_version`, which prompt produced a model's form. The model parser's prompt
 #      is version 2 (`PROMPT_VERSION`). The rules parse every question as they did: they
 #      never set the new fields
-VERSION = 10
+#  11  22 October 2026, from the verifier's audit of v10. A filter's value is a word or a
+#      number, and the values of "in" are words; a model's null, dict or nested list is
+#      refused rather than printed into a word, and so is a list of filters that is not a
+#      list. The rules write only such values, so they parse every question as they did
+VERSION = 11
 
 # The model parser's prompt, recorded in every form a model proposes. Runs made under
 # different prompts are different parsers and are never pooled.
@@ -150,6 +154,16 @@ class Filter:
         if (self.op == "in") != isinstance(self.value, tuple):
             raise ValueError(f"filter {self.attribute} {self.op}: 'in' takes a tuple of values "
                              f"and nothing else does, got {self.value!r}")
+        # A value is a word or a number, and the values of "in" are words (form v11, 22
+        # October 2026). Until then a model's null, dict or nested list was turned into its
+        # printed form, and "- None, None" reached the agent as a listing (verifier finding).
+        # Every value the rules write, and every value in every stored record, is one of these.
+        if isinstance(self.value, tuple):
+            if not self.value or not all(isinstance(v, str) and v.strip() for v in self.value):
+                raise ValueError(f"filter {self.attribute} in: the values are words, got {self.value!r}")
+        elif isinstance(self.value, bool) or not isinstance(self.value, (str, int, float)):
+            raise ValueError(f"filter {self.attribute} {self.op}: the value is a word or a number, "
+                             f"got {self.value!r}")
 
     def record(self) -> dict:
         value = list(self.value) if isinstance(self.value, tuple) else self.value
@@ -298,11 +312,15 @@ def from_record(data: dict, source: str) -> Form:
     if missing:
         raise ValueError(f"the form lacks {', '.join(missing)}")
     filters = []
-    for entry in data.get("filters") or []:
+    entries = data.get("filters") or []
+    if not isinstance(entries, list):
+        raise ValueError(f"filters must be a list, got {entries!r}")
+    for entry in entries:
         if not isinstance(entry, dict) or not {"attribute", "op", "value"} <= set(entry):
             raise ValueError(f"a filter needs attribute, op and value, got {entry!r}")
-        value = tuple(str(v) for v in entry["value"]) if isinstance(entry["value"], list) \
-            else entry["value"]
+        # A list's members are kept as they are, for `Filter` to refuse any that is not a
+        # word, rather than printed into words (form v11).
+        value = tuple(entry["value"]) if isinstance(entry["value"], list) else entry["value"]
         filters.append(Filter(str(entry["attribute"]), str(entry["op"]), value))
     k = data.get("k")
     if isinstance(k, float) and k.is_integer():
@@ -310,6 +328,11 @@ def from_record(data: dict, source: str) -> Form:
     evidence = data.get("evidence") or {}
     if not isinstance(evidence, dict):
         raise ValueError(f"evidence must map each field to the words that chose it, got {evidence!r}")
+    unknowns = data.get("unknowns") or []
+    if not isinstance(unknowns, list) or not all(isinstance(u, str) for u in unknowns):
+        raise ValueError(f"unknowns must be a list of words, got {unknowns!r}")
+    if data.get("reading") is not None and not isinstance(data["reading"], str):
+        raise ValueError(f"reading is a word or null, got {data['reading']!r}")
     # A null is read as false, as a missing field is; anything else that is not true or
     # false is refused by the form itself.
     negated = data.get("negated")
@@ -325,7 +348,7 @@ def from_record(data: dict, source: str) -> Form:
     return Form(quantifier=str(data["quantifier"]), objective=str(data["objective"]),
                 filters=tuple(filters), population=str(data["population"]), k=k,
                 reading=data.get("reading") or None,
-                unknowns=tuple(str(u) for u in data.get("unknowns") or []), source=source,
+                unknowns=tuple(unknowns), source=source,
                 evidence={str(key): str(words) for key, words in evidence.items()},
                 negated=False if negated is None else negated, ambiguities=tuple(read),
                 prompt_version=data.get("prompt_version"))
