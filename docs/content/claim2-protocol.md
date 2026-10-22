@@ -19,8 +19,8 @@ times, as the first protocol did.
 
 - **Two products under one brand.** About 20 listings of a tee (sizes S, M, L, XL) and about 20
   listings of bottled water (packs 24 x 350ml, 12 x 550ml, 6 x 1.25L, 2 x 9.5L), from distinct
-  sellers, so the brand's search returns about 40 listings, interleaved: both products appear among the first four cards and on page 2. Titles take one of several phrasings per product, ending in "Tee" or "Water", because with one fixed title Magento's relevance order lists nearly all of one product before the other (measured against Magento's own request by `env/search_order.py --validate`). The claim market draws its phrasings from a pool the development market never used. Product scoping reads each title's last word.
-- **Two results pages.** At the shop's page size of 36, the search spans two pages. No shop setting is changed. To fix, from the generator's rule: at least one price question's answer listing is on page 2, and every count and "every listing" question needs both pages.
+  sellers, so the brand's search returns about 40 listings, interleaved: both products appear among the first four cards and on page 2. Titles take one of several phrasings per product, ending in "Tee" or "Water", because with one fixed title Magento's relevance order lists nearly all of one product before the other (measured against Magento's own request by `env/search_order.py --validate`). The claim market's titles come from phrasings the development market never drew: tee "Classic Organic Tee", "Relaxed Fit Basic Tee", "Organic Ringspun Tee, Short Sleeve"; water "Mineral Water", "Alpine Mineral Water", "Pure Mineral Water, Bottled". Each names its product as its last word before any comma, which product scoping reads. None shares a word with a development phrasing except that noun, and each has as many words as the development phrasing it stands beside.
+- **Two results pages.** At the shop's page size of 36, the search spans two pages. No shop setting is changed. At least one price question's answer listing is on page 2, so a bound computed over page 1 alone would stop too early, and every count question, under each of its readings, counts at least one listing on page 2, so a count over page 1 alone is short. The two "does every listing" questions are not held to page 2: both answer No, and a No needs page 2 only when every listing without the size or pack renders there, which 21 tees and 21 waters cannot arrange with the other rules (seven listings would have to fit on a page 2 of six).
 - **Each variant absent, sold out or buyable at its own price.** The tee and water price models
   are those of the generators already used (Thornwood and Ashcombe for tees, Rivenhall and
   Calderwood for water).
@@ -29,16 +29,18 @@ times, as the first protocol did.
     first screen advertises less than the answer costs, so a card-only answer is wrong. The
     first screen is the four cards openJiuwen's card probe sees at its 1200 x 701 viewport,
     checked live;
-  - at least one gated question's answer is on page 2, so a bound computed over page 1 alone
-    would stop too early;
+  
   - the size or pack each "offer" or "stock" question asks about is listed but sold out on at
     least one listing, so the two readings differ;
     - the best price per litre is not at the cheapest 2 x 9.5L listing, and it leads the next
     seller by at least 8%, as the price winners do;
-  - on each water price question, a listing has the asked pack listed but sold out at a price
-    below the buyable winner's, so "can actually be bought" changes the answer, as on the tees;
-  - the cheapest-advertised tee card is on page 1, at least 8% below any tee card on page 2,
-    so both readings of "the results page" in tee-headline give the same answer.
+    - for the two 2 x 9.5L price questions, a 2 x 9.5L is listed but sold out at a price below the
+    buyable winner's, and for best-per-litre a pack listed but sold out is cheaper per litre than
+    the best that can be bought, so "can actually be bought" changes every water price answer,
+    as on the tees;
+    - the cheapest-advertised tee card is on page 1, and every tee card on page 2 advertises at
+    least 8 per cent more than it, so "on the results page" read as page 1 or as both pages names
+    the same listing at the same price;
 - **What the two readings change.** On this design only the count questions answer
   differently under the two readings of "offer" or "stock". The "does every listing"
   questions answer No under both, because a listing without the variant always exists.
@@ -138,4 +140,9 @@ every invocation, as before.
   price voids them. Sorting is counted in every run.
 - The box's per-litre bound uses the largest pack, 2 x 9.5L, which is a condition of the
   design unless the cards show it (to fix from the coder's check).
-- Product scoping relies on each title ending in its product's noun.
+- Product scoping relies on each title naming its product's noun last, before any comma.
+- The page rules select mildly for answer listings with longer titles and seller names, which
+  rank lower in search: over development seeds 901 to 920 the shortest phrasing was 18% of tee
+  answer listings against 29% of all tees (`env/manifests/aplus_dev-title-study.json`).
+- On the development draw the best-per-litre floor is 17 of 21 listings, so that question
+  tests little pruning.
