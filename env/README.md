@@ -169,7 +169,7 @@ it. None calls a model.
 | `search_order.py` | Predicts the order the shop's search lists one brand's listings in, so the page rules can be applied before seeding. `--validate` checks it against the live index and pages |
 | `pick_aplus_market.py` | Checks a brand by the brand rule, then seeds a seed's market, reindexes, and accepts it only if the live pages hold the page rules, recording every seed tried |
 | `check_aplus_market.py` | Checks a seeded market live: both results pages, every card, every variant under both themes, the gated reveal, and with `--unchanged` every earlier market against a snapshot |
-| `generate_aplus_tasks.py` | Writes the questions and their keys, and the second reading of the three questions that have two |
+| `generate_aplus_tasks.py` | Writes the questions and their keys, and a buyable key for every keyed question: the second key of the three that have two readings, and for the rest their own key computed again over the market as bought |
 
 Development uses its own brand and seeds 900 to 999 only, and `generate_aplus.py` refuses any
 other seed without `--claim`. The development market is Larchmere, prefix IGR-DEV, seed 900.

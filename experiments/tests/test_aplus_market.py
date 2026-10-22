@@ -5,6 +5,7 @@ Nothing here touches the shop. Every rule is shown firing on a planted fault and
 on the development market (LESSONS 24, 31), and the order model is checked against the
 results pages two batches stored.
 """
+import argparse
 import copy
 import json
 import pathlib
@@ -977,21 +978,72 @@ class Keys(DevMarket):
         asked = [t["id"] for t in self.spec["tasks"]
                  if ambiguity.ask(t["query"].format(base=self.spec["base_url"]))]
         self.assertEqual(asked, list(aplus_tasks.TWO_READINGS))
-        self.assertEqual(sorted(readings), sorted(asked))
+        self.assertEqual(load(DEV_READINGS)["two_readings"], asked)
         stocked, buyable = self.by["tee-count-stocked"]["expect"]["value"], readings["tee-count-stocked"]["value"]
         self.assertGreater(stocked, buyable)      # readings_differ: the sold-out are the difference
         # Each buyable key recounted from the variants: a size or pack counts if it can be bought.
         can = lambda f, option: any(v["option"] == option and v["qty"] for v in f["variants"])  # noqa: E731
         tees, waters = self.groups[aplus.TEE], self.groups[aplus.WATER]
-        self.assertEqual(readings, {
+        self.assertEqual({task_id: readings[task_id] for task_id in asked}, {
             "tee-count-stocked": {"kind": "count", "value": sum(can(t, "M") for t in tees)},
             "tee-all-stocked": {"kind": "boolean", "value": all(can(t, "M") for t in tees)},
             "water-all-stocked": {"kind": "boolean", "value": all(can(w, "2 x 9.5L") for w in waters)}})
+        # And the writer computes them so now, over the market as bought.
+        self.assertEqual(aplus_tasks.buyable_reading(self.fixture)["buyable"], readings)
         for task_id in asked:
             with self.subTest(task=task_id):
                 self.assertIs(score.under_reading(self.by[task_id], "menu", readings), self.by[task_id])
                 self.assertEqual(score.under_reading(self.by[task_id], "buyable", {"buyable": readings})["expect"],
                                  readings[task_id])
+
+    def test_every_keyed_question_has_a_buyable_key(self):
+        # The model parser can lead any question it reads to the buyable reading, so suite.py
+        # refuses a batch under it with a question that has none (22 October 2026).
+        readings = score.readings_for(DEV_TASKS)
+        keyed = [t["id"] for t in self.spec["tasks"] if t["expect"]["kind"] != "none"]
+        self.assertEqual((list(readings["buyable"]), len(keyed)), (keyed, 13))
+        for task in self.spec["tasks"]:
+            with self.subTest(task=task["id"]):
+                under = score.under_reading(task, "buyable", readings)       # raises on none
+                if task["id"] not in aplus_tasks.TWO_READINGS:
+                    # Its words settle the reading, so its buyable key is its own.
+                    self.assertEqual(under["expect"], task["expect"])
+        # The suite's own check, every question read off a page by the model. The box's
+        # decision on the live page is not this test's, so build_query is stubbed.
+        args = argparse.Namespace(parser="model", reading=None)
+        ran = mock.patch.object(suite, "build_query", return_value=("a query", {"box": None, "page": "a page"}))
+        three = {"buyable": {task_id: readings["buyable"][task_id] for task_id in aplus_tasks.TWO_READINGS}}
+        with ran:
+            self.assertEqual(suite.unscorable(self.spec["tasks"], self.spec, args, readings), [])
+            # Fires on a sidecar of the three alone, as written until this change.
+            self.assertEqual(len(suite.unscorable(self.spec["tasks"], self.spec, args, three)), 10)
+
+    def test_a_one_reading_key_is_its_own_over_the_market_as_bought(self):
+        k = aplus_tasks.checked_keys(self.fixture)
+        n = len(self.groups[aplus.TEE]), len(self.groups[aplus.WATER])
+        own = aplus_tasks.expects_from(k, k, *n)
+        bought = aplus_tasks.expects_from(aplus.keys(aplus_tasks.as_bought(self.families)), k, *n)
+        self.assertEqual(own, {task["id"]: task["expect"] for task in self.spec["tasks"]})
+        self.assertEqual(aplus_tasks.reading_problems(own, bought), [])
+        # Planted: the count of tees that can sell M now keyed as the menu's count.
+        planted = {**own, "tee-count-buyable": {"kind": "count", "value": k["tee_listed"]}}
+        self.assertEqual(aplus_tasks.reading_problems(planted, bought), ["tee-count-buyable"])
+        # Planted: the best per litre read over every pack, the sold-out one included.
+        sold = k["sold_out_rate_listing"]["seller"].split()[0]
+        planted = {**own, "water-best-per-litre": {**own["water-best-per-litre"], "any": [sold]}}
+        self.assertEqual(aplus_tasks.reading_problems(planted, bought), ["water-best-per-litre"])
+        # Quiet where the per-litre answer is also the listing whose sold-out pack is cheapest
+        # per litre: over the market as bought it is a copy, and still never its own trap.
+        families = copy.deepcopy(self.families)
+        best = by_sku(families, k["per_litre"]["parent_sku"])
+        other = next(v for v in best["variants"] if v["option"] != k["per_litre_pack"]["option"])
+        other.update(qty=0, price=0.01)
+        shown = aplus.keys(families)
+        self.assertEqual(shown["sold_out_rate_listing"]["parent_sku"], best["parent_sku"])
+        own = aplus_tasks.expects_from(shown, shown, *n)
+        bought = aplus_tasks.expects_from(aplus.keys(aplus_tasks.as_bought(families)), shown, *n)
+        self.assertEqual(aplus_tasks.reading_problems(own, bought), [])
+        self.assertNotIn(best["seller"].split()[0], bought["water-best-per-litre"]["not_any"])
 
     def test_the_file_names_its_fixture_and_its_own_draw(self):
         self.assertEqual(self.spec["fixture"], DEV.name)

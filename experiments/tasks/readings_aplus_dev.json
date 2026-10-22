@@ -1,14 +1,46 @@
 {
   "_about": [
     "Computed by env/generate_aplus_tasks.py from env/fixtures/aplus_dev.json: the scripted",
-    "user's second reading of the three questions in tasks_aplus_dev.json with two readings,",
-    "used by suite.py --reading buyable and by verify_cells.py when a batch records that",
-    "reading. Do not hand edit.",
-    "The task's own expect is the menu reading: a sold-out size or pack counts as offered or",
-    "stocked. Here it does not: \"offer\" and \"stock\" are read as \"can sell it now\"."
+    "user's buyable reading of every keyed question in tasks_aplus_dev.json, used by suite.py",
+    "--reading buyable, by the model parser, which can lead any question it reads to this",
+    "reading, and by verify_cells.py when a run records it. Do not hand edit.",
+    "Here a size or pack counts only if it can be bought now. The questions in two_readings",
+    "say \"offer\" or \"stock\", and their own expect is the menu reading, a sold-out size or",
+    "pack counted as offered or stocked: here is their second key. The others say \"can",
+    "actually be bought\", \"can actually supply\" or \"available to buy\", or ask what a card",
+    "advertises, which is the cheapest variant that can be bought: here is their own key,",
+    "computed again over the market with every sold-out variant taken out, and checked equal",
+    "to it."
+  ],
+  "two_readings": [
+    "tee-all-stocked",
+    "tee-count-stocked",
+    "water-all-stocked"
   ],
   "readings": {
     "buyable": {
+      "tee-headline": {
+        "kind": "contains",
+        "any": [
+          "Brindle"
+        ],
+        "price": 14.18
+      },
+      "tee-target-price": {
+        "kind": "price",
+        "value": 19.17
+      },
+      "tee-cheapest-target": {
+        "kind": "contains",
+        "any": [
+          "Elmsworth"
+        ],
+        "not_any": [
+          "Brindle",
+          "Lymington"
+        ],
+        "price": 19.17
+      },
       "tee-all-stocked": {
         "kind": "boolean",
         "value": false
@@ -17,9 +49,84 @@
         "kind": "count",
         "value": 11
       },
+      "tee-count-buyable": {
+        "kind": "count",
+        "value": 11
+      },
+      "tee-exists-under": {
+        "kind": "boolean",
+        "value": true,
+        "any": [
+          "Elmsworth"
+        ],
+        "not_any": [
+          "Brindle",
+          "Lymington",
+          "Dunmore",
+          "Bexhill",
+          "Haldane",
+          "Northwick",
+          "Everleigh"
+        ]
+      },
+      "tee-top-3": {
+        "kind": "ranked",
+        "items": [
+          {
+            "any": [
+              "Elmsworth"
+            ],
+            "price": 19.17
+          },
+          {
+            "any": [
+              "Everleigh"
+            ],
+            "price": 21.54
+          },
+          {
+            "any": [
+              "Bexhill"
+            ],
+            "price": 21.71
+          }
+        ]
+      },
+      "water-target-price": {
+        "kind": "price",
+        "value": 20.3,
+        "trap": 6.93
+      },
+      "water-cheapest-target": {
+        "kind": "contains",
+        "any": [
+          "Dalston"
+        ],
+        "not_any": [
+          "Oakfield",
+          "Fenwick",
+          "Westmere"
+        ],
+        "price": 20.3
+      },
       "water-all-stocked": {
         "kind": "boolean",
         "value": false
+      },
+      "water-count-buyable": {
+        "kind": "count",
+        "value": 13
+      },
+      "water-best-per-litre": {
+        "kind": "contains",
+        "any": [
+          "Crowhurst"
+        ],
+        "not_any": [
+          "Oakfield",
+          "Dalston",
+          "Westmere"
+        ]
       }
     }
   }

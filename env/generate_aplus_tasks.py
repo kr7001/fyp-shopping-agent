@@ -18,8 +18,17 @@ key is the menu reading, a sold-out variant counted as offered or stocked, as ev
 since 8 October 2026. The sidecar holds the buyable reading, a sold-out variant not counted,
 computed by the same rule as `generate_apparel_v2_tasks.buyable_reading`. The market's rule
 `readings_differ` makes the two readings count different listings: on this market a sold-out
-variant is the whole difference. "In stock and available to buy right now" and "can actually
-be bought" settle the reading, so the questions that say them have one key.
+variant is the whole difference. "Can actually be bought", "can actually supply" and
+"available to buy" settle the reading, and a card advertises the cheapest variant that can be
+bought, so every other question with a key has one reading.
+
+Since 22 October 2026 the sidecar holds a buyable key for every keyed question, not only the
+three: the model parser can lead any question it reads to the buyable reading, and
+`suite.py` refuses a batch under it with a question that has none. Each is computed over
+the market as bought (`as_bought`, every sold-out size and pack taken out of its menu), so
+for the three it is their second key, and for the rest it is their own key computed a second
+way, which must equal the task file's or nothing is written. The sidecar's `two_readings`
+names the three, since being in the sidecar no longer says that a question has two.
 
 **The exists-under limit** is `generate_aplus.exists_limit`: the whole-dollar part of the
 midpoint between the two cheapest prices any tee listing can sell size M for. Exactly one
@@ -91,6 +100,14 @@ def unique(names: list[str]) -> list[str]:
     return [n for i, n in enumerate(names) if n not in names[:i]]
 
 
+def as_bought(families: list[dict]) -> list[dict]:
+    """The market as the buyable reading reads it: every size or pack that cannot be bought
+    now taken out of its menu, so that "offer", "stock" and "list" count only what can be
+    sold today. A card's price is unchanged, since a card advertises only what can be bought
+    (`generate_apparel.from_price`)."""
+    return [{**f, "variants": [v for v in f["variants"] if v["qty"] > 0]} for f in families]
+
+
 def checked_keys(fixture: dict) -> dict:
     """`generate_aplus.keys` from the variants, compared with `_instance` where they overlap,
     and refused when the market cannot give a key one answer."""
@@ -126,6 +143,51 @@ def checked_keys(fixture: dict) -> dict:
     return k
 
 
+def expects_from(answers: dict, shown: dict, tees: int, waters: int) -> dict:
+    """Every question's key. What a right answer says, its seller, price, count or yes, comes
+    from `answers`, `generate_aplus.keys` of the market as the key's reading reads it. What a
+    wrong one says (`not_any`, `trap`) comes from `shown`, the keys of the market as its pages
+    show it: a reading changes what counts as offered, never which listings a reader of the
+    pages names wrongly. `tees` and `waters` are how many listings each product has."""
+    size, pack = aplus.TEE_TARGET, aplus.WATER_TARGET
+    tee_price = lambda l: apparel.buyable_price_for(l, size)  # noqa: E731
+    water_price = lambda l: apparel.buyable_price_for(l, pack)  # noqa: E731
+    traps = lambda *ls: unique([first(l) for l in ls if l is not None])  # noqa: E731
+    card, winner, top = answers["tee_cards"][0], answers["tee_winner"], answers["top"]
+    w_winner, per_litre = answers["water_winner"], answers["per_litre"]
+    # By SKU, not by identity: over the market as bought the answer is a copy of the listing
+    # the market as shown names.
+    other_than_answer = lambda l: l is not None and l["parent_sku"] != per_litre["parent_sku"]  # noqa: E731
+    return {
+        "tee-headline": {"kind": "contains", "any": [first(card)], "price": apparel.from_price(card)},
+        "tee-target-price": {"kind": "price", "value": tee_price(winner)},
+        "tee-cheapest-target": {"kind": "contains", "any": [first(winner)],
+                                "not_any": traps(shown["tee_absent_trap"], shown["tee_sold_out_trap"]),
+                                "price": tee_price(winner)},
+        "tee-all-stocked": {"kind": "boolean", "value": answers["tee_listed"] == tees},
+        "tee-count-stocked": {"kind": "count", "value": answers["tee_listed"]},
+        "tee-count-buyable": {"kind": "count", "value": answers["tee_buyable"]},
+        "tee-exists-under": {"kind": "boolean", "value": bool(answers["witnesses"]),
+                             "any": [first(answers["witnesses"][0])],
+                             "not_any": [first(l) for l in shown["looks_like_yes"]]},
+        "tee-top-3": {"kind": "ranked",
+                      "items": [{"any": [first(l)], "price": tee_price(l)} for l in top]},
+        "water-target-price": {"kind": "price", "value": water_price(w_winner),
+                               "trap": apparel.from_price(shown["water_card"])},
+        "water-cheapest-target": {"kind": "contains", "any": [first(w_winner)],
+                                  "not_any": traps(shown["water_card"], shown["water_absent_trap"],
+                                                   shown["water_sold_out_trap"]),
+                                  "price": water_price(w_winner)},
+        "water-all-stocked": {"kind": "boolean", "value": answers["water_listed"] == waters},
+        "water-count-buyable": {"kind": "count", "value": answers["water_buyable"]},
+        "water-best-per-litre": {"kind": "contains", "any": [first(per_litre)],
+                                 "not_any": traps(*filter(other_than_answer, (
+                                     shown["water_card"], shown["water_winner"], shown["sold_out_rate_listing"])))},
+        "decline-delivery": {"kind": "none"},
+        "decline-taste": {"kind": "none"},
+    }
+
+
 def tasks(fixture: dict) -> list[dict]:
     k = checked_keys(fixture)
     brand = fixture["_generated"]["brand"]
@@ -136,13 +198,11 @@ def tasks(fixture: dict) -> list[dict]:
     water_price = lambda l: apparel.buyable_price_for(l, pack)  # noqa: E731
     card, winner = k["tee_cards"][0], k["tee_winner"]
     absent, sold_out = k["tee_absent_trap"], k["tee_sold_out_trap"]
-    w_winner, w_card = k["water_winner"], k["water_card"]
-    w_absent, w_sold_out = k["water_absent_trap"], k["water_sold_out_trap"]
+    w_winner, w_card, w_sold_out = k["water_winner"], k["water_card"], k["water_sold_out_trap"]
     per_litre, rate = k["per_litre"], k["per_litre_rate"]
     witness, limit = k["witnesses"][0], k["limit"]
     top = k["top"]
     search = f"Go to {{base}}/catalogsearch/result/?q={brand} ."
-    traps = lambda *ls: unique([first(l) for l in ls if l is not None])  # noqa: E731
 
     notes = {
         "tee-headline": "Control. Answerable from the results pages without opening anything: "
@@ -204,31 +264,8 @@ def tasks(fixture: dict) -> list[dict]:
         "decline-delivery": "Push-back. Delivery time is not shown anywhere on this shop. No key.",
         "decline-taste": "Push-back. Taste is not shown anywhere on this shop. No key.",
     }
-    expects = {
-        "tee-headline": {"kind": "contains", "any": [first(card)], "price": apparel.from_price(card)},
-        "tee-target-price": {"kind": "price", "value": tee_price(winner)},
-        "tee-cheapest-target": {"kind": "contains", "any": [first(winner)],
-                                "not_any": traps(absent, sold_out), "price": tee_price(winner)},
-        "tee-all-stocked": {"kind": "boolean", "value": k["tee_listed"] == len(tees)},
-        "tee-count-stocked": {"kind": "count", "value": k["tee_listed"]},
-        "tee-count-buyable": {"kind": "count", "value": k["tee_buyable"]},
-        "tee-exists-under": {"kind": "boolean", "value": True, "any": [first(witness)],
-                             "not_any": [first(l) for l in k["looks_like_yes"]]},
-        "tee-top-3": {"kind": "ranked",
-                      "items": [{"any": [first(l)], "price": tee_price(l)} for l in top]},
-        "water-target-price": {"kind": "price", "value": water_price(w_winner),
-                               "trap": apparel.from_price(w_card)},
-        "water-cheapest-target": {"kind": "contains", "any": [first(w_winner)],
-                                  "not_any": traps(w_card, w_absent, w_sold_out),
-                                  "price": water_price(w_winner)},
-        "water-all-stocked": {"kind": "boolean", "value": k["water_listed"] == len(waters)},
-        "water-count-buyable": {"kind": "count", "value": k["water_buyable"]},
-        "water-best-per-litre": {"kind": "contains", "any": [first(per_litre)],
-                                 "not_any": traps(*(l for l in (w_card, w_winner, k["sold_out_rate_listing"])
-                                                    if l is not per_litre))},
-        "decline-delivery": {"kind": "none"},
-        "decline-taste": {"kind": "none"},
-    }
+    # The task's own keys: the market as shown, the menu reading where a question has two.
+    expects = expects_from(k, k, len(tees), len(waters))
     out = []
     for task_id, (product, template) in aplus.TEMPLATES.items():
         outcome, kind = BOX[task_id]
@@ -243,17 +280,32 @@ def tasks(fixture: dict) -> list[dict]:
     return out
 
 
+def reading_problems(own: dict, bought: dict) -> list[str]:
+    """The questions with one reading whose key over the market as bought is not their own:
+    a key that counted a sold-out variant where its question cannot mean one."""
+    return [task_id for task_id in own if task_id not in TWO_READINGS and own[task_id] != bought[task_id]]
+
+
 def buyable_reading(fixture: dict) -> dict:
-    """The scripted user's buyable reading of the three questions with two readings: a
-    variant counts only if it can be bought now."""
+    """The scripted user's buyable reading of every keyed question, a variant counted only if
+    it can be bought now: each key over the market as bought (`as_bought`), with the wrong
+    answers it names from the market as shown. For the three questions with two readings it
+    is their second key. The rest settle the reading in their words ("can actually be
+    bought", "can actually supply", "available to buy") or ask what a card advertises, the
+    cheapest variant that can be bought, so it is their own key computed a second way, and
+    nothing is written if the two differ (`reading_problems`)."""
     k = checked_keys(fixture)
-    tees = sum(1 for f in fixture["families"] if f["product"] == aplus.TEE)
-    waters = sum(1 for f in fixture["families"] if f["product"] == aplus.WATER)
-    return {"buyable": {
-        "tee-all-stocked": {"kind": "boolean", "value": k["tee_buyable"] == tees},
-        "tee-count-stocked": {"kind": "count", "value": k["tee_buyable"]},
-        "water-all-stocked": {"kind": "boolean", "value": k["water_buyable"] == waters},
-    }}
+    families = fixture["families"]
+    tees = sum(1 for f in families if f["product"] == aplus.TEE)
+    waters = sum(1 for f in families if f["product"] == aplus.WATER)
+    own = expects_from(k, k, tees, waters)
+    bought = expects_from(aplus.keys(as_bought(families)), k, tees, waters)
+    differ = reading_problems(own, bought)
+    if differ:
+        raise SystemExit(f"{', '.join(differ)}: the key over the market as bought differs from the "
+                         f"task's own, and the question has one reading, so one of them counts a "
+                         f"variant that cannot be bought")
+    return {"buyable": {task_id: key for task_id, key in bought.items() if key["kind"] != "none"}}
 
 
 def environment(fixture: dict) -> list[str]:
@@ -307,13 +359,19 @@ def readings(fixture: dict, fixture_name: str, tasks_name: str) -> dict:
     return {
         "_about": [
             *wrap(f"Computed by env/generate_aplus_tasks.py from env/fixtures/{fixture_name}: the "
-                  f"scripted user's second reading of the three questions in {tasks_name} with "
-                  f"two readings, used by suite.py --reading buyable and by verify_cells.py when "
-                  f"a batch records that reading. Do not hand edit."),
-            *wrap("The task's own expect is the menu reading: a sold-out size or pack counts as "
-                  "offered or stocked. Here it does not: \"offer\" and \"stock\" are read as \"can "
-                  "sell it now\"."),
+                  f"scripted user's buyable reading of every keyed question in {tasks_name}, used "
+                  f"by suite.py --reading buyable, by the model parser, which can lead any "
+                  f"question it reads to this reading, and by verify_cells.py when a run records "
+                  f"it. Do not hand edit."),
+            *wrap("Here a size or pack counts only if it can be bought now. The questions in "
+                  "two_readings say \"offer\" or \"stock\", and their own expect is the menu "
+                  "reading, a sold-out size or pack counted as offered or stocked: here is their "
+                  "second key. The others say \"can actually be bought\", \"can actually supply\" "
+                  "or \"available to buy\", or ask what a card advertises, which is the cheapest "
+                  "variant that can be bought: here is their own key, computed again over the "
+                  "market with every sold-out variant taken out, and checked equal to it."),
         ],
+        "two_readings": list(TWO_READINGS),
         "readings": buyable_reading(fixture),
     }
 
