@@ -38,6 +38,7 @@ DEV_TASKS = paths.TASKS / "tasks_aplus_dev.json"
 DEV_READINGS = paths.TASKS / "readings_aplus_dev.json"
 DEV_SEARCH = paths.REPO / "env" / "manifests" / "aplus_dev-search.json"
 DEV_V1_ORDER = paths.REPO / "env" / "manifests" / "aplus_dev-v1-order.json"
+HELD_OUT = paths.TASKS / "paraphrases_v2.json"
 BRAND = "Larchmere"
 TWO_FORMS = True                   # Larchmere's, as the shop's analyzer reads it
 
@@ -1050,6 +1051,139 @@ class Keys(DevMarket):
         self.assertEqual(self.spec["_instance"], self.fixture["_instance"])
         self.assertTrue(suite.draw_id(self.spec).startswith(f"{BRAND}:"))
         self.assertNotEqual(suite.draw_id(self.spec), suite.draw_id(load(paths.TASKS / "tasks_claim_apparel.json")))
+
+
+class Rewordings(DevMarket):
+    """The held-out rewordings as `--rewordings` writes them (task F, 22 October 2026), on the
+    development market until the claim's exists. Another agent wrote them blind, so they are
+    handled here by id, template and their flags: no assertion shows a rewording's text, a
+    failure names its id, and no rule or model is put to one (the held-out file's _about)."""
+
+    def setUp(self):
+        super().setUp()
+        self.held = load(HELD_OUT)
+        self.spec = aplus_tasks.spec(self.fixture, DEV.name, self.held)
+        self.sidecar = aplus_tasks.readings(self.fixture, DEV.name, DEV_TASKS.name, self.held)
+        self.by = {t["id"]: t for t in self.spec["tasks"]}
+        self.kept = [e for e in self.held["paraphrases"] if e["meaning_kept"]]
+
+    def test_each_rewording_that_keeps_its_meaning_follows_the_templates(self):
+        self.assertEqual(self.spec["tasks"][:15], load(DEV_TASKS)["tasks"])
+        self.assertEqual([t["id"] for t in self.spec["tasks"][15:]], [f"rw-{e['id']:02d}" for e in self.kept])
+        # Thirty of the thirty-six: the six that change their template's meaning are not tasks.
+        self.assertEqual((len(self.kept), len(self.spec["tasks"])), (30, 45))
+
+    def test_a_rewording_carries_its_templates_keys(self):
+        for entry in self.kept:
+            task, template = self.by[f"rw-{entry['id']:02d}"], self.by[entry["template"]]
+            with self.subTest(rewording=entry["id"]):
+                self.assertEqual((task["template"], task["rewording"]), (entry["template"], entry["id"]))
+                for field in ("family", "product", "gated", "expect", "box"):
+                    self.assertEqual(task[field], template[field], field)
+                # The template's lead, then the rewording with the market's brand and limit in
+                # it and no placeholder left but the suite's {base}. Checked without showing it.
+                lead = template["query"].split(" . ", 1)[0]
+                rest = task["query"][len(lead) + 3:]
+                self.assertTrue(task["query"].startswith(lead + " . "), entry["id"])
+                self.assertFalse("{" in rest or "}" in rest, entry["id"])
+                self.assertFalse(rest == template["query"][len(lead) + 3:], entry["id"])
+
+    def test_the_sidecar_gives_each_its_templates_buyable_key_and_readings(self):
+        committed = load(DEV_READINGS)
+        own, buyable = committed["readings"]["buyable"], self.sidecar["readings"]["buyable"]
+        for entry in self.kept:
+            task_id = f"rw-{entry['id']:02d}"
+            with self.subTest(rewording=entry["id"]):
+                if entry["template"] in own:
+                    self.assertEqual(buyable[task_id], own[entry["template"]])
+                else:
+                    self.assertNotIn(task_id, buyable)       # a decline's template has no key
+        # Every keyed question has a buyable key, the thirteen templates and 26 rewordings, as
+        # suite.py's check under the model parser needs (build_query stubbed, as in Keys).
+        keyed = [t["id"] for t in self.spec["tasks"] if t["expect"]["kind"] != "none"]
+        self.assertEqual((sorted(buyable), len(keyed)), (sorted(keyed), 39))
+        args = argparse.Namespace(parser="model", reading=None)
+        with mock.patch.object(suite, "build_query", return_value=("a query", {"box": None, "page": "a page"})):
+            self.assertEqual(suite.unscorable(self.spec["tasks"], self.spec, args, self.sidecar["readings"]), [])
+        # Two readings where the template has them: the six the held-out file expects an ask on.
+        asked = [f"rw-{e['id']:02d}" for e in self.kept if e["expected"] == "ask"]
+        self.assertEqual(asked, ["rw-07", "rw-09", "rw-10", "rw-21", "rw-33", "rw-36"])
+        self.assertEqual(self.sidecar["two_readings"], committed["two_readings"] + asked)
+        # Under the menu reading a rewording is scored by its own key, its template's.
+        for task_id in asked:
+            with self.subTest(task=task_id):
+                task = self.by[task_id]
+                self.assertIs(score.under_reading(task, "menu", self.sidecar["readings"]), task)
+                self.assertEqual(score.under_reading(task, "buyable", self.sidecar["readings"])["expect"],
+                                 own[task["template"]])
+
+    def test_a_rewording_its_keys_may_not_fit_is_refused_by_its_id(self):
+        first = self.kept[0]
+        asks = next(e for e in self.kept if e["template"] in aplus_tasks.TWO_READINGS)
+        for label, entry, change, words in (
+                ("its template reworded since", first,
+                 lambda e: e.update(template_text=e["template_text"] + " Now."), "is not worded as its author"),
+                ("a template the file does not hold", first,
+                 lambda e: e.update(template="tee-colour"), "which the task file does not hold"),
+                ("expected to plan where its template asks", asks,
+                 lambda e: e.update(expected="plan"), "for a person to decide")):
+            with self.subTest(fault=label):
+                broken = copy.deepcopy(self.held)
+                planted = next(e for e in broken["paraphrases"] if e["id"] == entry["id"])
+                change(planted)
+                for write in (lambda h: aplus_tasks.spec(self.fixture, DEV.name, h),
+                              lambda h: aplus_tasks.readings(self.fixture, DEV.name, DEV_TASKS.name, h)):
+                    with self.assertRaises(SystemExit) as raised:
+                        write(broken)
+                    message = str(raised.exception)
+                    self.assertIn(f"rewording {entry['id']}", message)
+                    self.assertIn(words, message)
+                    self.assertFalse(entry["text"] in message or entry["template_text"] in message)
+
+    def test_one_command_writes_both_and_shows_no_rewording(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tasks, readings = pathlib.Path(tmp) / DEV_TASKS.name, pathlib.Path(tmp) / DEV_READINGS.name
+            ran = subprocess.run([sys.executable, "env/generate_aplus_tasks.py", "--fixture",
+                                  str(DEV.relative_to(paths.REPO)), "--out", str(tasks),
+                                  "--readings-out", str(readings), "--rewordings",
+                                  str(HELD_OUT.relative_to(paths.REPO))],
+                                 cwd=paths.REPO, check=True, capture_output=True, text=True)
+            # Compared whole without a diff, which would show the queries.
+            self.assertTrue(load(tasks) == self.spec, "the command's task file is not spec()'s")
+            self.assertEqual(load(readings), self.sidecar)
+        printed = ran.stdout + ran.stderr
+        self.assertIn("(45 tasks)", printed)
+        self.assertFalse(any(e["text"] in printed for e in self.held["paraphrases"]))
+
+    def test_never_beside_the_development_markets_questions(self):
+        # Fires on the committed development files, which the free tests read; quiet on a
+        # file outside experiments/tasks/, and on the same files without the rewordings.
+        self.assertIn("would put the held-out rewordings", aplus_tasks.refused(
+            DEV, self.fixture, DEV_TASKS, DEV_READINGS, rewordings=True))
+        with tempfile.TemporaryDirectory() as tmp:
+            out = pathlib.Path(tmp)
+            self.assertIn("would put the held-out rewordings", aplus_tasks.refused(
+                DEV, self.fixture, out / DEV_TASKS.name, DEV_READINGS, rewordings=True))
+            self.assertIsNone(aplus_tasks.refused(DEV, self.fixture, out / DEV_TASKS.name,
+                                                  out / DEV_READINGS.name, rewordings=True))
+        self.assertIsNone(aplus_tasks.refused(DEV, self.fixture, DEV_TASKS, DEV_READINGS))
+        # A claim market's may hold them: the same fixture, drawn from the claim's phrasings.
+        claim = copy.deepcopy(self.fixture)
+        claim["_generated"]["phrasings"] = "claim"
+        self.assertIsNone(aplus_tasks.refused(DEV, claim, DEV_TASKS, DEV_READINGS, rewordings=True))
+
+    def test_the_command_refuses_before_writing(self):
+        # The command line asks the same rule. A temporary folder stands for experiments/tasks/,
+        # so a command that did not ask would write there and not over the committed files.
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = pathlib.Path(tmp)
+            argv = ["generate_aplus_tasks.py", "--fixture", str(DEV), "--out", str(folder / DEV_TASKS.name),
+                    "--readings-out", str(folder / DEV_READINGS.name), "--rewordings", str(HELD_OUT)]
+            with mock.patch.object(aplus_tasks, "TASKS", folder), mock.patch.object(sys, "argv", argv), \
+                    self.assertRaises(SystemExit) as raised:
+                aplus_tasks.main()
+            self.assertIn("would put the held-out rewordings", str(raised.exception))
+            self.assertEqual(list(folder.iterdir()), [])
 
 
 class LiveCheckComparisons(DevMarket):

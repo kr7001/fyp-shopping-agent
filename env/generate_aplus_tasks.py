@@ -41,8 +41,26 @@ ask which reading is meant, or decline the two it should not plan. The kinds are
 the block gives the same questions on the first claim market. It is not yet checked against
 the box, which does not read a second results page.
 
+**The held-out rewordings** (since 22 October 2026, task F). With `--rewordings`, each
+rewording in experiments/tasks/paraphrases_v2.json that keeps its template's meaning is a
+task too (`reworded`), so one command writes the claim's task file for both: its id is
+`rw-NN` from the rewording's id, it carries its template's id (`template`), product, gated
+flag and keys, its expected outcome from the held-out file, which must be its template's,
+and its query is the template's lead with the rewording after it, the market's brand and
+limit filled in. Its template's wording as the rewording's author read it is held to the
+task file's, so a template changed since is refused. The rewordings are read here by id,
+template, meaning_kept and expected, and their texts only to be written into the queries:
+nothing here prints one. They go into the claim market's task file, or for a test into a
+file outside experiments/tasks/, never beside a development market's questions there, which
+the free tests put the rules to (`refused`), so no rule or prompt is tuned on them (the
+held-out file's own _about, LESSONS 19). The sidecar gives each its template's buyable key,
+and names the rewordings of the three questions with two readings among them.
+
     python3 env/generate_aplus_tasks.py --fixture env/fixtures/aplus_dev.json \\
         --out experiments/tasks/tasks_aplus_dev.json --readings-out experiments/tasks/readings_aplus_dev.json
+    python3 env/generate_aplus_tasks.py --fixture env/fixtures/<claim market>.json \\
+        --out experiments/tasks/tasks_<market>.json --readings-out experiments/tasks/readings_<market>.json \\
+        --rewordings experiments/tasks/paraphrases_v2.json
 """
 
 from __future__ import annotations
@@ -61,6 +79,10 @@ import generate_apparel as apparel  # noqa: E402  (from_price, buyable_price_for
 
 TASKS = REPO / "experiments" / "tasks"
 FAMILY = "aplus"
+# A held-out rewording's task id, from its id in the held-out file.
+REWORDING_ID = "rw-{id:02d}"
+# The held-out file's expected outcome, in the box field's words.
+EXPECTED = {"plan": "plan", "ask": "ask", "decline": "refuse"}
 # The questions with two readings, by the box's rule (`ambiguity.ask`, checked by the tests).
 TWO_READINGS = ("tee-all-stocked", "tee-count-stocked", "water-all-stocked")
 NOT_PLANNED = ("decline-delivery", "decline-taste")
@@ -280,6 +302,46 @@ def tasks(fixture: dict) -> list[dict]:
     return out
 
 
+def reworded(templates: list[dict], held_out: dict, brand: str, limit: int) -> list[dict]:
+    """A task for each held-out rewording that keeps its template's meaning, with its
+    template's keys (`--rewordings`, 22 October 2026). Refused when a rewording names a
+    template the task file does not hold, when its template's wording as its author read it
+    is not the task file's, so its keys would be another question's, or when the block is
+    expected to do with it other than with its template, so its reading would be a person's
+    to decide. No text is printed: the reason names the rewording by its id."""
+    by_id = {task["id"]: task for task in templates}
+    out = []
+    for entry in held_out["paraphrases"]:
+        if not entry["meaning_kept"]:
+            continue
+        template = by_id.get(entry["template"])
+        if template is None:
+            raise SystemExit(f"rewording {entry['id']} rewords {entry['template']!r}, which the task "
+                             f"file does not hold")
+        lead, wording = template["query"].split(" . ", 1)
+        if entry["template_text"].format(brand=brand, limit=limit) != wording:
+            raise SystemExit(f"rewording {entry['id']}'s template, {entry['template']}, is not worded "
+                             f"as its author read it, so its keys may not apply")
+        outcome, kind = BOX[entry["template"]]
+        if EXPECTED[entry["expected"]] != outcome:
+            # A rewording that keeps its template's meaning keeps what the block should do with
+            # it, as all thirty in the file of 22 October 2026 do. One that did not would leave
+            # which reading it has, and so which key, for a person to decide.
+            raise SystemExit(f"rewording {entry['id']} is expected to {entry['expected']} where its "
+                             f"template, {entry['template']}, is to {outcome}, so which key applies "
+                             f"is for a person to decide")
+        out.append({
+            "id": REWORDING_ID.format(id=entry["id"]), "family": FAMILY, "product": template["product"],
+            "gated": template["gated"], "template": entry["template"], "rewording": entry["id"],
+            "note": f"Held-out rewording {entry['id']} of {entry['template']} (paraphrases_v2.json), which "
+                    f"keeps its meaning, so its template's keys apply.",
+            "query": f"{lead} . {entry['text'].format(brand=brand, limit=limit)}",
+            "expect": template["expect"],
+            "box": {"outcome": EXPECTED[entry["expected"]], "kind": kind if entry["expected"] != "decline" else None},
+        })
+    return out
+
+
 def reading_problems(own: dict, bought: dict) -> list[str]:
     """The questions with one reading whose key over the market as bought is not their own:
     a key that counted a sold-out variant where its question cannot mean one."""
@@ -328,8 +390,11 @@ def environment(fixture: dict) -> list[str]:
         f"pack is chosen.")
 
 
-def spec(fixture: dict, fixture_name: str) -> dict:
+def spec(fixture: dict, fixture_name: str, held_out: dict | None = None) -> dict:
     generated = fixture["_generated"]
+    templates = tasks(fixture)
+    rewordings = (reworded(templates, held_out, generated["brand"], checked_keys(fixture)["limit"])
+                  if held_out is not None else [])
     return {
         "_about": [
             f"Generated by env/generate_aplus_tasks.py from env/fixtures/{fixture_name}. Do not hand edit.",
@@ -345,17 +410,33 @@ def spec(fixture: dict, fixture_name: str) -> dict:
                   "is not yet checked against the box, which reads one results page."),
             *wrap("\"fixture\" names the market's fixture, so the analysis tools read its ground "
                   "truth."),
+            *(wrap(f"Then {len(rewordings)} held-out rewordings from experiments/tasks/paraphrases_v2.json, "
+                   f"those that keep their template's meaning, each a task with its template's keys, "
+                   f"id rw-NN and the template's id under \"template\". Only the claim run puts the "
+                   f"block to them: no free test or probe reads their queries, and nothing is tuned "
+                   f"on them (LESSONS 19).") if held_out is not None else []),
         ],
         "_environment": environment(fixture),
         "base_url": "http://localhost:7770",
         "brand": generated["brand"],
         "fixture": fixture_name,
         "_instance": fixture["_instance"],
-        "tasks": tasks(fixture),
+        "tasks": templates + rewordings,
     }
 
 
-def readings(fixture: dict, fixture_name: str, tasks_name: str) -> dict:
+def readings(fixture: dict, fixture_name: str, tasks_name: str, held_out: dict | None = None) -> dict:
+    keys = buyable_reading(fixture)
+    two = list(TWO_READINGS)
+    if held_out is not None:
+        # A rewording keeps its template's meaning, so its keys are its template's under
+        # either reading, and it has two readings where its template has.
+        generated = fixture["_generated"]
+        for task in reworded(tasks(fixture), held_out, generated["brand"], checked_keys(fixture)["limit"]):
+            if task["template"] in keys["buyable"]:
+                keys["buyable"][task["id"]] = keys["buyable"][task["template"]]
+            if task["template"] in TWO_READINGS:
+                two.append(task["id"])
     return {
         "_about": [
             *wrap(f"Computed by env/generate_aplus_tasks.py from env/fixtures/{fixture_name}: the "
@@ -370,17 +451,21 @@ def readings(fixture: dict, fixture_name: str, tasks_name: str) -> dict:
                   "or \"available to buy\", or ask what a card advertises, which is the cheapest "
                   "variant that can be bought: here is their own key, computed again over the "
                   "market with every sold-out variant taken out, and checked equal to it."),
+            *(wrap("The held-out rewordings, rw-NN, are described by their templates and not by "
+                   "the words above: each keeps its template's meaning, so it has its template's "
+                   "key here and is in two_readings where its template is.") if held_out is not None else []),
         ],
-        "two_readings": list(TWO_READINGS),
-        "readings": buyable_reading(fixture),
+        "two_readings": two,
+        "readings": keys,
     }
 
 
 def refused(fixture_path: pathlib.Path, fixture: dict, out: pathlib.Path,
-            readings_out: pathlib.Path) -> str | None:
+            readings_out: pathlib.Path, rewordings: bool = False) -> str | None:
     """Why this may not be written, or None: the fixture is not an A+ market's under
-    env/fixtures, or an output is a file of another market's. Kept apart from `main` so a test
-    can ask it without writing."""
+    env/fixtures, an output is a file of another market's, or the held-out rewordings would
+    go beside a development market's questions in experiments/tasks/. Kept apart from `main`
+    so a test can ask it without writing."""
     if fixture_path.resolve().parent != (HERE / "fixtures").resolve():
         return "the fixture must be under env/fixtures, where the analysis tools look for it"
     if (fixture.get("_generated") or {}).get("generator") != "env/generate_aplus.py":
@@ -393,6 +478,15 @@ def refused(fixture_path: pathlib.Path, fixture: dict, out: pathlib.Path,
                 return f"{path.name} is the task file of {named or 'another market'}"
             if path == readings_out and fixture_path.name not in " ".join(other.get("_about", [])):
                 return f"{path.name} is the readings of another market"
+    # The rewordings go into the claim market's task file, or for a test into a file outside
+    # experiments/tasks/. A development market's task file there is the one the free tests and
+    # probes put the rules to, which would tune them on the held-out set (LESSONS 19,
+    # 22 October 2026).
+    if rewordings and fixture["_generated"].get("phrasings") == "development":
+        for path in (out, readings_out):
+            if TASKS.resolve() in path.resolve().parents:
+                return (f"{path.name} would put the held-out rewordings beside a development "
+                        f"market's questions, where the free tests put the rules to them")
     return None
 
 
@@ -401,13 +495,17 @@ def main() -> int:
     parser.add_argument("--fixture", type=pathlib.Path, required=True)
     parser.add_argument("--out", type=pathlib.Path, required=True)
     parser.add_argument("--readings-out", type=pathlib.Path, required=True)
+    parser.add_argument("--rewordings", type=pathlib.Path, default=None,
+                        help="experiments/tasks/paraphrases_v2.json: add each held-out rewording "
+                             "that keeps its template's meaning, with its template's keys")
     args = parser.parse_args()
     fixture = json.loads(args.fixture.read_text())
-    why = refused(args.fixture, fixture, args.out, args.readings_out)
+    why = refused(args.fixture, fixture, args.out, args.readings_out, rewordings=args.rewordings is not None)
     if why:
         raise SystemExit(f"refusing: {why}")
-    written = spec(fixture, args.fixture.name)
-    sidecar = readings(fixture, args.fixture.name, args.out.name)
+    held_out = json.loads(args.rewordings.read_text()) if args.rewordings else None
+    written = spec(fixture, args.fixture.name, held_out)
+    sidecar = readings(fixture, args.fixture.name, args.out.name, held_out)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(written, indent=2) + "\n")
     args.readings_out.write_text(json.dumps(sidecar, indent=2) + "\n")
