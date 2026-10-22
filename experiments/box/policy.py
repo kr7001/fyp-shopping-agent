@@ -381,8 +381,24 @@ EXHAUSTIVE = (
     "listings you have opened, and say how many you opened.")
 
 
-def exhaustive_query(query: str) -> str:
-    return query + EXHAUSTIVE
+# The same instruction for a search that holds more than the question's product, the tee
+# and the water of one brand (22 October 2026, the second claim market): EXHAUSTIVE tells the
+# agent to open every listing in the results, the other product's too, which on Larchmere is
+# 42 listings for a question about 21 of them, and checks a size on listings that sell water.
+# An option, `suite.py --exhaustive-wording product`, never the default: the first claim's
+# open-everything arm was sent EXHAUSTIVE, word for word, and the default stays so.
+EXHAUSTIVE_PRODUCT = (
+    "\n\nBefore answering, open every {product} listing in the search results, including any "
+    "on later pages, and check the relevant option on each one. Listings of anything else in "
+    "the results are not part of the question and need not be opened. Do not stop early "
+    "because a listing looks unpromising from its search-result price. Base the answer only "
+    "on listings you have opened, and say how many you opened.")
+
+
+def exhaustive_query(query: str, product: str | None = None) -> str:
+    """The question with the open-everything instruction: EXHAUSTIVE, or with `product`
+    the instruction naming the question's product (`EXHAUSTIVE_PRODUCT`)."""
+    return query + (EXHAUSTIVE if product is None else EXHAUSTIVE_PRODUCT.format(product=product))
 
 
 def confidence_query(query: str, wording: str) -> str:

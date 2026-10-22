@@ -1310,5 +1310,78 @@ class StepAndClock(unittest.TestCase):
                          "Held constant across the arms: browser_tool None; max_steps not recorded; clock_s 1800")
 
 
+# ---------------------------------------------------------------------------
+# Open everything on a search of two products (22 October 2026)
+
+class OpenEverythingByProduct(unittest.TestCase):
+    """The open-everything instruction says "every listing in the search results". On a
+    search of a tee and a water that is the other product's listings too, so a product-naming
+    wording is an option of its own, never the default."""
+    APLUS = ("--tasks", str(paths.TASKS / "tasks_aplus_dev.json"), "--repeats", "1",
+             "--only", "tee-target-price", "water-target-price")
+
+    def run_with(self, *argv):
+        run = run_suite(*argv)
+        self.addCleanup(run.owner.cleanup)
+        payload = json.loads((run.batch / "suite.json").read_text()) if run.batch else None
+        return run, payload
+
+    def test_the_default_is_the_first_claims_text_word_for_word(self):
+        import policy  # noqa: E402
+        stored = json.loads((paths.RESULTS / "20261020T202049" / "apparel-cheapest-target-1.json").read_text())
+        self.assertTrue(stored["query"].endswith(policy.EXHAUSTIVE))
+        self.assertEqual(policy.exhaustive_query("Q?"), "Q?" + policy.EXHAUSTIVE)
+        self.assertIn("open every listing in the search results", policy.EXHAUSTIVE)
+
+    def test_the_product_wording_names_each_tasks_product(self):
+        # Planted: the suite sending the default whatever the flag, both texts said every
+        # listing.
+        run, payload = self.run_with(*self.APLUS, "--exhaustive", "--exhaustive-wording", "product")
+        texts = {command[command.index("--out") - 1].split(" . ", 1)[1].split("?", 1)[0]: command[command.index("--out") - 1]
+                 for command, _ in run.commands}
+        self.assertEqual(len(texts), 2)
+        for text in texts.values():
+            product = "tee" if "of the Larchmere tee" in text else "water"
+            self.assertIn(f"Before answering, open every {product} listing in the search results, including any "
+                          f"on later pages", text)
+            self.assertIn("Listings of anything else in the results are not part of the question", text)
+            self.assertNotIn("open every listing in the search results", text)
+        self.assertEqual((payload["arm"], payload["exhaustive_wording"]), ("exhaustive-product", "product"))
+        # The default, as before, and an arm of its own name.
+        run, payload = self.run_with(*self.APLUS, "--exhaustive")
+        self.assertTrue(all(command[command.index("--out") - 1].endswith(__import__("policy").EXHAUSTIVE)
+                            for command, _ in run.commands))
+        self.assertEqual((payload["arm"], payload["exhaustive_wording"]), ("exhaustive", "every"))
+        run, payload = self.run_with(*self.APLUS)
+        self.assertEqual((payload["arm"], payload["exhaustive_wording"]), ("none", None))
+
+    def test_it_needs_open_everything_and_a_product_to_name(self):
+        run, _ = self.run_with(*self.APLUS, "--exhaustive-wording", "product")
+        self.assertEqual(run.code, 2)
+        self.assertIn("--exhaustive-wording words the open-everything instruction, so it needs --exhaustive",
+                      run.out)
+        run, _ = self.run_with("--tasks", str(paths.TASKS / "tasks_apparel.json"), "--repeats", "1",
+                               "--only", "apparel-headline", "--exhaustive", "--exhaustive-wording", "product")
+        self.assertEqual(run.code, 2)
+        self.assertIn("names none for apparel-headline", run.out)
+
+    def test_the_older_scripts_know_it(self):
+        # Planted, one at a time: each of the three without it, its line below failed.
+        import claim  # noqa: E402
+        import arms  # noqa: E402
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = pathlib.Path(tmp)
+            (folder / "suite.json").write_text(json.dumps({"tasks_file": "tasks_aplus_dev.json", "exhaustive": True,
+                                                           "exhaustive_wording": "product"}))
+            self.assertIn("--exhaustive --exhaustive-wording product", voids.rerun_flags(folder))
+            (folder / "suite.json").write_text(json.dumps({"tasks_file": "tasks_apparel.json", "exhaustive": True}))
+            self.assertNotIn("--exhaustive-wording", voids.rerun_flags(folder))
+        line = "--tasks t --repeats 1 --exhaustive {} --only tee-target-price"
+        self.assertEqual(claim.intended(line.format("--exhaustive-wording product"))[0], "exhaustive-product")
+        self.assertEqual(claim.intended(line.format(""))[0], "exhaustive")
+        self.assertEqual(arms.arm_name({"exhaustive": True, "exhaustive_wording": "product"}), "exhaustive-product")
+        self.assertEqual(arms.arm_name({"exhaustive": True}), "exhaustive")
+
+
 if __name__ == "__main__":
     unittest.main()

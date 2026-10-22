@@ -368,6 +368,9 @@ def intended(args: str) -> tuple[str, str | None, list[tuple[str, int]]]:
            else "exhaustive" if "exhaustive" in named else "none")
     if arm in ("box", "box-exhaust") and (named.get("parser") or ["rules"])[0] == "model":
         arm += "-model"
+    # Open everything naming the question's product is an arm of its own (22 October 2026).
+    if arm == "exhaustive" and (named.get("exhaustive-wording") or ["every"])[0] == "product":
+        arm = "exhaustive-product"
     reading = (named.get("reading") or [None])[0]
     try:
         start = int((named.get("repeat-start") or ["1"])[0])

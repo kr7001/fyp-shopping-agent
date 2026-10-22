@@ -87,7 +87,8 @@ def arm_name(payload: dict) -> str:
         # assumption that every suite used the development fixture.
         return f"{base} v{version}"
     if payload.get("exhaustive"):
-        return "exhaustive"
+        # The product wording is an arm of its own (22 October 2026); no water batch has it.
+        return "exhaustive-product" if payload.get("exhaustive_wording") == "product" else "exhaustive"
     if payload.get("confidence", "off") != "off":
         return f"confidence:{payload['confidence']}"
     policy = payload.get("policy", "off")

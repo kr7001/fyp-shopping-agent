@@ -463,7 +463,9 @@ def build_query(task: dict, spec: dict, args, call=None) -> tuple[str | None, di
         # buys nothing.
         query, applied["strategy"] = planner_module.planned_query(query)
     if args.exhaustive:
-        query = policy_module.exhaustive_query(query)
+        # Every listing, the default, or every listing of the task's product (22 October 2026).
+        wording = getattr(args, "exhaustive_wording", None) or "every"
+        query = policy_module.exhaustive_query(query, task["product"] if wording == "product" else None)
     if args.confidence != "off":
         query = policy_module.confidence_query(query, args.confidence)
     return query, applied
@@ -483,8 +485,10 @@ def arm_of(args) -> str:
         return "box-exhaust-model" if model else "box-exhaust"
     if args.box:
         return "box-model" if model else "box"
+    # Open everything naming the question's product is an arm of its own (22 October 2026).
+    product = getattr(args, "exhaustive_wording", None) == "product"
     named = [name for name, on in (("targeting", args.targeting),
-                                   ("exhaustive", args.exhaustive)) if on]
+                                   ("exhaustive-product" if product else "exhaustive", args.exhaustive)) if on]
     return "+".join(named) or "none"
 
 
@@ -722,6 +726,12 @@ def main() -> int:
                         help="instruct the agent to open every listing. The upper bound "
                              "on cost, correct and expensive, that a targeting policy has "
                              "to beat")
+    parser.add_argument("--exhaustive-wording", choices=("every", "product"), default=None,
+                        help="with --exhaustive: every, the default, tells the agent to open "
+                             "every listing in the results, as every batch before 22 October "
+                             "2026 did; product names the task's product (its task file's "
+                             "`product`), for a search that holds another product too. An arm "
+                             "of its own, exhaustive-product")
     parser.add_argument("--confidence", choices=("off", "plain", "retrieval"), default="off",
                         help="ask the agent to state a confidence with its answer. This is "
                              "the verbalised-confidence baseline, not part of the "
@@ -813,6 +823,10 @@ def main() -> int:
                      "--box or --box-exhaust")
     if args.repeat_start < 1:
         parser.error("--repeat-start numbers the first repeat, so it is 1 or more")
+    if args.exhaustive_wording and not args.exhaustive:
+        parser.error("--exhaustive-wording words the open-everything instruction, so it needs "
+                     "--exhaustive")
+    args.exhaustive_wording = (args.exhaustive_wording or "every") if args.exhaustive else None
     # The limits are openJiuwen's (22 October 2026). The naive loop has its own step limit
     # and no clock, so either flag there would record a limit nobody applied.
     for flag, value in (("--max-steps", args.max_steps), ("--clock", args.clock)):
@@ -873,6 +887,12 @@ def main() -> int:
     if not tasks:
         print("no matching tasks")
         return 1
+    # The product wording names each task's product, so a task file must say it (22 October
+    # 2026): refused by name rather than worded without one.
+    unnamed = [t["id"] for t in tasks if args.exhaustive_wording == "product" and not t.get("product")]
+    if unnamed:
+        parser.error(f"--exhaustive-wording product names each task's product, and "
+                     f"{args.tasks.name} names none for {', '.join(unnamed)}")
     # The scripted user's other readings of the ambiguous questions, for scoring under
     # `--reading`. Empty when the task file has no sidecar.
     readings = scoring.readings_for(args.tasks)
@@ -1063,6 +1083,9 @@ def main() -> int:
                "policy": args.policy,
                "confidence": args.confidence,
                "exhaustive": args.exhaustive,
+               # Which open-everything instruction (22 October 2026): "every" listing, as every
+               # batch before, or every listing of the task's "product"; None without it.
+               "exhaustive_wording": args.exhaustive_wording,
                "targeting": args.targeting,
                # The box plans through the same classifier and planner, so both versions
                # are recorded under it too.

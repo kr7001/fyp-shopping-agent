@@ -235,6 +235,10 @@ def rerun_flags(folder: pathlib.Path) -> str:
     flags = [f"--tasks experiments/tasks/{payload.get('tasks_file') or '?'}", "--repeats 1"]
     flags += [f"--{name}" for name in ("box", "box-exhaust", "targeting", "exhaustive")
               if payload.get(name.replace("-", "_"))]
+    # The open-everything instruction's wording (22 October 2026); "every", the default, and a
+    # batch before the field need no flag.
+    if payload.get("exhaustive_wording") == "product":
+        flags.append("--exhaustive-wording product")
     for name in ("reading", "policy", "confidence"):
         if payload.get(name) not in (None, "off"):
             flags.append(f"--{name} {payload[name]}")
