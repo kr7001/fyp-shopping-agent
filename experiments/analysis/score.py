@@ -40,7 +40,19 @@ import paths  # noqa: E402,F401  (puts box/ on the path)
 #      answered under a reading its task file has no key for is unscored, with the reason,
 #      never scored under the task's own key (`under_reading`, `score_under`). Re-scored
 #      over every stored run that day, no verdict changes
-VERSION = 4
+#   5  22 October 2026, for the second claim market, whose water is sold by the pack. A
+#      variant's own label is never a price or a count (`VARIANT_LABEL`): until v5 the
+#      count rule read "The 2 x 9.5L pack is in stock at 9 listings" as 2, and `prices_in`
+#      read 1.25 from "6 x 1.25L" as a price
+#   6  22 October 2026, from the verifier's check of the second claim market. An answer to a
+#      "contains" question that names both the expected option and an excluded one is
+#      scored by the one it names as the best (`named_best`). Until v6 naming the expected
+#      one anywhere won, so "Chandler Direct's 2 x 9.5L ... is the best value; Ambleside's
+#      6 x 1.25L is close behind" was correct where Ambleside is the key. Re-scored over
+#      every stored run that day: one verdict changes, 20260914T034338
+#      scaled-cheapest-target-2, correct to wrong, an answer that named Hillside the
+#      cheapest and Redhill, the key, only in a note
+VERSION = 6
 
 # Phrases that mean the agent declined rather than answered. Kept narrow on
 # purpose: "not" alone is far too broad, "could not determine" is not.
@@ -68,13 +80,60 @@ COVERAGE_NUMBER = re.compile(
     r"(\d{1,3})\b", re.IGNORECASE)
 
 
+# A variant's own label, which is never a price or a count (score v5, 22 October 2026): a pack,
+# a count of bottles times a volume, "2 x 9.5L", "24x350ml", "6 × 1.25 L", with any spacing,
+# and a volume on its own, "1.25L", "350 ml", "9.5-litre". The shop's clothing sizes, S to
+# XL, hold no figure, so only the water's labels have numbers to set aside. A whole number
+# followed by a lone "L" after a space, "3 L", is left alone: it may be a count of size L.
+VARIANT_LABEL = re.compile(
+    r"\b\d+\s*[x×]\s*\d+(?:\.\d+)?\s*(?:ml|l|litres?|liters?)\b"
+    r"|\b\d+(?:\.\d+)?[\s-]*(?:ml|litres?|liters?)\b"
+    r"|\b\d+(?:\.\d+)?l\b|\b\d+\.\d+\s+l\b", re.IGNORECASE)
+
+
+def without_labels(text: str) -> str:
+    """The answer with every variant label blanked, character for character, so a position
+    in it is a position in the answer."""
+    return VARIANT_LABEL.sub(lambda m: " " * len(m.group(0)), text or "")
+
+
+# What an answer says is the best of what it compares (score v6): "the cheapest", "the best
+# value", "the lowest price per litre". A sentence that says none of these only reports.
+SUPERLATIVE = re.compile(r"\b(?:best|cheapest|lowest|least\s+expensive|most\s+affordable)\b",
+                         re.IGNORECASE)
+# The sentences of an answer, never cut at a decimal point: a stop, a question mark, an
+# exclamation or a semicolon followed by a space, or a new line.
+SENTENCE_END = re.compile(r"(?<=[.!?;])\s+|\n+")
+
+
+def named_best(answer: str, wanted: list[str], excluded: list[str]) -> str | None:
+    """Which side the answer names as the best, "wanted" or "excluded", or None when no
+    sentence makes a superlative claim about either (score v6, 22 October 2026). The first
+    sentence that says "best", "cheapest" or "lowest" and names an option decides, by the
+    option named nearest the first such word: the answer's conclusion comes in it however
+    much it compares after."""
+    for sentence in SENTENCE_END.split(answer or ""):
+        low = sentence.lower()
+        claim = SUPERLATIVE.search(low)
+        if claim is None:
+            continue
+        named = [(abs(m.start() - claim.start()) if m.start() > claim.start()
+                  else max(0, claim.start() - m.end()), side)
+                 for side, tokens in (("wanted", wanted), ("excluded", excluded))
+                 for token in tokens for m in re.finditer(re.escape(token.lower()), low)]
+        if named:
+            return min(named)[1]
+    return None
+
+
 def has_marker(text: str, markers: tuple[str, ...]) -> bool:
     return any(re.search(rf"\b{re.escape(m)}\b", text) for m in markers)
 
 
 def prices_in(text: str) -> list[float]:
-    """Every money-looking number in the answer, in order of appearance."""
-    return [float(m) for m in re.findall(r"(?<![\d.])(\d{1,4}\.\d{2})(?![\d])", text or "")]
+    """Every money-looking number in the answer, in order of appearance, none inside a
+    variant's label (score v5): "6 x 1.25L at $6.84" names one price, 6.84."""
+    return [float(m) for m in re.findall(r"(?<![\d.])(\d{1,4}\.\d{2})(?![\d])", without_labels(text))]
 
 
 def abstained(text: str) -> bool:
@@ -195,6 +254,10 @@ def score(task: dict, answer: str, ok: bool) -> dict:
         hit = any(token.lower() in low for token in expect["any"])
         bad = any(token.lower() in low for token in expect.get("not_any", []))
         price = expect.get("price")
+        # Naming both, the answer is held to the one it says is the best (score v6).
+        if hit and bad and named_best(answer, expect["any"], expect["not_any"]) == "excluded":
+            return {"verdict": "wrong", "why": "named an excluded option as the best",
+                    "prices": found}
         if hit:
             if price is not None and price not in found:
                 return {"verdict": "ambiguous", "why": f"right option, missing price {price}",
@@ -242,12 +305,14 @@ def score(task: dict, answer: str, ok: bool) -> dict:
         # read "After checking all 15 listings, I found that 5 products have size M", which
         # is right and was scored as a count of 15. So a number stating how many were looked
         # at, "all 15", "of the 15", "out of 15", is not the count, and neither are the
-        # digits inside a price. If that leaves nothing, the first number is used after all,
-        # since "All 15 listings offer it" is a count of 15.
-        numbers = list(re.finditer(r"(?<![\d.$])(\d{1,3})(?![\d.])", answer or ""))
+        # digits inside a price, nor since score v5 those inside a variant's label, "the
+        # 2 x 9.5L pack". If that leaves nothing, the first number is used after all, since
+        # "All 15 listings offer it" is a count of 15.
+        bare = without_labels(answer)
+        numbers = list(re.finditer(r"(?<![\d.$])(\d{1,3})(?![\d.])", bare))
         if not numbers:
             return {"verdict": "ambiguous", "why": "no number given", "prices": found}
-        coverage = {m.start(1) for m in COVERAGE_NUMBER.finditer(answer or "")}
+        coverage = {m.start(1) for m in COVERAGE_NUMBER.finditer(bare)}
         kept = [m for m in numbers if m.start(1) not in coverage]
         stated = int((kept or numbers)[0].group(1))
         if stated == expect["value"]:

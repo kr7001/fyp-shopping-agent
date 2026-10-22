@@ -3,12 +3,13 @@
 A rule with only a passing case is not tested: it might pass everything. So every rule here
 has a case where it must fire and a case where it must stay quiet (LESSONS.md, 1 and 24).
 """
+import json
 import pathlib
 import sys
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-import paths  # noqa: E402,F401
+import paths  # noqa: E402
 import policy  # noqa: E402
 import score  # noqa: E402
 
@@ -156,6 +157,101 @@ class Abstention(unittest.TestCase):
 
     def test_a_plain_answer_is_not_an_abstention(self):
         self.assertFalse(score.abstained("The cheapest size M is $12.40 from Hollis & Vane."))
+
+
+class VariantLabels(unittest.TestCase):
+    """Score v5, 22 October 2026: a variant's own label is never a price or a count. The water
+    of the second claim market is sold by the pack, and its labels hold figures."""
+
+    def test_a_pack_is_not_a_count(self):
+        # Planted: `without_labels` returning the answer as it is, the count read was 2.
+        self.assertEqual(verdict({"kind": "count", "value": 9}, "The 2 x 9.5L pack is in stock at 9 listings."),
+                         "correct")
+        self.assertEqual(verdict({"kind": "count", "value": 3}, "24 x 350ml: 3 listings can sell it now."),
+                         "correct")
+        # Quiet: a count with no label, and one after a coverage number, as before.
+        self.assertEqual(verdict({"kind": "count", "value": 9}, "9 listings have the pack."), "correct")
+        self.assertEqual(verdict({"kind": "count", "value": 2}, "Of the 21 listings, 2 stock it."), "correct")
+
+    def test_a_volume_is_not_a_price(self):
+        # Planted: the same, 1.25 was read as a price.
+        self.assertEqual(score.prices_in("The 6 x 1.25L pack is $6.84."), [6.84])
+        for written in ("6 x 1.25L", "6x1.25L", "6 × 1.25 L", "6 X 1.25l", "1.25L", "1.25 L", "1.25 litres",
+                        "1.25-litre", "350 ml", "12 x 550ml"):
+            with self.subTest(label=written):
+                self.assertEqual(score.prices_in(f"{written} at $6.84, not $7.10"), [6.84, 7.10])
+        # Quiet: money is still money, and a count of size L is no volume.
+        self.assertEqual(score.prices_in("$12.50 and 9.99"), [12.50, 9.99])
+        self.assertEqual(verdict({"kind": "count", "value": 3}, "3 L tees are left, and 12.50 is the price."),
+                         "correct")
+
+    def test_every_water_question_of_the_development_market(self):
+        # One right and one wrong answer to each, written with the packs' labels, scored
+        # under the task file's own keys. Each wrong one is wrong for the reason named.
+        spec = json.loads((paths.TASKS / "tasks_aplus_dev.json").read_text())
+        keys = {task["id"]: task for task in spec["tasks"] if task["id"].startswith("water-")}
+        answers = {
+            "water-target-price": ("The lowest price for the 2 x 9.5L pack that can be bought is $17.61, at "
+                                   "Chandler Direct; the 6 x 1.25L pack is not the one asked about.",
+                                   "The cheapest pack is the 6 x 1.25L at $6.84."),
+            "water-cheapest-target": ("Chandler Direct is the cheapest for the 2 x 9.5L pack, at $17.61.",
+                                      "Pembroke is the cheapest for the 2 x 9.5L pack."),
+            "water-all-stocked": ("No. Five water listings have no 2 x 9.5L pack in their menu.",
+                                  "Yes, every listing lists the 2 x 9.5L pack."),
+            "water-count-buyable": ("The 2 x 9.5L pack is in stock and can be bought at 12 listings.",
+                                    "The 2 x 9.5L pack is in stock at 16 listings."),
+            "water-best-per-litre": ("Ambleside's 6 x 1.25L pack has the lowest price per litre, $0.91/L; "
+                                     "Chandler Direct's 2 x 9.5L is close behind at $0.93/L.",
+                                     "Chandler Direct's 2 x 9.5L pack is the best value per litre; "
+                                     "Ambleside's 6 x 1.25L is close behind."),
+        }
+        self.assertEqual(sorted(answers), sorted(keys))
+        for task_id, (right, wrong) in answers.items():
+            with self.subTest(task=task_id):
+                self.assertEqual(score.score(keys[task_id], right, True)["verdict"], "correct")
+                self.assertEqual(score.score(keys[task_id], wrong, True)["verdict"], "wrong")
+
+
+class NamedBest(unittest.TestCase):
+    """Score v6, 22 October 2026: an answer naming both the expected option and an excluded
+    one is held to the one it says is the best."""
+    PER_LITRE = {"kind": "contains", "any": ["Ambleside"], "not_any": ["Pembroke", "Chandler"]}
+
+    def test_the_best_named_decides_where_both_are_named(self):
+        # The verifier's case. Planted: `named_best` never consulted, it was correct.
+        self.assertEqual(verdict(self.PER_LITRE, "Chandler Direct's 2 x 9.5L is the best value; Ambleside's "
+                                                 "6 x 1.25L is close behind."), "wrong")
+        for answer in ("Ambleside offers the lowest price per litre; Chandler Direct is second.",
+                       "I opened all 21. Pembroke: $1.20/L, Chandler: $0.93/L, Ambleside: $0.91/L. "
+                       "Ambleside is the cheapest per litre.",
+                       "Chandler at $0.93/L is beaten by Ambleside, the best at $0.91/L."):
+            with self.subTest(answer=answer[:50]):
+                self.assertEqual(verdict(self.PER_LITRE, answer), "correct")
+
+    def test_the_first_claim_of_a_best_decides(self):
+        # The answer's conclusion, then a claim about something else. Planted: the last
+        # claim deciding, this was wrong.
+        answer = ("Ambleside has the lowest price per litre, $0.91/L. Chandler Direct has the best price "
+                  "for the 2 x 9.5L pack itself.")
+        self.assertEqual(score.named_best(answer, ["Ambleside"], ["Chandler"]), "wanted")
+        self.assertEqual(verdict(self.PER_LITRE, answer), "correct")
+
+    def test_one_side_named_is_scored_as_before(self):
+        self.assertEqual(verdict(self.PER_LITRE, "Ambleside, at $0.91 per litre."), "correct")
+        self.assertEqual(verdict(self.PER_LITRE, "Chandler Direct is the best value."), "wrong")
+        # Naming both with no claim of a best is read as before: the expected one is named.
+        self.assertEqual(verdict(self.PER_LITRE, "Ambleside $0.91/L, Chandler $0.93/L."), "correct")
+        self.assertIsNone(score.named_best("Ambleside $0.91/L, Chandler $0.93/L.", ["Ambleside"], ["Chandler"]))
+
+    def test_the_stored_answer_it_changes(self):
+        # The one stored verdict v6 moves (20260914T034338 scaled-cheapest-target-2): it named
+        # Hillside the cheapest and the key, Redhill, only in a note.
+        answer = ("The cheapest seller for the 2 x 9.5L Rivenhall pack is Hillside Wholesale at $19.26 (base "
+                  "price $6.44 + pack surcharge $12.82). Note: Redhill Stores offers $17.68, but Hillside "
+                  "Wholesale at $19.26 represents the best overall value.")
+        expect = {"kind": "contains", "any": ["Redhill"], "not_any": ["Hillside"]}
+        self.assertEqual(verdict(expect, answer), "wrong")
+        self.assertEqual(score.VERSION, 6)
 
 
 if __name__ == "__main__":
