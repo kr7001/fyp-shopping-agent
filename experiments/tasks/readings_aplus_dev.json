@@ -15,7 +15,7 @@
       },
       "tee-count-stocked": {
         "kind": "count",
-        "value": 13
+        "value": 11
       },
       "water-all-stocked": {
         "kind": "boolean",

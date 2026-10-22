@@ -1,0 +1,711 @@
+{
+ "_about": [
+  "Larchmere's first A+ market (generator v1, seed 900, seeded 22 October 2026) as the order",
+  "model reads it, from env/fixtures/aplus_dev.json at commit 8305357, and the order the live",
+  "results pages listed it in, from env/manifests/aplus_dev-search.json. The case that showed",
+  "search_order.py's first formula wrong: kept so the model is checked against it offline",
+  "after the development market is drawn again. Written by a one-off script; do not edit."
+ ],
+ "brand": "Larchmere",
+ "brand_forms": 2,
+ "listings": [
+  {
+   "parent_sku": "IGR-DEV-01",
+   "name": "Larchmere Heavyweight Cotton Crew Neck Tee - Haldane Apparel Official Store",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "L"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-02",
+   "name": "Larchmere Natural Spring Water, Still - Ingleton Beverage Supply",
+   "variants": [
+    {
+     "option": "12 x 550ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    },
+    {
+     "option": "2 x 9.5L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-03",
+   "name": "Larchmere Spring Water - Brockwell Beverage Supply",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "12 x 550ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    },
+    {
+     "option": "2 x 9.5L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-04",
+   "name": "Larchmere Still Spring Water - Holbeck Trading Company",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "12 x 550ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    },
+    {
+     "option": "2 x 9.5L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-05",
+   "name": "Larchmere Still Spring Water - Elstead Pantry Stores",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "12 x 550ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    },
+    {
+     "option": "2 x 9.5L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-06",
+   "name": "Larchmere Heavyweight Cotton Tee - Abbotsley Threads",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-07",
+   "name": "Larchmere Still Spring Water - Kettering Grocery Company Ltd",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "12 x 550ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-08",
+   "name": "Larchmere Natural Spring Water, Still - Bramley Supply Co",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "12 x 550ml"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-09",
+   "name": "Larchmere Heavyweight Cotton Crew Neck Tee - Thirsk Textiles Official Store",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "M"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-10",
+   "name": "Larchmere Spring Water - Fordwich Trading Company",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "12 x 550ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    },
+    {
+     "option": "2 x 9.5L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-11",
+   "name": "Larchmere Spring Water - Ashgrove Trading Company",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-12",
+   "name": "Larchmere Heavyweight Cotton Tee - Garrick Workwear Supply Co",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "M"
+    },
+    {
+     "option": "L"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-13",
+   "name": "Larchmere Heavyweight Cotton Tee, Unisex - Oakhurst Apparel Official Store",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "M"
+    },
+    {
+     "option": "L"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-14",
+   "name": "Larchmere Heavyweight Cotton Tee, Unisex - Foxcombe Clothing Company Ltd",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "M"
+    },
+    {
+     "option": "L"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-15",
+   "name": "Larchmere Heavyweight Cotton Tee - Brindle Garments",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "M"
+    },
+    {
+     "option": "L"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-16",
+   "name": "Larchmere Heavyweight Cotton Tee - Rookwood Garment Works",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "M"
+    },
+    {
+     "option": "L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-17",
+   "name": "Larchmere Still Spring Water - Westmere Provisions",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    },
+    {
+     "option": "2 x 9.5L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-18",
+   "name": "Larchmere Spring Water - Pembroke Provisions",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "12 x 550ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    },
+    {
+     "option": "2 x 9.5L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-19",
+   "name": "Larchmere Heavyweight Cotton Tee, Unisex - Kelsall Clothing Co",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "L"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-20",
+   "name": "Larchmere Heavyweight Cotton Tee - Everleigh Workwear Supply Co",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "M"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-21",
+   "name": "Larchmere Still Spring Water - Chandler Direct",
+   "variants": [
+    {
+     "option": "12 x 550ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    },
+    {
+     "option": "2 x 9.5L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-22",
+   "name": "Larchmere Heavyweight Cotton Crew Neck Tee - Bexhill Apparel",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "M"
+    },
+    {
+     "option": "L"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-23",
+   "name": "Larchmere Spring Water - Oakfield Beverage Supply",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    },
+    {
+     "option": "2 x 9.5L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-24",
+   "name": "Larchmere Heavyweight Cotton Crew Neck Tee - Alderney Garment Works",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "M"
+    },
+    {
+     "option": "L"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-25",
+   "name": "Larchmere Natural Spring Water, Still - Ambleside Grocery Company Ltd",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "12 x 550ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-26",
+   "name": "Larchmere Natural Spring Water, Still - Whitlock Drinks Official Store",
+   "variants": [
+    {
+     "option": "12 x 550ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    },
+    {
+     "option": "2 x 9.5L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-27",
+   "name": "Larchmere Heavyweight Cotton Tee, Unisex - Dunmore Apparel Official Store",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "M"
+    },
+    {
+     "option": "L"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-28",
+   "name": "Larchmere Still Spring Water - Crowhurst Supply Co",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "12 x 550ml"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-29",
+   "name": "Larchmere Spring Water - Stonebridge Direct",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "12 x 550ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    },
+    {
+     "option": "2 x 9.5L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-30",
+   "name": "Larchmere Natural Spring Water, Still - Redhill Beverage Supply Co",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "12 x 550ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    },
+    {
+     "option": "2 x 9.5L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-31",
+   "name": "Larchmere Heavyweight Cotton Tee - Fairhaven Textile Company",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "M"
+    },
+    {
+     "option": "L"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-32",
+   "name": "Larchmere Natural Spring Water, Still - Thornbury Beverage Supply",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "12 x 550ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    },
+    {
+     "option": "2 x 9.5L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-33",
+   "name": "Larchmere Heavyweight Cotton Crew Neck Tee - Ivybridge Textile Company",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "M"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-34",
+   "name": "Larchmere Heavyweight Cotton Tee, Unisex - Carnforth Apparel Official Store",
+   "variants": [
+    {
+     "option": "M"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-35",
+   "name": "Larchmere Heavyweight Cotton Tee - Pentland Garment Works",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-36",
+   "name": "Larchmere Natural Spring Water, Still - Fenwick Beverage Supply Co",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "6 x 1.25L"
+    },
+    {
+     "option": "2 x 9.5L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-37",
+   "name": "Larchmere Heavyweight Cotton Tee - Quarles Workwear Supply Co",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "M"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-38",
+   "name": "Larchmere Heavyweight Cotton Tee - Gisburn Textiles Official Store",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-39",
+   "name": "Larchmere Spring Water - Larkspur Merchants",
+   "variants": [
+    {
+     "option": "24 x 350ml"
+    },
+    {
+     "option": "12 x 550ml"
+    },
+    {
+     "option": "2 x 9.5L"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-40",
+   "name": "Larchmere Heavyweight Cotton Crew Neck Tee - Marchmont Garments",
+   "variants": [
+    {
+     "option": "M"
+    },
+    {
+     "option": "L"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-41",
+   "name": "Larchmere Heavyweight Cotton Crew Neck Tee - Copperfield Outfitters",
+   "variants": [
+    {
+     "option": "S"
+    },
+    {
+     "option": "M"
+    },
+    {
+     "option": "L"
+    },
+    {
+     "option": "XL"
+    }
+   ]
+  },
+  {
+   "parent_sku": "IGR-DEV-42",
+   "name": "Larchmere Spring Water - Dalston Beverage Supply Co",
+   "variants": [
+    {
+     "option": "12 x 550ml"
+    },
+    {
+     "option": "2 x 9.5L"
+    }
+   ]
+  }
+ ],
+ "live_order": [
+  "IGR-DEV-15",
+  "IGR-DEV-18",
+  "IGR-DEV-29",
+  "IGR-DEV-31",
+  "IGR-DEV-39",
+  "IGR-DEV-06",
+  "IGR-DEV-16",
+  "IGR-DEV-03",
+  "IGR-DEV-10",
+  "IGR-DEV-12",
+  "IGR-DEV-22",
+  "IGR-DEV-41",
+  "IGR-DEV-17",
+  "IGR-DEV-21",
+  "IGR-DEV-23",
+  "IGR-DEV-04",
+  "IGR-DEV-05",
+  "IGR-DEV-35",
+  "IGR-DEV-19",
+  "IGR-DEV-37",
+  "IGR-DEV-40",
+  "IGR-DEV-13",
+  "IGR-DEV-14",
+  "IGR-DEV-24",
+  "IGR-DEV-27",
+  "IGR-DEV-11",
+  "IGR-DEV-20",
+  "IGR-DEV-38",
+  "IGR-DEV-33",
+  "IGR-DEV-32",
+  "IGR-DEV-02",
+  "IGR-DEV-07",
+  "IGR-DEV-28",
+  "IGR-DEV-42",
+  "IGR-DEV-01",
+  "IGR-DEV-09",
+  "IGR-DEV-30",
+  "IGR-DEV-34",
+  "IGR-DEV-25",
+  "IGR-DEV-26",
+  "IGR-DEV-36",
+  "IGR-DEV-08"
+ ]
+}

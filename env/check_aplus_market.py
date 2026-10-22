@@ -175,12 +175,23 @@ def live_order(pages: list[dict], fixture: dict) -> list[str]:
 
 
 def order_lines(fixture: dict, order: list[str]) -> list[tuple[bool, str]]:
-    """The live order against the model's, and the page rules on the live order."""
-    predicted = aplus.predicted_orders(fixture["families"])
+    """The live order against the model's for the brand's own analyzer form, and against the
+    order the fixture records (`_instance.predicted_order`, the brand's form since version 2),
+    and the page rules on the live order. A fixture from before the form was recorded is
+    compared with both forms' orders."""
+    forms = fixture["_generated"].get("brand_forms")
+    families = fixture["families"]
+    predicted = (aplus.predicted_orders(families, forms == 2) if forms else
+                 {**aplus.predicted_orders(families, False), **aplus.predicted_orders(families, True)})
     same = [label for label, o in predicted.items() if o == order]
+    recorded = fixture["_instance"]["predicted_order"] == order
     lines = [(bool(same), "the live order is the one search_order.py predicted"
-              + (f" ({same[0]})" if same else ": it is not, under any scenario, so the model "
-                                              "is wrong for this shop and the search stops"))]
+              + (f" ({same[0]})" if same else ": it is not, under any scenario for the brand's "
+                                              "form, so the model is wrong for this shop and the "
+                                              "search stops")),
+             (recorded, "the live order is the order the fixture records" if recorded else
+              f"the live order differs from the fixture's recorded order in "
+              f"{sum(a != b for a, b in zip(order, fixture['_instance']['predicted_order']))} positions")]
     broken = aplus.page_problems(fixture["families"], order)
     lines.append((not broken, "the page rules hold on the live order: " + ", ".join(aplus.PAGE_RULES)
                   if not broken else "page rules broken on the live order: " + "; ".join(broken)))

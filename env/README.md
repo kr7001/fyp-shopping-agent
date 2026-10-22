@@ -173,3 +173,10 @@ it. None calls a model.
 
 Development uses its own brand and seeds 900 to 999 only, and `generate_aplus.py` refuses any
 other seed without `--claim`. The development market is Larchmere, prefix IGR-DEV, seed 900.
+
+Since version 2 (22 October 2026, from the verifier's check): the generator takes the brand's
+analyzer form (`--brand-forms`, which the picker measures), and its page rules and recorded
+order are that form's. `--claim` refuses until the protocol no longer says DRAFT, refuses
+seeds below 1000 and development's prefix and fixture, draws only the seed its record allows
+next, titles the claim market from phrasings development never drew (`CLAIM_TEE_PHRASES`,
+`CLAIM_WATER_PHRASES`), and prints a claim market only once it is written and recorded.

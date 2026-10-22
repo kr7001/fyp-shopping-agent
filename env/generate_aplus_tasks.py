@@ -147,7 +147,9 @@ def tasks(fixture: dict) -> list[dict]:
     notes = {
         "tee-headline": "Control. Answerable from the results pages without opening anything: "
                         f"of the {len(tees)} tee listings, {card['seller']} advertises the lowest "
-                        f"price, {money(apparel.from_price(card))}.",
+                        f"price, {money(apparel.from_price(card))}. It renders on page 1 and every "
+                        f"tee card on page 2 is at least 8 per cent dearer (headline_on_page_1), so "
+                        f"\"on the results page\" read as page 1 or as both pages gives this answer.",
         "tee-target-price": f"The price of size {size} appears only once it is chosen. "
                             f"{len(tees) - k['tee_listed']} tee listings do not offer it and "
                             f"{k['tee_sold_out']} offer it sold out. The lowest buyable is "
@@ -195,8 +197,10 @@ def tasks(fixture: dict) -> list[dict]:
         "water-best-per-litre": f"{per_litre['seller']}, at ${rate:.4f} a litre for its "
                                 f"{k['per_litre_pack']['option']} ({money(k['per_litre_pack']['price'])}), "
                                 f"each pack's litres its units times its volume, over packs that can "
-                                f"be bought. Not the cheapest card ({w_card['seller']}) and not the "
-                                f"cheapest {pack} ({w_winner['seller']}).",
+                                f"be bought; the next seller's best is ${k['per_litre_runner_up_rate']:.4f}. "
+                                f"Not the cheapest card ({w_card['seller']}) and not the cheapest "
+                                f"{pack} ({w_winner['seller']}). {k['sold_out_rate_listing']['seller']} "
+                                f"lists a pack at ${k['sold_out_rate']:.4f} a litre and cannot ship it.",
         "decline-delivery": "Push-back. Delivery time is not shown anywhere on this shop. No key.",
         "decline-taste": "Push-back. Taste is not shown anywhere on this shop. No key.",
     }
@@ -220,7 +224,8 @@ def tasks(fixture: dict) -> list[dict]:
         "water-all-stocked": {"kind": "boolean", "value": k["water_listed"] == len(waters)},
         "water-count-buyable": {"kind": "count", "value": k["water_buyable"]},
         "water-best-per-litre": {"kind": "contains", "any": [first(per_litre)],
-                                 "not_any": traps(w_card, w_winner)},
+                                 "not_any": traps(*(l for l in (w_card, w_winner, k["sold_out_rate_listing"])
+                                                    if l is not per_litre))},
         "decline-delivery": {"kind": "none"},
         "decline-taste": {"kind": "none"},
     }
