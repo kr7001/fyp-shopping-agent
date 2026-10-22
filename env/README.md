@@ -180,3 +180,5 @@ order are that form's. `--claim` refuses until the protocol no longer says DRAFT
 seeds below 1000 and development's prefix and fixture, draws only the seed its record allows
 next, titles the claim market from phrasings development never drew (`CLAIM_TEE_PHRASES`,
 `CLAIM_WATER_PHRASES`), and prints a claim market only once it is written and recorded.
+`aplus_title_study.py` draws development seeds, without seeding them, to see whether the
+rules select answer listings by their titles; its record is `manifests/aplus_dev-title-study.json`.
