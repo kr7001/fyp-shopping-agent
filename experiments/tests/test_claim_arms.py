@@ -480,8 +480,11 @@ class StrictUnder(unittest.TestCase):
         # computed with a strict limit, read the same way.
         self.assertEqual(sorted(self.strict_questions("tasks_claim_apparel.json")[1]),
                          ["apparel-exists-under-23", "apparel-exists-under-24"])
+        # The A+ development market's, written on 22 October 2026 by a generator whose key
+        # reads "under" strictly too.
+        self.assertEqual(self.strict_questions("tasks_aplus_dev.json")[1], ["tee-exists-under"])
         self.assertEqual(sorted(p.name for p in paths.TASKS.glob("tasks*.json")),
-                         sorted(self.AUDITED + ("tasks_claim_apparel.json",)))
+                         sorted(self.AUDITED + ("tasks_claim_apparel.json", "tasks_aplus_dev.json")))
 
 
 # ---------------------------------------------------------------------------

@@ -156,3 +156,20 @@ the page decodes for the one option actually selected. An agent that runs JavaSc
 own could decode it, exactly as an agent on the live marketplace could call the API its page
 fetches from. What is removed is the price being *readable in the observation the agent takes
 before interacting*, which is the property the experiments measure.
+
+## The A+ market, added 22 October 2026
+
+The second claim protocol (docs/content/claim2-protocol.md) asks for a market of two products,
+tees and bottled water, under one brand, across two results pages. Five scripts make and check
+it. None calls a model.
+
+| Script | Its job |
+| --- | --- |
+| `generate_aplus.py` | Draws the market from a seed: the tee generator's listings and rules, the water generator's prices and rules with a sold-out state added, the protocol's rules, and rules on where the answers render |
+| `search_order.py` | Predicts the order the shop's search lists one brand's listings in, so the page rules can be applied before seeding. `--validate` checks it against the live index and pages |
+| `pick_aplus_market.py` | Checks a brand by the brand rule, then seeds a seed's market, reindexes, and accepts it only if the live pages hold the page rules, recording every seed tried |
+| `check_aplus_market.py` | Checks a seeded market live: both results pages, every card, every variant under both themes, the gated reveal, and with `--unchanged` every earlier market against a snapshot |
+| `generate_aplus_tasks.py` | Writes the questions and their keys, and the second reading of the three questions that have two |
+
+Development uses its own brand and seeds 900 to 999 only, and `generate_aplus.py` refuses any
+other seed without `--claim`. The development market is Larchmere, prefix IGR-DEV, seed 900.
