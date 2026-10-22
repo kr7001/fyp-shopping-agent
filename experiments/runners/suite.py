@@ -590,6 +590,9 @@ def print_dry_parsers(task: dict, spec: dict, args, replies: dict[str, str]) -> 
               f"{parse_probe.summary(parse['model_form'])}")
     for change in parse["changes"]:
         print(f"  normalised: {change}")
+    if parse.get("declined"):
+        print("  declined on the model's form: what it needs is not shown, by the rules' check "
+              "of the page's attributes")
     dry_text(query, applied)
     print()
     return applied["box"]
@@ -893,7 +896,9 @@ def main() -> int:
                 if model_parser:
                     row["parse_cost_usd"] = parsed
                 rows.append(row)
-                print(f"[{done}/{total}] {tag:32} {row['verdict']:10} the box {row['verdict']}")
+                declined = ((applied["box"] or {}).get("parse") or {}).get("declined")
+                print(f"[{done}/{total}] {tag:32} {row['verdict']:10} the box {row['verdict']}"
+                      + (" on the model's form" if declined else ""))
                 continue
             record = run_once(task, spec["base_url"], out_dir, tag, query=query,
                               scaffold=args.scaffold, shop=args.shop, probe=args.probe)

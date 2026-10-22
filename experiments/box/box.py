@@ -116,7 +116,12 @@ import targeting
 #      parser, where it was sent to the agent as "not on the results page the box read:
 #      find it in the results" (primitives v10); no question on its own market's page did.
 #      The page record keeps each listing's title. Every other rules text is unchanged
-VERSION = 14
+#   15 22 October 2026, for the second claim run. Under the model parser, a model's form whose
+#      one failure is an attribute the shop does not show, by the rules' own check of the
+#      page's attributes, declines the question with the usual statement of what the shop
+#      shows (`normalise.declines`), where 14 let the rules' form decide; the record says the
+#      model's form declined (`Parse.declined`). The rules path is unchanged
+VERSION = 15
 
 # Who may read the question for the box: the rules, the default, or a model through a call
 # the caller injects.
@@ -204,12 +209,15 @@ class Parse:
     model_raw: form_module.Form | None = None    # as the model wrote it
     changes: tuple[str, ...] = ()
     reply: str | None = None
+    # The model's form declined the question: the one thing wrong with it was an attribute
+    # the shop does not show, confirmed by the rules' check of the page (box v15).
+    declined: bool = False
 
     def record(self) -> dict:
         def form(value: form_module.Form | None) -> dict | None:
             return value.record() if value is not None else None
         return {"parser": self.parser, "used": self.used, "fallback_reason": self.fallback_reason,
-                "prompt_version": self.prompt_version,
+                "declined": self.declined, "prompt_version": self.prompt_version,
                 "normalise_version": normalise.VERSION if self.parser == "model" else None,
                 "rules_form": form(self.rules_form), "model_form": form(self.model_form),
                 "model_raw": form(self.model_raw), "changes": list(self.changes),
@@ -406,10 +414,14 @@ def decide_by_model(question: str, page: page_module.Page | None, reply: str | N
     the rules alone, with no call, since there is no page to plan from; the record says so.
     Then one call (`normalise.read`): the reply parsed, normalised to the page's own words
     and checked. When the call fails, the reply is not a form or the form fails a check,
-    the rules decide, and the record keeps the model's form and the reason. A model's reading
-    of the question never refuses it: a form that needs what the shop does not show fails a
-    check, and the rules' form decides whether the question is refused. The one refusal made
-    on a model's form is the one a reading brings, below.
+    the rules decide, and the record keeps the model's form and the reason. One failure is
+    not a fallback (box v15): a form whose one failure is an attribute the shop does not
+    show, by the rules' own check of the page's attributes (`normalise.declines`), declines
+    the question with the usual statement of what the shop shows, and the record says the
+    model's form declined. Any other failure falls back, so a model can decline a question
+    the rules would plan, as "which seller would get it to me first", which they plan as a
+    survey, but never one whose words ask about a price (`normalise.conflicts`). The other
+    refusal made on a model's form is the one a reading brings, below.
 
     With the model's form the box asks as the rules do, in their order. The shop's own
     ambiguity, a size listed or buyable, is asked with the "offer" template when the lexicon
@@ -446,13 +458,18 @@ def decide_by_model(question: str, page: page_module.Page | None, reply: str | N
             rules_form=form_module.from_rules(decision.question, page), model_form=model_form,
             model_raw=read.raw, changes=tuple(changes), reply=read.reply))
 
-    def decided(model_form: form_module.Form, **fields) -> Decision:
+    def decided(model_form: form_module.Form, declined: bool = False, **fields) -> Decision:
         decision = Decision(page=page, exhaust=exhaust, **fields)
         return dataclasses.replace(decision, parse=Parse(
             parser="model", used="model", prompt_version=form_module.PROMPT_VERSION,
             rules_form=form_module.from_rules(decision.question, page), model_form=model_form,
-            model_raw=read.raw, changes=tuple(changes), reply=read.reply))
+            model_raw=read.raw, changes=tuple(changes), reply=read.reply, declined=declined))
 
+    if read.declines:
+        # No reading the user could choose makes the shop show it, so nothing is asked.
+        return decided(read.form, declined=True, question=question, kind=None, ask=None,
+                       reading=None, query=None, plan=None, form=read.form,
+                       refuse=form_module.refusal(list(read.declines)))
     if read.failure is not None:
         return by_rules(read.failure, read.form)
     form = read.form

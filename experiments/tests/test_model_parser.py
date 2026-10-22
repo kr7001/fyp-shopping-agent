@@ -254,8 +254,14 @@ class PromptV2(unittest.TestCase):
                     self.assertEqual((found["outcome"], found["ask"], found["parsed_by"]),
                                      ("ask", asks[words], "model"))
                 elif kind == "argmin_delivery_time":
-                    self.assertEqual((found["outcome"], found["parsed_by"]), ("refuse", "rules"))
+                    # Refused, by the rules: the example's question says "ships", which the
+                    # rules read as availability = buyable, and its form leaves that out, so
+                    # since box v15 it is not a form the model may decline on, which needs
+                    # nothing else wrong with it (`test_model_decline`).
+                    self.assertEqual((found["outcome"], found["parsed_by"], found["declined"]),
+                                     ("refuse", "rules", False))
                     self.assertIn("the shop does not show delivery time", found["fallback_reason"])
+                    self.assertIn("the question's 'ships' gives availability = 'buyable'", found["fallback_reason"])
                 else:
                     self.assertEqual((found["outcome"], found["kind"], found["parsed_by"]),
                                      ("plan", kind, "model"))
@@ -808,9 +814,9 @@ class ModelPath(unittest.TestCase):
 
     def test_the_rules_path_is_unchanged(self):
         page_ = synthetic_page([31.40, 12.25, 19.50])
-        default = {"parser": "rules", "used": "rules", "fallback_reason": None, "prompt_version": None,
-                   "normalise_version": None, "rules_form": None, "model_form": None, "model_raw": None,
-                   "changes": [], "reply": None}
+        default = {"parser": "rules", "used": "rules", "fallback_reason": None, "declined": False,
+                   "prompt_version": None, "normalise_version": None, "rules_form": None, "model_form": None,
+                   "model_raw": None, "changes": [], "reply": None}
         for task_id, question in clothing_questions().items():
             for reading in (None, "menu", "buyable"):
                 with self.subTest(task=task_id, reading=reading):

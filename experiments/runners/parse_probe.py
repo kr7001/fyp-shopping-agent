@@ -423,7 +423,11 @@ def outcome(question: str, page: page_module.Page, reply: str | None = None) -> 
     elif decision.form.fallback:
         found["outcome"] = "fallback"
     if reply is not None:
-        found.update(parsed_by=decision.parse.used, fallback_reason=decision.parse.fallback_reason)
+        # A refusal on the model's own form, the one failure an attribute the shop does not
+        # show (box v15), is said to be the model's: `parsed_by` alone would not tell it from
+        # the model's reading planned.
+        found.update(parsed_by=decision.parse.used, fallback_reason=decision.parse.fallback_reason,
+                     declined=decision.parse.declined)
     return found
 
 
@@ -454,6 +458,8 @@ def outcome_words(found: dict) -> str:
     if found["outcome"] in ("plan", "fallback"):
         chosen = ", the box chose the reading" if found["reading_by"] == "box" else ""
         return f"{found['outcome']} {found['kind']}{chosen}"
+    if found.get("declined"):
+        return "refuse, declined on the model's form"
     return found["outcome"]
 
 

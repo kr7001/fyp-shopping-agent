@@ -207,9 +207,10 @@ class StrategyTextV8(unittest.TestCase):
     def test_the_versions(self):
         # Box 13, form 10 and primitives 9 on 22 October 2026, the model's front door, then
         # box 14, form 11 and primitives 10 the same day, the verifier's fixes to it
-        # (test_model_parser.py). The strategy texts are v9 still.
+        # (test_model_parser.py), and box 15, the model's decline, for the second claim run.
+        # The strategy texts are v9 still.
         self.assertEqual((targeting.VERSION, box.VERSION, form_module.VERSION, primitives.VERSION),
-                         (9, 14, 11, 10))
+                         (9, 15, 11, 10))
 
     def test_no_text_the_box_sends_holds_an_old_wording(self):
         texts = every_text()

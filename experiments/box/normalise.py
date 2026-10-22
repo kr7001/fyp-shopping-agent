@@ -25,6 +25,11 @@ evidence records, is held against the model's, and every figure, size, seller an
 the model states must be the question's own (`conflicts`, 22 October 2026, verifier
 finding). A form that contradicts them is not used either.
 
+One failure is an answer rather than a misreading: a form that needs an attribute the shop
+does not show, and has nothing else wrong with it, by the rules' own check of the page's
+attributes. The box then declines the question on the model's form (`declines`, box v15,
+22 October 2026), where until then the rules' form decided.
+
 It calls no model and reads no file. `call` is the caller's, and only `read` uses it.
 """
 
@@ -59,7 +64,11 @@ from form import Filter, Form  # noqa: E402
 #      value is a word, never a number turned into one. "x-large" is XL, and a size is one
 #      the shop names or a pack size with a figure in it. A title is read only where the
 #      page record kept it. A negation is read in the sentences that ask (`asking`)
-VERSION = 2
+#   3  22 October 2026, for the second claim run. A form whose one failure is an attribute
+#      the shop does not show declines the question (`declines`). And since a model could
+#      then decline a question about a price by naming such an attribute, a form that does
+#      not ask about a price, where the question's own words do, is refused (`conflicts`)
+VERSION = 3
 
 # The clothing listings whose price depends on the size chosen name their sizes S, M, L and
 # XL: the options of the shop's configurable attribute apparel_size, read from its database
@@ -498,7 +507,8 @@ def conflicts(form: Form, question: str, page: page_module.Page | None) -> list[
     word, is not the question's words and is not held, as `parse_probe.agree` leaves it. A
     review's words are held separately, below, since the rules' clause is a guess at them.
     Then what the rules' form cannot hold the model to, the model may still not invent: the
-    direction of a superlative the words chose, the number of a "three cheapest", every
+    direction of a superlative the words chose, a price the words ask about (normalisation
+    v3, so a model never declines a price question), the number of a "three cheapest", every
     figure and size the model states, which the question must state, every seller and URL
     the model names, which the question must name in full, and the negation: a universal
     the question writes with "not" or "lacks" is not the plain universal, and a negated
@@ -535,6 +545,15 @@ def conflicts(form: Form, question: str, page: page_module.Page | None) -> list[
         other = "dearest" if asked == "cheapest" else "cheapest"
         found.append(f"the question's {rules.evidence.get('quantifier')!r} asks for the {asked}, "
                      f"where the form asks for the {other}")
+    # A price the question's own words ask about (normalisation v3): "cheapest", "under
+    # $24", "per litre". Held only where the rules' evidence is words of the question; their
+    # defaults, "a price is asked for" for a lookup and "nothing but a price is asked about"
+    # for a listing of everything, are not, and a form may ask about something else there.
+    words = rules.evidence.get("objective") or ""
+    if rules.objective in priced and form.objective not in priced and words \
+            and words.lower() in question.lower():
+        found.append(f"the question's {words!r} asks about a price, where the form asks about "
+                     f"{form.objective!r}")
     if rules.quantifier == "topk" and (form.quantifier, form.k) != ("topk", rules.k):
         found.append(f"the question's {rules.evidence.get('k')!r} asks for {rules.k}, where the "
                      f"form asks for {form.k if form.quantifier == 'topk' else 'none in particular'}")
@@ -575,6 +594,27 @@ def conflicts(form: Form, question: str, page: page_module.Page | None) -> list[
     return found
 
 
+def declines(form: Form, found: list[str], page: page_module.Page | None) -> list[str]:
+    """The attributes the form needs that the shop does not show, when that is all that is
+    wrong with it, so the box declines the question on the model's form (box v15, 22
+    October 2026; the second claim run's protocol: the model may decline a question only
+    when the rules confirm the attribute it needs is not shown on this shop). Empty when
+    anything else is wrong, or nothing is.
+
+    The confirmation is the rules' own check, property 5 against the page's attribute list
+    (`form.attributes_shown`), never the model's say-so in its unknowns. One consequence of
+    it is not another failure: no kind is planned that ranks by an attribute the shop does
+    not show. "The price of a sold-out size" is not an attribute the shop lacks but a reading
+    of the question, which the box asks about or takes itself, so it never declines."""
+    missing = sorted(form.attributes() - form_module.attributes_shown(page))
+    if not missing:
+        return []
+    own = {f"the shop does not show {attribute}" for attribute in missing}
+    ranked = form.objective.split(":", 1)[1] if form.objective.startswith("attribute:") else None
+    unplanned = f"no plan exists for kind {form.kind()!r}" if ranked in missing else None
+    return [] if any(problem not in own and problem != unplanned for problem in found) else missing
+
+
 def problems(form: Form, question: str, page: page_module.Page | None) -> list[str]:
     """Why the box must not use this model form at all, empty when it may: what the asks
     need, how it contradicts the question's own words, and, unless the form names a missing
@@ -592,12 +632,15 @@ def problems(form: Form, question: str, page: page_module.Page | None) -> list[s
 @dataclasses.dataclass(frozen=True)
 class ModelRead:
     """What one call made of the question: the reply, the form as the model wrote it, the
-    form normalised, each change, and why the box will not use it, None when it may."""
+    form normalised, each change, and why the box will not use it, None when it may. And,
+    when the one thing wrong is what the shop does not show, those attributes, on which the
+    box declines the question (`declines`)."""
     reply: str | None
     raw: Form | None
     form: Form | None
     changes: tuple[str, ...]
     failure: str | None
+    declines: tuple[str, ...] = ()
 
 
 def read(question: str, page: page_module.Page | None, call) -> ModelRead:
@@ -615,4 +658,5 @@ def read(question: str, page: page_module.Page | None, call) -> ModelRead:
         return ModelRead(reply, None, None, (), f"the model's reply is not a form: {fault}")
     normalised, changes = normalise(raw, question, page)
     found = problems(normalised, question, page)
-    return ModelRead(reply, raw, normalised, tuple(changes), "; ".join(found) or None)
+    return ModelRead(reply, raw, normalised, tuple(changes), "; ".join(found) or None,
+                     tuple(declines(normalised, found, page)))
