@@ -76,6 +76,11 @@ QUANTIFIERS = {
     "topk_price": "argmin",
     "named_lookup": "enumerate",
     "argmax_price": "argmin",
+    # 22 October 2026, form v10: "is there a listing without size M", a universal the
+    # question asks to break. Existential, since one listing that lacks the size settles
+    # yes and no amount of silence settles no. Only a model's form is ever negated, so as
+    # on 14 October no v1 plan changed and the version did not either.
+    "negated_refutation": "existential",
 }
 
 # Which bound may be used to skip a member of the population, and why it is valid. Since 20
@@ -119,6 +124,9 @@ BOUNDS = {
     # The advertised price is a lower bound, and nothing a lower bound says rules a
     # listing out of being the dearest.
     "argmax_price": None,
+    # Whether a listing lacks a size is in its menu, which no figure on the results page
+    # bounds, as for the universal it negates.
+    "negated_refutation": None,
 }
 
 # What the answer has to be able to show, in the same vocabulary the sufficiency rules use.
@@ -165,6 +173,12 @@ EVIDENCE = {
     "argmax_price": {"min_listings_opened": "population",
                      "counterexample": False,
                      "enforced_by": ["primitives.BoundPrune"]},
+    # The counterexample is the witness: a yes shows the listing that lacks the option, a
+    # no has to have opened every listing.
+    "negated_refutation": {"min_listings_opened": 1,
+                           "counterexample": True,
+                           "witness": True,
+                           "enforced_by": ["primitives.Counterexample"]},
 }
 
 # A figure produced by a bound is a device for deciding what to skip. It is not a price, and
@@ -218,6 +232,8 @@ STOP_RULES = {
     "named_lookup": "when every named listing has been opened",
     "argmax_price": "when every listing has been opened, since the advertised price bounds "
                     "nothing from above",
+    # The universal's own stop rule: the search is the same, only the answer turns over.
+    "negated_refutation": "at the first listing that lacks the option, which settles the question",
 }
 
 

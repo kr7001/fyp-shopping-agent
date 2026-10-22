@@ -41,8 +41,12 @@ import parse_probe  # noqa: E402  (the comparison: tiers, question_totals, the p
 #   1  20 October 2026, before the first paid paraphrase run
 VERSION = 1
 
-# The run's conditions, as the result file names them, printed and kept in the JSON.
+# The run's conditions, as the result file names them, printed and kept in the JSON. The
+# prompt and the normalisation joined on 22 October 2026 (box v13): a file written before
+# then has neither, prints None for both, and was made under prompt version 1 with no
+# normalisation, which its form_version 9 says.
 CONDITIONS = ("questions", "comparison_version", "model", "temperature", "form_version",
+              "prompt_version", "normalise_version",
               "box_version", "primitives_version", "planner_version", "strategy_version",
               "commit", "page_from", "ran_at", "calls_failed", "charged_usd", "spend_usd")
 

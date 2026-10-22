@@ -132,6 +132,30 @@ def threshold_ask(word: str) -> Ask:
     return Ask(verb=word, text=THRESHOLD.format(word=word), readings={})
 
 
+def availability_ask(word: str) -> Ask:
+    """The "offer" question for a word a model read as either in the menu or buyable where
+    the lexicon found no verb governing a variant (box v13, 22 October 2026): the same
+    template and the same two readings, quoting the model's word, so the scripted user's
+    `--reading` answers it as it answers the lexicon's."""
+    return Ask(verb=word, text=ASK.format(verb=word),
+               readings={key: Reading(label, sentence.format(phrase=word))
+                         for key, (label, sentence) in READINGS.items()})
+
+
+# The ask for any other word a model reads two ways (box v13, 22 October 2026). It quotes
+# the word and the model's readings and claims nothing about the shop, since only the model
+# says the readings differ. It offers no reading a scripted reply could choose, so the ask
+# stands as the outcome, as the threshold ask does.
+GENERIC = "Your question says '{word}', which could mean {readings}. Which do you mean?"
+
+
+def generic_ask(word: str, readings: tuple[str, ...]) -> Ask:
+    """The question put to the user about a word whose readings the box has no plan of its
+    own for: the word and each reading, in the model's words."""
+    listed = ", ".join(readings[:-1]) + f" or {readings[-1]}"
+    return Ask(verb=word, text=GENERIC.format(word=word, readings=listed), readings={})
+
+
 def with_reading(question: str, asked: Ask, reading: str) -> str:
     """The question with the chosen reading written into it, so the agent sees no ambiguity."""
     if reading not in asked.readings:

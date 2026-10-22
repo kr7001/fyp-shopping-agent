@@ -205,8 +205,11 @@ class StrategyTextV8(unittest.TestCase):
     menu refuses (20261007T115021/apparel-target-price-1)."""
 
     def test_the_versions(self):
+        # Box 13, form 10 and primitives 9 since 22 October 2026, the model's front door
+        # (test_model_parser.py). The strategy texts are v9 still, and every rules-path text
+        # with them.
         self.assertEqual((targeting.VERSION, box.VERSION, form_module.VERSION, primitives.VERSION),
-                         (9, 12, 9, 8))
+                         (9, 13, 10, 9))
 
     def test_no_text_the_box_sends_holds_an_old_wording(self):
         texts = every_text()

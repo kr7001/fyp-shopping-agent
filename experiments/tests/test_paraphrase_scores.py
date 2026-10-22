@@ -234,7 +234,11 @@ def planted_reply(entry: dict, page_: page.Page) -> str:
                                             "k", "reading", "unknowns", "evidence")}
     fault = PLANTED.get(entry["id"])
     if fault == "population":
-        reply["population"] = next(p for p in form.POPULATIONS if p != reply["population"])
+        # "reviews" rather than "listing" since 22 October 2026: the probe normalises the
+        # model's form as the box would use it, and a "listing" with no product page named
+        # is put back to the results page, which would plant nothing (test_probe.py says the
+        # same of its own planted fault).
+        reply["population"] = "reviews"
     elif fault == "objective":
         reply["objective"] = next(o for o in ("price", "rate") if o != reply["objective"])
     elif fault == "quantifier":

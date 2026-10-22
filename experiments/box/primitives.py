@@ -12,7 +12,8 @@ stop rule required.
 For the seven kinds v1 had, the instruction is `targeting.BODIES[kind]`, the same bytes, so
 the pilot measured under v1 stays a measurement of what v2 sends (`tests/test_box.py` pins
 that against a fixture frozen from v1). New text exists only for the forms v1 could not
-express: existence under a price limit, the k cheapest, named listings, the dearest. Every
+express: existence under a price limit, the k cheapest, named listings, the dearest, and
+since 22 October 2026 the negated universal, which only a model's form can be. Every
 statement in that text about the shop was checked against the live gated Thornwood results
 page and a listing on 14 October 2026 (LESSONS 17). Each card advertises one price, which
 is the cheapest option the listing can sell. A listing's size menu is filled from its page
@@ -70,7 +71,12 @@ import targeting
 #   8  20 October 2026. Under the box without its stop rule the quarantine no longer opens
 #      by saying the bound decides what to skip, since nothing is skipped there; it says
 #      what the advertised price is (`QUARANTINE_LEAD`). The box's own text is unchanged
-VERSION = 8
+#   9  22 October 2026. The negated universal, "is there a listing without size M" (form
+#      v10): the counterexample search with the answer's yes and no the other way round,
+#      in its own text (`NEGATED_REFUTATION`), checked by the counterexample check turned
+#      over (`Counterexample.negated_check`), with its stop sentences for the box without
+#      its stop rule. Every other text and check is unchanged
+VERSION = 9
 
 # The same hazard as every v1 bound strategy: a figure derived from a bound is not a price.
 QUARANTINE = targeting.QUARANTINE
@@ -337,6 +343,29 @@ def argmax_text(form: form_module.Form, page: page_module.Page) -> str:
         "opened.")
 
 
+# The negated universal (22 October 2026, form v10): "is there a listing without size M".
+# The refutation's search, `targeting.BODIES["refutation"]`, with the answer the other way
+# round: the counterexample is now the yes. Written as its own text rather than by swapping
+# words in the v1 body, whose last sentence reports what happened to a previous version of
+# that instruction and would be false here. Every statement is logic, not the shop: one
+# listing that lacks the option settles it, a no needs them all.
+NEGATED_REFUTATION = (
+    "Note what the question actually requires, because the two possible answers need very "
+    "different amounts of work.\n"
+    "To answer Yes you need exactly ONE listing that lacks the option. Nothing more. One "
+    "listing without it settles whether some listing lacks it.\n"
+    "To answer No you must have opened every single one.\n"
+    "So hunt for a listing that lacks it rather than surveying:\n"
+    "1. Open a listing and check for the option asked about.\n"
+    "2. If it lacks the option, you are finished. Answer Yes, name that listing as your "
+    "evidence, and stop immediately. Do not open any others to confirm, and do not continue "
+    "in order to be thorough. Opening more cannot change the answer.\n"
+    "3. Only if you exhaust every enumerated listing without finding one may you answer No.\n"
+    "In your answer, say how many listings you opened and which one settled it. Stopping "
+    "after one or two openings, once a listing that lacks the option is found, is the correct "
+    "outcome here, not a sign that you did too little.")
+
+
 def lookup_text(form: form_module.Form, page: page_module.Page) -> str:
     named = named_listings(form, page)
     if not named:
@@ -497,17 +526,52 @@ class Counterexample:
 
     @staticmethod
     def instruction(form: form_module.Form, page: page_module.Page) -> str:
-        return targeting.BODIES["refutation"]
+        return NEGATED_REFUTATION if form.negated else targeting.BODIES["refutation"]
 
     @staticmethod
     def stop_rule(form: form_module.Form) -> str:
-        return planner.STOP_RULES["refutation"]
+        return planner.STOP_RULES[form.kind()]
+
+    @staticmethod
+    def negated_check(form: form_module.Form, page: page_module.Page, answer: str,
+                      opened: set[str], menus: dict | None = None) -> dict:
+        """The check below turned over, for the negated universal (22 October 2026): the
+        question asks whether some listing lacks the option, so a yes is what a no is there.
+        A yes needs the listing that lacks it opened, or every listing, or an opened listing
+        whose observed menu lacks the size (or shows it disabled, when the question is about
+        buying). A no needs every listing, and so does an answer with neither word that
+        names a listing, held to the larger coverage as the universal's is."""
+        named = named_in(answer, page)
+        if affirms(answer):
+            if any(sufficiency.listing_key(item.url) in opened for item in named):
+                return ok("the listing named as lacking the option was opened")
+            if opened_all(page, opened):
+                return ok("every listing was opened")
+            seen = counterexample_seen(form, page, opened, menus or {})
+            if seen is not None:
+                return ok(f"a listing without the option was opened: {seen[0].seller}'s size "
+                          f"menu {seen[1]}")
+            return flag("counterexample_not_opened",
+                        f"answers yes {'naming ' + named[0].seller if named else 'naming no listing'} "
+                        f"without having opened it, having opened {len(opened)} of "
+                        f"{len(page.listings)}")
+        if denies(answer) or named:
+            if opened_all(page, opened):
+                return ok("every listing was opened")
+            why = (f"denies that any of {len(page.listings)} listings lacks the option"
+                   if denies(answer)
+                   else f"names {named[0].seller} without yes or no, so is held to a claim "
+                        f"about every one of {len(page.listings)} listings")
+            return flag("unverified_universal", f"{why}, having opened {len(opened)}")
+        return flag("answer_unclear", "neither affirms, denies nor names a listing, so "
+                                      "nothing in it can be held to the plan")
 
     @staticmethod
     def check(form: form_module.Form, page: page_module.Page, answer: str, opened: set[str],
               text: str, menus: dict | None = None) -> dict:
         """A no needs its counterexample opened, or every candidate, or an opened listing
-        whose observed menu refutes the claim. A yes needs every candidate.
+        whose observed menu refutes the claim. A yes needs every candidate. A negated form
+        is held to the same evidence the other way round (`negated_check`).
 
         An answer that opens with neither word but names a listing could be naming a
         counterexample or an example, and the check cannot tell which, so it is held to
@@ -522,6 +586,8 @@ class Counterexample:
         it disabled when the question is about buying (20 October 2026, see the class).
         A no naming a listing that was not opened is held to the same evidence.
         """
+        if form.negated:
+            return Counterexample.negated_check(form, page, answer, opened, menus)
         named = named_in(answer, page)
         if denies(answer):
             if any(sufficiency.listing_key(item.url) in opened for item in named):
@@ -736,6 +802,19 @@ def exhaust_swaps(form: form_module.Form, page: page_module.Page) -> list[tuple[
                  "Note that the previous version of this instruction was followed to the letter "
                  "and not to its point: the agent enumerated and then opened ten listings when "
                  "the first counterexample had already settled the question.", "")]
+    if kind == "negated_refutation":
+        # The universal's swaps with the answer turned over (22 October 2026, primitives v9).
+        return [(" Nothing more.", ""),
+                ("So hunt for a listing that lacks it rather than surveying:\n"
+                 "1. Open a listing and check for the option asked about.\n"
+                 "2. If it lacks the option, you are finished. Answer Yes, name that listing as "
+                 "your evidence, and stop immediately. Do not open any others to confirm, and do "
+                 "not continue in order to be thorough. Opening more cannot change the answer.\n",
+                 "1. Open every listing on the page before answering, and check each for the "
+                 "option asked about.\n"
+                 "2. If one lacks the option, answer Yes and name that listing as your evidence.\n"),
+                (" Stopping after one or two openings, once a listing that lacks the option is "
+                 "found, is the correct outcome here, not a sign that you did too little.", "")]
     if kind == "exists_price":
         limit = limit_of(form)
         return [(" Name it and stop. Nothing is gained by finding a second.", ""),

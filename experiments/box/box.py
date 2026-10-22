@@ -19,6 +19,12 @@ it was v1's bytes exactly, so the pilot measured under v1 was a measurement of w
 sent; since strategy texts v8 and v9 (20 October 2026) it differs from them in the five
 sentences those made true of the gated shop, and in nothing else, which the fixture's
 dated amendment records.
+
+Since box v13 (22 October 2026) a model may read the question instead of the rules
+(`decide(parser="model", call=...)`), and the rules still verify, plan, stop and check: the
+model's form is normalised and checked (`normalise.py`), the rules' form is used whenever it
+fails, and every decision records who read the question, both forms and why. The rules
+remain the default, and every text they render is the same.
 """
 
 from __future__ import annotations
@@ -32,6 +38,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402,F401  (puts box/, runners/, analysis/, water/ on the path)
 import ambiguity
 import form as form_module
+import normalise
 import page as page_module
 import policy
 import primitives
@@ -92,7 +99,20 @@ import targeting
 #   12 20 October 2026. The box without its stop rule no longer opens its quarantine by
 #      saying the bound decides what to skip, since it skips nothing; it says what the
 #      advertised price is (primitives v8). The box's own text is unchanged
-VERSION = 12
+#   13 22 October 2026, the model's front door. `decide(parser="model", call=...)`: a model
+#      reads the question (form prompt v2), its form is normalised and checked
+#      (`normalise.py`), and the rules' form is used instead, with the reason recorded,
+#      when the call fails, the reply is not a form or the form fails a check. A word the
+#      model reads two ways is asked about: the "offer" ask when it is the shop's own
+#      ambiguity, the threshold ask for a price word with no figure, and a template quoting
+#      the model's readings otherwise. A negated universal is planned (primitives v9).
+#      Every decision records who read the question and both forms (`Parse`). With the
+#      rules, the default, every text is the same as under box v12
+VERSION = 13
+
+# Who may read the question for the box: the rules, the default, or a model through a call
+# the caller injects.
+PARSERS = ("rules", "model")
 
 # Every wording of what the box sends that was changed on purpose since the box v2 batches
 # of 14 October 2026 (box v6), as (the box version that changed it, the words before, the
@@ -160,6 +180,35 @@ preamble = primitives.preamble
 
 
 @dataclasses.dataclass(frozen=True)
+class Parse:
+    """Who read the question for a decision, and what each reader made of it (box v13, 22
+    October 2026). Under the rules, the default, there is one reader and nothing else to
+    say. Under the model, the rules' form of the question as decided and the model's beside
+    it, the form as the model wrote it and each change normalisation made, the reply itself,
+    so a replay can decide again without a call, and which of the two forms the decision
+    used, with the reason when it was the rules'."""
+    parser: str = "rules"
+    used: str = "rules"
+    fallback_reason: str | None = None   # why the model's form was not used
+    prompt_version: int | None = None    # the prompt sent, None when none was
+    rules_form: form_module.Form | None = None
+    model_form: form_module.Form | None = None   # normalised, under the reading decided
+    model_raw: form_module.Form | None = None    # as the model wrote it
+    changes: tuple[str, ...] = ()
+    reply: str | None = None
+
+    def record(self) -> dict:
+        def form(value: form_module.Form | None) -> dict | None:
+            return value.record() if value is not None else None
+        return {"parser": self.parser, "used": self.used, "fallback_reason": self.fallback_reason,
+                "prompt_version": self.prompt_version,
+                "normalise_version": normalise.VERSION if self.parser == "model" else None,
+                "rules_form": form(self.rules_form), "model_form": form(self.model_form),
+                "model_raw": form(self.model_raw), "changes": list(self.changes),
+                "reply": self.reply}
+
+
+@dataclasses.dataclass(frozen=True)
 class Decision:
     question: str               # the question as planned, with any reading written in
     kind: str | None            # the plan's kind, None when the box asked, refused or bypassed
@@ -173,6 +222,7 @@ class Decision:
     bypass: bool = False        # the agent gets the question unchanged, see BYPASS_REASON
     reading_by: str | None = None   # who chose the reading: "user" by a reply, "box" when the other reading was refused
     exhaust: bool = False       # decided for the arm without the stop rule, `--box-exhaust`
+    parse: Parse | None = None  # who read the question, see `Parse`; None is the rules alone
 
     def record(self) -> dict:
         return {"box_version": VERSION, "form_version": form_module.VERSION,
@@ -184,7 +234,8 @@ class Decision:
                 "bypassed": self.bypass, "bypass_reason": BYPASS_REASON if self.bypass else None,
                 "fallback": bool(self.form and self.form.fallback),
                 "plan": self.plan.record() if self.plan else None,
-                "exhaust": self.exhaust}
+                "exhaust": self.exhaust,
+                "parse": (self.parse or Parse()).record()}
 
 
 def results_url(question: str, required: bool = True) -> str | None:
@@ -199,7 +250,7 @@ def results_url(question: str, required: bool = True) -> str | None:
 
 
 def decide(question: str, page: page_module.Page | None, reply: str | None = None,
-           exhaust: bool = False) -> Decision:
+           exhaust: bool = False, parser: str = "rules", call=None) -> Decision:
     """An ask, a refusal or a plan for one question.
 
     With no reply, an ambiguous question comes back as an ask and nothing is planned. A
@@ -237,7 +288,22 @@ def decide(question: str, page: page_module.Page | None, reply: str | None = Non
     With `exhaust` (20 October 2026) everything above is decided the same way, and a plan
     is composed without its stop rule: every listing on the page is opened before the
     answer (`primitives.exhaust_swaps`). The decision says which, whatever its outcome.
+
+    With `parser` "model" (box v13, 22 October 2026) a model reads the question, through
+    `call(prompt) -> str`, and the rules still verify, plan, stop and check: see
+    `decide_by_model`. The rules, the default, decide as every box before v13 did.
     """
+    if parser == "rules":
+        return decide_by_rules(question, page, reply, exhaust)
+    if parser != "model":
+        raise ValueError(f"parser {parser!r} is not one of {PARSERS}")
+    return decide_by_model(question, page, reply, exhaust, call)
+
+
+def decide_by_rules(question: str, page: page_module.Page | None, reply: str | None = None,
+                    exhaust: bool = False) -> Decision:
+    """`decide` with the rules reading the question. The body is box v12's own, unchanged,
+    so every text the rules render is the same bytes; `tests/test_box.py` pins them."""
     asked = ambiguity.ask(question)
     reading_by = None
     if asked is not None:
@@ -289,6 +355,121 @@ def decide(question: str, page: page_module.Page | None, reply: str | None = Non
     return Decision(question=question, kind=form.kind(), ask=asked, reading=reading,
                     query=f"{question}\n\n{plan.text}", plan=plan, page=page, form=form,
                     reading_by=reading_by, exhaust=exhaust)
+
+
+def decide_by_model(question: str, page: page_module.Page | None, reply: str | None,
+                    exhaust: bool, call) -> Decision:
+    """`decide` with a model reading the question and the rules doing the rest (box v13,
+    22 October 2026).
+
+    Before any call, a question the rules bypass, or one that names no page, is decided by
+    the rules alone, with no call, since there is no page to plan from; the record says so.
+    Then one call (`normalise.read`): the reply parsed, normalised to the page's own words
+    and checked. When the call fails, the reply is not a form or the form fails a check,
+    the rules decide, and the record keeps the model's form and the reason. A model's reading
+    of the question never refuses it: a form that needs what the shop does not show fails a
+    check, and the rules' form decides whether the question is refused. The one refusal made
+    on a model's form is the one a reading brings, below.
+
+    With the model's form the box asks as the rules do, in their order. The shop's own
+    ambiguity, a size listed or buyable, is asked with the "offer" template when the lexicon
+    finds it (`ambiguity.ask`), or the model flags it and the question does not settle it in
+    the lexicon's words, and is answered as the rules' is: by the reply, or by the box when
+    the shop cannot answer one reading. The reading is applied to the model's form in code
+    (`normalise.with_reading`), so a reply costs no second call, and the refusal that
+    depends on it, the price of a sold-out size, is the rules' own. Then any other word the
+    model reads two ways is asked about with a template quoting its readings, and a missing
+    price limit with the threshold ask; neither offers a reading a scripted reply could
+    choose, so either ends the run as asked. Last, the form under its reading is held to the
+    five properties and the plan's checks again (`normalise.plan_problems`), and the rules
+    decide if it fails.
+    """
+    if call is None:
+        raise ValueError("the model parser needs a call to send its prompt through")
+    if page is None or form_module.from_rules(question, page).quantifier == "unknown":
+        decision = decide_by_rules(question, page, reply, exhaust)
+        why = ("the question names no results page, so the box has nothing to plan from and "
+               "the model was not called" if page is None
+               else "the rules found no shopping question, so the model was not called")
+        return dataclasses.replace(decision, parse=Parse(
+            parser="model", used="rules", fallback_reason=why,
+            rules_form=form_module.from_rules(decision.question, page)))
+    read = normalise.read(question, page, call)
+    asked_question, asked_reply = question, reply
+    changes = list(read.changes)
+
+    def by_rules(reason: str, model_form: form_module.Form | None) -> Decision:
+        decision = decide_by_rules(asked_question, page, asked_reply, exhaust)
+        return dataclasses.replace(decision, parse=Parse(
+            parser="model", used="rules", fallback_reason=reason,
+            prompt_version=form_module.PROMPT_VERSION,
+            rules_form=form_module.from_rules(decision.question, page), model_form=model_form,
+            model_raw=read.raw, changes=tuple(changes), reply=read.reply))
+
+    def decided(model_form: form_module.Form, **fields) -> Decision:
+        decision = Decision(page=page, exhaust=exhaust, **fields)
+        return dataclasses.replace(decision, parse=Parse(
+            parser="model", used="model", prompt_version=form_module.PROMPT_VERSION,
+            rules_form=form_module.from_rules(decision.question, page), model_form=model_form,
+            model_raw=read.raw, changes=tuple(changes), reply=read.reply))
+
+    if read.failure is not None:
+        return by_rules(read.failure, read.form)
+    form = read.form
+    asked = ambiguity.ask(question)
+    flagged = normalise.availability_ambiguity(form)
+    if asked is None and flagged is not None:
+        settled = ambiguity.CLEAR.search(question)
+        if settled is not None:
+            line = (f"ambiguity {flagged.word!r} dropped: the question settles it, "
+                    f"{settled.group(0)!r}")
+            evidence = dict(form.evidence)
+            normalise.note(evidence, "ambiguities", line)
+            form = dataclasses.replace(normalise.without_availability(form), evidence=evidence)
+            changes.append(line)
+        else:
+            asked = ambiguity.availability_ask(flagged.word)
+    reading_by = None
+    if asked is not None:
+        answerable = [key for key in asked.readings
+                      if not form_module.not_shown(normalise.with_reading(form, key), page)]
+        if len(answerable) == 1 and len(asked.readings) == 2:
+            reply, reading_by = answerable[0], "box"
+        elif reply is None:
+            return decided(form, question=question, kind=None, ask=asked, reading=None,
+                           query=None, plan=None)
+    reading = None
+    if asked is not None:
+        if reply not in asked.readings:
+            raise ValueError(f"reply {reply!r} is not one of the readings offered: "
+                             f"{sorted(asked.readings)}")
+        question = ambiguity.with_reading(question, asked, reply)
+        form = normalise.with_reading(form, reply)
+        reading, reading_by = reply, reading_by or "user"
+    asked = None if reading_by == "box" else asked
+    closed = dict(question=question, kind=None, reading=reading, query=None, plan=None,
+                  form=form, reading_by=reading_by)
+    missing = form_module.not_shown(form, page)
+    if missing:
+        return decided(form, ask=asked, refuse=form_module.refusal(missing), **closed)
+    other = [entry for entry in form.ambiguities if not normalise.reads_availability(entry)]
+    if other:
+        return decided(form, ask=ambiguity.generic_ask(other[0].word, other[0].readings), **closed)
+    if "price limit" in form.unknowns:
+        return decided(form, ask=ambiguity.threshold_ask(form.evidence["unknowns"]), **closed)
+    found = normalise.plan_problems(form, page)
+    if found:
+        return by_rules("; ".join(dict.fromkeys(found)), form)
+    # A sound form can still have no text under the arm without its stop rule: a review
+    # question turns pages, and `primitives.compose` refuses it there. That is the model's
+    # form failing too, so the rules decide, and refuse it the same way if they read it so.
+    try:
+        plan = primitives.compose(form, page, exhaust=exhaust)
+    except ValueError as fault:
+        return by_rules(f"no plan can be composed from it: {fault}", form)
+    return decided(form, question=question, kind=form.kind(), ask=asked, reading=reading,
+                   query=f"{question}\n\n{plan.text}", plan=plan, form=form,
+                   reading_by=reading_by)
 
 
 def stated_figures(decision: Decision) -> set[int]:

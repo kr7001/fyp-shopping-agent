@@ -14,7 +14,11 @@ every question the project has run keeps the kind v1 gave it, and extended for t
 research census found v1 lacked: existence under a price limit, the k cheapest, a comparison
 of named listings, a filtered cheapest, a lookup on one listing. `from_model` asks a model
 through a `call` the caller injects, so this module does no I/O and the tests use a fake. A
-real call goes through the spend guard (`runners/parse_probe.py`).
+real call goes through the spend guard (`runners/parse_probe.py`, `runners/suite.py
+--parser model`). Since form v10 (22 October 2026) a form may also be negated, a universal
+the question asks to break, carry the words a model reads two ways, and say which prompt
+produced it; the box normalises a model's form and checks it before using it
+(`normalise.py`).
 
 It reads the question, and the page only for the sellers named on it. Never a task file's
 answers, a market's instance record or a fixture: `tests/test_box.py` checks that.
@@ -70,7 +74,27 @@ import targeting
 #      "within" and "$L or less" keep price <= L (`CEILING`, the op "<"). Until now every
 #      one read as at or below, while the coverage floor in verify_cells and the
 #      generator's witnesses read "under $27" as strictly below (verifier finding)
-VERSION = 9
+#  10  22 October 2026, the model's front door. Three fields join the record: `negated`, a
+#      universal the question asks to break ("is there a listing without size M", kind
+#      "negated_refutation"), `ambiguities`, a word a model reads two ways, and
+#      `prompt_version`, which prompt produced a model's form. The model parser's prompt
+#      is version 2 (`PROMPT_VERSION`). The rules parse every question as they did: they
+#      never set the new fields
+VERSION = 10
+
+# The model parser's prompt, recorded in every form a model proposes. Runs made under
+# different prompts are different parsers and are never pooled.
+#
+#   1  14 October 2026. The shop, the attributes it shows, the five properties and the
+#      schema. The census and the paraphrase probe of 20 October ran under it
+#   2  22 October 2026. Adds the shop's size words, the kinds of question that have a
+#      plan, how to fill each field, the two new fields and one worked example for each
+#      kind. The examples are written from the six clothing templates and the shapes added
+#      since, about a made-up brand, and copy no question of tasks/paraphrases_v1.json,
+#      whose failures named what to teach: medium kept as a size, title filters restating
+#      the brand, the population "listing" for a results page, a negation read as an
+#      existence, and "affordable" made a filter (22 October 2026)
+PROMPT_VERSION = 2
 
 # The vocabulary. A form outside it is refused when it is built, so a model's reply cannot
 # smuggle in a quantifier nothing knows how to plan. "unknown" is the rules' answer to a
@@ -133,6 +157,29 @@ class Filter:
 
 
 @dataclasses.dataclass(frozen=True)
+class Ambiguity:
+    """A word of the question that a model reads two or more ways, each giving a different
+    answer on this shop (form v10, 22 October 2026): the words as the question writes them,
+    and each reading in the model's words. The rules never propose one; the box maps the
+    readings onto those it knows, or asks with a template that quotes them (`box.decide`)."""
+    word: str
+    readings: tuple[str, ...]
+
+    def __post_init__(self):
+        if not isinstance(self.word, str) or not self.word.strip():
+            raise ValueError(f"an ambiguity names the words it is about, got {self.word!r}")
+        if not isinstance(self.readings, tuple) or len(self.readings) < 2 or not all(
+                isinstance(reading, str) and reading.strip() for reading in self.readings):
+            raise ValueError(f"an ambiguity of {self.word!r} needs two or more readings, each "
+                             f"a phrase, got {self.readings!r}")
+        if len({reading.strip().lower() for reading in self.readings}) != len(self.readings):
+            raise ValueError(f"the readings of {self.word!r} repeat one another: {self.readings!r}")
+
+    def record(self) -> dict:
+        return {"word": self.word, "readings": list(self.readings)}
+
+
+@dataclasses.dataclass(frozen=True)
 class Form:
     quantifier: str
     objective: str
@@ -143,6 +190,10 @@ class Form:
     unknowns: tuple[str, ...] = ()       # what the question leaves unsaid or the page lacks
     source: str = "rules"
     evidence: dict = dataclasses.field(default_factory=dict)   # field -> the words that chose it
+    # Form v10, 22 October 2026. Last, so every form built by position builds as before.
+    negated: bool = False                # forall only: the question asks whether some listing fails it
+    ambiguities: tuple[Ambiguity, ...] = ()   # words a model reads two ways
+    prompt_version: int | None = None    # the model prompt that produced it, None for the rules
 
     def __post_init__(self):
         if self.quantifier not in QUANTIFIERS:
@@ -165,6 +216,18 @@ class Form:
             raise ValueError("filters must be Filter records")
         if self.source not in SOURCES:
             raise ValueError(f"source {self.source!r} is not one of {SOURCES}")
+        if not isinstance(self.negated, bool):
+            raise ValueError(f"negated is true or false, got {self.negated!r}")
+        if self.negated and self.quantifier != "forall":
+            raise ValueError(f"negated is for a universal, a question whether some listing fails "
+                             f"it, not for quantifier {self.quantifier!r}")
+        if not isinstance(self.ambiguities, tuple) or not all(
+                isinstance(a, Ambiguity) for a in self.ambiguities):
+            raise ValueError("ambiguities must be a tuple of Ambiguity records")
+        if self.prompt_version is not None and (isinstance(self.prompt_version, bool) or not isinstance(
+                self.prompt_version, int) or self.prompt_version < 1):
+            raise ValueError(f"prompt_version is a whole number of at least 1 or None, got "
+                             f"{self.prompt_version!r}")
 
     def filter(self, attribute: str) -> Filter | None:
         return next((f for f in self.filters if f.attribute == attribute), None)
@@ -179,6 +242,9 @@ class Form:
         "topk_price", "named_lookup", "argmax_price". A combination no primitive plans,
         such as an existence question about a rate, gets a name the planner has no row
         for, and `verify` refuses it. An unknown question is "unknown", which no row plans.
+        A universal the question asks to break, "is there a listing without size M", is
+        "negated_refutation" (form v10): the same hunt for one counterexample, with the
+        answer's yes and no the other way round.
         """
         if self.quantifier == "unknown":
             return "unknown"
@@ -187,7 +253,7 @@ class Form:
         if self.quantifier == "lookup":
             return "named_lookup"
         if self.quantifier == "forall":
-            return "refutation"
+            return "negated_refutation" if self.negated else "refutation"
         if self.quantifier in ("count", "aggregate"):
             return "survey"
         if self.quantifier == "argmin":
@@ -217,12 +283,15 @@ class Form:
                 "objective": self.objective, "filters": [f.record() for f in self.filters],
                 "population": self.population, "k": self.k, "reading": self.reading,
                 "unknowns": list(self.unknowns), "source": self.source,
-                "evidence": dict(self.evidence)}
+                "evidence": dict(self.evidence), "negated": self.negated,
+                "ambiguities": [a.record() for a in self.ambiguities],
+                "prompt_version": self.prompt_version}
 
 
 def from_record(data: dict, source: str) -> Form:
     """A form from its record, or from a model's reply, refused with the field named when a
-    value is outside the vocabulary."""
+    value is outside the vocabulary. A record written before form v10 has no `negated`,
+    `ambiguities` or `prompt_version`, and reads as a form without them."""
     if not isinstance(data, dict):
         raise ValueError(f"a form is a JSON object, got {type(data).__name__}")
     missing = [key for key in ("quantifier", "objective", "population") if key not in data]
@@ -241,11 +310,25 @@ def from_record(data: dict, source: str) -> Form:
     evidence = data.get("evidence") or {}
     if not isinstance(evidence, dict):
         raise ValueError(f"evidence must map each field to the words that chose it, got {evidence!r}")
+    # A null is read as false, as a missing field is; anything else that is not true or
+    # false is refused by the form itself.
+    negated = data.get("negated")
+    ambiguities = data.get("ambiguities") or []
+    if not isinstance(ambiguities, list):
+        raise ValueError(f"ambiguities must be a list, got {ambiguities!r}")
+    read = []
+    for entry in ambiguities:
+        if not isinstance(entry, dict) or not {"word", "readings"} <= set(entry) \
+                or not isinstance(entry["readings"], list):
+            raise ValueError(f"an ambiguity needs a word and a list of readings, got {entry!r}")
+        read.append(Ambiguity(entry["word"], tuple(entry["readings"])))
     return Form(quantifier=str(data["quantifier"]), objective=str(data["objective"]),
                 filters=tuple(filters), population=str(data["population"]), k=k,
                 reading=data.get("reading") or None,
                 unknowns=tuple(str(u) for u in data.get("unknowns") or []), source=source,
-                evidence={str(key): str(words) for key, words in evidence.items()})
+                evidence={str(key): str(words) for key, words in evidence.items()},
+                negated=False if negated is None else negated, ambiguities=tuple(read),
+                prompt_version=data.get("prompt_version"))
 
 
 # ---------------------------------------------------------------------------
@@ -316,12 +399,19 @@ def verify(form: Form, page: page_module.Page | None = None) -> list[str]:
     every attribute compared or filtered on is one the shop shows. The 18 September probe's
     one unsound plan compared a delivery time the shop does not publish, and only a check
     against the page catches that.
+
+    A negated universal (form v10) is planned only over an option's availability, the one
+    thing its counterexample search and its check read: the size menu of each listing
+    opened. The rules never negate a form, so for them this never fires.
     """
     plan = plan_dict(form)
     problems = ([f"no plan exists for kind {form.kind()!r}"] if plan is None
                 else planner.properties(plan))
     if form.quantifier == "lookup" and not (form.filter("url") or form.filter("seller")):
         problems.append("a lookup names no listing")
+    if form.negated and (form.objective != "availability" or form.filter("size") is None):
+        problems.append("a negated universal is planned only over the availability of a size "
+                        "it names")
     problems += [f"the shop does not show {attribute}" for attribute in not_shown(form, page)]
     return problems
 
@@ -877,21 +967,232 @@ on the results page), "reviews" (the reviews of one listing),
 that chose it
 }"""
 
+# Prompt version 2, 22 October 2026. Every statement about the shop was checked that day:
+# the generated clothing listings, whose price is shown only once a size is chosen, take
+# their sizes from the configurable attribute apparel_size, whose options are S, M, L and XL
+# (the shop's database; the base catalogue's own clothing has custom size options named
+# Small, Medium, X-Large and so on, so the sentence is about the first kind only), and the
+# water listings' packs are written like 2 x 9.5L.
+SIZES = """How a size is written. The clothing listings whose price depends on the size \
+chosen name their sizes S, M, L and XL, so write such a size as one of those four: small is \
+S, medium is M, large is L and extra large is XL. A pack size, such as a number of bottles \
+and their volume, is written as the question writes it."""
 
-def prompt(question: str, page: page_module.Page | None = None) -> str:
-    """The one prompt the model parser sends. Everything in it is true of the shop today."""
+# The kinds of question that have a plan, in the words prompt version 2 gives the model,
+# each with the form that plans it, so the model does not invent a kind nothing plans.
+# `tests/test_model_parser.py` holds this list to `planner.QUANTIFIERS`, the kinds the
+# planner has a row for: every one is here and nothing else is.
+PLANNABLE = (
+    ("results_page", "the lowest advertised price on the results page itself",
+     'argmin, objective "advertised price", no filters'),
+    ("total_bound", "the cheapest price for an option, such as a size",
+     'argmin, objective "price", the option as a filter'),
+    ("availability_bound", "the same, counting only listings that can sell the option now",
+     'argmin, objective "price", the option and availability = "buyable"'),
+    ("rate_bound", "the lowest price per unit, such as per litre, across pack sizes",
+     'argmin, objective "rate"'),
+    ("topk_price", "the k cheapest for an option", 'topk with k, objective "price"'),
+    ("argmax_price", "the dearest for an option", 'argmax, objective "price"'),
+    ("exists_price", "whether any listing sells an option within a price limit",
+     'exists, objective "price", the limit as a price filter'),
+    ("refutation", "whether every listing has an option", 'forall, objective "availability"'),
+    ("negated_refutation", "whether some listing lacks an option",
+     'forall, objective "availability", and "negated": true'),
+    ("survey", "how many listings have an option, or every listing that does",
+     'count, or aggregate to list them, objective "availability"'),
+    ("named_lookup", "listings the question names by seller or by product page URL",
+     'lookup, with a seller or url filter "in" the names'),
+    ("depth_search", "whether the reviews of a listing mention something",
+     'exists, objective "mention", population "reviews", review text contains the thing'),
+)
+
+KINDS = ("The kinds of question the box can plan, and the form of each. No other kind has a "
+         "plan, so do not invent a quantifier or objective for one:\n"
+         + "\n".join(f"- {what}: {shape}" for _, what, shape in PLANNABLE)
+         + "\nA question that needs an attribute the shop does not show, such as delivery "
+           "time, has no plan either: make it the objective, as \"attribute:<name>\", or a "
+           "filter on it, and name it in \"unknowns\", so the box can say what is missing.")
+
+FILLING = """How to fill the form.
+- population: "results" when the question gives a results page URL or names sellers on it; \
+"listing" only when it gives product page URLs and no results page; "reviews" for a question \
+about reviews.
+- Do not add a filter that restates the product or the brand the search is for, such as a \
+title filter on the brand's name: the results page is already that search.
+- A price limit: "under", "below", "less than" or "cheaper than" a figure is price < the \
+figure; "at most", "no more than", "up to", "within" or "the figure or less" is price <= the \
+figure. The value is a number.
+- availability = "buyable" when the question says the option must be in stock, available to \
+buy or shippable now, and availability = "listed" when it says being in the menu is enough, \
+sold out or not. Otherwise leave availability out.
+- unknowns: only two things go here. A price word with no figure anywhere in the question, \
+such as cheap, affordable or budget: write "price limit", quote the word as "unknowns" in the \
+evidence, and do not make it a filter. And an attribute the shop does not show that the \
+question needs. Otherwise the list is empty.
+- ambiguities: a word or phrase of the question with two readings that give different \
+answers on this shop, as {"word": the words as the question writes them, "readings": two or \
+more readings}. The usual one here is a verb such as offer, carry, stock or have before a size, \
+since a size can be in a listing's menu and sold out: give it the readings ["listed", \
+"buyable"] and leave availability out of the filters. A price word with no figure is not an \
+ambiguity: it is the price limit. Otherwise the list is empty.
+- negated: true only for a question asking whether some listing lacks an option, with the \
+quantifier "forall"; its answer is yes when one listing lacks it. Otherwise false.
+- reading: null. The box sets it from the user's reply."""
+
+SCHEMA_V2 = """Return one JSON object and nothing else, with exactly these fields:
+
+{
+  "quantifier": one of "lookup", "exists", "forall", "argmin", "argmax", "topk", "count", \
+"aggregate",
+  "objective": "price" (of the option asked about), "advertised price" (the results page's \
+figure), "rate" (price per unit), "availability", "mention" (what reviews say), or \
+"attribute:<name>" for an attribute the shop does not show,
+  "filters": a list of {"attribute": ..., "op": one of "=", "<", "<=", ">=", "in", "contains", \
+"value": ...},
+  "population": "results", "listing" or "reviews",
+  "k": a number for topk, otherwise null,
+  "negated": true or false,
+  "reading": null,
+  "unknowns": a list, usually empty,
+  "ambiguities": a list of {"word": ..., "readings": [...]}, usually empty,
+  "evidence": an object with one line per field above, quoting the words of the question \
+that chose it
+}"""
+
+# One worked example for each kind that has a plan, and one for each thing the box does
+# instead of planning: refuse, ask for a price limit, ask about another reading. Written on
+# 22 October 2026 from the six clothing templates and the shapes added since, about a
+# made-up brand, Example, with made-up sellers; none is a question of
+# tasks/paraphrases_v1.json, which `tests/test_model_parser.py` checks. Each is (the kind
+# its form plans, the question, the form), and the same test holds every form to its kind
+# and to what the box does with it, given as the model's reply to its own question.
+_SEARCH = "Go to http://localhost:7770/catalogsearch/result/?q=Example . "
+
+
+def _example(kind: str, question: str, **fields) -> tuple[str, str, dict]:
+    record = {"quantifier": None, "objective": None, "filters": [], "population": "results",
+              "k": None, "negated": False, "reading": None, "unknowns": [], "ambiguities": [],
+              "evidence": {}}
+    record.update(fields)
+    return kind, question, record
+
+
+def _f(attribute: str, op: str, value) -> dict:
+    return {"attribute": attribute, "op": op, "value": value}
+
+
+EXAMPLES = (
+    _example("results_page", _SEARCH + "Which Example jacket listing advertises the lowest price "
+             "on the results page?", quantifier="argmin", objective="advertised price",
+             evidence={"quantifier": "the lowest", "objective": "advertises ... on the results page",
+                       "population": "the results page URL"}),
+    _example("total_bound", _SEARCH + "Who charges the least for a large Example jacket?",
+             quantifier="argmin", objective="price", filters=[_f("size", "=", "L")],
+             evidence={"quantifier": "charges the least", "filters": "large, which is size L"}),
+    _example("availability_bound", _SEARCH + "Among listings able to sell size S right now, which "
+             "seller is cheapest, and what does it cost?", quantifier="argmin",
+             objective="price", filters=[_f("size", "=", "S"), _f("availability", "=", "buyable")],
+             evidence={"quantifier": "cheapest", "filters": "size S, able to sell it right now"}),
+    _example("rate_bound", _SEARCH + "Counting every pack size of every Example water listing, "
+             "which seller is cheapest per litre?", quantifier="argmin", objective="rate",
+             evidence={"quantifier": "cheapest", "objective": "per litre"}),
+    _example("topk_price", _SEARCH + "Name the two Example sellers asking the least for size XL "
+             "in stock, with their prices.", quantifier="topk", objective="price", k=2,
+             filters=[_f("size", "=", "XL"), _f("availability", "=", "buyable")],
+             evidence={"quantifier": "asking the least", "k": "two", "filters": "size XL in stock"}),
+    _example("argmax_price", _SEARCH + "Which Example seller asks the most for a small?",
+             quantifier="argmax", objective="price", filters=[_f("size", "=", "S")],
+             evidence={"quantifier": "asks the most", "filters": "a small, which is size S"}),
+    _example("exists_price", _SEARCH + "Can size M be bought from any Example seller for less "
+             "than $25?", quantifier="exists", objective="price",
+             filters=[_f("size", "=", "M"), _f("price", "<", 25), _f("availability", "=", "buyable")],
+             evidence={"quantifier": "any Example seller", "filters": "size M, less than $25, can be bought"}),
+    _example("exists_price", _SEARCH + "Can any Example seller sell me a medium at $30 or less?",
+             quantifier="exists", objective="price",
+             filters=[_f("size", "=", "M"), _f("price", "<=", 30), _f("availability", "=", "buyable")],
+             evidence={"quantifier": "Can any", "filters": "a medium, $30 or less; a price exists "
+                                                           "only for a size that can be bought"}),
+    _example("refutation", _SEARCH + "Is size L offered by every Example listing?",
+             quantifier="forall", objective="availability", filters=[_f("size", "=", "L")],
+             ambiguities=[{"word": "offered", "readings": ["listed", "buyable"]}],
+             evidence={"quantifier": "every", "filters": "size L",
+                       "ambiguities": "offered: in the menu, or able to sell it now"}),
+    _example("negated_refutation", _SEARCH + "Is there an Example listing whose size menu leaves "
+             "out XL?", quantifier="forall", objective="availability",
+             filters=[_f("size", "=", "XL"), _f("availability", "=", "listed")], negated=True,
+             evidence={"quantifier": "Is there an Example listing ... leaves out",
+                       "negated": "asks whether some listing lacks XL",
+                       "filters": "XL, whose size menu"}),
+    _example("survey", _SEARCH + "How many Example listings carry an extra large?",
+             quantifier="count", objective="availability", filters=[_f("size", "=", "XL")],
+             ambiguities=[{"word": "carry", "readings": ["listed", "buyable"]}],
+             evidence={"quantifier": "How many", "filters": "an extra large, which is size XL",
+                       "ambiguities": "carry: in the menu, or able to sell it now"}),
+    _example("survey", _SEARCH + "What number of Example listings have a small in stock?",
+             quantifier="count", objective="availability",
+             filters=[_f("size", "=", "S"), _f("availability", "=", "buyable")],
+             evidence={"quantifier": "What number of", "filters": "a small, in stock"}),
+    _example("named_lookup", _SEARCH + "Between Harbour Lane Goods and Mellow Fields, who is "
+             "cheaper for size L?", quantifier="lookup", objective="price",
+             filters=[_f("seller", "in", ["Harbour Lane Goods", "Mellow Fields"]), _f("size", "=", "L")],
+             evidence={"quantifier": "Between Harbour Lane Goods and Mellow Fields",
+                       "filters": "size L"}),
+    _example("named_lookup", "On http://localhost:7770/example-jacket-04.html, can size M be "
+             "bought now?", quantifier="lookup", objective="availability", population="listing",
+             filters=[_f("url", "in", ["http://localhost:7770/example-jacket-04.html"]),
+                      _f("size", "=", "M"), _f("availability", "=", "buyable")],
+             evidence={"population": "a product page URL and no results page",
+                       "objective": "can be bought now"}),
+    _example("depth_search", "Go to http://localhost:7770/review/product/list/id/12/ . Do "
+             "reviewers say the zip breaks? Answer yes or no.", quantifier="exists",
+             objective="mention", population="reviews",
+             filters=[_f("review text", "contains", "the zip breaks")],
+             evidence={"quantifier": "Do reviewers say", "population": "reviewers"}),
+    _example("argmin_delivery_time", _SEARCH + "Which Example seller ships an order the quickest?",
+             quantifier="argmin", objective="attribute:delivery time", unknowns=["delivery time"],
+             evidence={"objective": "ships ... the quickest, which the shop does not show"}),
+    _example("exists_price", _SEARCH + "Find me an inexpensive Example jacket in size M.",
+             quantifier="exists", objective="price",
+             filters=[_f("size", "=", "M"), _f("availability", "=", "buyable")],
+             unknowns=["price limit"], evidence={"unknowns": "inexpensive"}),
+    _example("total_bound", _SEARCH + "What is the price of the Example jacket in size M?",
+             quantifier="argmin", objective="price", filters=[_f("size", "=", "M")],
+             ambiguities=[{"word": "the price", "readings": ["the lowest price any listing charges",
+                                                             "the price each listing charges"]}],
+             evidence={"ambiguities": "the price: the page lists many listings, each with its own"}),
+)
+
+
+def worked_examples() -> str:
+    """The examples as prompt version 2 prints them, each form one line of JSON."""
+    lines = ["Worked examples, about a made-up brand and made-up sellers on the same shop:"]
+    for _, question, example in EXAMPLES:
+        lines += [f"Question: {question}", f"Form: {json.dumps(example)}"]
+    return "\n".join(lines)
+
+
+def prompt(question: str, page: page_module.Page | None = None,
+           version: int = PROMPT_VERSION) -> str:
+    """The prompt the model parser sends, by version, the current one by default. Version 1
+    is kept byte for byte, so a probe made under it can be reproduced. Everything in it is
+    true of the shop today."""
     shown = attributes_shown(page)
     lists = SHOWN.format(results=", ".join(sorted(shown - LISTING_PAGE_SHOWS - REVIEW_PAGE_SHOWS)),
                          listing=", ".join(sorted(LISTING_PAGE_SHOWS)),
                          review=", ".join(sorted(REVIEW_PAGE_SHOWS)))
-    return "\n\n".join([CONTEXT, lists, PROPERTIES, SCHEMA, f"The question:\n{question}"])
+    if version == 1:
+        return "\n\n".join([CONTEXT, lists, PROPERTIES, SCHEMA, f"The question:\n{question}"])
+    if version == 2:
+        return "\n\n".join([CONTEXT, lists, SIZES, KINDS, PROPERTIES, FILLING, SCHEMA_V2,
+                            worked_examples(), f"The question:\n{question}"])
+    raise ValueError(f"no prompt version {version!r}: there are 1 and 2")
 
 
-def from_model(question: str, page: page_module.Page | None, call) -> Form:
-    """The form a model proposes. `call(prompt) -> str` is injected, so this module makes no
-    request of its own, and the runner that supplies a real call is a paid script. A reply
-    that is not one JSON object in the vocabulary raises, with the fault named."""
-    reply = call(prompt(question, page))
+def parse_reply(reply: str | None, version: int = PROMPT_VERSION) -> Form:
+    """A model's reply to prompt `version` as a form, which records that version, refused
+    with the fault named when it is not one JSON object in the vocabulary. Taken out of
+    `from_model` on 22 October 2026, so the box can tell a call that failed from a reply
+    that is not a form."""
     block = re.search(r"\{.*\}", reply or "", re.DOTALL)
     if not block:
         raise ValueError(f"the model's reply holds no JSON object: {(reply or '')[:200]!r}")
@@ -899,7 +1200,15 @@ def from_model(question: str, page: page_module.Page | None, call) -> Form:
         data = json.loads(block.group(0))
     except json.JSONDecodeError as error:
         raise ValueError(f"the model's JSON does not parse ({error}): {block.group(0)[:200]!r}")
-    return from_record(data, source="model")
+    return dataclasses.replace(from_record(data, source="model"), prompt_version=version)
+
+
+def from_model(question: str, page: page_module.Page | None, call) -> Form:
+    """The form a model proposes, under the current prompt, which the form records. `call(prompt)
+    -> str` is injected, so this module makes no request of its own, and the runner that
+    supplies a real call is a paid script. A reply that is not one JSON object in the
+    vocabulary raises, with the fault named."""
+    return parse_reply(call(prompt(question, page)))
 
 
 def main() -> int:

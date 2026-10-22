@@ -24,6 +24,15 @@ in the stored batch the file names, so no shop is needed, and that half is free:
 run prints it, with what `box.decide` does with each question, the number of calls and an
 estimate from the census's charge per call.
 
+Since 22 October 2026 both modes measure what the box would use (box v13): the model's
+reply to the current prompt (`form.PROMPT_VERSION`), normalised to the page's own words
+(`normalise.normalise`), is the model's form, held to the box's own gate
+(`normalise.problems`) for its problems. The form as the model wrote it is kept beside it,
+with its tiers and each change, so what normalisation did can be read off every row. A
+paraphrase row also says what `box.decide` does with the question under the model parser,
+from the same reply, with no second call. A result file says which prompt and which
+normalisation made it.
+
     python experiments/runners/parse_probe.py --dry-run     # prints the prompts, calls nothing
     python experiments/runners/parse_probe.py               # paid: one call per question
     python experiments/runners/parse_probe.py --questions experiments/tasks/paraphrases_v1.json --dry-run
@@ -44,6 +53,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import box
 import form
+import normalise
 import page as page_module
 import plan_probe  # the key, the model name and the account usage, read the same way
 import planner
@@ -177,25 +187,28 @@ def agree(rules: form.Form, model: form.Form) -> bool:
     return not stated
 
 
-def propose(question: str, model: str, key: str) -> tuple[form.Form | None, str | None, bool,
-                                                         float | None]:
-    """The model's form of one question, the error when there is none, whether the call
-    itself failed, and what it was charged. A request that fails, an HTTP error, a timeout
-    or a body that is not JSON, is a failed call with no cost rather than the end of the
-    probe, and a success whose body holds no completion is one too, with whatever it was
-    charged. No retry, so the figure stays one call per question. Taken out of `probe_one`
-    on 20 October 2026 so the paraphrase probe fails the same way; the census's own
-    behaviour is unchanged."""
+def propose(question: str, model: str, key: str, page: page_module.Page | None = None) -> dict:
+    """The model's form of one question, as the box would use it, with everything that
+    made it: the form as the model wrote it (`raw`), the form normalised to the page's own
+    words (`form`) and each change, the reply's text, the error when there is no form,
+    whether the call itself failed, and what it was charged. A request that fails, an HTTP
+    error, a timeout or a body that is not JSON, is a failed call with no cost rather than
+    the end of the probe, and a success whose body holds no completion is one too, with
+    whatever it was charged. No retry, so the figure stays one call per question. Taken out
+    of `probe_one` on 20 October 2026 so the paraphrase probe fails the same way; since 22
+    October 2026 the form is normalised as the box normalises it (box v13)."""
     charged: list[float | None] = []
+    replies: list[str] = []
 
     def call(prompt: str) -> str:
         text, cost = call_model(key, model, prompt)
         charged.append(cost)
+        replies.append(text)
         return text
 
-    proposed, error, failed = None, None, False
+    raw, error, failed = None, None, False
     try:
-        proposed = form.from_model(question, None, call)
+        raw = form.from_model(question, page, call)
     # Request failures before ValueError: requests' `JSONDecodeError`, raised for a 200
     # whose body is not JSON, is both, and until 14 October 2026 the ValueError handler
     # took it as a model problem, so `calls_failed` undercounted (verifier finding).
@@ -206,23 +219,36 @@ def propose(question: str, model: str, key: str) -> tuple[form.Form | None, str 
         charged.append(fault.cost)
     except ValueError as fault:         # a reply that is not a form in the vocabulary
         error = str(fault)
-    return proposed, error, failed, charged[0] if charged else None
+    normalised, changes = normalise.normalise(raw, question, page) if raw is not None else (None, [])
+    return {"raw": raw, "form": normalised, "changes": changes,
+            "reply": replies[0] if replies else None, "error": error, "failed": failed,
+            "cost": charged[0] if charged else None}
+
+
+def model_fields(got: dict, question: str, page: page_module.Page | None) -> dict:
+    """A row's model fields from `propose`: the form the box would use, the form as the
+    model wrote it and each change between them, and the problems that would stop the box
+    using it, its own gate (`normalise.problems`), or the error when there is no form."""
+    proposed = got["form"]
+    return {"model": proposed.record() if proposed else None,
+            "model_raw": got["raw"].record() if got["raw"] is not None else None,
+            "normalised": list(got["changes"]),
+            "model_problems": (normalise.problems(proposed, question, page) if proposed
+                               else [] if got["failed"] else [got["error"]]),
+            "error": got["error"], "call_failed": got["failed"], "cost_usd": got["cost"]}
 
 
 def probe_one(name: str, question: str, model: str, key: str) -> dict:
-    """One question: the rules' form on the page it names, the model's form, whether the
-    two agree, and what the call cost, a failed call recorded on the row (`propose`)."""
+    """One question: the rules' form on the page it names, the model's form as the box
+    would use it, whether the two agree, and what the call cost, a failed call recorded on
+    the row (`propose`)."""
     page = results_page(question)
     rules = form.from_rules(question, page)
-    proposed, error, failed, cost = propose(question, model, key)
+    got = propose(question, model, key, page)
     return {"file": name, "question": question,
             "rules": rules.record(), "rules_problems": form.verify(rules, page),
-            "model": proposed.record() if proposed else None,
-            "model_problems": (form.verify(proposed, page) if proposed
-                               else [] if failed else [error]),
-            "error": error, "call_failed": failed,
-            "agree": proposed is not None and agree(rules, proposed),
-            "cost_usd": cost}
+            **model_fields(got, question, page),
+            "agree": got["form"] is not None and agree(rules, got["form"])}
 
 
 def print_row(row: dict) -> None:
@@ -252,7 +278,10 @@ def report(rows: list[dict], model: str, key: str, before: float | None) -> path
     stamp = dt.datetime.now().strftime("%Y%m%dT%H%M%S")
     out = RESULTS / f"parse-probe-{stamp}.json"
     out.write_text(json.dumps({"ran_at": stamp, "model": model, "temperature": 0,
-                               "form_version": form.VERSION, "commit": repository_commit(),
+                               "form_version": form.VERSION,
+                               "prompt_version": form.PROMPT_VERSION,
+                               "normalise_version": normalise.VERSION,
+                               "commit": repository_commit(),
                                "spend_usd": spent, "charged_usd": charged_total,
                                "calls_failed": failed, "rows": rows}, indent=2) + "\n")
     print(f"written: {out}")
@@ -337,14 +366,22 @@ def stored_page(suite: pathlib.Path) -> page_module.Page:
     return page_module.from_record(json.loads(records.pop()))
 
 
-def outcome(question: str, page: page_module.Page) -> dict:
+def outcome(question: str, page: page_module.Page, reply: str | None = None) -> dict:
     """What `box.decide` does with the question, with no reply, in the words of the task
     files' "box" field: plan, ask, refuse, fallback or bypass, and the kind planned. For an
     ask, the kind is the one planned once the menu reading answers it, as
     tests/test_apparel_v2.py reads it, and None for the ask for a price limit, which no
-    reading answers. A plan `decide` refuses to compose, by raising, is "error"."""
+    reading answers. A plan `decide` refuses to compose, by raising, is "error".
+
+    With `reply`, a model's reply already paid for, the box decides under the model parser
+    with that reply as its call, so no second call is made (22 October 2026), and the
+    outcome says whose form it used and why the rules' when it was. An ask that offers no
+    reading is "other" when the form it was asked from holds a word the model reads two
+    ways other than the shop's own, which the box asks about before a price limit, and
+    "price limit" otherwise."""
+    parsed = {} if reply is None else {"parser": "model", "call": lambda prompt: reply}
     try:
-        decision = box.decide(question, page)
+        decision = box.decide(question, page, **parsed)
     except ValueError as fault:
         return {"outcome": "error", "kind": None, "ask": None, "reading_by": None,
                 "detail": str(fault)}
@@ -355,15 +392,20 @@ def outcome(question: str, page: page_module.Page) -> dict:
     elif decision.refuse:
         found.update(outcome="refuse", detail=decision.refuse)
     elif decision.query is None:
+        # The box asks about another word before it asks for a price limit (`box.decide`).
+        other = decision.form is not None and any(
+            not normalise.reads_availability(entry) for entry in decision.form.ambiguities)
         found.update(outcome="ask", detail=decision.ask.text,
-                     ask="reading" if decision.ask.readings else "price limit")
+                     ask="reading" if decision.ask.readings else "other" if other else "price limit")
         if decision.ask.readings:
             try:
-                found["kind"] = box.decide(question, page, reply="menu").kind
+                found["kind"] = box.decide(question, page, reply="menu", **parsed).kind
             except ValueError as fault:
                 found["detail"] += f" Read as the menu, it is refused: {fault}"
     elif decision.form.fallback:
         found["outcome"] = "fallback"
+    if reply is not None:
+        found.update(parsed_by=decision.parse.used, fallback_reason=decision.parse.fallback_reason)
     return found
 
 
@@ -385,6 +427,8 @@ def meets_audit(expected: str, found: dict) -> bool:
 def outcome_words(found: dict) -> str:
     """An outcome in a few words, for the printed rows."""
     if found["outcome"] == "ask":
+        if found["ask"] == "other":
+            return "ask about another reading the model found"
         return ("ask for a price limit" if found["ask"] == "price limit"
                 else f"ask for a reading, then {found['kind']}")
     if found["outcome"] in ("plan", "fallback"):
@@ -411,13 +455,16 @@ def rules_half(entry: dict, page: page_module.Page) -> tuple[dict, form.Form]:
 
 def model_half(row: dict, expected: form.Form, page: page_module.Page, model: str,
                key: str) -> dict:
-    """The row with the model's form added, one call, and the tiers that form reaches."""
-    proposed, error, failed, cost = propose(row["question"], model, key)
-    return {**row, "model": proposed.record() if proposed else None,
-            "model_problems": (form.verify(proposed, page) if proposed
-                               else [] if failed else [error]),
-            "model_tiers": tiers(expected, proposed),
-            "error": error, "call_failed": failed, "cost_usd": cost}
+    """The row with the model's form added, one call: the form the box would use and the
+    tiers it reaches, which are the figures, and beside them the form as the model wrote it
+    with its own tiers and each change, and what `box.decide` does under the model parser
+    with the same reply."""
+    got = propose(row["question"], model, key, page)
+    return {**row, **model_fields(got, row["question"], page),
+            "model_tiers": tiers(expected, got["form"]),
+            "model_raw_tiers": tiers(expected, got["raw"]),
+            "model_box": (outcome(row["question"], page, reply=got["reply"])
+                          if got["reply"] is not None else None)}
 
 
 def reached(found: dict[str, bool]) -> str:
@@ -436,9 +483,19 @@ def print_paraphrase(row: dict) -> None:
         print(f"     model:    {summary(row['model']) if row['model'] else 'no form: ' + str(row['error'])}")
         print(f"               {reached(row['model_tiers'])}; {'; '.join(row['model_problems']) or 'sound'}")
         print(f"               {'$%.5f' % row['cost_usd'] if row['cost_usd'] is not None else 'cost unknown'}")
+        # What normalisation changed, and what the form as written reached (22 Oct 2026).
+        for change in row.get("normalised") or []:
+            print(f"               normalised: {change}")
+        if row.get("normalised"):
+            print(f"               as written: {summary(row['model_raw'])}; {reached(row['model_raw_tiers'])}")
     met = "met" if meets_audit(row["audit_expected"], row["box"]) else "not met"
     print(f"     box:      {outcome_words(row['box'])}; the template: "
           f"{outcome_words(row['template_box'])}; the audit expected {row['audit_expected']}, {met}")
+    if row.get("model_box"):
+        found = row["model_box"]
+        why = f", since {found['fallback_reason']}" if found.get("fallback_reason") else ""
+        whose = {"rules": "the rules'", "model": "the model's"}[found["parsed_by"]]
+        print(f"     model box: {outcome_words(found)}, by {whose} form{why}")
 
 
 def question_totals(rows: list[dict], with_model: bool) -> dict:
@@ -456,6 +513,13 @@ def question_totals(rows: list[dict], with_model: bool) -> dict:
         totals["rules_only"] = {tier: count(lambda r: r["rules_tiers"][tier] and not r["model_tiers"][tier])
                                 for tier in TIERS}
     totals["box"] = {name: count(lambda r: r["box"]["outcome"] == name) for name in OUTCOMES}
+    if with_model:
+        # Under the model parser, from each row's own reply (22 October 2026), and how
+        # many of those decisions used the rules' form instead. Zero in a file written
+        # before, whose rows have no model_box.
+        totals["model_box"] = {name: count(lambda r: (r.get("model_box") or {}).get("outcome") == name)
+                               for name in OUTCOMES}
+        totals["model_box_by_rules"] = count(lambda r: (r.get("model_box") or {}).get("parsed_by") == "rules")
     totals["box_as_template"] = count(lambda r: same_outcome(r["box"], r["template_box"]))
     totals["box_as_audit_expected"] = count(lambda r: meets_audit(r["audit_expected"], r["box"]))
     for label in ("ambiguous", "clear"):
@@ -478,6 +542,12 @@ def print_totals(totals: dict, with_model: bool) -> None:
         print(f"{line} of {n}")
     print(f"box.decide under the rules: "
           f"{', '.join(f'{name} {got}' for name, got in totals['box'].items())}")
+    # Printed only for a file that has them, so a file written before 22 October 2026
+    # prints what it always printed.
+    if with_model and any((totals.get("model_box") or {}).values()):
+        print(f"box.decide under the model parser: "
+              f"{', '.join(f'{name} {got}' for name, got in totals['model_box'].items())}; "
+              f"by the rules' form {totals['model_box_by_rules']}")
     print(f"  the same outcome and kind as its template's  {totals['box_as_template']} of {n}")
     print(f"  the outcome the audit expected               {totals['box_as_audit_expected']} of {n}")
     for label in ("ambiguous", "clear"):
@@ -492,12 +562,27 @@ def census_charge(path: pathlib.Path | None = None) -> tuple[float, int, str]:
     return sum(charged), len(charged), census["model"]
 
 
-def print_estimate(calls: int, model: str) -> None:
+def prompt_scale(prompts: list[str], path: pathlib.Path | None = None) -> float:
+    """How much longer these prompts are, on average, than the ones the census sent, which
+    were prompt version 1's (22 October 2026: version 2's worked examples make it about five
+    times as long, and the census's charge per call no longer prices a call)."""
+    census = json.loads((path or paths.RESULTS / CENSUS).read_text())
+    sent = [len(form.prompt(row["question"], version=1)) for row in census["rows"]]
+    return (sum(map(len, prompts)) / len(prompts)) / (sum(sent) / len(sent))
+
+
+def print_estimate(prompts: list[str], model: str) -> None:
+    """The calls a probe of these prompts makes, and what they would cost: the census's
+    charge per call, scaled by how much longer these prompts are (`prompt_scale`). The whole
+    charge is scaled, the reply's share with the prompt's, so the figure is high rather than
+    low: the reply does not grow with the prompt."""
     total, charged, census_model = census_charge()
-    per_call = total / charged
+    per_call = total / charged * prompt_scale(prompts)
+    calls = len(prompts)
     print(f"{calls} calls to {model}, text only, no browser. Nothing was sent.")
     print(f"estimate: ${calls * per_call:.4f}, {calls} calls at ${per_call:.5f}, the census's charge "
-          f"per call ({CENSUS}: ${total:.4f} for {charged} calls to {census_model})")
+          f"per call ({CENSUS}: ${total:.4f} for {charged} calls to {census_model}) times "
+          f"{prompt_scale(prompts):.2f}, how much longer these prompts are than the census's")
     if model != census_model:
         print(f"warning: the census called {census_model}, so its charge does not price {model}")
 
@@ -523,6 +608,7 @@ def report_questions(rows: list[dict], path: pathlib.Path, spec: dict, page: pag
     out.write_text(json.dumps({
         "ran_at": stamp, "questions": path.name, "comparison_version": COMPARISON_VERSION,
         "model": model, "temperature": 0, "form_version": form.VERSION,
+        "prompt_version": form.PROMPT_VERSION, "normalise_version": normalise.VERSION,
         "box_version": box.VERSION, "primitives_version": primitives.VERSION,
         "planner_version": planner.VERSION, "strategy_version": targeting.VERSION,
         "commit": repository_commit(), "page_from": spec["page_from"], "page": page.record(),
@@ -552,7 +638,7 @@ def probe_questions(path: pathlib.Path, model: str, dry_run: bool) -> int:
         for row, _ in halves:
             print_paraphrase(row)
         print_totals(question_totals([row for row, _ in halves], with_model=False), with_model=False)
-        print_estimate(len(halves), model)
+        print_estimate([form.prompt(row["question"], page) for row, _ in halves], model)
         return 0
 
     key = plan_probe.load_key()

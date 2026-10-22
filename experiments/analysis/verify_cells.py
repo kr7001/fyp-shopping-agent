@@ -313,7 +313,13 @@ def verify_run(record_path: pathlib.Path, task: dict, truth: dict,
         "selections": (trace.get("selections") or [] if scaffold == "naive"
                        else trace_stats.stats(log_path)["selections"]),
         "tool_calls": trace.get("tool_calls_total"), "actions": trace.get("actions"),
+        # What the run cost, and the agent's part of it, which is all the log's charges can
+        # re-sum to. They differ only under the model parser, whose parse is charged to the
+        # run beside the agent (`suite.charge_parse`, 22 October 2026); a record without
+        # `agent_cost_usd` is the agent's alone.
         "cost": record.get("cost_usd"), "cost_resummed": resummed,
+        "agent_cost": record.get("agent_cost_usd", record.get("cost_usd")),
+        "parse_cost": record.get("parse_cost_usd"),
         "completions": completions, "cost_lines": cost_lines,
         "spend_before": record.get("spend_before_usd"),
         "spend_after": record.get("spend_after_usd"),
@@ -375,6 +381,14 @@ def print_floor_table(rows: list[dict]) -> None:
               f"{row['rule']:34} {which}")
 
 
+def cost_differs(run: dict) -> bool:
+    """Whether a run's record disagrees with the charges its own log re-sums to. The log
+    holds the agent's charges only, so it is held to the agent's part of the cost, which
+    under the model parser is the run's cost less its parse (22 October 2026), and for every
+    record before that is the run's cost itself."""
+    return run["cost_resummed"] is not None and abs((run["agent_cost"] or 0) - run["cost_resummed"]) > 1e-6
+
+
 def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: bool) -> dict:
     gated = [r for r in runs if r["gated"]]
     control = [r for r in runs if not r["gated"]]
@@ -405,8 +419,8 @@ def report(batch: pathlib.Path, suite: dict, runs: list[dict], show_answers: boo
             problem(f"{tag}: record says shop {r['shop']}")
         if r["cost_lines"] is not None and r["cost_lines"] != r["completions"]:
             problem(f"{tag}: {r['completions']} completions but {r['cost_lines']} charges")
-        if r["cost_resummed"] is not None and abs((r["cost"] or 0) - r["cost_resummed"]) > 1e-6:
-            problem(f"{tag}: record cost {r['cost']} against re-summed {r['cost_resummed']}")
+        if cost_differs(r):
+            problem(f"{tag}: record cost {r['agent_cost']} against re-summed {r['cost_resummed']}")
         if r["longest_silence_s"] > SUSPENDED_AFTER_S:
             problem(f"{tag}: log silent for {r['longest_silence_s']:.0f}s, the run was "
                     f"suspended, so it is void")

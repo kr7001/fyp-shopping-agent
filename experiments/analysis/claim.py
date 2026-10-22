@@ -380,9 +380,11 @@ def page_calls(log_path: pathlib.Path, market: list[str] | None
 
 def flagged_arm(payload: dict) -> str:
     """The arm a payload's flags make, by `suite.arm_of`'s rule, for a batch made before the
-    payload named its arm (20 October 2026) and to check one that does."""
+    payload named its arm (20 October 2026) and to check one that does. The parser is one of
+    the flags since 22 October 2026: a payload without it was read by the rules."""
     return suite_module.arm_of(argparse.Namespace(**{
-        name: bool(payload.get(name)) for name in ("box", "box_exhaust", "targeting", "exhaustive")}))
+        name: bool(payload.get(name)) for name in ("box", "box_exhaust", "targeting", "exhaustive")},
+        parser=payload.get("parser") or "rules"))
 
 
 def arm_of(payload: dict, run: dict | None = None) -> str:

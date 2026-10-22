@@ -26,6 +26,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402,F401
 import box  # noqa: E402
 import form  # noqa: E402
+import normalise  # noqa: E402
 import page  # noqa: E402
 import parse_probe  # noqa: E402
 import plan_probe  # noqa: E402
@@ -595,7 +596,14 @@ class QuestionsDryRun(unittest.TestCase):
         self.assertRegex(first, r"\n  same on every field +\d+ of 30\n")
         lines = first.splitlines()
         self.assertEqual(lines[-2], f"30 calls to {census_model}, text only, no browser. Nothing was sent.")
-        self.assertTrue(lines[-1].startswith(f"estimate: ${30 * total / calls:.4f}, 30 calls at "), lines[-1])
+        # Since 22 October 2026 the census's charge per call is scaled by how much longer
+        # prompt version 2 is than the version 1 prompts the census sent.
+        _, entries = parse_probe.load_questions(PARAPHRASES)
+        scale = parse_probe.prompt_scale([form.prompt(entry["question"]) for entry in entries])
+        self.assertGreater(scale, 4)
+        self.assertTrue(lines[-1].startswith(f"estimate: ${30 * total / calls * scale:.4f}, 30 calls at "),
+                        lines[-1])
+        self.assertIn(f"times {scale:.2f}, how much longer these prompts are", lines[-1])
 
     def test_the_estimate_says_when_the_census_priced_another_model(self):
         self.assertTrue(self.dry_run("fake/model").splitlines()[-1].startswith(
@@ -605,9 +613,11 @@ class QuestionsDryRun(unittest.TestCase):
 
 
 # What the faked model does wrong, by paraphrase: every other one answers with the expected
-# form itself, so it reaches every tier.
+# form itself, so it reaches every tier. 8 writes its size as a word, which normalisation
+# puts right (22 October 2026): the form the box would use reaches every tier, the form as
+# written all but every field.
 PLANTED = {2: "population", 3: "objective", 4: "quantifier", 5: "a filter", 6: "no form",
-           7: "a failed call"}
+           7: "a failed call", 8: "a size word"}
 
 
 def planted_reply(entry: dict, page_: page.Page) -> str:
@@ -617,7 +627,11 @@ def planted_reply(entry: dict, page_: page.Page) -> str:
                                             "k", "reading", "unknowns", "evidence")}
     fault = PLANTED.get(entry["id"])
     if fault == "population":
-        reply["population"] = next(p for p in form.POPULATIONS if p != reply["population"])
+        # "reviews" rather than "listing" since 22 October 2026: the probe measures the form
+        # normalised as the box would use it, and a "listing" with no product page named is
+        # put back to the results page (`normalise.normalise`, `ModelPath` in
+        # test_model_parser.py), so it would plant nothing.
+        reply["population"] = "reviews"
     elif fault == "objective":
         reply["objective"] = next(o for o in ("price", "rate") if o != reply["objective"])
     elif fault == "quantifier":
@@ -625,6 +639,9 @@ def planted_reply(entry: dict, page_: page.Page) -> str:
         reply["k"] = None
     elif fault == "a filter":
         reply["filters"] = reply["filters"] + [{"attribute": "colour", "op": "=", "value": "red"}]
+    elif fault == "a size word":
+        reply["filters"] = [dict(f, value="medium") if f["attribute"] == "size" else f
+                            for f in reply["filters"]]
     elif fault == "no form":
         return "I cannot parse that."
     elif fault == "a failed call":
@@ -642,8 +659,10 @@ class QuestionsFakedModel(unittest.TestCase):
         cls.folder = tempfile.TemporaryDirectory()
         cls.page = parse_probe.stored_page(THORNWOOD)
         by_question = {entry["question"]: entry for entry in parse_probe.load_questions(PARAPHRASES)[1]}
+        cls.prompts = []
 
         def call_model(key, model, prompt):
+            cls.prompts.append(prompt)
             return planted_reply(by_question[prompt.rsplit("The question:\n", 1)[1]], cls.page), 0.001
 
         out = io.StringIO()
@@ -721,6 +740,43 @@ class QuestionsFakedModel(unittest.TestCase):
                           primitives.VERSION, planner.VERSION, targeting.VERSION))
         self.assertEqual(p["page"], json.loads(THORNWOOD.read_text())["rows"][0]["box"]["page"])
         self.assertRegex(p["commit"], r"^[0-9a-f]{40}$")
+        # Which prompt and which normalisation made the model's forms (22 October 2026).
+        self.assertEqual((p["prompt_version"], p["normalise_version"]),
+                         (form.PROMPT_VERSION, normalise.VERSION))
+
+    def test_the_figures_are_the_normalised_forms_and_the_written_one_is_kept(self):
+        # 22 October 2026: the model's tiers are those of the form the box would use, and the
+        # form as the model wrote it is kept beside it with its own tiers and each change.
+        rows = {row["id"]: row for row in self.payload["rows"]}
+        eight = rows[8]
+        self.assertEqual(list(eight["model_tiers"].values()), [True] * 4)
+        self.assertEqual(list(eight["model_raw_tiers"].values()), [True, True, True, False])
+        self.assertEqual(eight["normalised"], ["size = 'medium' is size = 'M'"])
+        self.assertEqual((eight["model_raw"]["filters"][0], eight["model"]["filters"][0]),
+                         ({"attribute": "size", "op": "=", "value": "medium"},
+                          {"attribute": "size", "op": "=", "value": "M"}))
+        self.assertIn("               normalised: size = 'medium' is size = 'M'", self.printed)
+        # A reply planted with no fault is the expected form and needs no change.
+        self.assertEqual((rows[1]["normalised"], rows[1]["model_raw_tiers"]), ([], rows[1]["model_tiers"]))
+        # The prompt sent is the current one, once per paraphrase: the box's decision under
+        # the model parser reuses each row's reply and makes no call of its own.
+        self.assertEqual(len(self.prompts), 30)
+        self.assertTrue(all(p == form.prompt(p.rsplit("The question:\n", 1)[1]) for p in self.prompts))
+
+    def test_the_box_under_the_model_parser_decides_from_the_same_reply(self):
+        rows = {row["id"]: row for row in self.payload["rows"]}
+        # The planted form of 8 is used; 6's reply is no form, so the rules' decision stands,
+        # and 7's call failed, so there is no reply to decide from.
+        self.assertEqual((rows[8]["model_box"]["parsed_by"], rows[8]["model_box"]["outcome"]),
+                         ("model", rows[8]["box"]["outcome"]))
+        self.assertEqual(rows[6]["model_box"]["parsed_by"], "rules")
+        self.assertTrue(rows[6]["model_box"]["fallback_reason"].startswith("the model's reply is not a form"))
+        self.assertIsNone(rows[7]["model_box"])
+        totals = self.payload["totals"]
+        self.assertEqual(sum(totals["model_box"].values()), 29)
+        self.assertEqual(totals["model_box_by_rules"],
+                         sum(1 for r in self.payload["rows"] if (r["model_box"] or {}).get("parsed_by") == "rules"))
+        self.assertIn("box.decide under the model parser: ", self.printed)
 
 
 class ProbeReadsNoAnswer(unittest.TestCase):

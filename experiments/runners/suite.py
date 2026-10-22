@@ -26,7 +26,10 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import box as box_module
 import form as form_module
+import normalise as normalise_module
 import page as page_module
+import parse_probe  # the one call to the provider a parse makes, and its charge
+import plan_probe  # the key and the agent's model, read the same way
 import policy as policy_module
 import primitives as primitives_module
 import sufficiency
@@ -109,6 +112,60 @@ ALLOWED_ORIGINS = "http://localhost:7770"
 BROWSER_FLAGS = "--block-service-workers --isolated"
 MCP_ARGS_GATED = (f'-y @playwright/mcp@{BROWSER_TOOL} --user-agent "{GATED_UA}" '
                   f'--allowed-origins {ALLOWED_ORIGINS} {BROWSER_FLAGS}')
+
+
+# The model parser (box v13, 22 October 2026). It reads each run's question through one call
+# at temperature 0, the setting of every parse probe, with no retry. Its model is the
+# agent's own unless `--parser-model` names another, read the way the agent reads it
+# (`run_browser_task.py`): MODEL_NAME in the environment, then in the repository's .env,
+# then this default.
+PARSER_TEMPERATURE = 0
+DEFAULT_MODEL = "anthropic/claude-haiku-4.5"
+
+
+def agent_model() -> str:
+    """The model the agent will run, as the agent reads it."""
+    if os.environ.get("MODEL_NAME"):
+        return os.environ["MODEL_NAME"]
+    if (REPO / ".env").exists():
+        return plan_probe.model_name()
+    return DEFAULT_MODEL
+
+
+def parser_call(model: str, key: str, charges: list):
+    """The model parser's call for one run: one request to `model` through
+    `parse_probe.call_model` (temperature 0, no retry), the provider's charge for it
+    appended to `charges`. A reply that is no completion raises as a failed call with its
+    charge kept, as the parse probe keeps it; a request that fails before any reply leaves
+    no charge, as in the probe. Either way the box then uses the rules' form and says why."""
+    def call(prompt: str) -> str:
+        try:
+            text, cost = parse_probe.call_model(key, model, prompt)
+        except parse_probe.UnexpectedReply as fault:
+            charges.append(fault.cost)
+            raise
+        charges.append(cost)
+        return text
+    return call
+
+
+def parse_cost(charges: list) -> float | None:
+    """What a run's parse cost: its charges summed, 0 when no call was made, and None when
+    the provider did not say what a call cost, since a missing cost is unknown, not zero."""
+    if any(charge is None for charge in charges):
+        return None
+    return round(sum(charges), 6)
+
+
+def stubbed_replies(path: pathlib.Path) -> dict[str, str]:
+    """Recorded or stubbed model replies for a dry run under the model parser, by task id,
+    from a JSON file {"replies": {task id: reply text}}, so the dry run can show the plan a
+    reply gives while sending nothing. A paid run never reads one (`main` refuses it)."""
+    data = json.loads(path.read_text())
+    replies = data.get("replies") if isinstance(data, dict) else None
+    if not isinstance(replies, dict) or not all(isinstance(text, str) for text in replies.values()):
+        raise ValueError(f'{path} must hold {{"replies": {{task id: reply text}}}}')
+    return replies
 
 
 def browser_conditions(scaffold: str, shop: str) -> dict:
@@ -211,6 +268,20 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
     return record
 
 
+def charge_parse(record: dict, parsed: float | None, record_path: pathlib.Path) -> dict:
+    """A run's record with its parse charged to it (22 October 2026): `cost_usd` becomes
+    what the run cost, the agent's charges and the parse's, beside `agent_cost_usd`, which
+    the log's own charges re-sum to (`verify_cells`), and `parse_cost_usd`. None when either
+    part is unknown, since a missing cost is unknown, not zero. Written back into the run's
+    record file when the runner wrote one, so the file says what its run cost."""
+    agent = record.get("cost_usd")
+    record = {**record, "agent_cost_usd": agent, "parse_cost_usd": parsed,
+              "cost_usd": None if agent is None or parsed is None else round(agent + parsed, 6)}
+    if record_path.exists():
+        record_path.write_text(json.dumps(record, indent=2, default=str) + "\n")
+    return record
+
+
 def model_from_records(out_dir: pathlib.Path) -> str | None:
     """The model the runner actually used, read back from the first run it wrote.
 
@@ -306,7 +377,7 @@ def results_page(url: str) -> page_module.Page:
     return PAGES[url]
 
 
-def build_query(task: dict, spec: dict, args) -> tuple[str | None, dict]:
+def build_query(task: dict, spec: dict, args, call=None) -> tuple[str | None, dict]:
     """The exact text the agent receives, and what produced it.
 
     One function for the dry run and the paid loop, so the text the verifier reads is the
@@ -316,18 +387,26 @@ def build_query(task: dict, spec: dict, args) -> tuple[str | None, dict]:
     refused. A question the box bypasses comes back as its own text, which is what the
     agent then gets. The dict holds the strategy kind, the box's record, the page it read
     and its decision, each None when not used.
+
+    Under `--parser model` the box reads the question through `call`, which the paid loop
+    makes with `parser_call` for each run and a dry run makes from a replies file, so a
+    dry run sends nothing (22 October 2026).
     """
     query = task["query"].format(base=spec["base_url"])
     applied = {"strategy": None, "box": None, "page": None, "decision": None}
     # Read with a default: a caller that builds its own namespace, as the tests do, may
-    # predate the flag (20 October 2026).
+    # predate the flag (20 October 2026), or the parser's (22 October 2026).
     exhaust = getattr(args, "box_exhaust", False)
     if args.box or exhaust:
         # A question with no URL names no page to read. The box decides whether that is
         # because it is not about the shop (a bypass) or an error.
         url = box_module.results_url(query, required=False)
         page = results_page(url) if url else None
-        decision = box_module.decide(query, page, reply=args.reading, exhaust=exhaust)
+        # Anything but the word "model" is the rules: a namespace a test builds, a mock
+        # among them, may have no parser of its own. The command line allows only the two.
+        parser = "model" if getattr(args, "parser", "rules") == "model" else "rules"
+        decision = box_module.decide(query, page, reply=args.reading, exhaust=exhaust,
+                                     parser=parser, call=call)
         applied.update(strategy=decision.kind, box=decision.record(), page=page,
                        decision=decision)
         if decision.query is None:
@@ -353,20 +432,26 @@ def arm_of(args) -> str:
     """Which retrieval instruction the batch adds to every question, the arm's name in its
     payload (20 October 2026): the box, the box without its stop rule, the targeting
     strategies, the open-everything instruction, the last two together, or none. The
-    other conditions of an arm (probe, scaffold, shop, model) have their own fields."""
+    other conditions of an arm (probe, scaffold, shop, model) have their own fields.
+
+    The box read by the model parser is another arm, "box-model" or "box-exhaust-model"
+    (22 October 2026), so a reader that selects box batches by their arm never pools the
+    two parsers (LESSONS 7). A namespace without the flag is the rules'."""
+    model = getattr(args, "parser", "rules") == "model"
     if getattr(args, "box_exhaust", False):
-        return "box-exhaust"
+        return "box-exhaust-model" if model else "box-exhaust"
     if args.box:
-        return "box"
+        return "box-model" if model else "box"
     named = [name for name, on in (("targeting", args.targeting),
                                    ("exhaustive", args.exhaustive)) if on]
     return "+".join(named) or "none"
 
 
-def asked_row(task: dict, repeat: int, box_record: dict) -> dict:
+def asked_row(task: dict, repeat: int, box_record: dict, cost: float | None = 0) -> dict:
     """A run slot the box closed without running the agent: it asked the user, or (box v2)
-    it refused because the shop does not show what the question needs. Nothing was spent,
-    so the cost is zero rather than unknown."""
+    it refused because the shop does not show what the question needs. No agent ran, so
+    under the rules nothing was spent and the cost is zero rather than unknown. Under the
+    model parser the parse was paid for, and `cost` is what it cost (22 October 2026)."""
     refused = box_record.get("refuse")
     return {"task": task["id"], "family": task["family"], "gated": task["gated"],
             "repeat": repeat, "verdict": "refused" if refused else "asked",
@@ -374,7 +459,7 @@ def asked_row(task: dict, repeat: int, box_record: dict) -> dict:
                     if refused else "the box asked the user and no --reading answered it"),
             "answer": (refused or box_record["ask"])[:300],
             "tool_calls": None, "actions": None, "observations": None,
-            "cost_usd": 0, "elapsed_s": 0, "error": None, "log": None,
+            "cost_usd": cost, "elapsed_s": 0, "error": None, "log": None,
             "box": box_record, "reading": None}
 
 
@@ -406,10 +491,17 @@ def unscorable(tasks: list[dict], spec: dict, args, readings: dict) -> list[str]
     has no key for it. Since 335dda6 (20 October 2026) a question with two readings
     answered under one its sidecar lacks raises there, and the suite scores each run right
     after it, so the batch would end after that run had been paid for. A slot the box
-    closes, an ask with no reply or a refusal, runs nothing and is scored by nothing."""
+    closes, an ask with no reply or a refusal, runs nothing and is scored by nothing.
+
+    Under the model parser (22 October 2026) the decision waits on each run's reply, so it
+    cannot be known before anything is spent. The rules' decision is checked as above,
+    which costs nothing, and so is the one reading the model's form can lead the box to that
+    the rules' might not: a question with two readings answered as buyable, by the box or
+    by a reply. Between them every reading a run can be scored under has its key."""
     missing = []
+    rules = argparse.Namespace(**{**vars(args), "parser": "rules"})
     for task in tasks:
-        query, applied = build_query(task, spec, args)
+        query, applied = build_query(task, spec, rules)
         if query is None:
             continue
         reading = reading_answered(applied["box"], args.reading)
@@ -417,15 +509,21 @@ def unscorable(tasks: list[dict], spec: dict, args, readings: dict) -> list[str]
             scoring.under_reading(task, reading, readings)
         except scoring.NoKeyForReading:
             missing.append(f"{task['id']} under the {reading} reading")
+    if getattr(args, "parser", "rules") == "model":
+        for task in tasks:
+            try:
+                scoring.under_reading(task, "buyable", readings)
+            except scoring.NoKeyForReading:
+                found = f"{task['id']} under the buyable reading"
+                if found not in missing:
+                    missing.append(found + ", which the model parser's form can lead the box to")
     return missing
 
 
-def print_dry_task(task: dict, query: str | None, applied: dict) -> None:
-    """One task of the dry run: the exact text, through the same function the paid loop
-    uses, so what is read here is what the agent gets (LESSONS 17). An ask is printed as
-    the box's question, a refusal as what the box said was missing, a reading the box took
-    on its own as a line before the text."""
-    print(f"  {task['id']:26} gated={task['gated']}  {task['expect']['kind']}")
+def dry_text(query: str | None, applied: dict) -> None:
+    """What one decision sends, as the dry run prints it: the exact text, an ask as the
+    box's question, a refusal as what the box said was missing, a reading the box took on
+    its own as a line before the text."""
     record = applied["box"]
     if query is not None and record and record["bypassed"]:
         print(f"BYPASS: {query}")
@@ -437,7 +535,53 @@ def print_dry_task(task: dict, query: str | None, applied: dict) -> None:
         print(f"REFUSES: {record['refuse']}")
     else:
         print(f"ASKS: {record['ask']}")
+
+
+def print_dry_task(task: dict, query: str | None, applied: dict) -> None:
+    """One task of the dry run: the exact text, through the same function the paid loop
+    uses, so what is read here is what the agent gets (LESSONS 17)."""
+    print(f"  {task['id']:26} gated={task['gated']}  {task['expect']['kind']}")
+    dry_text(query, applied)
     print()
+
+
+def print_dry_parsers(task: dict, spec: dict, args, replies: dict[str, str]) -> dict | None:
+    """One task of a dry run under `--parser model` (22 October 2026): what the rules give,
+    then what the model parser gives with the reply `replies` holds for the task, or a line
+    saying there is none, since a dry run sends nothing. Each with the form it used and,
+    for the model, every change normalisation made and why the rules' form was used, when
+    it was. Returns the record the batch's counts take: the model's decision where a reply
+    was given, the rules' otherwise, which is also what the box sends when the model's form
+    fails."""
+    print(f"  {task['id']:26} gated={task['gated']}  {task['expect']['kind']}")
+    query, applied = build_query(task, spec, argparse.Namespace(**{**vars(args), "parser": "rules"}))
+    # The form the decision used, or, where the box asked first and used none, the rules'
+    # form of the question as asked.
+    form = (applied["box"] or {}).get("form") or form_module.from_rules(
+        task["query"].format(base=spec["base_url"]), applied["page"]).record()
+    print(f"parser rules: {parse_probe.summary(form)}")
+    dry_text(query, applied)
+    reply = replies.get(task["id"])
+    version = f"prompt v{form_module.PROMPT_VERSION}, normalisation v{normalise_module.VERSION}"
+    if reply is None:
+        print(f"parser model ({version}): no reply, since a dry run sends nothing. Give one with "
+              f"--parser-replies to see the plan it gives; if the model's form fails, the box "
+              f"sends the rules' text above")
+        print()
+        return applied["box"]
+    query, applied = build_query(task, spec, args, call=lambda prompt: reply)
+    parse = applied["box"]["parse"]
+    if parse["used"] == "rules":
+        print(f"parser model ({version}), reply from {args.parser_replies.name}: the rules' form "
+              f"is used: {parse['fallback_reason']}")
+    else:
+        print(f"parser model ({version}), reply from {args.parser_replies.name}: "
+              f"{parse_probe.summary(parse['model_form'])}")
+    for change in parse["changes"]:
+        print(f"  normalised: {change}")
+    dry_text(query, applied)
+    print()
+    return applied["box"]
 
 
 def gate_for(task: dict, spec: dict, answer: str, log_path: pathlib.Path,
@@ -568,6 +712,20 @@ def main() -> int:
                              "task's own key. buyable: only a size that can be sold now, "
                              "the key in tasks/readings_<market>.json. Without it a box "
                              "that asks records the ask, runs no agent and spends nothing")
+    parser.add_argument("--parser", choices=box_module.PARSERS, default="rules",
+                        help="who reads the question for the box. rules, the default, as every "
+                             "box batch before 22 October 2026. model: one call per run reads "
+                             "it, and its form is normalised and held to the box's checks, "
+                             "with the rules' form used instead, and the reason recorded, when "
+                             "the call fails or the form fails a check. Needs --box or "
+                             "--box-exhaust, and is an arm of its own")
+    parser.add_argument("--parser-model", default=None,
+                        help="the model --parser model calls, by default the agent's own "
+                             "(MODEL_NAME, as the agent reads it)")
+    parser.add_argument("--parser-replies", type=pathlib.Path, default=None,
+                        help='with --parser model and --dry-run only: a JSON file {"replies": '
+                             '{task id: reply text}} of recorded or stubbed model replies, so '
+                             "the dry run shows the plan each gives while sending nothing")
     parser.add_argument("--dry-run", action="store_true",
                         help="print the exact text each task would send, and run nothing")
     args = parser.parse_args()
@@ -606,6 +764,18 @@ def main() -> int:
                      "browser is not confined to the shop, since it launches its own without "
                      "--allowed-origins, and a question the box bypasses could take it off "
                      "localhost. Refused until it is confined")
+    # The parser is the box's (22 October 2026). A stubbed reply is for a dry run alone: a
+    # paid run reading one would measure a parse nobody made.
+    model_parser = args.parser == "model"
+    if model_parser and not boxed:
+        parser.error("--parser model reads the question for the box, so it needs --box or "
+                     "--box-exhaust")
+    if args.parser_model and not model_parser:
+        parser.error("--parser-model names the model of --parser model, so it needs it")
+    if args.parser_replies and not (model_parser and args.dry_run):
+        parser.error("--parser-replies stands in for the model's replies in a dry run, so it "
+                     "needs --parser model and --dry-run")
+    parser_model = (args.parser_model or agent_model()) if model_parser else None
 
     # Task files moved into experiments/tasks/ on 8 Oct 2026. Commands in the decision log
     # still name the old place, so a missing path falls back to the same file name there.
@@ -655,39 +825,69 @@ def main() -> int:
     print("browser: " + " ".join(f"{key}={value}" for key, value in browser.items()))
     # The arm, so a dry run of the box and of the box without its stop rule say which.
     print(f"arm: {arm_of(args)}")
+    # Under the model parser, who reads the question and with what. Not printed under the
+    # rules, so a rules batch's header is what it always was.
+    if model_parser:
+        print(f"parser: model {parser_model}, temperature {PARSER_TEMPERATURE}, prompt "
+              f"v{form_module.PROMPT_VERSION}, normalisation v{normalise_module.VERSION}")
 
     if args.dry_run:
         # The exact text, through the same function the paid loop uses, so what is read
         # here is what the agent gets (LESSONS 17). An ask is printed as the box's question,
         # a refusal as what the box said was missing. Under the box, the counts the batch
-        # would record and how many of its slots would reach the agent come last.
+        # would record and how many of its slots would reach the agent come last. Under the
+        # model parser each task shows what both parsers give, the model's from a replies
+        # file when one is given, since a dry run sends nothing.
+        replies = stubbed_replies(args.parser_replies) if args.parser_replies else {}
         records = []
         for task in tasks:
+            if model_parser:
+                records.append(print_dry_parsers(task, spec, args, replies))
+                continue
             query, applied = build_query(task, spec, args)
             records.append(applied["box"])
             print_dry_task(task, query, applied)
         summary = dry_summary(records, args.repeats)
         if summary:
+            if model_parser:
+                given = len(set(replies) & {task["id"] for task in tasks})
+                print(f"the counts take the model parser's decision on the {given} tasks a reply "
+                      f"was given for, and the rules' on the rest")
             print(summary)
         return 0
 
+    key = None
+    if model_parser:
+        key = plan_probe.load_key()
+        if not key:
+            print("no OPENROUTER_API_KEY for the model parser")
+            return 1
     out_dir.mkdir(parents=True, exist_ok=True)
     rows, done = [], 0
     for task in tasks:
         for repeat in repeats:
             done += 1
             tag = f"{task['id']}-{repeat}"
-            query, applied = build_query(task, spec, args)
+            # Under the model parser each run's question is read by its own call, and what
+            # it was charged is part of the run's cost (22 October 2026).
+            charges: list = []
+            call = parser_call(parser_model, key, charges) if model_parser else None
+            query, applied = build_query(task, spec, args, call=call)
+            parsed = parse_cost(charges)
             strategy = applied["strategy"]
             if query is None:
                 # The box asked and no scripted reply was given, or it refused. Either is
-                # the outcome: no agent runs and nothing is spent.
-                row = asked_row(task, repeat, applied["box"])
+                # the outcome: no agent runs, and nothing is spent but the parse.
+                row = asked_row(task, repeat, applied["box"], cost=parsed if model_parser else 0)
+                if model_parser:
+                    row["parse_cost_usd"] = parsed
                 rows.append(row)
                 print(f"[{done}/{total}] {tag:32} {row['verdict']:10} the box {row['verdict']}")
                 continue
             record = run_once(task, spec["base_url"], out_dir, tag, query=query,
                               scaffold=args.scaffold, shop=args.shop, probe=args.probe)
+            if model_parser:
+                record = charge_parse(record, parsed, out_dir / f"{tag}.json")
             result = record.get("result") or {}
             answer = str(result.get("final") or "")
             trace = record.get("trace") or {}
@@ -734,6 +934,8 @@ def main() -> int:
                 # who chose it, and the exact query, so a run under the box says what
                 # produced it.
                 row.update(box_fields(applied["box"]))
+            if model_parser:
+                row["parse_cost_usd"] = parsed
             if args.confidence != "off":
                 row["confidence"] = confidence
                 row["confidence_reason"] = reason
@@ -757,6 +959,8 @@ def main() -> int:
             conf += " [bypass]" if boxed and applied["box"]["bypassed"] else ""
             if boxed and applied["box"].get("reading_by") == "box":
                 conf += f" [reading taken by the box: {applied['box']['reading']}]"
+            if model_parser:
+                conf += f" [parsed by the {applied['box']['parse']['used']}, ${parsed}]"
             print(f"[{done}/{total}] {tag:32} {row['verdict']:10} "
                   f"calls={row['tool_calls']} act={row['actions']}{conf} "
                   f"${row['cost_usd']} {row['elapsed_s']}s")
@@ -788,6 +992,18 @@ def main() -> int:
                # versioned on its own, so a run says which of each produced it.
                "form_version": form_module.VERSION if boxed else None,
                "primitives_version": primitives_module.VERSION if boxed else None,
+               # Who read the question for the box, and with what (22 October 2026). The
+               # parser is part of the arm too (`arm_of`), so two parsers are never pooled
+               # (LESSONS 7). The parse's charges are in every row's cost, and summed here.
+               "parser": args.parser if boxed else None,
+               "parser_model": parser_model,
+               "parser_temperature": PARSER_TEMPERATURE if model_parser else None,
+               "prompt_version": form_module.PROMPT_VERSION if model_parser else None,
+               "normalise_version": normalise_module.VERSION if model_parser else None,
+               "parse_charged_usd": (round(sum(row.get("parse_cost_usd") or 0 for row in rows), 6)
+                                     if model_parser else None),
+               "parse_charges_unknown": (sum(1 for row in rows if row.get("parse_cost_usd") is None)
+                                         if model_parser else None),
                "reading": args.reading,
                # The pinned browser tool, the origins the browser may request and the
                # flags it runs with, see `browser_conditions`: `browser_tool`,

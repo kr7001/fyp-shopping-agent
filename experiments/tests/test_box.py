@@ -1549,8 +1549,10 @@ class AgentCode(unittest.TestCase):
 # instance and of the seeder's manifests, and the fixture and manifest files themselves. Not
 # covered: a bare number such as the market's size, which no test can tell from any other 15.
 ANSWER_KEYS = {"_instance", "expect", "oracle_min_opens", "ground_truth"}
+# normalise.py joined on 22 October 2026, with the model's front door: it reads the form,
+# the question and the page, and nothing else.
 BEFORE_THE_AGENT = ("targeting.py", "planner.py", "page.py", "ambiguity.py", "box.py",
-                    "form.py", "primitives.py")
+                    "form.py", "primitives.py", "normalise.py")
 
 
 def code_values(source: str) -> tuple[list[str], list[float], set[str]]:
@@ -1641,7 +1643,8 @@ class NoAnswerKey(unittest.TestCase):
         # decision modules read nothing at all. (`planner.py` is not held to this: its
         # `--regression` reads every task file's questions, and `answer_reads` above checks
         # that it reads none of their answers.)
-        for name in ("page.py", "ambiguity.py", "box.py", "targeting.py", "form.py", "primitives.py"):
+        for name in ("page.py", "ambiguity.py", "box.py", "targeting.py", "form.py", "primitives.py",
+                     "normalise.py"):
             with self.subTest(file=name):
                 _, _, names = code_values(self.source(name))
                 if name == "page.py":
