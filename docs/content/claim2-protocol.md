@@ -19,20 +19,29 @@ times, as the first protocol did.
 
 - **Two products under one brand.** About 20 listings of a tee (sizes S, M, L, XL) and about 20
   listings of bottled water (packs 24 x 350ml, 12 x 550ml, 6 x 1.25L, 2 x 9.5L), from distinct
-  sellers, so the brand's search returns about 40 listings, interleaved, not grouped by product.
-- **Two results pages.** At the shop's page size of 36, the search spans two pages. No shop
-  setting is changed. Every claim question's answer depends on reading both pages.
+  sellers, so the brand's search returns about 40 listings, interleaved: both products appear among the first four cards and on page 2. Titles take one of several phrasings per product, ending in "Tee" or "Water", because with one fixed title Magento's relevance order lists nearly all of one product before the other (measured against Magento's own request by `env/search_order.py --validate`). The claim market draws its phrasings from a pool the development market never used. Product scoping reads each title's last word.
+- **Two results pages.** At the shop's page size of 36, the search spans two pages. No shop setting is changed. To fix, from the generator's rule: at least one price question's answer listing is on page 2, and every count and "every listing" question needs both pages.
 - **Each variant absent, sold out or buyable at its own price.** The tee and water price models
   are those of the generators already used (Thornwood and Ashcombe for tees, Rivenhall and
   Calderwood for water).
 - **Acceptance rules.** The existing tee rules and water rules, plus, to fix:
-  - for each gated question the answer renders outside the first screen, and a listing on the
-    first screen advertises less than the answer costs, so a card-only answer is wrong;
+    - for each price question the answer renders outside the first screen, and a listing on the
+    first screen advertises less than the answer costs, so a card-only answer is wrong. The
+    first screen is the four cards openJiuwen's card probe sees at its 1200 x 701 viewport,
+    checked live;
   - at least one gated question's answer is on page 2, so a bound computed over page 1 alone
     would stop too early;
   - the size or pack each "offer" or "stock" question asks about is listed but sold out on at
     least one listing, so the two readings differ;
-  - the best price per litre is not at the cheapest 2 x 9.5L listing.
+    - the best price per litre is not at the cheapest 2 x 9.5L listing, and it leads the next
+    seller by at least 8%, as the price winners do;
+  - on each water price question, a listing has the asked pack listed but sold out at a price
+    below the buyable winner's, so "can actually be bought" changes the answer, as on the tees;
+  - the cheapest-advertised tee card is on page 1, at least 8% below any tee card on page 2,
+    so both readings of "the results page" in tee-headline give the same answer.
+- **What the two readings change.** On this design only the count questions answer
+  differently under the two readings of "offer" or "stock". The "does every listing"
+  questions answer No under both, because a listing without the variant always exists.
 - **Seed and brand rules.** Development uses its own brand and seeds 900 to 999 only. The claim
   market is the first seed from 1000 that passes every rule, with a brand chosen by the first
   protocol's rule (the shop's search returns nothing for it, and it is no word of any seller
@@ -41,7 +50,7 @@ times, as the first protocol did.
   exactly the market's listings across exactly two pages, every card's advertised price equals
   the listing's cheapest buyable variant, every variant's label, price and stock equals the
   fixture's, and the gated theme hides every variant price until chosen. Thornwood's and
-  Ashcombe's results pages are unchanged.
+  Ashcombe's results pages are unchanged. The development market, Larchmere, stays seeded: its brand word is not the claim brand's, so the claim search does not return it.
 
 ## Questions (templates, to fix)
 
@@ -125,3 +134,8 @@ every invocation, as before.
   in v2 are the test.
 - The stop rule still assumes no card advertises more than its cheapest buyable variant.
 - The page's encoded variant store is still in the page source.
+- The page rules hold for the shop's relevance order only. An agent that sorts the results by
+  price voids them. Sorting is counted in every run.
+- The box's per-litre bound uses the largest pack, 2 x 9.5L, which is a condition of the
+  design unless the cards show it (to fix from the coder's check).
+- Product scoping relies on each title ending in its product's noun.
