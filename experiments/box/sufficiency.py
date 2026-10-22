@@ -58,11 +58,19 @@ RESULTS = paths.RESULTS
 #      pilot and the three box v2 batches, one count changes: 20261014T213118
 #      apparel-all-stocked-2, 2 to 1, where `electronics.html` had been counted. No
 #      verdict changes
+#   5  22 October 2026, for the second claim market's water. The menu reader reads a pack
+#      menu, the combobox "Pack Size *", as it reads a size menu (`MENU_HEAD`); until v5 no
+#      log reader saw a water menu at all. Checked on every stored water log's readings
+#      against its own fixture, and on a live Larchmere water listing's snapshot
+#      (`tests/test_box.py`, `PackMenus`). And a menu holding its placeholder alone, a page
+#      whose script had not yet filled it in, is no reading, where it was a complete menu
+#      lacking every variant; no stored log holds one. No stored box run is on water, so
+#      no verdict of the box's check changes
 #
 # Runs scored under different versions are different measurements. A figure quoted from
 # version 1 runs stays a version 1 figure, and the effect of version 2 on them is reported
 # by replay, separately, never by restating the original number.
-RULES_VERSION = 4
+RULES_VERSION = 5
 
 # Money is handled in integer cents throughout. Comparing prices as floats invites a
 # value that does not round-trip to slip past an equality test, and the whole check rests
@@ -199,7 +207,9 @@ GENERATED_SLUG = re.compile(r"^slug:igr-", re.IGNORECASE)
 # before its window (20261014T220116/apparel-cheapest-xl-1, igr-app-08: a find for "XL"
 # prints the head and S, M, L, XL without the placeholder). Such a block is partial at the
 # front and shows presence only, whatever follows it.
-MENU_HEAD = re.compile(r'combobox "Size[^"]*"')
+# The variant menu's combobox: "Size *" on the clothing listings, "Pack Size *" on the water's,
+# read off the live shop (since v5, 22 October 2026; until then the water's was never read).
+MENU_HEAD = re.compile(r'combobox "(?:Pack )?Size[^"]*"')
 MENU_LINE = re.compile(r'^[ \t]*- option "([^"]*)"((?: \[[^\]]*\])*)[ \t]*$')
 MENU_OPTION = re.compile(r'option "([^"]*)"((?: \[[^\]]*\])*)')
 MENU_PLACEHOLDER = "Choose an Option..."
@@ -360,6 +370,12 @@ def menu_blocks(text: str, whole_page: bool) -> list[tuple[dict[str, bool], bool
                 break                     # a cut line is where an excerpt ended
         if first != MENU_PLACEHOLDER:
             complete = False              # options before the window may be missing
+        if not options:
+            # The placeholder alone: the page's script had not yet filled the menu in when
+            # the snapshot was taken, and a listing always has a variant, so this shows
+            # nothing (v5, 22 October 2026: every live Larchmere water listing read this
+            # way just after loading, a complete menu lacking every pack until then).
+            complete = False
         found.append((options, complete))
     return found
 

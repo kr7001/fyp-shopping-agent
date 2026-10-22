@@ -1,0 +1,57 @@
+{
+ "_about": [
+  "Two water listings of the development market Larchmere, read live on 22 October 2026",
+  "with the gated user agent in headless Chromium (Playwright 1.63, .venv-naive): each page's",
+  "accessibility snapshot, its 'main' region only, as the browser tool builds its snapshot",
+  "(the tool adds [ref=...] to each node), once the page's script had filled in the pack",
+  "menu ('populated') and once before it had ('early'), and the menu as the DOM's select",
+  "holds it, for the menu reader's tests (tests/test_box.py, PackMenus). igr-dev-23 has a",
+  "sold-out pack; igr-dev-16 lists two of the four packs."
+ ],
+ "listings": {
+  "igr-dev-23.html": {
+   "dom": [
+    [
+     "Choose an Option...",
+     true
+    ],
+    [
+     "24 x 350ml",
+     true
+    ],
+    [
+     "12 x 550ml",
+     true
+    ],
+    [
+     "6 x 1.25L",
+     false
+    ],
+    [
+     "2 x 9.5L",
+     true
+    ]
+   ],
+   "populated": "- main:\n  - heading \"Larchmere Spring Water - Oakfield Provisions\" [level=1]\n  - alert\n  - alert\n  - text: In stock\n  - strong: SKU\n  - text: IGR-DEV-23\n  - link \"Be the first to review this product\":\n    - /url: http://localhost:7770/igr-dev-23.html#review-form\n  - text: As low as $6.93 Pack Size *\n  - combobox \"Pack Size *\":\n    - option \"Choose an Option...\" [selected]\n    - option \"24 x 350ml\"\n    - option \"12 x 550ml\"\n    - option \"6 x 1.25L\" [disabled]\n    - option \"2 x 9.5L\"\n  - text: Qty\n  - spinbutton \"Qty\": \"1\"\n  - button \"Add to Cart\"\n  - link \"Add to Wish List\":\n    - /url: \"#\"\n  - link \"Add to Compare\":\n    - /url: \"#\"",
+   "early": "- main:\n  - heading \"Larchmere Spring Water - Oakfield Provisions\" [level=1]\n  - alert\n  - alert\n  - text: In stock\n  - strong: SKU\n  - text: IGR-DEV-23\n  - link \"Be the first to review this product\":\n    - /url: http://localhost:7770/igr-dev-23.html#review-form\n  - text: As low as $6.93 Pack Size *\n  - combobox \"Pack Size *\":\n    - option \"Choose an Option...\" [selected]\n  - text: Qty\n  - spinbutton \"Qty\": \"1\"\n  - button \"Add to Cart\" [disabled]\n  - link \"Add to Wish List\":\n    - /url: \"#\"\n  - link \"Add to Compare\":\n    - /url: \"#\""
+  },
+  "igr-dev-16.html": {
+   "dom": [
+    [
+     "Choose an Option...",
+     true
+    ],
+    [
+     "24 x 350ml",
+     true
+    ],
+    [
+     "12 x 550ml",
+     true
+    ]
+   ],
+   "populated": "- main:\n  - heading \"Larchmere Spring Water - Fenwick Beverage Supply\" [level=1]\n  - alert\n  - alert\n  - text: In stock\n  - strong: SKU\n  - text: IGR-DEV-16\n  - link \"Be the first to review this product\":\n    - /url: http://localhost:7770/igr-dev-16.html#review-form\n  - text: As low as $11.97 Pack Size *\n  - combobox \"Pack Size *\":\n    - option \"Choose an Option...\" [selected]\n    - option \"24 x 350ml\"\n    - option \"12 x 550ml\"\n  - text: Qty\n  - spinbutton \"Qty\": \"1\"\n  - button \"Add to Cart\"\n  - link \"Add to Wish List\":\n    - /url: \"#\"\n  - link \"Add to Compare\":\n    - /url: \"#\"",
+   "early": "- main:\n  - heading \"Larchmere Spring Water - Fenwick Beverage Supply\" [level=1]\n  - alert\n  - alert\n  - text: In stock\n  - strong: SKU\n  - text: IGR-DEV-16\n  - link \"Be the first to review this product\":\n    - /url: http://localhost:7770/igr-dev-16.html#review-form\n  - text: As low as $11.97 Pack Size *\n  - combobox \"Pack Size *\":\n    - option \"Choose an Option...\" [selected]\n  - text: Qty\n  - spinbutton \"Qty\": \"1\"\n  - button \"Add to Cart\" [disabled]\n  - link \"Add to Wish List\":\n    - /url: \"#\"\n  - link \"Add to Compare\":\n    - /url: \"#\""
+  }
+ }
+}

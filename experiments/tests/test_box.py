@@ -1192,6 +1192,56 @@ def thornwood_page() -> page.Page:
                      next_page=record["next_page"])
 
 
+class PackMenus(unittest.TestCase):
+    """The menu reader on the water's pack menu, the combobox "Pack Size *" (sufficiency
+    rules v5, 22 October 2026), on two live Larchmere listings' snapshots kept in
+    `fixtures/larchmere_water_menus.json`, each held to the menu its page's own select
+    holds."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.listings = json.loads((FIXTURES / "larchmere_water_menus.json").read_text())["listings"]
+
+    def dom(self, name: str) -> dict[str, bool]:
+        return {label: enabled for label, enabled in self.listings[name]["dom"]
+                if label != sufficiency.MENU_PLACEHOLDER}
+
+    def test_a_filled_pack_menu_reads_whole_as_the_page_holds_it(self):
+        # Planted: the head read as a size menu's alone, no reading at all.
+        for name in self.listings:
+            with self.subTest(listing=name):
+                blocks = sufficiency.menu_blocks(self.listings[name]["populated"], whole_page=True)
+                self.assertEqual(blocks, [(self.dom(name), True)])
+                self.assertEqual(list(blocks[0][0]), list(self.dom(name)))     # in the page's order
+        self.assertEqual(self.dom("igr-dev-23.html")["6 x 1.25L"], False)      # sold out, disabled
+        self.assertNotIn("2 x 9.5L", self.dom("igr-dev-16.html"))              # not in its menu
+
+    def test_the_browser_tools_own_form_reads_the_same(self):
+        # The tool writes [ref=...] after every node; the reader takes those as it always has.
+        name = "igr-dev-23.html"
+        text = self.listings[name]["populated"]
+        refs = iter(range(70, 200))
+        tooled = "\n".join(re.sub(r'^(\s*- (?:combobox|option) "[^"]*")', lambda m: f"{m.group(1)} [ref=e{next(refs)}]",
+                                  line) for line in text.splitlines())
+        self.assertIn('- combobox "Pack Size *" [ref=e', tooled)
+        self.assertEqual(sufficiency.menu_blocks(tooled, whole_page=True), [(self.dom(name), True)])
+
+    def test_a_menu_not_yet_filled_in_is_no_reading(self):
+        # Just after loading, every water listing's menu holds its placeholder alone. Read as
+        # complete, it lacked every pack, a counterexample for every question. Planted: the
+        # guard removed, it was ({}, True).
+        for name in self.listings:
+            with self.subTest(listing=name):
+                self.assertEqual(sufficiency.menu_blocks(self.listings[name]["early"], whole_page=True),
+                                 [({}, False)])
+        # And a head with no colon, a node past a snapshot's depth, gives none (sufficiency
+        # rules' note, 20260910T133605/scaled-cheapest-target-1.log).
+        self.assertEqual(sufficiency.menu_blocks('- combobox "Pack Size *" [ref=f3e89]\n- text: Qty', True), [])
+        # A size menu reads as before.
+        sized = '- combobox "Size *" [ref=e1]:\n  - option "Choose an Option..." [selected]\n  - option "M"\n- text: Qty'
+        self.assertEqual(sufficiency.menu_blocks(sized, True), [({"M": True}, True)])
+
+
 @unittest.skipUnless(PILOT.exists(), "the pilot batch's record is not here")
 class FloorOnStoredBatches(unittest.TestCase):
     """The floor from the page counts a tie at the answer's price once (14 Oct 2026). On
