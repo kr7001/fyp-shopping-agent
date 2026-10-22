@@ -61,6 +61,7 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import score as scoring  # noqa: E402
+import suite  # noqa: E402  (the agent's default limits, one definition)
 import trace_stats  # noqa: E402
 import verify_cells  # noqa: E402  (the suspended-run rule, one definition)
 
@@ -249,6 +250,13 @@ def rerun_flags(folder: pathlib.Path) -> str:
     # reader is the default and needs no flag.
     if (payload.get("box") or payload.get("box_exhaust")) and payload.get("page_reader") != "rendered":
         flags.append("--page-reader fetch")
+    # The agent's limits (22 October 2026). A batch without them ran under the defaults,
+    # which need no flag, and a naive batch under its loop's own.
+    if payload.get("scaffold") != "naive":
+        for flag, key, default in (("--max-steps", "max_steps", suite.DEFAULT_MAX_STEPS),
+                                   ("--clock", "clock_s", suite.DEFAULT_CLOCK_S)):
+            if payload.get(key) not in (None, default):
+                flags.append(f"{flag} {payload[key]}")
     if payload.get("scaffold") == "naive":
         flags.append("--scaffold naive")
     probes = {json.loads(p.read_text()).get("probe") for p in folder.glob("*.json") if p.name != "suite.json"}

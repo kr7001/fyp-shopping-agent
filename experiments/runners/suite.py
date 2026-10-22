@@ -114,6 +114,27 @@ MCP_ARGS_GATED = (f'-y @playwright/mcp@{BROWSER_TOOL} --user-agent "{GATED_UA}" 
                   f'--allowed-origins {ALLOWED_ORIGINS} {BROWSER_FLAGS}')
 
 
+# The agent's step and clock limits (22 October 2026, for the second claim run, which raises
+# both for every arm alike, to 300 steps and 1800 s, since browsing two results pages whole
+# runs past these). The defaults are openJiuwen's own, which every batch before ran under:
+# its guardrail's DEFAULT_GUARDRAIL_MAX_STEPS (agent-core, harness/tools/browser_move/utils/
+# env.py), passed as BROWSER_GUARDRAIL_MAX_STEPS, and the runner's --timeout
+# (run_browser_task.py), its run's deadline; `tests/test_claim_arms.py` holds both to the
+# source. The naive loop has a step limit of its own, NAIVE_STEP_LIMIT (`naive_agent.py`),
+# and no clock, so neither flag reaches it.
+DEFAULT_MAX_STEPS = 100
+DEFAULT_CLOCK_S = 600
+NAIVE_STEP_LIMIT = 100
+
+
+def limits(scaffold: str, max_steps: int | None = None, clock_s: int | None = None) -> dict:
+    """The step and clock limits a run of this scaffold runs under: the flags' for
+    openJiuwen, the defaults when none is given, and the naive loop's own."""
+    if scaffold == "naive":
+        return {"max_steps": NAIVE_STEP_LIMIT, "clock_s": None}
+    return {"max_steps": max_steps or DEFAULT_MAX_STEPS, "clock_s": clock_s or DEFAULT_CLOCK_S}
+
+
 # The model parser (box v13, 22 October 2026). It reads each run's question through one call
 # at temperature 0, the setting of every parse probe, with no retry. Its model is the
 # agent's own unless `--parser-model` names another, read the way the agent reads it
@@ -212,12 +233,15 @@ def browser_env(shop: str, probe: str = "viewport",
 
 def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
              query: str | None = None, scaffold: str = "openjiuwen",
-             shop: str = "gated", probe: str = "viewport") -> dict:
+             shop: str = "gated", probe: str = "viewport",
+             max_steps: int | None = None, clock_s: int | None = None) -> dict:
     """Execute one task once and return its record, enriched with trace counts.
 
     `query` overrides the task text, which is how a policy retry re-asks the same task
-    with the reason its first answer was rejected.
+    with the reason its first answer was rejected. `max_steps` and `clock_s` are the
+    agent's limits (`limits`), the defaults when None, recorded in the record.
     """
+    bounds = limits(scaffold, max_steps, clock_s)
     query = query if query is not None else task["query"].format(base=base_url)
     (out_dir / "caches" / tag).mkdir(parents=True, exist_ok=True)
     record_path = out_dir / f"{tag}.json"
@@ -233,12 +257,16 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
             command += ["--user-agent", GATED_UA]
         cwd = REPO
     else:
-        command = ["uv", "run", "python", str(RUNNER), query, "--out", str(record_path)]
+        command = ["uv", "run", "python", str(RUNNER), query, "--out", str(record_path),
+                   "--timeout", str(bounds["clock_s"])]
         cwd = AGENT_CORE
+    env = browser_env(shop, probe, cache_dir=out_dir / "caches" / tag)
+    # Set always, so the limit is the suite's and never one left in the shell.
+    if scaffold != "naive":
+        env["BROWSER_GUARDRAIL_MAX_STEPS"] = str(bounds["max_steps"])
 
     with log_path.open("w") as log:
-        subprocess.run(command, cwd=cwd,
-                       env=browser_env(shop, probe, cache_dir=out_dir / "caches" / tag),
+        subprocess.run(command, cwd=cwd, env=env,
                        stdout=log, stderr=subprocess.STDOUT, check=False)
 
     if not record_path.exists():
@@ -265,6 +293,9 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
     record["shop"] = shop
     # Which card probe setting this run met. A record without it predates the arm.
     record["probe"] = probe
+    # The step and clock limits it ran under (22 October 2026). A record without them ran
+    # under openJiuwen's defaults, 100 steps and 600 s, or the naive loop's 100 steps.
+    record.update(bounds)
     # The naive loop stamps its own scaffold, openJiuwen's runner does not, so a mixed
     # directory had records where the field was simply absent. Stamped here for both, since
     # a record that cannot say which agent produced it is how four arms got pooled once.
@@ -624,7 +655,8 @@ def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
                  reason: str | None = None, scaffold: str = "openjiuwen",
                  shop: str = "gated", probe: str = "viewport",
                  page: page_module.Page | None = None,
-                 decision: box_module.Decision | None = None) -> tuple:
+                 decision: box_module.Decision | None = None,
+                 max_steps: int | None = None, clock_s: int | None = None) -> tuple:
     """Run the sufficiency check and act on it.
 
     Cost and interaction counts are reported for the arm as a whole, both attempts
@@ -654,7 +686,7 @@ def apply_policy(mode: str, task: dict, spec: dict, answer: str, record: dict,
     # this it always ran openJiuwen against the default theme, whatever the first attempt
     # had been, so a naive policy run silently changed both halfway through.
     second = run_once(task, spec["base_url"], out_dir, tag2, query=query,
-                      scaffold=scaffold, shop=shop, probe=probe)
+                      scaffold=scaffold, shop=shop, probe=probe, max_steps=max_steps, clock_s=clock_s)
     result2 = second.get("result") or {}
     answer2 = str(result2.get("final") or "")
     trace2 = second.get("trace") or {}
@@ -751,6 +783,13 @@ def main() -> int:
                              "agent's user agent, run in the Playwright venv. fetch: each "
                              "page's HTML over HTTP, the box's reader until box v16, when it "
                              "read the first page alone. Needs --box or --box-exhaust")
+    parser.add_argument("--max-steps", type=int, default=None, metavar="N",
+                        help=f"openJiuwen's step limit, passed as BROWSER_GUARDRAIL_MAX_STEPS; "
+                             f"{DEFAULT_MAX_STEPS} by default, its own, as every batch before 22 "
+                             f"October 2026 ran under")
+    parser.add_argument("--clock", type=int, default=None, metavar="S",
+                        help=f"openJiuwen's wall clock limit for one run, in seconds, passed as "
+                             f"the runner's --timeout; {DEFAULT_CLOCK_S} by default, as before")
     parser.add_argument("--dry-run", action="store_true",
                         help="print the exact text each task would send, and run nothing")
     args = parser.parse_args()
@@ -774,6 +813,16 @@ def main() -> int:
                      "--box or --box-exhaust")
     if args.repeat_start < 1:
         parser.error("--repeat-start numbers the first repeat, so it is 1 or more")
+    # The limits are openJiuwen's (22 October 2026). The naive loop has its own step limit
+    # and no clock, so either flag there would record a limit nobody applied.
+    for flag, value in (("--max-steps", args.max_steps), ("--clock", args.clock)):
+        if value is not None and value < 1:
+            parser.error(f"{flag} is a limit, so it is 1 or more")
+        if value is not None and args.scaffold == "naive":
+            parser.error(f"{flag} is openJiuwen's limit; the naive loop has a step limit of its "
+                         f"own ({NAIVE_STEP_LIMIT}) and no clock")
+    bounds = limits(args.scaffold, args.max_steps, args.clock)
+    args.max_steps, args.clock = bounds["max_steps"], bounds["clock_s"]
     # The reader is the box's (box v16), so with no box it would name a reading nobody made.
     if args.page_reader and not boxed:
         parser.error("--page-reader is how the box reads the results pages, so it needs --box "
@@ -853,6 +902,9 @@ def main() -> int:
     # The browser's conditions in the header too, so the dry run shows what a paid run
     # under the same flags would record.
     print("browser: " + " ".join(f"{key}={value}" for key, value in browser.items()))
+    # The agent's limits, every batch's conditions since 22 October 2026.
+    print(f"limits: max steps {args.max_steps}, clock "
+          + (f"{args.clock} s" if args.clock is not None else "none"))
     # The arm, so a dry run of the box and of the box without its stop rule say which.
     print(f"arm: {arm_of(args)}")
     # How the box reads the results pages (box v16), a condition of every box batch.
@@ -920,7 +972,8 @@ def main() -> int:
                       + (" on the model's form" if declined else ""))
                 continue
             record = run_once(task, spec["base_url"], out_dir, tag, query=query,
-                              scaffold=args.scaffold, shop=args.shop, probe=args.probe)
+                              scaffold=args.scaffold, shop=args.shop, probe=args.probe,
+                              max_steps=args.max_steps, clock_s=args.clock)
             if model_parser:
                 record = charge_parse(record, parsed, out_dir / f"{tag}.json")
             result = record.get("result") or {}
@@ -941,7 +994,8 @@ def main() -> int:
                     args.policy, task, spec, answer, record, out_dir, tag,
                     confidence=args.confidence, reason=reason,
                     scaffold=args.scaffold, shop=args.shop, probe=args.probe,
-                    page=applied["page"], decision=applied["decision"])
+                    page=applied["page"], decision=applied["decision"],
+                    max_steps=args.max_steps, clock_s=args.clock)
 
             # Scored against the key for the reading the run answered under, the user's
             # reply or the box's own choice, the sidecar's when that reading is not the
@@ -1061,6 +1115,11 @@ def main() -> int:
                # compared with anything.
                "model": os.environ.get("MODEL_NAME") or model_from_records(out_dir),
                "scaffold": args.scaffold,
+               # The step and clock limits every run ran under (22 October 2026), in every
+               # run record too. A batch without them ran under openJiuwen's defaults, 100
+               # steps and 600 s, or the naive loop's 100 steps and no clock.
+               "max_steps": args.max_steps,
+               "clock_s": args.clock,
                # Which openJiuwen code answered: the submodule's commit and the sha1 of
                # its uncommitted patch, see `agent_code_identity`. None for the naive loop.
                "agent_core_commit": agent_code["agent_core_commit"],

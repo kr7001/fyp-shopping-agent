@@ -69,6 +69,7 @@ class SuiteRun:
     calls: int                      # how many runs the runner was started for
     owner: tempfile.TemporaryDirectory
     readers: list = dataclasses.field(default_factory=list)   # the reader each page read asked for
+    commands: list = dataclasses.field(default_factory=list)  # each runner's command and environment
 
 
 def run_suite(*argv: str, page: page_module.Page | None = None,
@@ -79,7 +80,7 @@ def run_suite(*argv: str, page: page_module.Page | None = None,
     is returned as its exit code, with its message in `out`."""
     owner = tempfile.TemporaryDirectory()
     results = pathlib.Path(owner.name)
-    calls, readers = [], []
+    calls, readers, commands = [], [], []
 
     def results_page(url, reader=None):
         readers.append(reader)
@@ -87,6 +88,7 @@ def run_suite(*argv: str, page: page_module.Page | None = None,
 
     def runner(command, cwd=None, env=None, stdout=None, stderr=None, check=False):
         calls.append(command)
+        commands.append((command, env))
         record = pathlib.Path(command[command.index("--out") + 1])
         record.write_text(json.dumps({"model": "fake/model", "elapsed_s": 1.0, "cost_usd": 0.0,
                                       "error": None, "result": {"ok": True, "final": answer}}))
@@ -107,7 +109,7 @@ def run_suite(*argv: str, page: page_module.Page | None = None,
             code = refused.code
     batches = sorted(p for p in results.iterdir() if p.is_dir())
     return SuiteRun(code, out.getvalue() + err.getvalue(), batches[0] if batches else None,
-                    len(calls), owner, readers)
+                    len(calls), owner, readers, commands)
 
 
 def dry_run(*argv: str) -> subprocess.CompletedProcess:
@@ -1187,6 +1189,121 @@ class PageReader(unittest.TestCase):
         slots[1]["conditions"] = dict(slots[1]["conditions"], page_reader="rendered")
         with self.assertRaisesRegex(SystemExit, "page_reader"):
             claim.one_condition_each(slots)
+
+
+# ---------------------------------------------------------------------------
+# The agent's step and clock limits, conditions of every run (22 October 2026)
+
+class StepAndClock(unittest.TestCase):
+    TASKS = ("--tasks", str(paths.TASKS / "tasks_apparel.json"), "--repeats", "1", "--only", "apparel-headline")
+
+    def run_with(self, *flags):
+        run = run_suite(*self.TASKS, *flags)
+        self.addCleanup(run.owner.cleanup)
+        payload = json.loads((run.batch / "suite.json").read_text()) if run.batch else None
+        record = json.loads((run.batch / "apparel-headline-1.json").read_text()) if run.batch else None
+        return run, payload, record
+
+    def test_the_defaults_are_the_agents_own(self):
+        # The step limit openJiuwen applies with nothing set, the env name it reads, the
+        # runner's own clock, and the naive loop's step limit, each read from its source.
+        utils = (paths.AGENT_CORE / "openjiuwen" / "harness" / "tools" / "browser_move" / "utils" / "env.py").read_text()
+        config = (paths.AGENT_CORE / "openjiuwen" / "harness" / "tools" / "browser_move" / "playwright_runtime"
+                  / "config.py").read_text()
+        runner = (paths.EXPERIMENTS / "runners" / "run_browser_task.py").read_text()
+        naive = (paths.EXPERIMENTS / "runners" / "naive_agent.py").read_text()
+        self.assertIn(f"DEFAULT_GUARDRAIL_MAX_STEPS = {suite.DEFAULT_MAX_STEPS}\n", utils)
+        self.assertIn('"BROWSER_GUARDRAIL_MAX_STEPS"', config)
+        self.assertIn(f'parser.add_argument("--timeout", type=int, default={suite.DEFAULT_CLOCK_S})', runner)
+        self.assertIn("timeout_s=args.timeout", runner)
+        self.assertIn(f"\nSTEP_LIMIT = {suite.NAIVE_STEP_LIMIT}\n", naive)
+
+    def test_the_limits_reach_the_agent_and_every_record(self):
+        # Planted, one at a time: the step limit left out of the runner's environment, and
+        # the clock left off its command; each run below then ran under the agent's default.
+        run, payload, record = self.run_with("--max-steps", "300", "--clock", "1800")
+        command, env = run.commands[0]
+        self.assertEqual((env["BROWSER_GUARDRAIL_MAX_STEPS"], command[command.index("--timeout") + 1]),
+                         ("300", "1800"))
+        self.assertEqual((record["max_steps"], record["clock_s"], payload["max_steps"], payload["clock_s"]),
+                         (300, 1800, 300, 1800))
+        self.assertIn("limits: max steps 300, clock 1800 s\n", run.out)
+        # The defaults are set too, never left to the shell.
+        with mock.patch.dict(suite.os.environ, {"BROWSER_GUARDRAIL_MAX_STEPS": "7"}):
+            run, payload, record = self.run_with()
+        command, env = run.commands[0]
+        self.assertEqual((env["BROWSER_GUARDRAIL_MAX_STEPS"], command[command.index("--timeout") + 1]),
+                         ("100", "600"))
+        self.assertEqual((record["max_steps"], record["clock_s"], payload["max_steps"], payload["clock_s"]),
+                         (100, 600, 100, 600))
+        self.assertIn("limits: max steps 100, clock 600 s\n", run.out)
+
+    def test_the_naive_loop_keeps_its_own_and_takes_neither_flag(self):
+        for flag in ("--max-steps", "--clock"):
+            with self.subTest(flag=flag):
+                run, payload, _ = self.run_with("--scaffold", "naive", flag, "300")
+                self.assertEqual((run.code, payload), (2, None))
+                self.assertIn(f"{flag} is openJiuwen's limit", run.out)
+        run, payload, record = self.run_with("--scaffold", "naive")
+        command, env = run.commands[0]
+        self.assertNotIn("--timeout", command)
+        self.assertEqual((record["max_steps"], record["clock_s"], payload["max_steps"], payload["clock_s"]),
+                         (100, None, 100, None))
+        self.assertIn("limits: max steps 100, clock none\n", run.out)
+        run, _, _ = self.run_with("--max-steps", "0")
+        self.assertEqual(run.code, 2)
+
+    def test_a_retry_runs_under_the_same_limits(self):
+        # Planted: `apply_policy` without the limits, the retry ran under the defaults.
+        seen = []
+
+        def once(*args, **kwargs):
+            seen.append((kwargs.get("max_steps"), kwargs.get("clock_s")))
+            return {"result": {"final": "x"}, "trace": {}}
+
+        task = {"id": "t", "query": "q", "family": "apparel", "gated": True}
+        refused = {"ok": False, "flag": "f", "why": "w"}
+        with mock.patch.object(suite, "run_once", once), mock.patch.object(suite, "gate_for", return_value=refused):
+            suite.apply_policy("retry", task, {"base_url": BASE}, "a", {"result": {}, "trace": {}},
+                               pathlib.Path("/nowhere"), "t-1", max_steps=300, clock_s=1800)
+        self.assertEqual(seen, [(300, 1800)])
+
+    def test_a_rerun_line_carries_the_limits(self):
+        # Planted: `rerun_flags` without the limits, the raised batch's line ran at 100.
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = pathlib.Path(tmp)
+            for payload, words in (({"max_steps": 300, "clock_s": 1800}, "--max-steps 300 --clock 1800"),
+                                   ({"max_steps": 100, "clock_s": 1800}, "--clock 1800"),
+                                   ({"max_steps": 100, "clock_s": 600}, None),
+                                   ({}, None),
+                                   ({"scaffold": "naive", "max_steps": 100, "clock_s": None}, None)):
+                with self.subTest(payload=payload):
+                    (folder / "suite.json").write_text(json.dumps({"tasks_file": "tasks_apparel.json", **payload}))
+                    flags = voids.rerun_flags(folder)
+                    if words is None:
+                        self.assertNotIn("--max-steps", flags)
+                        self.assertNotIn("--clock", flags)
+                    else:
+                        self.assertIn(words, flags)
+
+    def test_two_limits_are_two_conditions_of_an_arm(self):
+        import claim  # noqa: E402  (the claim analysis, only here)
+        for key in ("max_steps", "clock_s"):
+            self.assertIn(key, claim.CONDITIONS)
+            self.assertIn(key, claim.RUN_CONDITIONS)
+        # Read from the run's own record, where it has them.
+        self.assertEqual(claim.conditions_of({"max_steps": 100}, {"max_steps": 300})["max_steps"], 300)
+        self.assertEqual(claim.conditions_of({"clock_s": 1800}, {})["clock_s"], 1800)
+        slots = [{"measured": True, "outcome": "answered", "arm": "shipped", "model": "m",
+                  "conditions": {key: None for key in claim.CONDITIONS}} for _ in range(2)]
+        claim.one_condition_each(slots)
+        slots[1]["conditions"] = dict(slots[1]["conditions"], max_steps=300)
+        with self.assertRaisesRegex(SystemExit, "max_steps"):
+            claim.one_condition_each(slots)
+        # A run that recorded no limit is said to have recorded none, never "None", which
+        # reads as no limit; any other condition's None is printed as it was.
+        self.assertEqual(claim.held_line({"browser_tool": None, "max_steps": None, "clock_s": 1800}),
+                         "Held constant across the arms: browser_tool None; max_steps not recorded; clock_s 1800")
 
 
 if __name__ == "__main__":

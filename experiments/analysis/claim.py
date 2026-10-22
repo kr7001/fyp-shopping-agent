@@ -108,13 +108,15 @@ SETTING = {"scaffold": "openjiuwen", "shop": "gated", "probe": "viewport", "poli
 CONDITIONS = ("model", "scaffold", "shop", "probe", "draw", "tasks_file", "policy", "confidence",
               "targeting_version", "planner_version", "box_version", "form_version",
               "primitives_version", "page_reader", "browser_tool", "browser_origins", "browser_flags",
-              "agent_core_commit", "agent_core_patch")
+              "agent_core_commit", "agent_core_patch", "max_steps", "clock_s")
 # Of those, the ones only an arm under the box has, so they differ between arms by design.
 # The page reader is the box's since box v16 (22 October 2026); every batch before has none.
 BOX_CONDITIONS = ("targeting_version", "planner_version", "box_version", "form_version",
                   "primitives_version", "page_reader")
-# The fields a run record carries for itself; the rest are its batch's.
-RUN_CONDITIONS = ("model", "scaffold", "shop", "probe")
+# The fields a run record carries for itself; the rest are its batch's. The step and clock
+# limits are in both since 22 October 2026; every run before has neither.
+RUN_CONDITIONS = ("model", "scaffold", "shop", "probe", "max_steps", "clock_s")
+UNRECORDED_BEFORE_LIMITS = ("max_steps", "clock_s")
 ALPHA = 0.05
 
 
@@ -1059,13 +1061,23 @@ def render(result: dict) -> str:
     return "\n".join(out)
 
 
+def held_line(held: dict) -> str:
+    """The conditions every arm shares, as the report prints them. A run before 22 October
+    2026 recorded no step or clock limit, and is said to have recorded none rather than shown
+    as None, which would read as no limit: it ran under the agent's own, 100 steps and 600 s
+    (`suite.DEFAULT_MAX_STEPS`, `suite.DEFAULT_CLOCK_S`), unless the shell set another, which
+    nothing records. Every other condition is printed as it is."""
+    shown = {key: ("not recorded" if value is None and key in UNRECORDED_BEFORE_LIMITS else value)
+             for key, value in held.items()}
+    return "Held constant across the arms: " + "; ".join(f"{key} {value}" for key, value in shown.items())
+
+
 def render_model(m: dict, say) -> None:
     say("\nArms, each from its batches' payloads:")
     for arm, a in m["arms"].items():
         say(f"  {arm:34} {a['runs']:>3} runs, {a['distinct']:>3} distinct, repeats "
             f"{', '.join(map(str, a['repeats']))}   batches {', '.join(a['batches'])}")
-    held = m["conditions"]["held"]
-    say("Held constant across the arms: " + "; ".join(f"{k} {v}" for k, v in held.items()))
+    say(held_line(m["conditions"]["held"]))
     for key, seen in m["conditions"]["differ"].items():
         say(f"  DIFFERS between arms, {key}: " + "; ".join(f"{arm} {value}" for arm, value in seen.items()))
     say("The six questions' text in the arms' task files: " + (
