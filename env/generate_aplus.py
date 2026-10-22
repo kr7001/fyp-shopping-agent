@@ -47,9 +47,15 @@ protocol names, and only after the protocol is final, which `--claim` guards.
   answer, so every first word is distinct and is found in no other seller's name, the brand,
   a product phrasing, an option label or a question (`names_distinct`). That is the first
   protocol's brand rule (the "Kelsall" problem) applied to every word a scorer reads.
+- *The claim is held apart* (version 2). Its titles come from phrasings development never
+  drew, sharing only the head noun (`CLAIM_TEE_PHRASES`, `CLAIM_WATER_PHRASES`, the rule in
+  `phrase_problems`). `--claim` refuses while the protocol says DRAFT, below seed 1000, and
+  under development's prefix or over its fixture; draws only the seed its record allows next,
+  so the claim market is the first seed from 1000 that passes (`claim_record_problem`); and
+  prints a claim market only once it is written and recorded as accepted (`claim_gate`).
 
-    python3 env/generate_aplus.py --seed 900 --brand <Brand> --report
-    python3 env/generate_aplus.py --seed 900 --brand <Brand> --sku-prefix IGR-DEV \\
+    python3 env/generate_aplus.py --seed 900 --brand <Brand> --brand-forms 2 --report
+    python3 env/generate_aplus.py --seed 900 --brand <Brand> --brand-forms 2 --sku-prefix IGR-DEV \\
         --out env/fixtures/aplus_dev.json
 """
 
@@ -71,8 +77,17 @@ import search_order  # noqa: E402  (the predicted results order)
 
 MARKET = "aplus"
 # Bumped whenever a change would draw a different market from the same seed, or judge one
-# differently. Recorded in every fixture's `_generated`.
-VERSION = 1
+# differently. Recorded in every fixture's `_generated` and every attempt of a seed search.
+#   1  22 October 2026, the first A+ market (Larchmere, seed 900)
+#   2  22 October 2026, from the verifier's check of version 1 (task E): an 8 per cent margin
+#      for the best price per litre (`per_litre_margin`, replacing `per_litre_unique`); a
+#      sold-out trap on every water price question (`water_sold_out_trap`,
+#      `per_litre_sold_out_trap`); page 2 rules a market can meet (`counts_need_page_2`); the
+#      headline answered alike from page 1 and from both pages (`headline_on_page_1`); the
+#      page rules and the recorded order for the brand's own analyzer form (`--brand-forms`);
+#      the claim market's titles drawn from phrasings development never used; the claim's
+#      seed guards. Rules about one product are checked on its own draw, before pairing
+VERSION = 2
 
 TEE, WATER = "tee", "water"
 TEE_TARGET = apparel.TARGET_SIZE          # "M"
@@ -91,13 +106,65 @@ TEE_LISTINGS = 21
 WATER_LISTINGS = 21
 
 # How each seller titles its listing, drawn per listing, as sellers on a marketplace title the
-# same product differently. Every tee title holds "Tee" and no water word, and every water
-# title holds "Water" and no tee word, so the product a listing sells is in its title. The
-# first tee phrasing is Thornwood's and Ashcombe's; every water phrasing is shorter than
-# Rivenhall's "Still Spring Water, Multipack" (see the module docstring for why).
-TEE_PHRASES = ("Heavyweight Cotton Tee", "Heavyweight Cotton Tee, Unisex",
-               "Heavyweight Cotton Crew Neck Tee")
-WATER_PHRASES = ("Spring Water", "Still Spring Water", "Natural Spring Water, Still")
+# same product differently. The rule every phrasing keeps: its head noun, the last word before
+# any comma, is its product's (`HEAD_NOUNS`), because that is the word the box scopes a
+# question to a product by (`box.head_noun`); and it holds no word of the other product.
+# Development's phrasings: the first tee phrasing is Thornwood's and Ashcombe's, and every
+# water phrasing is shorter than Rivenhall's "Still Spring Water, Multipack" (see the module
+# docstring for why).
+DEV_TEE_PHRASES = ("Heavyweight Cotton Tee", "Heavyweight Cotton Tee, Unisex",
+                   "Heavyweight Cotton Crew Neck Tee")
+DEV_WATER_PHRASES = ("Spring Water", "Still Spring Water", "Natural Spring Water, Still")
+# The claim market's, held out (task E, 22 October 2026): phrasings development never drew,
+# sharing no word with development's but the head noun, so nothing built on the development
+# market's titles carries over to the claim's. The same number of words, phrasing by
+# phrasing, as development's (3, 4, 5 for the tee, 2, 3, 4 for the water), since a title's
+# length moves where it renders.
+CLAIM_TEE_PHRASES = ("Classic Organic Tee", "Relaxed Fit Basic Tee",
+                     "Organic Ringspun Tee, Short Sleeve")
+CLAIM_WATER_PHRASES = ("Mineral Water", "Alpine Mineral Water", "Pure Mineral Water, Bottled")
+HEAD_NOUNS = {TEE: "Tee", WATER: "Water"}
+ALL_PHRASES = DEV_TEE_PHRASES + DEV_WATER_PHRASES + CLAIM_TEE_PHRASES + CLAIM_WATER_PHRASES
+
+
+def phrasings(claim: bool) -> dict[str, tuple[str, ...]]:
+    """The titles a market draws from: the claim's held-out pool, or development's."""
+    if claim:
+        return {TEE: CLAIM_TEE_PHRASES, WATER: CLAIM_WATER_PHRASES}
+    return {TEE: DEV_TEE_PHRASES, WATER: DEV_WATER_PHRASES}
+
+
+def head_noun(phrase: str) -> str:
+    """A phrasing's head noun, read as the box reads a title's: the last word before any
+    comma."""
+    return phrase.split(",", 1)[0].split()[-1]
+
+
+def phrase_words(phrases: tuple[str, ...]) -> set[str]:
+    return {w.lower() for phrase in phrases for w in phrase.replace(",", " ").split()}
+
+
+def phrase_problems() -> list[str]:
+    """What is wrong with the phrasing pools, one line each: a head noun not its product's,
+    a word of the other product in a phrasing, a claim phrasing sharing a word other than
+    the head noun with development's, or a claim pool whose word counts are not
+    development's. Empty when nothing is."""
+    problems = []
+    nouns = {noun.lower() for noun in HEAD_NOUNS.values()}
+    for product, dev, claim in ((TEE, DEV_TEE_PHRASES, CLAIM_TEE_PHRASES),
+                                (WATER, DEV_WATER_PHRASES, CLAIM_WATER_PHRASES)):
+        other = HEAD_NOUNS[WATER if product == TEE else TEE].lower()
+        for phrase in dev + claim:
+            if head_noun(phrase) != HEAD_NOUNS[product]:
+                problems.append(f"{phrase!r}: its head noun is not {HEAD_NOUNS[product]!r}")
+            if other in phrase_words((phrase,)):
+                problems.append(f"{phrase!r}: it holds the other product's noun")
+        shared = phrase_words(claim) & phrase_words(DEV_TEE_PHRASES + DEV_WATER_PHRASES) - nouns
+        if shared:
+            problems.append(f"{product}: the claim phrasings share {sorted(shared)} with development's")
+        if sorted(len(p.split()) for p in dev) != sorted(len(p.split()) for p in claim):
+            problems.append(f"{product}: the claim phrasings' word counts are not development's")
+    return problems
 
 # The availability model, the tee generator's, for both products.
 P_ABSENT = apparel.P_SIZE_MISSING
@@ -175,35 +242,64 @@ The protocol's four (docs/content/claim2-protocol.md, "Acceptance rules"):
                           winning pack's price for best-per-litre. A page rule
 2. answer_on_page_2       a listing one of those keys names is on page 2, so a bound computed
                           over page 1 alone stops too early. A page rule
+   counts_need_page_2     and every count question, under each of its readings, counts at
+                          least one listing on page 2, so a count over page 1 alone is short.
+                          (Version 2. "Every 'every listing' question needs both pages" was
+                          proposed too and cannot be met at 21 and 21 listings. Both answer
+                          no, and a no needs page 2 only when every listing without the
+                          variant renders there: at least four tees without size M in the
+                          menu (the tee rule some_missing_target) and a water without the
+                          2 x 9.5L (the water rule of that name), beside a tee that can sell
+                          size M and a water that can sell the 2 x 9.5L, which the counts put
+                          on page 2. That is seven listings, nine read as what can be bought,
+                          and page 2 holds six. The protocol's wording says so.) A page
+                          rule
 3. readings_differ        size M is listed but sold out on at least one tee listing, and the
                           2 x 9.5L on at least one water listing, so the menu and the buyable
                           readings of "offer" and "stock" count different listings
 4. per_litre_not_target   the best price per litre among packs that can be bought is not at the
                           cheapest 2 x 9.5L that can be bought
 
+So that "can actually be bought" decides every water price question (version 2), as the tee
+rule `sold_out_trap` does for the tee's:
+
+5. water_sold_out_trap    a 2 x 9.5L is listed but sold out at a price below the winner's
+6. per_litre_sold_out_trap a pack listed but sold out is cheaper per litre than the best
+                          that can be bought
+
 The market's shape (the protocol's "The market (A+)"):
 
-5. two_pages              more than one page of listings and no more than two
-6. interleaved            both products on the first screen and both on page 2, so neither
+7. two_pages              more than one page of listings and no more than two
+8. interleaved            both products on the first screen and both on page 2, so neither
                           product is one block and every question about either product needs
                           both pages. A page rule
-7. names_distinct         every seller's first word is distinct, and is inside no other
+9. names_distinct         every seller's first word is distinct, and is inside no other
                           seller's name, the brand, a product phrasing, an option label or a
                           question template; and no seller name holds a word of a product
                           phrasing
 
 What every key needs to be one answer, refused rather than guessed:
 
-8. headline_unique        one tee listing advertises the lowest tee price
-9. limit_separates        the exists-under limit (`exists_limit`) leaves exactly one listing
+10. headline_unique       one tee listing advertises the lowest tee price
+11. headline_on_page_1    that listing renders on page 1, and every tee card on page 2 is at
+                          least 8 per cent dearer, so "on the results page" read as page 1 or
+                          as every page names the same listing at the same price (version 2).
+                          A page rule
+12. limit_separates       the exists-under limit (`exists_limit`) leaves exactly one listing
                           that can sell size M under it, and no buyable size M sits on it
-10. top_3_unique          the fourth cheapest buyable size M costs more than the third
-11. per_litre_unique      one listing has the lowest price per litre
+13. top_3_unique          the fourth cheapest buyable size M costs more than the third
+14. per_litre_margin      one listing has the lowest price per litre, at least 8 per cent below
+                          the next listing's, as `clear_margin` holds the price winners
+                          (version 2, replacing per_litre_unique)
 
-A page rule is applied to the order `search_order.py` predicts, under every one of its
-scenarios, when the market is drawn, and to the live results pages after it is seeded."""
+A page rule is applied to the order `search_order.py` predicts for the brand's analyzer form,
+under each of its scenarios, when the market is drawn, and to the live results pages after
+it is seeded. The rules about one product are checked on that product's draw before the two
+are paired, so the water draws paired with each tee draw are the first `WATER_PER_TEE` that
+pass every rule about water (version 2)."""
 
-PAGE_RULES = ("interleaved", "first_screen_misleads", "answer_on_page_2")
+PAGE_RULES = ("interleaved", "first_screen_misleads", "answer_on_page_2", "counts_need_page_2",
+              "headline_on_page_1")
 
 
 def money(value: float) -> float:
@@ -223,18 +319,21 @@ def seller_names(firsts: tuple[str, ...], seconds: tuple[str, ...], count: int,
     return [f"{first} {rng.choice(seconds)}" for first in pool[:count]]
 
 
-def build_tee(seller: str, index: int, rng: random.Random, brand: str) -> dict:
+def build_tee(seller: str, index: int, rng: random.Random, brand: str,
+              phrases: tuple[str, ...] = DEV_TEE_PHRASES) -> dict:
     """One tee listing, exactly as the tee generator draws it. Until the market's catalogue
     order is drawn (`catalogue`) it carries a provisional SKU, TEE-NN, distinct within the
     draw, because the tee rules tell listings apart by SKU."""
     listing = apparel.build_listing(seller, index, rng, brand, sku_prefix="TEE")
-    # The title is drawn after everything the tee generator draws, so its draws are its own.
-    listing["name"] = f"{brand} {rng.choice(TEE_PHRASES)} - {seller}"
+    # The title is drawn after everything the tee generator draws, so its draws are its own,
+    # and either pool of phrasings leaves the prices and stock of a seed as they are.
+    listing["name"] = f"{brand} {rng.choice(phrases)} - {seller}"
     listing["product"] = TEE
     return listing
 
 
-def build_water(seller: str, index: int, rng: random.Random, brand: str) -> dict:
+def build_water(seller: str, index: int, rng: random.Random, brand: str,
+                phrases: tuple[str, ...] = DEV_WATER_PHRASES) -> dict:
     """One water listing: the water generator's prices, the tee generator's availability. A
     provisional SKU, WATER-NN, until the catalogue order is drawn."""
     rate = rng.uniform(*water.RATE_RANGE)
@@ -255,7 +354,7 @@ def build_water(seller: str, index: int, rng: random.Random, brand: str) -> dict
         variants[0]["qty"] = rng.randint(25, 240)
     return {
         "key": f"water-{index:02d}", "parent_sku": f"WATER-{index:02d}",
-        "name": f"{brand} {rng.choice(WATER_PHRASES)} - {seller}",
+        "name": f"{brand} {rng.choice(phrases)} - {seller}",
         "seller": seller,
         "attribute": "pack_size",
         "category_ids": [water.GROCERY_CATEGORY_ID],
@@ -433,6 +532,9 @@ def keys(families: list[dict]) -> dict:
     water_absent = [l for l in waters if apparel.price_for(l, WATER_TARGET) is None]
     rated = [(best_rate(l), l) for l in waters if best_rate(l)]
     rated.sort(key=lambda pair: pair[0][0])
+    # Every pack listed but sold out, by its price per litre: the per-litre question's trap.
+    sold_rates = sorted(((round(v["price"] / litres(v), 4), l, v) for l in waters
+                         for v in l["variants"] if v["qty"] == 0), key=lambda t: t[0])
     price = lambda l, option: apparel.buyable_price_for(l, option)  # noqa: E731
     return {
         "tee_cards": sorted(tees, key=apparel.from_price),
@@ -466,6 +568,9 @@ def keys(families: list[dict]) -> dict:
         "per_litre_rate": rated[0][0][0] if rated else None,
         "per_litre_pack": rated[0][0][1] if rated else None,
         "per_litre_runner_up_rate": rated[1][0][0] if len(rated) > 1 else None,
+        "per_litre_runner_up": rated[1][1] if len(rated) > 1 else None,
+        "sold_out_rate": sold_rates[0][0] if sold_rates else None,
+        "sold_out_rate_listing": sold_rates[0][1] if sold_rates else None,
     }
 
 
@@ -495,16 +600,16 @@ def answer_listings(k: dict) -> dict[str, tuple[list[dict], float]]:
 
 def words_a_scorer_reads(brand: str) -> list[str]:
     """Every text a seller's first word must not be found in, lowercased: the brand, every
-    phrasing of both products, every option label and every question."""
-    texts = [brand, *TEE_PHRASES, *WATER_PHRASES, *TEE_OPTIONS, *WATER_OPTIONS]
+    phrasing of both products in both pools, every option label and every question."""
+    texts = [brand, *ALL_PHRASES, *TEE_OPTIONS, *WATER_OPTIONS]
     texts += [text.format(brand=brand, limit="") for _, text in TEMPLATES.values()]
     return [t.lower() for t in texts]
 
 
 def product_words() -> set[str]:
-    """The words of every phrasing of both products, which no seller name may hold, so that
-    the product a listing sells is read from its title alone."""
-    return {w.strip(",").lower() for phrase in TEE_PHRASES + WATER_PHRASES for w in phrase.split()}
+    """The words of every phrasing in both pools, which no seller name may hold, so that the
+    product a listing sells is read from its title alone."""
+    return phrase_words(ALL_PHRASES)
 
 
 def name_problems(families: list[dict], brand: str) -> list[str]:
@@ -528,19 +633,12 @@ def name_problems(families: list[dict], brand: str) -> list[str]:
     return problems
 
 
-def market_check(families: list[dict], brand: str) -> list[str]:
-    """Rules 3 to 5 and 7 to 11 of `MARKET_RULES`: everything that the fixture alone decides."""
-    k = keys(families)
+def tee_market_rules(k: dict) -> list[str]:
+    """The rules of `MARKET_RULES` about the tees alone, from `keys` of a draw that need hold
+    nothing but tees, so the generator can check them before pairing."""
     broken = []
-    if not PAGE_SIZE < len(families) <= 2 * PAGE_SIZE:
-        broken.append("two_pages")
-    if not (k["tee_sold_out"] and k["water_sold_out"]):
+    if not k["tee_sold_out"]:
         broken.append("readings_differ")
-    if k["per_litre"] is None or k["water_winner"] is None or \
-            k["per_litre"]["parent_sku"] == k["water_winner"]["parent_sku"]:
-        broken.append("per_litre_not_target")
-    if name_problems(families, brand):
-        broken.append("names_distinct")
     cards = [apparel.from_price(l) for l in k["tee_cards"]]
     if len(cards) < 2 or cards[0] == cards[1]:
         broken.append("headline_unique")
@@ -549,8 +647,49 @@ def market_check(families: list[dict], brand: str) -> list[str]:
     if k["top_next"] is None or apparel.buyable_price_for(k["top_next"], TEE_TARGET) == \
             apparel.buyable_price_for(k["top"][-1], TEE_TARGET):
         broken.append("top_3_unique")
-    if k["per_litre_rate"] is None or k["per_litre_rate"] == k["per_litre_runner_up_rate"]:
-        broken.append("per_litre_unique")
+    return broken
+
+
+def water_market_rules(k: dict) -> list[str]:
+    """The rules of `MARKET_RULES` about the water alone, as `tee_market_rules`."""
+    broken = []
+    if not k["water_sold_out"]:
+        broken.append("readings_differ")
+    winner, unit = k["water_winner"], k["per_litre"]
+    if unit is None or winner is None or unit["parent_sku"] == winner["parent_sku"]:
+        broken.append("per_litre_not_target")
+    # As `clear_margin` holds the price winners (8 per cent, `generate_catalogue.MIN_MARGIN_REL`):
+    # Larchmere's first market had its best per litre 0.31 per cent ahead of the next seller.
+    rate, runner_up = k["per_litre_rate"], k["per_litre_runner_up_rate"]
+    if rate is None or runner_up is None or runner_up - rate < rate * water.MIN_MARGIN_REL:
+        broken.append("per_litre_margin")
+    # As the tee rule `sold_out_trap` (Rookwood's sold-out M on Larchmere): the pack asked
+    # for is listed but sold out somewhere at a price below the winner's, so "can actually
+    # be bought" decides the answer. On Larchmere's first market every sold-out 2 x 9.5L was
+    # dearer than the winner (verifier, 22 October 2026).
+    trap = k["water_sold_out_trap"]
+    if winner is None or trap is None or \
+            apparel.price_for(trap, WATER_TARGET) >= apparel.buyable_price_for(winner, WATER_TARGET):
+        broken.append("water_sold_out_trap")
+    # The same for the third water price question: a pack listed but sold out is cheaper per
+    # litre than the best that can be bought.
+    if rate is None or k["sold_out_rate"] is None or k["sold_out_rate"] >= rate:
+        broken.append("per_litre_sold_out_trap")
+    return broken
+
+
+def market_check(families: list[dict], brand: str) -> list[str]:
+    """Every rule of `MARKET_RULES` that the fixture alone decides: those about one product
+    (`tee_market_rules`, `water_market_rules`) and those about the market as a whole."""
+    k = keys(families)
+    broken = []
+    if not PAGE_SIZE < len(families) <= 2 * PAGE_SIZE:
+        broken.append("two_pages")
+    if name_problems(families, brand):
+        broken.append("names_distinct")
+    for rule in tee_market_rules(k) + water_market_rules(k):
+        if rule not in broken:
+            broken.append(rule)
     return broken
 
 
@@ -575,20 +714,54 @@ def page_problems(families: list[dict], order: list[str]) -> list[str]:
             broken.append(f"first_screen_misleads:{question}")
     if not any(l["parent_sku"] in page_2 for listings, _ in named.values() for l in listings):
         broken.append("answer_on_page_2")
+    for question, reading, counted in COUNTED:
+        if not any(counted(by_sku[s]) for s in page_2):
+            broken.append(f"counts_need_page_2:{question} ({reading})")
+    # The headline question says "on the results page", which on two pages reads as page 1
+    # or as every page: the cheapest tee card is on page 1, and any tee card on page 2 is at
+    # least 8 per cent dearer, so both readings name the same listing at the same price. One
+    # condition says both: were the cheapest card on page 2, it would be a page-2 card within
+    # the margin of itself.
+    headline = min(apparel.from_price(by_sku[s]) for s in order if by_sku[s]["product"] == TEE)
+    later = [apparel.from_price(by_sku[s]) for s in page_2 if by_sku[s]["product"] == TEE]
+    if later and min(later) < headline * (1 + apparel.MIN_MARGIN_REL):
+        broken.append("headline_on_page_1")
     return broken
 
 
-def predicted_orders(families: list[dict]) -> dict[str, list[str]]:
-    """The order `search_order` predicts under each of its scenarios, by label."""
+# The count questions, each under each of its readings, with what it counts: a listing
+# counted on page 2 means page 1 alone gives a smaller count. "Offer" is two readings (the
+# key's, the menu, and the sidecar's, buyable); "in stock and available to buy" is one.
+COUNTED = (
+    ("tee-count-stocked", "menu",
+     lambda f: f["product"] == TEE and apparel.price_for(f, TEE_TARGET) is not None),
+    ("tee-count-stocked", "buyable",
+     lambda f: f["product"] == TEE and apparel.buyable_price_for(f, TEE_TARGET) is not None),
+    ("tee-count-buyable", "buyable",
+     lambda f: f["product"] == TEE and apparel.buyable_price_for(f, TEE_TARGET) is not None),
+    ("water-count-buyable", "buyable",
+     lambda f: f["product"] == WATER and apparel.buyable_price_for(f, WATER_TARGET) is not None),
+)
+
+
+def scenarios(two_forms: bool) -> tuple[tuple[bool, float], ...]:
+    """The order model's scenarios for a brand of this analyzer form: its average lengths as
+    measured and 2 per cent either way (`search_order.SCENARIOS`)."""
+    return tuple(s for s in search_order.SCENARIOS if s[0] == two_forms)
+
+
+def predicted_orders(families: list[dict], two_forms: bool) -> dict[str, list[str]]:
+    """The order `search_order` predicts for the brand's form under each scenario, by label,
+    the measured average lengths first."""
     return {f"{'two forms' if two else 'one form'}, average lengths x{scale}":
             [f["parent_sku"] for f in search_order.order(families, two, scale)]
-            for two, scale in search_order.SCENARIOS}
+            for two, scale in scenarios(two_forms)}
 
 
-def predicted_problems(families: list[dict]) -> list[str]:
-    """Every page rule broken under any scenario, each once."""
+def predicted_problems(families: list[dict], two_forms: bool) -> list[str]:
+    """Every page rule broken under any of the brand's scenarios, each once."""
     found = []
-    for order in predicted_orders(families).values():
+    for order in predicted_orders(families, two_forms).values():
         found += [p for p in page_problems(families, order) if p not in found]
     return found
 
@@ -597,16 +770,28 @@ def predicted_problems(families: list[dict]) -> list[str]:
 # Drawing a market
 
 
-def tee_draw(seed: int, attempt: int, count: int, brand: str) -> list[dict]:
+def tee_draw(seed: int, attempt: int, count: int, brand: str, claim: bool = False) -> list[dict]:
     rng = random.Random(f"{MARKET}:{seed}:tee:{attempt}")
-    return [build_tee(name, i, rng, brand)
+    phrases = phrasings(claim)[TEE]
+    return [build_tee(name, i, rng, brand, phrases)
             for i, name in enumerate(seller_names(TEE_FIRST, TEE_SECOND, count, rng), 1)]
 
 
-def water_draw(seed: int, attempt: int, count: int, brand: str) -> list[dict]:
+def water_draw(seed: int, attempt: int, count: int, brand: str, claim: bool = False) -> list[dict]:
     rng = random.Random(f"{MARKET}:{seed}:water:{attempt}")
-    return [build_water(name, i, rng, brand)
+    phrases = phrasings(claim)[WATER]
+    return [build_water(name, i, rng, brand, phrases)
             for i, name in enumerate(seller_names(WATER_FIRST, WATER_SECOND, count, rng), 1)]
+
+
+def tee_passes(tees: list[dict]) -> bool:
+    """A tee draw passes the tee generator's 13 rules and the market's rules about the tees."""
+    return not apparel.check(tees, apparel.measure(tees)) and not tee_market_rules(keys(tees))
+
+
+def water_passes(waters: list[dict]) -> bool:
+    """A water draw passes the water generator's 8 rules and the market's rules about water."""
+    return not water_check(waters, water_measure(waters)) and not water_market_rules(keys(waters))
 
 
 # How many water draws that pass their own rules are paired with each tee draw that passes
@@ -614,32 +799,34 @@ def water_draw(seed: int, attempt: int, count: int, brand: str) -> list[dict]:
 WATER_PER_TEE = 40
 
 
-def generate(seed: int, brand: str, sku_prefix: str, tees: int = TEE_LISTINGS,
-             waters: int = WATER_LISTINGS, tee_attempts: int = 200000,
-             water_attempts: int = 400000) -> tuple[list[dict], dict, dict]:
+def generate(seed: int, brand: str, sku_prefix: str, two_forms: bool, tees: int = TEE_LISTINGS,
+             waters: int = WATER_LISTINGS, claim: bool = False, tee_attempts: int = 400000,
+             water_attempts: int = 2000000) -> tuple[list[dict], dict, dict]:
     """The first draw that passes every rule.
 
-    The tees and the water come from their own streams, each held to its own generator's
-    rules first, since a joint draw would pass both about once in a few hundred thousand.
-    Each tee draw that passes is paired, in turn, with the first `WATER_PER_TEE` water draws
-    that pass, each pairing given its catalogue order from its own stream, and the pair is
-    held to the market's rules and the page rules. Returns the families in catalogue order,
-    the facts, and the two draws accepted."""
+    The tees and the water come from their own streams, each held first to its own
+    generator's rules and the market's rules about that product alone, since a joint draw
+    would pass both about once in a few hundred thousand. Each tee draw that passes is
+    paired, in turn, with the first `WATER_PER_TEE` water draws that pass, each pairing given
+    its catalogue order from its own stream, and the pair is held to the rules about the
+    market as a whole and to the page rules for the brand's analyzer form (`two_forms`).
+    `claim` draws the titles from the claim's held-out phrasings. Returns the families in
+    catalogue order, the facts, and the two draws accepted."""
     passing: list[tuple[int, list[dict]]] = []     # water draws that pass, in stream order
     next_water = 0
 
     def water_passing(i: int) -> tuple[int, list[dict]] | None:
         nonlocal next_water
         while len(passing) <= i and next_water < water_attempts:
-            listings = water_draw(seed, next_water, waters, brand)
-            if not water_check(listings, water_measure(listings)):
+            listings = water_draw(seed, next_water, waters, brand, claim)
+            if water_passes(listings):
                 passing.append((next_water, listings))
             next_water += 1
         return passing[i] if i < len(passing) else None
 
     for tee_attempt in range(tee_attempts):
-        tee_list = tee_draw(seed, tee_attempt, tees, brand)
-        if apparel.check(tee_list, apparel.measure(tee_list)):
+        tee_list = tee_draw(seed, tee_attempt, tees, brand, claim)
+        if not tee_passes(tee_list):
             continue
         for i in range(WATER_PER_TEE):
             found = water_passing(i)
@@ -650,20 +837,23 @@ def generate(seed: int, brand: str, sku_prefix: str, tees: int = TEE_LISTINGS,
             rng = random.Random(f"{MARKET}:{seed}:order:{tee_attempt}:{water_attempt}")
             families = catalogue(json.loads(json.dumps(tee_list)),
                                  json.loads(json.dumps(water_list)), rng, sku_prefix)
-            if market_check(families, brand) or predicted_problems(families):
+            if market_check(families, brand) or predicted_problems(families, two_forms):
                 continue
-            return families, measure(families), {"tee": tee_attempt, "water": water_attempt}
+            return (families, measure(families, two_forms),
+                    {"tee": tee_attempt, "water": water_attempt})
     raise SystemExit(f"seed {seed}: no market satisfied every rule")
 
 
-def measure(families: list[dict]) -> dict:
-    """The facts a fixture records: each product's, and where the answers are predicted to
-    render."""
+def measure(families: list[dict], two_forms: bool) -> dict:
+    """The facts a fixture records: each product's, and the order the results pages are
+    predicted to list the listings in for the brand's own analyzer form, with where each
+    price question's answer renders in it. Until 22 October 2026 (version 1) the order was
+    the one-form order whatever the brand, which for Larchmere, two forms, differed from the
+    live page in 15 of 42 positions (verifier)."""
     groups = products(families)
-    orders = predicted_orders(families)
-    one_form = next(iter(orders.values()))
+    order = next(iter(predicted_orders(families, two_forms).values()))
     k = keys(families)
-    rendered = {question: [one_form.index(l["parent_sku"]) + 1 for l in listings]
+    rendered = {question: [order.index(l["parent_sku"]) + 1 for l in listings]
                 for question, (listings, _) in answer_listings(k).items()}
     return {
         "market": MARKET,
@@ -674,19 +864,18 @@ def measure(families: list[dict]) -> dict:
         "tee": apparel.measure(groups[TEE]),
         "water": water_measure(groups[WATER]),
         "exists_limit": k["limit"],
-        "predicted_order": one_form,
-        "predicted_order_two_forms": orders[next(label for label in orders if label.startswith("two"))],
+        "predicted_order": order,
         "predicted_cards": rendered,
     }
 
 
-def check(families: list[dict], brand: str) -> list[str]:
+def check(families: list[dict], brand: str, two_forms: bool) -> list[str]:
     """Every rule, by name, for a market already drawn: the tee rules, the water rules, the
-    market's own and the page rules under the predicted orders. Empty means usable."""
+    market's own and the page rules under the brand's predicted orders. Empty means usable."""
     groups = products(families)
     broken = [f"tee.{r}" for r in apparel.check(groups[TEE], apparel.measure(groups[TEE]))]
     broken += [f"water.{r}" for r in water_check(groups[WATER], water_measure(groups[WATER]))]
-    return broken + market_check(families, brand) + predicted_problems(families)
+    return broken + market_check(families, brand) + predicted_problems(families, two_forms)
 
 
 # ---------------------------------------------------------------------------
@@ -701,20 +890,25 @@ def search_lines(search: dict, command: str) -> list[str]:
 
 
 def to_fixture(families: list[dict], facts: dict, seed: int, attempts: dict, brand: str,
-               sku_prefix: str, search: dict | None = None, command: str | None = None) -> dict:
+               sku_prefix: str, two_forms: bool, claim: bool = False, search: dict | None = None,
+               command: str | None = None) -> dict:
+    forms = "two forms" if two_forms else "one form"
     about = [
         "Generated by env/generate_aplus.py. Do not hand edit.",
         f"Seed {seed}, tee draw {attempts['tee']}, water draw {attempts['water']}, brand "
         f"{brand}, SKU prefix {sku_prefix}.",
         "Regenerate with the same seed, brand and prefix to reproduce this catalogue exactly.",
         "Seeded with env/seed_variants.py, which reads this same schema.",
-        *textwrap.wrap("The predicted order is search_order.py's. The live results pages are "
-                       "checked after seeding and are what counts.", 88),
+        *textwrap.wrap(f"The predicted order is search_order.py's for the brand read as {forms}, "
+                       f"as the shop's analyzer reads it. The live results pages are checked after "
+                       f"seeding and are what counts.", 88),
+        f"Titles from the {'claim' if claim else 'development'} phrasings.",
     ]
     generated = {"generator": "env/generate_aplus.py", "version": VERSION,
                  "search_order": "env/search_order.py",
                  "search_order_version": search_order.VERSION, "seed": seed, "attempts": attempts,
-                 "brand": brand, "sku_prefix": sku_prefix,
+                 "brand": brand, "brand_forms": 2 if two_forms else 1, "sku_prefix": sku_prefix,
+                 "phrasings": "claim" if claim else "development",
                  "listings": {TEE: facts["tee"]["listings"], WATER: facts["water"]["listings"]}}
     if search is not None:
         about += search_lines(search, command or "")
@@ -772,19 +966,88 @@ def report(fixture: dict) -> None:
 EARLIER = ("gated_pricing.json", "scaled_water.json", "heldout_calderwood.json",
            "scaled_apparel.json", "claim_apparel.json")
 DEV_SEEDS = range(900, 1000)
+# Development's own market, which the claim may never be written over or seeded under.
+DEV_PREFIX, DEV_FIXTURE = "IGR-DEV", "aplus_dev.json"
+# The claim market is the first seed from here that passes every rule (the protocol).
+CLAIM_FIRST_SEED = 1000
+PROTOCOL = REPO / "docs" / "content" / "claim2-protocol.md"
 
 
-def refused(seed: int, claim: bool, out: pathlib.Path | None) -> str | None:
-    """Why this draw may not be made or written, or None. Kept apart from `main` so a test can
-    ask it without drawing anything."""
+def protocol_final(protocol: pathlib.Path = PROTOCOL) -> bool:
+    """The protocol no longer says DRAFT, which it does until it is frozen."""
+    return "DRAFT" not in protocol.read_text()
+
+
+def refused(seed: int, claim: bool, out: pathlib.Path | None, sku_prefix: str = DEV_PREFIX,
+            protocol: pathlib.Path = PROTOCOL) -> str | None:
+    """Why this draw may not be made or written, or None. Development draws seeds 900 to 999
+    only. The claim (`--claim`) draws seeds from 1000 only, only once the protocol is final,
+    and never under development's prefix or over development's fixture. Kept apart from
+    `main` so a test can ask it without drawing anything."""
     if out is not None and out.name in EARLIER and out.resolve().parent == (HERE / "fixtures"):
         return f"{out.name} is an earlier market's fixture"
-    if not claim and seed not in DEV_SEEDS:
-        return (f"seed {seed} is outside development's 900 to 999; the claim market is drawn "
-                f"with --claim, only after the protocol is final")
-    if claim and seed in DEV_SEEDS:
-        return f"seed {seed} is a development seed, and --claim is for the claim market"
+    if not claim:
+        if seed not in DEV_SEEDS:
+            return (f"seed {seed} is outside development's 900 to 999; the claim market is drawn "
+                    f"with --claim, only after the protocol is final")
+        return None
+    if seed < CLAIM_FIRST_SEED:
+        return f"seed {seed} is below {CLAIM_FIRST_SEED}, and --claim draws the claim market from it"
+    if not protocol_final(protocol):
+        return f"{protocol.name} still says DRAFT, and the claim market is drawn only once it is final"
+    if sku_prefix == DEV_PREFIX:
+        return f"{DEV_PREFIX} is development's prefix"
+    if out is not None and out.name == DEV_FIXTURE:
+        return f"{DEV_FIXTURE} is development's fixture"
     return None
+
+
+def claim_record_problem(tried: list[dict], seed: int, final: bool) -> str | None:
+    """Why the claim search's record does not allow this seed, or None. The claim market is the
+    first seed from 1000 that passes every rule, so the record holds every seed tried from
+    1000 in order, each the one after the seed before unless that one stopped (the shop or the
+    model was at fault, not the seed, so the same seed is tried again), and accepts none but
+    its last. `final` asks whether the market may be written as the one accepted: the record
+    must end with this seed accepted. Otherwise it asks whether this seed may be drawn as the
+    next candidate: it must be the next the record allows."""
+    expected = CLAIM_FIRST_SEED
+    for n, entry in enumerate(tried):
+        if entry.get("seed") != expected:
+            return f"the record tries seed {entry.get('seed')} where seed {expected} comes next"
+        if entry.get("outcome") == "accepted" and n != len(tried) - 1:
+            return f"the record accepts seed {entry['seed']} and then tries more"
+        expected = entry["seed"] if entry.get("outcome") == "stopped" else entry["seed"] + 1
+    last = tried[-1] if tried else {}
+    if final:
+        if (last.get("seed"), last.get("outcome")) != (seed, "accepted"):
+            return f"the record does not end with seed {seed} accepted"
+        return None
+    if last.get("outcome") == "accepted":
+        return f"the record already ends with seed {last['seed']} accepted"
+    if seed != expected:
+        return f"seed {seed} is not the next seed the claim search may draw; {expected} is"
+    return None
+
+
+def claim_gate(seed: int, search_log: pathlib.Path | None, out: pathlib.Path | None,
+               report: bool) -> tuple[str | None, bool]:
+    """Under --claim, after `refused`: why this seed may not be drawn, written or printed, or
+    None, and whether the record has accepted it (`final`). Which claim seed may be drawn is
+    the record's to say, never the caller's (`claim_record_problem`), and a claim market is
+    printed only once it is written and recorded as accepted, so no claim seed can be looked
+    at before the search reaches it."""
+    if search_log is None:
+        return "--claim needs --search-log, the claim search's record", False
+    tried = json.loads(search_log.read_text()).get("tried", []) if search_log.exists() else []
+    last = tried[-1] if tried else {}
+    final = (last.get("seed"), last.get("outcome")) == (seed, "accepted")
+    problem = claim_record_problem(tried, seed, final)
+    if problem:
+        return problem, final
+    if report and not (final and out is not None and out.exists()):
+        return ("a claim market is printed only once it is written and recorded as accepted; "
+                "name its fixture with --out"), final
+    return None, final
 
 
 def load_search(path: pathlib.Path, seed: int, brand: str, sku_prefix: str) -> dict:
@@ -806,38 +1069,55 @@ def main() -> int:
                         help="the word every listing's name starts with and the shop is searched for")
     parser.add_argument("--sku-prefix", default="IGR-DEV",
                         help="the listings' SKU prefix, and so their URL keys")
+    parser.add_argument("--brand-forms", type=int, choices=(1, 2), required=True,
+                        help="how many forms the shop's analyzer gives the brand: 2 when its stem "
+                             "differs from it (env/pick_aplus_market.py --check-brands prints it)")
     parser.add_argument("--tees", type=int, default=TEE_LISTINGS)
     parser.add_argument("--waters", type=int, default=WATER_LISTINGS)
     parser.add_argument("--out", type=pathlib.Path)
     parser.add_argument("--search-log", type=pathlib.Path,
                         help="the seed search that chose this market, written by "
-                             "env/pick_aplus_market.py, recorded in the fixture")
+                             "env/pick_aplus_market.py, recorded in the fixture; required with "
+                             "--claim, where it decides which seed may be drawn")
     parser.add_argument("--claim", action="store_true",
-                        help="draw the claim market: a seed from 1000, only after the protocol is final")
+                        help="draw the claim market: the first seed from 1000 that passes, once "
+                             "the protocol is final")
     parser.add_argument("--report", action="store_true", help="print the market and write nothing")
     args = parser.parse_args()
-    why = refused(args.seed, args.claim, None if args.report else args.out)
+    why = refused(args.seed, args.claim, args.out, args.sku_prefix)
     if why:
         raise SystemExit(f"refusing: {why}")
     if not args.report and args.out is None:
         parser.error("name --out, or ask for --report")
+    two_forms = args.brand_forms == 2
 
-    families, facts, attempts = generate(args.seed, args.brand, args.sku_prefix,
-                                         args.tees, args.waters)
+    final = False
+    if args.claim:
+        problem, final = claim_gate(args.seed, args.search_log, args.out, args.report)
+        if problem:
+            raise SystemExit(f"refusing: {problem}")
+
+    families, facts, attempts = generate(args.seed, args.brand, args.sku_prefix, two_forms,
+                                         args.tees, args.waters, claim=args.claim)
     search, command = None, None
-    if args.search_log:
+    if args.search_log and (final or not args.claim):
         search = load_search(args.search_log, args.seed, args.brand, args.sku_prefix)
         log = args.search_log.resolve()
         log = log.relative_to(REPO) if log.is_relative_to(REPO) else log
         command = (f"python3 env/generate_aplus.py --seed {args.seed} --brand {args.brand} "
-                   f"--sku-prefix {args.sku_prefix} --tees {args.tees} --waters {args.waters} "
-                   f"--out env/fixtures/{args.out.name} --search-log {log}"
-                   + (" --claim" if args.claim else ""))
+                   f"--brand-forms {args.brand_forms} --sku-prefix {args.sku_prefix} "
+                   f"--tees {args.tees} --waters {args.waters} --out env/fixtures/{args.out.name} "
+                   f"--search-log {log}" + (" --claim" if args.claim else ""))
     fixture = to_fixture(families, facts, args.seed, attempts, args.brand, args.sku_prefix,
-                         search, command)
-    report(fixture)
+                         two_forms, args.claim, search, command)
     if args.report:
+        if args.claim and json.loads(args.out.read_text())["families"] != families:
+            raise SystemExit(f"refusing: {args.out.name} is not this seed's claim market")
+        report(fixture)
         return 0
+    # A claim candidate is written to be seeded and checked, never printed to look at.
+    if not args.claim:
+        report(fixture)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(fixture, indent=2) + "\n")
     print(f"\nwritten: {args.out}")

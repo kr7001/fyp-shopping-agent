@@ -5,6 +5,7 @@ Nothing here touches the shop. Every rule is shown firing on a planted fault and
 on the development market (LESSONS 24, 31), and the order model is checked against the
 results pages two batches stored.
 """
+import argparse
 import copy
 import json
 import pathlib
@@ -13,6 +14,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402
@@ -35,7 +37,9 @@ DEV = paths.FIXTURES / "aplus_dev.json"
 DEV_TASKS = paths.TASKS / "tasks_aplus_dev.json"
 DEV_READINGS = paths.TASKS / "readings_aplus_dev.json"
 DEV_SEARCH = paths.REPO / "env" / "manifests" / "aplus_dev-search.json"
+DEV_V1_ORDER = paths.REPO / "env" / "manifests" / "aplus_dev-v1-order.json"
 BRAND = "Larchmere"
+TWO_FORMS = True                   # Larchmere's, as the shop's analyzer reads it
 
 
 def load(path: pathlib.Path) -> dict:
@@ -71,23 +75,29 @@ class OrderModel(unittest.TestCase):
                 self.assertNotEqual([f["parent_sku"] for f in fixture["families"]], want)
 
     def test_the_order_is_the_development_markets_live_order(self):
-        # The case that showed the first version of the model wrong, recorded by the picker
-        # from the live pages. Larchmere is two forms to the analyzer.
-        live_order = load(DEV_SEARCH)["tried"][-1]["live_order"]
+        # Larchmere is two forms to the analyzer. The market as the record's last accepted
+        # attempt saw it live, and its first market, kept with the order the shop served for
+        # it (env/manifests/aplus_dev-v1-order.json): the case that showed the model wrong.
+        accepted = load(DEV_SEARCH)["tried"][-1]
+        self.assertEqual(accepted["outcome"], "accepted")
         families = load(DEV)["families"]
-        self.assertEqual([f["parent_sku"] for f in search_order.order(families, True)], live_order)
+        self.assertEqual([f["parent_sku"] for f in search_order.order(families, True)],
+                         accepted["live_order"])
+        first = load(DEV_V1_ORDER)
+        self.assertEqual([f["parent_sku"] for f in search_order.order(first["listings"], True)],
+                         first["live_order"])
 
         # The fault: the phrase prefix split into both forms, as a query without Magento's
         # prefix_search analyzer reads it. Thornwood's and Ashcombe's stored pages cannot tell
-        # the two apart; this market's can.
+        # the two apart; Larchmere's first market can.
         def split(family):
             freq, name, search = search_order.lengths(family)
             tf = search_order._tf
             return (6 * tf(2 * freq, name, search_order.AVGDL_NAME)
                     + 2 * 2 * tf(freq, name, search_order.AVGDL_NAME)
                     + 4 * tf(2 * freq, search, search_order.AVGDL_SEARCH))
-        self.assertNotEqual([f["parent_sku"] for f in sorted(families, key=lambda f: -round(split(f), 9))],
-                            live_order)
+        self.assertNotEqual([f["parent_sku"] for f in sorted(first["listings"], key=lambda f: -round(split(f), 9))],
+                            first["live_order"])
         ashcombe = load(paths.FIXTURES / "claim_apparel.json")["families"]
         self.assertEqual(sorted(ashcombe, key=lambda f: -round(split(f), 9)),
                          search_order.order(ashcombe, True))
@@ -148,9 +158,10 @@ class ProductRules(DevMarket):
     read over what can be bought."""
 
     def test_the_development_market_passes_every_rule(self):
-        self.assertEqual(aplus.check(self.families, BRAND), [])
+        self.assertEqual(aplus.check(self.families, BRAND, TWO_FORMS), [])
         self.assertEqual(len(self.groups[aplus.TEE]), aplus.TEE_LISTINGS)
         self.assertEqual(len(self.groups[aplus.WATER]), aplus.WATER_LISTINGS)
+        self.assertEqual(self.fixture["_generated"]["version"], aplus.VERSION)
 
     def test_a_tee_draw_is_the_tee_generators(self):
         # Same model, same draws: the A+ tee is generate_apparel.build_listing, then a title.
@@ -158,7 +169,21 @@ class ProductRules(DevMarket):
         ours = aplus.build_tee("Haldane Threads", 3, rng_a, BRAND)
         theirs = apparel.build_listing("Haldane Threads", 3, rng_b, BRAND, sku_prefix="TEE")
         self.assertEqual(ours["variants"], theirs["variants"])
-        self.assertIn(ours["name"].split(" - ")[0].removeprefix(BRAND + " "), aplus.TEE_PHRASES)
+        self.assertIn(ours["name"].split(" - ")[0].removeprefix(BRAND + " "), aplus.DEV_TEE_PHRASES)
+
+    def test_the_claims_titles_change_nothing_else(self):
+        # A seed's prices and stock are the same under either pool; only the titles differ,
+        # each from its own pool. Development seed 901's first draw of five listings, not a
+        # market (the seed is among those the title study records).
+        dev, claim = (aplus.tee_draw(901, 0, 5, BRAND, pool) for pool in (False, True))
+        wdev, wclaim = (aplus.water_draw(901, 0, 5, BRAND, pool) for pool in (False, True))
+        for a, b, pool in ((dev, claim, aplus.CLAIM_TEE_PHRASES), (wdev, wclaim, aplus.CLAIM_WATER_PHRASES)):
+            self.assertEqual([x["variants"] for x in a], [y["variants"] for y in b])
+            self.assertEqual([x["seller"] for x in a], [y["seller"] for y in b])
+            self.assertTrue(all(y["name"].split(" - ")[0].removeprefix(BRAND + " ") in pool for y in b))
+        self.assertEqual(self.fixture["_generated"]["phrasings"], "development")
+        titles = {f["name"].split(" - ")[0].removeprefix(BRAND + " ") for f in self.families}
+        self.assertLessEqual(titles, set(aplus.DEV_TEE_PHRASES + aplus.DEV_WATER_PHRASES))
 
     def test_each_tee_rule_fires_on_its_fault(self):
         # The tee generator's 13, unchanged, on the A+ tees: each shown firing on its fault.
@@ -385,6 +410,27 @@ class MarketRules(DevMarket):
                          and apparel.price_for(f, pack["option"]) is not None)
             variant(other, pack["option"]).update(price=pack["price"], qty=10)
 
+        def per_litre_close(families):
+            # The next seller's best pack priced 5 per cent above the best rate: inside 8.
+            runner = by_sku(families, k["per_litre_runner_up"]["parent_sku"])
+            best = min((v for v in runner["variants"] if v["qty"]), key=lambda v: v["price"] / aplus.litres(v))
+            best["price"] = round(k["per_litre_rate"] * 1.05 * aplus.litres(best), 2)
+
+        def sold_out_dearer(families):
+            # Every sold-out 2 x 9.5L above the winner's price: "can be bought" no longer matters.
+            for f in families:
+                if f["product"] == aplus.WATER and apparel.price_for(f, aplus.WATER_TARGET) is not None \
+                        and apparel.buyable_price_for(f, aplus.WATER_TARGET) is None:
+                    variant(f, aplus.WATER_TARGET)["price"] = \
+                        apparel.buyable_price_for(k["water_winner"], aplus.WATER_TARGET) + 500
+
+        def sold_out_dearer_per_litre(families):
+            for f in families:
+                if f["product"] == aplus.WATER:
+                    for v in f["variants"]:
+                        if v["qty"] == 0:
+                            v["price"] = round(v["price"] * 10, 2)
+
         plants = {
             "readings_differ (tee)": ("readings_differ", no_sold_out(aplus.TEE, aplus.TEE_TARGET)),
             "readings_differ (water)": ("readings_differ", no_sold_out(aplus.WATER, aplus.WATER_TARGET)),
@@ -398,11 +444,37 @@ class MarketRules(DevMarket):
             "headline_unique": ("headline_unique", tied_headline),
             "limit_separates": ("limit_separates", no_witness),
             "top_3_unique": ("top_3_unique", fourth_ties_third),
-            "per_litre_unique": ("per_litre_unique", per_litre_tie),
+            "per_litre_margin, a tie": ("per_litre_margin", per_litre_tie),
+            "per_litre_margin, 5 per cent": ("per_litre_margin", per_litre_close),
+            "water_sold_out_trap": ("water_sold_out_trap", sold_out_dearer),
+            "per_litre_sold_out_trap": ("per_litre_sold_out_trap", sold_out_dearer_per_litre),
         }
         for label, (rule, plant) in plants.items():
             with self.subTest(fault=label):
                 self.assertIn(rule, self.broken(plant))
+
+    def test_the_margin_and_the_traps_hold_on_the_development_market(self):
+        # Quiet, and by what margin: the figures each rule reads.
+        k = aplus.keys(self.families)
+        self.assertGreaterEqual(k["per_litre_runner_up_rate"] - k["per_litre_rate"], 0.08 * k["per_litre_rate"])
+        self.assertLess(apparel.price_for(k["water_sold_out_trap"], aplus.WATER_TARGET),
+                        apparel.buyable_price_for(k["water_winner"], aplus.WATER_TARGET))
+        self.assertLess(k["sold_out_rate"], k["per_litre_rate"])
+
+    def test_the_per_litre_key_ignores_sold_out_packs(self):
+        # A pack listed but sold out at a tenth of a cent a litre changes neither the key nor
+        # the facts: the best price per litre is over packs that can be bought.
+        k = aplus.keys(self.families)
+        families = copy.deepcopy(self.families)
+        other = next(f for f in families if f["product"] == aplus.WATER
+                     and f["parent_sku"] != k["per_litre"]["parent_sku"])
+        other["variants"][0].update(qty=0, price=0.02)
+        planted = aplus.keys(families)
+        self.assertEqual((planted["per_litre"]["parent_sku"], planted["per_litre_rate"]),
+                         (k["per_litre"]["parent_sku"], k["per_litre_rate"]))
+        self.assertEqual(aplus.water_measure(aplus.products(families)[aplus.WATER])["best_per_litre"]["sku"],
+                         k["per_litre"]["parent_sku"])
+        self.assertIsNone(aplus.best_rate({"variants": [{"price": 1.0, "qty": 0, "units": 2, "volume_ml": 9500}]}))
 
     def test_each_names_check_reports_its_own_fault(self):
         # First words used nowhere else in this market, so each plant meets one check only.
@@ -418,6 +490,16 @@ class MarketRules(DevMarket):
             with self.subTest(check=words):
                 families = copy.deepcopy(self.families)
                 plant(families)
+                self.assertIn(words, "; ".join(aplus.name_problems(families, BRAND)))
+
+    def test_the_claims_words_are_held_to_the_names_rule(self):
+        # The claim's held-out phrasings are text a scorer reads too, and their words are
+        # product words, though development never draws them.
+        for seller, words in (("Alpine Direct", "inside a text the scorer reads"),
+                              ("Zennor Mineral Co", "it holds a product's own word")):
+            with self.subTest(seller=seller):
+                families = copy.deepcopy(self.families)
+                families[0]["seller"] = seller
                 self.assertIn(words, "; ".join(aplus.name_problems(families, BRAND)))
 
     def test_the_brand_is_held_to_the_names_rule_too(self):
@@ -438,6 +520,36 @@ class MarketRules(DevMarket):
         self.assertGreaterEqual(min(len(aplus.TEE_FIRST), len(aplus.WATER_FIRST)), aplus.TEE_LISTINGS)
 
 
+class Phrasings(unittest.TestCase):
+    """Every title's head noun is its product's, and the claim's phrasings are held out."""
+
+    def test_the_pools_keep_the_rule(self):
+        self.assertEqual(aplus.phrase_problems(), [])
+        for phrase in aplus.ALL_PHRASES:
+            with self.subTest(phrase=phrase):
+                # As the box reads a title (box.head_noun): the last word before any comma.
+                self.assertIn(aplus.head_noun(phrase), aplus.HEAD_NOUNS.values())
+        self.assertEqual(aplus.phrasings(True), {aplus.TEE: aplus.CLAIM_TEE_PHRASES,
+                                                 aplus.WATER: aplus.CLAIM_WATER_PHRASES})
+        self.assertEqual(aplus.phrasings(False), {aplus.TEE: aplus.DEV_TEE_PHRASES,
+                                                  aplus.WATER: aplus.DEV_WATER_PHRASES})
+
+    def test_each_fault_in_a_pool_fires(self):
+        faults = {
+            "its head noun is not 'Tee'": ("CLAIM_TEE_PHRASES", ("Classic Organic Tee", "Relaxed Fit Basic Tee",
+                                                                 "Organic Tee Shirt, Ringspun")),
+            "share ['cotton']": ("CLAIM_TEE_PHRASES", ("Classic Organic Tee", "Relaxed Fit Cotton Tee",
+                                                        "Organic Ringspun Tee, Short Sleeve")),
+            "word counts are not development's": ("CLAIM_WATER_PHRASES", ("Mineral Water", "Alpine Mineral Water",
+                                                                          "Mineral Water")),
+            "holds the other product's noun": ("CLAIM_WATER_PHRASES", ("Mineral Water", "Alpine Mineral Water",
+                                                                       "Tee Shop Mineral Water")),
+        }
+        for words, (pool, value) in faults.items():
+            with self.subTest(fault=words), mock.patch.object(aplus, pool, value):
+                self.assertIn(words, "; ".join(aplus.phrase_problems()))
+
+
 class PageRules(DevMarket):
     """The page rules, on the predicted order of the development market and on planted
     orders. The live check applies the same function to the live pages."""
@@ -448,11 +560,28 @@ class PageRules(DevMarket):
         self.k = aplus.keys(self.families)
 
     def test_quiet_on_every_predicted_order(self):
-        for label, order in aplus.predicted_orders(self.families).items():
+        for label, order in aplus.predicted_orders(self.families, TWO_FORMS).items():
             with self.subTest(scenario=label):
                 self.assertEqual(aplus.page_problems(self.families, order), [])
-        self.assertEqual(self.order, aplus.predicted_orders(self.families)[
-            "one form, average lengths x1.0"])
+
+    def test_the_recorded_order_is_the_brands_own(self):
+        # Two forms for Larchmere: the order recorded, and every card it gives, are the
+        # two-form order's, which is the live one. Version 1 recorded the one-form order.
+        self.assertEqual(self.fixture["_generated"]["brand_forms"], 2)
+        two = aplus.predicted_orders(self.families, True)["two forms, average lengths x1.0"]
+        one = aplus.predicted_orders(self.families, False)["one form, average lengths x1.0"]
+        self.assertEqual(self.order, two)
+        self.assertEqual(self.order, load(DEV_SEARCH)["tried"][-1]["live_order"])
+        cards = {q: [two.index(l["parent_sku"]) + 1 for l in ls]
+                 for q, (ls, _) in aplus.answer_listings(self.k).items()}
+        self.assertEqual(self.fixture["_instance"]["predicted_cards"], cards)
+        # What the generator records for each form: the brand's own order and its cards.
+        measured = aplus.measure(self.families, True)
+        self.assertEqual((measured["predicted_order"], measured["predicted_cards"]), (two, cards))
+        # The fault: the one-form order, as version 1 recorded it, differs here.
+        self.assertNotEqual(one, two)
+        self.assertEqual(aplus.measure(self.families, False)["predicted_order"], one)
+        self.assertNotIn("predicted_order_two_forms", self.fixture["_instance"])
 
     def moved(self, sku: str, to: int) -> list[str]:
         order = [s for s in self.order if s != sku]
@@ -496,18 +625,153 @@ class PageRules(DevMarket):
         order = keep[:aplus.PAGE_SIZE - len(named)] + sorted(named) + keep[aplus.PAGE_SIZE - len(named):]
         self.assertIn("answer_on_page_2", aplus.page_problems(self.families, order))
 
+    def counted_off_page_2(self, counted) -> list[str]:
+        """The order with every listing `counted` moved to the front, so page 2 holds none."""
+        moved = [s for s in self.order if counted(by_sku(self.families, s))]
+        return moved + [s for s in self.order if s not in moved]
+
+    def test_counts_need_page_2_fires_for_each_count_and_reading(self):
+        # Every count question under each of its readings, read from the templates and the
+        # task writer's two-reading list, so a reading dropped from COUNTED is noticed.
+        counts = [q for q in aplus.TEMPLATES if "-count-" in q]
+        expected = {(q, r) for q in counts
+                    for r in (("menu", "buyable") if q in aplus_tasks.TWO_READINGS else ("buyable",))}
+        self.assertEqual({(q, r) for q, r, _ in aplus.COUNTED}, expected)
+        self.assertEqual(len(expected), 4)
+        for question, reading, counted in aplus.COUNTED:
+            with self.subTest(question=question, reading=reading):
+                # Quiet on the development market: page 2 holds a listing each counts.
+                self.assertTrue(any(counted(by_sku(self.families, s)) for s in self.order[aplus.PAGE_SIZE:]))
+                broken = aplus.page_problems(self.families, self.counted_off_page_2(counted))
+                self.assertIn(f"counts_need_page_2:{question} ({reading})", broken)
+
+    def test_headline_on_page_1_fires_off_page_1_and_without_its_margin(self):
+        tees = sorted((f for f in self.families if f["product"] == aplus.TEE), key=apparel.from_price)
+        headline = tees[0]["parent_sku"]
+        self.assertNotIn(headline, self.order[aplus.PAGE_SIZE:])
+        # The cheapest card moved to page 2: a reader of page 1 names another listing.
+        self.assertIn("headline_on_page_1", self.moved(headline, len(self.order) - 1))
+        # A tee card on page 2 within 8 per cent of it: "every page" might be read otherwise
+        # by one who rounds, and the rule asks for a clear margin.
+        families = copy.deepcopy(self.families)
+        later = next(s for s in self.order[aplus.PAGE_SIZE:] if by_sku(families, s)["product"] == aplus.TEE)
+        low = min((v for v in by_sku(families, later)["variants"] if v["qty"]), key=lambda v: v["price"])
+        low["price"] = round(apparel.from_price(tees[0]) * 1.04, 2)
+        self.assertIn("headline_on_page_1", aplus.page_problems(families, self.order))
+        # And at 8 per cent or more it is quiet.
+        low["price"] = round(apparel.from_price(tees[0]) * 1.09, 2)
+        self.assertNotIn("headline_on_page_1", aplus.page_problems(families, self.order))
+
+    def test_no_order_can_hold_the_every_listing_questions_to_page_2(self):
+        # Why rule 2 leaves them out, as MARKET_RULES says: each answers no, and a no needs
+        # page 2 only when every listing without the variant renders there, beside the tee
+        # and the water the counts put on page 2. The fewest the rules allow, by planting.
+        def fewest_absent(product: str, option: str, check) -> int:
+            for n in range(len(self.groups[product]) + 1):
+                # All but n of the listings without the option given it, listed but sold out.
+                draw = copy.deepcopy(self.groups[product])
+                like = next(v for listing in draw for v in listing["variants"] if v["option"] == option)
+                for listing in [l for l in draw if apparel.price_for(l, option) is None][n:]:
+                    listing["variants"].append(dict(like, price=999.0, qty=0))
+                if "some_missing_target" not in check(draw):
+                    return n
+            raise AssertionError(f"some_missing_target fires on every {product} draw")
+
+        tee = fewest_absent(aplus.TEE, aplus.TEE_TARGET, lambda d: apparel.check(d, apparel.measure(d)))
+        water = fewest_absent(aplus.WATER, aplus.WATER_TARGET,
+                              lambda d: aplus.water_check(d, aplus.water_measure(d)))
+        self.assertEqual((tee, water), (4, 1))
+        # The listings the buyable counts need on page 2 are none of those.
+        counted = {(q, r): c for q, r, c in aplus.COUNTED}
+        for question, product, option in (("tee-count-buyable", aplus.TEE, aplus.TEE_TARGET),
+                                          ("water-count-buyable", aplus.WATER, aplus.WATER_TARGET)):
+            without = [l for l in self.groups[product] if apparel.buyable_price_for(l, option) is None]
+            self.assertFalse(any(counted[(question, "buyable")](l) for l in without))
+        # Read as what can be bought, readings_differ's sold-out listing of each is one more.
+        menu, bought, page_2 = tee + water + 2, tee + water + 4, len(self.families) - aplus.PAGE_SIZE
+        self.assertGreater(menu, page_2)
+        words = dict(enumerate("zero one two three four five six seven eight nine ten".split()))
+        self.assertIn(f"That is {words[menu]} listings, {words[bought]} read as what can be bought, "
+                      f"and page 2 holds {words[page_2]}.", " ".join(aplus.MARKET_RULES.split()))
+
 
 class Guards(unittest.TestCase):
     """What the generator, the picker and the task writer refuse, asked without drawing,
     seeding or writing anything."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        folder = pathlib.Path(self.tmp.name)
+        # A protocol as it will read once frozen, and the draft as it reads now.
+        self.final = folder / "claim2-protocol.md"
+        self.final.write_text("# The second claim run, protocol (FINAL)\n")
+        self.claim_out = folder / "claim2_aplus.json"
+
+    def tearDown(self):
+        self.tmp.cleanup()
 
     def test_development_seeds_only_unless_the_claim(self):
         self.assertIsNone(aplus.refused(900, False, None))
         self.assertIsNone(aplus.refused(999, False, None))
         self.assertIn("outside development", aplus.refused(1000, False, None))
         self.assertIn("outside development", aplus.refused(899, False, None))
-        self.assertIsNone(aplus.refused(1000, True, None))
-        self.assertIn("development seed", aplus.refused(950, True, None))
+
+    def test_the_claim_draws_from_1000_once_final_and_never_as_development(self):
+        ok = dict(sku_prefix="IGR-CL2", protocol=self.final)
+        self.assertIsNone(aplus.refused(1000, True, self.claim_out, **ok))
+        for seed in (999, 950, 900, 0):
+            with self.subTest(seed=seed):
+                self.assertIn("below 1000", aplus.refused(seed, True, self.claim_out, **ok))
+        # The protocol as it stands says DRAFT, so the claim is refused today.
+        self.assertTrue("DRAFT" in aplus.PROTOCOL.read_text())
+        self.assertIn("still says DRAFT", aplus.refused(1000, True, self.claim_out, "IGR-CL2"))
+        self.assertIn("development's prefix", aplus.refused(1000, True, self.claim_out, "IGR-DEV", self.final))
+        self.assertIn("development's fixture", aplus.refused(1000, True, DEV, "IGR-CL2", self.final))
+
+    def test_the_claims_record_decides_its_seed(self):
+        rejected = lambda s: {"seed": s, "outcome": "rejected"}  # noqa: E731
+        problem = aplus.claim_record_problem
+        self.assertIsNone(problem([], 1000, False))
+        self.assertIn("1000 is", problem([], 1001, False))
+        self.assertIsNone(problem([rejected(1000)], 1001, False))
+        self.assertIn("1001 is", problem([rejected(1000)], 1000, False))
+        self.assertIn("1001 is", problem([rejected(1000)], 1002, False))
+        # A stop is the shop's or the model's fault, so the same seed is tried again.
+        self.assertIsNone(problem([{"seed": 1000, "outcome": "stopped"}], 1000, False))
+        self.assertIsNone(problem([{"seed": 1000, "outcome": "no instance"}], 1001, False))
+        accepted = [rejected(1000), {"seed": 1001, "outcome": "accepted"}]
+        self.assertIsNone(problem(accepted, 1001, True))
+        self.assertIn("already ends", problem(accepted, 1002, False))
+        self.assertIn("does not end with seed 1002", problem(accepted, 1002, True))
+        self.assertIn("where seed 1000 comes next", problem([rejected(1001)], 1002, False))
+        self.assertIn("accepts seed 1000 and then", problem(
+            [{"seed": 1000, "outcome": "accepted"}, rejected(1001)], 1002, False))
+
+    def test_a_claim_market_is_printed_only_written_and_recorded(self):
+        record = pathlib.Path(self.tmp.name) / "claim2_aplus-search.json"
+        gate = aplus.claim_gate
+        self.assertIn("needs --search-log", gate(1000, None, self.claim_out, False)[0])
+        # No record yet: seed 1000 may be drawn as a candidate, not printed.
+        self.assertEqual(gate(1000, record, self.claim_out, False), (None, False))
+        self.assertIn("printed only once", gate(1000, record, self.claim_out, True)[0])
+        record.write_text(json.dumps({"tried": [{"seed": 1000, "outcome": "accepted"}]}))
+        # Accepted but its fixture not written: still not printed.
+        self.assertIn("printed only once", gate(1000, record, self.claim_out, True)[0])
+        self.claim_out.write_text("{}")
+        self.assertEqual(gate(1000, record, self.claim_out, True), (None, True))
+        self.assertIn("already ends", gate(1001, record, self.claim_out, False)[0])
+
+    def test_the_command_line_refuses_before_drawing(self):
+        for args, words in ((["--seed", "1000", "--claim", "--report"], "still says DRAFT"),
+                            (["--seed", "999", "--claim", "--report"], "below 1000"),
+                            (["--seed", "1000", "--report"], "outside development")):
+            with self.subTest(args=args):
+                run = subprocess.run([sys.executable, "env/generate_aplus.py", "--brand", BRAND,
+                                      "--brand-forms", "2", "--sku-prefix", "IGR-CL2", *args],
+                                     cwd=paths.REPO, capture_output=True, text=True, timeout=60)
+                self.assertNotEqual(run.returncode, 0)
+                self.assertIn(words, run.stderr)
+                self.assertEqual(run.stdout, "")
 
     def test_no_earlier_market_is_written_over(self):
         for name in aplus.EARLIER:
@@ -549,6 +813,47 @@ class Guards(unittest.TestCase):
     def test_the_first_screen_is_the_first_protocols(self):
         self.assertEqual(aplus.FIRST_SCREEN, pick.FIRST_ROW)
 
+    def test_the_picker_continues_a_record_only_across_a_change_of_rules(self):
+        record = pathlib.Path(self.tmp.name) / "search.json"
+        market = picker.Market(fixture=DEV, brand=BRAND, sku_prefix="IGR-DEV")
+        accepted = {"seed": 900, "outcome": "accepted", **picker.versions()}
+        record.write_text(json.dumps({"brand": BRAND, "sku_prefix": "IGR-DEV", "tried": [accepted]}))
+        with self.assertRaises(SystemExit):                 # accepted under the code that runs now
+            picker.earlier_tries(market, record)
+        older = {**accepted, "generator_version": aplus.VERSION - 1}
+        record.write_text(json.dumps({"brand": BRAND, "sku_prefix": "IGR-DEV", "tried": [older]}))
+        self.assertEqual(picker.earlier_tries(market, record), [older])
+        claim = picker.Market(fixture=self.claim_out, brand=BRAND, sku_prefix="IGR-DEV", claim=True)
+        with self.assertRaises(SystemExit):                 # a claim record never continues
+            picker.earlier_tries(claim, record)
+        other = picker.Market(fixture=DEV, brand="Quenby", sku_prefix="IGR-DEV")
+        with self.assertRaises(SystemExit):
+            picker.earlier_tries(other, record)
+
+    def test_the_picker_judges_the_live_order_by_the_brands_form(self):
+        fixture = load(DEV)
+        live_order = load(DEV_SEARCH)["tried"][-1]["live_order"]
+        self.assertEqual(picker.order_match(fixture["families"], live_order, True),
+                         ("two forms, average lengths x1.0", None))
+        # The same live order judged as if the brand were one form: the form is wrong.
+        matched, problem = picker.order_match(fixture["families"], live_order, False)
+        self.assertIsNone(matched)
+        self.assertIn("the form measured is wrong", problem)
+        # An order the model gives for neither form: the model is wrong.
+        swapped = live_order[:]
+        swapped[0], swapped[-1] = swapped[-1], swapped[0]
+        self.assertIn("the order model is wrong", picker.order_match(fixture["families"], swapped, True)[1])
+
+    def test_the_picker_passes_the_brands_form_and_the_claims_record(self):
+        market = picker.Market(fixture=DEV, brand=BRAND, sku_prefix="IGR-DEV", two_forms=True)
+        command = picker.generate_command(900, market)
+        self.assertEqual(command[command.index("--brand-forms") + 1], "2")
+        self.assertNotIn("--claim", command)
+        claim = picker.Market(fixture=self.claim_out, brand="Quenby", sku_prefix="IGR-CL2", claim=True)
+        command = picker.generate_command(1000, claim, pathlib.Path("record.json"))
+        self.assertEqual(command[-3:], ["--claim", "--search-log", "record.json"])
+        self.assertEqual(command[command.index("--brand-forms") + 1], "1")
+
 
 class Files(unittest.TestCase):
     """The committed fixture, task file and sidecar are what the generators write, byte for
@@ -559,7 +864,8 @@ class Files(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             out = pathlib.Path(tmp) / DEV.name
             subprocess.run([sys.executable, "env/generate_aplus.py", "--seed", str(generated["seed"]),
-                            "--brand", generated["brand"], "--sku-prefix", generated["sku_prefix"],
+                            "--brand", generated["brand"], "--brand-forms", str(generated["brand_forms"]),
+                            "--sku-prefix", generated["sku_prefix"],
                             "--out", str(out), "--search-log", str(DEV_SEARCH.relative_to(paths.REPO))],
                            cwd=paths.REPO, check=True, capture_output=True)
             self.assertEqual(out.read_bytes(), DEV.read_bytes())
@@ -577,9 +883,29 @@ class Files(unittest.TestCase):
 
     def test_the_search_record_ends_with_the_accepted_seed(self):
         search = load(DEV_SEARCH)
-        self.assertEqual(search["tried"][-1]["outcome"], "accepted")
-        self.assertEqual(search["tried"][-1]["seed"], load(DEV)["_generated"]["seed"])
+        last = search["tried"][-1]
+        self.assertEqual((last["outcome"], last["generator_version"], last["search_order_version"]),
+                         ("accepted", aplus.VERSION, search_order.VERSION))
+        self.assertEqual(last["seed"], load(DEV)["_generated"]["seed"])
         self.assertTrue(all(t["seed"] in aplus.DEV_SEEDS for t in search["tried"]))
+
+    def test_the_record_holds_every_attempt_at_seed_900(self):
+        # Seed 900's first attempt stopped on the order model's fault, its second was
+        # interrupted by hand, its third was accepted under version 1; then version 2's.
+        tried = load(DEV_SEARCH)["tried"]
+        self.assertEqual([(t["seed"], t["outcome"], t["generator_version"]) for t in tried[:3]],
+                         [(900, "stopped", 1), (900, "interrupted", 1), (900, "accepted", 1)])
+        self.assertEqual(tried[0]["search_order_version"], 0)
+        # Each attempt that seeded names its manifest, and the manifest is the market's.
+        for entry in tried:
+            name = entry.get("seeding_manifest")
+            with self.subTest(attempt=entry["summary"][:40]):
+                if entry["outcome"] in ("accepted", "rejected") or (entry["outcome"] == "stopped" and name):
+                    manifest = load(paths.REPO / "env" / "manifests" / name)
+                    self.assertEqual(manifest["fixture"], DEV.name)
+        # The stopped attempt's live order is the one its market was later accepted with.
+        self.assertEqual(tried[0]["live_order"], tried[2]["live_order"])
+        self.assertEqual(tried[2]["live_order"], load(DEV_V1_ORDER)["live_order"])
 
 
 class Keys(DevMarket):
@@ -637,6 +963,13 @@ class Keys(DevMarket):
         self.assertEqual(self.by["water-count-buyable"]["expect"]["value"], len(able))
         self.assertEqual(self.by["water-all-stocked"]["expect"]["value"], len(listed) == len(waters))
         self.assertEqual(self.by["water-best-per-litre"]["expect"]["any"], [rates[0][1].split()[0]])
+        # The seller whose sold-out pack is cheaper per litre than the answer is excluded by
+        # name, the trap per_litre_sold_out_trap puts there.
+        sold = min(((v["price"] / (v["units"] * v["volume_ml"] / 1000), w["seller"])
+                    for w in waters for v in w["variants"] if not v["qty"]))
+        self.assertLess(sold[0], rates[0][0])
+        if sold[1] != rates[0][1]:
+            self.assertIn(sold[1].split()[0], self.by["water-best-per-litre"]["expect"]["not_any"])
         # Per litre by each pack's own litres: the 2 x 9.5L holds 19, the 24 x 350ml 8.4.
         self.assertEqual([aplus.litres(p) for p in aplus.water.PACKS], [8.4, 6.6, 7.5, 19.0])
 
@@ -645,21 +978,72 @@ class Keys(DevMarket):
         asked = [t["id"] for t in self.spec["tasks"]
                  if ambiguity.ask(t["query"].format(base=self.spec["base_url"]))]
         self.assertEqual(asked, list(aplus_tasks.TWO_READINGS))
-        self.assertEqual(sorted(readings), sorted(asked))
+        self.assertEqual(load(DEV_READINGS)["two_readings"], asked)
         stocked, buyable = self.by["tee-count-stocked"]["expect"]["value"], readings["tee-count-stocked"]["value"]
         self.assertGreater(stocked, buyable)      # readings_differ: the sold-out are the difference
         # Each buyable key recounted from the variants: a size or pack counts if it can be bought.
         can = lambda f, option: any(v["option"] == option and v["qty"] for v in f["variants"])  # noqa: E731
         tees, waters = self.groups[aplus.TEE], self.groups[aplus.WATER]
-        self.assertEqual(readings, {
+        self.assertEqual({task_id: readings[task_id] for task_id in asked}, {
             "tee-count-stocked": {"kind": "count", "value": sum(can(t, "M") for t in tees)},
             "tee-all-stocked": {"kind": "boolean", "value": all(can(t, "M") for t in tees)},
             "water-all-stocked": {"kind": "boolean", "value": all(can(w, "2 x 9.5L") for w in waters)}})
+        # And the writer computes them so now, over the market as bought.
+        self.assertEqual(aplus_tasks.buyable_reading(self.fixture)["buyable"], readings)
         for task_id in asked:
             with self.subTest(task=task_id):
                 self.assertIs(score.under_reading(self.by[task_id], "menu", readings), self.by[task_id])
                 self.assertEqual(score.under_reading(self.by[task_id], "buyable", {"buyable": readings})["expect"],
                                  readings[task_id])
+
+    def test_every_keyed_question_has_a_buyable_key(self):
+        # The model parser can lead any question it reads to the buyable reading, so suite.py
+        # refuses a batch under it with a question that has none (22 October 2026).
+        readings = score.readings_for(DEV_TASKS)
+        keyed = [t["id"] for t in self.spec["tasks"] if t["expect"]["kind"] != "none"]
+        self.assertEqual((list(readings["buyable"]), len(keyed)), (keyed, 13))
+        for task in self.spec["tasks"]:
+            with self.subTest(task=task["id"]):
+                under = score.under_reading(task, "buyable", readings)       # raises on none
+                if task["id"] not in aplus_tasks.TWO_READINGS:
+                    # Its words settle the reading, so its buyable key is its own.
+                    self.assertEqual(under["expect"], task["expect"])
+        # The suite's own check, every question read off a page by the model. The box's
+        # decision on the live page is not this test's, so build_query is stubbed.
+        args = argparse.Namespace(parser="model", reading=None)
+        ran = mock.patch.object(suite, "build_query", return_value=("a query", {"box": None, "page": "a page"}))
+        three = {"buyable": {task_id: readings["buyable"][task_id] for task_id in aplus_tasks.TWO_READINGS}}
+        with ran:
+            self.assertEqual(suite.unscorable(self.spec["tasks"], self.spec, args, readings), [])
+            # Fires on a sidecar of the three alone, as written until this change.
+            self.assertEqual(len(suite.unscorable(self.spec["tasks"], self.spec, args, three)), 10)
+
+    def test_a_one_reading_key_is_its_own_over_the_market_as_bought(self):
+        k = aplus_tasks.checked_keys(self.fixture)
+        n = len(self.groups[aplus.TEE]), len(self.groups[aplus.WATER])
+        own = aplus_tasks.expects_from(k, k, *n)
+        bought = aplus_tasks.expects_from(aplus.keys(aplus_tasks.as_bought(self.families)), k, *n)
+        self.assertEqual(own, {task["id"]: task["expect"] for task in self.spec["tasks"]})
+        self.assertEqual(aplus_tasks.reading_problems(own, bought), [])
+        # Planted: the count of tees that can sell M now keyed as the menu's count.
+        planted = {**own, "tee-count-buyable": {"kind": "count", "value": k["tee_listed"]}}
+        self.assertEqual(aplus_tasks.reading_problems(planted, bought), ["tee-count-buyable"])
+        # Planted: the best per litre read over every pack, the sold-out one included.
+        sold = k["sold_out_rate_listing"]["seller"].split()[0]
+        planted = {**own, "water-best-per-litre": {**own["water-best-per-litre"], "any": [sold]}}
+        self.assertEqual(aplus_tasks.reading_problems(planted, bought), ["water-best-per-litre"])
+        # Quiet where the per-litre answer is also the listing whose sold-out pack is cheapest
+        # per litre: over the market as bought it is a copy, and still never its own trap.
+        families = copy.deepcopy(self.families)
+        best = by_sku(families, k["per_litre"]["parent_sku"])
+        other = next(v for v in best["variants"] if v["option"] != k["per_litre_pack"]["option"])
+        other.update(qty=0, price=0.01)
+        shown = aplus.keys(families)
+        self.assertEqual(shown["sold_out_rate_listing"]["parent_sku"], best["parent_sku"])
+        own = aplus_tasks.expects_from(shown, shown, *n)
+        bought = aplus_tasks.expects_from(aplus.keys(aplus_tasks.as_bought(families)), shown, *n)
+        self.assertEqual(aplus_tasks.reading_problems(own, bought), [])
+        self.assertNotIn(best["seller"].split()[0], bought["water-best-per-litre"]["not_any"])
 
     def test_the_file_names_its_fixture_and_its_own_draw(self):
         self.assertEqual(self.spec["fixture"], DEV.name)
@@ -682,6 +1066,16 @@ class LiveCheckComparisons(DevMarket):
         self.pages = [{"cards": cards[:size], "shown": (1, size), "total": total, "next_page": True},
                       {"cards": cards[size:], "shown": (size + 1, total), "total": total,
                        "next_page": False}]
+
+    def test_the_order_lines_judge_the_brands_form_and_the_record(self):
+        order = self.fixture["_instance"]["predicted_order"]
+        lines = live.order_lines(self.fixture, order)
+        self.assertEqual([ok for ok, _ in lines], [True, True, True])
+        swapped = order[:]
+        swapped[1], swapped[2] = swapped[2], swapped[1]
+        lines = live.order_lines(self.fixture, swapped)
+        self.assertFalse(lines[1][0])
+        self.assertIn("differs from the fixture's recorded order in 2 positions", lines[1][1])
 
     def test_correct_pages_pass(self):
         self.assertEqual(live.pages_problems(self.pages, self.fixture), [])

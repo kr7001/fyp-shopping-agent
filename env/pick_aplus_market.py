@@ -15,11 +15,16 @@ The brand rule is the first protocol's (docs/content/claim-protocol.md, "Brand r
 shop's search returns nothing for the brand, no product's name holds it, and it is no word of
 any seller name the generator can draw. Here also no seller's first word is inside it, since
 the scorer matches a first word as a substring (`generate_aplus.names_distinct`). How the
-shop's analyzer reads it, as one form or two, is printed: the generator's page rules hold
-under either.
+shop's analyzer reads it, as one form or two, is measured at the start of a search and passed
+to the generator (`--brand-forms`), whose page rules and recorded order are then the brand's
+own, and the live order must be one the model predicts for that form.
 
-Development uses its own brand, prefix and fixture, and seeds 900 to 999 only. Nothing here
-costs money, only time: a cycle is several minutes, most of it reindexing.
+Development uses its own brand, prefix and fixture, and seeds 900 to 999 only. The claim
+(`--claim`) refuses until docs/content/claim2-protocol.md no longer says DRAFT, refuses
+development's prefix and fixture, and tries seeds only in the order its record allows: 1000
+first, each next one after a rejection, the same one again after a stop. Every attempt is
+written to the record as it ends. Nothing here costs money, only time: a cycle is several
+minutes, most of it reindexing.
 
     python3 env/pick_aplus_market.py --check-brands Larchmere Quenby
     python3 env/pick_aplus_market.py --brand <Brand> --sku-prefix IGR-DEV \\
@@ -51,6 +56,9 @@ import seed_variants  # noqa: E402  (expand_skus, the seeder's own child SKUs)
 # down: Thornwood, Ashcombe, Rivenhall, Calderwood, and the hand-written families.
 EARLIER_PREFIXES = ("IGR-APP", "IGR-CLM", "IGR-RVN", "IGR-CAL", "IGR-WATER", "IGR-TEE",
                     "IGR-COFFEE")
+MANIFESTS = HERE / "manifests"
+# The seeding manifest of the attempt under way, so a stop after seeding can name it too.
+SEEDING: dict = {"manifest": None}
 
 
 @dataclasses.dataclass(frozen=True)
@@ -61,6 +69,13 @@ class Market:
     tees: int = aplus.TEE_LISTINGS
     waters: int = aplus.WATER_LISTINGS
     claim: bool = False
+    two_forms: bool = False         # how the shop's analyzer reads the brand, measured live
+
+
+def versions() -> dict:
+    """The code an attempt was made with, recorded in every attempt (task E, 22 October 2026),
+    so a record spanning a change of rules says which rules each seed was held to."""
+    return {"generator_version": aplus.VERSION, "search_order_version": aplus.search_order.VERSION}
 
 
 def prefix_refused(prefix: str) -> str | None:
@@ -101,11 +116,16 @@ def teardown(market: Market) -> str:
     return f"removed the {len(fixture['families'])} listings of {market.fixture.name}"
 
 
-def generate_command(seed: int, market: Market) -> list[str]:
+def generate_command(seed: int, market: Market, log: pathlib.Path | None = None) -> list[str]:
+    """The generator's command for a seed. The claim's always names its record, which decides
+    whether the seed may be drawn (`generate_aplus.claim_record_problem`)."""
     command = [sys.executable, "env/generate_aplus.py", "--seed", str(seed), "--brand",
-               market.brand, "--sku-prefix", market.sku_prefix, "--tees", str(market.tees),
-               "--waters", str(market.waters), "--out", str(market.fixture)]
-    return command + (["--claim"] if market.claim else [])
+               market.brand, "--brand-forms", "2" if market.two_forms else "1", "--sku-prefix",
+               market.sku_prefix, "--tees", str(market.tees), "--waters", str(market.waters),
+               "--out", str(market.fixture)]
+    if market.claim:
+        command += ["--claim", "--search-log", str(log)]
+    return command
 
 
 def fixture_skus(fixture: dict) -> set[str]:
@@ -136,16 +156,38 @@ def live_problems(fixture: dict, sku_prefix: str) -> tuple[list[str], list[str]]
     return problems, orders["gated"]
 
 
-def attempt(seed: int, market: Market) -> dict:
+def order_match(families: list[dict], order: list[str], two_forms: bool) -> tuple[str | None, str | None]:
+    """Which of the model's orders for the brand's own form the live order is, by scenario
+    label, or why it is none: an order the model gives only for the other form means the form
+    measured is wrong; one it gives for neither, that the model is wrong for this shop. Kept
+    apart from `attempt` so a test can ask it without the shop."""
+    predicted = aplus.predicted_orders(families, two_forms)
+    matched = next((label for label, o in predicted.items() if o == order), None)
+    if matched is not None:
+        return matched, None
+    other = aplus.predicted_orders(families, not two_forms)
+    wrong_form = next((label for label, o in other.items() if o == order), None)
+    if wrong_form:
+        return None, (f"the live order is the model's for the other form ({wrong_form}), not the "
+                      f"brand's, so the form measured is wrong")
+    return None, "the live order is none the model predicts, so the order model is wrong for this shop"
+
+
+def attempt(seed: int, market: Market, log: pathlib.Path | None = None) -> dict:
     """One seed: remove the previous candidate, draw this one, seed it, reindex, check the
     shop holds exactly it, and read the live pages. Returns the record of the attempt; raises
     Stop when the shop or the model, not the seed, is at fault."""
+    SEEDING["manifest"] = None
     teardown(market)
-    if pick.run(generate_command(seed, market)):
-        return {"seed": seed, "outcome": "no instance",
+    if pick.run(generate_command(seed, market, log)):
+        return {"seed": seed, **versions(), "outcome": "no instance",
                 "summary": f"seed {seed}: no market satisfied every rule"}
+    before = {p.name for p in MANIFESTS.glob("*-gated-pricing.json")}
     pick.run_or_stop([sys.executable, "env/seed_variants.py", "seed", "--fixture",
                       market.fixture.name], f"seed {seed}: seeding failed")
+    # The manifest the seeder wrote for this attempt, named in its record (and in a stop's).
+    written = sorted({p.name for p in MANIFESTS.glob("*-gated-pricing.json")} - before)
+    SEEDING["manifest"] = written[-1] if written else None
     pick.run_or_stop([sys.executable, "env/seed_variants.py", "verify", "--fixture",
                       market.fixture.name], f"seed {seed}: the seeded products differ from the fixture")
     if pick.elasticsearch_status() is None:
@@ -156,11 +198,9 @@ def attempt(seed: int, market: Market) -> dict:
     if problems:
         raise pick.Stop(f"seed {seed}: the shop does not hold exactly this candidate: "
                         + "; ".join(problems))
-    predicted = aplus.predicted_orders(fixture["families"])
-    matched = next((label for label, o in predicted.items() if o == order), None)
-    if matched is None:
-        raise pick.Stop(f"seed {seed}: the live order is none of the predicted ones, so the order "
-                        f"model is wrong for this shop. Live: {order}")
+    matched, problem = order_match(fixture["families"], order, market.two_forms)
+    if problem:
+        raise pick.Stop(f"seed {seed}: {problem}. Live: {order}")
     broken = aplus.page_problems(fixture["families"], order)
     attempts = fixture["_generated"]["attempts"]
     cards = {question: [order.index(l["parent_sku"]) + 1 for l in listings]
@@ -168,10 +208,12 @@ def attempt(seed: int, market: Market) -> dict:
     ok = not broken
     # The live order itself is kept, so the order model can be checked against it offline:
     # this market's first seed is the case that showed the model wrong (`search_order.py`).
-    return {"seed": seed, "attempts": attempts, "outcome": "accepted" if ok else "rejected",
+    return {"seed": seed, **versions(), "brand_forms": 2 if market.two_forms else 1,
+            "attempts": attempts, "outcome": "accepted" if ok else "rejected",
+            "seeding_manifest": SEEDING["manifest"],
             "live_order": order, "live_order_is": matched, "broken": broken, "answer_cards": cards,
-            "summary": (f"seed {seed}, tee draw {attempts['tee']} and water draw {attempts['water']} "
-                        f"by every rule on the predicted pages: "
+            "summary": (f"seed {seed} (generator v{aplus.VERSION}), tee draw {attempts['tee']} and "
+                        f"water draw {attempts['water']} by every rule on the predicted pages: "
                         f"{'accepted' if ok else 'rejected'} on the live pages, whose order is the "
                         f"predicted one ({matched})"
                         + (f"; broken there: {', '.join(broken)}" if broken else ""))}
@@ -180,7 +222,10 @@ def attempt(seed: int, market: Market) -> dict:
 def earlier_tries(market: Market, log: pathlib.Path | None) -> list[dict]:
     """The seeds a search record already holds for this market, so a search continued in a
     later run records every seed tried, in order, stops included. Refused when the record is
-    another market's, or already ends with an accepted seed."""
+    another market's, or already ends with a seed accepted under the code that runs now. A
+    development record accepted under an earlier generator or order model continues, since a
+    change of rules draws the market again (task E, 22 October 2026); a claim record never
+    does once it accepts."""
     if log is None or not log.exists():
         return []
     search = json.loads(log.read_text())
@@ -188,8 +233,11 @@ def earlier_tries(market: Market, log: pathlib.Path | None) -> list[dict]:
         raise SystemExit(f"{log.name} is the search for {search.get('brand')} "
                          f"{search.get('sku_prefix')}, not {market.brand} {market.sku_prefix}")
     tried = search.get("tried", [])
-    if tried and tried[-1].get("outcome") == "accepted":
-        raise SystemExit(f"{log.name} already ends with seed {tried[-1]['seed']} accepted")
+    last = tried[-1] if tried else {}
+    now = versions()
+    if last.get("outcome") == "accepted" and (
+            market.claim or all(last.get(key) == value for key, value in now.items())):
+        raise SystemExit(f"{log.name} already ends with seed {last['seed']} accepted")
     return tried
 
 
@@ -206,7 +254,10 @@ def accept(market: Market, tried: list[dict], log: pathlib.Path) -> None:
     market is the one that was seeded."""
     seeded = json.loads(market.fixture.read_text())
     write_log(market, tried, log)
-    if pick.run(generate_command(tried[-1]["seed"], market) + ["--search-log", str(log)]):
+    command = generate_command(tried[-1]["seed"], market, log)
+    if not market.claim:
+        command += ["--search-log", str(log)]
+    if pick.run(command):
         raise pick.Stop("the accepted fixture could not be written again with its search record")
     final = json.loads(market.fixture.read_text())
     if (final["families"], final["_instance"]) != (seeded["families"], seeded["_instance"]):
@@ -302,18 +353,33 @@ def main() -> int:
     if refused:
         parser.error(refused)
     for seed in args.seeds:
-        why = aplus.refused(seed, args.claim, None)
+        why = aplus.refused(seed, args.claim, fixture_path, args.sku_prefix)
         if why:
             parser.error(why)
+    if args.claim and args.search_log is None:
+        parser.error("--claim needs --search-log: the claim's record decides which seed comes next")
+    # The brand's analyzer form, measured here and passed to the generator, so the page rules
+    # and the recorded order are the brand's own (task E).
+    forms = analyzer_forms(args.brand)
+    if forms not in (1, 2):
+        parser.error(f"the shop's analyzer gave {args.brand} {forms} forms; it is checked as 1 or 2")
     market = Market(fixture=fixture_path, brand=args.brand, sku_prefix=args.sku_prefix,
-                    tees=args.tees, waters=args.waters, claim=args.claim)
+                    tees=args.tees, waters=args.waters, claim=args.claim, two_forms=forms == 2)
     log = args.search_log.resolve() if args.search_log else None
     tried = earlier_tries(market, log)
     seed = None
     try:
         for seed in args.seeds:
-            entry = attempt(seed, market)
+            # The claim tries seeds only in the record's order: the first from 1000 that passes.
+            problem = aplus.claim_record_problem(tried, seed, False) if market.claim else None
+            if problem:
+                raise SystemExit(f"refusing: {problem}")
+            entry = attempt(seed, market, log)
             tried.append(entry)
+            # Written after every attempt, so the record survives an interruption, and the
+            # generator reads the claim's order from it.
+            if log:
+                write_log(market, tried, log)
             print(("KEPT  " if entry["outcome"] == "accepted" else "reject") + "  "
                   + entry["summary"], flush=True)
             if entry["outcome"] == "accepted":
@@ -324,15 +390,14 @@ def main() -> int:
                 return 0
     except pick.Stop as stop:
         # A stop is a seed tried too: recorded, so the next run continues the same record.
-        tried.append({"seed": seed, "outcome": "stopped",
+        tried.append({"seed": seed, **versions(), "outcome": "stopped",
+                      "seeding_manifest": SEEDING["manifest"],
                       "summary": f"seed {seed}: stopped, {stop}"[:600]})
         if log:
             write_log(market, tried, log)
         print("\nstopped: " + textwrap.fill(str(stop), 100), flush=True)
         print("seeds tried: " + json.dumps([t["summary"] for t in tried], indent=2))
         return 2
-    if log:
-        write_log(market, tried, log)
     print("\nno seed held every rule on the live pages. Try more seeds.")
     return 1
 

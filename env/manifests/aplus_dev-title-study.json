@@ -1,0 +1,6192 @@
+{
+  "_about": [
+    "Written by env/aplus_title_study.py. Development seeds drawn, never seeded,",
+    "to see whether the rules select answer listings by their titles."
+  ],
+  "brand": "Larchmere",
+  "brand_forms": 2,
+  "seeds": [
+    901,
+    902,
+    903,
+    904,
+    905,
+    906,
+    907,
+    908,
+    909,
+    910,
+    911,
+    912,
+    913,
+    914,
+    915,
+    916,
+    917,
+    918,
+    919,
+    920
+  ],
+  "summary": {
+    "tee": {
+      "phrasing": {
+        "answers": {
+          "Heavyweight Cotton Crew Neck Tee": 0.433,
+          "Heavyweight Cotton Tee": 0.183,
+          "Heavyweight Cotton Tee, Unisex": 0.383
+        },
+        "all": {
+          "Heavyweight Cotton Crew Neck Tee": 0.369,
+          "Heavyweight Cotton Tee": 0.29,
+          "Heavyweight Cotton Tee, Unisex": 0.34
+        }
+      },
+      "seller_words": {
+        "answers": {
+          "2": 0.267,
+          "3": 0.267,
+          "4": 0.467
+        },
+        "all": {
+          "2": 0.288,
+          "3": 0.302,
+          "4": 0.41
+        }
+      },
+      "options": {
+        "answers": {
+          "2": 0.117,
+          "3": 0.417,
+          "4": 0.467
+        },
+        "all": {
+          "2": 0.183,
+          "3": 0.424,
+          "4": 0.393
+        }
+      },
+      "answer_listings": 60
+    },
+    "water": {
+      "phrasing": {
+        "answers": {
+          "Natural Spring Water, Still": 0.375,
+          "Spring Water": 0.225,
+          "Still Spring Water": 0.4
+        },
+        "all": {
+          "Natural Spring Water, Still": 0.279,
+          "Spring Water": 0.376,
+          "Still Spring Water": 0.345
+        }
+      },
+      "seller_words": {
+        "answers": {
+          "2": 0.25,
+          "3": 0.325,
+          "4": 0.425
+        },
+        "all": {
+          "2": 0.362,
+          "3": 0.31,
+          "4": 0.329
+        }
+      },
+      "options": {
+        "answers": {
+          "2": 0.2,
+          "3": 0.5,
+          "4": 0.3
+        },
+        "all": {
+          "2": 0.138,
+          "3": 0.412,
+          "4": 0.45
+        }
+      },
+      "answer_listings": 40
+    }
+  },
+  "markets": [
+    {
+      "seed": 901,
+      "attempts": {
+        "tee": 8836,
+        "water": 69758
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-28",
+            "card": 22,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-28",
+            "card": 22,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-28",
+            "card": 22,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-28",
+            "card": 22,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "sku": "IGR-DEV-08",
+            "card": 19,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "sku": "IGR-DEV-38",
+            "card": 14,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-30",
+            "card": 42,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-30",
+            "card": 42,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-19",
+            "card": 6,
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          }
+        ]
+      }
+    },
+    {
+      "seed": 902,
+      "attempts": {
+        "tee": 2369,
+        "water": 90337
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-17",
+            "card": 37,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-17",
+            "card": 37,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-17",
+            "card": 37,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-17",
+            "card": 37,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "sku": "IGR-DEV-40",
+            "card": 11,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-07",
+            "card": 8,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-21",
+            "card": 26,
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-21",
+            "card": 26,
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-09",
+            "card": 40,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 2
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          }
+        ]
+      }
+    },
+    {
+      "seed": 903,
+      "attempts": {
+        "tee": 8062,
+        "water": 3345
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-17",
+            "card": 39,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-17",
+            "card": 39,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-17",
+            "card": 39,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-17",
+            "card": 39,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-12",
+            "card": 7,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-41",
+            "card": 10,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-11",
+            "card": 36,
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-11",
+            "card": 36,
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-33",
+            "card": 34,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          }
+        ]
+      }
+    },
+    {
+      "seed": 904,
+      "attempts": {
+        "tee": 4383,
+        "water": 17025
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-16",
+            "card": 34,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-16",
+            "card": 34,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-16",
+            "card": 34,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-16",
+            "card": 34,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "sku": "IGR-DEV-39",
+            "card": 35,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "sku": "IGR-DEV-28",
+            "card": 7,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-18",
+            "card": 8,
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-18",
+            "card": 8,
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-38",
+            "card": 38,
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          }
+        ]
+      }
+    },
+    {
+      "seed": 905,
+      "attempts": {
+        "tee": 2124,
+        "water": 23839
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-40",
+            "card": 33,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 2
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-40",
+            "card": 33,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 2
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-40",
+            "card": 33,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 2
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-40",
+            "card": 33,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "sku": "IGR-DEV-32",
+            "card": 39,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "sku": "IGR-DEV-35",
+            "card": 11,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-23",
+            "card": 5,
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-23",
+            "card": 5,
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-07",
+            "card": 28,
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          }
+        ]
+      }
+    },
+    {
+      "seed": 906,
+      "attempts": {
+        "tee": 5699,
+        "water": 22097
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-12",
+            "card": 36,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-12",
+            "card": 36,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-12",
+            "card": 36,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-12",
+            "card": 36,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-30",
+            "card": 38,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "sku": "IGR-DEV-08",
+            "card": 6,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-15",
+            "card": 8,
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-15",
+            "card": 8,
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-20",
+            "card": 9,
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 4
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          }
+        ]
+      }
+    },
+    {
+      "seed": 907,
+      "attempts": {
+        "tee": 208,
+        "water": 94918
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-01",
+            "card": 18,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 2
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-01",
+            "card": 18,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 2
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-01",
+            "card": 18,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 2
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-01",
+            "card": 18,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "sku": "IGR-DEV-18",
+            "card": 11,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-37",
+            "card": 28,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-19",
+            "card": 40,
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 2
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-19",
+            "card": 40,
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 2
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-16",
+            "card": 13,
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          }
+        ]
+      }
+    },
+    {
+      "seed": 908,
+      "attempts": {
+        "tee": 5235,
+        "water": 29929
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-24",
+            "card": 22,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-24",
+            "card": 22,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-24",
+            "card": 22,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-24",
+            "card": 22,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-22",
+            "card": 38,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-36",
+            "card": 8,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 3
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-41",
+            "card": 34,
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-41",
+            "card": 34,
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-25",
+            "card": 36,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          }
+        ]
+      }
+    },
+    {
+      "seed": 909,
+      "attempts": {
+        "tee": 1779,
+        "water": 4764
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-02",
+            "card": 9,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-02",
+            "card": 9,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-02",
+            "card": 9,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-02",
+            "card": 9,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "sku": "IGR-DEV-11",
+            "card": 24,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "sku": "IGR-DEV-39",
+            "card": 15,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-42",
+            "card": 40,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 2
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-42",
+            "card": 40,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 2
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-01",
+            "card": 17,
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 2
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 2
+          }
+        ]
+      }
+    },
+    {
+      "seed": 910,
+      "attempts": {
+        "tee": 2294,
+        "water": 33134
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-33",
+            "card": 17,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-33",
+            "card": 17,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-33",
+            "card": 17,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-33",
+            "card": 17,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "sku": "IGR-DEV-02",
+            "card": 39,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "sku": "IGR-DEV-03",
+            "card": 10,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-42",
+            "card": 33,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-42",
+            "card": 33,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-07",
+            "card": 22,
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          }
+        ]
+      }
+    },
+    {
+      "seed": 911,
+      "attempts": {
+        "tee": 4531,
+        "water": 15221
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-22",
+            "card": 26,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-22",
+            "card": 26,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-22",
+            "card": 26,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-22",
+            "card": 26,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "sku": "IGR-DEV-05",
+            "card": 23,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "sku": "IGR-DEV-03",
+            "card": 17,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-30",
+            "card": 36,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-30",
+            "card": 36,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-16",
+            "card": 39,
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 2
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          }
+        ]
+      }
+    },
+    {
+      "seed": 912,
+      "attempts": {
+        "tee": 9746,
+        "water": 111097
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-24",
+            "card": 12,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-24",
+            "card": 12,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-24",
+            "card": 12,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-24",
+            "card": 12,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-30",
+            "card": 38,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "sku": "IGR-DEV-09",
+            "card": 37,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-28",
+            "card": 25,
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-28",
+            "card": 25,
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-26",
+            "card": 34,
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 2
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          }
+        ]
+      }
+    },
+    {
+      "seed": 913,
+      "attempts": {
+        "tee": 6224,
+        "water": 1116
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-37",
+            "card": 15,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-37",
+            "card": 15,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-37",
+            "card": 15,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-37",
+            "card": 15,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-04",
+            "card": 38,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "sku": "IGR-DEV-29",
+            "card": 26,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-35",
+            "card": 6,
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-35",
+            "card": 6,
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-33",
+            "card": 36,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 2
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          }
+        ]
+      }
+    },
+    {
+      "seed": 914,
+      "attempts": {
+        "tee": 2121,
+        "water": 73918
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-36",
+            "card": 32,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-36",
+            "card": 32,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-36",
+            "card": 32,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-36",
+            "card": 32,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "sku": "IGR-DEV-31",
+            "card": 8,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-08",
+            "card": 6,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-09",
+            "card": 40,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-09",
+            "card": 40,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-02",
+            "card": 23,
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          }
+        ]
+      }
+    },
+    {
+      "seed": 915,
+      "attempts": {
+        "tee": 7150,
+        "water": 80581
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-10",
+            "card": 9,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-10",
+            "card": 9,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-10",
+            "card": 9,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-10",
+            "card": 9,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-11",
+            "card": 10,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-06",
+            "card": 27,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-17",
+            "card": 31,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-17",
+            "card": 31,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-39",
+            "card": 42,
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 2
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 2
+          }
+        ]
+      }
+    },
+    {
+      "seed": 916,
+      "attempts": {
+        "tee": 7959,
+        "water": 66404
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-34",
+            "card": 16,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-34",
+            "card": 16,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-34",
+            "card": 16,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-34",
+            "card": 16,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-10",
+            "card": 39,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-26",
+            "card": 29,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-32",
+            "card": 22,
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-32",
+            "card": 22,
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-20",
+            "card": 41,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 4
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          }
+        ]
+      }
+    },
+    {
+      "seed": 917,
+      "attempts": {
+        "tee": 16640,
+        "water": 32592
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-23",
+            "card": 33,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-23",
+            "card": 33,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-23",
+            "card": 33,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-23",
+            "card": 33,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "sku": "IGR-DEV-08",
+            "card": 14,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-21",
+            "card": 39,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-36",
+            "card": 6,
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-36",
+            "card": 6,
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-22",
+            "card": 5,
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 4
+          }
+        ]
+      }
+    },
+    {
+      "seed": 918,
+      "attempts": {
+        "tee": 3940,
+        "water": 58635
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-39",
+            "card": 28,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-39",
+            "card": 28,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-39",
+            "card": 28,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-39",
+            "card": 28,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "sku": "IGR-DEV-19",
+            "card": 10,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "sku": "IGR-DEV-04",
+            "card": 29,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-38",
+            "card": 36,
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-38",
+            "card": 36,
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-25",
+            "card": 42,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          }
+        ]
+      }
+    },
+    {
+      "seed": 919,
+      "attempts": {
+        "tee": 14363,
+        "water": 71553
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-23",
+            "card": 38,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-23",
+            "card": 38,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-23",
+            "card": 38,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-23",
+            "card": 38,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-14",
+            "card": 27,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "sku": "IGR-DEV-33",
+            "card": 16,
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-21",
+            "card": 42,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-21",
+            "card": 42,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-09",
+            "card": 21,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 3
+          }
+        ]
+      }
+    },
+    {
+      "seed": 920,
+      "attempts": {
+        "tee": 41505,
+        "water": 15848
+      },
+      "generator_version": 2,
+      "search_order_version": 1,
+      "answers": {
+        "tee-target-price": [
+          {
+            "sku": "IGR-DEV-37",
+            "card": 37,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "tee-cheapest-target": [
+          {
+            "sku": "IGR-DEV-37",
+            "card": 37,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "tee-exists-under": [
+          {
+            "sku": "IGR-DEV-37",
+            "card": 37,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          }
+        ],
+        "tee-top-3": [
+          {
+            "sku": "IGR-DEV-37",
+            "card": 37,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "sku": "IGR-DEV-06",
+            "card": 17,
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "sku": "IGR-DEV-38",
+            "card": 30,
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "water-target-price": [
+          {
+            "sku": "IGR-DEV-30",
+            "card": 40,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "water-cheapest-target": [
+          {
+            "sku": "IGR-DEV-30",
+            "card": 40,
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          }
+        ],
+        "water-best-per-litre": [
+          {
+            "sku": "IGR-DEV-29",
+            "card": 21,
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 2
+          }
+        ]
+      },
+      "all": {
+        "tee": [
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 2,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Crew Neck Tee",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee, Unisex",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Heavyweight Cotton Tee",
+            "seller_words": 4,
+            "options": 2
+          }
+        ],
+        "water": [
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 3,
+            "options": 2
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 2
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 2
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 4,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 3,
+            "options": 4
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Spring Water",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Natural Spring Water, Still",
+            "seller_words": 2,
+            "options": 3
+          },
+          {
+            "phrasing": "Still Spring Water",
+            "seller_words": 4,
+            "options": 3
+          }
+        ]
+      }
+    }
+  ]
+}

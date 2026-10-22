@@ -5,11 +5,74 @@
   "tried": [
     {
       "seed": 900,
+      "generator_version": 1,
+      "search_order_version": 0,
+      "outcome": "stopped",
+      "seeding_manifest": "20261022T184458-gated-pricing.json",
+      "live_order": [
+        "IGR-DEV-15",
+        "IGR-DEV-18",
+        "IGR-DEV-29",
+        "IGR-DEV-31",
+        "IGR-DEV-39",
+        "IGR-DEV-06",
+        "IGR-DEV-16",
+        "IGR-DEV-03",
+        "IGR-DEV-10",
+        "IGR-DEV-12",
+        "IGR-DEV-22",
+        "IGR-DEV-41",
+        "IGR-DEV-17",
+        "IGR-DEV-21",
+        "IGR-DEV-23",
+        "IGR-DEV-04",
+        "IGR-DEV-05",
+        "IGR-DEV-35",
+        "IGR-DEV-19",
+        "IGR-DEV-37",
+        "IGR-DEV-40",
+        "IGR-DEV-13",
+        "IGR-DEV-14",
+        "IGR-DEV-24",
+        "IGR-DEV-27",
+        "IGR-DEV-11",
+        "IGR-DEV-20",
+        "IGR-DEV-38",
+        "IGR-DEV-33",
+        "IGR-DEV-32",
+        "IGR-DEV-02",
+        "IGR-DEV-07",
+        "IGR-DEV-28",
+        "IGR-DEV-42",
+        "IGR-DEV-01",
+        "IGR-DEV-09",
+        "IGR-DEV-30",
+        "IGR-DEV-34",
+        "IGR-DEV-25",
+        "IGR-DEV-26",
+        "IGR-DEV-36",
+        "IGR-DEV-08"
+      ],
+      "summary": "seed 900 (generator v1, the order model before its fix): stopped, the live order was none of the predicted ones, so the order model was wrong for this shop: it split a two-form brand's phrase prefix into both forms (env/search_order.py). Added to this record on 22 October 2026 from that run's own stop message and its seeding manifest, since the picker then wrote no record on a stop"
+    },
+    {
+      "seed": 900,
+      "generator_version": 1,
+      "search_order_version": 1,
+      "outcome": "interrupted",
+      "summary": "seed 900 (generator v1): the same 42 listings drawn with the order model fixed; seeding interrupted by hand, before any check, to have the picker record each attempt's live order. No seeding manifest was written. Added to this record on 22 October 2026"
+    },
+    {
+      "seed": 900,
+      "generator_version": 1,
+      "search_order_version": 1,
+      "brand_forms": 2,
       "attempts": {
         "tee": 7022,
         "water": 1294
       },
       "outcome": "accepted",
+      "seeding_manifest": "20261022T190246-gated-pricing.json",
       "live_order": [
         "IGR-DEV-15",
         "IGR-DEV-18",
@@ -82,6 +145,90 @@
         ]
       },
       "summary": "seed 900, tee draw 7022 and water draw 1294 by every rule on the predicted pages: accepted on the live pages, whose order is the predicted one (two forms, average lengths x1.0)"
+    },
+    {
+      "seed": 900,
+      "generator_version": 2,
+      "search_order_version": 1,
+      "brand_forms": 2,
+      "attempts": {
+        "tee": 9801,
+        "water": 50865
+      },
+      "outcome": "accepted",
+      "seeding_manifest": "20261022T210021-gated-pricing.json",
+      "live_order": [
+        "IGR-DEV-23",
+        "IGR-DEV-32",
+        "IGR-DEV-06",
+        "IGR-DEV-13",
+        "IGR-DEV-15",
+        "IGR-DEV-18",
+        "IGR-DEV-30",
+        "IGR-DEV-34",
+        "IGR-DEV-01",
+        "IGR-DEV-20",
+        "IGR-DEV-22",
+        "IGR-DEV-42",
+        "IGR-DEV-19",
+        "IGR-DEV-04",
+        "IGR-DEV-05",
+        "IGR-DEV-37",
+        "IGR-DEV-40",
+        "IGR-DEV-10",
+        "IGR-DEV-12",
+        "IGR-DEV-25",
+        "IGR-DEV-26",
+        "IGR-DEV-35",
+        "IGR-DEV-36",
+        "IGR-DEV-28",
+        "IGR-DEV-14",
+        "IGR-DEV-27",
+        "IGR-DEV-17",
+        "IGR-DEV-38",
+        "IGR-DEV-16",
+        "IGR-DEV-03",
+        "IGR-DEV-24",
+        "IGR-DEV-02",
+        "IGR-DEV-08",
+        "IGR-DEV-33",
+        "IGR-DEV-39",
+        "IGR-DEV-07",
+        "IGR-DEV-21",
+        "IGR-DEV-31",
+        "IGR-DEV-41",
+        "IGR-DEV-09",
+        "IGR-DEV-29",
+        "IGR-DEV-11"
+      ],
+      "live_order_is": "two forms, average lengths x1.0",
+      "broken": [],
+      "answer_cards": {
+        "tee-target-price": [
+          8
+        ],
+        "tee-cheapest-target": [
+          8
+        ],
+        "tee-exists-under": [
+          8
+        ],
+        "tee-top-3": [
+          8,
+          25,
+          39
+        ],
+        "water-target-price": [
+          37
+        ],
+        "water-cheapest-target": [
+          37
+        ],
+        "water-best-per-litre": [
+          33
+        ]
+      },
+      "summary": "seed 900 (generator v2), tee draw 9801 and water draw 50865 by every rule on the predicted pages: accepted on the live pages, whose order is the predicted one (two forms, average lengths x1.0)"
     }
   ]
 }

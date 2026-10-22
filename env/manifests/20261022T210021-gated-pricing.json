@@ -1,0 +1,1575 @@
+{
+  "seeded_at": "2026-10-22T21:00:21",
+  "base_url": "http://localhost:7770",
+  "fixture": "aplus_dev.json",
+  "parent_skus": [
+    "IGR-DEV-01",
+    "IGR-DEV-02",
+    "IGR-DEV-03",
+    "IGR-DEV-04",
+    "IGR-DEV-05",
+    "IGR-DEV-06",
+    "IGR-DEV-07",
+    "IGR-DEV-08",
+    "IGR-DEV-09",
+    "IGR-DEV-10",
+    "IGR-DEV-11",
+    "IGR-DEV-12",
+    "IGR-DEV-13",
+    "IGR-DEV-14",
+    "IGR-DEV-15",
+    "IGR-DEV-16",
+    "IGR-DEV-17",
+    "IGR-DEV-18",
+    "IGR-DEV-19",
+    "IGR-DEV-20",
+    "IGR-DEV-21",
+    "IGR-DEV-22",
+    "IGR-DEV-23",
+    "IGR-DEV-24",
+    "IGR-DEV-25",
+    "IGR-DEV-26",
+    "IGR-DEV-27",
+    "IGR-DEV-28",
+    "IGR-DEV-29",
+    "IGR-DEV-30",
+    "IGR-DEV-31",
+    "IGR-DEV-32",
+    "IGR-DEV-33",
+    "IGR-DEV-34",
+    "IGR-DEV-35",
+    "IGR-DEV-36",
+    "IGR-DEV-37",
+    "IGR-DEV-38",
+    "IGR-DEV-39",
+    "IGR-DEV-40",
+    "IGR-DEV-41",
+    "IGR-DEV-42"
+  ],
+  "child_skus": [
+    "IGR-DEV-01-24-X-350ML",
+    "IGR-DEV-01-12-X-550ML",
+    "IGR-DEV-01-6-X-1-25L",
+    "IGR-DEV-02-24-X-350ML",
+    "IGR-DEV-02-12-X-550ML",
+    "IGR-DEV-02-6-X-1-25L",
+    "IGR-DEV-02-2-X-9-5L",
+    "IGR-DEV-03-M",
+    "IGR-DEV-03-L",
+    "IGR-DEV-03-XL",
+    "IGR-DEV-04-24-X-350ML",
+    "IGR-DEV-04-12-X-550ML",
+    "IGR-DEV-04-6-X-1-25L",
+    "IGR-DEV-04-2-X-9-5L",
+    "IGR-DEV-05-S",
+    "IGR-DEV-05-M",
+    "IGR-DEV-05-L",
+    "IGR-DEV-05-XL",
+    "IGR-DEV-06-S",
+    "IGR-DEV-06-M",
+    "IGR-DEV-06-L",
+    "IGR-DEV-06-XL",
+    "IGR-DEV-07-12-X-550ML",
+    "IGR-DEV-07-6-X-1-25L",
+    "IGR-DEV-07-2-X-9-5L",
+    "IGR-DEV-08-24-X-350ML",
+    "IGR-DEV-08-12-X-550ML",
+    "IGR-DEV-08-6-X-1-25L",
+    "IGR-DEV-08-2-X-9-5L",
+    "IGR-DEV-09-12-X-550ML",
+    "IGR-DEV-09-6-X-1-25L",
+    "IGR-DEV-09-2-X-9-5L",
+    "IGR-DEV-10-12-X-550ML",
+    "IGR-DEV-10-6-X-1-25L",
+    "IGR-DEV-10-2-X-9-5L",
+    "IGR-DEV-11-24-X-350ML",
+    "IGR-DEV-11-2-X-9-5L",
+    "IGR-DEV-12-24-X-350ML",
+    "IGR-DEV-12-12-X-550ML",
+    "IGR-DEV-12-6-X-1-25L",
+    "IGR-DEV-13-S",
+    "IGR-DEV-13-M",
+    "IGR-DEV-13-L",
+    "IGR-DEV-13-XL",
+    "IGR-DEV-14-S",
+    "IGR-DEV-14-M",
+    "IGR-DEV-14-XL",
+    "IGR-DEV-15-S",
+    "IGR-DEV-15-M",
+    "IGR-DEV-15-L",
+    "IGR-DEV-15-XL",
+    "IGR-DEV-16-24-X-350ML",
+    "IGR-DEV-16-12-X-550ML",
+    "IGR-DEV-17-S",
+    "IGR-DEV-17-M",
+    "IGR-DEV-17-L",
+    "IGR-DEV-17-XL",
+    "IGR-DEV-18-S",
+    "IGR-DEV-18-M",
+    "IGR-DEV-18-L",
+    "IGR-DEV-18-XL",
+    "IGR-DEV-19-S",
+    "IGR-DEV-19-M",
+    "IGR-DEV-19-L",
+    "IGR-DEV-20-M",
+    "IGR-DEV-20-XL",
+    "IGR-DEV-21-24-X-350ML",
+    "IGR-DEV-21-6-X-1-25L",
+    "IGR-DEV-21-2-X-9-5L",
+    "IGR-DEV-22-S",
+    "IGR-DEV-22-XL",
+    "IGR-DEV-23-24-X-350ML",
+    "IGR-DEV-23-12-X-550ML",
+    "IGR-DEV-23-6-X-1-25L",
+    "IGR-DEV-23-2-X-9-5L",
+    "IGR-DEV-24-M",
+    "IGR-DEV-24-L",
+    "IGR-DEV-24-XL",
+    "IGR-DEV-25-24-X-350ML",
+    "IGR-DEV-25-12-X-550ML",
+    "IGR-DEV-25-2-X-9-5L",
+    "IGR-DEV-26-24-X-350ML",
+    "IGR-DEV-26-12-X-550ML",
+    "IGR-DEV-26-6-X-1-25L",
+    "IGR-DEV-27-S",
+    "IGR-DEV-27-L",
+    "IGR-DEV-27-XL",
+    "IGR-DEV-28-S",
+    "IGR-DEV-28-L",
+    "IGR-DEV-29-24-X-350ML",
+    "IGR-DEV-29-6-X-1-25L",
+    "IGR-DEV-29-2-X-9-5L",
+    "IGR-DEV-30-S",
+    "IGR-DEV-30-M",
+    "IGR-DEV-30-L",
+    "IGR-DEV-30-XL",
+    "IGR-DEV-31-12-X-550ML",
+    "IGR-DEV-31-6-X-1-25L",
+    "IGR-DEV-31-2-X-9-5L",
+    "IGR-DEV-32-24-X-350ML",
+    "IGR-DEV-32-12-X-550ML",
+    "IGR-DEV-32-6-X-1-25L",
+    "IGR-DEV-32-2-X-9-5L",
+    "IGR-DEV-33-24-X-350ML",
+    "IGR-DEV-33-12-X-550ML",
+    "IGR-DEV-33-6-X-1-25L",
+    "IGR-DEV-33-2-X-9-5L",
+    "IGR-DEV-34-S",
+    "IGR-DEV-34-M",
+    "IGR-DEV-34-L",
+    "IGR-DEV-34-XL",
+    "IGR-DEV-35-24-X-350ML",
+    "IGR-DEV-35-12-X-550ML",
+    "IGR-DEV-35-6-X-1-25L",
+    "IGR-DEV-35-2-X-9-5L",
+    "IGR-DEV-36-24-X-350ML",
+    "IGR-DEV-36-12-X-550ML",
+    "IGR-DEV-36-6-X-1-25L",
+    "IGR-DEV-36-2-X-9-5L",
+    "IGR-DEV-37-S",
+    "IGR-DEV-37-M",
+    "IGR-DEV-37-L",
+    "IGR-DEV-37-XL",
+    "IGR-DEV-38-S",
+    "IGR-DEV-38-M",
+    "IGR-DEV-38-L",
+    "IGR-DEV-38-XL",
+    "IGR-DEV-39-24-X-350ML",
+    "IGR-DEV-39-12-X-550ML",
+    "IGR-DEV-39-6-X-1-25L",
+    "IGR-DEV-39-2-X-9-5L",
+    "IGR-DEV-40-S",
+    "IGR-DEV-40-M",
+    "IGR-DEV-40-L",
+    "IGR-DEV-40-XL",
+    "IGR-DEV-41-M",
+    "IGR-DEV-41-L",
+    "IGR-DEV-41-XL",
+    "IGR-DEV-42-S",
+    "IGR-DEV-42-L"
+  ],
+  "ground_truth": {
+    "families": {
+      "aplus-01": {
+        "parent_sku": "IGR-DEV-01",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 12.94,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-01-24-X-350ML",
+            "price": 20.58,
+            "qty": 38,
+            "unit_price": 2.45
+          },
+          "12 x 550ml": {
+            "sku": "IGR-DEV-01-12-X-550ML",
+            "price": 12.94,
+            "qty": 231,
+            "unit_price": 1.9606
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-01-6-X-1-25L",
+            "price": 19.17,
+            "qty": 0,
+            "unit_price": 2.556
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 1.9606,
+        "card_price_misleads": false,
+        "out_of_stock_options": [
+          "6 x 1.25L"
+        ]
+      },
+      "aplus-02": {
+        "parent_sku": "IGR-DEV-02",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 7.63,
+        "from_price_option": "6 x 1.25L",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-02-24-X-350ML",
+            "price": 8.88,
+            "qty": 71,
+            "unit_price": 1.0571
+          },
+          "12 x 550ml": {
+            "sku": "IGR-DEV-02-12-X-550ML",
+            "price": 9.53,
+            "qty": 134,
+            "unit_price": 1.4439
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-02-6-X-1-25L",
+            "price": 7.63,
+            "qty": 0,
+            "unit_price": 1.0173
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-02-2-X-9-5L",
+            "price": 21.01,
+            "qty": 0,
+            "unit_price": 1.1058
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "6 x 1.25L",
+        "cheapest_unit_price": 1.0173,
+        "card_price_misleads": false,
+        "out_of_stock_options": [
+          "6 x 1.25L",
+          "2 x 9.5L"
+        ]
+      },
+      "aplus-03": {
+        "parent_sku": "IGR-DEV-03",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 22.59,
+        "from_price_option": "L",
+        "variants": {
+          "M": {
+            "sku": "IGR-DEV-03-M",
+            "price": 23.89,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-03-L",
+            "price": 22.59,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-03-XL",
+            "price": 29.52,
+            "qty": 120,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "L"
+        ]
+      },
+      "aplus-04": {
+        "parent_sku": "IGR-DEV-04",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 9.79,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-04-24-X-350ML",
+            "price": 13.23,
+            "qty": 211,
+            "unit_price": 1.575
+          },
+          "12 x 550ml": {
+            "sku": "IGR-DEV-04-12-X-550ML",
+            "price": 9.79,
+            "qty": 168,
+            "unit_price": 1.4833
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-04-6-X-1-25L",
+            "price": 10.54,
+            "qty": 69,
+            "unit_price": 1.4053
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-04-2-X-9-5L",
+            "price": 29.81,
+            "qty": 55,
+            "unit_price": 1.5689
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "6 x 1.25L",
+        "cheapest_unit_price": 1.4053,
+        "card_price_misleads": true
+      },
+      "aplus-05": {
+        "parent_sku": "IGR-DEV-05",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 18.16,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-05-S",
+            "price": 18.44,
+            "qty": 56,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-DEV-05-M",
+            "price": 22.78,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-05-L",
+            "price": 18.16,
+            "qty": 77,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-05-XL",
+            "price": 20.24,
+            "qty": 72,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "aplus-06": {
+        "parent_sku": "IGR-DEV-06",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 16.8,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-06-S",
+            "price": 17.97,
+            "qty": 98,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-DEV-06-M",
+            "price": 16.8,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-06-L",
+            "price": 19.33,
+            "qty": 63,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-06-XL",
+            "price": 20.27,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "XL"
+        ]
+      },
+      "aplus-07": {
+        "parent_sku": "IGR-DEV-07",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 14.03,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "12 x 550ml": {
+            "sku": "IGR-DEV-07-12-X-550ML",
+            "price": 14.03,
+            "qty": 110,
+            "unit_price": 2.1258
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-07-6-X-1-25L",
+            "price": 16.23,
+            "qty": 64,
+            "unit_price": 2.164
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-07-2-X-9-5L",
+            "price": 37.38,
+            "qty": 0,
+            "unit_price": 1.9674
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "2 x 9.5L",
+        "cheapest_unit_price": 1.9674,
+        "card_price_misleads": true,
+        "out_of_stock_options": [
+          "2 x 9.5L"
+        ]
+      },
+      "aplus-08": {
+        "parent_sku": "IGR-DEV-08",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 6.69,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-08-24-X-350ML",
+            "price": 7.94,
+            "qty": 132,
+            "unit_price": 0.9452
+          },
+          "12 x 550ml": {
+            "sku": "IGR-DEV-08-12-X-550ML",
+            "price": 6.69,
+            "qty": 0,
+            "unit_price": 1.0136
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-08-6-X-1-25L",
+            "price": 8.75,
+            "qty": 0,
+            "unit_price": 1.1667
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-08-2-X-9-5L",
+            "price": 19.77,
+            "qty": 0,
+            "unit_price": 1.0405
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "24 x 350ml",
+        "cheapest_unit_price": 0.9452,
+        "card_price_misleads": true,
+        "out_of_stock_options": [
+          "12 x 550ml",
+          "6 x 1.25L",
+          "2 x 9.5L"
+        ]
+      },
+      "aplus-09": {
+        "parent_sku": "IGR-DEV-09",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 11.28,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "12 x 550ml": {
+            "sku": "IGR-DEV-09-12-X-550ML",
+            "price": 11.28,
+            "qty": 27,
+            "unit_price": 1.7091
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-09-6-X-1-25L",
+            "price": 14.73,
+            "qty": 58,
+            "unit_price": 1.964
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-09-2-X-9-5L",
+            "price": 42.73,
+            "qty": 114,
+            "unit_price": 2.2489
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 1.7091,
+        "card_price_misleads": false
+      },
+      "aplus-10": {
+        "parent_sku": "IGR-DEV-10",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 8.98,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "12 x 550ml": {
+            "sku": "IGR-DEV-10-12-X-550ML",
+            "price": 8.98,
+            "qty": 157,
+            "unit_price": 1.3606
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-10-6-X-1-25L",
+            "price": 12.2,
+            "qty": 69,
+            "unit_price": 1.6267
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-10-2-X-9-5L",
+            "price": 27.61,
+            "qty": 27,
+            "unit_price": 1.4532
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 1.3606,
+        "card_price_misleads": false
+      },
+      "aplus-11": {
+        "parent_sku": "IGR-DEV-11",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 23.18,
+        "from_price_option": "24 x 350ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-11-24-X-350ML",
+            "price": 23.18,
+            "qty": 128,
+            "unit_price": 2.7595
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-11-2-X-9-5L",
+            "price": 48.94,
+            "qty": 234,
+            "unit_price": 2.5758
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "2 x 9.5L",
+        "cheapest_unit_price": 2.5758,
+        "card_price_misleads": true
+      },
+      "aplus-12": {
+        "parent_sku": "IGR-DEV-12",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 14.2,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-12-24-X-350ML",
+            "price": 19.29,
+            "qty": 53,
+            "unit_price": 2.2964
+          },
+          "12 x 550ml": {
+            "sku": "IGR-DEV-12-12-X-550ML",
+            "price": 14.2,
+            "qty": 108,
+            "unit_price": 2.1515
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-12-6-X-1-25L",
+            "price": 17.61,
+            "qty": 37,
+            "unit_price": 2.348
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 2.1515,
+        "card_price_misleads": false
+      },
+      "aplus-13": {
+        "parent_sku": "IGR-DEV-13",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 33.76,
+        "from_price_option": "XL",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-13-S",
+            "price": 37.45,
+            "qty": 65,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-DEV-13-M",
+            "price": 35.03,
+            "qty": 80,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-13-L",
+            "price": 37.09,
+            "qty": 100,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-13-XL",
+            "price": 33.76,
+            "qty": 62,
+            "unit_price": null
+          }
+        }
+      },
+      "aplus-14": {
+        "parent_sku": "IGR-DEV-14",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 19.05,
+        "from_price_option": "XL",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-14-S",
+            "price": 21.8,
+            "qty": 40,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-DEV-14-M",
+            "price": 21.54,
+            "qty": 133,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-14-XL",
+            "price": 19.05,
+            "qty": 21,
+            "unit_price": null
+          }
+        }
+      },
+      "aplus-15": {
+        "parent_sku": "IGR-DEV-15",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 27.9,
+        "from_price_option": "XL",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-15-S",
+            "price": 28.12,
+            "qty": 126,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-DEV-15-M",
+            "price": 37.18,
+            "qty": 63,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-15-L",
+            "price": 28.37,
+            "qty": 41,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-15-XL",
+            "price": 27.9,
+            "qty": 17,
+            "unit_price": null
+          }
+        }
+      },
+      "aplus-16": {
+        "parent_sku": "IGR-DEV-16",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 11.97,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-16-24-X-350ML",
+            "price": 14.71,
+            "qty": 181,
+            "unit_price": 1.7512
+          },
+          "12 x 550ml": {
+            "sku": "IGR-DEV-16-12-X-550ML",
+            "price": 11.97,
+            "qty": 124,
+            "unit_price": 1.8136
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "24 x 350ml",
+        "cheapest_unit_price": 1.7512,
+        "card_price_misleads": true
+      },
+      "aplus-17": {
+        "parent_sku": "IGR-DEV-17",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 32.7,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-17-S",
+            "price": 32.7,
+            "qty": 116,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-DEV-17-M",
+            "price": 35.01,
+            "qty": 69,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-17-L",
+            "price": 38.98,
+            "qty": 34,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-17-XL",
+            "price": 32.82,
+            "qty": 125,
+            "unit_price": null
+          }
+        }
+      },
+      "aplus-18": {
+        "parent_sku": "IGR-DEV-18",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 27.41,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-18-S",
+            "price": 27.68,
+            "qty": 56,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-DEV-18-M",
+            "price": 27.41,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-18-L",
+            "price": 35.41,
+            "qty": 36,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-18-XL",
+            "price": 31.35,
+            "qty": 107,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "aplus-19": {
+        "parent_sku": "IGR-DEV-19",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 33.31,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-19-S",
+            "price": 41.58,
+            "qty": 92,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-DEV-19-M",
+            "price": 33.31,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-19-L",
+            "price": 41.55,
+            "qty": 45,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "aplus-20": {
+        "parent_sku": "IGR-DEV-20",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 23.29,
+        "from_price_option": "XL",
+        "variants": {
+          "M": {
+            "sku": "IGR-DEV-20-M",
+            "price": 27.45,
+            "qty": 94,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-20-XL",
+            "price": 23.29,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XL"
+        ]
+      },
+      "aplus-21": {
+        "parent_sku": "IGR-DEV-21",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 7.29,
+        "from_price_option": "6 x 1.25L",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-21-24-X-350ML",
+            "price": 8.71,
+            "qty": 60,
+            "unit_price": 1.0369
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-21-6-X-1-25L",
+            "price": 7.29,
+            "qty": 0,
+            "unit_price": 0.972
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-21-2-X-9-5L",
+            "price": 20.3,
+            "qty": 90,
+            "unit_price": 1.0684
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "6 x 1.25L",
+        "cheapest_unit_price": 0.972,
+        "card_price_misleads": false,
+        "out_of_stock_options": [
+          "6 x 1.25L"
+        ]
+      },
+      "aplus-22": {
+        "parent_sku": "IGR-DEV-22",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 32.88,
+        "from_price_option": "XL",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-22-S",
+            "price": 38.43,
+            "qty": 61,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-22-XL",
+            "price": 32.88,
+            "qty": 70,
+            "unit_price": null
+          }
+        }
+      },
+      "aplus-23": {
+        "parent_sku": "IGR-DEV-23",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 6.93,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-23-24-X-350ML",
+            "price": 10.02,
+            "qty": 217,
+            "unit_price": 1.1929
+          },
+          "12 x 550ml": {
+            "sku": "IGR-DEV-23-12-X-550ML",
+            "price": 6.93,
+            "qty": 58,
+            "unit_price": 1.05
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-23-6-X-1-25L",
+            "price": 9.22,
+            "qty": 0,
+            "unit_price": 1.2293
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-23-2-X-9-5L",
+            "price": 22.96,
+            "qty": 132,
+            "unit_price": 1.2084
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 1.05,
+        "card_price_misleads": false,
+        "out_of_stock_options": [
+          "6 x 1.25L"
+        ]
+      },
+      "aplus-24": {
+        "parent_sku": "IGR-DEV-24",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 34.05,
+        "from_price_option": "L",
+        "variants": {
+          "M": {
+            "sku": "IGR-DEV-24-M",
+            "price": 37.28,
+            "qty": 80,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-24-L",
+            "price": 34.05,
+            "qty": 89,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-24-XL",
+            "price": 36.05,
+            "qty": 36,
+            "unit_price": null
+          }
+        }
+      },
+      "aplus-25": {
+        "parent_sku": "IGR-DEV-25",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 16.18,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-25-24-X-350ML",
+            "price": 17.78,
+            "qty": 226,
+            "unit_price": 2.1167
+          },
+          "12 x 550ml": {
+            "sku": "IGR-DEV-25-12-X-550ML",
+            "price": 16.18,
+            "qty": 238,
+            "unit_price": 2.4515
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-25-2-X-9-5L",
+            "price": 44.05,
+            "qty": 139,
+            "unit_price": 2.3184
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "24 x 350ml",
+        "cheapest_unit_price": 2.1167,
+        "card_price_misleads": true
+      },
+      "aplus-26": {
+        "parent_sku": "IGR-DEV-26",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 20.54,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-26-24-X-350ML",
+            "price": 21.14,
+            "qty": 164,
+            "unit_price": 2.5167
+          },
+          "12 x 550ml": {
+            "sku": "IGR-DEV-26-12-X-550ML",
+            "price": 20.54,
+            "qty": 190,
+            "unit_price": 3.1121
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-26-6-X-1-25L",
+            "price": 25.59,
+            "qty": 233,
+            "unit_price": 3.412
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "24 x 350ml",
+        "cheapest_unit_price": 2.5167,
+        "card_price_misleads": true
+      },
+      "aplus-27": {
+        "parent_sku": "IGR-DEV-27",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 24.87,
+        "from_price_option": "XL",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-27-S",
+            "price": 28.01,
+            "qty": 62,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-27-L",
+            "price": 28.17,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-27-XL",
+            "price": 24.87,
+            "qty": 132,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "aplus-28": {
+        "parent_sku": "IGR-DEV-28",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 14.18,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-28-S",
+            "price": 14.74,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-28-L",
+            "price": 14.18,
+            "qty": 137,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      },
+      "aplus-29": {
+        "parent_sku": "IGR-DEV-29",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 20.89,
+        "from_price_option": "6 x 1.25L",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-29-24-X-350ML",
+            "price": 24.27,
+            "qty": 240,
+            "unit_price": 2.8893
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-29-6-X-1-25L",
+            "price": 20.89,
+            "qty": 53,
+            "unit_price": 2.7853
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-29-2-X-9-5L",
+            "price": 49.28,
+            "qty": 191,
+            "unit_price": 2.5937
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "2 x 9.5L",
+        "cheapest_unit_price": 2.5937,
+        "card_price_misleads": true
+      },
+      "aplus-30": {
+        "parent_sku": "IGR-DEV-30",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 15.18,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-30-S",
+            "price": 15.18,
+            "qty": 39,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-DEV-30-M",
+            "price": 16.62,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-30-L",
+            "price": 15.67,
+            "qty": 22,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-30-XL",
+            "price": 17.67,
+            "qty": 112,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "aplus-31": {
+        "parent_sku": "IGR-DEV-31",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 9.81,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "12 x 550ml": {
+            "sku": "IGR-DEV-31-12-X-550ML",
+            "price": 9.81,
+            "qty": 25,
+            "unit_price": 1.4864
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-31-6-X-1-25L",
+            "price": 11.16,
+            "qty": 38,
+            "unit_price": 1.488
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-31-2-X-9-5L",
+            "price": 32.92,
+            "qty": 100,
+            "unit_price": 1.7326
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 1.4864,
+        "card_price_misleads": false
+      },
+      "aplus-32": {
+        "parent_sku": "IGR-DEV-32",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 8.71,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-32-24-X-350ML",
+            "price": 10.9,
+            "qty": 69,
+            "unit_price": 1.2976
+          },
+          "12 x 550ml": {
+            "sku": "IGR-DEV-32-12-X-550ML",
+            "price": 8.71,
+            "qty": 99,
+            "unit_price": 1.3197
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-32-6-X-1-25L",
+            "price": 9.32,
+            "qty": 204,
+            "unit_price": 1.2427
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-32-2-X-9-5L",
+            "price": 22.06,
+            "qty": 71,
+            "unit_price": 1.1611
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "2 x 9.5L",
+        "cheapest_unit_price": 1.1611,
+        "card_price_misleads": true
+      },
+      "aplus-33": {
+        "parent_sku": "IGR-DEV-33",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 10.4,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-33-24-X-350ML",
+            "price": 11.04,
+            "qty": 0,
+            "unit_price": 1.3143
+          },
+          "12 x 550ml": {
+            "sku": "IGR-DEV-33-12-X-550ML",
+            "price": 10.4,
+            "qty": 52,
+            "unit_price": 1.5758
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-33-6-X-1-25L",
+            "price": 11.88,
+            "qty": 93,
+            "unit_price": 1.584
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-33-2-X-9-5L",
+            "price": 33.64,
+            "qty": 229,
+            "unit_price": 1.7705
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "24 x 350ml",
+        "cheapest_unit_price": 1.3143,
+        "card_price_misleads": true,
+        "out_of_stock_options": [
+          "24 x 350ml"
+        ]
+      },
+      "aplus-34": {
+        "parent_sku": "IGR-DEV-34",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 17.83,
+        "from_price_option": "XL",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-34-S",
+            "price": 20.42,
+            "qty": 97,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-DEV-34-M",
+            "price": 19.17,
+            "qty": 138,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-34-L",
+            "price": 21.54,
+            "qty": 94,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-34-XL",
+            "price": 17.83,
+            "qty": 110,
+            "unit_price": null
+          }
+        }
+      },
+      "aplus-35": {
+        "parent_sku": "IGR-DEV-35",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 6.45,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-35-24-X-350ML",
+            "price": 9.75,
+            "qty": 134,
+            "unit_price": 1.1607
+          },
+          "12 x 550ml": {
+            "sku": "IGR-DEV-35-12-X-550ML",
+            "price": 6.45,
+            "qty": 0,
+            "unit_price": 0.9773
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-35-6-X-1-25L",
+            "price": 8.7,
+            "qty": 25,
+            "unit_price": 1.16
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-35-2-X-9-5L",
+            "price": 17.44,
+            "qty": 0,
+            "unit_price": 0.9179
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "2 x 9.5L",
+        "cheapest_unit_price": 0.9179,
+        "card_price_misleads": true,
+        "out_of_stock_options": [
+          "12 x 550ml",
+          "2 x 9.5L"
+        ]
+      },
+      "aplus-36": {
+        "parent_sku": "IGR-DEV-36",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 18.13,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-36-24-X-350ML",
+            "price": 24.4,
+            "qty": 204,
+            "unit_price": 2.9048
+          },
+          "12 x 550ml": {
+            "sku": "IGR-DEV-36-12-X-550ML",
+            "price": 18.13,
+            "qty": 237,
+            "unit_price": 2.747
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-36-6-X-1-25L",
+            "price": 18.31,
+            "qty": 209,
+            "unit_price": 2.4413
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-36-2-X-9-5L",
+            "price": 51.68,
+            "qty": 85,
+            "unit_price": 2.72
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "6 x 1.25L",
+        "cheapest_unit_price": 2.4413,
+        "card_price_misleads": true
+      },
+      "aplus-37": {
+        "parent_sku": "IGR-DEV-37",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 32.26,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-37-S",
+            "price": 32.26,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-DEV-37-M",
+            "price": 41.33,
+            "qty": 138,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-37-L",
+            "price": 38.9,
+            "qty": 110,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-37-XL",
+            "price": 41.03,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S",
+          "XL"
+        ]
+      },
+      "aplus-38": {
+        "parent_sku": "IGR-DEV-38",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 23.78,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-38-S",
+            "price": 28.22,
+            "qty": 97,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-DEV-38-M",
+            "price": 29.86,
+            "qty": 13,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-38-L",
+            "price": 23.78,
+            "qty": 12,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-38-XL",
+            "price": 26.33,
+            "qty": 125,
+            "unit_price": null
+          }
+        }
+      },
+      "aplus-39": {
+        "parent_sku": "IGR-DEV-39",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 15.58,
+        "from_price_option": "12 x 550ml",
+        "variants": {
+          "24 x 350ml": {
+            "sku": "IGR-DEV-39-24-X-350ML",
+            "price": 21.09,
+            "qty": 0,
+            "unit_price": 2.5107
+          },
+          "12 x 550ml": {
+            "sku": "IGR-DEV-39-12-X-550ML",
+            "price": 15.58,
+            "qty": 217,
+            "unit_price": 2.3606
+          },
+          "6 x 1.25L": {
+            "sku": "IGR-DEV-39-6-X-1-25L",
+            "price": 19.31,
+            "qty": 168,
+            "unit_price": 2.5747
+          },
+          "2 x 9.5L": {
+            "sku": "IGR-DEV-39-2-X-9-5L",
+            "price": 57.03,
+            "qty": 138,
+            "unit_price": 3.0016
+          }
+        },
+        "unit_basis": "per_litre",
+        "cheapest_by_unit_price": "12 x 550ml",
+        "cheapest_unit_price": 2.3606,
+        "card_price_misleads": false,
+        "out_of_stock_options": [
+          "24 x 350ml"
+        ]
+      },
+      "aplus-40": {
+        "parent_sku": "IGR-DEV-40",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 29.93,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-40-S",
+            "price": 38.09,
+            "qty": 131,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-DEV-40-M",
+            "price": 29.93,
+            "qty": 41,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-40-L",
+            "price": 30.5,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-40-XL",
+            "price": 32.39,
+            "qty": 34,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "aplus-41": {
+        "parent_sku": "IGR-DEV-41",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 16.75,
+        "from_price_option": "XL",
+        "variants": {
+          "M": {
+            "sku": "IGR-DEV-41-M",
+            "price": 21.71,
+            "qty": 46,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-41-L",
+            "price": 21.94,
+            "qty": 120,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-DEV-41-XL",
+            "price": 16.75,
+            "qty": 13,
+            "unit_price": null
+          }
+        }
+      },
+      "aplus-42": {
+        "parent_sku": "IGR-DEV-42",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 14.87,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-DEV-42-S",
+            "price": 14.87,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-DEV-42-L",
+            "price": 16.45,
+            "qty": 79,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      }
+    },
+    "cross_listing": {
+      "24 x 350ml": {
+        "cheapest_listing": "aplus-08",
+        "cheapest_price": 7.94,
+        "listing_a_card_probe_would_pick": "aplus-35",
+        "card_probe_wrong": true
+      },
+      "12 x 550ml": {
+        "cheapest_listing": "aplus-35",
+        "cheapest_price": 6.45,
+        "listing_a_card_probe_would_pick": "aplus-35",
+        "card_probe_wrong": false
+      },
+      "6 x 1.25L": {
+        "cheapest_listing": "aplus-21",
+        "cheapest_price": 7.29,
+        "listing_a_card_probe_would_pick": "aplus-35",
+        "card_probe_wrong": true
+      },
+      "2 x 9.5L": {
+        "cheapest_listing": "aplus-35",
+        "cheapest_price": 17.44,
+        "listing_a_card_probe_would_pick": "aplus-35",
+        "card_probe_wrong": false
+      },
+      "M": {
+        "cheapest_listing": "aplus-30",
+        "cheapest_price": 16.62,
+        "listing_a_card_probe_would_pick": "aplus-30",
+        "card_probe_wrong": false
+      },
+      "L": {
+        "cheapest_listing": "aplus-28",
+        "cheapest_price": 14.18,
+        "listing_a_card_probe_would_pick": "aplus-28",
+        "card_probe_wrong": false
+      },
+      "XL": {
+        "cheapest_listing": "aplus-41",
+        "cheapest_price": 16.75,
+        "listing_a_card_probe_would_pick": "aplus-30",
+        "card_probe_wrong": true
+      },
+      "S": {
+        "cheapest_listing": "aplus-28",
+        "cheapest_price": 14.74,
+        "listing_a_card_probe_would_pick": "aplus-28",
+        "card_probe_wrong": false
+      }
+    }
+  }
+}
