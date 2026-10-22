@@ -160,6 +160,98 @@ class ProductRules(DevMarket):
         self.assertEqual(ours["variants"], theirs["variants"])
         self.assertIn(ours["name"].split(" - ")[0].removeprefix(BRAND + " "), aplus.TEE_PHRASES)
 
+    def test_each_tee_rule_fires_on_its_fault(self):
+        # The tee generator's 13, unchanged, on the A+ tees: each shown firing on its fault.
+        target = aplus.TEE_TARGET
+        cheapest_buyable = lambda t: min((v for v in t["variants"] if v["qty"]), key=lambda v: v["price"])  # noqa: E731
+
+        def winner(ts, f):
+            return by_sku(ts, f["winner"]["sku"])
+
+        def tie(ts, f):
+            variant(aplus.buyable(ts, target)[1], target)["price"] = f["winner"]["price"]
+
+        def winner_cheapest_card(ts, f):
+            for v in winner(ts, f)["variants"]:
+                if v["option"] != target and v["qty"]:
+                    v["price"] = 1.0
+
+        def no_absent_trap(ts, f):
+            for t in ts:
+                if apparel.price_for(t, target) is None:
+                    for v in t["variants"]:
+                        v["price"] += 100
+
+        def nothing_prunable(ts, f):
+            for t in ts:
+                others = [v for v in t["variants"] if v["qty"] and v["option"] != target]
+                if others and t["parent_sku"] != f["winner"]["sku"]:
+                    min(others, key=lambda v: v["price"])["price"] = 1.0
+
+        def only_the_winner_to_open(ts, f):
+            for t in ts:
+                if t["parent_sku"] != f["winner"]["sku"]:
+                    for v in t["variants"]:
+                        v["price"] += 500
+
+        def every_listing_lists_m(ts, f):
+            for t in ts:
+                if apparel.price_for(t, target) is None:
+                    t["variants"].append({"option": target, "price": 99.0, "qty": 0, "units": 1})
+
+        def winner_cheapest_xl(ts, f):
+            xl = next((v for v in winner(ts, f)["variants"] if v["option"] == "XL"), None)
+            if xl is None:
+                winner(ts, f)["variants"].append({"option": "XL", "price": 1.0, "qty": 10, "units": 1})
+            else:
+                xl["price"] = 1.0
+
+        def sold_out_m_dearer(ts, f):
+            for t in ts:
+                m = next((v for v in t["variants"] if v["option"] == target), None)
+                if m is not None and m["qty"] == 0:
+                    m["price"] += 100
+
+        def close_runner_up(ts, f):
+            variant(aplus.buyable(ts, target)[1], target)["price"] = round(f["winner"]["price"] * 1.05, 2)
+
+        def floor_of_three(ts, f):
+            # Keep the winner and the two other cheapest cards open; price everything else out.
+            keep = {f["winner"]["sku"]} | {t["parent_sku"] for t in sorted(
+                (t for t in ts if t["parent_sku"] != f["winner"]["sku"]), key=apparel.from_price)[:2]}
+            for t in ts:
+                if t["parent_sku"] not in keep:
+                    for v in t["variants"]:
+                        v["price"] += 500
+            for t in ts:
+                if t["parent_sku"] in keep and t["parent_sku"] != f["winner"]["sku"]:
+                    cheapest_buyable(t)["price"] = min(cheapest_buyable(t)["price"], f["winner"]["price"] - 0.5)
+
+        def one_sold_out(ts, f):
+            sold = sorted((t for t in ts if apparel.price_for(t, target) is not None
+                           and apparel.buyable_price_for(t, target) is None),
+                          key=lambda t: apparel.price_for(t, target))
+            for t in sold[1:]:
+                variant(t, target).update(qty=10, price=variant(t, target)["price"] + 100)
+
+        def two_buyable(ts, f):
+            for t in aplus.buyable(ts, target)[2:]:
+                variant(t, target)["qty"] = 0
+
+        plants = {"unique_winner": tie, "card_probe_wrong": winner_cheapest_card,
+                  "absent_trap": no_absent_trap, "bound_is_useful": nothing_prunable,
+                  "bound_not_sufficient": only_the_winner_to_open,
+                  "some_missing_target": every_listing_lists_m, "crossover": winner_cheapest_xl,
+                  "four_answers": sold_out_m_dearer, "clear_margin": close_runner_up,
+                  "floor_is_real": floor_of_three, "sold_out_trap": sold_out_m_dearer,
+                  "sold_out_population": one_sold_out, "enough_buyable": two_buyable}
+        self.assertEqual(len(plants), 13)
+        for rule, plant in plants.items():
+            with self.subTest(rule=rule):
+                tees = copy.deepcopy(self.groups[aplus.TEE])
+                plant(tees, apparel.measure(tees))
+                self.assertIn(rule, apparel.check(tees, apparel.measure(tees)))
+
     def plant_water(self, change) -> list[str]:
         waters = copy.deepcopy(self.groups[aplus.WATER])
         change(waters, aplus.water_measure(waters))
