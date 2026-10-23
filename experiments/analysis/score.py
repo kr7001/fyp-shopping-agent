@@ -11,6 +11,7 @@ outcome: a policy that says "I could not determine this" has not misled anyone.
 from __future__ import annotations
 
 import collections
+import dataclasses
 import json
 import pathlib
 import re
@@ -86,7 +87,11 @@ import paths  # noqa: E402,F401  (puts box/ on the path)
 #      (`ranked`). Re-scored over every stored run that day, 654 records in 88 batches, with
 #      the market's sellers where a task file names its fixture and without: no verdict and
 #      no reason changes; the re-audit's 24 move as it judged them, and its first audit's 51
-#      and seven controls stay as v7 scored them
+#      and seven controls stay as v7 scored them. And from v8 every caller scores a run
+#      through one call, `score_run`, with its task file's `Keys`: the sidecar's readings, its
+#      `two_readings` and the market's sellers, so a batch's stored verdicts and every
+#      re-score of them apply the same rules (suite.py passed the two readings, verify_cells
+#      and claim.py did not, and only claim.py passed the sellers)
 VERSION = 8
 
 # Phrases that mean the agent declined rather than answered. Kept narrow on
@@ -472,15 +477,45 @@ def under_reading(task: dict, reading: str | None, readings: dict,
 
 
 def score_under(task: dict, reading: str | None, readings: dict, answer: str, ok: bool,
-                sellers: list[str] | None = None) -> dict:
+                sellers: list[str] | None = None, two_readings: list[str] | None = None) -> dict:
     """A run's verdict under the key for the reading it was answered under, or "unscored",
-    with the reason, when its task file has no key for that reading (22 October 2026)."""
+    with the reason, when its task file has no key for that reading (22 October 2026), the
+    sidecar's `two_readings` holding "menu" to the questions that have two (`under_reading`)
+    and the market's `sellers` judging a best (`score`). Every caller that judges a run goes
+    through `score_run`, which passes all three from the task file."""
     try:
-        keyed = under_reading(task, reading, readings)
+        keyed = under_reading(task, reading, readings, two_readings)
     except NoKeyForReading as fault:
         return {"verdict": "unscored", "why": f"no answer key for this run: {fault}",
                 "prices": prices_in(answer or "")}
     return score(keyed, answer, ok, sellers)
+
+
+@dataclasses.dataclass(frozen=True)
+class Keys:
+    """What a run's verdict depends on besides its task, the reading it answered under and
+    its answer, read once from its task file (23 October 2026): the sidecar's other readings,
+    the questions it names as having two, and the market's sellers. One value, so no caller
+    can pass the readings and forget the rest (LESSONS 29: until then suite.py passed the
+    two readings, verify_cells and claim.py did not, and only claim.py passed the sellers)."""
+    readings: dict
+    two_readings: list[str] | None
+    sellers: list[str] | None
+
+
+def keys_for(tasks_path: pathlib.Path) -> Keys:
+    """The `Keys` of a task file: its sidecar's readings (`readings_for`) and two-readings
+    list (`two_readings_for`), and the sellers of the fixture it names (`market_sellers`)."""
+    spec = json.loads(tasks_path.read_text())
+    return Keys(readings_for(tasks_path), two_readings_for(tasks_path), market_sellers(spec))
+
+
+def score_run(task: dict, reading: str | None, keys: Keys, answer: str, ok: bool) -> dict:
+    """The one scoring call (23 October 2026, LESSONS 29). suite.py live, verify_cells,
+    rescore.py, compare_cells, replay_box and claim.py all judge a run through it, with the
+    reading the run answered under and the `Keys` of its task file, so a stored verdict and
+    every re-score of it apply the same rules."""
+    return score_under(task, reading, keys.readings, answer, ok, keys.sellers, keys.two_readings)
 
 
 def score(task: dict, answer: str, ok: bool, sellers: list[str] | None = None) -> dict:

@@ -301,14 +301,19 @@ class TheOwnReading(unittest.TestCase):
             self.assertEqual(suite.unscorable([self.by[t] for t in SLOTS], self.spec, args, self.readings), [])
 
     def test_a_run_told_menu_on_a_buyable_key_is_unscored(self):
+        # Through the one scoring call (score v8, `score.score_run`), which suite.py's own
+        # `score_run` gave way to, with the task file's keys.
+        keys = score.keys_for(PILOT)
+        self.assertEqual((keys.readings, keys.two_readings), (self.readings, self.two))
         task, right = self.by["pv1-15"], "11 listings can sell size M today."
-        unscored = suite.score_run(task, "menu", self.readings, self.two, right, True)
+        unscored = score.score_run(task, "menu", keys, right, True)
         self.assertEqual(unscored["verdict"], "unscored")
-        self.assertEqual(suite.score_run(task, "buyable", self.readings, self.two, right, True)["verdict"], "correct")
+        self.assertEqual(score.score_run(task, "buyable", keys, right, True)["verdict"], "correct")
         # The menu question is scored under its own key, 17 listed.
         listed = self.by["tee-count-stocked"]
-        self.assertEqual(suite.score_run(listed, "menu", self.readings, self.two, "17 listings offer it.", True)["verdict"],
+        self.assertEqual(score.score_run(listed, "menu", keys, "17 listings offer it.", True)["verdict"],
                          "correct")
+        self.assertFalse(hasattr(suite, "score_run"))
 
     def test_a_batch_records_each_reply_and_a_voids_rerun_keeps_own(self):
         ran = run_suite("--tasks", str(PILOT), "--repeats", "1", "--box", "--reading", "own",

@@ -75,12 +75,16 @@ READINGS = ("menu", "buyable")
 def correct(run: dict, reading: str) -> bool:
     # The buyable key is the batch's own sidecar's (`load_batch`), never a number typed
     # here: until 20 October 2026 it was Thornwood's 5, whatever market the run was on.
+    # Since 23 October 2026 through the one scoring call, with the run's task file's sellers
+    # and two-readings list beside its buyable key (`score.score_run`, LESSONS 29).
     if reading == "buyable" and run["task"] == "apparel-count-stocked":
         if not run.get("buyable_key"):
             raise verify_cells.scoring.NoKeyForReading(f"{run['task']} has no buyable key")
-        return verify_cells.scoring.score(
-            {"expect": run["buyable_key"]}, run["answer"], run["ok"]
-        )["verdict"] == "correct"
+        keys = verify_cells.scoring.Keys(readings={"buyable": {run["task"]: run["buyable_key"]}},
+                                         two_readings=run.get("two_readings"), sellers=run.get("sellers"))
+        task = {"id": run["task"], "expect": run["buyable_key"]}
+        return verify_cells.scoring.score_run(task, "buyable", keys, run["answer"], run["ok"]
+                                              )["verdict"] == "correct"
     return run["rescored"] == "correct"
 
 
@@ -139,7 +143,8 @@ def load_batch(batch: str) -> list[dict]:
     from the batch's own task file the buyable reading's key for its task and the market's
     listing URLs (None where the file names no fixture), since 20 October 2026."""
     suite, found = verify_cells.verify_batch(RESULTS / batch)
-    readings = verify_cells.scoring.readings_for(paths.TASKS / suite["tasks_file"])
+    keys = verify_cells.scoring.keys_for(paths.TASKS / suite["tasks_file"])
+    readings = keys.readings
     market = verify_cells.market_urls(task_file(batch))
     for run in found:
         record = json.loads((RESULTS / batch / f"{run['task']}-{run['repeat']}.json")
@@ -148,6 +153,7 @@ def load_batch(batch: str) -> list[dict]:
         run["tokens"] = (tokens.get("prompt"), tokens.get("completion"))
         run["batch"] = batch
         run["buyable_key"] = (readings.get("buyable") or {}).get(run["task"])
+        run["two_readings"], run["sellers"] = keys.two_readings, keys.sellers
         run["market"] = market
     return found
 

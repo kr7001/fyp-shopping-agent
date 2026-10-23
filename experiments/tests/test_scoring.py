@@ -5,6 +5,7 @@ has a case where it must fire and a case where it must stay quiet (LESSONS.md, 1
 """
 import json
 import pathlib
+import re
 import sys
 import unittest
 
@@ -688,6 +689,61 @@ class MarketSellers(unittest.TestCase):
         answer = "Ashgrove Provisions is the cheapest at $8.71; Elmsworth Apparel charges $19.17."
         self.assertEqual(score.score({"expect": expect}, answer, True, sellers)["verdict"], "wrong")
         self.assertEqual(score.score({"expect": expect}, answer, True)["verdict"], "correct")
+
+
+class OneScoringCall(unittest.TestCase):
+    """Score v8 (23 October 2026, LESSONS 29): every reader of a run scores it through
+    `score_run` with its task file's `Keys`. Until then suite.py passed the two-readings
+    list, verify_cells and claim.py did not, only claim.py passed the market's sellers, and
+    rescore.py scored every run under its task's own key whatever reading it answered."""
+
+    # Each direct call that stays, by file and function, and why it is no verdict of a run
+    # under its key.
+    ALLOWED = {
+        ("experiments/analysis/cell_facts.py", "score"): "a count against the listings that can sell M",
+        ("experiments/runners/suite.py", "under_reading"): "`unscorable`: whether a key exists, before a run",
+        ("experiments/water/arms.py", "score"): "the September study: no sidecar, fixture or two readings",
+        ("experiments/water/replay_gate.py", "score"): "the same study's gate replay",
+    }
+    DIRECT = re.compile(r"\b(?:scoring|score)\.(score|score_under|under_reading)\(")
+
+    def test_no_other_reader_scores_on_its_own(self):
+        found = set()
+        for folder in ("analysis", "runners", "box", "water"):
+            for path in sorted((paths.EXPERIMENTS / folder).glob("*.py")):
+                if path.name == "score.py":
+                    continue
+                found |= {(str(path.relative_to(paths.REPO)), m.group(1))
+                          for m in self.DIRECT.finditer(path.read_text())}
+        self.assertEqual(found, set(self.ALLOWED))
+
+    def test_a_rescore_applies_the_reading_guard_and_the_sellers(self):
+        import verify_cells
+        task = {"id": "q-count", "expect": {"kind": "count", "value": 11}}
+        keys = score.Keys(readings={"buyable": {"q-count": {"kind": "count", "value": 11}}},
+                          two_readings=["another-question"], sellers=None)
+        # "menu" on a question whose own key counts what can be bought: unscored, never
+        # scored against that key. Planted: verify_cells scoring without the two readings.
+        menu = verify_cells.rescore(task, "11 listings.", True, {"box": {"reading": "menu"}}, {}, keys)
+        self.assertEqual(menu["verdict"], "unscored")
+        self.assertEqual(verify_cells.rescore(task, "11 listings.", True, {"box": {"reading": "buyable"}}, {},
+                                              keys)["verdict"], "correct")
+        # The market's sellers judge a best. Planted: verify_cells scoring without them.
+        cheapest = {"id": "q-cheapest", "expect": {"kind": "contains", "any": ["Elmsworth"], "not_any": []}}
+        sellers_keys = score.Keys(readings={}, two_readings=None,
+                                  sellers=["Elmsworth Apparel", "Haldane Garment Works"])
+        answer = "Haldane Garment Works is the cheapest; Elmsworth Apparel is next."
+        self.assertEqual(verify_cells.rescore(cheapest, answer, True, {}, {}, sellers_keys)["verdict"], "wrong")
+        self.assertEqual(verify_cells.rescore(cheapest, answer, True, {}, {}, verify_cells.NO_KEYS)["verdict"],
+                         "correct")
+
+    def test_a_task_files_keys(self):
+        keys = score.keys_for(paths.TASKS / "tasks_aplus_dev.json")
+        self.assertEqual(keys.two_readings, ["tee-all-stocked", "tee-count-stocked", "water-all-stocked"])
+        self.assertEqual(len(keys.sellers or []), 42)
+        self.assertIn("buyable", keys.readings)
+        thornwood = score.keys_for(paths.TASKS / "tasks_apparel.json")
+        self.assertEqual((thornwood.two_readings, thornwood.sellers), (None, None))
 
 
 if __name__ == "__main__":

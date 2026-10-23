@@ -28,6 +28,7 @@ import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import policy as policy_module
 import score as scoring
 import suite
+import verify_cells  # noqa: E402  (run_reading, the reading a stored run answered under)
 
 
 def main() -> int:
@@ -48,6 +49,7 @@ def main() -> int:
     tasks_path = args.tasks or paths.TASKS / (payload.get("tasks_file") or "tasks.json")
     spec = json.loads(tasks_path.read_text())
     tasks = {t["id"]: t for t in spec["tasks"]}
+    keys = scoring.keys_for(tasks_path)
     confidence = payload.get("confidence") or "off"
 
     changes = []
@@ -69,7 +71,11 @@ def main() -> int:
                         "opened": check.get("opened")})
             row["answer"] = answer[:300]
 
-        verdict = scoring.score(task, answer, bool(result.get("ok")))
+        # The one scoring call, under the reading the run answered and the task file's keys
+        # (score v8, `score.score_run`): until 23 October 2026 this scored every run under its
+        # task's own key, whatever reading it was answered under (LESSONS 29).
+        verdict = scoring.score_run(task, verify_cells.run_reading(row, payload), keys, answer,
+                                    bool(result.get("ok")))
         if verdict["verdict"] != row["verdict"]:
             changes.append({"task": row["task"], "repeat": row["repeat"],
                             "from": row["verdict"], "to": verdict["verdict"]})

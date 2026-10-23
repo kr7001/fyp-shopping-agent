@@ -106,9 +106,9 @@ class ScoredByTheRunsOwnRecord(unittest.TestCase):
         self.assertEqual((row["box"]["reading"], row["box"]["parse"]["used"], row["verdict"]),
                          ("buyable", "model", "correct"))
         # The verifier re-scores it the same way, from the row's box record.
-        readings = score.readings_for(self.folder / "tasks_option.json")
+        keys = score.keys_for(self.folder / "tasks_option.json")
         task = json.loads((self.folder / "tasks_option.json").read_text())["tasks"][0]
-        self.assertEqual(verify_cells.rescore(task, row["answer"], True, row, payload, readings)["verdict"],
+        self.assertEqual(verify_cells.rescore(task, row["answer"], True, row, payload, keys)["verdict"],
                          "correct")
 
     def test_with_no_key_for_that_reading_the_batch_is_refused_before_anything_runs(self):
@@ -146,7 +146,7 @@ class ScoredByTheRunsOwnRecord(unittest.TestCase):
         self.assertEqual(verify_cells.run_reading({"reading": "menu"}, {"reading": "buyable"}), "menu")
         self.assertEqual(verify_cells.run_reading({}, {"reading": "buyable"}), "buyable")
         task = {"id": "option-count", "expect": {"kind": "count", "value": 10}}
-        got = verify_cells.rescore(task, "7 listings", True, {"box": {"reading": "buyable"}}, {}, {})
+        got = verify_cells.rescore(task, "7 listings", True, {"box": {"reading": "buyable"}}, {}, verify_cells.NO_KEYS)
         self.assertEqual(got["verdict"], "unscored")
         self.assertIn("no answer key for this run: option-count was answered under the 'buyable' reading",
                       got["why"])

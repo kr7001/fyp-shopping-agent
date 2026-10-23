@@ -108,10 +108,10 @@ class ReadingKey(unittest.TestCase):
     def setUp(self):
         spec = json.loads((paths.TASKS / "tasks_apparel.json").read_text())
         self.task = next(t for t in spec["tasks"] if t["id"] == "apparel-count-stocked")
-        self.readings = score.readings_for(paths.TASKS / "tasks_apparel.json")
+        self.keys = score.keys_for(paths.TASKS / "tasks_apparel.json")
 
     def verdict(self, answer: str, row: dict, suite: dict) -> str:
-        return verify_cells.rescore(self.task, answer, True, row, suite, self.readings)["verdict"]
+        return verify_cells.rescore(self.task, answer, True, row, suite, self.keys)["verdict"]
 
     def test_the_rows_reading_uses_the_sidecar_key(self):
         self.assertEqual(self.verdict("5 listings", {"reading": "buyable"}, {}), "correct")
@@ -334,7 +334,7 @@ class VerifyRunFields(unittest.TestCase):
         cls.payload = json.loads((cls.batch / "suite.json").read_text())
         cls.tasks = {t["id"]: t for t in json.loads(V2.read_text())["tasks"]}
         cls.truth = verify_cells.ground_truth()
-        cls.readings = score.readings_for(V2)
+        cls.keys = score.keys_for(V2)
 
     @classmethod
     def tearDownClass(cls):
@@ -344,7 +344,7 @@ class VerifyRunFields(unittest.TestCase):
         record = self.batch / "apparel-cheapest-target-1.json"
         record.with_suffix(".log").write_text(log_text)
         return verify_cells.verify_run(record, self.tasks[task_id], self.truth, stored,
-                                       suite_payload, self.readings)
+                                       suite_payload, self.keys)
 
     def test_opened_counts_the_markets_listings_and_names_the_rest(self):
         row = next(r for r in self.payload["rows"] if r["task"] == "apparel-cheapest-target")
@@ -448,7 +448,7 @@ class TwoProducts(unittest.TestCase):
                                       "shop": "gated", "probe": "viewport", "cost_usd": 0.0}))
         record.with_suffix(".log").write_text("\n".join(f"Page URL: {self.spec['base_url']}/{sku}.html"
                                                          for sku in opened))
-        return verify_cells.verify_run(record, self.tasks[task_id], self.truth, stored, {}, {},
+        return verify_cells.verify_run(record, self.tasks[task_id], self.truth, stored, {}, verify_cells.NO_KEYS,
                                        market=verify_cells.market_urls(self.spec))
 
     def test_a_run_is_held_to_its_questions_product(self):

@@ -613,20 +613,6 @@ def scripted_reply(task: dict, flag: str | None, two_readings: list[str] | None)
     return "buyable"
 
 
-def score_run(task: dict, reading: str | None, readings: dict, two_readings: list[str] | None,
-              answer: str, ok: bool) -> dict:
-    """`score.score_under` with the task file's `two_readings` given to `under_reading`, so a
-    run told the menu reading on a question whose key counts what can be bought is unscored,
-    never scored against that key (23 October 2026). Kept here, not in score.py, until the
-    scorer's v7 merges, which then takes the parameter in `score_under` too."""
-    try:
-        keyed = scoring.under_reading(task, reading, readings, two_readings)
-    except scoring.NoKeyForReading as fault:
-        return {"verdict": "unscored", "why": f"no answer key for this run: {fault}",
-                "prices": scoring.prices_in(answer or "")}
-    return scoring.score(keyed, answer, ok)
-
-
 def unscorable(tasks: list[dict], spec: dict, args, readings: dict,
                 two_readings: list[str] | None = None) -> list[str]:
     """The tasks a batch could not score, each with the reading its runs would be scored
@@ -1044,10 +1030,12 @@ def main() -> int:
                      f"{args.tasks.name} names none for {', '.join(unnamed)}")
     # The scripted user's other readings of the ambiguous questions, for scoring under
     # `--reading`. Empty when the task file has no sidecar.
-    readings = scoring.readings_for(args.tasks)
-    # The questions its sidecar says have two readings, None where it names none (23 October
-    # 2026): the scripted reply under "own" and the reading each key was written under.
-    args.two_readings = scoring.two_readings_for(args.tasks)
+    # With the questions its sidecar says have two readings, None where it names none (23
+    # October 2026), the scripted reply under "own" and the reading each key was written
+    # under, and the market's sellers: everything every run is scored with (`score.score_run`).
+    keys = scoring.keys_for(args.tasks)
+    readings = keys.readings
+    args.two_readings = keys.two_readings
     # Every key a run will be scored against, found before the first run and in the dry
     # run, so a missing one stops the batch before anything is spent (20 October 2026).
     missing = unscorable(tasks, spec, args, readings, args.two_readings)
@@ -1179,9 +1167,10 @@ def main() -> int:
             # Scored against the key for the reading the run answered under, the user's
             # reply or the box's own choice, the sidecar's when that reading is not the
             # task's own, and unscored, never the task's own key, when the sidecar has
-            # none (score.py v4; `unscorable` refuses such a batch before it runs).
+            # none (score.py v4; `unscorable` refuses such a batch before it runs), through
+            # the one scoring call every reader of the batch makes (score v8, `score_run`).
             answered = reading_answered(applied["box"], scripted_reply(task, args.reading, args.two_readings))
-            verdict = score_run(task, answered, readings, args.two_readings, answer, bool(result.get("ok")))
+            verdict = scoring.score_run(task, answered, keys, answer, bool(result.get("ok")))
             row = {
                 "task": task["id"], "family": task["family"], "gated": task["gated"],
                 "repeat": repeat,

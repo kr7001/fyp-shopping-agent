@@ -505,18 +505,19 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
     problems = []
     spec = json.loads((paths.TASKS / payload["tasks_file"]).read_text())
     tasks = {task["id"]: task for task in spec["tasks"]}
-    readings = scoring.readings_for(paths.TASKS / payload["tasks_file"])
+    # Everything a run is scored with, read once (score v8, `score.score_run`): the sidecar's
+    # readings, its `two_readings` and the market's sellers, where the task file names its
+    # fixture, so a best is judged against all of them (score v7).
+    keys = scoring.keys_for(paths.TASKS / payload["tasks_file"])
+    readings = keys.readings
     buyable = readings.get("buyable") or {}
     # The questions with two readings: those the sidecar names under `two_readings`, since
     # the A+ market's sidecar holds a key for every question (22 October 2026); before it,
     # those it holds a key for, as the first claim's sidecar does.
-    named = scoring.two_readings_for(paths.TASKS / payload["tasks_file"])
-    ambiguous = set(named) if named is not None else {task for keys in readings.values() for task in keys}
+    named = keys.two_readings
+    ambiguous = set(named) if named is not None else {task for found in readings.values() for task in found}
     truth = verify_cells.ground_truth(verify_cells.fixture_for(spec))
     market = verify_cells.market_urls(spec)
-    # Every seller of the market, so a best is judged against all of them (score v7), where
-    # the task file names its fixture; None before the first claim market's file.
-    sellers = scoring.market_sellers(spec)
     rows = {(row["task"], row["repeat"]): row for row in payload.get("rows", [])}
     _, found = verify_cells.verify_batch(folder)
     checked = {(run["task"], run["repeat"]): run for run in found}
@@ -544,7 +545,7 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
         if measured is not None:
             slot.update(measure(measured, folder, row, slot["reading"], task, buyable.get(run.task),
                                 truth, market, seen.get(f"{run.task}-{run.repeat}", []),
-                                answered=slot["answered"], sellers=sellers))
+                                answered=slot["answered"], keys=keys))
             if measured["tool_calls"] is not None and measured["tool_calls"] != slot["calls"]:
                 problems.append(f"{folder.name}/{run.task}-{run.repeat}: the record counts "
                                 f"{measured['tool_calls']} tool calls, the page count {slot['calls']}")
@@ -603,10 +604,11 @@ def closed_tokens(row: dict) -> tuple[int | None, tuple]:
 
 def measure(run: dict, folder: pathlib.Path, row: dict, reading: str | None, task: dict,
             buyable_key: dict | None, truth: dict, market: list[str] | None,
-            leak: list[str], answered: str | None = None, sellers: list[str] | None = None) -> dict:
+            leak: list[str], answered: str | None = None, keys: scoring.Keys | None = None) -> dict:
     """What one run did, from verify_cells' re-derivation and the log: the answer under the
-    task's own key and, for the two offer questions, under the buyable key, each judged
-    against every seller of the market where `sellers` names them (score v7); the market's
+    task's own key and, for the two offer questions, under the buyable key, and the verdict
+    under the reading it answered, each through the one scoring call with the task file's
+    `keys` (score v8, `score.score_run`), so judged against every seller of the market; the market's
     listings opened, and whether they were what the answer needs under the reading the run
     answered; the cost; the calls by page; the asks; the leaks; the results pages it asked
     for (`toolbar.read`), and the advertised or sold-out prices its answer gives
@@ -621,9 +623,9 @@ def measure(run: dict, folder: pathlib.Path, row: dict, reading: str | None, tas
     log = folder / f"{run['task']}-{run['repeat']}.log"
     calls, actions, names = page_calls(log, own)
     answer, ok = run["answer"], run["ok"]
-    own = scoring.score(task, answer, ok, sellers)["verdict"]
-    under_buyable = (scoring.score({"expect": buyable_key}, answer, ok, sellers)["verdict"]
-                     if buyable_key else None)
+    keys = keys or verify_cells.NO_KEYS
+    own = scoring.score_run(task, None, keys, answer, ok)["verdict"]
+    under_buyable = scoring.score_run(task, "buyable", keys, answer, ok)["verdict"] if buyable_key else None
     total = (tokens.get("prompt") or 0) + (tokens.get("completion") or 0) if stated else None
     keyed = buyable_key if answered == "buyable" and buyable_key else task.get("expect") or {}
     return {
@@ -631,11 +633,11 @@ def measure(run: dict, folder: pathlib.Path, row: dict, reading: str | None, tas
         "own": own,
         "buyable": under_buyable,
         # Under the key for the reading the run was answered under, as score v4 scores it: the
-        # task's own unless the box record holds another, the buyable key then, and unscored
-        # where the sidecar has none. A protocol named in a file reads this (22 October 2026).
-        "verdict": (own if answered in (None, scoring.OWN_READING)
-                    else under_buyable if answered == "buyable" and under_buyable is not None
-                    else "unscored"),
+        # task's own unless the box record holds another, the sidecar's then, and unscored
+        # where the sidecar has none, or where a "menu" reply meets a question whose own key
+        # counts what can be bought (the sidecar's `two_readings`, 23 October 2026). A protocol
+        # named in a file reads this (22 October 2026).
+        "verdict": scoring.score_run(task, answered, keys, answer, ok)["verdict"],
         "tokens_total": total or None,
         "opened": run["opened"], "skus": run["skus"],
         "covered": compare_cells.covered(run, reading or scoring.OWN_READING, truth),

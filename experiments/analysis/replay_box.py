@@ -154,7 +154,8 @@ def replay(batch: pathlib.Path) -> list[dict]:
     suite = json.loads((batch / "suite.json").read_text())
     spec = json.loads((paths.TASKS / suite["tasks_file"]).read_text())
     tasks = {t["id"]: t for t in spec["tasks"]}
-    readings = scoring.readings_for(paths.TASKS / suite["tasks_file"])
+    # The task file's keys, for the one scoring call (score v8, `score.score_run`).
+    keys = scoring.keys_for(paths.TASKS / suite["tasks_file"])
     rows = []
     for row in suite["rows"]:
         record = row.get("box")
@@ -172,7 +173,7 @@ def replay(batch: pathlib.Path) -> list[dict]:
         status, change = compared_today(today, record)
         verdict = box_module.check(decision, answer, batch / row["log"])
         rescored = verify_cells.rescore(tasks[row["task"]], answer,
-                                        result.get("ok") in (True, "True"), row, suite, readings)
+                                        result.get("ok") in (True, "True"), row, suite, keys)
         rows.append({"batch": batch.name, "task": row["task"], "repeat": row["repeat"],
                      "verdict": rescored["verdict"], "ok": verdict["ok"],
                      "flag": verdict["flag"], "why": verdict["why"],

@@ -297,19 +297,24 @@ def run_reading(row: dict, suite: dict) -> str | None:
 
 
 def rescore(task: dict, answer: str, ok: bool, row: dict, suite: dict,
-            readings: dict) -> dict:
+            keys: scoring.Keys) -> dict:
     """Score against the key for the reading the run was answered under (`run_reading`).
 
     A batch run with `--reading buyable` scores its ambiguous questions against the
     sidecar key for that reading, so re-scoring against the task's own key would report
     every such run as a mismatch. A reading the sidecar has no key for leaves the run
-    unscored, with the reason, never scored under the task's own key (score.py v4)."""
-    return scoring.score_under(task, run_reading(row, suite), readings, answer, ok)
+    unscored, with the reason, never scored under the task's own key (score.py v4). Since 23
+    October 2026 through the one scoring call, with the task file's `keys`: its readings,
+    its `two_readings` and the market's sellers (`score.score_run`, LESSONS 29)."""
+    return scoring.score_run(task, run_reading(row, suite), keys, answer, ok)
+
+
+NO_KEYS = scoring.Keys(readings={}, two_readings=None, sellers=None)
 
 
 def verify_run(record_path: pathlib.Path, task: dict, truth: dict,
                stored: dict, suite: dict | None = None,
-               readings: dict | None = None, market: list[str] | None = None) -> dict:
+               keys: scoring.Keys | None = None, market: list[str] | None = None) -> dict:
     record = json.loads(record_path.read_text())
     log_path = record_path.with_suffix(".log")
     log = log_path.read_text(errors="replace")
@@ -365,11 +370,12 @@ def verify_run(record_path: pathlib.Path, task: dict, truth: dict,
     # task under the reading the run was answered under (`run_reading`), otherwise the
     # task's own.
     reading = run_reading(stored, suite or {})
-    scored_under = reading if ((readings or {}).get(reading) or {}).get(task["id"]) else None
+    keys = keys or NO_KEYS
+    scored_under = reading if (keys.readings.get(reading) or {}).get(task["id"]) else None
     probe_line = next((line for line in log.splitlines() if line.startswith("card probe:")),
                       None)
     trace = record.get("trace") or {}
-    rescored = rescore(task, answer, ok, stored, suite or {}, readings or {})
+    rescored = rescore(task, answer, ok, stored, suite or {}, keys)
     # An opened listing without the variant the question names, its size or its pack, and
     # size M's when it names none, as it was for every question until 22 October 2026. The
     # floor's own counterexample set is `floor.one_of`, which `covered` applies.
@@ -440,7 +446,7 @@ def verify_batch(batch: pathlib.Path) -> tuple[dict, list[dict]]:
     tasks = {t["id"]: t for t in spec["tasks"]}
     truth = ground_truth(fixture_for(spec))
     market = market_urls(spec)
-    readings = scoring.readings_for(paths.TASKS / suite["tasks_file"])
+    keys = scoring.keys_for(paths.TASKS / suite["tasks_file"])
     stored = {(row["task"], row["repeat"]): row for row in suite["rows"]}
     runs = []
     for record_path in sorted(batch.glob("*.json")):
@@ -449,7 +455,7 @@ def verify_batch(batch: pathlib.Path) -> tuple[dict, list[dict]]:
         task_id, repeat = record_path.stem.rsplit("-", 1)
         runs.append(verify_run(record_path, tasks[task_id], truth,
                                stored.get((task_id, int(repeat)), {}),
-                               suite=suite, readings=readings, market=market))
+                               suite=suite, keys=keys, market=market))
     return suite, runs
 
 
