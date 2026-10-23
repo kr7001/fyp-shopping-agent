@@ -33,9 +33,19 @@ paraphrase row also says what `box.decide` does with the question under the mode
 from the same reply, with no second call. A result file says which prompt and which
 normalisation made it.
 
+With `--spec-from` and `--page-from` (23 October 2026) it probes a paraphrase file that leaves
+its templates, base, lead and page null, as the held-out paraphrases_v2.json does: it was
+written before its market existed, and its entries are pinned, so they are not filled in by
+an edit. The market's task file gives the templates, the base, the lead and the limit its
+templates state, and a stored batch on that market gives the page (`from_market`). The result
+file names both. A dry run prints every question, so on the held-out file it is run only once
+its texts may be read, after the stage's last block run (docs/content/claim2-protocol.md).
+
     python experiments/runners/parse_probe.py --dry-run     # prints the prompts, calls nothing
     python experiments/runners/parse_probe.py               # paid: one call per question
     python experiments/runners/parse_probe.py --questions experiments/tasks/paraphrases_v1.json --dry-run
+    python experiments/runners/parse_probe.py --dry-run --questions experiments/tasks/paraphrases_v2.json \\
+        --spec-from experiments/tasks/tasks_<market>.json --page-from experiments/results/<batch>
 """
 
 from __future__ import annotations
@@ -44,6 +54,7 @@ import argparse
 import datetime as dt
 import json
 import pathlib
+import re
 import subprocess
 import sys
 
@@ -355,6 +366,17 @@ READ_AGAIN = (1,)
 IN_SAMPLE = {"paraphrases_v1.json": "prompt version 2 and normalisation versions 1 and 2 were "
                                     "written from this file's model failures, on 22 October 2026"}
 
+# What a paraphrase file names for itself, and what `--spec-from` and `--page-from` supply
+# when it leaves them all null (`from_market`, 23 October 2026).
+SUPPLIED = ("templates", "base_url", "lead", "page_from")
+# The task id env/generate_aplus_tasks.py gives a held-out rewording (its `REWORDING_ID`,
+# which tests/test_reading_test.py holds this to), by which a question here is held to the
+# words its run asked.
+HELD_OUT_TASK = "rw-{id:02d}"
+# The held-out file's expected outcome, plan, ask or decline, in the audit's words
+# (`meets_audit`).
+EXPECTED = {"plan": "PLAN", "ask": "ASK", "decline": "REFUSE"}
+
 # The census whose charge per call prices a probe of other questions: one call each, text
 # only, and the same prompt but for the question and the op "<", which form v9 added to the
 # schema's list.
@@ -391,8 +413,13 @@ def load_questions(path: pathlib.Path) -> tuple[dict, list[dict]]:
     lead, a space and the text, as the audit put them, and its template's question. Of the
     task file the templates come from only each task's id and query are read, never an
     answer. A template the task file does not hold, or one that does not start with the
-    lead, is refused: the question would be compared with nothing, or in another frame."""
+    lead, is refused: the question would be compared with nothing, or in another frame. So
+    is a file that leaves those null, whose market supplies them (`from_market`)."""
     spec = json.loads(path.read_text())
+    missing = [field for field in SUPPLIED if spec.get(field) is None]
+    if missing:
+        raise ValueError(f"{path.name} leaves {', '.join(missing)} null: give its market's task "
+                         f"file with --spec-from and a stored batch on that market with --page-from")
     tasks = json.loads((paths.TASKS / spec["templates"]).read_text())["tasks"]
     templates = {task["id"]: task["query"].format(base=spec["base_url"]) for task in tasks}
     lead = spec["lead"].format(base=spec["base_url"])
@@ -420,6 +447,121 @@ def stored_page(suite: pathlib.Path) -> page_module.Page:
     if len(records) != 1:
         raise ValueError(f"{suite} holds {len(records)} different page records, not one")
     return page_module.from_record(json.loads(records.pop()))
+
+
+def recorded_as(path: pathlib.Path, root: pathlib.Path) -> str:
+    """A path as a result file records it: from its root when under it, as `page_from` and a
+    batch's tasks_file are, and whole otherwise."""
+    path, root = path.resolve(), root.resolve()
+    return str(path.relative_to(root)) if root in path.parents else str(path)
+
+
+def stated_limit(copy: str, wording: str) -> int | None:
+    """The whole-dollar limit a template's wording states, where its author's copy of it,
+    filled with a NUL for the limit, has one. None when the copy has none, or when the
+    wording is not the copy with a number in that place, which `from_market` then refuses
+    as another wording."""
+    if "\0" not in copy:
+        return None
+    before, _, after = copy.partition("\0")
+    found = re.fullmatch(re.escape(before) + r"(\d+)" + re.escape(after), wording)
+    return int(found.group(1)) if found else None
+
+
+def from_market(path: pathlib.Path, task_file: pathlib.Path, batch: pathlib.Path
+                ) -> tuple[dict, list[dict], page_module.Page]:
+    """A paraphrase file that leaves its templates, base, lead and page null, as the held-out
+    paraphrases_v2.json does, with them supplied by its market (`--spec-from`, `--page-from`,
+    23 October 2026): the templates, the base and the lead from the market's task file, as
+    env/generate_aplus_tasks.py writes it, and the page from a stored batch on that market,
+    as `page_from` names one. Each text's {brand} and ${limit} are filled in as the generator
+    fills them, with the task file's brand and the limit its templates state, read off their
+    wording (`stated_limit`), so the question is the one the run asked. Where the task file
+    holds the rewording as a task (`HELD_OUT_TASK`), the question is held to that task's
+    query. Of the task file only the brand, the base, each task's id and query, and the draw
+    its answers hash to (`suite.draw_id`, which reads no answer out) are used.
+
+    Refused, by ValueError: a file that names any of those fields itself, which the flags
+    would overrule; a task file whose brand is not the batch's market's, or that is another
+    draw of it; a template the task file lacks, templates that do not share one lead, or one
+    not worded as its rewording's author read it (`template_text`, held as the generator
+    holds it); a text with a placeholder that cannot be filled; an expected outcome not in
+    `EXPECTED`; and a question in other words than its task's. A reason names the entry by
+    its id and never quotes a text."""
+    import suite  # here, not at the top: suite imports this module
+
+    spec = json.loads(path.read_text())
+    already = [field for field in SUPPLIED if spec.get(field) is not None]
+    if already:
+        raise ValueError(f"{path.name} names its own {', '.join(already)}, which --spec-from "
+                         f"and --page-from would overrule")
+    market = json.loads(task_file.read_text())
+    brand, draw = market.get("brand"), json.loads((batch / "suite.json").read_text()).get("draw")
+    ran_on = draw.split(":", 1)[0] if isinstance(draw, str) else None
+    if not brand or brand != ran_on:
+        raise ValueError(f"{task_file.name} is the task file of {brand or 'no brand'}, and batch "
+                         f"{batch.name} ran on {ran_on or 'a market it does not record'}")
+    if draw != suite.draw_id(market):
+        raise ValueError(f"batch {batch.name} ran on draw {draw} of {brand}'s market, and "
+                         f"{task_file.name} is draw {suite.draw_id(market)}")
+    page = stored_page(batch / "suite.json")
+    base, tasks = market["base_url"], {task["id"]: task for task in market["tasks"]}
+
+    def filled(entry: dict, field: str, limit) -> str:
+        try:
+            return entry[field].format(brand=brand, limit=limit)
+        except (KeyError, IndexError, ValueError):
+            raise ValueError(f"paraphrase {entry['id']}'s {field} holds a placeholder other than "
+                             f"{{brand}} and {{limit}}") from None
+
+    # Each template's lead and wording, its query either side of the " . " the generator
+    # puts between them.
+    worded = {}
+    for entry in spec["paraphrases"]:
+        task = tasks.get(entry["template"])
+        if task is None:
+            raise ValueError(f"paraphrase {entry['id']} rewords {entry['template']!r}, which "
+                             f"{task_file.name} does not hold")
+        if not isinstance(entry.get("template_text"), str):
+            raise ValueError(f"paraphrase {entry['id']} has no template_text, so whether its "
+                             f"template is worded as its author read it is unknown")
+        lead, _, wording = task["query"].partition(" . ")
+        worded[entry["template"]] = (lead, wording)
+    leads = {lead for lead, _ in worded.values()}
+    if len(leads) != 1:
+        raise ValueError(f"the templates in {task_file.name} do not share one lead")
+    lead = f"{leads.pop()} ."
+    limits = {stated_limit(filled(entry, "template_text", "\0"), worded[entry["template"]][1])
+              for entry in spec["paraphrases"]} - {None}
+    if len(limits) > 1:
+        raise ValueError(f"the templates in {task_file.name} state {len(limits)} different limits")
+    limit = limits.pop() if limits else None
+
+    entries, held = [], 0
+    for entry in spec["paraphrases"]:
+        if filled(entry, "template_text", limit) != worded[entry["template"]][1]:
+            raise ValueError(f"paraphrase {entry['id']}'s template, {entry['template']}, is not "
+                             f"worded in {task_file.name} as its author read it")
+        if limit is None and "{limit}" in entry["text"]:
+            raise ValueError(f"paraphrase {entry['id']} needs a limit, and no template in "
+                             f"{task_file.name} states one")
+        if entry.get("expected") not in EXPECTED:
+            raise ValueError(f"paraphrase {entry['id']} expects {entry.get('expected')!r}, not "
+                             f"one of {', '.join(EXPECTED)}")
+        question = f"{lead.format(base=base)} {filled(entry, 'text', limit)}"
+        asked = tasks.get(HELD_OUT_TASK.format(id=entry["id"]))
+        if asked is not None:
+            if asked["query"].format(base=base) != question:
+                raise ValueError(f"paraphrase {entry['id']} would be parsed in other words than "
+                                 f"task {asked['id']} asked it")
+            held += 1
+        entries.append({**entry, "question": question, "audit_expected": EXPECTED[entry["expected"]],
+                        "template_question": tasks[entry["template"]]["query"].format(base=base)})
+    supplied = {**spec, "templates": recorded_as(task_file, paths.TASKS), "base_url": base,
+                "lead": lead, "page_from": recorded_as(batch, paths.RESULTS),
+                "spec_from": recorded_as(task_file, paths.TASKS), "draw": draw, "limit": limit,
+                "held_to_tasks": held}
+    return supplied, entries, page
 
 
 def outcome(question: str, page: page_module.Page, reply: str | None = None) -> dict:
@@ -480,10 +622,17 @@ def same_outcome(a: dict, b: dict) -> bool:
 def meets_audit(expected: str, found: dict) -> bool:
     """Whether the outcome is the one the audit expected, by the audit's own rule: "ASK" is
     met by any ask, "REFUSE" by a refusal and "BYPASS" by a bypass, and any other word is
-    the kind a plan must have, the fallback's included."""
+    the kind a plan must have, the fallback's included.
+
+    "PLAN", the held-out file's "plan" (`EXPECTED`, 23 October 2026), is met by a plan of any
+    kind, the fallback's included: its author expected the box to plan, and whether the plan
+    is of the template's form is the tiers' to say. No file made before holds the word, so
+    no figure made under comparison 2 moves, and the version stands."""
     words = {"ASK": "ask", "REFUSE": "refuse", "BYPASS": "bypass"}
     if expected in words:
         return found["outcome"] == words[expected]
+    if expected == "PLAN":
+        return found["outcome"] in ("plan", "fallback")
     return found["outcome"] in ("plan", "fallback") and found["kind"] == expected
 
 
@@ -680,7 +829,11 @@ def report_questions(rows: list[dict], path: pathlib.Path, spec: dict, page: pag
         "prompt_version": form.PROMPT_VERSION, "normalise_version": normalise.VERSION,
         "box_version": box.VERSION, "primitives_version": primitives.VERSION,
         "planner_version": planner.VERSION, "strategy_version": targeting.VERSION,
-        "commit": repository_commit(), "page_from": spec["page_from"], "page": page.record(),
+        "commit": repository_commit(), "page_from": spec["page_from"],
+        # The market's task file and the draw, for a file whose market supplied its fields
+        # (`from_market`, 23 October 2026). A file that names its own has neither key.
+        **({"spec_from": spec["spec_from"], "draw": spec["draw"]} if spec.get("spec_from") else {}),
+        "page": page.record(),
         "limits": limits(path, page), "in_sample": path.name in IN_SAMPLE,
         "spend_usd": spent, "charged_usd": charged_total, "calls_failed": failed,
         "totals": totals, "rows": rows}, indent=2) + "\n")
@@ -704,12 +857,23 @@ def limits(path: pathlib.Path, page: page_module.Page) -> list[str]:
     return found
 
 
-def probe_questions(path: pathlib.Path, model: str, dry_run: bool) -> int:
+def probe_questions(path: pathlib.Path, model: str, dry_run: bool,
+                    spec_from: pathlib.Path | None = None, page_from: pathlib.Path | None = None) -> int:
     """The paraphrase probe. The rules' half of every question first, free, on the stored
     page each question must name; then, in a paid run, the model's half, one call each with
-    no retry and the result file written whatever stops the loop, as the census."""
-    spec, entries = load_questions(path)
-    page = stored_page(paths.RESULTS / spec["page_from"] / "suite.json")
+    no retry and the result file written whatever stops the loop, as the census. With
+    `spec_from` and `page_from`, the market supplies what the file leaves null (`from_market`),
+    and the probe first says which task file, draw, limit and batch it used."""
+    if spec_from is None:
+        spec, entries = load_questions(path)
+        page = stored_page(paths.RESULTS / spec["page_from"] / "suite.json")
+    else:
+        spec, entries, page = from_market(path, spec_from, page_from)
+        limit = f"${spec['limit']}" if spec["limit"] is not None else "none"
+        print(f"the market: {spec['spec_from']}, draw {spec['draw']}, for the templates, the base "
+              f"and the lead, and the limit they state, {limit}")
+        print(f"the page: batch {spec['page_from']}, {page.url}; {spec['held_to_tasks']} of "
+              f"{len(entries)} questions held to the words their tasks asked")
     for entry in entries:
         named = box.results_url(entry["question"])
         if named != page.url:
@@ -754,11 +918,23 @@ def main() -> int:
                         help="a paraphrase file, such as experiments/tasks/paraphrases_v1.json: "
                              "probe its questions instead of the census, each against the "
                              "rules' form of the question it rewords")
+    parser.add_argument("--spec-from", type=pathlib.Path, default=None,
+                        help="with --questions and --page-from, for a paraphrase file that leaves "
+                             "its templates, base, lead and page null, as paraphrases_v2.json "
+                             "does: its market's task file, such as experiments/tasks/tasks_<market>.json, "
+                             "for the templates, the base, the lead and the limit they state")
+    parser.add_argument("--page-from", type=pathlib.Path, default=None,
+                        help="with --spec-from: a stored batch folder on that market, such as "
+                             "experiments/results/<batch>, for the results page the box read")
     args = parser.parse_args()
+    if (args.spec_from is None) != (args.page_from is None):
+        parser.error("--spec-from and --page-from go together")
+    if args.spec_from is not None and args.questions is None:
+        parser.error("--spec-from and --page-from supply a paraphrase file's fields, so they need --questions")
 
     model = args.model or plan_probe.model_name()
     if args.questions is not None:
-        return probe_questions(args.questions, model, args.dry_run)
+        return probe_questions(args.questions, model, args.dry_run, args.spec_from, args.page_from)
     questions = census()
     if args.dry_run:
         for n, (name, question) in enumerate(questions, 1):
