@@ -1992,6 +1992,24 @@ def showcase_and_a_buyable_answer(model: str, arm: Plan, folder: pathlib.Path) -
         answer_under(folder, "tee-count-stocked", 2, "buyable", right(readings["buyable"]["tee-count-stocked"]))
 
 
+def unscored_run(folder: pathlib.Path, task_id: str, repeat: int) -> None:
+    """A run of a written batch answered under the buyable reading where the sidecar has no
+    buyable key for its question, taken out the first time: unscored (score v4), whatever it
+    says."""
+    tasks_dir = folder.parent / "tasks"
+    if task_id in json.loads((tasks_dir / READINGS_FILE).read_text())["readings"]["buyable"]:
+        drop_key(tasks_dir, task_id)
+    answer_under(folder, task_id, repeat, "buyable", "Eleven of them can be bought now.")
+
+
+def showcase_buyable_and_unscored(model: str, arm: Plan, folder: pathlib.Path) -> None:
+    """`showcase_and_a_buyable_answer`, and the block (model)'s first round of rw-09, a
+    rewording of tee-count-stocked, answered under a reading with no key (v7)."""
+    showcase_and_a_buyable_answer(model, arm, folder)
+    if arm.name == "the block (model)":
+        unscored_run(folder, "rw-09", 1)
+
+
 class HandReadingSheet(unittest.TestCase):
     """The blind hand-reading sheet (`claim.py --sheet`), on the synthetic run with every
     fault planted: each answer counted, under a random code, and nothing that names its arm,
@@ -2001,7 +2019,7 @@ class HandReadingSheet(unittest.TestCase):
     def setUpClass(cls):
         cls.owner = tempfile.TemporaryDirectory()
         root = pathlib.Path(cls.owner.name)
-        cls.manifest = build_run2(root, plant=showcase_and_a_buyable_answer)
+        cls.manifest = build_run2(root, plant=showcase_buyable_and_unscored)
         cls.sheet = root / "sheet.csv"
         with mock.patch.object(paths, "TASKS", root / "tasks"), contextlib.redirect_stdout(io.StringIO()) as out:
             cls.code = claim.main(["--protocol", str(FULL), str(cls.manifest), "--sheet", str(cls.sheet)])
@@ -2018,11 +2036,12 @@ class HandReadingSheet(unittest.TestCase):
         cls.owner.cleanup()
 
     def ran(self) -> list[tuple]:
-        """Every run the agent answered on a question with a key (v5: none of a keyless one)."""
+        """Every run the agent answered on a question with a key (v5: none of a keyless one), and
+        a key for the reading it answered under (v7: no unscored run)."""
         keyed = {task["id"] for task in self.spec["tasks"] if task["expect"].get("kind") != "none"}
         return sorted((model, run["arm"], run["batch"], run["task"], run["repeat"])
                       for model, m in self.result["models"].items() for run in m["runs"]
-                      if run["outcome"] != voids.CLOSED and run["task"] in keyed)
+                      if run["outcome"] != voids.CLOSED and run["task"] in keyed and run["verdict"] != "unscored")
 
     def test_every_answer_once_under_its_own_random_code(self):
         self.assertEqual(self.code, 0)
@@ -2044,6 +2063,16 @@ class HandReadingSheet(unittest.TestCase):
         # them against, so not on the sheet (v5).
         self.assertEqual(self.key["keyless_answers_left_out"], 2 * 6)
         self.assertFalse(any(c["task"].startswith("decline-") for c in self.key["codes"].values()))
+        # The block (model)'s rw-09-1 under each model, answered under a reading with no key: unscored,
+        # in no test of correct, and not on the sheet either (v7, the reading rules).
+        unscored = [(model, run["task"], run["repeat"]) for model, m in self.result["models"].items()
+                    for run in m["runs"] if run["verdict"] == "unscored" and run["outcome"] != voids.CLOSED
+                    and run["task"] in {t["id"] for t in self.spec["tasks"] if t["expect"]["kind"] != "none"}]
+        self.assertEqual(sorted(unscored), sorted([(DEEPSEEK, "rw-09", 1), (HAIKU, "rw-09", 1)]))
+        self.assertEqual(self.key["unscored_left_out"], 2)
+        self.assertFalse(any((c["task"], c["repeat"], c["arm"]) == ("rw-09", 1, "the block (model)")
+                             for c in self.key["codes"].values()))
+        self.assertIn("runs with no key for the reading they answered 2.", self.out)
 
     def test_nothing_on_the_sheet_names_an_arm_a_model_a_batch_or_a_question_id(self):
         names = (list(self.result["models"]) + list(json.loads(PROTOCOL.read_text())["arms"])
@@ -2319,6 +2348,98 @@ class HandReadBack(unittest.TestCase):
             claim.main(["--protocol", str(FULL), str(self.manifest), "--hand", str(self.sheet),
                         "--sheet", str(self.sheet.with_name("new.csv"))])
         self.assertIn("one at a time", err.getvalue())
+
+
+def unscored_and_one_refused(model: str, arm: Plan, folder: pathlib.Path) -> None:
+    """DeepSeek's block (model) answers rw-09-1 under a reading with no key, and Haiku's shipped
+    batch runs outside require and is not run again, so Haiku's analysis is refused."""
+    if model == DEEPSEEK and arm.name == "the block (model)":
+        unscored_run(folder, "rw-09", 1)
+    if model == HAIKU and arm.name == "shipped":
+        set_conditions(folder, max_steps=150)
+
+
+def claim_on(manifest: pathlib.Path, extra: list[str]) -> tuple[int, str, dict]:
+    """claim.py --protocol on the manifest, under the full design it was built with, with
+    `extra`: its exit code, what it prints, and the analysis it writes beside the manifest."""
+    with mock.patch.object(paths, "TASKS", manifest.parent / "tasks"), contextlib.redirect_stdout(io.StringIO()) as out:
+        code = claim.main(["--protocol", str(FULL), str(manifest), *extra])
+    return code, out.getvalue(), json.loads(manifest.with_suffix(".analysis.json").read_text())
+
+
+class TheSheetsOwnRuns(unittest.TestCase):
+    """`--hand` asks a row of exactly the runs `--sheet` writes one for (protocol analysis v7):
+    none of a run with no key for the reading it answered, which the key file counts instead,
+    as the reading rules say, and none of a refused model's, whose analysis is not made."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.owner = tempfile.TemporaryDirectory()
+        cls.manifest = build_run2(pathlib.Path(cls.owner.name), plant=unscored_and_one_refused)
+        cls.sheet = cls.manifest.with_name("sheet.csv")
+        cls.code, cls.out, cls.result = claim_on(cls.manifest, ["--sheet", str(cls.sheet)])
+        cls.key = json.loads(cls.sheet.with_name("sheet.key.json").read_text())
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.owner.cleanup()
+
+    def unscored(self) -> dict:
+        return next(run for run in self.result["models"][DEEPSEEK]["runs"] if run["verdict"] == "unscored"
+                    and run["task"] == "rw-09")
+
+    def forged(self, name: str, mapped: dict, answer: str) -> pathlib.Path:
+        """A sheet filled as the scorer has it with one row more, standing for `mapped`, in the
+        sheet and in its key, with `answer`."""
+        sheet = fill(self.sheet, name)
+        key_path = sheet.with_name(sheet.stem + ".key.json")
+        key_path.write_text(json.dumps({**self.key, "codes": {**self.key["codes"], "ffff0001": mapped}}))
+        with sheet.open("a", newline="") as handle:
+            csv.DictWriter(handle, fieldnames=list(claim.SHEET_COLUMNS)).writerow(
+                {"code": "ffff0001", "question": "", "key": "", "answer": answer, "hand_verdict": "correct", "note": ""})
+        return sheet
+
+    def refused(self, sheet: pathlib.Path) -> str:
+        with self.assertRaises(SystemExit) as raised:
+            claim_on(self.manifest, ["--hand", str(sheet)])
+        return str(raised.exception)
+
+    def test_the_sheet_leaves_off_the_unscored_run_and_the_refused_model(self):
+        self.assertEqual(self.code, 1)
+        self.assertIn("refused", self.result["models"][HAIKU])
+        run = self.unscored()
+        self.assertEqual((run["arm"], run["repeat"], run["answered"]), ("the block (model)", 1, "buyable"))
+        self.assertEqual(self.key["unscored_left_out"], 1)
+        self.assertFalse(any((c["task"], c["repeat"]) == ("rw-09", 1) and c["arm"] == "the block (model)"
+                             for c in self.key["codes"].values()))
+        self.assertEqual({c["model"] for c in self.key["codes"].values()}, {DEEPSEEK})
+
+    def test_hand_reads_it_back_with_one_model_refused(self):
+        # Until v7 every run counted was asked a row, Haiku's too, so this sheet was refused.
+        code, out, result = claim_on(self.manifest, ["--hand", str(fill(self.sheet, "agreed.csv"))])
+        self.assertEqual(code, 1)
+        self.assertIn("refused", result["models"][HAIKU])
+        m = result["models"][DEEPSEEK]
+        self.assertEqual({t: v["p"] for t, v in m["hand_reading"]["tests"].items()},
+                         {t: v["p"] for t, v in m["primary"].items()})
+        self.assertEqual(result["hand_sheet"]["left_off"]["unscored_left_out"], 1)
+        self.assertIn("runs with no key for the reading they answered 1", out)
+
+    def test_a_row_for_a_run_off_the_sheet_is_refused(self):
+        run = self.unscored()
+        mapped = {"model": DEEPSEEK, "arm": run["arm"], "batch": run["batch"], "task": run["task"],
+                  "repeat": run["repeat"], "answered": run["answered"], "verdict": run["verdict"]}
+        self.assertIn("rw-09-1, which this analysis leaves off the sheet (unscored_left_out)",
+                      self.refused(self.forged("unscored.csv", mapped, run["answer"])))
+        # A row of the refused model's, whose batch is within require and counted, but read by no
+        # model's analysis.
+        folder = pathlib.Path(self.manifest.read_text().splitlines()[8].split("|")[1])
+        row = next(r for r in json.loads((folder / "suite.json").read_text())["rows"]
+                   if (r["task"], r["repeat"]) == ("tee-target-price", 1))
+        mapped = {"model": HAIKU, "arm": "the block (model)", "batch": folder.name, "task": "tee-target-price",
+                  "repeat": 1, "answered": None, "verdict": "correct"}
+        self.assertIn("1 rows stand for runs no model's analysis reads",
+                      self.refused(self.forged("refused.csv", mapped, row["answer"])))
 
 
 if __name__ == "__main__":

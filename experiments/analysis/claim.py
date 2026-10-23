@@ -1619,7 +1619,14 @@ def render_test(t: dict) -> str:
 #      ask for is listed, as before, and is now in no figure, so a test reads only the rounds its
 #      design has. A test's two arms are asked its questions in the same rounds, or the file is
 #      refused (`resolve_protocol`), and `--preflight` refuses an arm the model's design does not run
-PROTOCOL_ANALYSIS_VERSION = 6
+#   7  23 October 2026, from the hand reading's rules (docs/content/claim2-reading-rules.md):
+#      a run with no key for the reading it was answered under is unscored, and is no longer on
+#      the sheet but counted in its key file (`unscored_left_out`, `left_off_the_sheet`), as the
+#      closed slots and the keyless answers are; `--hand` prints the three counts. And a sheet
+#      read back is held to the runs each model's analysis reads once it is made (`sheet_gaps`):
+#      until now every run counted was asked a row, a refused model's too, and a run outside its
+#      model's design, so `--hand` refused every sheet of a run where one model was refused
+PROTOCOL_ANALYSIS_VERSION = 7
 # The conditions a protocol's arms are held to: the first claim's and the model parser's,
 # the open-everything wording, the agent's limits. Of them, the ones an arm has by design.
 # The box's rate plan and the product wording's version (23 October 2026) join them, so two
@@ -2803,8 +2810,9 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
     named = [m for m in protocol.models if protocol.roles.get(m) == "primary"] + \
         [m for m in protocol.models if protocol.roles.get(m) != "primary"]
     models = [m for m in named if m in models] + [m for m in models if m not in named]
-    # The hand verdicts by run, each matched to a run this analysis counts (v4).
-    by_run = hand_by_run(hand, population["kept"], files[0], shown_path(path), protocol.keyed) if hand else None
+    # The hand verdicts by run, each matched to a run this analysis counts and puts on a sheet (v4, v7).
+    tasks, keys = task_keys(files[0])
+    by_run = hand_by_run(hand, population["kept"], files[0], shown_path(path), tasks, keys) if hand else None
     out = {"analysis_version": VERSION, "protocol_analysis_version": PROTOCOL_ANALYSIS_VERSION,
            "scorer_version": scoring.VERSION, "toolbar_version": toolbar.VERSION, "protocol": config["protocol"],
            "protocol_file": shown_path(path), "protocol_version": config.get("version"), "tasks_file": files[0],
@@ -2816,7 +2824,10 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
            "families": {str(model): list(d.tests) for model, d in protocol.designs.items()},
            "source": source(lines, manifest, every), "problems": problems, "models": {},
            "models_named": list(protocol.models), "roles": dict(protocol.roles),
-           "hand_sheet": {"sheet": hand["sheet"], "rows": len(hand["rows"])} if hand else None,
+           "hand_sheet": {"sheet": hand["sheet"], "rows": len(hand["rows"]),
+                          # What its key says the sheet left off, and why (v7).
+                          "left_off": {field: hand["key"].get(field) for field in LEFT_OFF.values()}}
+           if hand else None,
            "void_batches": void_batches}
     for model in models:
         why = list(refused.get(model, []))
@@ -2850,6 +2861,11 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
         out["models"][str(model)] = result
     out["problems"] += [f"the protocol's model {model} has no run" for model in protocol.models
                         if model not in out["models"]]
+    # A sheet read back holds a row for every run the analysis would put on one, and for no
+    # other, now that the models' analyses are made (v7): a refused model's runs are on none.
+    gaps = sheet_gaps(out["models"], by_run, tasks, keys) if hand else []
+    if gaps:
+        raise not_this_analysis(hand, gaps)
     return out
 
 
@@ -2864,6 +2880,50 @@ SHEET_COLUMNS = ("code", "question", "key", "answer", "hand_verdict", "note")
 # empty, garbled, or about another question (the protocol file's note, v5); any other answer is
 # correct or not correct against its key.
 HAND_VERDICTS = {"correct": "correct", "not correct": "not correct", "unscorable": "unscored"}
+# Why a run the analysis counts is not on the hand-reading sheet, and the field of the key file
+# that counts each. A slot the box closed answered nothing. A question with no key, a decline or
+# one of its rewordings, has nothing to read an answer against (v5). A run with no key for the
+# reading it was answered under is unscored (`score.score_under`) and in no test of correct, so a
+# hand verdict of it would count for nothing (v7, from the reading rules of 23 October 2026).
+LEFT_OFF = {"closed": "closed_slots_left_out", "keyless": "keyless_answers_left_out",
+            "unscored": "unscored_left_out"}
+
+
+def left_off_the_sheet(run: dict, tasks: dict, keys: scoring.Keys) -> str | None:
+    """Why a run the analysis counted is not on the hand-reading sheet, one of `LEFT_OFF`, or
+    None where it is. The sheet and its read-back both ask this (v7), so `--hand` asks a row of
+    exactly the runs `--sheet` wrote one for."""
+    if run["outcome"] == voids.CLOSED:
+        return "closed"
+    task = tasks[run["task"]]
+    if task["expect"].get("kind") == "none":
+        return "keyless"
+    try:
+        scoring.run_key(task, run["answered"], keys)
+    except scoring.NoKeyForReading:
+        return "unscored"
+    return None
+
+
+def task_keys(tasks_file: str) -> tuple[dict, scoring.Keys]:
+    """A task file's tasks by id, and the `Keys` its runs are scored with."""
+    path = paths.TASKS / tasks_file
+    return {task["id"]: task for task in json.loads(path.read_text())["tasks"]}, scoring.keys_for(path)
+
+
+def sheet_runs(models: dict, tasks: dict, keys: scoring.Keys) -> tuple[list[tuple[str, dict]], dict]:
+    """The runs a hand-reading sheet holds, as (model, run): every run of each model's analysis
+    that `left_off_the_sheet` keeps; and how many it leaves off, by the key file's field. A
+    refused model has no analysis, so nothing of it is read (v4)."""
+    on, left = [], collections.Counter()
+    for model, m in models.items():
+        for run in m.get("runs") or []:
+            why = left_off_the_sheet(run, tasks, keys)
+            if why is None:
+                on.append((model, run))
+            else:
+                left[why] += 1
+    return on, {field: left[why] for why, field in LEFT_OFF.items()}
 
 
 def hand_reading_sheet(result: dict) -> tuple[list[dict], dict]:
@@ -2879,50 +2939,35 @@ def hand_reading_sheet(result: dict) -> tuple[list[dict], dict]:
     verdict (`read_hand_sheet` and `--hand` read the sheet back). A held-out rewording is shown
     by its template's question, which it rewords with the meaning kept and whose key it has:
     only the block's arms ask the rewordings, so their own texts, or their ids, would name the
-    arm, and this code never reads them. A slot the box closed answered nothing and is left
-    out, counted in the key file.
+    arm, and this code never reads them. A slot the box closed, an answer to a question with no
+    key and, since v7, a run with no key for the reading it was answered under are left out,
+    each counted in the key file (`left_off_the_sheet`).
 
     What the sheet cannot hide: an answer's own words, which may say how many listings it
     opened, and on a question with two readings a buyable key, which only the box can give a
     run, by the reply to its ask or a reading it took itself."""
-    tasks_path = paths.TASKS / result["tasks_file"]
-    spec = json.loads(tasks_path.read_text())
-    tasks = {task["id"]: task for task in spec["tasks"]}
-    keys = scoring.keys_for(tasks_path)
-    rows, codes, closed, keyless = [], {}, 0, 0
-    for model, m in result["models"].items():
-        # A refused model has no analysis, so nothing of it is read (v4).
-        for run in m.get("runs") or []:
-            if run["outcome"] == voids.CLOSED:
-                closed += 1
-                continue
-            # A question with no key, a decline or one of its rewordings, has nothing to read an
-            # answer against and is in no test of correct, so it is not on the sheet (v5): a
-            # reader marks unscorable only an answer that cannot be read at all.
-            if tasks[run["task"]]["expect"].get("kind") == "none":
-                keyless += 1
-                continue
+    spec = json.loads((paths.TASKS / result["tasks_file"]).read_text())
+    tasks, keys = task_keys(result["tasks_file"])
+    on, left = sheet_runs(result["models"], tasks, keys)
+    rows, codes = [], {}
+    for model, run in on:
+        code = secrets.token_hex(4)
+        while code in codes:
             code = secrets.token_hex(4)
-            while code in codes:
-                code = secrets.token_hex(4)
-            task = tasks[run["task"]]
-            asked = tasks[run["template"]] if run.get("template") else task
-            try:
-                key = json.dumps(scoring.run_key(task, run["answered"], keys), sort_keys=True)
-            except scoring.NoKeyForReading:
-                key = "no key for the reading this run answered under"
-            rows.append({"code": code, "question": asked["query"].format(base=spec["base_url"]), "key": key,
-                         "answer": " ".join((run["answer"] or "").split()), "hand_verdict": "", "note": ""})
-            codes[code] = {"model": model, "arm": run["arm"], "batch": run["batch"], "task": run["task"],
-                           "repeat": run["repeat"], "answered": run["answered"], "verdict": run["verdict"]}
+        task = tasks[run["task"]]
+        asked = tasks[run["template"]] if run.get("template") else task
+        key = json.dumps(scoring.run_key(task, run["answered"], keys), sort_keys=True)
+        rows.append({"code": code, "question": asked["query"].format(base=spec["base_url"]), "key": key,
+                     "answer": " ".join((run["answer"] or "").split()), "hand_verdict": "", "note": ""})
+        codes[code] = {"model": model, "arm": run["arm"], "batch": run["batch"], "task": run["task"],
+                       "repeat": run["repeat"], "answered": run["answered"], "verdict": run["verdict"]}
     rows.sort(key=lambda row: row["code"])
     mapping = {"_about": "What each code of the hand-reading sheet stands for. Keep it apart from the sheet "
                          "until every row is read.",
                "tasks_file": result["tasks_file"], "protocol_file": result["protocol_file"],
                "analysis_version": result["analysis_version"],
                "protocol_analysis_version": result["protocol_analysis_version"],
-               "scorer_version": result["scorer_version"], "rows": len(rows),
-               "closed_slots_left_out": closed, "keyless_answers_left_out": keyless,
+               "scorer_version": result["scorer_version"], "rows": len(rows), **left,
                "codes": dict(sorted(codes.items()))}
     return rows, mapping
 
@@ -2986,19 +3031,25 @@ def read_hand_sheet(path: pathlib.Path) -> dict:
     return {"sheet": str(sheet_path), "key": key, "rows": read}
 
 
-def hand_by_run(hand: dict, kept: list[dict], tasks_file: str, protocol_file: str,
-                keyed: frozenset | None = None) -> dict:
+def not_this_analysis(hand: dict, problems: list[str]) -> SystemExit:
+    """The refusal of a hand-reading sheet that is not this analysis's, naming why."""
+    return SystemExit(f"{pathlib.Path(hand['sheet']).name}: refused, the sheet is not this analysis's: "
+                      + "; ".join(problems[:10]) + (" ..." if len(problems) > 10 else ""))
+
+
+def hand_by_run(hand: dict, kept: list[dict], tasks_file: str, protocol_file: str, tasks: dict,
+                keys: scoring.Keys) -> dict:
     """Each answered run's hand verdict, by its model, batch, task and repeat, from a sheet
     read back (`read_hand_sheet`). Refused where the sheet is not this analysis's: its key
-    names another task or protocol file, a code stands for a run this analysis does not count
-    or whose answer is not the one on the sheet, or a run the agent answered on a question with
-    a key (`keyed`, every question where None) has no row."""
+    names another task or protocol file, or a code stands for a run this analysis does not
+    count, or does not put on a sheet (`left_off_the_sheet`, v7), or whose answer is not the one
+    on the sheet. Whether every run the analysis reads has a row is asked once each model's
+    analysis is made (`sheet_gaps`), since a refused model's runs are on no sheet."""
     key, problems = hand["key"], []
     if (key.get("tasks_file"), key.get("protocol_file")) != (tasks_file, protocol_file):
         problems.append(f"its key is of {key.get('tasks_file')} under {key.get('protocol_file')}, "
                         f"and this analysis of {tasks_file} under {protocol_file}")
-    runs = {(s["model"], s["batch"], s["task"], s["repeat"]): s for s in kept
-            if s["outcome"] != voids.CLOSED and (keyed is None or s["task"] in keyed)}
+    runs = {(s["model"], s["batch"], s["task"], s["repeat"]): s for s in kept}
     found = {}
     for code, mapped in key["codes"].items():
         name = (mapped["model"], mapped["batch"], mapped["task"], mapped["repeat"])
@@ -3007,6 +3058,11 @@ def hand_by_run(hand: dict, kept: list[dict], tasks_file: str, protocol_file: st
             problems.append(f"the code {code} stands for {mapped['batch']}/{mapped['task']}-{mapped['repeat']}, "
                             f"which this analysis does not count")
             continue
+        why = left_off_the_sheet(run, tasks, keys)
+        if why is not None:
+            problems.append(f"the code {code} stands for {mapped['batch']}/{mapped['task']}-{mapped['repeat']}, "
+                            f"which this analysis leaves off the sheet ({LEFT_OFF[why]})")
+            continue
         if code not in hand["rows"]:
             problems.append(f"the code {code} has no row on the sheet")
             continue
@@ -3014,14 +3070,28 @@ def hand_by_run(hand: dict, kept: list[dict], tasks_file: str, protocol_file: st
             problems.append(f"the code {code}'s answer on the sheet is not the one "
                             f"{mapped['batch']}/{mapped['task']}-{mapped['repeat']} gave")
         found[name] = {**hand["rows"][code], "code": code}
-    unread = sorted(set(runs) - set(found), key=str)
+    if problems:
+        raise not_this_analysis(hand, problems)
+    return found
+
+
+def sheet_gaps(models: dict, found: dict, tasks: dict, keys: scoring.Keys) -> list[str]:
+    """How a sheet read back (`hand_by_run`) is not the one this analysis would write, once
+    each model's analysis is made: a run it would put on the sheet with no row, and a row of a
+    run no model's analysis reads, a refused model's or one outside its model's design (v7).
+    Until v7 every run the analysis counted was asked a row, a refused model's too, so a sheet
+    of a run with one model refused, which holds none of that model's, was always refused."""
+    wanted = {(model, run["batch"], run["task"], run["repeat"]) for model, run in sheet_runs(models, tasks, keys)[0]}
+    problems = []
+    unread = sorted(wanted - set(found), key=str)
     if unread:
         problems.append(f"{len(unread)} runs the agent answered have no row: "
                         + ", ".join(f"{b}/{t}-{r}" for _, b, t, r in unread[:6]) + (" ..." if len(unread) > 6 else ""))
-    if problems:
-        raise SystemExit(f"{pathlib.Path(hand['sheet']).name}: refused, the sheet is not this analysis's: "
-                         + "; ".join(problems[:10]) + (" ..." if len(problems) > 10 else ""))
-    return found
+    stray = sorted(set(found) - wanted, key=str)
+    if stray:
+        problems.append(f"{len(stray)} rows stand for runs no model's analysis reads: "
+                        + ", ".join(f"{b}/{t}-{r}" for _, b, t, r in stray[:6]) + (" ..." if len(stray) > 6 else ""))
+    return problems
 
 
 # Which way the scorer leans where it and the hand reader differ.
@@ -3150,6 +3220,13 @@ def render_protocol(result: dict) -> str:
     for void in result.get("void_batches") or []:
         say(f"Void as a whole, outside what the protocol requires: {void['batch']} ({'; '.join(void['why'])}); "
             + ("every slot of it run again" if void["re_run"] else "not run again"))
+    sheet = result.get("hand_sheet")
+    if sheet:
+        left = sheet.get("left_off") or {}
+        say(f"The hand reading read back from {sheet['sheet']}: {sheet['rows']} rows; left off the sheet, as its "
+            f"key counts them: closed slots {left.get('closed_slots_left_out', '-')}, answers to a question with "
+            f"no key {left.get('keyless_answers_left_out', '-')}, runs with no key for the reading they "
+            f"answered {left.get('unscored_left_out', '-')}")
     for model, m in result["models"].items():
         role = role_words(m.get("role"), m.get("family") or (result.get("families") or {}).get(model) or [])
         say(f"\n{'=' * 100}\nModel {model}" + ("" if m["named"] else ", which the protocol does not name")
@@ -3430,9 +3507,10 @@ def main(argv: list[str] | None = None) -> int:
                              "experiments/tasks/claim2_analysis.json for the second claim; the "
                              "first claim's analysis by default")
     parser.add_argument("--sheet", type=pathlib.Path,
-                        help="under --protocol, also write every answer counted as a blind "
-                             "hand-reading sheet, CSV, and its key beside it as <name>.key.json "
-                             "(`hand_reading_sheet`); neither is ever written over")
+                        help="under --protocol, also write every answer counted that a key can judge "
+                             "as a blind hand-reading sheet, CSV, and its key beside it as "
+                             "<name>.key.json, which counts the runs left off (`hand_reading_sheet`); "
+                             "neither is ever written over")
     parser.add_argument("--hand", type=pathlib.Path, metavar="SHEET",
                         help="under --protocol, read a filled hand-reading sheet back, with its key "
                              "beside it, and add the primary tests on its verdicts and every "
@@ -3492,7 +3570,10 @@ def main(argv: list[str] | None = None) -> int:
             rows, mapping = hand_reading_sheet(result)
             key_path = write_sheet(args.sheet, rows, mapping)
             print(f"\nthe hand-reading sheet, {len(rows)} answers under random codes: {args.sheet}; "
-                  f"its key, to be kept apart until every row is read: {key_path}. Write correct or not "
+                  f"its key, to be kept apart until every row is read: {key_path}. Left off it: closed "
+                  f"slots {mapping['closed_slots_left_out']}, answers to a question with no key "
+                  f"{mapping['keyless_answers_left_out']}, runs with no key for the reading they answered "
+                  f"{mapping['unscored_left_out']}. Write correct or not "
                   f"correct in hand_verdict for every answer that can be read, and unscorable only for "
                   f"one that cannot: empty, garbled, or about another question")
     else:
