@@ -22,7 +22,9 @@ Every run is made at one commit, named here at the freeze with every version it 
 form, prompt, normalisation, primitives, targeting, planner, scorer, sufficiency rules, the
 analysis file, the A+ generator, the search-order model and the toolbar counter. The
 analysis file's `require` holds each arm's conditions: those versions, the agent's code and
-patch, the browser tool, flags and origins, and for the model arm the parser's model. The
+patch, the browser tool, flags and origins, for the model arm the parser's model, and the
+provider routing (decision 9): the agent's routing in every arm and the parser's in the model
+arm, each equal to the protocol's value for the run's model (null meaning off). The
 claim command checks them before every invocation and spends nothing on a mismatch. A batch
 found outside `require` afterwards is void as a whole: it is listed, re-run under the
 required conditions, and until then it holds up only its own model's analysis. To fix at the
@@ -30,8 +32,11 @@ freeze: the commit and the version list.
 
 Fixed settings, the same for every arm: the agent's sampling (temperature 0.2, top_p 0.1),
 the browser tool (Playwright MCP 0.0.83, isolated, service workers blocked) confined to the
-shop's origin, the gated theme's user agent, and a fresh browser profile and selector cache
-for each run.
+shop's origin, the gated theme's user agent, a fresh browser profile and selector cache for
+each run, and, under decision 9(b), `IGR_PROVIDER_ROUTING` exported once for the whole stage
+with DeepSeek's value `{"order": ["gmicloud", "deepinfra", "streamlake"], "allow_fallbacks":
+false, "quantizations": ["fp8"]}` and none for Haiku. The routing names providers and a
+quantisation, not a price; the providers' prices on 23 October were at or below list.
 
 ## The market (A+, generator version 3)
 
@@ -166,7 +171,9 @@ person developing them before the run.
    own model at temperature 0 under prompt version 3. It may decline a question only when the
    rules confirm the attribute it needs is not shown on this shop, and a price question cannot
    be declined by naming a missing attribute. A reply that gives no usable form falls back to
-   the rules' form, recorded on the run.
+   the rules' form, recorded on the run. Under provider routing, a parse call that fails (an
+   HTTP error, or no completion) voids the slot instead: no agent runs, and it is re-run once
+   with the voids.
 
 Both block arms: the rendered page reader (`--page-reader rendered`, headless Chromium,
 following the pager across every results page), and the rate plan without a bound
@@ -187,8 +194,9 @@ DeepSeek V4 Flash is the primary model: its four tests are the claim, with Holm 
 four. Claude Haiku 4.5 is a replication: a family of its own, Holm over its own tests, never
 pooled with DeepSeek's. DeepSeek's serving provider is set by decision 9: either left to
 OpenRouter (openJiuwen sends no provider preference) or restricted, for every arm alike, to the
-listed fp8 providers at or below list price. Every run records its providers; H3 is also
-reported on tokens, and within each provider wherever the two arms' provider mixes differ.
+listed fp8 providers at or below list price. Every run records its providers, and a run whose
+log gives no count is counted as unknown, never as none; H3 is also reported on tokens, and
+within each provider wherever the two arms' provider mixes differ.
 
 ## Design and order
 
@@ -218,22 +226,35 @@ To fix: the stage caps and the reserve (decision 2).
 
 As the first protocol: correct under the key fixed before the run, listings opened by
 membership of the market's listings, cost by the provider's charge, the parse call's tokens and
-charge counted in its run. Answers are scored by the scorer at the frozen commit (score
-version 8, to confirm at the freeze) with the same arguments in every caller (the market's
+charge counted in its run. Answers are scored by the scorer at the frozen commit (version 8,
+or 9 under decision 5(b)) with the same arguments in every caller (the market's
 sellers and the two-reading list), so a run has one verdict wherever it is scored. A run is
 scored under the reading it was answered under; a run with no key for that reading is
 unscored and reported, never scored against another key.
 
-The scorer is frozen at the commit (version 8, or version 9 if decision 5 adopts the three
-fixes prepared on 23 October), and its known limits are stated: on fresh plausible answers
-written by the verifier after version 8, version 8 misjudged 11 of 24, mostly long and careful
-answers read as wrong, with a few wrong long answers read as correct; and on the pilot's 34
-real answers it misjudged 5 correct block answers, all through the list of opened and skipped
-listings the block asks its agent to write. The verdict of record is set by decision 5. Beside it, every answer is read by hand from a sheet in which the arm,
-the model and the scorer's verdict are all replaced by random codes (`claim.py --sheet`); the
-filled sheet is read back by `claim.py --hand`, H1 to H4 are rerun on the hand verdicts, and
-every disagreement with the scorer is listed by arm and model after unblinding. A hand reading
-cannot be blind to an answer's own style, which is stated.
+The scorer is frozen at the commit (version 8, or version 9 under decision 5(b)), and its known
+limits are stated: on fresh plausible answers written by the verifier after version 8, version 8
+misjudged 11 of 24, mostly long and careful answers read as wrong, with a few wrong long answers
+read as correct; and on the pilot's 34 real answers it misjudged 5 correct block answers, all
+through the list of opened and skipped listings the block asks its agent to write. Version 9
+reads those 5 correctly, but passed all 7 wrong answers the auditor wrote in the block's report
+style. The verdict of record is set by decision 5.
+
+Beside the scorer, every keyed answer is read by hand from a sheet written by `claim.py
+--sheet`: one random code per run hides its arm, model, batch, task and round; the scorer's
+verdict is not on the sheet, only in the key file; a held-out rewording is shown under its
+template's question, since only the block arms ask rewordings. Closed slots and answers to the
+keyless questions (the decline templates and their rewordings) are not on the sheet. The
+filled sheet is read back by `claim.py --hand`, which refuses a sheet with any gap or foreign
+code; H1 to H4 are rerun on the hand verdicts per model, and every disagreement with the scorer
+is listed by arm and model after unblinding, with its lean. A hand reading cannot be blind to
+an answer's own style, which is stated. The reader is named (the student) and reads under the
+written rules in `docs/content/claim2-reading-rules.md`, fixed with this protocol; a run may be
+marked unscorable only when its answer cannot be read at all (empty, garbled, or about another
+question), and unscorable runs are counted by arm and model beside each test. A second reader,
+the verifier, reads 40 rows of the same sheet blind, drawn with Python's
+`random.Random(20261023).sample` over the sheet's codes in sorted order, and the agreement
+between the two readers (the share of rows read alike, and Cohen's kappa) is reported.
 
 ## Tests
 
@@ -265,7 +286,8 @@ hidden price; without runs that sorted the results or changed the page size.
 A run is void when its log falls silent for more than 60 seconds or it ends with no final
 completion for a reason outside the agent (the shop, the provider, the laptop). Voids are
 decided from the log before any answer is judged, re-run once after the last round under the
-same flags, and a second void is reported as such. Every other run counts; a run that stops at
+same flags and the same provider routing (`voids.py` prints no re-run flags when the routing
+differs from the batch's), and a second void is reported as such. Every other run counts; a run that stops at
 the step or clock limit without an answer counts as not correct.
 
 ## Secondary measures
@@ -275,7 +297,12 @@ fallbacks, by arm and model; the shipped arm's failures on the reading-independe
 by written code ("page 2 never reached", applied only where the key needs a listing past page 1
 in the accepted order; a separate code for a run that sorted or changed the page size and
 stayed on page 1; "a card or sold-out price taken"; "other"); sorts and page-size changes by
-arm; runs that saw a hidden price; the DeepSeek provider mix by arm.
+arm; runs that saw a hidden price; the DeepSeek provider mix by arm. The reading test: each
+model parses all 36 held-out entries once, as text, at the frozen prompt (`parse_probe.py
+--questions experiments/tasks/paraphrases_v2.json`), each form compared with its template's
+in the probe's four tiers and each outcome with the entry's expected one (plan, ask or
+decline), and the rules' form beside it. It runs after the stage's last block run, so no
+parse of a v2 entry precedes the run that answers it.
 
 ## Limits stated in advance
 
@@ -330,10 +357,13 @@ Each is the student's; the text above is written under the recommended option.
 3. **Scripted reply.** `own` (recommended) or `menu` for every ask.
 4. **The stop rule's own effect.** Add the block without its stop rule on the price questions,
    or state the limit above.
-5. **Verdict of record.** (a) Fix the three rules that misread the block's own report
-   (version 9), freeze, with the blind hand reading beside it (recommended); (b) freeze
-   version 8, and the blind hand reading is the verdict of record; (c) freeze version 8, with
-   the hand reading as a sensitivity only.
+5. **Verdict of record.** (a) The student's blind hand reading, under written reading rules
+   fixed before the run, with score version 8 reported beside it and the verifier reading a
+   blind sample as a second reader (recommended); (b) score version 9 (the three rules that
+   misread the block's own report, fixed), with the blind hand reading as a pre-specified
+   check; (c) score version 8, with the hand reading as a check. Version 9 corrects every real
+   answer it moves, but its exemptions passed all 7 wrong answers the auditor wrote in the
+   block's report style.
 6. **Multipack hint.** Keep it and state it, remove it, or give the same sentence to open
    everything.
 7. **Product scoping.** A shared rules step (recommended), or the model names the product.
