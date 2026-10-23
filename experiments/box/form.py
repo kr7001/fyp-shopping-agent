@@ -103,7 +103,11 @@ VERSION = 12
 #      whose failures named what to teach: medium kept as a size, title filters restating
 #      the brand, the population "listing" for a results page, a negation read as an
 #      existence, and "affordable" made a filter (22 October 2026)
-PROMPT_VERSION = 2
+#   3  23 October 2026, from the verifier's fairness audit of d357c72. Version 2 with two
+#      sentences of its context made true of the shop (`CONTEXT_V3`): a search lists one
+#      product or several, and a listing has reviews only when it has any. Version 2 is kept
+#      byte for byte (tests/test_model_parser.py pins its sha256)
+PROMPT_VERSION = 3
 
 # The vocabulary. A form outside it is refused when it is built, so a model's reply cannot
 # smuggle in a quantifier nothing knows how to plan. "unknown" is the rules' answer to a
@@ -983,6 +987,23 @@ appears only after that size is chosen, and a size that cannot be bought is list
 menu as a disabled option. Reviews of a listing are on their own pages, ten to a page, each \
 with its text and a rating."""
 
+# Prompt version 3 (23 October 2026, the verifier's fairness audit of d357c72): two sentences
+# of CONTEXT were false of the shop. A search can list more than one product, as the
+# Larchmere search lists a tee and a bottled water, and a listing has reviews only when it
+# has any: every generated listing says "Be the first to review this product" and holds no
+# review (igr-dev-21.html and igr-dev-28.html, read on 23 October 2026), where the base
+# catalogue's products have review pages (/review/product/list/id/230/). Said in the shop's
+# terms, naming no market; the rest of the prompt is version 2's.
+CONTEXT_V3 = """You are parsing a shopper's question into a logical form before a web agent \
+retrieves anything from an online shop.
+
+The shop's search results page lists the competing listings a search finds, for one product \
+or for several. For each listing it shows the seller, the title, the URL and one advertised \
+price, which is the cheapest option that listing can sell. Opening a listing shows its size \
+menu. The price of a size appears only after that size is chosen, and a size that cannot be \
+bought is listed in the menu as a disabled option. A listing that has reviews has them on \
+their own pages, ten to a page, each with its text and a rating; many listings have none."""
+
 SHOWN = """The attributes the shop shows, and the only ones a form may compare or filter on:
 - on the results page: {results}
 - on a listing page: {listing}
@@ -1226,19 +1247,20 @@ def worked_examples() -> str:
 
 def prompt(question: str, page: page_module.Page | None = None,
            version: int = PROMPT_VERSION) -> str:
-    """The prompt the model parser sends, by version, the current one by default. Version 1
-    is kept byte for byte, so a probe made under it can be reproduced. Everything in it is
-    true of the shop today."""
+    """The prompt the model parser sends, by version, the current one by default. Versions 1
+    and 2 are kept byte for byte, so a probe made under either can be reproduced. Everything
+    in the current one is true of the shop today."""
     shown = attributes_shown(page)
     lists = SHOWN.format(results=", ".join(sorted(shown - LISTING_PAGE_SHOWS - REVIEW_PAGE_SHOWS)),
                          listing=", ".join(sorted(LISTING_PAGE_SHOWS)),
                          review=", ".join(sorted(REVIEW_PAGE_SHOWS)))
     if version == 1:
         return "\n\n".join([CONTEXT, lists, PROPERTIES, SCHEMA, f"The question:\n{question}"])
-    if version == 2:
-        return "\n\n".join([CONTEXT, lists, SIZES, KINDS, PROPERTIES, FILLING, SCHEMA_V2,
+    if version in (2, 3):
+        context = CONTEXT if version == 2 else CONTEXT_V3
+        return "\n\n".join([context, lists, SIZES, KINDS, PROPERTIES, FILLING, SCHEMA_V2,
                             worked_examples(), f"The question:\n{question}"])
-    raise ValueError(f"no prompt version {version!r}: there are 1 and 2")
+    raise ValueError(f"no prompt version {version!r}: there are 1, 2 and 3")
 
 
 def parse_reply(reply: str | None, version: int = PROMPT_VERSION) -> Form:

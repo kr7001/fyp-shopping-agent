@@ -53,6 +53,10 @@ MEDIUM = ("Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Which
 # sha256 of `form.prompt` at 447d285, taken on 22 October 2026 before form.py changed.
 V1_QUESTION = GO + "Is there any seller under $20 for size M?"
 V1_PROMPT_SHA256 = "e1d59dbf5fb4e72f3ee7e76fcbdfaec6277cd8a56242e8b4f0f040603986795b"
+# Prompt version 2 for the same question: the sha256 of `form.prompt` at 39e747b, whose form.py
+# is d357c72's, taken on 23 October 2026 before version 3 existed, so the probes and runs made
+# under it can be reproduced.
+V2_PROMPT_SHA256 = "96ff5fa3777250082e55bf4b82ff83dec20e7f6dbaa2d071d89504266b182b2b"
 
 
 def reply(**fields) -> str:
@@ -155,7 +159,7 @@ class FormV10(unittest.TestCase):
     def test_the_prompt_version_is_recorded(self):
         question = GO + "Which seller is cheapest for size M?"
         self.assertEqual(form.from_model(question, None, stub(reply())).prompt_version, form.PROMPT_VERSION)
-        self.assertEqual(form.PROMPT_VERSION, 2)
+        self.assertEqual(form.PROMPT_VERSION, 3)
         self.assertEqual(form.parse_reply(reply(), version=1).prompt_version, 1)
         self.assertIsNone(form.from_rules(question).prompt_version)
         for bad in (0, True, "2"):
@@ -194,13 +198,38 @@ class FormV10(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # 2. Prompt version 2
 
+class PromptV3(unittest.TestCase):
+    """Version 3 (23 October 2026, the verifier's fairness audit of d357c72): version 2 with
+    the two sentences of its context that were false of the shop made true."""
+
+    def test_version_2_is_kept_byte_for_byte(self):
+        sent = form.prompt(V1_QUESTION, version=2)
+        self.assertEqual(hashlib.sha256(sent.encode()).hexdigest(), V2_PROMPT_SHA256)
+        self.assertTrue(sent.startswith(form.CONTEXT + "\n\n"))
+
+    def test_version_3_is_version_2_with_its_context_corrected(self):
+        two, three = form.prompt(V1_QUESTION, version=2), form.prompt(V1_QUESTION)
+        self.assertEqual(three, form.CONTEXT_V3 + two[len(form.CONTEXT):])
+        for false in ("lists competing listings for one product", "Reviews of a listing are on their own pages"):
+            with self.subTest(sentence=false):
+                self.assertIn(false, two)
+                self.assertNotIn(false, three)
+        for true in ("for one product or for several", "A listing that has reviews has them on their own "
+                     "pages", "many listings have none"):
+            with self.subTest(sentence=true):
+                self.assertIn(true, three)
+        # It names no market: no brand the shop's generated markets were seeded under.
+        for brand in ("Larchmere", "Thornwood", "Ashcombe", "Rivenhall", "Calderwood"):
+            self.assertNotIn(brand, form.CONTEXT_V3)
+
+
 class PromptV2(unittest.TestCase):
     def test_version_1_is_kept_byte_for_byte(self):
         sent = form.prompt(V1_QUESTION, version=1)
         self.assertEqual(hashlib.sha256(sent.encode()).hexdigest(), V1_PROMPT_SHA256)
         self.assertNotIn("Worked examples", sent)
         with self.assertRaises(ValueError):
-            form.prompt(V1_QUESTION, version=3)
+            form.prompt(V1_QUESTION, version=4)
 
     def test_version_2_says_what_the_task_asked_and_ends_with_the_question(self):
         sent = form.prompt(V1_QUESTION)
@@ -584,7 +613,8 @@ class ModelPath(unittest.TestCase):
         record = decision.record()
         parse = record["parse"]
         self.assertEqual((parse["parser"], parse["used"], parse["fallback_reason"], parse["prompt_version"],
-                          parse["normalise_version"]), ("model", "model", None, 2, normalise.VERSION))
+                          parse["normalise_version"]), ("model", "model", None, form.PROMPT_VERSION,
+                                                       normalise.VERSION))
         self.assertEqual(parse["model_form"], record["form"])
         self.assertEqual(parse["rules_form"], form.from_rules(MEDIUM, self.thornwood).record())
         self.assertEqual(parse["model_raw"]["filters"], [f("size", "=", "medium"), f("title", "contains", "Thornwood")])
@@ -624,7 +654,8 @@ class ModelPath(unittest.TestCase):
                 decision = box.decide(MEDIUM, self.thornwood, parser="model", call=call)
                 self.assertEqual((decision.query, decision.kind, decision.form), (rules.query, rules.kind, rules.form))
                 parse = decision.record()["parse"]
-                self.assertEqual((parse["parser"], parse["used"], parse["prompt_version"]), ("model", "rules", 2))
+                self.assertEqual((parse["parser"], parse["used"], parse["prompt_version"]),
+                                 ("model", "rules", form.PROMPT_VERSION))
                 self.assertIn(words, parse["fallback_reason"])
                 self.assertEqual(parse["model_form"] is not None, has_form)
                 self.assertEqual(parse["rules_form"], rules.form.record())
@@ -991,7 +1022,7 @@ class SuiteParser(unittest.TestCase):
         run, _ = self.run_model(*only, "--box", "--parser", "model", "--dry-run")
         self.assertEqual(run.code, 0)
         self.assertIn("arm: box-model\n", run.out)
-        self.assertIn(f"parser: model {suite.agent_model()}, temperature 0, prompt v2, normalisation "
+        self.assertIn(f"parser: model {suite.agent_model()}, temperature 0, prompt v{form.PROMPT_VERSION}, normalisation "
                       f"v{normalise.VERSION}\n", run.out)
         # Under the rules the header is what it always was.
         run, _ = self.run_model(*only, "--box", "--dry-run")
@@ -1013,7 +1044,7 @@ class SuiteParser(unittest.TestCase):
         self.assertEqual(run.code, 0, run.out)
         sent.assert_not_called()
         self.assertIn("parser rules: argmin price over results, filters: none\n", run.out)
-        self.assertIn(f"parser model (prompt v2, normalisation v{normalise.VERSION}), reply from replies.json: "
+        self.assertIn(f"parser model (prompt v{form.PROMPT_VERSION}, normalisation v{normalise.VERSION}), reply from replies.json: "
                       "argmin price over results, filters: size = M\n", run.out)
         self.assertIn("  normalised: size = 'medium' is size = 'M'\n", run.out)
         self.assertEqual(run.out.count(f"{MEDIUM}\n\nThe results page lists 15 listings"), 2)
@@ -1042,7 +1073,8 @@ class SuiteParser(unittest.TestCase):
         self.assertEqual((payload["arm"], payload["parser"], payload["parser_model"], payload["parser_temperature"],
                           payload["prompt_version"], payload["normalise_version"], payload["parse_charged_usd"],
                           payload["parse_charges_unknown"]),
-                         ("box-model", "model", suite.agent_model(), 0, 2, normalise.VERSION, 0.008, 0))
+                         ("box-model", "model", suite.agent_model(), 0, form.PROMPT_VERSION,
+                          normalise.VERSION, 0.008, 0))
         self.assertEqual(payload["summary"]["total_cost"], 0.008)
         self.assertIn("[parsed by the model, $0.004]", run.out)
         # The same batch under the rules: no parse, no charge, and the parser named.
