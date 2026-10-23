@@ -211,7 +211,16 @@ rewordings. Rounds and what each model runs: to fix from the budget (decision 2)
 About $98 is left on the key after the pilot (to fix from the account at the freeze). The run
 is staged, each stage one command with its own declared estimate and a cap: every invocation
 starts only if the spend so far plus that invocation's high estimate stays under the stage's
-cap, and an account that cannot be read stops the stage. Stage 1 is DeepSeek; the verifier
+cap, and an account that cannot be read stops the stage. Invocations are small (one arm, one
+round and one product, or one question for open everything and shipped), with high estimates
+of twice the estimate per question: the pilot's measured cost for the block arms, and estimates
+from those costs for open everything and shipped, which the pilot did not measure. A watchdog in the stage's command reads the
+account every 20 seconds and stops any running suite once the spend reaches the cap less
+$0.30; the account's figure lags, so a stage can end slightly over its cap, by what is spent
+while the figure catches up. Under decision 9(b) stage 1's command (DeepSeek's) starts with a
+routing check: one parse probe on
+the 30 development rewordings (about $0.02), whose every call must have been served by a
+provider the routing names, or the stage stops before any agent runs. Stage 1 is DeepSeek; the verifier
 checks its outputs before stage 2, Haiku, starts. Every stage's design is fixed here before
 stage 1 starts, and nothing changes between stages except void re-runs. The claim command
 for each stage is written from this section, dry-run, and verified before it runs.
