@@ -53,6 +53,12 @@ protocol names, and only after the protocol is final, which `--claim` guards.
   under development's prefix or over its fixture; draws only the seed its record allows next,
   so the claim market is the first seed from 1000 that passes (`claim_record_problem`); and
   prints a claim market only once it is written and recorded as accepted (`claim_gate`).
+  Since version 3 its phrasings name one product, as development's do.
+- *Rules by version* (version 3). A market is held to the rules of the version it was drawn
+  under, and drawn again under the version its seed search accepted it under
+  (`RULES_SINCE`, `drawn_under`), so development's market stays the one the shop holds.
+  Without its search record (`--search-log env/manifests/aplus_dev-search.json`) a seed is
+  drawn under this version's rules, and seed 900 is then not development's market.
 
     python3 env/generate_aplus.py --seed 900 --brand <Brand> --brand-forms 2 --report
     python3 env/generate_aplus.py --seed 900 --brand <Brand> --brand-forms 2 --sku-prefix IGR-DEV \\
@@ -87,7 +93,21 @@ MARKET = "aplus"
 #      page rules and the recorded order for the brand's own analyzer form (`--brand-forms`);
 #      the claim market's titles drawn from phrasings development never used; the claim's
 #      seed guards. Rules about one product are checked on its own draw, before pairing
-VERSION = 2
+#   3  23 October 2026, from the verifier's fairness audit, before any claim draw. The claim's
+#      tee titles read as one product, as development's all say "Heavyweight Cotton": version
+#      2's "Classic Organic Tee" and "Relaxed Fit Basic Tee" named two materials and two fits,
+#      so "the {brand} tee" had a second reading. The claim's water loses "Alpine", a source
+#      the others do not claim. Every pool shares one core, its shortest phrasing's words
+#      (`phrase_problems`). And a margin through the top three (`top_3_margin`): version 2
+#      let the second and third cheapest buyable size M tie. A market is held to the rules of
+#      the version it was drawn under (`RULES_SINCE`, `drawn_under`): development's, drawn
+#      under version 2, is kept as drawn, and fails the margin by its second and third,
+#      $21.54 and $21.71, 0.8 per cent apart; it is development's, and no claim rests on it
+VERSION = 3
+# The rules a market drawn under an earlier version was not held to, by the version that
+# brought each in. A market is judged by the rules of the version it was drawn under, its
+# fixture's `_generated.version`, and redrawn under that version (`drawn_under`).
+RULES_SINCE = {"top_3_margin": 3}
 
 TEE, WATER = "tee", "water"
 TEE_TARGET = apparel.TARGET_SIZE          # "M"
@@ -119,10 +139,14 @@ DEV_WATER_PHRASES = ("Spring Water", "Still Spring Water", "Natural Spring Water
 # sharing no word with development's but the head noun, so nothing built on the development
 # market's titles carries over to the claim's. The same number of words, phrasing by
 # phrasing, as development's (3, 4, 5 for the tee, 2, 3, 4 for the water), since a title's
-# length moves where it renders.
-CLAIM_TEE_PHRASES = ("Classic Organic Tee", "Relaxed Fit Basic Tee",
-                     "Organic Ringspun Tee, Short Sleeve")
-CLAIM_WATER_PHRASES = ("Mineral Water", "Alpine Mineral Water", "Pure Mineral Water, Bottled")
+# length moves where it renders. Since version 3 (23 October 2026) they read as one product,
+# as development's do: one core, a midweight jersey tee and a mineral water, with words that
+# every such listing could carry (a knit, a short sleeve; bottled, pure), where version 2's
+# set "Classic Organic" against "Relaxed Fit Basic", two materials and two fits, and an
+# "Alpine" water against two that claim no source.
+CLAIM_TEE_PHRASES = ("Midweight Jersey Tee", "Midweight Jersey Knit Tee",
+                     "Midweight Jersey Tee, Short Sleeve")
+CLAIM_WATER_PHRASES = ("Mineral Water", "Mineral Water, Bottled", "Pure Mineral Water, Bottled")
 HEAD_NOUNS = {TEE: "Tee", WATER: "Water"}
 ALL_PHRASES = DEV_TEE_PHRASES + DEV_WATER_PHRASES + CLAIM_TEE_PHRASES + CLAIM_WATER_PHRASES
 
@@ -147,8 +171,12 @@ def phrase_words(phrases: tuple[str, ...]) -> set[str]:
 def phrase_problems() -> list[str]:
     """What is wrong with the phrasing pools, one line each: a head noun not its product's,
     a word of the other product in a phrasing, a claim phrasing sharing a word other than
-    the head noun with development's, or a claim pool whose word counts are not
-    development's. Empty when nothing is."""
+    the head noun with development's, a claim pool whose word counts are not development's,
+    or a pool whose phrasings do not share one core (version 3): every phrasing of a pool
+    holds each word of its shortest, as each of development's holds "Heavyweight Cotton
+    Tee" and "Spring Water", so the pool names one product. Whether the words beyond the
+    core are ones every such listing could carry is read by hand (the module's version
+    notes). Empty when nothing is."""
     problems = []
     nouns = {noun.lower() for noun in HEAD_NOUNS.values()}
     for product, dev, claim in ((TEE, DEV_TEE_PHRASES, CLAIM_TEE_PHRASES),
@@ -164,6 +192,12 @@ def phrase_problems() -> list[str]:
             problems.append(f"{product}: the claim phrasings share {sorted(shared)} with development's")
         if sorted(len(p.split()) for p in dev) != sorted(len(p.split()) for p in claim):
             problems.append(f"{product}: the claim phrasings' word counts are not development's")
+        for name, pool in (("development", dev), ("claim", claim)):
+            core = phrase_words((min(pool, key=lambda p: len(p.split())),))
+            apart = [phrase for phrase in pool if not core <= phrase_words((phrase,))]
+            if apart:
+                problems.append(f"{product}: the {name} phrasings share no one core: {apart} lack "
+                                f"{sorted(core)}")
     return problems
 
 # The availability model, the tee generator's, for both products.
@@ -291,6 +325,11 @@ What every key needs to be one answer, refused rather than guessed:
 14. per_litre_margin      one listing has the lowest price per litre, at least 8 per cent below
                           the next listing's, as `clear_margin` holds the price winners
                           (version 2, replacing per_litre_unique)
+15. top_3_margin          the third cheapest buyable size M is at least 8 per cent above the
+                          second, and the fourth at least 8 per cent above the third, as
+                          `clear_margin` holds the second above the first, so neither who is in
+                          the three nor what each charges is rounding luck (version 3; markets
+                          drawn under an earlier version were not held to it)
 
 A page rule is applied to the order `search_order.py` predicts for the brand's analyzer form,
 under each of its scenarios, when the market is drawn, and to the live results pages after
@@ -633,9 +672,27 @@ def name_problems(families: list[dict], brand: str) -> list[str]:
     return problems
 
 
-def tee_market_rules(k: dict) -> list[str]:
+def held_to(rule: str, version: int | None) -> bool:
+    """Whether a market drawn under `version` is held to `rule`. None asks for the rules every
+    version holds, as a caller that cannot say which version its market was drawn under
+    (generate_aplus_tasks.py's check of a fixture's keys) must."""
+    return rule not in RULES_SINCE or (version is not None and version >= RULES_SINCE[rule])
+
+
+def top_3_separated(k: dict) -> bool:
+    """`top_3_margin`: the second, third and fourth cheapest buyable size M each at least
+    `apparel.MIN_MARGIN_REL` above the one before, where the second above the first is
+    `clear_margin`'s, the tee generator's."""
+    if k["top_next"] is None or len(k["top"]) < TOP_K:
+        return False
+    prices = [apparel.buyable_price_for(l, TEE_TARGET) for l in k["top"] + [k["top_next"]]]
+    return all(b - a >= a * apparel.MIN_MARGIN_REL for a, b in zip(prices[1:], prices[2:]))
+
+
+def tee_market_rules(k: dict, version: int | None = VERSION) -> list[str]:
     """The rules of `MARKET_RULES` about the tees alone, from `keys` of a draw that need hold
-    nothing but tees, so the generator can check them before pairing."""
+    nothing but tees, so the generator can check them before pairing, as a market drawn
+    under `version` is held to them (`held_to`)."""
     broken = []
     if not k["tee_sold_out"]:
         broken.append("readings_differ")
@@ -647,6 +704,8 @@ def tee_market_rules(k: dict) -> list[str]:
     if k["top_next"] is None or apparel.buyable_price_for(k["top_next"], TEE_TARGET) == \
             apparel.buyable_price_for(k["top"][-1], TEE_TARGET):
         broken.append("top_3_unique")
+    if held_to("top_3_margin", version) and not top_3_separated(k):
+        broken.append("top_3_margin")
     return broken
 
 
@@ -678,16 +737,19 @@ def water_market_rules(k: dict) -> list[str]:
     return broken
 
 
-def market_check(families: list[dict], brand: str) -> list[str]:
+def market_check(families: list[dict], brand: str, version: int | None = None) -> list[str]:
     """Every rule of `MARKET_RULES` that the fixture alone decides: those about one product
-    (`tee_market_rules`, `water_market_rules`) and those about the market as a whole."""
+    (`tee_market_rules`, `water_market_rules`) and those about the market as a whole, as a
+    market drawn under `version` is held to them. Without a version, the rules every version
+    holds: generate_aplus_tasks.py checks a fixture's keys so, and the generator, which
+    holds every draw to its own version's, passes it."""
     k = keys(families)
     broken = []
     if not PAGE_SIZE < len(families) <= 2 * PAGE_SIZE:
         broken.append("two_pages")
     if name_problems(families, brand):
         broken.append("names_distinct")
-    for rule in tee_market_rules(k) + water_market_rules(k):
+    for rule in tee_market_rules(k, version) + water_market_rules(k):
         if rule not in broken:
             broken.append(rule)
     return broken
@@ -784,9 +846,10 @@ def water_draw(seed: int, attempt: int, count: int, brand: str, claim: bool = Fa
             for i, name in enumerate(seller_names(WATER_FIRST, WATER_SECOND, count, rng), 1)]
 
 
-def tee_passes(tees: list[dict]) -> bool:
-    """A tee draw passes the tee generator's 13 rules and the market's rules about the tees."""
-    return not apparel.check(tees, apparel.measure(tees)) and not tee_market_rules(keys(tees))
+def tee_passes(tees: list[dict], version: int = VERSION) -> bool:
+    """A tee draw passes the tee generator's 13 rules and the market's rules about the tees,
+    as a market drawn under `version` is held to them."""
+    return not apparel.check(tees, apparel.measure(tees)) and not tee_market_rules(keys(tees), version)
 
 
 def water_passes(waters: list[dict]) -> bool:
@@ -801,8 +864,9 @@ WATER_PER_TEE = 40
 
 def generate(seed: int, brand: str, sku_prefix: str, two_forms: bool, tees: int = TEE_LISTINGS,
              waters: int = WATER_LISTINGS, claim: bool = False, tee_attempts: int = 400000,
-             water_attempts: int = 2000000) -> tuple[list[dict], dict, dict]:
-    """The first draw that passes every rule.
+             water_attempts: int = 2000000, version: int = VERSION) -> tuple[list[dict], dict, dict]:
+    """The first draw that passes every rule of `version`, this module's by default and an
+    earlier one's only to draw again a market that version accepted (`drawn_under`).
 
     The tees and the water come from their own streams, each held first to its own
     generator's rules and the market's rules about that product alone, since a joint draw
@@ -826,7 +890,7 @@ def generate(seed: int, brand: str, sku_prefix: str, two_forms: bool, tees: int 
 
     for tee_attempt in range(tee_attempts):
         tee_list = tee_draw(seed, tee_attempt, tees, brand, claim)
-        if not tee_passes(tee_list):
+        if not tee_passes(tee_list, version):
             continue
         for i in range(WATER_PER_TEE):
             found = water_passing(i)
@@ -837,7 +901,7 @@ def generate(seed: int, brand: str, sku_prefix: str, two_forms: bool, tees: int 
             rng = random.Random(f"{MARKET}:{seed}:order:{tee_attempt}:{water_attempt}")
             families = catalogue(json.loads(json.dumps(tee_list)),
                                  json.loads(json.dumps(water_list)), rng, sku_prefix)
-            if market_check(families, brand) or predicted_problems(families, two_forms):
+            if market_check(families, brand, version) or predicted_problems(families, two_forms):
                 continue
             return (families, measure(families, two_forms),
                     {"tee": tee_attempt, "water": water_attempt})
@@ -869,13 +933,14 @@ def measure(families: list[dict], two_forms: bool) -> dict:
     }
 
 
-def check(families: list[dict], brand: str, two_forms: bool) -> list[str]:
+def check(families: list[dict], brand: str, two_forms: bool, version: int = VERSION) -> list[str]:
     """Every rule, by name, for a market already drawn: the tee rules, the water rules, the
-    market's own and the page rules under the brand's predicted orders. Empty means usable."""
+    market's own and the page rules under the brand's predicted orders, as a market drawn
+    under `version` is held to them (its fixture's `_generated.version`). Empty means usable."""
     groups = products(families)
     broken = [f"tee.{r}" for r in apparel.check(groups[TEE], apparel.measure(groups[TEE]))]
     broken += [f"water.{r}" for r in water_check(groups[WATER], water_measure(groups[WATER]))]
-    return broken + market_check(families, brand) + predicted_problems(families, two_forms)
+    return broken + market_check(families, brand, version) + predicted_problems(families, two_forms)
 
 
 # ---------------------------------------------------------------------------
@@ -891,7 +956,7 @@ def search_lines(search: dict, command: str) -> list[str]:
 
 def to_fixture(families: list[dict], facts: dict, seed: int, attempts: dict, brand: str,
                sku_prefix: str, two_forms: bool, claim: bool = False, search: dict | None = None,
-               command: str | None = None) -> dict:
+               command: str | None = None, version: int = VERSION) -> dict:
     forms = "two forms" if two_forms else "one form"
     about = [
         "Generated by env/generate_aplus.py. Do not hand edit.",
@@ -904,7 +969,7 @@ def to_fixture(families: list[dict], facts: dict, seed: int, attempts: dict, bra
                        f"seeding and are what counts.", 88),
         f"Titles from the {'claim' if claim else 'development'} phrasings.",
     ]
-    generated = {"generator": "env/generate_aplus.py", "version": VERSION,
+    generated = {"generator": "env/generate_aplus.py", "version": version,
                  "search_order": "env/search_order.py",
                  "search_order_version": search_order.VERSION, "seed": seed, "attempts": attempts,
                  "brand": brand, "brand_forms": 2 if two_forms else 1, "sku_prefix": sku_prefix,
@@ -1050,6 +1115,27 @@ def claim_gate(seed: int, search_log: pathlib.Path | None, out: pathlib.Path | N
     return None, final
 
 
+def drawn_under(search_log: pathlib.Path | None, seed: int) -> int:
+    """The version a market is drawn under (version 3): the one its seed search accepted it
+    under, when the record ends with this seed accepted, so a market accepted before a rule
+    came in is drawn again as it was (development's Larchmere, accepted under version 2);
+    else this module's, for every new draw. The rules are kept by version for that
+    (`RULES_SINCE`). The phrasing pools are not: a later version that changes a pool must
+    keep the older one to draw again a market accepted under it, which no version has needed,
+    since version 2 drew no claim market."""
+    if search_log is None or not search_log.exists():
+        return VERSION
+    tried = json.loads(search_log.read_text()).get("tried") or []
+    last = tried[-1] if tried else {}
+    if (last.get("seed"), last.get("outcome")) != (seed, "accepted"):
+        return VERSION
+    version = last.get("generator_version", VERSION)
+    if version > VERSION:
+        raise SystemExit(f"refusing: {search_log.name} accepted seed {seed} under version {version}, "
+                         f"later than this generator's {VERSION}")
+    return version
+
+
 def load_search(path: pathlib.Path, seed: int, brand: str, sku_prefix: str) -> dict:
     """A seed search's record, checked against the market it is said to have chosen."""
     search = json.loads(path.read_text())
@@ -1097,8 +1183,9 @@ def main() -> int:
         if problem:
             raise SystemExit(f"refusing: {problem}")
 
+    version = drawn_under(args.search_log, args.seed)
     families, facts, attempts = generate(args.seed, args.brand, args.sku_prefix, two_forms,
-                                         args.tees, args.waters, claim=args.claim)
+                                         args.tees, args.waters, claim=args.claim, version=version)
     search, command = None, None
     if args.search_log and (final or not args.claim):
         search = load_search(args.search_log, args.seed, args.brand, args.sku_prefix)
@@ -1109,7 +1196,7 @@ def main() -> int:
                    f"--tees {args.tees} --waters {args.waters} --out env/fixtures/{args.out.name} "
                    f"--search-log {log}" + (" --claim" if args.claim else ""))
     fixture = to_fixture(families, facts, args.seed, attempts, args.brand, args.sku_prefix,
-                         two_forms, args.claim, search, command)
+                         two_forms, args.claim, search, command, version)
     if args.report:
         if args.claim and json.loads(args.out.read_text())["families"] != families:
             raise SystemExit(f"refusing: {args.out.name} is not this seed's claim market")

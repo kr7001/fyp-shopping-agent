@@ -159,10 +159,17 @@ class ProductRules(DevMarket):
     read over what can be bought."""
 
     def test_the_development_market_passes_every_rule(self):
-        self.assertEqual(aplus.check(self.families, BRAND, TWO_FORMS), [])
+        # Every rule of the version it was drawn under, version 2, and that is the version its
+        # seed search accepted it under, which it is drawn again under (version 3's
+        # `drawn_under`). Under version 3 it fails the one rule version 3 brought in: its
+        # second and third cheapest buyable size M are $21.54 and $21.71, 0.8 per cent apart.
+        drawn = self.fixture["_generated"]["version"]
+        self.assertEqual((drawn, aplus.drawn_under(DEV_SEARCH, self.fixture["_generated"]["seed"])), (2, 2))
+        self.assertEqual(aplus.check(self.families, BRAND, TWO_FORMS, drawn), [])
+        self.assertEqual(aplus.check(self.families, BRAND, TWO_FORMS, aplus.VERSION), ["top_3_margin"])
         self.assertEqual(len(self.groups[aplus.TEE]), aplus.TEE_LISTINGS)
         self.assertEqual(len(self.groups[aplus.WATER]), aplus.WATER_LISTINGS)
-        self.assertEqual(self.fixture["_generated"]["version"], aplus.VERSION)
+        self.assertLessEqual(drawn, aplus.VERSION)
 
     def test_a_tee_draw_is_the_tee_generators(self):
         # Same model, same draws: the A+ tee is generate_apparel.build_listing, then a title.
@@ -454,6 +461,33 @@ class MarketRules(DevMarket):
             with self.subTest(fault=label):
                 self.assertIn(rule, self.broken(plant))
 
+    def test_the_top_3_margin_by_the_version_a_market_was_drawn_under(self):
+        # Version 3: the second, third and fourth cheapest buyable size M each 8 per cent above
+        # the one before. Development's market (version 2) ties nearly, second to third; it is
+        # held to the rule only as a market drawn under version 3 would be, and never by a
+        # caller that names no version, as generate_aplus_tasks.py does.
+        self.assertEqual(aplus.market_check(self.families, BRAND, 3), ["top_3_margin"])
+        self.assertEqual((aplus.market_check(self.families, BRAND, 2), aplus.market_check(self.families, BRAND)),
+                         ([], []))
+        k = aplus.keys(self.families)
+        second, third, fourth = (k["top"][1], k["top"][2], k["top_next"])
+
+        def priced(*changes: tuple[dict, float]) -> list[dict]:
+            families = copy.deepcopy(self.families)
+            for listing, price in changes:
+                variant(by_sku(families, listing["parent_sku"]), aplus.TEE_TARGET)["price"] = price
+            return families
+
+        m = lambda listing: apparel.buyable_price_for(listing, aplus.TEE_TARGET)  # noqa: E731
+        # Quiet: the third moved 10 per cent above the second, the fourth still far above it.
+        apart = round(m(second) * 1.10, 2)
+        self.assertGreaterEqual(m(fourth), apart * 1.08)
+        self.assertEqual(aplus.market_check(priced((third, apart)), BRAND, 3), [])
+        # Fires: the same, with the fourth only 5 per cent above the third; and a tie.
+        self.assertIn("top_3_margin", aplus.market_check(priced((third, apart), (fourth, round(apart * 1.05, 2))),
+                                                         BRAND, 3))
+        self.assertIn("top_3_margin", aplus.market_check(priced((third, m(second))), BRAND, 3))
+
     def test_the_margin_and_the_traps_hold_on_the_development_market(self):
         # Quiet, and by what margin: the figures each rule reads.
         k = aplus.keys(self.families)
@@ -496,7 +530,7 @@ class MarketRules(DevMarket):
     def test_the_claims_words_are_held_to_the_names_rule(self):
         # The claim's held-out phrasings are text a scorer reads too, and their words are
         # product words, though development never draws them.
-        for seller, words in (("Alpine Direct", "inside a text the scorer reads"),
+        for seller, words in (("Jersey Direct", "inside a text the scorer reads"),
                               ("Zennor Mineral Co", "it holds a product's own word")):
             with self.subTest(seller=seller):
                 families = copy.deepcopy(self.families)
@@ -549,6 +583,45 @@ class Phrasings(unittest.TestCase):
         for words, (pool, value) in faults.items():
             with self.subTest(fault=words), mock.patch.object(aplus, pool, value):
                 self.assertIn(words, "; ".join(aplus.phrase_problems()))
+
+    def test_a_pool_that_names_more_than_one_product_fires(self):
+        # Version 3, from the verifier's fairness audit: version 2's claim tee pool set two
+        # materials and two fits against each other, so "the Larchmere tee" read two ways;
+        # its phrasings share no one core. A water pool where one phrasing drops "Mineral"
+        # fires too. Quiet: every pool as it stands, development's and the claim's.
+        for pool, value, words in (
+                ("CLAIM_TEE_PHRASES", ("Classic Organic Tee", "Relaxed Fit Basic Tee", "Organic Ringspun Tee, Short Sleeve"),
+                 "tee: the claim phrasings share no one core"),
+                ("CLAIM_WATER_PHRASES", ("Mineral Water", "Alpine Water, Bottled", "Pure Mineral Water, Bottled"),
+                 "water: the claim phrasings share no one core")):
+            with self.subTest(pool=pool), mock.patch.object(aplus, pool, value):
+                self.assertIn(words, "; ".join(aplus.phrase_problems()))
+        self.assertFalse([p for p in aplus.phrase_problems() if "core" in p])
+        self.assertEqual(sorted(len(p.split()) for p in aplus.CLAIM_TEE_PHRASES), [3, 4, 5])
+        self.assertEqual(sorted(len(p.split()) for p in aplus.CLAIM_WATER_PHRASES), [2, 3, 4])
+
+
+class Versions(unittest.TestCase):
+    """Version 3: a market is held to the rules of the version it was drawn under and drawn
+    again under the version its seed search accepted it under."""
+
+    def test_which_rules_a_version_holds(self):
+        self.assertEqual([aplus.held_to("top_3_margin", v) for v in (None, 2, 3)], [False, False, True])
+        self.assertTrue(aplus.held_to("names_distinct", None))
+        self.assertEqual(aplus.RULES_SINCE, {"top_3_margin": 3})
+
+    def test_the_version_a_draw_is_made_under(self):
+        self.assertEqual(aplus.drawn_under(DEV_SEARCH, 900), 2)       # development's, accepted under 2
+        self.assertEqual(aplus.drawn_under(DEV_SEARCH, 901), aplus.VERSION)   # not the seed accepted
+        self.assertEqual(aplus.drawn_under(None, 900), aplus.VERSION)
+        with tempfile.TemporaryDirectory() as tmp:
+            record = pathlib.Path(tmp) / "search.json"
+            record.write_text(json.dumps({"tried": [{"seed": 1000, "outcome": "rejected", "generator_version": 3}]}))
+            self.assertEqual(aplus.drawn_under(record, 1000), aplus.VERSION)
+            record.write_text(json.dumps({"tried": [{"seed": 1000, "outcome": "accepted",
+                                                     "generator_version": aplus.VERSION + 1}]}))
+            with self.assertRaises(SystemExit):
+                aplus.drawn_under(record, 1000)
 
 
 class PageRules(DevMarket):
@@ -883,10 +956,12 @@ class Files(unittest.TestCase):
             self.assertEqual(readings.read_bytes(), DEV_READINGS.read_bytes())
 
     def test_the_search_record_ends_with_the_accepted_seed(self):
+        # Accepted under the version the fixture records, which the generator draws it again
+        # under (version 3, `drawn_under`): version 2, development's.
         search = load(DEV_SEARCH)
         last = search["tried"][-1]
         self.assertEqual((last["outcome"], last["generator_version"], last["search_order_version"]),
-                         ("accepted", aplus.VERSION, search_order.VERSION))
+                         ("accepted", load(DEV)["_generated"]["version"], search_order.VERSION))
         self.assertEqual(last["seed"], load(DEV)["_generated"]["seed"])
         self.assertTrue(all(t["seed"] in aplus.DEV_SEEDS for t in search["tried"]))
 
