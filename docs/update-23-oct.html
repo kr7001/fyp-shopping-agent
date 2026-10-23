@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update, 23 October</title>
+<style>
+  body { margin: 0; background: #f6f7f9; color: #1d2229; font: 16px/1.55 Georgia, "Times New Roman", serif; }
+  .page { max-width: 820px; margin: 0 auto; padding: 32px 20px 80px; }
+  h1 { font: 600 28px/1.2 system-ui, sans-serif; margin: 0 0 4px; }
+  h2 { font: 600 19px/1.3 system-ui, sans-serif; margin: 34px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #d5d9e0; }
+  h3 { font: 600 16px/1.3 system-ui, sans-serif; margin: 22px 0 6px; }
+  .eyebrow { font: 600 12px system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; color: #6b7280; }
+  p { margin: 8px 0; }
+  ol, ul { margin: 6px 0 6px 22px; padding: 0; } li { margin: 6px 0; }
+  .box { background: #fff; border: 1px solid #d5d9e0; border-radius: 8px; padding: 14px 18px; margin: 12px 0; }
+  .todo { background: #fff8e6; border-left: 4px solid #b7791f; }
+  .why { color: #4b5563; font-size: 14.5px; display: block; margin-top: 2px; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font: 14.5px/1.4 system-ui, sans-serif; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #e3e6eb; vertical-align: top; }
+  th { font-weight: 600; color: #4b5563; font-size: 12.5px; text-transform: uppercase; letter-spacing: .04em; }
+  td.n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  code { font: 13px ui-monospace, Menlo, monospace; background: #eef0f3; padding: 1px 5px; border-radius: 4px; }
+  .muted { color: #6b7280; font-size: 14px; }
+  .pending { color: #8a5a00; font-style: italic; }
+  .table-wrap { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="eyebrow">For Kayleen · written on 23 October 2026, while you were at work</div>
+<h1>Update, 23 October</h1>
+<p class="muted">What I did today, the small test run (the "pilot"), the check of the big run you asked for, a backup plan for the money, and the decisions I need from you before the big run. Simple words first; the details are underneath each point.</p>
+
+<div class="box todo">
+  <p><b>What you need to do tonight</b></p>
+  <ol>
+    <li><b>Read Part B</b>, the pilot's results and what they mean for the big run (5 minutes).</li>
+    <li><b>Answer Part E</b>, the decisions for the big run. A short reply like "1a, 2a, 3a…" is enough. Where I recommend an option it says so.</li>
+    <li><b>Then tap "Run it"</b> when the guard asks about stage 1 of the big run, which can run overnight. If you'd rather sleep first, tap it in the morning: nothing is lost by waiting.</li>
+  </ol>
+  <p class="muted">Keep the laptop on power with the lid open while runs go, and don't move or resize the Chrome windows that open by themselves.</p>
+</div>
+
+<h2>Part B. The pilot: what it tests and what it found</h2>
+<p>It started at 11:20, once the guard's question was answered. The guard checked first that the code was the exact commit the verifier passed (<code>782853d</code>), that the cost was declared ($6.94, never more than $8), and that the laptop was kept awake.</p>
+<p><b>What it runs.</b> The practice market, Larchmere: 21 tees and 21 bottled waters across 2 results pages, the same shape as the big run's market, but never the market we test on. The 15 question templates, and 12 of the practice rewordings. The held-out rewordings stay unseen.</p>
+<ul>
+  <li><b>Two reading tests first, no browser.</b> DeepSeek and Haiku each read the 30 practice rewordings and fill in the block's form. This measures directly how often each model gets the meaning right. DeepSeek has never done this before, and it is the main model of the big run.</li>
+  <li><b>DeepSeek, the block with the model reading the question:</b> all 15 templates and the 12 rewordings. Only if DeepSeek passed the reading test.</li>
+  <li><b>DeepSeek, the block with its rules:</b> the same 12 rewordings, so the two front doors can be compared.</li>
+  <li><b>Open everything:</b> 3 questions on DeepSeek and 1 on Haiku. It shows whether opening every listing fits in 300 steps and 30 minutes on two pages, and what it costs.</li>
+  <li><b>Haiku, the block with the model:</b> 3 questions. <b>Shipped:</b> 1 question.</li>
+</ul>
+<p><b>What it is for.</b> Four things the big run depends on:</p>
+<ol>
+  <li>Can DeepSeek be the front door for the main result?</li>
+  <li>Does the block still work on a two-page market with the browser page reader?</li>
+  <li>What does each arm really cost on two pages? That sets the big run's budget.</li>
+  <li>Do 300 steps and 30 minutes leave room for open everything?</li>
+</ol>
+<h3>What it found</h3>
+<p>It ran from 11:20 to 13:25 and spent <b>$7.26</b>. It stopped itself before passing $8, exactly as designed, so open everything, Haiku's runs and shipped didn't run (point 7).</p>
+<ol>
+  <li><b>DeepSeek reads questions as well as Haiku, for a thirteenth of the price.</b> <span class="why">Of the 24 practice rewordings that keep their question's meaning, DeepSeek filled in every part of the form correctly on 22, Haiku on 21, and the rules on 10. Before this week's prompt work, Haiku managed 2 (on 20 October). Neither model asked back on any of the 7 rewordings labelled clear. One reading costs DeepSeek about $0.0004. These are the questions the prompt was improved on, so they show progress, not proof; the held-out rewordings in the big run are the test.</span></li>
+  <li><b>The block with the model reading the question answered every run correctly on the two-page market.</b> <span class="why">The verifier read all 24 answers in full: 24 of 24 are right. The automatic scorer disagrees on 4 of them (decision 5). The two questions the block should not plan (delivery speed, taste) were refused, as they should be.</span></li>
+  <li><b>On the 12 practice rewordings, the model front door got 11 right and the rules got 7.</b> <span class="why">Same questions, same market, same agent, same model. The rules refused 2 and answered 3 wrongly; for example, asked how many listings offer size M (17), they counted the 11 that can sell it now. On 4 rewordings the model was right where the rules were wrong, and never the reverse. With one run each that is suggestive, not proof (p = 0.125). The model's runs also cost less on these questions ($1.64 against $2.36), because a wrong plan sends the agent on longer searches.</span></li>
+  <li><b>The model's one miss was caused by the rules' word list, not by the model.</b> <span class="why">"Which tee has the lowest listed price?" The word list read "listed" as "listed, even if sold out", overruled the model's correct reading, and the block refused the question. It is the same weakness as the unnecessary ask in Part C. Decision 10.</span></li>
+  <li><b>Every run finished well inside its limits.</b> <span class="why">The longest took 110 steps and 8 minutes, against limits of 300 steps and 30 minutes.</span></li>
+  <li><b>Two results pages cost far more than one, and which server answers matters as much.</b> <span class="why">A block run cost about $0.20 here, against $0.03 on Ashcombe. About 3 times of that is the work itself: at every step the agent re-sends everything it has seen, and two pages of 36 cards is a lot to re-send. The other 2 times is price. OpenRouter sent most of DeepSeek's calls to two servers that charged 2.5 and 3.4 times the list price, where on Ashcombe it paid list price. This is what the pilot changed most (decisions 2 and 9).</span></li>
+  <li><b>What didn't run:</b> open everything, Haiku's runs and shipped. <span class="why">The DeepSeek runs used the money first. Their costs on two pages are estimated: Haiku about $0.55 per block run, $1.50 per open-everything run and $0.48 per shipped run. The big run measures them in its first round.</span></li>
+  <li><b>The raw data are clean.</b> <span class="why">The charges add up to the account's movement to the cent ($7.2632). No run broke, none sorted the results or changed the page size, and none saw a hidden price.</span></li>
+</ol>
+
+<h3>What it means for the big run</h3>
+<ul>
+  <li><b>DeepSeek as the main model: confirmed.</b> It reads as well as Haiku and runs the block as well, at a fraction of the cost.</li>
+  <li><b>The shopper answering with the question's meaning works.</b> <span class="why">Every two-reading question got "listed", every other got "in stock", and there were no contradictions.</span></li>
+  <li><b>300 steps and 30 minutes are enough for the block.</b> <span class="why">Open everything is still unmeasured on two pages, so its first round is watched.</span></li>
+  <li><b>The full plan doesn't fit the money at today's server prices.</b> <span class="why">About $81 for three rounds on DeepSeek alone, out of about $98 left. At list price it would be about half. Decision 2 gives three plans; decision 9 is how to get list price.</span></li>
+  <li><b>The scorer must be fixed or replaced before the claim</b> <span class="why">(decision 5). It misreads the list of opened and skipped listings that the block itself asks its agent to write, so its mistakes fall on the block.</span></li>
+  <li><b>Tighter spending checks.</b> <span class="why">The big run checks its limit before each arm of each round, using the real per-question costs from today, and a watchdog stops a run that would pass the limit. Today's chain was checked only between its large steps, so one step cost $4.74 against an allowance of $2.80. The total still stayed under $8.</span></li>
+  <li><b>Haiku: a full repeat would cost more than the whole budget.</b> <span class="why">A small one is possible (decision 2).</span></li>
+</ul>
+
+<h2>Part C. Fixed today, before any money was spent</h2>
+<p>The verifier refused the pilot twice before passing it: first on two blockers, then on one cost estimate that was too low. Each refusal was worth having.</p>
+<ol>
+  <li><b>The simulated shopper could contradict the question.</b> <span class="why">When the block asks back "do you mean listed, or in stock?", our script always answered "listed". For "How many listings can sell me a size M today?" that is the opposite of what the question says, and the run was then marked against the other answer. Now the script answers with what the question itself means, like a real shopper would. Every ask is still counted, so an unnecessary ask still shows.</span></li>
+  <li><b>The block's word list asks back even when the wording already settles it</b>, and the model reading the question can't overrule the list. <span class="why">This is a design flaw, not a test bug. It is decision 10 in Part E. With fix 1 it costs one extra exchange, not a wrong answer.</span></li>
+  <li><b>The $8 limit could be overshot.</b> <span class="why">The old check looked only at what was already spent, and one Haiku run can cost $1.40. Now each step starts only if what's spent plus that step's worst case stays under $8, and the run stops if the account can't be read.</span></li>
+  <li><b>DeepSeek's replies might not have been readable.</b> <span class="why">If DeepSeek puts its reasoning before the answer, or sends its reply in pieces, our reader would fail or crash. Now it finds the answer, or falls back to the rules and records that it did.</span></li>
+</ol>
+
+<h2>Part D. The big run, checked once more for bias and ambiguity</h2>
+<p>You asked for one more check that the big run is fair, clear and unambiguous. The verifier re-audited it today. Its summary, in plain words:</p>
+<ul>
+  <li><b>Ambiguity: none found that the answer keys miss.</b> <span class="why">Every one of the 15 questions has one answer under each declared reading. The new tee titles ("Midweight Jersey Tee" and two variants) read as one product. The held-out rewordings' labels are right: 30 of 36 keep their question's meaning. The 15 template rows are unchanged, so the held-out set still applies.</span></li>
+  <li><b>Bias by design, which the report must state.</b> <span class="why">The market is built so the shipped agent's first screen misleads, so that the bound can always skip at least 3 listings, and so the block reads the results pages for its agent. All of this is deliberate, and each is now written in the protocol's limits.</span></li>
+  <li><b>One unintended help for the block.</b> <span class="why">Its per-litre plan tells its agent to multiply bottles by each bottle's volume. The other arms aren't told. Decision 6.</span></li>
+  <li><b>The scorer misread some long answers.</b> <span class="why">The block and open everything tend to give long answers, so these misreads would have counted against the block. The 15 cases the verifier wrote were fixed (scorer version 8), but a second fresh set of 24 found 11 more, and the pilot's real answers found 5 (Part B). The auditor's advice is to stop patching in general. The pilot's 5, though, all come from the block's own report format, which is why decision 5 recommends fixing exactly those three rules and adding a blind hand reading. None of the 615 stored answers changes its verdict under version 8.</span></li>
+  <li><b>The protocol text had about a dozen wrong sentences</b> <span class="why">(for example wrong rule names, and a check described as stricter than it was). All are corrected, and the missing parts are added: stages, the repair rule, how refused slots count, the scorer's limits, and what the parser was developed on. It is still marked draft until your decisions.</span></li>
+  <li><b>Code, as of 13:30:</b> <span class="why">the fixes are merged into one commit (<code>93b8413</code>), and all 779 tests pass on the laptop. The coder is finishing the last three items (stricter settings checks, the page-2 failure code, small notes). Then the verifier checks the frozen commit after your decisions.</span></li>
+</ul>
+
+<h2>Part E. Decisions for the big run</h2>
+<p class="muted">Reply with the number and letter. Where I recommend an option, it is marked. Decision 2 waits for the pilot's costs; the rest don't depend on it.</p>
+<ol>
+  <li><b>How the block finds the best price per litre.</b>
+    <span class="why"><b>(a) Open every water listing</b> (recommended). No hidden knowledge, about 4 extra listings out of 21 on that one question, but that question then shows no skipping.<br>
+    <b>(b) Use the largest pack as a shortcut.</b> Skips more, but uses a fact only our generator knows (that no pack is bigger than 19 litres). An examiner could call it unfair.</span></li>
+  <li><b>Budget: what each model runs.</b> About $98 is left. The estimates come from the pilot's real costs; open everything and Haiku are estimated from Ashcombe.
+    <span class="why">The first figure in each plan is at today's server prices; the one in brackets is at list price (decision 9b).<br>
+    <b>(a) Recommended.</b> DeepSeek runs the 15 questions in 3 rounds in all four arms, and the 26 held-out rewordings once in both block arms: about $63 to $69 (about $40), about 14 hours, overnight. On Saturday Haiku repeats the held-out reading test (about $0.20) and the block against shipped once on the 9 questions whose answer doesn't depend on "listed or in stock" (about $9). Reserve: about $20 (about $48). Pros: the shipped and open-everything tests keep the first claim's 3 rounds; the rewording test's analysis already counts each rewording once; a real reserve. Con: one run per rewording.<br>
+    <b>(b) DeepSeek runs everything in 3 rounds:</b> about $81 (about $50), about 17 hours, and Haiku as in (a). Pro: the most runs for the rewording test. Con: at today's prices the reserve is thin (about $8); it only works well with list price.<br>
+    <b>(c) DeepSeek runs everything in 2 rounds:</b> about $54 (about $33), plus Haiku as in (a). Pro: a larger reserve. Con: fewer runs for every test.</span></li>
+  <li><b>What the simulated shopper says when the block asks back.</b>
+    <span class="why"><b>(a) What the question means</b> (recommended, used in the pilot). A shopper never contradicts their own question.<br>
+    <b>(b) Always "listed, even if sold out"</b>, as in the first claim. Unrealistic on questions with one meaning.</span></li>
+  <li><b>Showing what the stop rule itself saves.</b>
+    <span class="why"><b>(a) Add the block without its stop rule</b> on the price questions, as in the first claim. On DeepSeek this is cheap.<br>
+    <b>(b) Don't, and state the limit:</b> the saving then belongs to the plan, the briefing and the page reading together.</span></li>
+  <li><b>Who decides "correct".</b> The evidence: the verifier read all 34 of the pilot's answers in full. The newest scorer marked 4 correct block answers wrong, and an old rule marked a fifth as "declined". All 5 come from the list of opened and skipped listings that the block asks its agent to write, so the mistakes fall on the block. On fresh tricky answers written to test it, the scorer still misjudged 11 of 24.
+    <span class="why"><b>(a) Fix the three rules that misread the block's own report, freeze the scorer, and read every answer by hand beside it</b> (recommended). The fix is ready as an option (scorer version 9). It reads all 5 pilot answers correctly and breaks none of 106 tricky test answers. Of 654 stored answers it changes one: a night-run DeepSeek answer from 21 October (the block without its stop rule), the same misreading, from "declined" to correct. That arm goes from 8 of 9 to 9 of 9, and the stop-rule comparison is unchanged (p = 1.0). The hand reading hides the arm, the model and the scorer's verdict, the tests are rerun on it, and every disagreement is listed.<br>
+    <b>(b) Freeze the scorer as it is, and make your blind hand reading the official verdict.</b> That means reading about 230 answers, roughly two hours. It is a judgement, and block answers have a recognisable style.<br>
+    <b>(c) Freeze it as it is, with the hand reading only as a check.</b> Not recommended: its known mistakes fall on the block.</span></li>
+  <li><b>The multipack hint</b> (Part D).
+    <span class="why"><b>(a) Keep it and state it.</b><br>
+    <b>(b) Remove it.</b> The per-litre question then measures retrieval alone.<br>
+    <b>(c) Give the same sentence to open everything.</b> Fairer on that question, but it changes the open-everything wording.</span></li>
+  <li><b>Recognising the product ("tee" or "water").</b>
+    <span class="why"><b>(a) A shared rules step for both front doors</b> (recommended). Keeps the comparison clean.<br>
+    <b>(b) Let the model name the product.</b> Tests more of the model, but adds a step only one arm has.</span></li>
+  <li><b>"As accurate as open everything".</b>
+    <span class="why"><b>(a) Report the difference with its range</b> (recommended). Honest at this size.<br>
+    <b>(b) A formal "not worse than" test</b>, with a margin you'd have to choose now. Probably too few runs to pass.</span></li>
+  <li><b>DeepSeek's server.</b> New evidence since you accepted the mix on 22 October: today OpenRouter sent most calls to Relace and Parasail, which cost 2.5 and 3.4 times list price on our kind of run. Relace also runs a more compressed version of the model (fp4 instead of fp8). OpenRouter's public list shows three fp8 servers at or below list price: GMICloud, DeepInfra and StreamLake.
+    <span class="why"><b>(a) Leave it to OpenRouter, and record it.</b> No change, but the big run costs about twice as much, and the server, and with it the compression, varies from run to run.<br>
+    <b>(b) Send DeepSeek only to those three list-price servers</b> (recommended). About half the cost, and the same compression throughout. It needs no change to openJiuwen itself: a setting in our runner adds the server preference to every DeepSeek call, the same for every arm, and does nothing when it is off. The coder is building and testing it as an option now, for the verifier to check tonight. If all three servers are down, runs fail and are re-run as broken, never marked wrong.<br>
+    <b>(c) Ask OpenRouter for "the cheapest server".</b> Not recommended: it ranks servers by the advertised input price, which puts Relace first.</span></li>
+  <li><b>The word list overruling the model</b> (Part B, point 4, and Part C, point 2).
+    <span class="why"><b>(a) Leave it, state it, and count asks on clear questions by arm</b> (recommended). It only ever costs the model arm, so the test of the model against the rules stays conservative. Changing the design the night before, after seeing the practice results, is the kind of late tuning an examiner questions.<br>
+    <b>(b) When the word list and the model disagree, ask the shopper</b> instead of silently taking the rules' reading. That would have fixed "lowest listed price". But it is new code tonight and needs another verification round.<br>
+    <b>(c) Let the model's reading always win.</b> This removes a safety check that exists to catch the model's mistakes.</span></li>
+  <li><b>A batch run under the wrong settings</b> (for example the wrong code version).
+    <span class="why"><b>(a) It is void, re-run, and holds up only its own model's analysis</b> (recommended), so a Haiku mistake can't block DeepSeek's main result.<br>
+    <b>(b) It blocks the whole analysis.</b> Simpler, but one mistake in the replication stops the claim.</span></li>
+</ol>
+
+<h2>Part F. The money, and a backup plan</h2>
+<ul>
+  <li><b>Left on the key:</b> $105.25 this morning, about $98 after the pilot's $7.26.</li>
+  <li><b>The run is split into stages.</b> Stage 1 is DeepSeek, tonight. The verifier checks its results before stage 2, Haiku, starts on Saturday. Each stage has a hard limit that nothing can pass: the command checks before every arm of every round, and a watchdog stops any run that would cross the limit.</li>
+  <li><b>A reserve is held back</b> (about $20 under option a) for re-running broken runs and for one repair.</li>
+  <li><b>A repair is only allowed for a broken tool, never for a disappointing answer.</b> If the shop, the browser or the laptop fails (seen in the logs, not in the answers), the fix is verified and the whole affected arm is re-run. The repair is recorded with its time, and the replaced runs are reported beside it. The market and the questions never change.</li>
+  <li><b>If money runs short,</b> Haiku's part shrinks first, never DeepSeek's main result.</li>
+</ul>
+
+<h2>Part G. Everything done today</h2>
+<ul>
+  <li><b>08:54 to 09:32, pilot preparation:</b>
+    <ul>
+      <li>the practice-market question file;</li>
+      <li>block version 18, whose texts now agree with the product scope and the two pages;</li>
+      <li>the model's instructions made true of this shop (prompt version 3);</li>
+      <li>the reading step's tokens and cost recorded in every run.</li>
+    </ul>
+  </li>
+  <li><b>09:27 to 11:14, the fairness audit's fixes</b>, on a separate branch:
+    <ul>
+      <li>scorer versions 7 and 8;</li>
+      <li>a counter for runs that sort the results or change the page size;</li>
+      <li>refused slots kept out of the cost tests, with a check that puts them back;</li>
+      <li>DeepSeek as the main result and Haiku as its replication, each with its own correction for multiple tests;</li>
+      <li>the shipped agent's failures coded by kind;</li>
+      <li>the market generator's version 3: new claim titles, and a rule that the top three prices are clearly apart.</li>
+    </ul>
+  </li>
+  <li><b>10:17 to 11:14, the pilot's blockers fixed and verified</b> (Part C). Commit <code>782853d</code> at 10:54; 701 tests pass; the verifier's pass at 11:14.</li>
+  <li><b>Around 11:00, the big run re-audited</b> (Part D). Its 15 scorer cases were fixed by 11:12 (scorer version 8).</li>
+  <li><b>11:20 to 13:25, the pilot</b> (Part B). A watchdog guarded the $8 limit from 11:58. It never had to act.</li>
+  <li><b>During the pilot:</b>
+    <ul>
+      <li>the protocol rewritten for the big run, then corrected after the second re-audit, still a draft (<code>docs/content/claim2-protocol.md</code>);</li>
+      <li>the blind hand reading made real (<code>93b8413</code>);</li>
+      <li>this page.</li>
+    </ul>
+  </li>
+  <li><b>13:30, the branches merged</b> into one commit (<code>93b8413</code>); 779 tests pass on the laptop.</li>
+  <li><b>14:20, the report updated</b> (<code>report/main.tex</code>, its own local repository, never pushed):
+    <ul>
+      <li>the reading-test table now shows the rules, Haiku on 20 October, and both models on prompt version 3;</li>
+      <li>two new paragraphs: how the front door works, and the pilot's results, marked as development figures;</li>
+      <li>the held-out result stays a "to be filled" slot for the big run. Still 29 pages.</li>
+    </ul>
+  </li>
+  <li><b>Not done: the code refactor.</b> The code had to stay at the verified commit for the pilot, and tonight it freezes for the big run. A refactor now would put new code in front of the claim, so it waits until after the big run.</li>
+</ul>
+
+<h2>Part H. Tonight, step by step</h2>
+<ol>
+  <li>You answer Part E.</li>
+  <li>I apply your decisions to the protocol, freeze it, and the verifier checks the frozen commit.</li>
+  <li>Then the claim market is drawn (the first seed from 1000 that passes every rule) and checked live in the shop.</li>
+  <li>The guard asks you once for stage 1 of the big run (DeepSeek), which runs overnight. Stage 2 (Haiku) follows once the verifier has checked stage 1's results.</li>
+</ol>
+
+</div>
+</body>
+</html>
