@@ -153,24 +153,31 @@ def agent_model() -> str:
     return DEFAULT_MODEL
 
 
-def parser_call(model: str, key: str, charges: list):
+def parser_call(model: str, key: str, charges: list, tokens: list | None = None):
     """The model parser's call for one run: one request to `model` through
     `parse_probe.call_model` (temperature 0, no retry), the provider's charge for it
     appended to `charges`. A reply that is no completion raises as a failed call with the
     charge its body states, if any. A request that fails otherwise, a timeout, an HTTP error
     or a body that is not JSON, may or may not have been charged, and nothing says which, so
     its charge is unknown, None, never $0 (verifier finding, 22 October 2026). Either way
-    the box then uses the rules' form and says why."""
+    the box then uses the rules' form and says why. The call's tokens go to `tokens` the
+    same way (23 October 2026): the provider's count, or None where it gave none."""
     def call(prompt: str) -> str:
         try:
-            text, cost = parse_probe.call_model(key, model, prompt)
+            text, cost, used = parse_probe.call_model(key, model, prompt)
         except parse_probe.UnexpectedReply as fault:
             charges.append(fault.cost)
+            if tokens is not None:
+                tokens.append(fault.tokens)
             raise
         except Exception:
             charges.append(None)
+            if tokens is not None:
+                tokens.append(None)
             raise
         charges.append(cost)
+        if tokens is not None:
+            tokens.append(used)
         return text
     return call
 
@@ -304,15 +311,44 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
     return record
 
 
-def charge_parse(record: dict, parsed: float | None, record_path: pathlib.Path) -> dict:
+def parse_tokens(counts: list) -> dict | None:
+    """What a run's parse used (23 October 2026): each call's prompt and completion tokens
+    summed, with the number of calls; zeros when no call was made, and None when a call's
+    count is unknown, since a missing count is unknown, not zero."""
+    if any(count is None for count in counts):
+        return None
+    prompt = sum(count["prompt"] for count in counts)
+    completion = sum(count["completion"] for count in counts)
+    return {"prompt": prompt, "completion": completion, "total": prompt + completion,
+            "calls": len(counts)}
+
+
+def run_tokens(agent: dict | None, parse: dict | None) -> dict | None:
+    """A run's tokens, the agent's and its parse's together, or None when either is
+    unknown (23 October 2026)."""
+    if not agent or parse is None:
+        return None
+    prompt = (agent.get("prompt") or 0) + parse["prompt"]
+    completion = (agent.get("completion") or 0) + parse["completion"]
+    return {"prompt": prompt, "completion": completion, "total": prompt + completion}
+
+
+def charge_parse(record: dict, parsed: float | None, record_path: pathlib.Path,
+                 parsed_tokens: dict | None = None) -> dict:
     """A run's record with its parse charged to it (22 October 2026): `cost_usd` becomes
     what the run cost, the agent's charges and the parse's, beside `agent_cost_usd`, which
     the log's own charges re-sum to (`verify_cells`), and `parse_cost_usd`. None when either
-    part is unknown, since a missing cost is unknown, not zero. Written back into the run's
-    record file when the runner wrote one, so the file says what its run cost."""
+    part is unknown, since a missing cost is unknown, not zero. Its tokens the same way since
+    23 October 2026: `tokens`, the run's, beside `agent_tokens`, the log's own count, and
+    `parse_tokens` (`parse_tokens`); the agent's `trace` is left as the log gives it. Written
+    back into the run's record file when the runner wrote one, so the file says what its
+    run cost."""
     agent = record.get("cost_usd")
+    agent_tokens = (record.get("trace") or {}).get("tokens")
     record = {**record, "agent_cost_usd": agent, "parse_cost_usd": parsed,
-              "cost_usd": None if agent is None or parsed is None else round(agent + parsed, 6)}
+              "cost_usd": None if agent is None or parsed is None else round(agent + parsed, 6),
+              "agent_tokens": agent_tokens, "parse_tokens": parsed_tokens,
+              "tokens": run_tokens(agent_tokens, parsed_tokens)}
     if record_path.exists():
         record_path.write_text(json.dumps(record, indent=2, default=str) + "\n")
     return record
@@ -1009,9 +1045,11 @@ def main() -> int:
             # Under the model parser each run's question is read by its own call, and what
             # it was charged is part of the run's cost (22 October 2026).
             charges: list = []
-            call = parser_call(parser_model, key, charges) if model_parser else None
+            counts: list = []
+            call = parser_call(parser_model, key, charges, counts) if model_parser else None
             query, applied = build_query(task, spec, args, call=call)
             parsed = parse_cost(charges)
+            parsed_tokens = parse_tokens(counts)
             strategy = applied["strategy"]
             if query is None:
                 # The box asked and no scripted reply was given, or it refused. Either is
@@ -1019,6 +1057,7 @@ def main() -> int:
                 row = asked_row(task, repeat, applied["box"], cost=parsed if model_parser else 0)
                 if model_parser:
                     row["parse_cost_usd"] = parsed
+                    row["parse_tokens"] = parsed_tokens
                 rows.append(row)
                 declined = ((applied["box"] or {}).get("parse") or {}).get("declined")
                 print(f"[{done}/{total}] {tag:32} {row['verdict']:10} the box {row['verdict']}"
@@ -1028,7 +1067,7 @@ def main() -> int:
                               scaffold=args.scaffold, shop=args.shop, probe=args.probe,
                               max_steps=args.max_steps, clock_s=args.clock)
             if model_parser:
-                record = charge_parse(record, parsed, out_dir / f"{tag}.json")
+                record = charge_parse(record, parsed, out_dir / f"{tag}.json", parsed_tokens)
             result = record.get("result") or {}
             answer = str(result.get("final") or "")
             trace = record.get("trace") or {}
@@ -1078,6 +1117,7 @@ def main() -> int:
                 row.update(box_fields(applied["box"]))
             if model_parser:
                 row["parse_cost_usd"] = parsed
+                row["parse_tokens"] = parsed_tokens
             if args.confidence != "off":
                 row["confidence"] = confidence
                 row["confidence_reason"] = reason
@@ -1152,6 +1192,13 @@ def main() -> int:
                                      if model_parser else None),
                "parse_charges_unknown": (sum(1 for row in rows if row.get("parse_cost_usd") is None)
                                          if model_parser else None),
+               # The parse's tokens over the runs whose count is known, and how many are not
+               # (23 October 2026); each run's own are in its row and its record.
+               "parse_tokens": ({part: sum((row.get("parse_tokens") or {}).get(part, 0) for row in rows)
+                                 for part in ("prompt", "completion", "total", "calls")}
+                                if model_parser else None),
+               "parse_tokens_unknown": (sum(1 for row in rows if row.get("parse_tokens") is None)
+                                        if model_parser else None),
                "reading": args.reading,
                # Which reader read the results pages, every one of them (box v16, 22 October
                # 2026); None without the box. A box batch without the field read the first

@@ -157,7 +157,7 @@ class TheSuiteAndTheProbe(unittest.TestCase):
         tasks.write_text(json.dumps({"base_url": BASE, "tasks": [{
             "id": "decline-first", "family": "apparel", "gated": True, "expect": {"kind": "none"},
             "query": FIRST.replace(BASE, "{base}")}]}))
-        with mock.patch.object(parse_probe, "call_model", lambda key, model, prompt: (delivery(), 0.002)), \
+        with mock.patch.object(parse_probe, "call_model", lambda key, model, prompt: (delivery(), 0.002, None)), \
                 mock.patch.object(plan_probe, "load_key", return_value="fake-key"):
             run = run_suite("--tasks", str(tasks), "--repeats", "1", "--box", "--parser", "model",
                             page=thornwood_page())

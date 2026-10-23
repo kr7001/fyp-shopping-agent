@@ -14,6 +14,8 @@ must leave alone, and each fault named planted with a fresh bytecode cache and s
 4. A decline names the attribute a generic superlative ranks by when a word beside it names
    one: "tastes best" is taste.
 5. Open everything naming the product checks every option the question needs.
+6. The parse call's tokens are recorded per run, beside the agent's and added to the run's,
+   so a comparison on tokens counts the parse too (suite.py, claim.py).
 
 Nothing here calls a model or touches the shop.
 """
@@ -33,6 +35,8 @@ import ambiguity  # noqa: E402
 import box  # noqa: E402
 import claim  # noqa: E402
 import form  # noqa: E402
+import parse_probe  # noqa: E402
+import plan_probe  # noqa: E402
 import page as page_module  # noqa: E402
 import policy  # noqa: E402
 import primitives  # noqa: E402
@@ -42,6 +46,7 @@ import targeting  # noqa: E402
 import voids  # noqa: E402
 from test_box import BASE, RESULTS_URL, thornwood_page  # noqa: E402
 from test_claim_arms import run_suite  # noqa: E402
+from test_model_parser import PARSE_TOKENS, keyed_tasks, replying  # noqa: E402
 
 GO = f"Go to {RESULTS_URL} . "
 SECOND = f"{BASE}/catalogsearch/result/index/?p=2&q=Example"
@@ -307,6 +312,87 @@ class OpenEverythingByProduct(unittest.TestCase):
                 payload = json.loads((ran.batch / "suite.json").read_text())
                 self.assertEqual(payload["exhaustive_wording_version"], recorded)
         self.assertIn("exhaustive_wording_version", claim.PROTOCOL_CONDITIONS)
+
+
+class TheParsesTokens(unittest.TestCase):
+    """Fix 6. Planted: the call's tokens never collected, the record without the run's
+    tokens, an unknown count read as zero, a stated count passed over by the analysis, and
+    a closed slot's parse counted as nothing."""
+
+    def test_a_calls_tokens_are_the_providers_count(self):
+        usage = {"cost": 0.004, "prompt_tokens": 5200, "completion_tokens": 140}
+        self.assertEqual(parse_probe.tokens_of(usage), {"prompt": 5200, "completion": 140})
+        for broken in (None, {}, {"prompt_tokens": 5200}, {"prompt_tokens": "5200", "completion_tokens": 140},
+                       {"prompt_tokens": True, "completion_tokens": 140}):
+            with self.subTest(usage=broken):
+                self.assertIsNone(parse_probe.tokens_of(broken))
+
+        def answered(body):
+            reply = mock.Mock()
+            reply.raise_for_status = lambda: None
+            reply.json = lambda: body
+            return mock.patch.object(parse_probe.requests, "post", return_value=reply)
+
+        with answered({"choices": [{"message": {"content": "a form"}}], "usage": usage}):
+            self.assertEqual(parse_probe.call_model("k", "m", "p"), ("a form", 0.004, PARSE_TOKENS))
+        with answered({"usage": usage}), self.assertRaises(parse_probe.UnexpectedReply) as raised:
+            parse_probe.call_model("k", "m", "p")
+        self.assertEqual((raised.exception.cost, raised.exception.tokens), (0.004, PARSE_TOKENS))
+
+    def test_a_runs_parse_is_summed_and_unknown_stays_unknown(self):
+        two = suite.parse_tokens([{"prompt": 10, "completion": 2}, {"prompt": 5, "completion": 1}])
+        self.assertEqual(two, {"prompt": 15, "completion": 3, "total": 18, "calls": 2})
+        self.assertEqual(suite.parse_tokens([]), {"prompt": 0, "completion": 0, "total": 0, "calls": 0})
+        self.assertIsNone(suite.parse_tokens([{"prompt": 10, "completion": 2}, None]))
+        self.assertEqual(suite.run_tokens({"prompt": 100, "completion": 10, "total": 110, "calls": 3}, two),
+                         {"prompt": 115, "completion": 13, "total": 128})
+        self.assertIsNone(suite.run_tokens({"prompt": 100, "completion": 10}, None))
+        self.assertIsNone(suite.run_tokens(None, two))
+
+    def batch(self, *flags: str, call=None) -> tuple[dict, dict]:
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        tasks = keyed_tasks(pathlib.Path(folder.name))
+        with mock.patch.object(parse_probe, "call_model", call or replying()), \
+                mock.patch.object(plan_probe, "load_key", return_value="fake-key"):
+            run = run_suite("--tasks", str(tasks), "--repeats", "1", "--only", "apparel-cheapest-target",
+                            "apparel-all-stocked", "--box", *flags, page=thornwood_page())
+        self.addCleanup(run.owner.cleanup)
+        self.assertEqual(run.code, 0, run.out)
+        payload = json.loads((run.batch / "suite.json").read_text())
+        record = json.loads((run.batch / "apparel-cheapest-target-1.json").read_text())
+        return payload, record
+
+    def test_a_batch_records_them_beside_the_agents(self):
+        payload, record = self.batch("--parser", "model")
+        rows = {row["task"]: row for row in payload["rows"]}
+        one = {**PARSE_TOKENS, "total": 5340, "calls": 1}
+        self.assertEqual((rows["apparel-cheapest-target"]["parse_tokens"], rows["apparel-all-stocked"]["parse_tokens"]),
+                         (one, one))
+        agent = record["trace"]["tokens"]
+        self.assertEqual((record["agent_tokens"], record["parse_tokens"]), (agent, one))
+        self.assertEqual(record["tokens"], {"prompt": agent["prompt"] + 5200, "completion": agent["completion"] + 140,
+                                            "total": agent["prompt"] + agent["completion"] + 5340})
+        self.assertEqual(claim.stated_tokens(record), record["tokens"])
+        # The asked slot ran no agent: its tokens are its parse's.
+        self.assertEqual(claim.closed_tokens(rows["apparel-all-stocked"]), (5340, (5200, 140)))
+        self.assertEqual((payload["parse_tokens"], payload["parse_tokens_unknown"]),
+                         ({"prompt": 10400, "completion": 280, "total": 10680, "calls": 2}, 0))
+
+    def test_an_unknown_count_is_unknown_and_the_rules_count_none(self):
+        payload, record = self.batch("--parser", "model", call=replying(tokens=None))
+        rows = {row["task"]: row for row in payload["rows"]}
+        self.assertEqual((rows["apparel-cheapest-target"]["parse_tokens"], record["tokens"]), (None, None))
+        self.assertIsNone(claim.stated_tokens(record))
+        self.assertEqual(claim.closed_tokens(rows["apparel-all-stocked"]), (None, (None, None)))
+        self.assertEqual(payload["parse_tokens_unknown"], 2)
+        payload, record = self.batch()
+        rows = {row["task"]: row for row in payload["rows"]}
+        self.assertNotIn("parse_tokens", rows["apparel-cheapest-target"])
+        self.assertNotIn("tokens", record)
+        self.assertEqual(claim.stated_tokens(record), record["trace"]["tokens"])
+        self.assertEqual(claim.closed_tokens(rows["apparel-all-stocked"]), (0, (None, None)))
+        self.assertIsNone(payload["parse_tokens"])
 
 
 class TheVersions(unittest.TestCase):

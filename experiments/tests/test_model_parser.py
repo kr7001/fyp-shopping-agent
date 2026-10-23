@@ -971,12 +971,16 @@ OFFER_REPLY = reply(quantifier="forall", objective="availability", filters=[f("s
                     ambiguities=[{"word": "offer", "readings": ["listed", "buyable"]}])
 
 
-def replying(cost: float | None = 0.004):
+# The tokens a faked call says it used (23 October 2026), a count of no real call.
+PARSE_TOKENS = {"prompt": 5200, "completion": 140}
+
+
+def replying(cost: float | None = 0.004, tokens: dict | None = PARSE_TOKENS):
     """A faked `parse_probe.call_model`: the cheapest question gets CHEAPEST_REPLY, every
-    other OFFER_REPLY, each charged `cost`."""
+    other OFFER_REPLY, each charged `cost` and counted `tokens`."""
     def call_model(key, model, prompt):
         question = prompt.rsplit("The question:\n", 1)[1]
-        return (CHEAPEST_REPLY if "cheapest" in question else OFFER_REPLY), cost
+        return (CHEAPEST_REPLY if "cheapest" in question else OFFER_REPLY), cost, tokens
     return call_model
 
 

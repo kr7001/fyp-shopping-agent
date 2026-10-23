@@ -548,15 +548,20 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
             closed = "closed by the box"
             # What the slot cost: nothing under the rules, and under the model parser the
             # parse, which its row records (`suite.asked_row`), unknown where the provider gave
-            # no charge (22 October 2026). No agent ran, so it used no agent tokens.
+            # no charge (22 October 2026). No agent ran, so its tokens are the parse's, which
+            # its row records under the model parser (23 October 2026), unknown where the
+            # provider gave no count, and none under the rules.
             charged = row.get("cost_usd", 0.0)
+            used, parts = closed_tokens(row)
             slot.update({"measured": True, "answer": row.get("answer") or "", "ok": False,
                          "own": closed, "buyable": closed if run.task in buyable else None,
-                         "verdict": closed, "tokens_total": 0,
+                         "verdict": closed,
+                         "tokens_total": used,
                          "opened": 0, "skus": [], "covered": False, "missed": [],
                          "cost": None if charged is None else float(charged),
                          "calls": 0, "actions": 0, "pages": {"calls": {}, "actions": {}},
-                         "agent_asks": 0, "leaks": [], "outside": [], "tokens": (None, None),
+                         "agent_asks": 0, "leaks": [], "outside": [],
+                         "tokens": parts,
                          "model": payload.get("model"), "scaffold": payload.get("scaffold"),
                          "shop": None, "probe": None})
         slot["model"] = slot.get("model") or payload.get("model")
@@ -564,6 +569,23 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
         slot["conditions"] = conditions_of(payload, slot, condition_keys)
         slots.append(slot)
     return payload, slots, problems
+
+
+def stated_tokens(record: dict) -> dict | None:
+    """A run's tokens: the record's own where it states them, the naive loop's and, since 23
+    October 2026, a run under the model parser's, its parse's included, None where the
+    parse's count is unknown (`suite.charge_parse`); else the agent's, from its trace."""
+    return record["tokens"] if "tokens" in record else (record.get("trace") or {}).get("tokens")
+
+
+def closed_tokens(row: dict) -> tuple[int | None, tuple]:
+    """A slot the box closed, as (its tokens, (prompt, completion)): the parse's under the
+    model parser, which its row records (`suite.asked_row`, 23 October 2026), unknown where
+    the provider gave no count; none under the rules, where nothing was called."""
+    if "parse_tokens" not in row:
+        return 0, (None, None)
+    parsed = row["parse_tokens"]
+    return (parsed["total"], (parsed["prompt"], parsed["completion"])) if parsed else (None, (None, None))
 
 
 def measure(run: dict, folder: pathlib.Path, row: dict, reading: str | None, task: dict,
@@ -574,7 +596,8 @@ def measure(run: dict, folder: pathlib.Path, row: dict, reading: str | None, tas
     listings opened, and whether they were what the answer needs under the reading the run
     answered; the cost; the calls by page; the asks; the leaks."""
     record = json.loads((folder / f"{run['task']}-{run['repeat']}.json").read_text())
-    tokens = record.get("tokens") or (record.get("trace") or {}).get("tokens") or {}
+    stated = stated_tokens(record)
+    tokens = stated or {}
     # The listings a page counts as the market's: the task file's fixture's, as verify_cells
     # counts them, else those of the results page the box read.
     page = ((row.get("box") or {}).get("page") or {})
@@ -583,7 +606,7 @@ def measure(run: dict, folder: pathlib.Path, row: dict, reading: str | None, tas
     answer, ok = run["answer"], run["ok"]
     own = scoring.score(task, answer, ok)["verdict"]
     under_buyable = scoring.score({"expect": buyable_key}, answer, ok)["verdict"] if buyable_key else None
-    total = (tokens.get("prompt") or 0) + (tokens.get("completion") or 0) if tokens else None
+    total = (tokens.get("prompt") or 0) + (tokens.get("completion") or 0) if stated else None
     return {
         "measured": True, "answer": answer, "ok": ok,
         "own": own,
@@ -1798,8 +1821,8 @@ def render_protocol_model(m: dict, say) -> None:
     say("   correct: under the key for the reading the run was answered under, of the runs a key judged; - for "
         "a question with no key. opened: the listings of the question's product opened, median [each run]. "
         "needs: opened what the answer needs.")
-    say("   $/run: the provider's charge, the model parser's included. tokens: the agent's, thousands, mean; "
-        "the model parser's are not recorded. actions: browser actions a run, "
+    say("   $/run: the provider's charge, the model parser's included. tokens: the run's, thousands, mean, "
+        "the model parser's included. actions: browser actions a run, "
         "all/results page/listings. asks: the box's and the agent's. step, clock, none, abst: not correct "
         "for the step budget, the clock, no answer, an abstention.")
     for arm, questions in m["tables"].items():
@@ -1831,7 +1854,8 @@ def render_protocol_model(m: dict, say) -> None:
             + ("  rejected at 0.05" if t["rejected"] else "  not rejected at 0.05"))
         also = t.get("also")
         if also:
-            label = "the agent's tokens" if also["measure"] == "tokens_total" else also["measure"]
+            label = ("the run's tokens, the model parser's included" if also["measure"] == "tokens_total"
+                     else also["measure"])
             say(f"     and on {label}, outside Holm: "
                 + (render_test(also) + f"; p = {p_text(also['p'])}" if also["per_question"] else "not computed"))
 
