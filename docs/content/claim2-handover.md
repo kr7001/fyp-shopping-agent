@@ -385,3 +385,39 @@ Keep the laptop on power with the lid open, and don't touch the Chrome windows.
    agreement, then insights.
 4. Report writing uses `report/main.tex`'s slots, and the front-door development section already
    written (report commit `bc4d495`).
+
+## 12. Usage limits and models (added at 01:45 at the student's request)
+
+The account's usage limits may run out overnight. On 23 October the session limit stopped every
+agent from 16:50 to 17:50, and the weekly limit may run out too. Spread the night's work across
+models so it keeps moving:
+
+- **Use Fable 5.1 where it suits the task.** The Agent tool's `model` parameter overrides a
+  subagent type's model (`model: "fable"`). Use it at the highest effort the agent definition
+  allows. This draws on Fable's own weekly limit instead of Opus's. Judge suitability task by
+  task. A default split:
+  - **Fable:** the large, well-specified build tasks, each with its tests and planted faults:
+    - the tee-only generator variant;
+    - the templates and keys;
+    - the analysis file and protocol drafts;
+    - the command generator;
+    - the practice question set;
+    - the update page.
+    Also the blind writing of the v3 held-out set. That needs a fresh writer who has never seen
+    the parser's prompt, and a new agent is one.
+  - **Opus:** the work where one mistake costs the night: the box and prompt changes (decision
+    11, prompt v4), the verifier's logic audit, and the final dry run and stamp. Switch these to
+    Fable too if Opus's limit runs out.
+- **Keep capacity in reserve for verification.** The night must not end with code built but
+  unverified. From about 06:00, put the remaining capacity on the verifier's audit and stamp
+  before anything else.
+- **If an agent stops on a usage limit:**
+  - note when the limit resets;
+  - resume the agent with SendMessage after the reset, or give its brief to a new agent on the
+    other model;
+  - the new brief says what is done and what remains, from the files and commits;
+  - never treat a stopped agent's partial work as done: check the working tree. On 23 October a
+    stopped coder left uncommitted code in the main checkout, which blocks the guard's stamp
+    until it is committed or removed.
+- **Record which model did which work** in each report, and in the update page's list of what
+  was built.
