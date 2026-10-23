@@ -46,7 +46,7 @@ def model_batch(test: unittest.TestCase, *argv: str, replies, page_: page.Page, 
     $0.003. Returns the run, its folder kept until `test` ends, and its payload, None when
     nothing ran."""
     def call_model(key, model, prompt):
-        return replies(prompt), 0.003
+        return replies(prompt), 0.003, None
 
     with mock.patch.object(parse_probe, "call_model", call_model), \
             mock.patch.object(plan_probe, "load_key", return_value="fake-key"):

@@ -435,7 +435,8 @@ class NoKeyForReading(ValueError):
     """A run answered under a reading its task file has no key for."""
 
 
-def under_reading(task: dict, reading: str | None, readings: dict) -> dict:
+def under_reading(task: dict, reading: str | None, readings: dict,
+                  two_readings: list[str] | None = None) -> dict:
     """The task with the answer key for the reading the run was answered under.
 
     `reading` is what the box did, read from the run's own box record: the reading its
@@ -454,8 +455,14 @@ def under_reading(task: dict, reading: str | None, readings: dict) -> dict:
     as buyable, was scored under the menu key (verifier finding, 22 October 2026: a correct
     7 for "is size M an option" was scored wrong against the menu's 10). Re-scored over
     every stored run on 22 October 2026, no verdict changes: every stored run answered
-    under the buyable reading is on a question the sidecar holds a key for."""
-    if reading in (None, OWN_READING) or task["expect"].get("kind") == "none":
+    under the buyable reading is on a question the sidecar holds a key for.
+
+    `two_readings`, when given, are the questions whose own key is the menu reading (the
+    sidecar's, 23 October 2026, the verifier's FAIL at cce9ab0): elsewhere the key counts
+    what can be bought, so "menu" has no key there and raises. Without it every key is the
+    menu reading's, as for every caller but suite.py."""
+    own = reading == OWN_READING and (two_readings is None or task["id"] in two_readings)
+    if reading is None or own or task["expect"].get("kind") == "none":
         return task
     expect = (readings.get(reading) or {}).get(task["id"])
     if expect:

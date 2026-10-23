@@ -136,11 +136,24 @@ import targeting
 #      listing set and why (`Scope`, `product_scope`). A question that names none of the
 #      products, or more than one, is planned over every listing, and the record says so.
 #      Neither parser reads the question differently. A page of one product is unchanged
-VERSION = 17
+#   18 23 October 2026, from the verifier's fairness audit of d357c72, for the front door's
+#      pilot. The texts agree with the scope and the pages: under a scope, open or read every
+#      listing above; over several pages, every results page (primitives v12, `in_scope`).
+#      The per-litre plan says to choose each pack and look again. A rate question can be
+#      planned with no bound, every listing opened (`decide(rate="every")`, recorded as
+#      `rate_plan` in the decision and the plan), since the bound's largest pack is a figure
+#      of the fixture; the bound is the default. A pack is asked about as a pack, in its
+#      menu's words (`ambiguity.PACK_ASK`), and a decline names the attribute a question ranks
+#      by when its words name one, "tastes best" by taste (form v12). Every text for a search
+#      on one page of one product is unchanged but the per-litre plan's, a pack's ask and such
+#      a decline: replayed, every one of the 117 stored box runs is the text it was sent
+VERSION = 18
 
 # Who may read the question for the box: the rules, the default, or a model through a call
 # the caller injects.
 PARSERS = ("rules", "model")
+# How a rate question is planned: with the bound, the default, or every listing opened.
+RATE_PLANS = primitives.RATE_PLANS
 
 # Every wording of what the box sends that was changed on purpose since the box v2 batches
 # of 14 October 2026 (box v6), as (the box version that changed it, the words before, the
@@ -255,6 +268,7 @@ class Decision:
     exhaust: bool = False       # decided for the arm without the stop rule, `--box-exhaust`
     parse: Parse | None = None  # who read the question, see `Parse`; None is the rules alone
     scope: Scope | None = None  # which listings a plan ranges over (box v17); None with no page
+    rate: str = "bound"         # how a rate question is planned (box v18), see `RATE_PLANS`
 
     @property
     def planned(self) -> page_module.Page | None:
@@ -273,7 +287,8 @@ class Decision:
                 "plan": self.plan.record() if self.plan else None,
                 "exhaust": self.exhaust,
                 "parse": (self.parse or Parse()).record(),
-                "scope": self.scope.record() if self.scope is not None else None}
+                "scope": self.scope.record() if self.scope is not None else None,
+                "rate_plan": self.rate}
 
 
 def results_url(question: str, required: bool = True) -> str | None:
@@ -402,7 +417,8 @@ def unlisted(form: form_module.Form, question: str, page: page_module.Page | Non
 
 
 def decide(question: str, page: page_module.Page | None, reply: str | None = None,
-           exhaust: bool = False, parser: str = "rules", call=None) -> Decision:
+           exhaust: bool = False, parser: str = "rules", call=None,
+           rate: str = "bound") -> Decision:
     """An ask, a refusal or a plan for one question.
 
     With no reply, an ambiguous question comes back as an ask and nothing is planned. A
@@ -449,23 +465,30 @@ def decide(question: str, page: page_module.Page | None, reply: str | None = Non
     the question names, on a page of several products (box v17, `Scope`): one step from the
     question and the page, taken after the question is read and before the plan, and
     recorded on every decision with a page.
+
+    With `rate` "every" (box v18, 23 October 2026) a rate question is planned with no bound,
+    every listing opened (`primitives.rate_every_text`); "bound", the default, plans it as
+    before. Every decision records which, whatever its outcome.
     """
     if parser not in PARSERS:
         raise ValueError(f"parser {parser!r} is not one of {PARSERS}")
+    if rate not in RATE_PLANS:
+        raise ValueError(f"rate plan {rate!r} is not one of {RATE_PLANS}")
     # One step for both parsers, from the question and the page alone (box v17).
     scope = product_scope(question, page) if page is not None else None
     if parser == "rules":
-        decision = decide_by_rules(question, page, reply, exhaust, scope)
+        decision = decide_by_rules(question, page, reply, exhaust, scope, rate)
     else:
-        decision = decide_by_model(question, page, reply, exhaust, call, scope)
+        decision = decide_by_model(question, page, reply, exhaust, call, scope, rate)
     # A decision that planned nothing records the scope as the question and page gave it.
     if scope is not None and decision.scope is None:
         decision = dataclasses.replace(decision, scope=scope.for_form(None))
-    return decision
+    return dataclasses.replace(decision, rate=rate)
 
 
 def decide_by_rules(question: str, page: page_module.Page | None, reply: str | None = None,
-                    exhaust: bool = False, scope: Scope | None = None) -> Decision:
+                    exhaust: bool = False, scope: Scope | None = None,
+                    rate: str = "bound") -> Decision:
     """`decide` with the rules reading the question. The body is box v12's own, and every
     text the rules render is the same bytes, `tests/test_box.py` pins them, but one: since
     box v14 a lookup naming a seller or listing the page does not list is asked about
@@ -527,14 +550,15 @@ def decide_by_rules(question: str, page: page_module.Page | None, reply: str | N
         # The refusal `planner.planned_query` makes, for the same reason: paying a model to
         # execute a plan already known to be unsound buys nothing.
         raise ValueError("refusing to execute an unsound plan: " + "; ".join(problems))
-    plan = primitives.compose(form, planned, exhaust=exhaust)
+    plan = primitives.compose(form, planned, exhaust=exhaust, rate=rate)
     return Decision(question=question, kind=form.kind(), ask=asked, reading=reading,
                     query=f"{question}\n\n{plan.text}", plan=plan, page=page, form=form,
                     reading_by=reading_by, exhaust=exhaust, scope=applied)
 
 
 def decide_by_model(question: str, page: page_module.Page | None, reply: str | None,
-                    exhaust: bool, call, scope: Scope | None = None) -> Decision:
+                    exhaust: bool, call, scope: Scope | None = None,
+                    rate: str = "bound") -> Decision:
     """`decide` with a model reading the question and the rules doing the rest (box v13,
     22 October 2026).
 
@@ -567,7 +591,7 @@ def decide_by_model(question: str, page: page_module.Page | None, reply: str | N
     if call is None:
         raise ValueError("the model parser needs a call to send its prompt through")
     if page is None or form_module.from_rules(question, page).quantifier == "unknown":
-        decision = decide_by_rules(question, page, reply, exhaust, scope)
+        decision = decide_by_rules(question, page, reply, exhaust, scope, rate)
         why = ("the question names no results page, so the box has nothing to plan from and "
                "the model was not called" if page is None
                else "the rules found no shopping question, so the model was not called")
@@ -583,7 +607,7 @@ def decide_by_model(question: str, page: page_module.Page | None, reply: str | N
     changes = list(read.changes)
 
     def by_rules(reason: str, model_form: form_module.Form | None) -> Decision:
-        decision = decide_by_rules(asked_question, page, asked_reply, exhaust, scope)
+        decision = decide_by_rules(asked_question, page, asked_reply, exhaust, scope, rate)
         return dataclasses.replace(decision, parse=Parse(
             parser="model", used="rules", fallback_reason=reason,
             prompt_version=form_module.PROMPT_VERSION,
@@ -612,7 +636,11 @@ def decide_by_model(question: str, page: page_module.Page | None, reply: str | N
     asked = ambiguity.ask(question)
     flagged = normalise.availability_ambiguity(form)
     if asked is None and flagged is not None:
-        asked = ambiguity.availability_ask(flagged.word)
+        # In a pack's words when the option the model read is a pack (box v18), as the plan
+        # names it (`primitives.option_phrase`).
+        size = form.filter("size")
+        pack = size is not None and not str(size.value).isalnum()
+        asked = ambiguity.availability_ask(flagged.word, pack=pack)
     reading_by = None
     if asked is not None:
         answerable = [key for key in asked.readings
@@ -654,7 +682,7 @@ def decide_by_model(question: str, page: page_module.Page | None, reply: str | N
     # question turns pages, and `primitives.compose` refuses it there. That is the model's
     # form failing too, so the rules decide, and refuse it the same way if they read it so.
     try:
-        plan = primitives.compose(form, planned, exhaust=exhaust)
+        plan = primitives.compose(form, planned, exhaust=exhaust, rate=rate)
     except ValueError as fault:
         return by_rules(f"no plan can be composed from it: {fault}", form)
     return decided(form, question=question, kind=form.kind(), ask=asked, reading=reading,
@@ -716,7 +744,7 @@ def check(decision: Decision, answer: str, log_path: pathlib.Path) -> dict:
                    "floor": None, "floor_from": "page" if planned else None}
     if verdict["ok"] and decision.plan is not None:
         own = primitives.check(decision.form, planned, answer, text,
-                               menus=sufficiency.size_menus(log_path))
+                               menus=sufficiency.size_menus(log_path), rate=decision.rate)
         verdict = {**verdict, "ok": own["ok"], "flag": own["flag"], "why": own["why"],
                    "primitive": own["primitive"]}
     return verdict

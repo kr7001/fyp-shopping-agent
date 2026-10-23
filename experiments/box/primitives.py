@@ -11,7 +11,10 @@ stop rule required.
 
 For the seven kinds v1 had, the instruction is `targeting.BODIES[kind]`, the same bytes, so
 the pilot measured under v1 stays a measurement of what v2 sends (`tests/test_box.py` pins
-that against a fixture frozen from v1). New text exists only for the forms v1 could not
+that against a fixture frozen from v1). Since box v18 (23 October 2026) that holds on a page
+of one product on one page, and for every kind but the rate strategy, whose second step now
+says how to read each pack's price (`rate_bound_text`); under a scope or over several pages
+the texts say what to open in the preamble's words (`in_scope`). New text exists only for the forms v1 could not
 express: existence under a price limit, the k cheapest, named listings, the dearest, and
 since 22 October 2026 the negated universal, which only a model's form can be. Every
 statement in that text about the shop was checked against the live gated Thornwood results
@@ -84,7 +87,19 @@ import targeting
 #      (box v16), and on a page of several products lists only the listings of the product
 #      the question asks about, saying how many the search holds (`preamble`, box v17).
 #      Every text for a search on one page of one product is unchanged
-VERSION = 11
+#  12  23 October 2026, box v18, from the verifier's fairness audit of d357c72. Under a
+#      scope the texts say to open or read every listing above, where they said every
+#      listing in the search results or on the page after the preamble had said only the
+#      product's are part of the question; over several results pages, every results page
+#      where they said the whole results page (`in_scope`). The per-litre plan says to choose
+#      each pack and look again, and to count only a pack that can be bought when the
+#      question says so (`rate_steps`). And a rate question can be planned with no bound,
+#      every listing opened (`rate="every"`, `rate_every_text`), where the bound divides by
+#      `targeting.LARGEST_PACK_LITRES`, a figure of the fixture the agent cannot see; the
+#      bound stays the default. Every text for a search on one page of one product is
+#      unchanged but the per-litre plan's. No stored run was sent a text that changed: none
+#      of the 122 stored box rows has a scope, two pages or a rate plan
+VERSION = 12
 
 # The same hazard as every v1 bound strategy: a figure derived from a bound is not a price.
 QUARANTINE = targeting.QUARANTINE
@@ -137,6 +152,31 @@ def preamble(page: page_module.Page) -> str:
     return "\n".join(lines)
 
 
+# What the texts below say of the listings to open or read, as they must say it after the
+# preamble (box v18, 23 October 2026, the verifier's fairness audit of d357c72). Under a
+# scope the preamble says only the product's listings are part of the question, so a text
+# that then said to open every listing "in the search results" or "on the page", which hold
+# the other product's too, contradicted it; it says the listings above. Over several results
+# pages "the whole results page" was one page of two, and "on the page" too. On a page of one
+# product on one page no text changes (tests/test_box.py pins them).
+UNDER_SCOPE = (("every listing from the search results", "every listing above"),
+               ("Open every listing in the search results", "Open every listing above"),
+               ("every listing on the page", "every listing above"))
+OVER_PAGES = (("every listing on the page", "every listing above"),
+              ("from the search results page alone", "from the search results pages alone"),
+              ("Read the whole results page,", "Read every results page,"))
+
+
+def in_scope(instruction: str, page: page_module.Page) -> str:
+    """The instruction in the words the preamble before it allows: the listings above under
+    a scope (`box.Scope`), every results page over several. Applied last, after the stop
+    rule's swaps, whose sentences are written in the words of one page of one product."""
+    swaps = (UNDER_SCOPE if page.scope is not None else ()) + (OVER_PAGES if len(page.pages) > 1 else ())
+    for old, new in swaps:
+        instruction = instruction.replace(old, new)
+    return instruction
+
+
 @dataclasses.dataclass(frozen=True)
 class Plan:
     primitive: str                                  # which primitive composed it
@@ -147,12 +187,13 @@ class Plan:
     instruction: str                                # the primitive's text alone
     text: str                                       # the preamble, then the instruction
     exhaust: bool = False                           # composed without its stop rule, `exhaust_swaps`
+    rate: str = "bound"                             # how a rate question is planned, `RATE_PLANS`
 
     def record(self) -> dict:
         return {"primitives_version": VERSION, "primitive": self.primitive, "kind": self.kind,
                 "stop_rule": self.stop_rule, "filters": [f.record() for f in self.filters],
                 "candidates": [{"seller": c.seller, "url": c.url} for c in self.candidates],
-                "exhaust": self.exhaust}
+                "exhaust": self.exhaust, "rate_plan": self.rate}
 
 
 # ---------------------------------------------------------------------------
@@ -368,6 +409,61 @@ def topk_text(form: form_module.Form, page: page_module.Page) -> str:
         "explicitly that you checked each option was available rather than only listed, and "
         "say how many listings you opened, how many you skipped, and why skipping them was "
         "safe." + QUARANTINE)
+
+
+# How a rate question is planned (box v18, 23 October 2026). "bound", the default: the
+# advertised price over the largest pack bounds a listing's best rate, so listings are
+# skipped by it, as every rate plan before. "every": every listing is opened, with no bound,
+# since the largest pack, `targeting.LARGEST_PACK_LITRES`, is a figure of the fixture that
+# neither the agent nor the box can see (the verifier's fairness audit of d357c72).
+RATE_PLANS = ("bound", "every")
+RATE_EVERY_STOP = "when every listing has been opened, since no bound rules one out"
+# The rate strategy's step that never said a pack's price shows only once it is chosen.
+RATE_STEP = ("2. Open listings in ascending order of advertised price, and for each work out "
+             "the actual best price per litre across its pack sizes.\n")
+
+
+def rate_steps(form: form_module.Form) -> str:
+    """Choose every pack and look again, then count only what can be bought: what
+    `option_steps` says of one option, said of each pack of a listing, in the same words
+    (box v18, from the verifier's fairness audit of d357c72: the per-litre plan said to work
+    out each listing's best rate and never that a pack's price shows only once chosen)."""
+    steps = ["choose each pack size in turn, then look at the page again and read the price it "
+             "now shows. The price a listing shows before you choose is its cheapest option that "
+             "can be bought, not necessarily the pack you are pricing, and the reply to choosing "
+             "an option does not show the new price."]
+    availability = form.filter("availability")
+    if availability is not None and availability.value == "buyable":
+        steps.append("Count only a pack that can actually be bought. A pack can be listed and "
+                     "still be unavailable, in which case it is shown as disabled or greyed out "
+                     "and cannot be chosen from the menu, so it has no price you can use.")
+    return " ".join(steps)
+
+
+def rate_bound_text(form: form_module.Form) -> str:
+    """The rate strategy, `targeting.BODIES["rate_bound"]`, with its second step saying how to
+    read each pack's price (`rate_steps`). Its bound and stop sentences are the body's, so
+    the arm without the stop rule swaps them as before."""
+    body = targeting.BODIES["rate_bound"]
+    if body.count(RATE_STEP) != 1:
+        raise ValueError("the rate strategy's second step is not in its body once")
+    return body.replace(RATE_STEP, f"2. Open listings in ascending order of advertised price. In "
+                                   f"each one, {rate_steps(form)} Then work out its best price per "
+                                   f"litre across its pack sizes.\n")
+
+
+def rate_every_text(form: form_module.Form) -> str:
+    """A rate question with no bound (`rate="every"`): every listing above is opened, and
+    nothing is said about a largest pack, which the results page does not show."""
+    return (
+        "Open every listing above. The results page shows each listing's cheapest option, not "
+        "its price per litre, so no listing can be ruled out from it.\n"
+        f"In each one, {rate_steps(form)} Then work out the price per litre of each pack, from "
+        "its price and its volume, the number of bottles times each bottle's volume as its "
+        "label gives them, and keep the listing's best.\n"
+        "In your answer, name the seller with the lowest price per litre, the pack and the price "
+        "you read for it, and say how many listings you opened. Only report a price you read "
+        "while that pack was chosen, never the price shown before choosing.")
 
 
 def argmax_text(form: form_module.Form, page: page_module.Page) -> str:
@@ -664,6 +760,9 @@ class BoundPrune:
     @staticmethod
     def instruction(form: form_module.Form, page: page_module.Page) -> str:
         kind = form.kind()
+        if kind == "rate_bound":
+            # The body with the step that reads each pack's price (box v18, `rate_steps`).
+            return rate_bound_text(form)
         if kind in targeting.BODIES:
             return targeting.BODIES[kind]
         if kind == "topk_price":
@@ -900,38 +999,53 @@ def without_stop_rule(instruction: str, swaps: list[tuple[str, str]]) -> str:
     return instruction
 
 
-def compose(form: form_module.Form, page: page_module.Page, exhaust: bool = False) -> Plan:
+def every_rate(form: form_module.Form, rate: str) -> bool:
+    """Whether this form is a rate question planned with no bound (`RATE_PLANS`)."""
+    if rate not in RATE_PLANS:
+        raise ValueError(f"no rate plan {rate!r}: one of {RATE_PLANS}")
+    return rate == "every" and form.kind() == "rate_bound"
+
+
+def compose(form: form_module.Form, page: page_module.Page, exhaust: bool = False,
+            rate: str = "bound") -> Plan:
     """The plan for a form: the primitive its quantifier chooses, carrying the filters,
-    rendered as the preamble and then the primitive's instruction.
+    rendered as the preamble and then the primitive's instruction, in the words the preamble
+    allows (`in_scope`).
 
     With `exhaust` the stop rule is replaced by OPEN_EVERY (`exhaust_swaps`) and recorded as
     EXHAUST_STOP. A review question turns review pages rather than opening the page's
-    listings, and no text is written for it without its stop rule, so it is refused."""
-    primitive = primitive_for(form)
-    instruction = primitive.instruction(form, page)
-    stop_rule = primitive.stop_rule(form)
+    listings, and no text is written for it without its stop rule, so it is refused.
+
+    With `rate` "every" (box v18) a rate question opens every listing, with no bound: the
+    exhaust primitive with `rate_every_text`, which has no stop sentence to swap."""
+    every = every_rate(form, rate)
+    primitive = Exhaust if every else primitive_for(form)
+    instruction = rate_every_text(form) if every else primitive.instruction(form, page)
+    stop_rule = RATE_EVERY_STOP if every else primitive.stop_rule(form)
     if exhaust:
         if primitive is Depth:
             raise ValueError("--box-exhaust opens every listing on the page, and a review "
                              "question has no such stop rule to replace")
-        swaps = exhaust_swaps(form, page)
+        swaps = [] if every else exhaust_swaps(form, page)
         instruction = without_stop_rule(instruction, swaps)
         stop_rule = EXHAUST_STOP if swaps else stop_rule
+    instruction = in_scope(instruction, page)
     return Plan(primitive=primitive.name, kind=form.kind(), filters=form.filters,
                 candidates=tuple(candidates(form, page)), stop_rule=stop_rule,
                 instruction=instruction, text=f"{preamble(page)}\n\n{instruction}",
-                exhaust=exhaust)
+                exhaust=exhaust, rate=rate)
 
 
 def check(form: form_module.Form, page: page_module.Page, answer: str, text: str,
-          menus: dict | None = None) -> dict:
+          menus: dict | None = None, rate: str = "bound") -> dict:
     """The plan's own answer check: the primitive's, then the filters', in the verdict shape
     `sufficiency.check` uses. `text` is what the run observed; the listings it opened are
     read from it the way every scaffold's are, and only the market's own listings count,
     the ones on the page the box read. `menus` is what `sufficiency.size_menus` read from
-    the run's log, which the counterexample check uses."""
+    the run's log, which the counterexample check uses. A rate question planned with no
+    bound (`rate` "every") is held to every listing, as its plan said."""
     opened = sufficiency.listings_opened(text, market=[item.url for item in page.listings])
-    primitive = primitive_for(form)
+    primitive = Exhaust if every_rate(form, rate) else primitive_for(form)
     verdict = primitive.check(form, page, answer, opened, text, menus)
     if verdict["ok"]:
         verdict = FilterModifier.check(form, page, answer, opened, text, menus)

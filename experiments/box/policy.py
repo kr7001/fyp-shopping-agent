@@ -387,12 +387,19 @@ EXHAUSTIVE = (
 # 42 listings for a question about 21 of them, and checks a size on listings that sell water.
 # An option, `suite.py --exhaustive-wording product`, never the default: the first claim's
 # open-everything arm was sent EXHAUSTIVE, word for word, and the default stays so.
+#
+# Its version, recorded in every batch under it (`exhaustive_wording_version`):
+#   1  22 October 2026, "check the relevant option on each one"
+#   2  23 October 2026, the verifier's fairness audit of d357c72: "check every option the
+#      question needs on each one", since a question about the best price per litre across
+#      every pack needs every pack, not one relevant option. No batch ran under 1
+EXHAUSTIVE_PRODUCT_VERSION = 2
 EXHAUSTIVE_PRODUCT = (
     "\n\nBefore answering, open every {product} listing in the search results, including any "
-    "on later pages, and check the relevant option on each one. Listings of anything else in "
-    "the results are not part of the question and need not be opened. Do not stop early "
-    "because a listing looks unpromising from its search-result price. Base the answer only "
-    "on listings you have opened, and say how many you opened.")
+    "on later pages, and check every option the question needs on each one. Listings of "
+    "anything else in the results are not part of the question and need not be opened. Do "
+    "not stop early because a listing looks unpromising from its search-result price. Base "
+    "the answer only on listings you have opened, and say how many you opened.")
 
 
 def exhaustive_query(query: str, product: str | None = None) -> str:

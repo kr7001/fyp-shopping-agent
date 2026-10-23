@@ -75,6 +75,23 @@ READINGS = {
                 "By '{phrase}' I mean listings that can sell it now, so a sold-out size "
                 "does not count."),
 }
+# The same for a pack (box v18, 23 October 2026, the verifier's fairness audit of d357c72):
+# "does every water listing stock the 2 x 9.5L pack" was asked about a "size", and its reading
+# was written in as the listing's "size menu". On this shop the water listings' menu is
+# labelled Pack Size and the tees' Size (igr-dev-21.html and igr-dev-28.html, read on
+# 23 October 2026). A question about a size, a colour or an option reads as before.
+PACK_ASK = ("Your question says '{verb}'. On this shop a pack can be in a listing's menu but "
+            "sold out. Do you mean listings whose menu lists the pack, sold out or not, or "
+            "listings that can sell it now?")
+PACK_READINGS = {
+    "menu": ("listings whose menu lists the pack, sold out or not",
+             "By '{phrase}' I mean listings whose pack size menu includes it, whether or not "
+             "it is sold out."),
+    "buyable": ("listings that can sell it now",
+                "By '{phrase}' I mean listings that can sell it now, so a sold-out pack "
+                "does not count."),
+}
+PACKS = ("pack", "packs")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -103,18 +120,26 @@ def phrase(question: str) -> tuple[str, str] | None:
     return None
 
 
+def offer_ask(verb: str, quoted: str, pack: bool = False) -> Ask:
+    """The "offer" question about the words `quoted`, in the words of a size or, with
+    `pack`, of a pack (box v18)."""
+    template, readings = (PACK_ASK, PACK_READINGS) if pack else (ASK, READINGS)
+    return Ask(verb=verb, text=template.format(verb=verb),
+               readings={key: Reading(label, sentence.format(phrase=quoted))
+                         for key, (label, sentence) in readings.items()})
+
+
 def ask(question: str) -> Ask | None:
-    """The question to put to the user, or None when the question settles its own reading."""
+    """The question to put to the user, or None when the question settles its own reading.
+    A pack is asked about as a pack: the words the verb governs name one (box v18)."""
     if CLEAR.search(question):
         return None
     found = phrase(question)
     if found is None:
         return None
     verb, governed = found
-    quoted = f"{verb} {governed}"
-    return Ask(verb=verb, text=ASK.format(verb=verb),
-               readings={key: Reading(label, sentence.format(phrase=quoted))
-                         for key, (label, sentence) in READINGS.items()})
+    pack = any(word.lower() in PACKS for word in governed.split())
+    return offer_ask(verb, f"{verb} {governed}", pack)
 
 
 # The numerical case (box v2, 14 October 2026): a price word with no figure. The threshold
@@ -132,14 +157,13 @@ def threshold_ask(word: str) -> Ask:
     return Ask(verb=word, text=THRESHOLD.format(word=word), readings={})
 
 
-def availability_ask(word: str) -> Ask:
+def availability_ask(word: str, pack: bool = False) -> Ask:
     """The "offer" question for a word a model read as either in the menu or buyable where
     the lexicon found no verb governing a variant (box v13, 22 October 2026): the same
     template and the same two readings, quoting the model's word, so the scripted user's
-    `--reading` answers it as it answers the lexicon's."""
-    return Ask(verb=word, text=ASK.format(verb=word),
-               readings={key: Reading(label, sentence.format(phrase=word))
-                         for key, (label, sentence) in READINGS.items()})
+    `--reading` answers it as it answers the lexicon's. With `pack`, in a pack's words, as
+    the caller reads the variant from the model's form (box v18)."""
+    return offer_ask(word, word, pack)
 
 
 # The ask for any other word a model reads two ways (box v13, 22 October 2026). It quotes

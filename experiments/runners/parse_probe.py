@@ -106,19 +106,33 @@ def repository_commit() -> str:
 class UnexpectedReply(Exception):
     """A reply the provider served as a success whose body is not a chat completion: no
     `choices`, or no message content in the first. The provider may still have charged
-    for it, so the charge comes with it when the body says one, and the row keeps it.
-    Until 14 October 2026 the KeyError stopped the loop and lost the row (verifier
-    finding)."""
+    for it, so the charge comes with it when the body says one, and the row keeps it, and
+    so do its tokens (`tokens_of`) since 23 October 2026. Until 14 October 2026 the
+    KeyError stopped the loop and lost the row (verifier finding)."""
 
-    def __init__(self, why: str, cost: float | None):
+    def __init__(self, why: str, cost: float | None, tokens: dict | None = None):
         super().__init__(why)
         self.cost = cost
+        self.tokens = tokens
 
 
-def call_model(key: str, model: str, prompt: str) -> tuple[str, float | None]:
-    """One call, and what the provider charged for it, or None when it did not say. A
-    200 with a body that is not JSON raises requests' own `JSONDecodeError`, a request
-    failure; a JSON body without the completion raises `UnexpectedReply`."""
+def tokens_of(usage) -> dict | None:
+    """The call's prompt and completion tokens as the provider counted them in its `usage`,
+    or None when it gives either as no whole number (23 October 2026, so a run under the
+    model parser can count its parse's tokens with the agent's)."""
+    if not isinstance(usage, dict):
+        return None
+    prompt, completion = usage.get("prompt_tokens"), usage.get("completion_tokens")
+    if not all(isinstance(n, int) and not isinstance(n, bool) for n in (prompt, completion)):
+        return None
+    return {"prompt": prompt, "completion": completion}
+
+
+def call_model(key: str, model: str, prompt: str) -> tuple[str, float | None, dict | None]:
+    """One call: its reply, what the provider charged for it, or None when it did not say,
+    and its tokens (`tokens_of`), or None when it did not count them. A 200 with a body that
+    is not JSON raises requests' own `JSONDecodeError`, a request failure; a JSON body
+    without the completion raises `UnexpectedReply`."""
     reply = requests.post(
         ENDPOINT,
         headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
@@ -131,12 +145,20 @@ def call_model(key: str, model: str, prompt: str) -> tuple[str, float | None]:
     usage = payload.get("usage") if isinstance(payload, dict) else None
     cost = usage.get("cost") if isinstance(usage, dict) else None
     cost = float(cost) if cost is not None else None
+    tokens = tokens_of(usage)
     try:
-        text = payload["choices"][0]["message"]["content"]
+        content = payload["choices"][0]["message"]["content"]
     except (KeyError, IndexError, TypeError) as fault:
         raise UnexpectedReply(f"the reply holds no choices[0].message.content "
-                              f"({type(fault).__name__}: {fault}): {str(payload)[:200]!r}", cost)
-    return text, cost
+                              f"({type(fault).__name__}: {fault}): {str(payload)[:200]!r}", cost, tokens)
+    # As text, the way `form.parse_reply` reads it (23 October 2026): a null content is
+    # nothing and a list of parts its text parts. Content of any other type is a reply that
+    # is no completion, with its charge and tokens kept, never a TypeError later.
+    try:
+        text = form.reply_text(content)
+    except ValueError as fault:
+        raise UnexpectedReply(f"the reply's content is not text: {fault}", cost, tokens)
+    return text, cost, tokens
 
 
 def summary(record: dict) -> str:
@@ -203,7 +225,7 @@ def propose(question: str, model: str, key: str, page: page_module.Page | None =
     replies: list[str] = []
 
     def call(prompt: str) -> str:
-        text, cost = call_model(key, model, prompt)
+        text, cost, _ = call_model(key, model, prompt)     # the probe keeps the charge alone
         charged.append(cost)
         replies.append(text)
         return text

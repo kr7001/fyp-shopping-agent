@@ -84,7 +84,18 @@ import targeting
 #      number, and the values of "in" are words; a model's null, dict or nested list is
 #      refused rather than printed into a word, and so is a list of filters that is not a
 #      list. The rules write only such values, so they parse every question as they did
-VERSION = 11
+#  12  23 October 2026, from the verifier's fairness audit of d357c72. A generic superlative
+#      whose attribute the shop does not show is named by the word beside it that names one,
+#      "tastes best" by taste (`NAMED_BESIDE`), where the refusal said "what 'best' ranks
+#      by"; the question is refused as before. The reading a user chose is read back from a
+#      pack's sentences as from a size's (`PACK_READING_MARKS`)
+#  13  23 October 2026, from the verifier's FAIL at cce9ab0, before DeepSeek first reads a
+#      question. A model's reply is read as text, None as nothing and a list of content parts
+#      by its text parts, and any other content refused with its type, never a TypeError
+#      (`reply_text`). When the first '{' to the last '}' is not one form, each object in the
+#      reply is tried and the last that is a form taken (`last_form`), for reasoning with
+#      braces in it. Every reply the first attempt parsed parses to the same form
+VERSION = 13
 
 # The model parser's prompt, recorded in every form a model proposes. Runs made under
 # different prompts are different parsers and are never pooled.
@@ -98,7 +109,11 @@ VERSION = 11
 #      whose failures named what to teach: medium kept as a size, title filters restating
 #      the brand, the population "listing" for a results page, a negation read as an
 #      existence, and "affordable" made a filter (22 October 2026)
-PROMPT_VERSION = 2
+#   3  23 October 2026, from the verifier's fairness audit of d357c72. Version 2 with two
+#      sentences of its context made true of the shop (`CONTEXT_V3`): a search lists one
+#      product or several, and a listing has reviews only when it has any. Version 2 is kept
+#      byte for byte (tests/test_model_parser.py pins its sha256)
+PROMPT_VERSION = 3
 
 # The vocabulary. A form outside it is refused when it is built, so a model's reply cannot
 # smuggle in a quantifier nothing knows how to plan. "unknown" is the rules' answer to a
@@ -581,6 +596,9 @@ BUYABLE_WORDS = ambiguity.whole_words(ambiguity.BUYABLE)
 # The sentence the box writes into a question when the user chooses a reading, without the
 # user's own phrase, so the reading can be read back out of the question.
 READING_MARKS = {key: sentence.split("' ", 1)[1] for key, (_, sentence) in ambiguity.READINGS.items()}
+# The same sentences in a pack's words (box v18, `ambiguity.PACK_READINGS`).
+PACK_READING_MARKS = {key: sentence.split("' ", 1)[1]
+                      for key, (_, sentence) in ambiguity.PACK_READINGS.items()}
 # What makes a question one about this shop when none of the shapes above fits: a URL into
 # it, a word for what the market holds, a word for what the shop shows (a price, a variant,
 # whether it can be bought, its reviews), an attribute the shop lacks, or a filter the words
@@ -637,11 +655,13 @@ def population_of(question: str, evidence: dict) -> tuple[str, tuple[str, ...]]:
 
 
 def reading_in(question: str, evidence: dict) -> str | None:
-    """The reading the user chose, read back from the sentence the box wrote in."""
-    for key, mark in READING_MARKS.items():
-        if mark in question:
-            evidence["reading"] = mark
-            return key
+    """The reading the user chose, read back from the sentence the box wrote in, in a
+    size's words or a pack's."""
+    for marks in (READING_MARKS, PACK_READING_MARKS):
+        for key, mark in marks.items():
+            if mark in question:
+                evidence["reading"] = mark
+                return key
     return None
 
 
@@ -774,16 +794,29 @@ def graded_attribute(before: str, phrase: str, after: str) -> str | None:
     return None
 
 
+# The attribute a generic superlative ranks by when a word beside it names one the shop does
+# not show (form v12, 23 October 2026, the verifier's fairness audit of d357c72): "Which water
+# tastes best?" was refused for "what 'best' ranks by", where the question says taste. Only
+# the name changes: the question is refused as it was.
+NAMED_BESIDE = {"taste": "taste", "tastes": "taste", "tasting": "taste", "tasted": "taste",
+                "smell": "smell", "smells": "smell", "smelling": "smell",
+                "fit": "fit", "fits": "fit", "fitting": "fit"}
+
+
 def graded_unknown(question: str) -> tuple[str, str] | None:
     """The first superlative or comparative whose attribute the shop does not show, as
     (what the form calls the attribute, the words that asked), or None. A question an
     entry of OTHER_ATTRIBUTES already names ("delivers fastest") is left to that entry,
-    which names the attribute better."""
+    which names the attribute better. A generic word is named by the attribute the word
+    before or after it names, "tastes best" by taste (`NAMED_BESIDE`), and any other by
+    what it ranks by."""
     if other_attribute(question):
         return None
     for before, phrase, after in graded_words(question):
         if graded_attribute(before, phrase, after) is None:
-            return f"what '{phrase.lower()}' ranks by", phrase
+            generic = len(phrase.split()) == 1 and phrase.lower() in GENERIC_GRADED
+            named = (NAMED_BESIDE.get(before) or NAMED_BESIDE.get(after)) if generic else None
+            return named or f"what '{phrase.lower()}' ranks by", phrase
     return None
 
 
@@ -959,6 +992,23 @@ option that listing can sell. Opening a listing shows its size menu. The price o
 appears only after that size is chosen, and a size that cannot be bought is listed in the \
 menu as a disabled option. Reviews of a listing are on their own pages, ten to a page, each \
 with its text and a rating."""
+
+# Prompt version 3 (23 October 2026, the verifier's fairness audit of d357c72): two sentences
+# of CONTEXT were false of the shop. A search can list more than one product, as the
+# Larchmere search lists a tee and a bottled water, and a listing has reviews only when it
+# has any: every generated listing says "Be the first to review this product" and holds no
+# review (igr-dev-21.html and igr-dev-28.html, read on 23 October 2026), where the base
+# catalogue's products have review pages (/review/product/list/id/230/). Said in the shop's
+# terms, naming no market; the rest of the prompt is version 2's.
+CONTEXT_V3 = """You are parsing a shopper's question into a logical form before a web agent \
+retrieves anything from an online shop.
+
+The shop's search results page lists the competing listings a search finds, for one product \
+or for several. For each listing it shows the seller, the title, the URL and one advertised \
+price, which is the cheapest option that listing can sell. Opening a listing shows its size \
+menu. The price of a size appears only after that size is chosen, and a size that cannot be \
+bought is listed in the menu as a disabled option. A listing that has reviews has them on \
+their own pages, ten to a page, each with its text and a rating; many listings have none."""
 
 SHOWN = """The attributes the shop shows, and the only ones a form may compare or filter on:
 - on the results page: {results}
@@ -1203,34 +1253,85 @@ def worked_examples() -> str:
 
 def prompt(question: str, page: page_module.Page | None = None,
            version: int = PROMPT_VERSION) -> str:
-    """The prompt the model parser sends, by version, the current one by default. Version 1
-    is kept byte for byte, so a probe made under it can be reproduced. Everything in it is
-    true of the shop today."""
+    """The prompt the model parser sends, by version, the current one by default. Versions 1
+    and 2 are kept byte for byte, so a probe made under either can be reproduced. Everything
+    in the current one is true of the shop today."""
     shown = attributes_shown(page)
     lists = SHOWN.format(results=", ".join(sorted(shown - LISTING_PAGE_SHOWS - REVIEW_PAGE_SHOWS)),
                          listing=", ".join(sorted(LISTING_PAGE_SHOWS)),
                          review=", ".join(sorted(REVIEW_PAGE_SHOWS)))
     if version == 1:
         return "\n\n".join([CONTEXT, lists, PROPERTIES, SCHEMA, f"The question:\n{question}"])
-    if version == 2:
-        return "\n\n".join([CONTEXT, lists, SIZES, KINDS, PROPERTIES, FILLING, SCHEMA_V2,
+    if version in (2, 3):
+        context = CONTEXT if version == 2 else CONTEXT_V3
+        return "\n\n".join([context, lists, SIZES, KINDS, PROPERTIES, FILLING, SCHEMA_V2,
                             worked_examples(), f"The question:\n{question}"])
-    raise ValueError(f"no prompt version {version!r}: there are 1 and 2")
+    raise ValueError(f"no prompt version {version!r}: there are 1, 2 and 3")
 
 
-def parse_reply(reply: str | None, version: int = PROMPT_VERSION) -> Form:
+def reply_text(content) -> str:
+    """A model's message content as text (23 October 2026, before DeepSeek, which has never
+    been the parser, first reads a question): a string as it is, None as nothing, and a list
+    of OpenAI-style content parts as the join of their text parts, a part of any other type
+    left out. Any other content is refused with its type named, a ValueError, so the box
+    records a fallback to the rules and the batch goes on, where a TypeError stopped it."""
+    if content is None:
+        return ""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return "".join(part if isinstance(part, str) else part["text"] for part in content
+                       if isinstance(part, str) or (isinstance(part, dict) and part.get("type") == "text"
+                                                    and isinstance(part.get("text"), str)))
+    raise ValueError(f"the model's reply is of type {type(content).__name__}, not text")
+
+
+def last_form(text: str) -> Form | None:
+    """The last JSON object in `text` that is a form, for a reply whose reasoning holds
+    braces before or after its form, so that the first '{' to the last '}' is not one object
+    (23 October 2026). Each '{' is decoded where it stands (`json.JSONDecoder.raw_decode`),
+    and of those `from_record` accepts the last is taken, the model's final answer. One that
+    lies inside another it accepts is passed over: a form's own evidence can read as a form,
+    when its lines name a quantifier, an objective and a population in the vocabulary. None
+    when no object is a form."""
+    decoder, found = json.JSONDecoder(), []
+    for brace in re.finditer(r"\{", text):
+        try:
+            data, end = decoder.raw_decode(text, brace.start())
+            found.append((brace.start(), end, from_record(data, source="model")))
+        except (ValueError, TypeError):    # not an object here, or not a form
+            continue
+    outermost = [one for one in found
+                 if not any(other[0] < one[0] and one[1] <= other[1] for other in found)]
+    return outermost[-1][2] if outermost else None
+
+
+def parse_reply(reply, version: int = PROMPT_VERSION) -> Form:
     """A model's reply to prompt `version` as a form, which records that version, refused
     with the fault named when it is not one JSON object in the vocabulary. Taken out of
     `from_model` on 22 October 2026, so the box can tell a call that failed from a reply
-    that is not a form."""
-    block = re.search(r"\{.*\}", reply or "", re.DOTALL)
-    if not block:
-        raise ValueError(f"the model's reply holds no JSON object: {(reply or '')[:200]!r}")
+    that is not a form.
+
+    Since 23 October 2026 the reply is read as text first (`reply_text`), and the first
+    attempt is the one every stored parse was made by: the first '{' to the last '}', one
+    object. Only when that fails is each object in the reply tried (`last_form`), and when
+    none is a form the first attempt's fault is the one raised, so a reply that failed
+    before fails as it did."""
+    text = reply_text(reply)
     try:
-        data = json.loads(block.group(0))
-    except json.JSONDecodeError as error:
-        raise ValueError(f"the model's JSON does not parse ({error}): {block.group(0)[:200]!r}")
-    return dataclasses.replace(from_record(data, source="model"), prompt_version=version)
+        block = re.search(r"\{.*\}", text, re.DOTALL)
+        if not block:
+            raise ValueError(f"the model's reply holds no JSON object: {text[:200]!r}")
+        try:
+            data = json.loads(block.group(0))
+        except json.JSONDecodeError as error:
+            raise ValueError(f"the model's JSON does not parse ({error}): {block.group(0)[:200]!r}")
+        parsed = from_record(data, source="model")
+    except ValueError as first:
+        parsed = last_form(text)
+        if parsed is None:
+            raise first
+    return dataclasses.replace(parsed, prompt_version=version)
 
 
 def from_model(question: str, page: page_module.Page | None, call) -> Form:

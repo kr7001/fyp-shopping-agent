@@ -213,7 +213,7 @@ class Probe(unittest.TestCase):
             prompts.append(prompt)
             if "second time" in prompt:
                 raise fault
-            return reply_for(prompt), 0.001
+            return reply_for(prompt), 0.001, None
 
         return call_model, prompts
 
@@ -248,7 +248,7 @@ class Probe(unittest.TestCase):
                 self.assertIn("no form: request failed", printed)
 
     def test_no_failure_counts_none(self):
-        code, payload, printed = self.run_main(lambda key, model, prompt: (reply_for(prompt), 0.001))
+        code, payload, printed = self.run_main(lambda key, model, prompt: (reply_for(prompt), 0.001, None))
         self.assertEqual((code, payload["calls_failed"]), (0, 0))
         self.assertEqual([r["agree"] for r in payload["rows"]], [True, True, True])
         self.assertIn("calls failed: 0 of 3", printed)
@@ -256,7 +256,7 @@ class Probe(unittest.TestCase):
 
     def test_a_reply_that_is_not_a_form_is_a_model_problem_not_a_failed_call(self):
         def call_model(key, model, prompt):
-            return ("I cannot parse that.", 0.001) if "second time" in prompt else (reply_for(prompt), 0.001)
+            return ("I cannot parse that.", 0.001, None) if "second time" in prompt else (reply_for(prompt), 0.001, None)
 
         code, payload, _ = self.run_main(call_model)
         row = payload["rows"][1]
@@ -335,7 +335,7 @@ class Probe(unittest.TestCase):
         def call_model(key, model, prompt):
             if "second time" in prompt:
                 raise RuntimeError("the laptop fell over")
-            return reply_for(prompt), 0.001
+            return reply_for(prompt), 0.001, None
 
         code, payload, printed = self.run_main(call_model)
         self.assertIsNone(code)
@@ -344,7 +344,7 @@ class Probe(unittest.TestCase):
         self.assertIn("agree on 1 of 1 questions", printed)
 
     def test_the_file_says_which_commit_and_form_version_made_it(self):
-        _, payload, _ = self.run_main(lambda key, model, prompt: (reply_for(prompt), 0.001))
+        _, payload, _ = self.run_main(lambda key, model, prompt: (reply_for(prompt), 0.001, None))
         self.assertRegex(payload["commit"], r"^[0-9a-f]{40}$")
         self.assertEqual((payload["form_version"], payload["model"], payload["temperature"]),
                          (form.VERSION, "fake/model", 0))
@@ -356,7 +356,7 @@ class Probe(unittest.TestCase):
     def test_the_rules_see_the_page_the_question_names(self):
         # Until 14 Oct 2026 the probe parsed without the page, so the third question, which
         # names two of its sellers, fell to the survey fallback instead of a lookup.
-        _, payload, _ = self.run_main(lambda key, model, prompt: (reply_for(prompt), 0.001))
+        _, payload, _ = self.run_main(lambda key, model, prompt: (reply_for(prompt), 0.001, None))
         rules = payload["rows"][2]["rules"]
         self.assertEqual((rules["quantifier"], rules["kind"]), ("lookup", "named_lookup"))
         self.assertEqual(rules["filters"][0], {"attribute": "seller", "op": "in",
@@ -669,7 +669,7 @@ class QuestionsFakedModel(unittest.TestCase):
 
         def call_model(key, model, prompt):
             cls.prompts.append(prompt)
-            return planted_reply(by_question[prompt.rsplit("The question:\n", 1)[1]], cls.page), 0.001
+            return planted_reply(by_question[prompt.rsplit("The question:\n", 1)[1]], cls.page), 0.001, None
 
         out = io.StringIO()
         with mock.patch.object(parse_probe, "RESULTS", pathlib.Path(cls.folder.name)), \

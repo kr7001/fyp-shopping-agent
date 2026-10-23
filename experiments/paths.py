@@ -19,6 +19,10 @@ EXPERIMENTS = pathlib.Path(__file__).resolve().parent
 REPO = EXPERIMENTS.parent
 
 TASKS = EXPERIMENTS / "tasks"          # question files with their answer keys
+# A pilot's question files (23 October 2026): development questions on a development market,
+# for a small paid run before a big one, never a claim's. The planner's census and the parse
+# probes do not read this folder.
+PILOT_TASKS = TASKS / "pilot"
 RESULTS = EXPERIMENTS / "results"      # one folder per batch: suite.json, run records, logs
 RUNS = EXPERIMENTS / "runs"            # single runs made outside a batch
 FIXTURES = REPO / "env" / "fixtures"   # the generated catalogues the shop was seeded from

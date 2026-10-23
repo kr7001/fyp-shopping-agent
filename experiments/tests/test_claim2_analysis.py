@@ -458,7 +458,7 @@ class SyntheticRun2(unittest.TestCase):
                       "correction over the 4", "H1 correct, the block (model) against shipped",
                       "H4 correct, the block (model) against the block (rules), on held_out, by template",
                       "stratified exact test by template", "380k",
-                      "and on the agent's tokens, outside Holm", "3. Correct, the block (model) against open everything",
+                      "and on the run's tokens, the model parser's included, outside Holm", "3. Correct, the block (model) against open everything",
                       "4. The held-out rewordings, by template", "5. Secondary and exploratory",
                       "c. The questions the block should not plan", "6. Sensitivity"):
             with self.subTest(words=words):

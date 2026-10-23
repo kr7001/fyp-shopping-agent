@@ -153,24 +153,31 @@ def agent_model() -> str:
     return DEFAULT_MODEL
 
 
-def parser_call(model: str, key: str, charges: list):
+def parser_call(model: str, key: str, charges: list, tokens: list | None = None):
     """The model parser's call for one run: one request to `model` through
     `parse_probe.call_model` (temperature 0, no retry), the provider's charge for it
     appended to `charges`. A reply that is no completion raises as a failed call with the
     charge its body states, if any. A request that fails otherwise, a timeout, an HTTP error
     or a body that is not JSON, may or may not have been charged, and nothing says which, so
     its charge is unknown, None, never $0 (verifier finding, 22 October 2026). Either way
-    the box then uses the rules' form and says why."""
+    the box then uses the rules' form and says why. The call's tokens go to `tokens` the
+    same way (23 October 2026): the provider's count, or None where it gave none."""
     def call(prompt: str) -> str:
         try:
-            text, cost = parse_probe.call_model(key, model, prompt)
+            text, cost, used = parse_probe.call_model(key, model, prompt)
         except parse_probe.UnexpectedReply as fault:
             charges.append(fault.cost)
+            if tokens is not None:
+                tokens.append(fault.tokens)
             raise
         except Exception:
             charges.append(None)
+            if tokens is not None:
+                tokens.append(None)
             raise
         charges.append(cost)
+        if tokens is not None:
+            tokens.append(used)
         return text
     return call
 
@@ -304,15 +311,44 @@ def run_once(task: dict, base_url: str, out_dir: pathlib.Path, tag: str,
     return record
 
 
-def charge_parse(record: dict, parsed: float | None, record_path: pathlib.Path) -> dict:
+def parse_tokens(counts: list) -> dict | None:
+    """What a run's parse used (23 October 2026): each call's prompt and completion tokens
+    summed, with the number of calls; zeros when no call was made, and None when a call's
+    count is unknown, since a missing count is unknown, not zero."""
+    if any(count is None for count in counts):
+        return None
+    prompt = sum(count["prompt"] for count in counts)
+    completion = sum(count["completion"] for count in counts)
+    return {"prompt": prompt, "completion": completion, "total": prompt + completion,
+            "calls": len(counts)}
+
+
+def run_tokens(agent: dict | None, parse: dict | None) -> dict | None:
+    """A run's tokens, the agent's and its parse's together, or None when either is
+    unknown (23 October 2026)."""
+    if not agent or parse is None:
+        return None
+    prompt = (agent.get("prompt") or 0) + parse["prompt"]
+    completion = (agent.get("completion") or 0) + parse["completion"]
+    return {"prompt": prompt, "completion": completion, "total": prompt + completion}
+
+
+def charge_parse(record: dict, parsed: float | None, record_path: pathlib.Path,
+                 parsed_tokens: dict | None = None) -> dict:
     """A run's record with its parse charged to it (22 October 2026): `cost_usd` becomes
     what the run cost, the agent's charges and the parse's, beside `agent_cost_usd`, which
     the log's own charges re-sum to (`verify_cells`), and `parse_cost_usd`. None when either
-    part is unknown, since a missing cost is unknown, not zero. Written back into the run's
-    record file when the runner wrote one, so the file says what its run cost."""
+    part is unknown, since a missing cost is unknown, not zero. Its tokens the same way since
+    23 October 2026: `tokens`, the run's, beside `agent_tokens`, the log's own count, and
+    `parse_tokens` (`parse_tokens`); the agent's `trace` is left as the log gives it. Written
+    back into the run's record file when the runner wrote one, so the file says what its
+    run cost."""
     agent = record.get("cost_usd")
+    agent_tokens = (record.get("trace") or {}).get("tokens")
     record = {**record, "agent_cost_usd": agent, "parse_cost_usd": parsed,
-              "cost_usd": None if agent is None or parsed is None else round(agent + parsed, 6)}
+              "cost_usd": None if agent is None or parsed is None else round(agent + parsed, 6),
+              "agent_tokens": agent_tokens, "parse_tokens": parsed_tokens,
+              "tokens": run_tokens(agent_tokens, parsed_tokens)}
     if record_path.exists():
         record_path.write_text(json.dumps(record, indent=2, default=str) + "\n")
     return record
@@ -376,6 +412,20 @@ def _git(git: str, where: pathlib.Path, *args: str) -> bytes:
     """What git prints for `args` inside `where`, as bytes. Raises when git fails."""
     return subprocess.run([git, "-C", str(where), *args], capture_output=True,
                           check=True).stdout
+
+
+def tasks_file_name(path: pathlib.Path) -> str:
+    """The task file as a batch records it (`tasks_file`), which every reader opens again as
+    `paths.TASKS / tasks_file`: verify_cells, claim, replay_box, voids, rescore, leaks and
+    the layout test. Its path under experiments/tasks/, so a pilot's file in
+    experiments/tasks/pilot/ is found again (23 October 2026); for a file directly there that
+    is its name, as every batch before recorded. A file outside, a test's, keeps its name, and
+    so does a link to one of ours there: only the folder is resolved, never the file."""
+    try:
+        folder = path.absolute().parent.resolve().relative_to(paths.TASKS.resolve())
+    except ValueError:
+        return path.name
+    return (folder / path.name).as_posix()
 
 
 def draw_id(spec: dict) -> str:
@@ -446,8 +496,15 @@ def build_query(task: dict, spec: dict, args, call=None) -> tuple[str | None, di
         # Anything but the word "model" is the rules: a namespace a test builds, a mock
         # among them, may have no parser of its own. The command line allows only the two.
         parser = "model" if getattr(args, "parser", "rules") == "model" else "rules"
-        decision = box_module.decide(query, page, reply=args.reading, exhaust=exhaust,
-                                     parser=parser, call=call)
+        # How a rate question is planned (box v18). Anything but the word "every" is the bound,
+        # the default, as for the parser: a namespace a test builds, a mock among them, may
+        # have no rate plan of its own.
+        rate = "every" if getattr(args, "rate_plan", None) == "every" else "bound"
+        # The scripted user's reply for this question, its own reading under "own" (23
+        # October 2026); a namespace a test builds may have no `two_readings`.
+        reply = scripted_reply(task, args.reading, getattr(args, "two_readings", None))
+        decision = box_module.decide(query, page, reply=reply, exhaust=exhaust,
+                                     parser=parser, call=call, rate=rate)
         applied.update(strategy=decision.kind, box=decision.record(), page=page,
                        decision=decision)
         if decision.query is None:
@@ -524,12 +581,54 @@ def box_fields(box_record: dict) -> dict:
 
 def reading_answered(box_record: dict | None, flag: str | None) -> str | None:
     """The reading a run answered under, which its scoring key follows: the box record's
-    when the box ran, a reply or the box's own choice, else the `--reading` flag, which
-    without the box is None."""
+    when the box ran, a reply or the box's own choice, else the scripted reply, the task's
+    own (`scripted_reply`), which without the box is None."""
     return box_record.get("reading") if box_record else flag
 
 
-def unscorable(tasks: list[dict], spec: dict, args, readings: dict) -> list[str]:
+# The scripted user's replies where the box asks (`--reading`). "menu" and "buyable" answer
+# every question alike, as every batch before 23 October 2026 did, and stay for those
+# batches. "own" answers each question with the reading its own key was written under (the
+# verifier's FAIL at cce9ab0, blocker 1: pv1-15, "How many Larchmere listings can sell me a
+# size M today?", was asked by the word list, told "whether or not it is sold out" by
+# --reading menu, and would have been scored against its key, which counts what can be
+# bought).
+SCRIPTED_READINGS = ("menu", "buyable", "own")
+
+
+def scripted_reply(task: dict, flag: str | None, two_readings: list[str] | None) -> str | None:
+    """The scripted user's reply to the box's question on this task: the flag itself under
+    "menu" or "buyable" or none. Under "own", the reading the task's own key was written
+    under: "menu" for a question in its sidecar's `two_readings`, whose key counts a size in
+    the menu sold out or not, and "buyable" for every other question with a key, whose key
+    counts what can be bought. A file whose sidecar names no `two_readings` wrote every key
+    under the menu reading (`score.two_readings_for`). A question with no key gets no reply,
+    so an ask on it closes the slot, since nothing would judge its run."""
+    if flag != "own":
+        return flag
+    if task["expect"].get("kind") == "none":
+        return None
+    if two_readings is None or task["id"] in two_readings:
+        return scoring.OWN_READING
+    return "buyable"
+
+
+def score_run(task: dict, reading: str | None, readings: dict, two_readings: list[str] | None,
+              answer: str, ok: bool) -> dict:
+    """`score.score_under` with the task file's `two_readings` given to `under_reading`, so a
+    run told the menu reading on a question whose key counts what can be bought is unscored,
+    never scored against that key (23 October 2026). Kept here, not in score.py, until the
+    scorer's v7 merges, which then takes the parameter in `score_under` too."""
+    try:
+        keyed = scoring.under_reading(task, reading, readings, two_readings)
+    except scoring.NoKeyForReading as fault:
+        return {"verdict": "unscored", "why": f"no answer key for this run: {fault}",
+                "prices": scoring.prices_in(answer or "")}
+    return scoring.score(keyed, answer, ok)
+
+
+def unscorable(tasks: list[dict], spec: dict, args, readings: dict,
+                two_readings: list[str] | None = None) -> list[str]:
     """The tasks a batch could not score, each with the reading its runs would be scored
     under: the `--reading` reply where the box asks, the box's own reading where it takes
     one, the task's own key otherwise (`reading_answered`), wherever `score.under_reading`
@@ -545,29 +644,43 @@ def unscorable(tasks: list[dict], spec: dict, args, readings: dict) -> list[str]
     asked and answered by `--reading`, or lead the box to take the buyable reading itself,
     whatever the word list makes of the question; so each such question with a key needs a
     key under every reading other than its own that the run could then be answered under
-    (verifier finding, 22 October 2026: a model's ask was scored under the task's own key)."""
+    (verifier finding, 22 October 2026: a model's ask was scored under the task's own key).
+
+    `two_readings` are the questions the sidecar names as having two (23 October 2026, the
+    verifier's FAIL at cce9ab0): the menu reading is the own reading of those alone
+    (`score.under_reading`), so a scripted "menu" on any other question is a reading with no
+    key. Under `--reading menu` that reports each such question the rules ask on, and under
+    the model parser each such question the model reads, since it can ask on any. Under
+    `--reading own` each question is answered with its own reading (`scripted_reply`)."""
     missing = []
-    rules = argparse.Namespace(**{**vars(args), "parser": "rules"})
+    # The rules decide with the replies `two_readings` gives, as the paid loop does.
+    rules = argparse.Namespace(**{**vars(args), "parser": "rules", "two_readings": two_readings})
     model = getattr(args, "parser", "rules") == "model"
     for task in tasks:
         query, applied = build_query(task, spec, rules)
+        reply = scripted_reply(task, args.reading, two_readings)
         if query is not None:
-            reading = reading_answered(applied["box"], args.reading)
+            reading = reading_answered(applied["box"], reply)
             try:
-                scoring.under_reading(task, reading, readings)
+                scoring.under_reading(task, reading, readings, two_readings)
             except scoring.NoKeyForReading:
                 missing.append(f"{task['id']} under the {reading} reading")
         read_by_model = model and applied["page"] is not None and not (applied["box"] or {}).get("bypassed")
         if not read_by_model:
             continue
-        for reading in sorted({"buyable", args.reading} - {None, scoring.OWN_READING}):
+        # The buyable reading the box can take itself, and the scripted reply to an ask.
+        for reading in sorted({"buyable", reply} - {None}):
             try:
-                scoring.under_reading(task, reading, readings)
+                scoring.under_reading(task, reading, readings, two_readings)
             except scoring.NoKeyForReading:
                 found = f"{task['id']} under the {reading} reading"
                 if found not in missing:
+                    # The buyable reading the box can take itself, whatever the reply; any
+                    # other, the scripted reply to an ask the model can put on any question.
                     missing.append(f"{found}, which the model parser can lead any question it "
-                                   f"reads to")
+                                   f"reads to" if reading == "buyable" else
+                                   f"{found}, the scripted reply if the model parser asks, as it "
+                                   f"can on any question it reads")
     return missing
 
 
@@ -588,10 +701,26 @@ def dry_text(query: str | None, applied: dict) -> None:
         print(f"ASKS: {record['ask']}")
 
 
-def print_dry_task(task: dict, query: str | None, applied: dict) -> None:
+def scripted_line(record: dict | None, reply: str | None) -> str:
+    """Under `--reading own`, the scripted user's reply for a task and whether it was given
+    (23 October 2026), as its record's `reading_by` says: given where the box asked, not
+    needed where the box took a reading itself, and not given where it asked nothing."""
+    by = (record or {}).get("reading_by")
+    given = ("given: the box asked" if by == "user" else
+             f"not needed: the box took the {record['reading']} reading itself" if by == "box" else
+             "not given: the box did not ask")
+    return f"scripted reply under --reading own: {reply or 'none, since no key would judge it'}, {given}"
+
+
+def print_dry_task(task: dict, query: str | None, applied: dict, own: bool = False,
+                   scripted: str | None = None) -> None:
     """One task of the dry run: the exact text, through the same function the paid loop
-    uses, so what is read here is what the agent gets (LESSONS 17)."""
+    uses, so what is read here is what the agent gets (LESSONS 17). Under `--reading own`
+    (`own`) the scripted reply, `scripted`, is printed first with whether it was given;
+    otherwise the lines are what they always were."""
     print(f"  {task['id']:26} gated={task['gated']}  {task['expect']['kind']}")
+    if own:
+        print(scripted_line(applied["box"], scripted))
     dry_text(query, applied)
     print()
 
@@ -611,6 +740,10 @@ def print_dry_parsers(task: dict, spec: dict, args, replies: dict[str, str]) -> 
     form = (applied["box"] or {}).get("form") or form_module.from_rules(
         task["query"].format(base=spec["base_url"]), applied["page"]).record()
     print(f"parser rules: {parse_probe.summary(form)}")
+    own = args.reading == "own"
+    scripted = scripted_reply(task, args.reading, getattr(args, "two_readings", None))
+    if own:
+        print(scripted_line(applied["box"], scripted))
     dry_text(query, applied)
     reply = replies.get(task["id"])
     version = f"prompt v{form_module.PROMPT_VERSION}, normalisation v{normalise_module.VERSION}"
@@ -633,6 +766,8 @@ def print_dry_parsers(task: dict, spec: dict, args, replies: dict[str, str]) -> 
     if parse.get("declined"):
         print("  declined on the model's form: what it needs is not shown, by the rules' check "
               "of the page's attributes")
+    if own:
+        print(scripted_line(applied["box"], scripted))
     dry_text(query, applied)
     print()
     return applied["box"]
@@ -767,12 +902,14 @@ def main() -> int:
                              "the page before answering. The arm that isolates the stop rule "
                              "for research question 3. Excludes --box, --targeting and "
                              "--exhaustive, and everything --box excludes")
-    parser.add_argument("--reading", choices=("menu", "buyable"),
+    parser.add_argument("--reading", choices=SCRIPTED_READINGS,
                         help="the scripted user's reply when the box asks. menu: a size in "
-                             "the listing's menu counts, sold out or not, which is the "
-                             "task's own key. buyable: only a size that can be sold now, "
-                             "the key in tasks/readings_<market>.json. Without it a box "
-                             "that asks records the ask, runs no agent and spends nothing")
+                             "the listing's menu counts, sold out or not. buyable: only a size "
+                             "that can be sold now, the key in tasks/readings_<market>.json. "
+                             "own: each question's own reading, menu for a question the "
+                             "sidecar names under two_readings and buyable for any other with "
+                             "a key (23 October 2026). Without it a box that asks records the "
+                             "ask, runs no agent and spends nothing")
     parser.add_argument("--parser", choices=box_module.PARSERS, default="rules",
                         help="who reads the question for the box. rules, the default, as every "
                              "box batch before 22 October 2026. model: one call per run reads "
@@ -793,6 +930,13 @@ def main() -> int:
                              "agent's user agent, run in the Playwright venv. fetch: each "
                              "page's HTML over HTTP, the box's reader until box v16, when it "
                              "read the first page alone. Needs --box or --box-exhaust")
+    parser.add_argument("--rate-plan", choices=box_module.RATE_PLANS, default=None,
+                        help="how the box plans a rate question, such as the best price per "
+                             "litre: bound, the default, skips a listing whose advertised price "
+                             "over the largest pack cannot win, as every box batch before 23 "
+                             "October 2026; every opens every listing, with no bound, since the "
+                             "largest pack is a figure the results pages do not show. Needs --box or "
+                             "--box-exhaust")
     parser.add_argument("--max-steps", type=int, default=None, metavar="N",
                         help=f"openJiuwen's step limit, passed as BROWSER_GUARDRAIL_MAX_STEPS; "
                              f"{DEFAULT_MAX_STEPS} by default, its own, as every batch before 22 "
@@ -842,6 +986,11 @@ def main() -> int:
         parser.error("--page-reader is how the box reads the results pages, so it needs --box "
                      "or --box-exhaust")
     args.page_reader = (args.page_reader or page_module.READERS[0]) if boxed else None
+    # The rate plan is the box's (box v18), so with no box it would name a plan nobody made.
+    if args.rate_plan and not boxed:
+        parser.error("--rate-plan is how the box plans a rate question, so it needs --box or "
+                     "--box-exhaust")
+    args.rate_plan = (args.rate_plan or "bound") if boxed else None
     if boxed and args.policy in ("retry", "investigate"):
         parser.error("--box supports --policy off or gate only in v1: the retry arms "
                      "rebuild the query without the box's plan")
@@ -896,9 +1045,12 @@ def main() -> int:
     # The scripted user's other readings of the ambiguous questions, for scoring under
     # `--reading`. Empty when the task file has no sidecar.
     readings = scoring.readings_for(args.tasks)
+    # The questions its sidecar says have two readings, None where it names none (23 October
+    # 2026): the scripted reply under "own" and the reading each key was written under.
+    args.two_readings = scoring.two_readings_for(args.tasks)
     # Every key a run will be scored against, found before the first run and in the dry
     # run, so a missing one stops the batch before anything is spent (20 October 2026).
-    missing = unscorable(tasks, spec, args, readings)
+    missing = unscorable(tasks, spec, args, readings, args.two_readings)
     if missing:
         parser.error(f"{args.tasks.name} has no answer key for the reading these runs would "
                      f"be scored under, so nothing runs: {'; '.join(missing)}")
@@ -930,6 +1082,9 @@ def main() -> int:
     # How the box reads the results pages (box v16), a condition of every box batch.
     if boxed:
         print(f"page reader: {args.page_reader}, every results page")
+    # The rate plan when it is not the default (box v18), so a default header is unchanged.
+    if boxed and args.rate_plan != "bound":
+        print(f"rate plan: {args.rate_plan}, a rate question opens every listing, with no bound")
     # Under the model parser, who reads the question and with what. Not printed under the
     # rules, so a rules batch's header is what it always was.
     if model_parser:
@@ -951,7 +1106,8 @@ def main() -> int:
                 continue
             query, applied = build_query(task, spec, args)
             records.append(applied["box"])
-            print_dry_task(task, query, applied)
+            print_dry_task(task, query, applied, own=args.reading == "own",
+                           scripted=scripted_reply(task, args.reading, args.two_readings))
         summary = dry_summary(records, args.repeats)
         if summary:
             if model_parser:
@@ -976,9 +1132,11 @@ def main() -> int:
             # Under the model parser each run's question is read by its own call, and what
             # it was charged is part of the run's cost (22 October 2026).
             charges: list = []
-            call = parser_call(parser_model, key, charges) if model_parser else None
+            counts: list = []
+            call = parser_call(parser_model, key, charges, counts) if model_parser else None
             query, applied = build_query(task, spec, args, call=call)
             parsed = parse_cost(charges)
+            parsed_tokens = parse_tokens(counts)
             strategy = applied["strategy"]
             if query is None:
                 # The box asked and no scripted reply was given, or it refused. Either is
@@ -986,6 +1144,7 @@ def main() -> int:
                 row = asked_row(task, repeat, applied["box"], cost=parsed if model_parser else 0)
                 if model_parser:
                     row["parse_cost_usd"] = parsed
+                    row["parse_tokens"] = parsed_tokens
                 rows.append(row)
                 declined = ((applied["box"] or {}).get("parse") or {}).get("declined")
                 print(f"[{done}/{total}] {tag:32} {row['verdict']:10} the box {row['verdict']}"
@@ -995,7 +1154,7 @@ def main() -> int:
                               scaffold=args.scaffold, shop=args.shop, probe=args.probe,
                               max_steps=args.max_steps, clock_s=args.clock)
             if model_parser:
-                record = charge_parse(record, parsed, out_dir / f"{tag}.json")
+                record = charge_parse(record, parsed, out_dir / f"{tag}.json", parsed_tokens)
             result = record.get("result") or {}
             answer = str(result.get("final") or "")
             trace = record.get("trace") or {}
@@ -1021,8 +1180,8 @@ def main() -> int:
             # reply or the box's own choice, the sidecar's when that reading is not the
             # task's own, and unscored, never the task's own key, when the sidecar has
             # none (score.py v4; `unscorable` refuses such a batch before it runs).
-            answered = reading_answered(applied["box"], args.reading)
-            verdict = scoring.score_under(task, answered, readings, answer, bool(result.get("ok")))
+            answered = reading_answered(applied["box"], scripted_reply(task, args.reading, args.two_readings))
+            verdict = score_run(task, answered, readings, args.two_readings, answer, bool(result.get("ok")))
             row = {
                 "task": task["id"], "family": task["family"], "gated": task["gated"],
                 "repeat": repeat,
@@ -1045,6 +1204,7 @@ def main() -> int:
                 row.update(box_fields(applied["box"]))
             if model_parser:
                 row["parse_cost_usd"] = parsed
+                row["parse_tokens"] = parsed_tokens
             if args.confidence != "off":
                 row["confidence"] = confidence
                 row["confidence_reason"] = reason
@@ -1086,6 +1246,9 @@ def main() -> int:
                # Which open-everything instruction (22 October 2026): "every" listing, as every
                # batch before, or every listing of the task's "product"; None without it.
                "exhaustive_wording": args.exhaustive_wording,
+               # The product wording's own version (23 October 2026); None under any other.
+               "exhaustive_wording_version": (policy_module.EXHAUSTIVE_PRODUCT_VERSION
+                                              if args.exhaustive_wording == "product" else None),
                "targeting": args.targeting,
                # The box plans through the same classifier and planner, so both versions
                # are recorded under it too.
@@ -1116,11 +1279,21 @@ def main() -> int:
                                      if model_parser else None),
                "parse_charges_unknown": (sum(1 for row in rows if row.get("parse_cost_usd") is None)
                                          if model_parser else None),
+               # The parse's tokens over the runs whose count is known, and how many are not
+               # (23 October 2026); each run's own are in its row and its record.
+               "parse_tokens": ({part: sum((row.get("parse_tokens") or {}).get(part, 0) for row in rows)
+                                 for part in ("prompt", "completion", "total", "calls")}
+                                if model_parser else None),
+               "parse_tokens_unknown": (sum(1 for row in rows if row.get("parse_tokens") is None)
+                                        if model_parser else None),
                "reading": args.reading,
                # Which reader read the results pages, every one of them (box v16, 22 October
                # 2026); None without the box. A box batch without the field read the first
                # page alone over HTTP.
                "page_reader": args.page_reader,
+               # How the box planned a rate question (box v18): "bound" or "every"; None
+               # without the box. A box batch without the field planned it with the bound.
+               "rate_plan": args.rate_plan,
                # The pinned browser tool, the origins the browser may request and the
                # flags it runs with, see `browser_conditions`: `browser_tool`,
                # `browser_origins` and `browser_flags`.
@@ -1147,7 +1320,8 @@ def main() -> int:
                # its uncommitted patch, see `agent_code_identity`. None for the naive loop.
                "agent_core_commit": agent_code["agent_core_commit"],
                "agent_core_patch": agent_code["agent_core_patch"],
-               "tasks_file": args.tasks.name,
+               # Under experiments/tasks/, where every reader looks (`tasks_file_name`).
+               "tasks_file": tasks_file_name(args.tasks),
                "draw": draw_id(spec),
                # The ground truth this suite was scored against. The catalogue is
                # regenerated between rounds, so without it an old result cannot be told
