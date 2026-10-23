@@ -4,10 +4,10 @@
     "arms: each protocol arm by what its batches' payloads record, the retrieval instruction suite.arm_of names and the scripted user's reading under the box, with the suite flags that make it. Every arm runs with --max-steps 300 --clock 1800, which 'require' holds the runs to.",
     "sets: question ids of the claim market's task file, which env/generate_aplus_tasks.py --rewordings writes. 'held_out' is no list: it is every task of that file with a 'template', the meaning-kept rewordings of experiments/tasks/paraphrases_v2.json, read by id and template only.",
     "tests: the four primary tests, two-sided, Holm over the four. H1 and H4 are stratified exact tests of correct, by question and by template; H2 and H3 van Elteren's stratified exact rank test, by question, and H3 is reported on the agent's tokens beside its cost, outside Holm (the model parser's tokens are not recorded, its charge is in the cost). Superseded in part: since cce9ab0 (23 October 2026) the parse's tokens are recorded, and a run's tokens, which H3 reports, include them.",
-    "design: the questions each arm asks, every round. 'templates' are the market's fifteen questions; the rewordings are asked under the block alone, since only H4 reads them. The number of rounds is the protocol's to fix from the dry run's estimate.",
+    "design: the questions each arm asks, every round. 'templates' are the market's fifteen questions; the rewordings are asked under the block alone, since only H4 reads them. The number of rounds is the protocol's to fix from the dry run's estimate. Superseded: since version 6 the design is one for each model, and each set an arm asks has rounds of its own.",
     "models: each its own result, never pooled. The ids are those the runs record (MODEL_NAME); a model the runs record that is not named here is analysed and said to be unnamed, and a model named here with no run is a problem.",
     "Version 2, 23 October 2026, from the verifier's fairness audit, before any run 2 data exists:",
-    "roles: DeepSeek's four tests are the primary result and the claim, with Holm over its four. Haiku's four are a replication of it, a family of their own with their own Holm over four; the two are never pooled and neither corrects the other.",
+    "roles: DeepSeek's four tests are the primary result and the claim, with Holm over its four. Haiku's four are a replication of it, a family of their own with their own Holm over four; the two are never pooled and neither corrects the other. Superseded in part: since version 6 Haiku's family is H1 alone, with Holm over that one test.",
     "H2 and H3 count only the slots where the agent ran. A slot the box closes, an ask with no reply or a decline, runs no agent, and entered H2 and H3 as 0 listings and the parse's cost; only the block under the model closes such slots on the gated questions, so it could only favour the model. The closed slots are left out and reported beside each test by question and arm, and the sensitivity 'with the closed slots in H2 and H3' puts them back.",
     "Every run's sorting and page size are counted from its log, by arm: product_list_order or product_list_dir in an address its navigations asked for or its replies reported is a sort (relevance, the default, is none), product_list_limit or the list view is a change of page size (experiments/analysis/toolbar.py). The page rules hold for the relevance order at 36 a page only; at 60 a page all 42 listings render on one. The sensitivity 'without the runs that sorted or changed the page size' drops them.",
     "H4 stays one test of all thirteen keyed templates. splits: H4 again on each part of two pre-specified splits, secondary and unadjusted: the first claim's six templates against the seven added for the second, and the tee's eight against the water's five. Both parsers are deterministic, so the box makes one plan of a rewording whatever the round, and the unit at the front door is the 26 keyed rewordings, not the runs: the sensitivity 'H4 by rewording, not by run' takes each rewording's share of its runs correct, one value a rewording and arm, van Elteren's stratified exact rank test by template.",
@@ -30,10 +30,13 @@
     "provider_routing: the OpenRouter provider object every call of a model's arms carries, the agent's and, in the arm the model parser reads, the parse's; null is off. Every arm of a model is held to it: a batch whose payload's provider_routing, or a run whose record's, is not it is outside require, void as a whole, and so is a run whose record's routing is not the one its batch's payload says the agent ran under. claim.py --preflight reads IGR_PROVIDER_ROUTING from the environment and refuses an invocation it would route otherwise.",
     "Pending decision 9 on the evening of 23 October 2026: DeepSeek V4 Flash routed to gmicloud, deepinfra and streamlake in that order with no fallback, and at fp8 alone (\"quantizations\": [\"fp8\"], since the verifier's check of 281c7e8, so an endpoint that changes its quantisation is not used either), the value provider_routing.PROPOSED holds, and Haiku off. If routing is not chosen, 'off' means null for DeepSeek too, and the batches are run with IGR_PROVIDER_ROUTING unset. A provider object's keys are held to OpenRouter's documented ones (provider_routing.PROVIDER_KEYS): a typo is refused, by suite.py, the preflight and this file's check alike, where OpenRouter would ignore it.",
     "The serving-provider mix by arm and model is read from each row's count of who served the agent's calls and from its parse_provider, a batch from before routing by the same reading of its logs, and a run whose count is missing is unknown, never zero.",
-    "The hand reading (claim.py --sheet, then --hand): a reader marks an answer 'unscorable' only when it cannot be read at all, being empty, garbled, or about another question; any answer that can be read is 'correct' or 'not correct' against its key, however hedged or long. An unscorable answer leaves every test of correct, so --hand counts them by arm and model and prints, beside each test of correct, how many it leaves out."
+    "The hand reading (claim.py --sheet, then --hand): a reader marks an answer 'unscorable' only when it cannot be read at all, being empty, garbled, or about another question; any answer that can be read is 'correct' or 'not correct' against its key, however hedged or long. An unscorable answer leaves every test of correct, so --hand counts them by arm and model and prints, beside each test of correct, how many it leaves out.",
+    "Version 6, 23 October 2026, for the student's decision 2 (the budget), before any run 2 data exists:",
+    "design: one for each model, and each set an arm asks in rounds of its own: 'asks' gives each arm the model runs its sets ('templates' or a set named under 'sets') with the rounds each is asked in, and 'tests' the family the model holds, with its own Holm over that family. The primary model's family holds every test. An arm, test, comparison or sensitivity a model's design leaves out is reported as not run by design, never as missing data or a refusal; a run the design does not ask for is listed among the problems and is in no figure, so each test, H4 and its sensitivities included, reads only the rounds its design has. A test's two arms are asked its questions in the same rounds, which claim.py holds the file to.",
+    "Pending decision 2 on the evening of 23 October 2026, the file holds plan 2a: DeepSeek runs the full design, the templates in rounds 1 to 3 under all four arms and the held-out rewordings in round 1 alone under both block arms, so H4 has one run a rewording an arm; Haiku runs only shipped and the block (model), on the nine reading-independent questions, in round 1 alone, and its family is H1 alone, with Holm over that one test. Plan 2b is 2a with the held-out rewordings in rounds [1, 2, 3]; plan 2c is 2a with every set of DeepSeek's in rounds [1, 2]. If either is chosen, the rounds here change with it, before any run."
   ],
   "protocol": "docs/content/claim2-protocol.md",
-  "version": 5,
+  "version": 6,
   "roles": {"deepseek/deepseek-v4-flash": "primary", "anthropic/claude-haiku-4.5": "replication"},
   "arms": {
     "shipped": {"arm": "none", "reading": null,
@@ -83,12 +86,21 @@
                         "water-count-buyable", "water-best-per-litre"]
   },
   "design": {
-    "rounds": [1, 2, 3],
-    "asks": {
-      "shipped": ["templates"],
-      "open everything (product)": ["gated"],
-      "the block (rules)": ["templates", "held_out"],
-      "the block (model)": ["templates", "held_out"]
+    "deepseek/deepseek-v4-flash": {
+      "asks": {
+        "shipped": {"templates": [1, 2, 3]},
+        "open everything (product)": {"gated": [1, 2, 3]},
+        "the block (rules)": {"templates": [1, 2, 3], "held_out": [1]},
+        "the block (model)": {"templates": [1, 2, 3], "held_out": [1]}
+      },
+      "tests": ["H1", "H2", "H3", "H4"]
+    },
+    "anthropic/claude-haiku-4.5": {
+      "asks": {
+        "shipped": {"reading_independent": [1]},
+        "the block (model)": {"reading_independent": [1]}
+      },
+      "tests": ["H1"]
     }
   },
   "tests": {

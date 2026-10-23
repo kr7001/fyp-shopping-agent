@@ -1609,7 +1609,17 @@ def render_test(t: dict) -> str:
 #      marked unscorable by arm and beside each test of correct, and an answer to a question
 #      with no key is no longer on the hand-reading sheet. The market's results order is read
 #      from experiments/analysis/fixture_order.py, which the A+ checker reads too, unchanged
-PROTOCOL_ANALYSIS_VERSION = 5
+#   6  23 October 2026, for the student's decision 2: a design for each model, and rounds for
+#      each set an arm asks (`Design`, `design_problems`). A protocol file gives each model its
+#      arms, each arm's sets with their own rounds, and the family of tests the model holds, its
+#      own Holm over them; the primary's holds every test. A model's analysis reads its design
+#      alone (`Protocol.of`): its slots, its tests, their splits and the sensitivities that can
+#      move them (`unmoved`); the arms, tests, sensitivities and comparisons its design leaves out
+#      are reported as not run by design, never as missing or refused. A run the design does not
+#      ask for is listed, as before, and is now in no figure, so a test reads only the rounds its
+#      design has. A test's two arms are asked its questions in the same rounds, or the file is
+#      refused (`resolve_protocol`), and `--preflight` refuses an arm the model's design does not run
+PROTOCOL_ANALYSIS_VERSION = 6
 # The conditions a protocol's arms are held to: the first claim's and the model parser's,
 # the open-everything wording, the agent's limits. Of them, the ones an arm has by design.
 # The box's rate plan and the product wording's version (23 October 2026) join them, so two
@@ -1650,9 +1660,32 @@ PROTOCOL_SETS = ("control", "decline", "gated", "two_readings", "reading_indepen
                  "count_two_readings", "held_out")
 
 
+@dataclasses.dataclass(frozen=True)
+class Design:
+    """One model's design (v6): the questions each of its arms asks, each in the rounds its set
+    is asked in, and the tests its family holds, in the file's order."""
+    asks: dict                      # arm -> {question id: the rounds it is asked in}
+    tests: tuple
+
+
+def primary_of(models, roles: dict) -> str:
+    """A protocol file's primary model, or its first where it gives no roles."""
+    return ([m for m in models if roles.get(m) == "primary"] or list(models))[0]
+
+
+def whose_design(models, roles: dict, model: str | None) -> str:
+    """The model whose design `model` runs under (v6): its own where the file names it, else the
+    primary's (`primary_of`), as a model the file does not name was analysed under the one
+    design before."""
+    return model if model in models else primary_of(models, roles)
+
+
 @dataclasses.dataclass
 class Protocol:
-    """A protocol file, checked, and its sets resolved against the claim's task file."""
+    """A protocol file, checked, and its sets resolved against the claim's task file, as its
+    primary model runs it; `of(model)` is the protocol as another model runs it (v6): that
+    model's design's `design`, and its family's `tests` and `splits`. The primary's family holds
+    every test (`design_problems`), so the file's `tests` are the primary's."""
     path: pathlib.Path
     config: dict
     names: dict                     # (recorded arm, reading) -> the protocol's arm name
@@ -1660,9 +1693,8 @@ class Protocol:
     sets: dict                      # name -> question ids, `held_out` from the task file
     templates_of: dict              # a held-out rewording's id -> its template's
     keyed: frozenset                # the questions with an answer key
-    design: dict                    # arm -> the questions it asks every round
-    rounds: tuple
-    tests: dict
+    design: dict                    # arm -> {question id: the rounds it is asked in}, one model's
+    tests: dict                     # the tests of that model's family
     require: dict
     models: tuple
     roles: dict = dataclasses.field(default_factory=dict)      # model -> "primary" or "replication"
@@ -1673,6 +1705,83 @@ class Protocol:
     # `routing_named` says the file names it at all, as one before v5 does not.
     routing: dict = dataclasses.field(default_factory=dict)
     routing_named: bool = False
+    designs: dict = dataclasses.field(default_factory=dict)    # model -> its `Design` (v6)
+
+    def design_of(self, model: str | None) -> Design:
+        """A model's design (`whose_design`)."""
+        return self.designs[whose_design(self.models, self.roles, model)]
+
+    def of(self, model: str | None) -> "Protocol":
+        """The protocol as `model` runs it (v6): its design's arms, questions and rounds, and the
+        tests its family holds with their splits, read from the file, so every figure of its
+        analysis reads them."""
+        d = self.design_of(model)
+        return dataclasses.replace(self, design=d.asks,
+                                   tests={n: s for n, s in self.config["tests"].items() if n in d.tests},
+                                   splits=splits_of(self.config, d.tests))
+
+    def not_run_by(self, model: str | None) -> dict:
+        """The file's arms and tests a model's design does not run (v6): reported as not run by
+        design, never as missing data or a refusal."""
+        d = self.design_of(model)
+        return {"arms": [arm for arm in self.arms if arm not in d.asks],
+                "tests": [name for name in self.config["tests"] if name not in d.tests]}
+
+
+def splits_of(config: dict, family) -> dict:
+    """The file's splits of the tests in `family`, each label's two sets."""
+    return {name: {label: tuple(parts) for label, parts in splits.items()}
+            for name, splits in (config.get("splits") or {}).items() if name in family}
+
+
+def design_problems(config: dict) -> list[str]:
+    """Why a protocol file's design cannot be read (v6). It gives each model the file names a
+    design of its own: `asks`, each arm it runs with the sets it asks, "templates" or one the
+    file names, each in its own rounds, distinct numbers from 1; and `tests`, the family its
+    tests are, each comparing two arms it runs. The primary model's family holds every test."""
+    design, models = config.get("design"), config.get("models") or []
+    if not models:
+        return ["the protocol names no model, so no design"]
+    if not isinstance(design, dict) or sorted(design) != sorted(models):
+        return ["the design does not name the protocol's models, one design each"]
+    arms, sets, tests = config.get("arms") or {}, config.get("sets") or {}, config.get("tests") or {}
+    primary = [model for model, role in (config.get("roles") or {}).items() if role == "primary"]
+    found = []
+    for model, d in design.items():
+        if not isinstance(d, dict) or sorted(d) != ["asks", "tests"]:
+            found.append(f"the design of {model} is not its asks and its tests")
+            continue
+        asks = d["asks"] if isinstance(d["asks"], dict) else {}
+        if not asks:
+            found.append(f"the design of {model} asks nothing")
+        for arm, groups in asks.items():
+            if arm not in arms:
+                found.append(f"the design has {model} run an arm the protocol has not: {arm!r}")
+            if not isinstance(groups, dict) or not groups:
+                found.append(f"the design has {model}'s {arm} ask no set")
+                continue
+            for group, rounds in groups.items():
+                if group != "templates" and group not in sets:
+                    found.append(f"the design has {model}'s {arm} ask a set the protocol does not name: {group!r}")
+                if (not isinstance(rounds, list) or not rounds or len(set(map(str, rounds))) != len(rounds)
+                        or not all(type(r) is int and r >= 1 for r in rounds)):
+                    found.append(f"the design has {model}'s {arm} ask {group} in rounds {rounds!r}, which are "
+                                 f"not distinct round numbers from 1")
+        family = d["tests"]
+        if not isinstance(family, list) or not family or len(set(map(str, family))) != len(family):
+            found.append(f"the design of {model} names no family of tests, or a test twice")
+            continue
+        for name in family:
+            if name not in tests:
+                found.append(f"the design of {model} holds a test the protocol has not: {name!r}")
+                continue
+            for side in ("a", "b"):
+                if tests[name].get(side) not in asks:
+                    found.append(f"{name} of {model} compares {tests[name].get(side)!r}, an arm its design "
+                                 f"does not run")
+        if model in primary and sorted(family) != sorted(tests):
+            found.append(f"the primary model's family, {model}'s, does not hold every test the protocol names")
+    return found
 
 
 def check_protocol(config: dict) -> list[str]:
@@ -1706,12 +1815,8 @@ def check_protocol(config: dict) -> list[str]:
             found.append(f"{name} is stratified by template, which only the held-out rewordings have")
     if len(config.get("tests") or {}) < 1:
         found.append("the protocol names no primary test")
-    for arm, groups in ((config.get("design") or {}).get("asks") or {}).items():
-        if arm not in arms:
-            found.append(f"the design has an arm the protocol has not ask questions: {arm!r}")
-        for group in groups:
-            if group != "templates" and group not in sets:
-                found.append(f"the design has {arm} ask a set the protocol does not name: {group!r}")
+    # Each model's design, its arms, sets, rounds and family of tests (v6).
+    found += design_problems(config)
     against = config.get("against_open_everything") or {}
     if against and (against.get("a") not in arms or against.get("b") not in arms or against.get("on") not in sets):
         found.append("the comparison with open everything names an arm or set the protocol has not")
@@ -1784,6 +1889,24 @@ def check_protocol(config: dict) -> list[str]:
     return found
 
 
+def resolve_asks(model: str, asks: dict, sets: dict, templates: tuple) -> dict:
+    """A model's asks as question ids (v6): each arm's sets, "templates" the task file's
+    questions with no template and any other a set the file names, each question in the rounds
+    its set is given. A question two of one arm's sets ask is refused, since it would have two."""
+    out = {}
+    for arm, groups in asks.items():
+        questions = {}
+        for group, rounds in groups.items():
+            members = templates if group == "templates" else sets[group]
+            for q in (members,) if isinstance(members, str) else members:
+                if q in questions:
+                    raise SystemExit(f"the design has {model}'s {arm} ask {q} in two of its sets, so in two "
+                                     f"sets of rounds")
+                questions[q] = tuple(rounds)
+        out[arm] = questions
+    return out
+
+
 def resolve_protocol(path: pathlib.Path, config: dict, spec: dict) -> Protocol:
     """The protocol file's sets as question ids of the claim's task file `spec`. The held-out
     rewordings are its tasks with a template, read by id and template only. Every id a set
@@ -1805,23 +1928,34 @@ def resolve_protocol(path: pathlib.Path, config: dict, spec: dict) -> Protocol:
                          f"does not hold: {stray}")
     templates_of = {task_id: tasks[task_id]["template"] for task_id in sets["held_out"]}
     templates = tuple(task_id for task_id, task in tasks.items() if not task.get("template"))
-    design = {}
-    for arm, groups in config["design"]["asks"].items():
-        design[arm] = tuple(dict.fromkeys(q for group in groups
-                                          for q in (templates if group == "templates" else sets[group])))
+    designs = {model: Design(asks=resolve_asks(model, d["asks"], sets, templates),
+                             tests=tuple(name for name in config["tests"] if name in d["tests"]))
+               for model, d in config["design"].items()}
     keyed = frozenset(task_id for task_id, task in tasks.items() if task["expect"].get("kind") != "none")
+    models, roles = tuple(config.get("models") or ()), dict(config.get("roles") or {})
     protocol = Protocol(path=path, config=config,
                         names={(arm["arm"], arm["reading"]): name for name, arm in config["arms"].items()},
                         arms=tuple(config["arms"]), sets=sets, templates_of=templates_of, keyed=keyed,
-                        design=design, rounds=tuple(config["design"]["rounds"]), tests=config["tests"],
-                        require=config.get("require") or {}, models=tuple(config.get("models") or ()),
-                        roles=dict(config.get("roles") or {}),
-                        splits={name: {label: tuple(parts) for label, parts in splits.items()}
-                                for name, splits in (config.get("splits") or {}).items()},
+                        design=designs[primary_of(models, roles)].asks, tests=config["tests"],
+                        require=config.get("require") or {}, models=models, roles=roles,
+                        splits=splits_of(config, config["tests"]),
                         breakdown=dict(config.get("failure_breakdown") or {}),
                         arm_require={name: dict(arm.get("require") or {}) for name, arm in config["arms"].items()},
                         routing=dict(config.get("provider_routing") or {}),
-                        routing_named="provider_routing" in config)
+                        routing_named="provider_routing" in config, designs=designs)
+    # Each test of a model's family on questions both its arms ask, and in the same rounds (v6):
+    # a test whose arms were asked its questions a different number of times would set a
+    # question's three runs of one arm against one run of the other.
+    for model, d in designs.items():
+        for name in d.tests:
+            spec = protocol.tests[name]
+            for q in questions_of(spec, protocol):
+                rounds = {side: d.asks[spec[side]].get(q) for side in ("a", "b")}
+                if rounds["a"] is None or rounds["a"] != rounds["b"]:
+                    raise SystemExit(f"{name} of {model} is on {spec['on']}, and its design asks {q} of "
+                                     f"{spec['a']} in rounds {list(rounds['a'] or [])} and of {spec['b']} in "
+                                     f"rounds {list(rounds['b'] or [])}: a test's arms are asked its questions "
+                                     f"in the same rounds")
     # A split is of the strata its test is on, the two parts disjoint and every stratum in
     # one: for H4, the thirteen keyed templates the rewordings reword.
     for name, splits in protocol.splits.items():
@@ -1997,6 +2131,9 @@ def protocol_against(arms: dict[str, list[dict]], protocol: Protocol) -> dict | 
     spec = protocol.config.get("against_open_everything")
     if not spec:
         return None
+    # A model whose design runs one of the two arms not at all has nothing to compare (v6).
+    if spec["a"] not in protocol.design or spec["b"] not in protocol.design:
+        return {"a": spec["a"], "b": spec["b"], "on": spec["on"], "not_run_by_design": True}
     a, b = scored(arms.get(spec["a"], [])), scored(arms.get(spec["b"], []))
     rows = []
     for q in protocol.sets[spec["on"]]:
@@ -2125,6 +2262,8 @@ def failure_breakdown(arms: dict[str, list[dict]], protocol: Protocol) -> dict |
     spec = protocol.breakdown
     if not spec:
         return None
+    if spec["arm"] not in protocol.design:
+        return {"arm": spec["arm"], "on": spec["on"], "not_run_by_design": True}
     wanted = set(protocol.sets[spec["on"]])
     runs = [run for run in scored(arms.get(spec["arm"], [])) if run["task"] in wanted and not answered_correct(run)]
     coded = [(run, *failure_code(run, spec["page_size"])) for run in runs]
@@ -2250,10 +2389,30 @@ def fallbacks_by_arm(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
     return out
 
 
+def moves(sensitivity: str, spec: dict) -> bool:
+    """Whether a sensitivity can move a test (v6): putting the closed slots back moves only a
+    test of what a run opened or cost, and one unit a rewording only a test by template."""
+    if sensitivity in ("with the closed slots in H2 and H3", "with the closed slots in H2 and H3 at open everything's median"):
+        return spec["measure"] != "correct"
+    if sensitivity == "H4 by rewording, not by run":
+        return spec["strata"] == "template"
+    return True
+
+
+def unmoved(protocol: Protocol) -> list[str]:
+    """The sensitivities the protocol names that move none of a model's family (`moves`), so are
+    not run by design under it (v6): a family of H1 alone has no H2, H3 or H4 to put back."""
+    return [name for name in protocol.config.get("sensitivity") or []
+            if not any(moves(name, spec) for spec in protocol.tests.values())]
+
+
 def protocol_sensitivity(arms: dict[str, list[dict]], voided: list[dict], protocol: Protocol) -> dict:
-    """The primary tests again under each sensitivity the protocol names."""
+    """The primary tests again under each sensitivity the protocol names that can move one of
+    them (`unmoved`, v6)."""
     out = {}
     for name in protocol.config.get("sensitivity") or []:
+        if name in unmoved(protocol):
+            continue
         if name == "without the two-reading questions":
             out[name] = protocol_tests(arms, protocol, frozenset(protocol.sets["two_readings"]))
         elif name == "distinct runs only":
@@ -2439,6 +2598,12 @@ def preflight(protocol_path: pathlib.Path, arm_name: str, flags: str) -> tuple[d
                         f"{arm_name} is arm {arm['arm']} with reading {arm['reading']}")
     problems += [f"{key} {planned[key]}, where the protocol holds {value} fixed"
                  for key, value in SETTING.items() if planned[key] != value]
+    # The design of the model that would run it (v6): a batch of an arm its design does not run
+    # would be analysed as outside the design, so it is never run.
+    runs = config["design"][whose_design(config["models"], config.get("roles") or {}, planned["model"])]["asks"]
+    if arm_name not in runs:
+        problems.append(f"the protocol's design for {planned['model']} does not run {arm_name}: it runs "
+                        f"{' and '.join(runs)}")
     problems += mismatches(planned, {**(config.get("require") or {}), **(arm.get("require") or {})})
     # The provider routing the environment would give the batch, against the protocol's for the
     # model that runs it (v5, the pilot coder's point d).
@@ -2453,13 +2618,25 @@ def preflight(protocol_path: pathlib.Path, arm_name: str, flags: str) -> tuple[d
 
 def protocol_model(model: str | None, population: dict, conditions: dict, protocol: Protocol,
                    hand: dict | None = None) -> dict:
-    """Everything for one model's arms under a protocol file. Two models are never pooled.
-    `hand`, each answered run's hand verdict (`hand_by_run`), adds the primary tests on them."""
-    kept = [s for s in population["kept"] if s["model"] == model]
+    """Everything for one model's arms under a protocol file, as the model's design runs them
+    (v6, `Protocol.of`): its arms, questions and rounds, and the tests of its family. Two models
+    are never pooled. `hand`, each answered run's hand verdict (`hand_by_run`), adds the
+    primary tests on them."""
+    not_run = protocol.not_run_by(model)
+    protocol = protocol.of(model)
+
+    def asked(slot: dict) -> bool:
+        """Whether the model's design asks the slot's question of its arm in its round."""
+        return slot["repeat"] in protocol.design.get(slot["arm"], {}).get(slot["task"], ())
+    every = [s for s in population["kept"] if s["model"] == model]
+    every_void = [s for s in population["voided"] if s["model"] == model]
+    # A run the design does not ask for is listed among the problems, as before, and since v6 is
+    # in no figure, so a test reads the rounds its design gives each question and no other.
+    kept = [s for s in every if asked(s)]
     present = {s["arm"] for s in kept}
     arms = {arm: [s for s in kept if s["arm"] == arm]
             for arm in [a for a in protocol.arms if a in present] + sorted(present - set(protocol.arms))}
-    voided = [s for s in population["voided"] if s["model"] == model]
+    voided = [s for s in every_void if asked(s)]
     mine = {arm: conditions[(arm, model)] for arm in arms if (arm, model) in conditions}
     held, differ = {}, {}
     for key in PROTOCOL_CONDITIONS:
@@ -2483,8 +2660,8 @@ def protocol_model(model: str | None, population: dict, conditions: dict, protoc
     voided_slots = {(s["arm"], s["task"], s["repeat"]) for s in voided}
     design = {"slots": 0, "filled": 0, "missing": [], "never_run": [], "outside": []}
     for arm, questions in protocol.design.items():
-        for task in questions:
-            for repeat in protocol.rounds:
+        for task, rounds in questions.items():
+            for repeat in rounds:
                 design["slots"] += 1
                 if filled[(arm, task, repeat)]:
                     design["filled"] += 1
@@ -2492,8 +2669,8 @@ def protocol_model(model: str | None, population: dict, conditions: dict, protoc
                     design["missing"].append(f"{arm}, {task} repeat {repeat}")
                     if (arm, task, repeat) not in voided_slots:
                         design["never_run"].append(f"{arm}, {task} repeat {repeat}")
-    design["outside"] = sorted(f"{arm}, {task} repeat {repeat}" for (arm, task, repeat) in filled
-                               if task not in protocol.design.get(arm, ()) or repeat not in protocol.rounds)
+    design["outside"] = sorted({f"{s['arm']}, {s['task']} repeat {s['repeat']}" for s in every + every_void
+                                if not asked(s)})
     templates = [q for q in protocol.sets["control"] + protocol.sets["gated"] + protocol.sets["decline"]]
     tables_ = {}
     for arm, runs in arms.items():
@@ -2513,8 +2690,11 @@ def protocol_model(model: str | None, population: dict, conditions: dict, protoc
     return {
         "named": model in protocol.models,
         # The model's role, the file's (v2): the primary's tests are the claim, a
-        # replication's are its own family, each with Holm over its four.
+        # replication's are its own family, each with Holm over its own tests (v6: its design's).
         "role": protocol.roles.get(model) if model in protocol.models else None,
+        "family": list(protocol.tests),
+        # What the file names and this model's design does not run (v6), never missing or refused.
+        "not_run_by_design": {**not_run, "sensitivities": unmoved(protocol)},
         "arms": {arm: {"batches": sorted({s["batch"] for s in runs}), "runs": len(runs),
                        "repeats": sorted({s["repeat"] for s in runs}),
                        "distinct": len(compare_cells.distinct(runs)), "conditions": mine.get(arm)}
@@ -2526,7 +2706,9 @@ def protocol_model(model: str | None, population: dict, conditions: dict, protoc
                        "not_correct": [brief(s) for s in kept if s["outcome"] == voids.NOT_CORRECT],
                        "design": design},
         "tables": tables_,
-        "held_out": held_out_table(arms, protocol),
+        # None where the design asks no rewording of any arm (v6): not run by design.
+        "held_out": held_out_table(arms, protocol) if any(q in protocol.templates_of for questions in
+                                                         protocol.design.values() for q in questions) else None,
         "primary": protocol_tests(arms, protocol),
         "splits": split_tests(arms, protocol),
         "against_open_everything": protocol_against(arms, protocol),
@@ -2628,7 +2810,10 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
            "protocol_file": shown_path(path), "protocol_version": config.get("version"), "tasks_file": files[0],
            "sets": {key: list(value) if not isinstance(value, str) else value
                     for key, value in protocol.sets.items()},
-           "design": {arm: len(questions) * len(protocol.rounds) for arm, questions in protocol.design.items()},
+           # Each model's slots by arm, and the family of tests it holds (v6).
+           "design": {str(model): {arm: sum(len(rounds) for rounds in questions.values())
+                                   for arm, questions in d.asks.items()} for model, d in protocol.designs.items()},
+           "families": {str(model): list(d.tests) for model, d in protocol.designs.items()},
            "source": source(lines, manifest, every), "problems": problems, "models": {},
            "models_named": list(protocol.models), "roles": dict(protocol.roles),
            "hand_sheet": {"sheet": hand["sheet"], "rows": len(hand["rows"])} if hand else None,
@@ -2905,6 +3090,28 @@ def shown_path(path: pathlib.Path) -> str:
         return str(path)
 
 
+NUMBER_WORDS = ("no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
+
+
+def family_words(tests: list[str]) -> str:
+    """A family of tests as the report names it: "H1 alone", or "H1, H2, H3 and H4"."""
+    if len(tests) < 2:
+        return f"{tests[0]} alone" if tests else "no test"
+    return ", ".join(tests[:-1]) + f" and {tests[-1]}"
+
+
+def role_words(role: str | None, family: list[str]) -> str:
+    """A model's role and family as its header names them (v2), its design's family since v6."""
+    n = NUMBER_WORDS[len(family)] if len(family) < len(NUMBER_WORDS) else str(len(family))
+    if role == "primary":
+        return (f", the primary: its {n} tests are the claim, Holm over the {n}" if len(family) > 1 else
+                f", the primary: {family_words(family)} is the claim")
+    if role == "replication":
+        return (f", a replication of the primary: its own Holm over its {n}" if len(family) > 1 else
+                f", a replication of the primary: {family_words(family)}, its own Holm over that one test")
+    return ""
+
+
 def render_protocol(result: dict) -> str:
     out = []
     say = out.append
@@ -2916,14 +3123,16 @@ def render_protocol(result: dict) -> str:
     say(f"Task file {result['tasks_file']}: {len(sets['control'])} control, {len(sets['gated'])} gated, "
         f"{len(sets['decline'])} the block should not plan, {len(sets['held_out'])} held-out rewordings; two "
         f"readings: {', '.join(sets['two_readings'])}; reading-independent: {len(sets['reading_independent'])}")
-    say("The design, slots each model: " + "; ".join(f"{arm} {n}" for arm, n in result["design"].items())
+    say("The design, slots by model and arm: " + "; ".join(
+        f"{model}: " + ", ".join(f"{arm} {n}" for arm, n in arms.items()) for model, arms in result["design"].items())
         + f"; models named: {', '.join(result['models_named'])}")
     roles = result.get("roles") or {}
     if roles:
+        families = result.get("families") or {}
         say("The tests' families, fixed before the run: " + "; ".join(
-            f"{model} {role}" for model, role in roles.items())
-            + ". The primary model's four tests are the claim, with Holm over the four; each replication's "
-              "four are its own family, with its own Holm, and never pooled with the primary's.")
+            f"{model} {role}, {family_words(families.get(model) or [])}" for model, role in roles.items())
+            + ". The primary model's tests are the claim; each family has its own Holm over its own tests, "
+              "and no family is pooled with another.")
     src = result["source"]
     kinds = collections.Counter(line["kind"] for line in src["lines"])
     say("Read " + ", ".join(f"{n} {kind}{'s' if n > 1 else ''}" if kind == "folder" else
@@ -2942,8 +3151,7 @@ def render_protocol(result: dict) -> str:
         say(f"Void as a whole, outside what the protocol requires: {void['batch']} ({'; '.join(void['why'])}); "
             + ("every slot of it run again" if void["re_run"] else "not run again"))
     for model, m in result["models"].items():
-        role = {"primary": ", the primary: its four tests are the claim, Holm over the four",
-                "replication": ", a replication of the primary: its own Holm over its four"}.get(m.get("role"), "")
+        role = role_words(m.get("role"), m.get("family") or (result.get("families") or {}).get(model) or [])
         say(f"\n{'=' * 100}\nModel {model}" + ("" if m["named"] else ", which the protocol does not name")
             + role + ". Each model is its own result and is never pooled with another.")
         if m.get("refused"):
@@ -2960,6 +3168,10 @@ def render_protocol_model(m: dict, say) -> None:
     for arm, a in m["arms"].items():
         say(f"  {arm:30} {a['runs']:>3} runs, {a['distinct']:>3} distinct, repeats "
             f"{', '.join(map(str, a['repeats']))}   batches {', '.join(a['batches'])}")
+    not_run = m.get("not_run_by_design") or {}
+    if any(not_run.values()):
+        say("  Not run by design under this model, so neither missing nor refused: "
+            + "; ".join(f"{what}: {' / '.join(items)}" for what, items in not_run.items() if items))
     say(held_line(m["conditions"]["held"]))
     for key, seen in m["conditions"]["differ"].items():
         say(f"  DIFFERS between arms, {key}: " + "; ".join(f"{arm} {value}" for arm, value in seen.items()))
@@ -3033,6 +3245,8 @@ def render_protocol_model(m: dict, say) -> None:
         if "closed" in t:
             say(f"     slots the box closed, no agent run, {t['closed_rule']} (a {t['a']}, b {t['b']}): "
                 + (", ".join(f"{row['task']} {row['a']}/{row['b']}" for row in t["closed"]) or "none"))
+    for name in not_run.get("tests") or []:
+        say(f"  {name} not run by design under this model, so in no Holm of its")
     for name, splits in (m.get("splits") or {}).items():
         say(f"  {name} on the pre-specified splits, secondary and unadjusted, each part on its own:")
         for split in splits:
@@ -3050,7 +3264,9 @@ def render_protocol_model(m: dict, say) -> None:
                 say(f"       {part['set']:24} {shown}; p = {p_text(part['p'])}")
 
     o = m["against_open_everything"]
-    if o:
+    if o and o.get("not_run_by_design"):
+        say(f"\n3. Correct, {o['a']} against {o['b']}, on {o['on']}: not run by design under this model")
+    elif o:
         say(f"\n3. Correct, {o['a']} against {o['b']}, on {o['on']}: counts and Newcombe's 95% hybrid "
             "score interval for the difference. Never a test of equivalence.")
         for row in o["per_question"] + [o["pooled"]]:
@@ -3059,7 +3275,9 @@ def render_protocol_model(m: dict, say) -> None:
                    f"{row['interval'][1]:+.3f}" if row["interval"] else ", no interval: an arm has no runs"))
 
     say("\n4. The held-out rewordings, by template: correct of the runs a key judged, asked, refused, opened median")
-    for arm, rows in m["held_out"].items():
+    if m["held_out"] is None:
+        say("   not run by design under this model: its design asks no rewording")
+    for arm, rows in (m["held_out"] or {}).items():
         say(f"  {arm}")
         for template, r in rows.items():
             correct = f"{r['correct']}/{r['scored']}" if r["keyed"] else "-"
@@ -3105,7 +3323,9 @@ def render_protocol_model(m: dict, say) -> None:
             say(f"       {named['run']}: sorted {', '.join(named['sorted']) or '-'}, page size "
                 f"{', '.join(named['page size']) or '-'}")
     fb = s.get("failure_breakdown")
-    if fb:
+    if fb and fb.get("not_run_by_design"):
+        say(f"  f. Why {fb['arm']} was not correct: not run by design under this model")
+    elif fb:
         say(f"  f. Why {fb['arm']} was not correct, coded from the log and the answer by the written rules, the "
             f"first that holds: {fb['failures']} of its {fb['of']} runs a key judged on {fb['on']}, at "
             f"{fb['page_size']} a page")
@@ -3164,10 +3384,13 @@ def render_protocol_model(m: dict, say) -> None:
     for name, tests in m["sensitivity"].items():
         say(f"     {name:64} " + " ".join(f"{p_text(t['p']) + ' (' + p_text(t['p_holm']) + ')':>22}"
                                           for t in tests.values()))
+    for name in not_run.get("sensitivities") or []:
+        say(f"     {name:64} not run by design under this model: it moves none of its tests")
 
     hr = m.get("hand_reading")
     if hr:
-        say("\n7. The hand reading: the primary tests on the hand verdicts, Holm over the four, and every "
+        say(f"\n7. The hand reading: the primary tests on the hand verdicts, Holm over the "
+            f"{NUMBER_WORDS[len(names)] if len(names) < len(NUMBER_WORDS) else len(names)}, and every "
             "disagreement with the scorer, read after unblinding")
         say(f"     {'':64} " + " ".join(f"{name:>22}" for name in names))
         for label, tests in (("the scorer's verdicts", m["primary"]), ("the hand verdicts", hr["tests"])):

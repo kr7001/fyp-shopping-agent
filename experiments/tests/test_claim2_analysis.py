@@ -85,6 +85,27 @@ AGENT_CODE = pinned_agent_code()
 ROUTING = json.loads(PROTOCOL.read_text())["provider_routing"]
 
 
+def full_design(config: dict) -> dict:
+    """The protocol file with the one design of its versions 1 to 5 given to every model (v6):
+    every arm, each set it asks in three rounds, every test in each model's family. The tests
+    of the analysis's machinery run under it, so their figures stay the ones worked out by hand
+    below; the file's own design, plan 2a, has tests of its own (PlanTwoA)."""
+    asks = {"shipped": {"templates": [1, 2, 3]}, "open everything (product)": {"gated": [1, 2, 3]},
+            "the block (rules)": {"templates": [1, 2, 3], "held_out": [1, 2, 3]},
+            "the block (model)": {"templates": [1, 2, 3], "held_out": [1, 2, 3]}}
+    return {**config, "design": {model: {"asks": asks, "tests": list(config["tests"])} for model in config["models"]}}
+
+
+# The full design's protocol file, written once for every test here into a folder of its own.
+FULL_FOLDER = tempfile.TemporaryDirectory()
+FULL = pathlib.Path(FULL_FOLDER.name) / "claim2_full_design.json"
+FULL.write_text(json.dumps(full_design(json.loads(PROTOCOL.read_text()))))
+
+
+def tearDownModule():
+    FULL_FOLDER.cleanup()
+
+
 def build_task_files(folder: pathlib.Path) -> None:
     """The claim task file and its sidecar for the development market, with the rewordings,
     as the one command writes them; the other task files beside them, linked, since the
@@ -183,11 +204,11 @@ def model_reply(question: str, page: page_module.Page) -> str:
 
 
 def write_batch(root: pathlib.Path, name: str, arm: Plan, model: str, spec: dict, keys: score.Keys,
-                page: page_module.Page, asked: dict[str, list[str]]) -> pathlib.Path:
-    """One arm's batch for one model, every question the protocol's design gives it, three
-    rounds, as suite.py writes a batch: suite.json, and for each run its record and its log.
-    The block's arms run as the protocol's flags say: each question's scripted reply its own
-    reading (`suite.scripted_reply`) and a rate question planned over every listing."""
+                page: page_module.Page, asked: dict[str, dict[str, tuple]]) -> pathlib.Path:
+    """One arm's batch for one model, every question the model's design gives the arm, each in
+    its rounds (v6), as suite.py writes a batch: suite.json, and for each run its record and its
+    log. The block's arms run as the protocol's flags say: each question's scripted reply its
+    own reading (`suite.scripted_reply`) and a rate question planned over every listing."""
     folder = root / name
     folder.mkdir()
     tasks = {t["id"]: t for t in spec["tasks"]}
@@ -197,7 +218,7 @@ def write_batch(root: pathlib.Path, name: str, arm: Plan, model: str, spec: dict
     boxed = arm.recorded.startswith("box")
     model_parser = arm.recorded == "box-model"
     rows = []
-    for task_id in asked[arm.name]:
+    for task_id, rounds in asked[arm.name].items():
         task = tasks[task_id]
         question = task["query"].format(base=spec["base_url"])
         decision = None
@@ -206,7 +227,7 @@ def write_batch(root: pathlib.Path, name: str, arm: Plan, model: str, spec: dict
             call = (lambda prompt, q=question: model_reply(q, page)) if parser == "model" else None
             reply = suite.scripted_reply(task, arm.reading, keys.two_readings)
             decision = box.decide(question, page, reply=reply, parser=parser, call=call, rate="every")
-        for repeat in (1, 2, 3):
+        for repeat in rounds:
             tag = f"{task_id}-{repeat}"
             refused = (decision is not None and decision.refuse is not None) or (
                 boxed and task.get("template") in ("decline-delivery", "decline-taste"))
@@ -274,34 +295,41 @@ def write_batch(root: pathlib.Path, name: str, arm: Plan, model: str, spec: dict
     return folder
 
 
-def build_run2(root: pathlib.Path, models=(DEEPSEEK, HAIKU), plant=None, asks=None, again=()) -> pathlib.Path:
-    """The task files under root/tasks, every arm's batch for each model, and the claim
-    command's manifest naming them, whose path is returned. For a fault, `plant(model, arm,
-    folder)` alters a batch once it is written, and `asks(design)` the questions each arm
-    is given. `again` names (model, arm) pairs whose batch is run a second time, after every
-    other, as a void batch is re-run, with nothing planted in it."""
+def build_run2(root: pathlib.Path, models=(DEEPSEEK, HAIKU), plant=None, asks=None, again=(),
+               protocol: pathlib.Path = FULL) -> pathlib.Path:
+    """The task files under root/tasks, the batch of every arm each model's design runs under
+    `protocol`, the full design by default (v6), and the claim command's manifest naming them,
+    whose path is returned. For a fault, `plant(model, arm, folder)` alters a batch once it is
+    written, and `asks(model, design)` the questions and rounds each arm of a model is given.
+    `again` names (model, arm) pairs whose batch is run a second time, after every other, as a
+    void batch is re-run, with nothing planted in it."""
     tasks_dir = root / "tasks"
     tasks_dir.mkdir()
     build_task_files(tasks_dir)
     spec = json.loads((tasks_dir / TASKS_FILE).read_text())
     keys = score.keys_for(tasks_dir / TASKS_FILE)
-    config = json.loads(PROTOCOL.read_text())
-    design = claim.resolve_protocol(PROTOCOL, config, spec).design
-    if asks is not None:
-        design = asks(design)
+    config = json.loads(protocol.read_text())
+    resolved = claim.resolve_protocol(protocol, config, spec)
+    designs = {}
+    for model in models:
+        designs[model] = resolved.of(model).design
+        if asks is not None:
+            designs[model] = asks(model, designs[model])
     page = larchmere_page(spec)
     lines, n = [], 0
     for model in models:
         for arm in ARMS:
+            if arm.name not in designs[model]:
+                continue
             n += 1
-            folder = write_batch(root, f"202611{n:02d}T100000", arm, model, spec, keys, page, design)
+            folder = write_batch(root, f"202611{n:02d}T100000", arm, model, spec, keys, page, designs[model])
             if plant is not None:
                 plant(model, arm, folder)
             lines.append(f"batch|{folder}|{config['arms'][arm.name]['flags']}")
     for model, name in again:
         n += 1
         arm = next(plan for plan in ARMS if plan.name == name)
-        folder = write_batch(root, f"202611{n:02d}T100000", arm, model, spec, keys, page, design)
+        folder = write_batch(root, f"202611{n:02d}T100000", arm, model, spec, keys, page, designs[model])
         lines.append(f"batch|{folder}|{config['arms'][arm.name]['flags']}")
     manifest = root / "claim2-test.manifest"
     manifest.write_text("start 2026-11-01T10:00:00 usage 20.0 cap 60\n" + "\n".join(lines)
@@ -309,7 +337,7 @@ def build_run2(root: pathlib.Path, models=(DEEPSEEK, HAIKU), plant=None, asks=No
     return manifest
 
 
-def analyse(manifest: pathlib.Path, protocol: pathlib.Path = PROTOCOL) -> tuple[int, dict, str]:
+def analyse(manifest: pathlib.Path, protocol: pathlib.Path = FULL) -> tuple[int, dict, str]:
     """claim.py --protocol on the manifest, as the command line runs it: its exit code, the
     analysis it writes beside the manifest, and what it prints."""
     with mock.patch.object(paths, "TASKS", manifest.parent / "tasks"), \
@@ -325,9 +353,9 @@ class SyntheticRun2(unittest.TestCase):
         root = pathlib.Path(cls.owner.name)
         manifest = build_run2(root)
         cls.spec = json.loads((root / "tasks" / TASKS_FILE).read_text())
-        cls.config = json.loads(PROTOCOL.read_text())
+        cls.config = json.loads(FULL.read_text())
         cls.code, cls.result, cls.out = analyse(manifest)
-        cls.protocol = claim.resolve_protocol(PROTOCOL, cls.config, cls.spec)
+        cls.protocol = claim.resolve_protocol(FULL, cls.config, cls.spec)
 
     @classmethod
     def tearDownClass(cls):
@@ -501,7 +529,7 @@ class SyntheticRun2(unittest.TestCase):
                 broken = json.loads(json.dumps(self.config))
                 change(broken["sets"])
                 with self.assertRaises(SystemExit) as raised:
-                    claim.resolve_protocol(PROTOCOL, broken, self.spec)
+                    claim.resolve_protocol(FULL, broken, self.spec)
                 self.assertIn(words, str(raised.exception))
 
     def test_holm_over_the_four(self):
@@ -800,9 +828,9 @@ class Run2Faults(unittest.TestCase):
         """The synthetic run with `plant`, analysed. `protocol`, if given, changes a copy of the
         protocol file first, which the run is then analysed under."""
         with tempfile.TemporaryDirectory() as tmp:
-            path = PROTOCOL
+            path = FULL
             if protocol is not None:
-                config = json.loads(PROTOCOL.read_text())
+                config = json.loads(FULL.read_text())
                 protocol(config)
                 path = pathlib.Path(tmp) / "claim2_changed.json"
                 path.write_text(json.dumps(config))
@@ -982,7 +1010,7 @@ class Run2Faults(unittest.TestCase):
                                               f"run, void or not", f"the protocol's model {DEEPSEEK} has no run"])
 
     def test_a_run_the_design_does_not_ask_for(self):
-        _, result, _ = self.run2(asks=lambda design: {**design, "shipped": design["shipped"] + ("rw-03",)})
+        _, result, _ = self.run2(asks=lambda model, design: {**design, "shipped": {**design["shipped"], "rw-03": (1, 2, 3)}})
         self.assertEqual([p for p in result["problems"] if "does not ask for" in p],
                          [f"{HAIKU}: a run the design does not ask for, shipped, rw-03 repeat {r}" for r in (1, 2, 3)])
 
@@ -1227,6 +1255,255 @@ class AuditItems(unittest.TestCase):
             with self.subTest(model=model):
                 ps = {name: t["p"] for name, t in m["primary"].items()}
                 self.assertEqual({name: t["p_holm"] for name, t in m["primary"].items()}, claim.holm(ps))
+
+
+# The design the protocol file holds, plan 2a, pending decision 2 (protocol version 6), as the
+# coordinator set it out on 23 October 2026.
+PLAN_2A = {DEEPSEEK: {"asks": {"shipped": {"templates": [1, 2, 3]},
+                               "open everything (product)": {"gated": [1, 2, 3]},
+                               "the block (rules)": {"templates": [1, 2, 3], "held_out": [1]},
+                               "the block (model)": {"templates": [1, 2, 3], "held_out": [1]}},
+                      "tests": ["H1", "H2", "H3", "H4"]},
+           HAIKU: {"asks": {"shipped": {"reading_independent": [1]},
+                            "the block (model)": {"reading_independent": [1]}},
+                   "tests": ["H1"]}}
+
+
+def plan(rounds_of) -> dict:
+    """Plan 2a with each of DeepSeek's sets in the rounds `rounds_of(arm, set, rounds)` gives."""
+    out = json.loads(json.dumps(PLAN_2A))
+    for arm, groups in out[DEEPSEEK]["asks"].items():
+        for group, rounds in groups.items():
+            groups[group] = rounds_of(arm, group, rounds)
+    return out
+
+
+# Plan 2b, the rewordings in rounds 1 to 3, and plan 2c, every set of DeepSeek's in rounds 1 and 2.
+PLAN_2B = plan(lambda arm, group, rounds: [1, 2, 3] if group == "held_out" else rounds)
+PLAN_2C = plan(lambda arm, group, rounds: [1, 2])
+# Haiku's arms, tests and sensitivities its design leaves out: every one but H1's.
+HAIKU_NOT_RUN = {"arms": ["open everything (product)", "the block (rules)"], "tests": ["H2", "H3", "H4"],
+                 "sensitivities": ["with the closed slots in H2 and H3", "H4 by rewording, not by run",
+                                   "with the closed slots in H2 and H3 at open everything's median"]}
+
+
+class PlanTwoA(unittest.TestCase):
+    """The protocol file's own design, plan 2a (protocol analysis v6), on synthetic batches
+    written as each model's design asks: DeepSeek every arm, the templates in rounds 1 to 3 and
+    the rewordings in round 1 alone under both block arms; Haiku shipped and the block (model) on
+    the nine reading-independent questions in round 1, its family H1 alone."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.owner = tempfile.TemporaryDirectory()
+        root = pathlib.Path(cls.owner.name)
+        manifest = build_run2(root, protocol=PROTOCOL)
+        cls.spec = json.loads((root / "tasks" / TASKS_FILE).read_text())
+        cls.config = json.loads(PROTOCOL.read_text())
+        cls.code, cls.result, cls.out = analyse(manifest, PROTOCOL)
+        cls.deepseek, cls.haiku = (cls.result["models"][m] for m in (DEEPSEEK, HAIKU))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.owner.cleanup()
+
+    def test_each_model_runs_its_own_design_and_no_slot_is_missing(self):
+        self.assertEqual((self.code, self.result["problems"]), (0, []))
+        # DeepSeek: shipped the 15 templates and open everything the 12 gated, three rounds each;
+        # each block arm the 15 templates in three rounds and the 30 rewordings in one: 45, 36, 75
+        # and 75 runs, 231 slots.
+        self.assertEqual({arm: a["runs"] for arm, a in self.deepseek["arms"].items()},
+                         {"shipped": 45, "open everything (product)": 36, "the block (rules)": 75,
+                          "the block (model)": 75})
+        design = self.deepseek["exclusions"]["design"]
+        self.assertEqual((design["slots"], design["filled"], design["missing"]), (231, 231, []))
+        # Haiku: shipped and the block (model), the nine reading-independent questions, round 1.
+        self.assertEqual({arm: (a["runs"], a["repeats"]) for arm, a in self.haiku["arms"].items()},
+                         {"shipped": (9, [1]), "the block (model)": (9, [1])})
+        design = self.haiku["exclusions"]["design"]
+        self.assertEqual((design["slots"], design["filled"], design["missing"], design["never_run"]),
+                         (18, 18, [], []))
+        self.assertEqual(self.result["design"], {DEEPSEEK: {"shipped": 45, "open everything (product)": 36,
+                                                            "the block (rules)": 75, "the block (model)": 75},
+                                                 HAIKU: {"shipped": 9, "the block (model)": 9}})
+        self.assertNotIn("refused", self.haiku)
+
+    def test_haikus_family_is_h1_alone_with_holm_over_that_one_test(self):
+        # The block (model) right on all nine, shipped on none, one run each: each stratum 1 of 1
+        # against 0 of 1, an even chance under the null, so p = 2 x (1/2)^9; Holm over one is p.
+        h1 = self.haiku["primary"]["H1"]
+        self.assertEqual((list(self.haiku["primary"]), self.haiku["family"]), (["H1"], ["H1"]))
+        self.assertEqual((h1["pooled"]["a"], h1["pooled"]["b"]), ([9, 9], [0, 9]))
+        self.assertAlmostEqual(h1["p"], 2 * 0.5 ** 9, places=12)
+        self.assertEqual((h1["p_holm"], h1["rejected"]), (h1["p"], True))
+        self.assertEqual(self.result["families"], {DEEPSEEK: ["H1", "H2", "H3", "H4"], HAIKU: ["H1"]})
+        # DeepSeek's four, Holm over the four.
+        tests = self.deepseek["primary"]
+        self.assertEqual({t: v["p_holm"] for t, v in tests.items()}, claim.holm({t: v["p"] for t, v in tests.items()}))
+        self.assertIn(f"Model {HAIKU}, a replication of the primary: H1 alone, its own Holm over that one test.", self.out)
+        self.assertIn(f"Model {DEEPSEEK}, the primary: its four tests are the claim, Holm over the four.", self.out)
+        self.assertIn(f"{DEEPSEEK} primary, H1, H2, H3 and H4; {HAIKU} replication, H1 alone.", self.out)
+
+    def test_what_haikus_design_leaves_out_is_not_run_by_design(self):
+        self.assertEqual(self.haiku["not_run_by_design"], HAIKU_NOT_RUN)
+        self.assertEqual(self.deepseek["not_run_by_design"], {"arms": [], "tests": [], "sensitivities": []})
+        self.assertEqual(self.haiku["against_open_everything"],
+                         {"a": "the block (model)", "b": "open everything (product)", "on": "reading_independent",
+                          "not_run_by_design": True})
+        self.assertIsNone(self.haiku["held_out"])
+        self.assertEqual(self.haiku["splits"], {})
+        self.assertIsNone(self.haiku["secondary"]["providers"]["h3"])
+        self.assertEqual(list(self.haiku["sensitivity"]),
+                         [s for s in self.config["sensitivity"] if s not in HAIKU_NOT_RUN["sensitivities"]])
+        self.assertEqual(list(self.deepseek["sensitivity"]), self.config["sensitivity"])
+        # Shipped's failures on H1's questions are coded under Haiku too: shipped runs there.
+        self.assertEqual(self.haiku["secondary"]["failure_breakdown"]["failures"], 9)
+        for words in ("Not run by design under this model, so neither missing nor refused: arms: open everything "
+                      "(product) / the block (rules); tests: H2 / H3 / H4",
+                      "H4 not run by design under this model, so in no Holm of its",
+                      "3. Correct, the block (model) against open everything (product), on reading_independent: "
+                      "not run by design under this model",
+                      "not run by design under this model: its design asks no rewording",
+                      "H4 by rewording, not by run                                      not run by design under this "
+                      "model: it moves none of its tests"):
+            with self.subTest(words=words):
+                self.assertIn(words, self.out)
+
+    def test_h4_reads_the_one_round_of_the_rewordings(self):
+        # Two keyed rewordings a template, round 1 alone: two runs a stratum and arm. The model is
+        # right on all, the rules on the odd-numbered rewordings.
+        held = {task["id"]: task for task in self.spec["tasks"] if task.get("template")}
+        h4 = self.deepseek["primary"]["H4"]
+        for row in h4["per_question"]:
+            ids = [t for t in held.values() if t["template"] == row["task"]]
+            self.assertEqual(row["a"], [2, 2])
+            self.assertEqual(row["b"], [sum(t["rewording"] % 2 for t in ids), 2])
+        self.assertEqual(h4["pooled"]["a"], [26, 26])
+        by_rewording = self.deepseek["sensitivity"]["H4 by rewording, not by run"]["H4"]
+        self.assertEqual((len(by_rewording["pooled"]["a"]), len(by_rewording["pooled"]["b"])), (26, 26))
+
+    def test_a_rewording_run_in_a_round_the_design_has_not_is_in_no_figure(self):
+        # The block (model) under DeepSeek asked rw-01 in round 2 too: listed, and H4's stratum of
+        # its template still two runs of the model, not three.
+        template = next(t["template"] for t in self.spec["tasks"] if t["id"] == "rw-01")
+
+        def asks(model, design):
+            arm = design["the block (model)"]
+            return {**design, "the block (model)": {**arm, "rw-01": (1, 2)}} if model == DEEPSEEK else design
+        with tempfile.TemporaryDirectory() as tmp:
+            _, result, _ = analyse(build_run2(pathlib.Path(tmp), models=(DEEPSEEK,), asks=asks, protocol=PROTOCOL),
+                                   PROTOCOL)
+        self.assertIn(f"{DEEPSEEK}: a run the design does not ask for, the block (model), rw-01 repeat 2",
+                      result["problems"])
+        h4 = result["models"][DEEPSEEK]["primary"]["H4"]
+        self.assertEqual(next(row["a"] for row in h4["per_question"] if row["task"] == template), [2, 2])
+        self.assertEqual(result["models"][DEEPSEEK]["arms"]["the block (model)"]["runs"], 75)
+
+
+class TheDesign(unittest.TestCase):
+    """The protocol file's design (protocol version 6): plan 2a, pending decision 2; plans 2b and
+    2c validate as the student may choose them; and a design that does not hold together is
+    refused before any batch is read, by `check_protocol` or, against the task file, by
+    `resolve_protocol`."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.owner = tempfile.TemporaryDirectory()
+        build_task_files(pathlib.Path(cls.owner.name))
+        cls.spec = json.loads((pathlib.Path(cls.owner.name) / TASKS_FILE).read_text())
+        cls.config = json.loads(PROTOCOL.read_text())
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.owner.cleanup()
+
+    def changed(self, change) -> dict:
+        config = json.loads(json.dumps(self.config))
+        change(config)
+        return config
+
+    def test_the_file_holds_plan_2a_pending_decision_2(self):
+        self.assertEqual(self.config["design"], PLAN_2A)
+        self.assertEqual(self.config["version"], 6)
+        notes = [note for note in self.config["_about"] if note.startswith("Pending decision 2")]
+        self.assertEqual(len(notes), 1)
+        self.assertIn("Plan 2b is 2a with the held-out rewordings in rounds [1, 2, 3]; plan 2c is 2a with every set "
+                      "of DeepSeek's in rounds [1, 2].", notes[0])
+
+    def test_plans_2a_2b_and_2c_validate(self):
+        # DeepSeek's slots: the 15 templates, the 12 gated and the 30 rewordings in their rounds.
+        haiku = {"shipped": 9, "the block (model)": 9}
+        for label, design, deepseek in (
+                ("2a", PLAN_2A, {"shipped": 45, "open everything (product)": 36, "the block (rules)": 75,
+                                 "the block (model)": 75}),
+                ("2b", PLAN_2B, {"shipped": 45, "open everything (product)": 36, "the block (rules)": 135,
+                                 "the block (model)": 135}),
+                ("2c", PLAN_2C, {"shipped": 30, "open everything (product)": 24, "the block (rules)": 90,
+                                 "the block (model)": 90})):
+            with self.subTest(plan=label):
+                config = self.changed(lambda c: c.update(design=design))
+                self.assertEqual(claim.check_protocol(config), [])
+                protocol = claim.resolve_protocol(PROTOCOL, config, self.spec)
+                slots = {model: {arm: sum(len(r) for r in questions.values())
+                                 for arm, questions in protocol.of(model).design.items()} for model in config["models"]}
+                self.assertEqual(slots, {DEEPSEEK: deepseek, HAIKU: haiku})
+                self.assertEqual((list(protocol.of(DEEPSEEK).tests), list(protocol.of(HAIKU).tests)),
+                                 (["H1", "H2", "H3", "H4"], ["H1"]))
+                self.assertEqual(protocol.not_run_by(HAIKU), {k: v for k, v in HAIKU_NOT_RUN.items() if k != "sensitivities"})
+
+    def test_a_design_that_does_not_hold_together_is_refused(self):
+        for label, change, words in (
+                ("a model with no design", lambda c: c["design"].pop(HAIKU),
+                 "the design does not name the protocol's models"),
+                ("the one design of versions 1 to 5", lambda c: c.update(design={"rounds": [1, 2, 3], "asks": {}}),
+                 "the design does not name the protocol's models"),
+                ("a design without its family", lambda c: c["design"][HAIKU].pop("tests"),
+                 f"the design of {HAIKU} is not its asks and its tests"),
+                ("an arm the protocol has not", lambda c: c["design"][HAIKU]["asks"].update({"the agent": {"templates": [1]}}),
+                 "an arm the protocol has not: 'the agent'"),
+                ("a set the protocol does not name",
+                 lambda c: c["design"][HAIKU]["asks"]["shipped"].update({"everything": [1]}),
+                 "a set the protocol does not name: 'everything'"),
+                ("an arm that asks no set", lambda c: c["design"][HAIKU]["asks"].update(shipped={}), "ask no set"),
+                ("a round twice", lambda c: c["design"][DEEPSEEK]["asks"]["shipped"].update(templates=[1, 1]),
+                 "not distinct round numbers from 1"),
+                ("round 0", lambda c: c["design"][DEEPSEEK]["asks"]["shipped"].update(templates=[0, 1]),
+                 "not distinct round numbers from 1"),
+                ("no round", lambda c: c["design"][HAIKU]["asks"]["shipped"].update(reading_independent=[]),
+                 "not distinct round numbers from 1"),
+                ("rounds that are no list", lambda c: c["design"][HAIKU]["asks"]["shipped"].update(reading_independent="1"),
+                 "not distinct round numbers from 1"),
+                ("a test the protocol has not", lambda c: c["design"][HAIKU]["tests"].append("H5"),
+                 "a test the protocol has not: 'H5'"),
+                ("a test of an arm the design does not run", lambda c: c["design"][HAIKU]["tests"].append("H2"),
+                 f"H2 of {HAIKU} compares 'open everything (product)', an arm its design does not run"),
+                ("no family", lambda c: c["design"][HAIKU].update(tests=[]), "names no family of tests"),
+                ("the primary's family short of a test", lambda c: c["design"][DEEPSEEK]["tests"].remove("H4"),
+                 "the primary model's family, deepseek/deepseek-v4-flash's, does not hold every test")):
+            with self.subTest(fault=label):
+                found = claim.check_protocol(self.changed(change))
+                self.assertTrue(any(words in problem for problem in found), found)
+        # Against the task file: a test's arms in different rounds, a question a test's arm does
+        # not ask, and a question two sets of one arm ask.
+        for label, change, words in (
+                ("H4's arms in different rounds",
+                 lambda c: c["design"][DEEPSEEK]["asks"]["the block (rules)"].update(held_out=[1, 2, 3]),
+                 f"H4 of {DEEPSEEK} is on held_out"),
+                ("H1's arms in different rounds under Haiku",
+                 lambda c: c["design"][HAIKU]["asks"]["shipped"].update(reading_independent=[1, 2]),
+                 f"H1 of {HAIKU} is on reading_independent"),
+                ("a question of H1 that shipped does not ask under Haiku",
+                 lambda c: c["design"][HAIKU]["asks"].update(shipped={"control": [1]}),
+                 f"H1 of {HAIKU} is on reading_independent"),
+                ("a question in two of an arm's sets",
+                 lambda c: c["design"][DEEPSEEK]["asks"]["shipped"].update(reading_independent=[1]),
+                 f"the design has {DEEPSEEK}'s shipped ask tee-target-price in two of its sets")):
+            with self.subTest(fault=label):
+                config = self.changed(change)
+                self.assertEqual(claim.check_protocol(config), [])
+                with self.assertRaises(SystemExit) as raised:
+                    claim.resolve_protocol(PROTOCOL, config, self.spec)
+                self.assertIn(words, str(raised.exception))
 
 
 class TwoReadings(unittest.TestCase):
@@ -1477,6 +1754,16 @@ class ThePreflight(unittest.TestCase):
             with self.subTest(arm=name):
                 self.assertEqual(self.preflight(name), [])
 
+    def test_an_arm_the_models_design_does_not_run_is_refused(self):
+        # Plan 2a (protocol version 6): Haiku runs shipped and the block (model) alone.
+        for name in ("shipped", "the block (model)"):
+            with self.subTest(arm=name):
+                self.assertEqual(self.preflight(name, model=HAIKU), [])
+        for name in ("open everything (product)", "the block (rules)"):
+            with self.subTest(arm=name):
+                self.assertIn(f"the protocol's design for {HAIKU} does not run {name}: it runs shipped and the "
+                              f"block (model)", self.preflight(name, model=HAIKU))
+
     def test_a_batch_outside_require_is_refused_before_it_runs(self):
         for name, flags, words in (
                 ("the block (rules)", "--box --parser rules --reading own --max-steps 300 --clock 1800",
@@ -1570,7 +1857,7 @@ class AsksByLabel(unittest.TestCase):
                 {"ambiguous": False, "asked": True, "agent_asks": 0},
                 {"ambiguous": True, "asked": True, "agent_asks": 1}]
         protocol = claim.Protocol(path=PROTOCOL, config={}, names={}, arms=("x",), sets={}, templates_of={},
-                                  keyed=frozenset(), design={}, rounds=(), tests={}, require={}, models=())
+                                  keyed=frozenset(), design={}, tests={}, require={}, models=())
         got = claim.asks_by_label({"x": runs}, protocol)["x"]
         self.assertEqual({label: (r["runs"], r["asked"], r["box"], r["agent"]) for label, r in got.items()},
                          {"clear": (3, 2, 1, 1), "ambiguous": (1, 1, 1, 1)})
@@ -1625,7 +1912,7 @@ class ByProvider(unittest.TestCase):
     def protocol() -> claim.Protocol:
         test = {"measure": "cost", "a": "a", "b": "b", "on": "gated", "strata": "question"}
         return claim.Protocol(path=PROTOCOL, config={}, names={}, arms=("a", "b"), sets={"gated": ("q1", "q2")},
-                              templates_of={}, keyed=frozenset(), design={}, rounds=(), tests={"H3": test},
+                              templates_of={}, keyed=frozenset(), design={}, tests={"H3": test},
                               require={}, models=())
 
     @staticmethod
@@ -1717,7 +2004,7 @@ class HandReadingSheet(unittest.TestCase):
         cls.manifest = build_run2(root, plant=showcase_and_a_buyable_answer)
         cls.sheet = root / "sheet.csv"
         with mock.patch.object(paths, "TASKS", root / "tasks"), contextlib.redirect_stdout(io.StringIO()) as out:
-            cls.code = claim.main(["--protocol", str(PROTOCOL), str(cls.manifest), "--sheet", str(cls.sheet)])
+            cls.code = claim.main(["--protocol", str(FULL), str(cls.manifest), "--sheet", str(cls.sheet)])
         cls.out = out.getvalue()
         cls.result = json.loads(cls.manifest.with_suffix(".analysis.json").read_text())
         cls.text = cls.sheet.read_text()
@@ -1826,13 +2113,13 @@ class HandReadingSheet(unittest.TestCase):
         again = self.sheet.with_name("again.csv")
         with mock.patch.object(paths, "TASKS", self.manifest.parent / "tasks"), \
                 contextlib.redirect_stdout(io.StringIO()):
-            claim.main(["--protocol", str(PROTOCOL), str(self.manifest), "--sheet", str(again)])
+            claim.main(["--protocol", str(FULL), str(self.manifest), "--sheet", str(again)])
             with open(again, newline="") as handle:
                 second = {row["code"] for row in csv.DictReader(handle)}
             self.assertFalse(second & {row["code"] for row in self.rows})
             before = self.sheet.read_bytes()
             with contextlib.redirect_stderr(io.StringIO()) as err, self.assertRaises(SystemExit):
-                claim.main(["--protocol", str(PROTOCOL), str(self.manifest), "--sheet", str(self.sheet)])
+                claim.main(["--protocol", str(FULL), str(self.manifest), "--sheet", str(self.sheet)])
             self.assertIn("already there", err.getvalue())
             self.assertEqual(self.sheet.read_bytes(), before)
             with contextlib.redirect_stderr(io.StringIO()) as err, self.assertRaises(SystemExit):
@@ -1905,7 +2192,7 @@ class HandReadBack(unittest.TestCase):
     def run_claim(cls, extra: list[str]) -> tuple[int, str, dict]:
         with mock.patch.object(paths, "TASKS", cls.manifest.parent / "tasks"), \
                 contextlib.redirect_stdout(io.StringIO()) as out:
-            code = claim.main(["--protocol", str(PROTOCOL), str(cls.manifest), *extra])
+            code = claim.main(["--protocol", str(FULL), str(cls.manifest), *extra])
         return code, out.getvalue(), json.loads(cls.manifest.with_suffix(".analysis.json").read_text())
 
     @classmethod
@@ -2029,7 +2316,7 @@ class HandReadBack(unittest.TestCase):
             claim.main([str(self.manifest), "--hand", str(self.sheet)])
         self.assertIn("needs --protocol", err.getvalue())
         with contextlib.redirect_stderr(io.StringIO()) as err, self.assertRaises(SystemExit):
-            claim.main(["--protocol", str(PROTOCOL), str(self.manifest), "--hand", str(self.sheet),
+            claim.main(["--protocol", str(FULL), str(self.manifest), "--hand", str(self.sheet),
                         "--sheet", str(self.sheet.with_name("new.csv"))])
         self.assertIn("one at a time", err.getvalue())
 
