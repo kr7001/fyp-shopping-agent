@@ -3,6 +3,8 @@
 
     python3 experiments/analysis/claim.py experiments/results/claim-20261020.manifest
     python3 experiments/analysis/claim.py experiments/results/<batch> [...] [--json PATH]
+    python3 experiments/analysis/claim.py --protocol experiments/tasks/claim2_analysis.json \
+        <the second claim's manifest> [--sheet PATH]
 
 The protocol's Measures, Analysis and Exclusions sections are the specification. Written on
 20 October 2026, before the claim run, and tried in-sample on Thornwood, with the box v2
@@ -42,6 +44,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import csv
 import dataclasses
 import hashlib
 import itertools
@@ -49,6 +52,7 @@ import json
 import math
 import pathlib
 import re
+import secrets
 import statistics
 import sys
 
@@ -518,6 +522,7 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
     ambiguous = set(named) if named is not None else {task for found in readings.values() for task in found}
     truth = verify_cells.ground_truth(verify_cells.fixture_for(spec))
     market = verify_cells.market_urls(spec)
+    order = results_order(spec)
     rows = {(row["task"], row["repeat"]): row for row in payload.get("rows", [])}
     _, found = verify_cells.verify_batch(folder)
     checked = {(run["task"], run["repeat"]): run for run in found}
@@ -545,7 +550,7 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
         if measured is not None:
             slot.update(measure(measured, folder, row, slot["reading"], task, buyable.get(run.task),
                                 truth, market, seen.get(f"{run.task}-{run.repeat}", []),
-                                answered=slot["answered"], keys=keys))
+                                answered=slot["answered"], keys=keys, order=order))
             if measured["tool_calls"] is not None and measured["tool_calls"] != slot["calls"]:
                 problems.append(f"{folder.name}/{run.task}-{run.repeat}: the record counts "
                                 f"{measured['tool_calls']} tool calls, the page count {slot['calls']}")
@@ -577,7 +582,8 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
                          "agent_asks": 0, "leaks": [], "outside": [],
                          "tokens": parts,
                          "model": payload.get("model"), "scaffold": payload.get("scaffold"),
-                         "shop": None, "probe": None, "toolbar": None, "taken": None})
+                         "shop": None, "probe": None, "toolbar": None, "taken": None,
+                         "key_where": {}, "providers": {}})
         slot["model"] = slot.get("model") or payload.get("model")
         slot["arm"] = arm_of(payload, slot if slot["measured"] else None, names)
         slot["conditions"] = conditions_of(payload, slot, condition_keys)
@@ -604,7 +610,8 @@ def closed_tokens(row: dict) -> tuple[int | None, tuple]:
 
 def measure(run: dict, folder: pathlib.Path, row: dict, reading: str | None, task: dict,
             buyable_key: dict | None, truth: dict, market: list[str] | None,
-            leak: list[str], answered: str | None = None, keys: scoring.Keys | None = None) -> dict:
+            leak: list[str], answered: str | None = None, keys: scoring.Keys | None = None,
+            order: list[str] | None = None) -> dict:
     """What one run did, from verify_cells' re-derivation and the log: the answer under the
     task's own key and, for the two offer questions, under the buyable key, and the verdict
     under the reading it answered, each through the one scoring call with the task file's
@@ -657,6 +664,10 @@ def measure(run: dict, folder: pathlib.Path, row: dict, reading: str | None, tas
         # numbers (23 October 2026), for the sorting count and its sensitivity.
         "toolbar": toolbar.read(log),
         "taken": prices_taken(answer, task, keyed, truth),
+        # Where the key's listings render, so a failure is coded "page 2 never reached" only
+        # where the answer needs a later page (R5), and who served the model's calls (R11).
+        "key_where": key_positions(task, keyed, truth, answered, order),
+        "providers": serving_providers(log),
     }
 
 
@@ -686,6 +697,90 @@ def prices_taken(answer: str, task: dict, expect: dict, truth: dict) -> dict:
     right = key_prices(expect)
     stated = {round(price, 2) for price in scoring.prices_in(answer or "")} - right
     return {"card": sorted(stated & cards), "sold_out": sorted(stated & sold_out)}
+
+
+def results_order(spec: dict) -> list[str] | None:
+    """The market's listings, as lowercased SKUs, in the order its results pages list them
+    (23 October 2026, for the failure code "page 2 never reached"): the live order its seed
+    search recorded when it accepted the market, which the fixture holds under
+    `_generated.search`, else the order the generator predicted (`_instance.predicted_order`).
+    None for a fixture that holds neither, as every market before the A+ one."""
+    if spec.get("fixture") is None:
+        return None
+    fixture = json.loads(verify_cells.fixture_for(spec).read_text())
+    tried = ((fixture.get("_generated") or {}).get("search") or {}).get("tried") or []
+    accepted = [entry for entry in tried if entry.get("outcome") == "accepted" and entry.get("live_order")]
+    order = accepted[-1]["live_order"] if accepted else (fixture.get("_instance") or {}).get("predicted_order")
+    return [sku.lower() for sku in order] if order else None
+
+
+def key_listings(task: dict, expect: dict, truth: dict, reading: str | None) -> tuple[set[str], str] | None:
+    """The market's listings a key's answer rests on, among the listings of the question's
+    product, and how (23 October 2026). "any": the answer rests on every one of them, a price,
+    a best, a ranking or a count, so it needs every page that holds any of them. "all": it rests
+    on one of them, a yes on one witness and a no on one listing without the size or pack
+    (under the menu reading, or without it buyable under the buyable reading), so it needs a
+    later page only when all of them are there. None where the key names no listing found."""
+    product = task.get("product")
+    listings = {sku: t for sku, t in truth.items() if product is None or t.get("product") in (None, product)}
+    variant = verify_cells.question_variant(task) if task.get("query") else None
+    kind = expect.get("kind")
+
+    def sellers(tokens):
+        return {sku for sku, t in listings.items() if any(token.lower() in t["seller"].lower() for token in tokens)}
+    if kind == "contains":
+        found, rule = sellers(expect.get("any") or []), "any"
+    elif kind == "ranked":
+        found, rule = sellers([token for item in expect["items"] for token in item["any"]]), "any"
+    elif kind == "price" and variant:
+        found = {sku for sku, t in listings.items() if round(t["buyable"].get(variant, -1), 2) == round(expect["value"], 2)}
+        rule = "any"
+    elif kind == "count" and variant:
+        menu = {sku for sku, t in listings.items() if variant in t["sizes"]}
+        bought = {sku for sku, t in listings.items() if variant in t["buyable"]}
+        found = bought if len(bought) == expect["value"] else menu if len(menu) == expect["value"] else set()
+        rule = "any"
+    elif kind == "boolean" and expect.get("value") and expect.get("any"):
+        found, rule = sellers(expect["any"]), "all"
+    elif kind == "boolean" and not expect.get("value") and variant:
+        held = "buyable" if reading == "buyable" else "sizes"
+        found, rule = {sku for sku, t in listings.items() if variant not in t[held]}, "all"
+    else:
+        return None
+    return (found, rule) if found else None
+
+
+def key_positions(task: dict, expect: dict, truth: dict, reading: str | None, order: list[str] | None) -> dict:
+    """Where a key's listings render (`key_listings`), as their places in the market's results
+    order, 1 for the first card (`results_order`), and the rule that says whether an answer
+    needs a page: {"positions": [...], "rule": "any" or "all"}, empty where either is unknown."""
+    listed = key_listings(task, expect, truth, reading)
+    if listed is None or not order:
+        return {}
+    found, rule = listed
+    return {"positions": sorted(order.index(sku) + 1 for sku in found if sku in order), "rule": rule}
+
+
+def needs_a_later_page(where: dict, page_size: int) -> bool | None:
+    """Whether a key's answer needs a results page past the first (`key_positions`): any of its
+    listings past the first page under "any", every one under "all"; None where unknown."""
+    positions = where.get("positions") if where else None
+    if not positions:
+        return None
+    later = [position > page_size for position in positions]
+    return any(later) if where["rule"] == "any" else all(later)
+
+
+# The provider that served one of a run's model calls, as openJiuwen logs each response, the
+# completion's repr ending "provider='GMICloud')" (23 October 2026, for R11). The client's own
+# setting, "model_provider": "OpenAI", is no serving provider and does not match.
+SERVED_BY = re.compile(r"provider='([^']+)'\)")
+
+
+def serving_providers(log_path: pathlib.Path) -> dict:
+    """How many of a run's model calls each provider served, from its log (`SERVED_BY`). Empty
+    where the log names none, as the second agent's never does."""
+    return dict(collections.Counter(SERVED_BY.findall(log_path.read_text(errors="replace"))))
 
 
 # ---------------------------------------------------------------------------
@@ -1417,7 +1512,16 @@ def render_test(t: dict) -> str:
 #      each with its own Holm over its four. The shipped arm's wrong answers are coded by
 #      written rules (`failure_breakdown`). Three sensitivities: the closed slots in H2 and
 #      H3, without the runs that sorted or changed the page size, and H4 by rewording
-PROTOCOL_ANALYSIS_VERSION = 2
+#   3  23 October 2026, from the verifier's re-audit of dede8fe, before the second claim run.
+#      A batch run under a condition the file does not require of its arm is refused, not
+#      listed: the file may require conditions of each arm alone (`not_as_required`, R4).
+#      "Page 2 never reached" codes a failure only where the key's listings need a later
+#      page (`needs_a_later_page`, R5). A sensitivity puts each closed slot back at open
+#      everything's median for its question (`at_the_others_median`, R6). The secondary
+#      measures the file names: asks by the sidecar's label (`asks_by_label`), the serving
+#      provider by arm and H3 by provider (`provider_table`, `by_provider`, R11). And the
+#      blind hand-reading sheet, `--sheet` (`hand_reading_sheet`)
+PROTOCOL_ANALYSIS_VERSION = 3
 # The conditions a protocol's arms are held to: the first claim's and the model parser's,
 # the open-everything wording, the agent's limits. Of them, the ones an arm has by design.
 # The box's rate plan and the product wording's version (23 October 2026) join them, so two
@@ -1434,7 +1538,14 @@ SENSITIVITIES = ("without the two-reading questions", "distinct runs only", "wit
                  # 23 October 2026, from the verifier's fairness audit (protocol analysis v2).
                  "with the closed slots in H2 and H3",
                  "without the runs that sorted or changed the page size",
-                 "H4 by rewording, not by run")
+                 "H4 by rewording, not by run",
+                 # and its re-audit (R6): each closed slot put back at open everything's median
+                 # listings and cost for its question, as if each had run as open everything runs.
+                 "with the closed slots in H2 and H3 at open everything's median")
+# The secondary measures a protocol file may name (v3, from the re-audit), each reported by
+# arm and model.
+SECONDARY_MEASURES = ("asks on questions labelled clear", "asks on questions labelled ambiguous",
+                      "the serving provider by arm, and H3 by provider")
 # The roles a protocol file gives its models (v2): one primary, whose tests are the claim, and
 # replications, each with its own Holm.
 ROLES = ("primary", "replication")
@@ -1463,6 +1574,7 @@ class Protocol:
     roles: dict = dataclasses.field(default_factory=dict)      # model -> "primary" or "replication"
     splits: dict = dataclasses.field(default_factory=dict)     # test -> {label: (set, set)}
     breakdown: dict = dataclasses.field(default_factory=dict)  # the shipped arm's failure codes
+    arm_require: dict = dataclasses.field(default_factory=dict)  # arm -> the conditions it must run under
 
 
 def check_protocol(config: dict) -> list[str]:
@@ -1511,6 +1623,16 @@ def check_protocol(config: dict) -> list[str]:
     for key in config.get("require") or {}:
         if key not in PROTOCOL_CONDITIONS:
             found.append(f"the protocol requires {key!r}, which no run records")
+    # What each arm alone must run under (v3, from the re-audit, R4): the box's versions, its
+    # page reader and rate plan, the model parser's prompt and temperature, the product
+    # wording's version.
+    for name, arm in arms.items():
+        for key in (arm.get("require") or {}) if isinstance(arm, dict) else {}:
+            if key not in PROTOCOL_CONDITIONS:
+                found.append(f"arm {name!r} requires {key!r}, which no run records")
+    for name in config.get("secondary_measures") or []:
+        if name not in SECONDARY_MEASURES:
+            found.append(f"no secondary measure this analysis has is called {name!r}")
     # Since protocol analysis v2 (23 October 2026): each model's role, the splits of a test,
     # and the shipped arm's failure codes, every one named before any run.
     roles = config.get("roles") or {}
@@ -1573,7 +1695,8 @@ def resolve_protocol(path: pathlib.Path, config: dict, spec: dict) -> Protocol:
                         roles=dict(config.get("roles") or {}),
                         splits={name: {label: tuple(parts) for label, parts in splits.items()}
                                 for name, splits in (config.get("splits") or {}).items()},
-                        breakdown=dict(config.get("failure_breakdown") or {}))
+                        breakdown=dict(config.get("failure_breakdown") or {}),
+                        arm_require={name: dict(arm.get("require") or {}) for name, arm in config["arms"].items()})
     # A split is of the strata its test is on, the two parts disjoint and every stratum in
     # one: for H4, the thirteen keyed templates the rewordings reword.
     for name, splits in protocol.splits.items():
@@ -1627,8 +1750,29 @@ def by_rewording(runs: list[dict], templates_of: dict) -> list[dict]:
             for rewording, got in groups.items()]
 
 
+def at_the_others_median(a: list[dict], b: list[dict], measures: list[str]) -> tuple[list[dict], list[dict]]:
+    """A's runs and b's, each slot the box closed in a given b's median of each measure on its
+    question, over b's runs where the agent ran (R6, the re-audit's cautious sensitivity): in
+    H2 and H3, open everything's median listings and cost, as if the slot had run as it runs.
+    A closed slot on a question where b has no such run is left out. B's own closed slots, which
+    open everything never has, are left out too."""
+    def median_of(task: str, measure: str):
+        got = [run[measure] for run in b if run["task"] == task and run.get("outcome") != voids.CLOSED
+               and run.get(measure) is not None]
+        return statistics.median(got) if got else None
+    filled = []
+    for run in a:
+        if run.get("outcome") != voids.CLOSED:
+            filled.append(run)
+            continue
+        values = {measure: median_of(run["task"], measure) for measure in measures}
+        if all(value is not None for value in values.values()):
+            filled.append({**run, **values})
+    return filled, [run for run in b if run.get("outcome") != voids.CLOSED]
+
+
 def one_test(spec: dict, arms: dict[str, list[dict]], protocol: Protocol, drop: frozenset = frozenset(),
-             closed_in: bool = False, rewordings: bool = False) -> dict:
+             closed_in: bool | str = False, rewordings: bool = False) -> dict:
     """One of the protocol's tests, two-sided and unadjusted. A test of correct counts only
     the questions with a key, and a test stratified by template sets each held-out
     rewording's runs under its template's stratum.
@@ -1638,8 +1782,10 @@ def one_test(spec: dict, arms: dict[str, list[dict]], protocol: Protocol, drop: 
     no reply answered or a decline, runs no agent: it entered H2 and H3 as 0 listings and the
     parse's cost, and only the model arm closes slots on the gated questions, so it could
     only favour the model. The closed slots are left out and listed by question and arm;
-    `closed_in` puts them back, for the sensitivity. `rewordings` takes a test by template at
-    one unit a rewording (`by_rewording`), for the sensitivity."""
+    `closed_in` puts them back as recorded, for the sensitivity, or with "median" at the other
+    arm's median for their question (`at_the_others_median`), for the cautious one (R6).
+    `rewordings` takes a test by template at one unit a rewording (`by_rewording`), for the
+    sensitivity."""
     questions = questions_of(spec, protocol, drop)
     a, b = arms.get(spec["a"], []), arms.get(spec["b"], [])
     if spec["strata"] == "template":
@@ -1659,7 +1805,9 @@ def one_test(spec: dict, arms: dict[str, list[dict]], protocol: Protocol, drop: 
                     for side, runs in (("a", a), ("b", b))}
             if shut["a"] or shut["b"]:
                 closed.append({"task": q, **shut})
-        if not closed_in:
+        if closed_in == "median":
+            a, b = at_the_others_median(a, b, [spec["measure"]] + ([spec["also"]] if spec.get("also") else []))
+        elif not closed_in:
             a = [run for run in a if run.get("outcome") != voids.CLOSED]
             b = [run for run in b if run.get("outcome") != voids.CLOSED]
     if spec["measure"] == "correct" and rewordings and spec["strata"] == "template":
@@ -1677,14 +1825,15 @@ def one_test(spec: dict, arms: dict[str, list[dict]], protocol: Protocol, drop: 
                    "questions": strata})
     if spec["measure"] != "correct":
         result["closed"] = closed
-        result["closed_rule"] = "in" if closed_in else "left out"
+        result["closed_rule"] = ("in at the other arm's median" if closed_in == "median"
+                                 else "in" if closed_in else "left out")
     if spec.get("also"):
         result["also"] = {**compare_ranks(a, b, strata, spec["also"]), "a": spec["a"], "b": spec["b"]}
     return result
 
 
 def protocol_tests(arms: dict[str, list[dict]], protocol: Protocol, drop: frozenset = frozenset(),
-                   closed_in: bool = False, rewordings: bool = False) -> dict:
+                   closed_in: bool | str = False, rewordings: bool = False) -> dict:
     """The protocol's primary tests, two-sided, with Holm over all of them (`one_test`). `drop`
     leaves questions out, and a rewording of a dropped template with them, for a
     sensitivity, as `closed_in` and `rewordings` do in their way."""
@@ -1807,20 +1956,24 @@ def failure_code(run: dict, page_size: int) -> tuple[str, str]:
     """A run's failure code and its evidence, by the protocol file's written rules, tried in
     order (`FAILURE_CODES`), the first that holds decides:
 
-      page 2 never reached            the log shows no results page numbered 2 or more and no
-                                      page size above the shop's, so the run read the first
-                                      results page alone (`toolbar.past_page_one`); on the A+
-                                      market both products have listings on page 2
-                                      (env/generate_aplus.py, rule `interleaved`)
+      page 2 never reached            the question's key needs a listing past the first results
+                                      page (`needs_a_later_page`, from where the key's listings
+                                      render in the market's results order), and the log shows
+                                      no results page numbered 2 or more and no page size
+                                      above the shop's, so the run read the first page alone
+                                      (`toolbar.past_page_one`). Since the re-audit (R5): until
+                                      then it applied whatever the key needed
       a card or sold-out price taken  the answer states a listing's advertised price, or the
                                       price of the question's variant at a listing where it
                                       is sold out, that the key does not hold as right
                                       (`prices_taken`)
       other                           anything else"""
     reading = run.get("toolbar") or {"results_pages": [], "results_limits": []}
-    if not toolbar.past_page_one(reading, page_size):
+    where = run.get("key_where") or {}
+    if needs_a_later_page(where, page_size) and not toolbar.past_page_one(reading, page_size):
         pages = reading["results_pages"]
-        return FAILURE_CODES[0], (f"results pages seen: {pages}" if pages else "no results page numbered")
+        return FAILURE_CODES[0], (f"the key's listings at {where['positions']} ({where['rule']}); "
+                                  + (f"results pages seen: {pages}" if pages else "no results page numbered"))
     taken = run.get("taken") or {}
     if taken.get("card") or taken.get("sold_out"):
         return FAILURE_CODES[1], "; ".join(f"{kind.replace('_', ' ')} {', '.join(f'${p:.2f}' for p in prices)}"
@@ -1851,6 +2004,94 @@ def failure_breakdown(arms: dict[str, list[dict]], protocol: Protocol) -> dict |
                      for run, code, why in coded]}
 
 
+NOT_RECORDED = "not recorded"
+
+
+def run_provider(run: dict) -> str:
+    """Who served a run's model calls (`serving_providers`): one provider's name, "mixed: A, B"
+    where calls went to several, or "not recorded" (a closed slot, or a log that names none)."""
+    served = run.get("providers") or {}
+    if not served:
+        return NOT_RECORDED
+    return next(iter(served)) if len(served) == 1 else "mixed: " + ", ".join(sorted(served))
+
+
+def provider_table(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
+    """The serving provider by arm, from each run's log (R11, the re-audit: DeepSeek's provider
+    is not pinned, so the mix is recorded): runs by provider, and calls by provider, over the
+    runs where the agent ran."""
+    out = {}
+    for arm in [a for a in protocol.arms if a in arms] + sorted(set(arms) - set(protocol.arms)):
+        runs = [run for run in arms[arm] if run.get("outcome") != voids.CLOSED]
+        calls = collections.Counter()
+        for run in runs:
+            calls.update(run.get("providers") or {})
+        out[arm] = {"runs": len(runs), "by_provider": dict(collections.Counter(map(run_provider, runs))),
+                    "calls": dict(calls)}
+    return out
+
+
+def by_provider(arms: dict[str, list[dict]], protocol: Protocol) -> dict | None:
+    """The test of cost (H3) within each provider that served whole runs of both its arms,
+    unadjusted, where the two arms' mixes of providers differ (R11): a cost difference that is
+    the providers' and not the arms' then shows. The mixes are of the runs the test compares,
+    its questions' where the agent ran. None where the protocol has no test of cost."""
+    name, spec = next(((n, s) for n, s in protocol.tests.items() if s["measure"] == "cost"), (None, None))
+    if spec is None:
+        return None
+    questions = set(questions_of(spec, protocol))
+    ran = {side: [run for run in arms.get(spec[side], []) if run.get("outcome") != voids.CLOSED
+                  and (run["task"] in questions or protocol.templates_of.get(run["task"]) in questions)]
+           for side in ("a", "b")}
+    mix = {side: collections.Counter(map(run_provider, runs)) for side, runs in ran.items()}
+    share = {side: {p: n / sum(c.values()) for p, n in c.items()} if c else {} for side, c in mix.items()}
+    differs = share["a"] != share["b"]
+
+    def whole(counted):
+        """The providers that served every call of some run: neither none nor a mix."""
+        return {p for p in counted if p != NOT_RECORDED and not p.startswith("mixed")}
+    tests = {}
+    if differs:
+        for provider in sorted(whole(mix["a"]) & whole(mix["b"])):
+            only = {**arms, **{spec[side]: [run for run in arms.get(spec[side], []) if run_provider(run) == provider]
+                               for side in ("a", "b")}}
+            tests[provider] = one_test(spec, only, protocol)
+    return {"test": name, "a": spec["a"], "b": spec["b"], "mix": {side: dict(c) for side, c in mix.items()},
+            "differs": differs, "tests": tests}
+
+
+def asks_by_label(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
+    """The secondary measures "asks on questions labelled clear" and "asks on questions labelled
+    ambiguous", by arm (each model is its own section): of the runs on questions the sidecar
+    labels with one reading or with two (`two_readings`, fixed before any run), those that
+    asked, the box or the agent itself, with Wilson's 95% interval (re-audit, 23 October 2026)."""
+    out = {}
+    for arm in [a for a in protocol.arms if a in arms] + sorted(set(arms) - set(protocol.arms)):
+        out[arm] = {}
+        for label, wanted in (("clear", False), ("ambiguous", True)):
+            group = [run for run in arms[arm] if run["ambiguous"] == wanted]
+            asked = sum(1 for run in group if run["asked"] or run["agent_asks"])
+            out[arm][label] = {"runs": len(group), "asked": asked,
+                               "box": sum(run["asked"] for run in group),
+                               "agent": sum(1 for run in group if run["agent_asks"]),
+                               "share": asked / len(group) if group else None,
+                               "interval": list(wilson(asked, len(group))) if group else None}
+    return out
+
+
+def secondary_measures(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
+    """The secondary measures the protocol file names (`SECONDARY_MEASURES`), by arm, each
+    model in its own section: the asks by the label the sidecar gives each question, under
+    "asks_by_label", and the serving provider by arm with H3 by provider, under "providers"."""
+    named = protocol.config.get("secondary_measures") or []
+    out = {}
+    if any(name.startswith("asks on questions labelled") for name in named):
+        out["asks_by_label"] = asks_by_label(arms, protocol)
+    if "the serving provider by arm, and H3 by provider" in named:
+        out["providers"] = {"by_arm": provider_table(arms, protocol), "h3": by_provider(arms, protocol)}
+    return out
+
+
 def protocol_sensitivity(arms: dict[str, list[dict]], voided: list[dict], protocol: Protocol) -> dict:
     """The primary tests again under each sensitivity the protocol names."""
     out = {}
@@ -1872,7 +2113,27 @@ def protocol_sensitivity(arms: dict[str, list[dict]], voided: list[dict], protoc
                                         for arm, runs in arms.items()}, protocol)
         elif name == "H4 by rewording, not by run":
             out[name] = protocol_tests(arms, protocol, rewordings=True)
+        elif name == "with the closed slots in H2 and H3 at open everything's median":
+            out[name] = protocol_tests(arms, protocol, closed_in="median")
     return out
+
+
+def required_of(arm: str, protocol: Protocol) -> dict:
+    """The conditions the protocol requires of an arm: those of every arm (`require`), and
+    the arm's own (`arms.<name>.require`, v3), which win where both name one."""
+    return {**protocol.require, **protocol.arm_require.get(arm, {})}
+
+
+def not_as_required(conditions: dict, protocol: Protocol) -> list[str]:
+    """Every arm, under every model, that ran under a condition other than the one the
+    protocol requires of it (`required_of`), by the conditions its runs record
+    (`one_condition_each`). Until v3 the protocol required the step budget and the clock
+    alone, and a batch under another was listed among the problems and analysed all the
+    same; since the re-audit (R4, 23 October 2026) a batch under another rate plan, wording,
+    prompt, temperature, box, page reader or browser tool is refused (`analyse_protocol`)."""
+    return [f"{model}: {arm} ran with {key} {c[key]}, where the protocol requires {value}"
+            for (arm, model), c in conditions.items()
+            for key, value in required_of(arm, protocol).items() if c[key] != value]
 
 
 def protocol_model(model: str | None, population: dict, conditions: dict, protocol: Protocol) -> dict:
@@ -1896,8 +2157,9 @@ def protocol_model(model: str | None, population: dict, conditions: dict, protoc
         raise SystemExit(f"the arms under {model} ran on more than one market draw, so they are "
                          f"never set against each other: {differ['draw']}")
     by_arm = {arm: {key: c[key] for key in PROTOCOL_ARM_CONDITIONS} for arm, c in mine.items()}
-    required = [f"{arm} ran with {key} {c[key]}, where the protocol requires {value}"
-                for arm, c in mine.items() for key, value in protocol.require.items() if c[key] != value]
+    # What every arm was held to, and each arm's own, all met: `analyse_protocol` refuses the
+    # batches before this is reached otherwise (v3, `not_as_required`).
+    required = {arm: required_of(arm, protocol) for arm in mine}
     filled = collections.Counter((s["arm"], s["task"], s["repeat"]) for s in kept)
     # A slot left empty by a void is excluded by rule and listed as such; one with no run at
     # all, void or not, the command never ran, which is a problem (22 October 2026).
@@ -1955,13 +2217,15 @@ def protocol_model(model: str | None, population: dict, conditions: dict, protoc
                       "asks": asks(arms, list(protocol.arms)), "declines": declines(arms, protocol),
                       "answer_check": answer_check(arms, list(protocol.arms)),
                       "toolbar": toolbar_table(arms, protocol),
-                      "failure_breakdown": failure_breakdown(arms, protocol)},
+                      "failure_breakdown": failure_breakdown(arms, protocol),
+                      # The secondary measures the file names (v3), each computed only if named.
+                      **secondary_measures(arms, protocol)},
         "sensitivity": protocol_sensitivity(arms, voided, protocol),
         "runs": [{key: s.get(key) for key in ("arm", "batch", "task", "template", "repeat", "outcome", "reason",
                                               "own", "buyable", "verdict", "answered", "opened", "skus",
                                               "covered", "missed", "cost", "tokens_total", "calls", "actions",
                                               "asked", "refused", "agent_asks", "leaks", "outside", "toolbar",
-                                              "taken", "answer")}
+                                              "taken", "key_where", "providers", "answer")}
                  for s in kept],
     }
 
@@ -2002,6 +2266,12 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
     problems += population["problems"]
     every = [slot for _, _, slots in loaded for slot in slots]
     conditions = one_condition_each(population["kept"] + population["voided"], PROTOCOL_CONDITIONS)
+    # A batch run under a condition the protocol does not require of its arm is no batch of
+    # this protocol: refused before any figure is made of it (v3, R4).
+    refused = not_as_required(conditions, protocol)
+    if refused:
+        raise SystemExit(f"{path.name}: refused, since batches ran under conditions the protocol does not "
+                         f"require: " + "; ".join(refused))
     models = sorted({slot["model"] for slot in population["kept"]} | {m["model"] for m in population["missing"]},
                     key=str)
     # The primary model first, then its replications in the file's order, then any the file
@@ -2019,7 +2289,6 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
            "models_named": list(protocol.models), "roles": dict(protocol.roles)}
     for model in models:
         result = protocol_model(model, population, conditions, protocol)
-        out["problems"] += [f"{model}: {text}" for text in result["conditions"]["required"]]
         # A condition that is no arm's own and differs between arms makes two experiments of
         # one (LESSONS 7, 10), and the design's slots are the protocol's, fixed before the run.
         out["problems"] += [f"{model}: {key} differs between the arms: "
@@ -2036,6 +2305,84 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
     out["problems"] += [f"the protocol's model {model} has no run" for model in protocol.models
                         if model not in out["models"]]
     return out
+
+
+# The blind hand-reading sheet's columns: the run's random code, what was asked, the key it was
+# judged by, the answer, the scorer's verdict, and two left blank for the reader.
+SHEET_COLUMNS = ("code", "question", "key", "answer", "scorer_verdict", "hand_verdict", "note")
+
+
+def hand_reading_sheet(result: dict) -> tuple[list[dict], dict]:
+    """Every answer a protocol's analysis counted, to be read by hand against its key without
+    the arm or the model in view (the re-audit, 23 October 2026, in case the hand reading is
+    chosen as a sensitivity), and the key that maps each row back.
+
+    A row is one run where the agent answered: the question, the key the scorer judged it by
+    (the key for the reading the run answered under, `score.run_key`), the answer as stored,
+    and the scorer's verdict. Its arm, model, batch, task and repeat are replaced by a
+    random code, drawn afresh each time (`secrets`), one a run, so no code is shared by two
+    runs of an arm and the rows, sorted by code, are in no arm's order; the key file maps each
+    code back. A held-out rewording is shown by its template's question, which it rewords with
+    the meaning kept and whose key it has: only the block's arms ask the rewordings, so their
+    own texts, or their ids, would name the arm, and this code never reads them. A slot the
+    box closed answered nothing and is left out, counted in the key file.
+
+    What the sheet cannot hide: an answer's own words, which may say how many listings it
+    opened, and on a question with two readings a buyable key, which only the box can give a
+    run, by the reply to its ask or a reading it took itself."""
+    tasks_path = paths.TASKS / result["tasks_file"]
+    spec = json.loads(tasks_path.read_text())
+    tasks = {task["id"]: task for task in spec["tasks"]}
+    keys = scoring.keys_for(tasks_path)
+    rows, codes, closed = [], {}, 0
+    for model, m in result["models"].items():
+        for run in m["runs"]:
+            if run["outcome"] == voids.CLOSED:
+                closed += 1
+                continue
+            code = secrets.token_hex(4)
+            while code in codes:
+                code = secrets.token_hex(4)
+            task = tasks[run["task"]]
+            asked = tasks[run["template"]] if run.get("template") else task
+            try:
+                key = json.dumps(scoring.run_key(task, run["answered"], keys), sort_keys=True)
+            except scoring.NoKeyForReading:
+                key = "no key for the reading this run answered under"
+            rows.append({"code": code, "question": asked["query"].format(base=spec["base_url"]), "key": key,
+                         "answer": " ".join((run["answer"] or "").split()), "scorer_verdict": run["verdict"],
+                         "hand_verdict": "", "note": ""})
+            codes[code] = {"model": model, "arm": run["arm"], "batch": run["batch"], "task": run["task"],
+                           "repeat": run["repeat"], "answered": run["answered"], "verdict": run["verdict"]}
+    rows.sort(key=lambda row: row["code"])
+    mapping = {"_about": "What each code of the hand-reading sheet stands for. Keep it apart from the sheet "
+                         "until every row is read.",
+               "tasks_file": result["tasks_file"], "protocol_file": result["protocol_file"],
+               "analysis_version": result["analysis_version"],
+               "protocol_analysis_version": result["protocol_analysis_version"],
+               "scorer_version": result["scorer_version"], "rows": len(rows),
+               "closed_slots_left_out": closed, "codes": dict(sorted(codes.items()))}
+    return rows, mapping
+
+
+def sheet_paths(path: pathlib.Path) -> tuple[pathlib.Path, pathlib.Path]:
+    """The hand-reading sheet's path and its key's beside it, `<name>.key.json`."""
+    return path, path.with_name(path.stem + ".key.json")
+
+
+def write_sheet(path: pathlib.Path, rows: list[dict], mapping: dict) -> pathlib.Path:
+    """The sheet as CSV at `path`, and its key beside it (`sheet_paths`), whose path is
+    returned. A sheet or key already there may hold a reading, so it is never written over."""
+    _, key_path = sheet_paths(path)
+    there = [str(p) for p in (path, key_path) if p.exists()]
+    if there:
+        raise SystemExit(f"refused: {', '.join(there)} already there, and may hold a reading. Move it away first")
+    with path.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=SHEET_COLUMNS)
+        writer.writeheader()
+        writer.writerows(rows)
+    key_path.write_text(json.dumps(mapping, indent=2) + "\n")
+    return key_path
 
 
 def shown_path(path: pathlib.Path) -> str:
@@ -2098,8 +2445,9 @@ def render_protocol_model(m: dict, say) -> None:
     for arm, c in m["conditions"]["by_arm"].items():
         shown = "; ".join(f"{key} {value}" for key, value in c.items() if value is not None)
         say(f"  {arm:30} {shown or 'no arm-specific condition'}")
-    for text in m["conditions"]["required"]:
-        say(f"  NOT AS REQUIRED: {text}")
+    say("  Required by the protocol and met by every run, since a batch under another is refused:")
+    for arm, required in m["conditions"]["required"].items():
+        say(f"  {arm:30} " + ("; ".join(f"{key} {value}" for key, value in required.items()) or "nothing"))
 
     e = m["exclusions"]
     say("\nExclusions, decided from the logs and the records before any answer was read:")
@@ -2237,15 +2585,45 @@ def render_protocol_model(m: dict, say) -> None:
         say(f"  f. Why {fb['arm']} was not correct, coded from the log and the answer by the written rules, the "
             f"first that holds: {fb['failures']} of its {fb['of']} runs a key judged on {fb['on']}, at "
             f"{fb['page_size']} a page")
+        say("     page 2 never reached is coded only where the key's listings need a later page, by where "
+            "they render in the market's results order")
         say("     pooled: " + "; ".join(f"{code} {n}" for code, n in fb["pooled"].items()))
         for q, row in fb["by_question"].items():
             say(f"     {q:22} " + "; ".join(f"{code} {n}" for code, n in row.items() if n))
+    labelled = s.get("asks_by_label")
+    if labelled:
+        say("  g. Asks on the questions the sidecar labels clear and ambiguous: the runs that asked, the box "
+            "or the agent, with Wilson's 95% interval")
+        for arm, row in labelled.items():
+            say(f"     {arm:30} " + "; ".join(
+                f"{label} {r['asked']} of {r['runs']}" + (f" ({r['share']:.2f}, {r['interval'][0]:.2f} to "
+                                                          f"{r['interval'][1]:.2f})" if r["runs"] else "")
+                for label, r in row.items()))
+    providers = s.get("providers")
+    if providers:
+        say("  h. Who served the model's calls, by arm, from each run's log: runs by provider, a run served by "
+            "more than one is mixed, and calls by provider")
+        for arm, row in providers["by_arm"].items():
+            say(f"     {arm:30} {row['runs']} runs: "
+                + "; ".join(f"{p} {n}" for p, n in sorted(row["by_provider"].items(), key=lambda kv: (-kv[1], kv[0])))
+                + "   calls: " + ("; ".join(f"{p} {n}" for p, n in sorted(row["calls"].items(),
+                                                                         key=lambda kv: (-kv[1], kv[0]))) or "none"))
+        h3 = providers["h3"]
+        if h3:
+            say(f"     {h3['test']} by provider, {h3['a']} against {h3['b']}: the mixes "
+                + ("differ, so within each provider that served whole runs of both, unadjusted:" if h3["differs"]
+                   else "are the same, so not split"))
+            for provider, t in h3["tests"].items():
+                say(f"       {provider:22} " + (render_test(t) + f"; p = {p_text(t['p'])}" if t["per_question"]
+                                                else "not computed: no question both arms asked"))
+            if h3["differs"] and not h3["tests"]:
+                say("       no provider served whole runs of both arms")
 
     names = list(m["primary"])
     say("\n6. Sensitivity: the primary tests again, p (Holm p)")
-    say(f"     {'':54} " + " ".join(f"{name:>22}" for name in names))
+    say(f"     {'':64} " + " ".join(f"{name:>22}" for name in names))
     for name, tests in m["sensitivity"].items():
-        say(f"     {name:54} " + " ".join(f"{p_text(t['p']) + ' (' + p_text(t['p_holm']) + ')':>22}"
+        say(f"     {name:64} " + " ".join(f"{p_text(t['p']) + ' (' + p_text(t['p_holm']) + ')':>22}"
                                           for t in tests.values()))
 
 
@@ -2266,10 +2644,20 @@ def main(argv: list[str] | None = None) -> int:
                         help="a protocol file naming its arms, sets, design and primary tests, "
                              "experiments/tasks/claim2_analysis.json for the second claim; the "
                              "first claim's analysis by default")
+    parser.add_argument("--sheet", type=pathlib.Path,
+                        help="under --protocol, also write every answer counted as a blind "
+                             "hand-reading sheet, CSV, and its key beside it as <name>.key.json "
+                             "(`hand_reading_sheet`); neither is ever written over")
     args = parser.parse_args(argv)
     if args.sets and args.protocol:
         parser.error("--sets is the first claim's analysis under other question sets; a protocol "
                      "file names its own")
+    if args.sheet and not args.protocol:
+        parser.error("--sheet is the hand-reading sheet of a protocol's runs, so it needs --protocol")
+    if args.sheet:
+        there = [str(p) for p in sheet_paths(args.sheet) if p.exists()]
+        if there:
+            parser.error(f"{', '.join(there)} already there, and may hold a reading. Move it away first")
     if args.sets:
         apply_sets(read_sets(args.sets))
     manifest = None
@@ -2284,6 +2672,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.protocol:
         result = analyse_protocol(lines, manifest, args.protocol)
         print(render_protocol(result))
+        if args.sheet:
+            rows, mapping = hand_reading_sheet(result)
+            key_path = write_sheet(args.sheet, rows, mapping)
+            print(f"\nthe hand-reading sheet, {len(rows)} answers under random codes: {args.sheet}; "
+                  f"its key, to be kept apart until every row is read: {key_path}")
     else:
         result = analyse(lines, manifest)
         print(render(result))

@@ -737,6 +737,30 @@ class OneScoringCall(unittest.TestCase):
         self.assertEqual(verify_cells.rescore(cheapest, answer, True, {}, {}, verify_cells.NO_KEYS)["verdict"],
                          "correct")
 
+    def test_the_key_a_reader_shows_is_the_one_score_run_judges_by(self):
+        # Over every development question under each reading a run can answer: where
+        # score_run gives a verdict, scoring the answer against `run_key`'s key with the
+        # market's sellers gives the same; where it gives "unscored", run_key raises.
+        path = paths.TASKS / "tasks_aplus_dev.json"
+        keys = score.keys_for(path)
+        tasks = json.loads(path.read_text())["tasks"]
+        unscored = 0
+        for task in tasks:
+            for reading in (None, "menu", "buyable"):
+                for answer in ("11 listings.", "Yes. Elmsworth Apparel at $19.17.", "No."):
+                    with self.subTest(task=task["id"], reading=reading, answer=answer):
+                        got = score.score_run(task, reading, keys, answer, True)
+                        if got["verdict"] == "unscored" and task["expect"]["kind"] != "none":
+                            unscored += 1
+                            with self.assertRaises(score.NoKeyForReading):
+                                score.run_key(task, reading, keys)
+                            continue
+                        keyed = {**task, "expect": score.run_key(task, reading, keys)}
+                        self.assertEqual(score.score(keyed, answer, True, keys.sellers)["verdict"], got["verdict"])
+        # "menu" on each of the ten keyed questions the sidecar does not name as having two
+        # readings: fifteen, less the three it names and the two declines, which have no key.
+        self.assertEqual(unscored, 10 * 3)
+
     def test_a_task_files_keys(self):
         keys = score.keys_for(paths.TASKS / "tasks_aplus_dev.json")
         self.assertEqual(keys.two_readings, ["tee-all-stocked", "tee-count-stocked", "water-all-stocked"])

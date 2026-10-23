@@ -518,6 +518,14 @@ def score_run(task: dict, reading: str | None, keys: Keys, answer: str, ok: bool
     return score_under(task, reading, keys.readings, answer, ok, keys.sellers, keys.two_readings)
 
 
+def run_key(task: dict, reading: str | None, keys: Keys) -> dict:
+    """The answer key `score_run` judges a run by, with the same arguments: the task's own, or
+    its sidecar's for the reading the run answered under (`under_reading`). Raises
+    NoKeyForReading where `score_run` gives "unscored". For a reader that shows the key and
+    judges nothing, as claim.py's hand-reading sheet (23 October 2026)."""
+    return under_reading(task, reading, keys.readings, keys.two_readings)["expect"]
+
+
 def score(task: dict, answer: str, ok: bool, sellers: list[str] | None = None) -> dict:
     """Return verdict plus the evidence behind it, so results stay auditable. `sellers` are
     the market's (`market_sellers`), where the caller knows them: a best named among them is

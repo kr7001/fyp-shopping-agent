@@ -11,22 +11,38 @@
     "H2 and H3 count only the slots where the agent ran. A slot the box closes, an ask with no reply or a decline, runs no agent, and entered H2 and H3 as 0 listings and the parse's cost; only the block under the model closes such slots on the gated questions, so it could only favour the model. The closed slots are left out and reported beside each test by question and arm, and the sensitivity 'with the closed slots in H2 and H3' puts them back.",
     "Every run's sorting and page size are counted from its log, by arm: product_list_order or product_list_dir in an address its navigations asked for or its replies reported is a sort (relevance, the default, is none), product_list_limit or the list view is a change of page size (experiments/analysis/toolbar.py). The page rules hold for the relevance order at 36 a page only; at 60 a page all 42 listings render on one. The sensitivity 'without the runs that sorted or changed the page size' drops them.",
     "H4 stays one test of all thirteen keyed templates. splits: H4 again on each part of two pre-specified splits, secondary and unadjusted: the first claim's six templates against the seven added for the second, and the tee's eight against the water's five. Both parsers are deterministic, so the box makes one plan of a rewording whatever the round, and the unit at the front door is the 26 keyed rewordings, not the runs: the sensitivity 'H4 by rewording, not by run' takes each rewording's share of its runs correct, one value a rewording and arm, van Elteren's stratified exact rank test by template.",
-    "failure_breakdown: the shipped arm's runs on the gated questions that a key judged not correct, each coded by the first of these written rules that holds. 'page 2 never reached': no address the run's navigations asked for or its replies reported is a results page numbered 2 or more, or one whose product_list_limit exceeds the page size, 36; on this market both products have listings on page 2 (env/generate_aplus.py, rule interleaved). 'a card or sold-out price taken': the answer states a listing's advertised price, or the price of the question's size or pack at a listing where it is sold out, among the listings of the question's product in the fixture the shop was seeded from, that the key does not hold as right. 'other': anything else."
+    "failure_breakdown: the shipped arm's runs on the gated questions that a key judged not correct, each coded by the first of these written rules that holds. 'page 2 never reached': no address the run's navigations asked for or its replies reported is a results page numbered 2 or more, or one whose product_list_limit exceeds the page size, 36; on this market both products have listings on page 2 (env/generate_aplus.py, rule interleaved). 'a card or sold-out price taken': the answer states a listing's advertised price, or the price of the question's size or pack at a listing where it is sold out, among the listings of the question's product in the fixture the shop was seeded from, that the key does not hold as right. 'other': anything else.",
+    "Version 3, 23 October 2026, from the verifier's re-audit of version 2 (dede8fe), before any run 2 data exists:",
+    "require: every arm is held to the step budget, the clock and the pinned browser tool, and each arm to its own conditions under arms.<name>.require: open everything to the product wording's version; each block arm to the box's version, its page reader, its rate plan and every other version a box batch records, so the two arms H4 compares run the same front door but for the parser; the model arm also to the parser's prompt, temperature and normalisation. claim.py refuses the batches when any run records another (R4); until version 3 only the step budget and the clock were required, and a batch under another was listed and analysed all the same. tests/test_claim2_analysis.py holds each required version to the code's own constant.",
+    "Pending the student's decision on the evening of 23 October 2026: both block arms run with --reading own, the scripted user answering each question with the reading its own key was written under (suite.scripted_reply), and --rate-plan every, a rate question planned over every listing with no bound. If either is not chosen, the arm's flags, its reading and its require change with it, before any run.",
+    "H3's tokens include the model parser's since 23 October 2026 (suite.charge_parse, claim.stated_tokens), as its charge always was in the cost.",
+    "failure_breakdown is on the reading-independent questions, H1's (R5), and 'page 2 never reached' codes a failure only where the question's key needs a listing past the first results page, by where its listings render in the market's results order (claim.needs_a_later_page): for a price, a best, a ranking or a count any one of them past it, for a yes or a no every one. On the other questions a run that read only the first page is coded by the rules after it.",
+    "The sensitivity 'with the closed slots in H2 and H3 at open everything's median' puts each closed slot back at open everything's median listings and cost for its question, as if each had run as open everything runs (R6), a cautious value where the agent ran nothing; 'with the closed slots in H2 and H3' stays.",
+    "secondary_measures: the asks, the box's or the agent's own, on the questions the sidecar labels clear and on those it labels ambiguous (its two_readings), as a share of runs with Wilson's 95% interval, by arm and model; and who served each run's model calls, from its log, by arm, with H3 within each provider that served whole runs of both its arms where the arms' mixes differ (R11), unadjusted.",
+    "claim.py --sheet writes every answer counted as a blind hand-reading sheet, each under a random code in place of its arm, model and run, and the key that maps the codes back, in case the hand reading is chosen as a sensitivity."
   ],
   "protocol": "docs/content/claim2-protocol.md",
-  "version": 2,
+  "version": 3,
   "roles": {"deepseek/deepseek-v4-flash": "primary", "anthropic/claude-haiku-4.5": "replication"},
   "arms": {
     "shipped": {"arm": "none", "reading": null,
                 "flags": "--max-steps 300 --clock 1800"},
     "open everything (product)": {"arm": "exhaustive-product", "reading": null,
-                                  "flags": "--exhaustive --exhaustive-wording product --max-steps 300 --clock 1800"},
-    "the block (rules)": {"arm": "box", "reading": "menu",
-                          "flags": "--box --parser rules --reading menu --max-steps 300 --clock 1800"},
-    "the block (model)": {"arm": "box-model", "reading": "menu",
-                          "flags": "--box --parser model --reading menu --max-steps 300 --clock 1800"}
+                                  "flags": "--exhaustive --exhaustive-wording product --max-steps 300 --clock 1800",
+                                  "require": {"exhaustive_wording_version": 2}},
+    "the block (rules)": {"arm": "box", "reading": "own",
+                          "flags": "--box --parser rules --reading own --rate-plan every --max-steps 300 --clock 1800",
+                          "require": {"box_version": 18, "page_reader": "rendered", "rate_plan": "every",
+                                      "targeting_version": 9, "planner_version": 2, "form_version": 13,
+                                      "primitives_version": 12}},
+    "the block (model)": {"arm": "box-model", "reading": "own",
+                          "flags": "--box --parser model --reading own --rate-plan every --max-steps 300 --clock 1800",
+                          "require": {"box_version": 18, "page_reader": "rendered", "rate_plan": "every",
+                                      "targeting_version": 9, "planner_version": 2, "form_version": 13,
+                                      "primitives_version": 12, "prompt_version": 3, "parser_temperature": 0,
+                                      "normalise_version": 4}}
   },
-  "require": {"max_steps": 300, "clock_s": 1800},
+  "require": {"max_steps": 300, "clock_s": 1800, "browser_tool": "0.0.83"},
   "models": ["deepseek/deepseek-v4-flash", "anthropic/claude-haiku-4.5"],
   "sets": {
     "control": ["tee-headline"],
@@ -74,14 +90,17 @@
   },
   "against_open_everything": {"a": "the block (model)", "b": "open everything (product)", "on": "reading_independent"},
   "failure_breakdown": {
-    "arm": "shipped", "on": "gated", "page_size": 36,
+    "arm": "shipped", "on": "reading_independent", "page_size": 36,
     "codes": [
-      {"code": "page 2 never reached", "rule": "no results page numbered 2 or more, and no product_list_limit above the page size, among the addresses the run's navigations asked for and its replies reported"},
+      {"code": "page 2 never reached", "rule": "the question's key needs a listing past the first results page, by where its listings render in the market's results order, and no results page numbered 2 or more, and no product_list_limit above the page size, is among the addresses the run's navigations asked for and its replies reported"},
       {"code": "a card or sold-out price taken", "rule": "the answer states a listing's advertised price, or the price of the question's variant where it is sold out, among the question's product's listings, that the key does not hold as right"},
       {"code": "other", "rule": "anything else"}
     ]
   },
   "sensitivity": ["without the two-reading questions", "distinct runs only", "with the voids included",
                   "without the runs that saw a hidden price", "with the closed slots in H2 and H3",
-                  "without the runs that sorted or changed the page size", "H4 by rewording, not by run"]
+                  "without the runs that sorted or changed the page size", "H4 by rewording, not by run",
+                  "with the closed slots in H2 and H3 at open everything's median"],
+  "secondary_measures": ["asks on questions labelled clear", "asks on questions labelled ambiguous",
+                         "the serving provider by arm, and H3 by provider"]
 }
