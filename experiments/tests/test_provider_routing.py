@@ -82,9 +82,27 @@ class TheSetting(unittest.TestCase):
                 provider_routing.setting({provider_routing.ENV: raw})
 
     def test_the_proposed_value(self):
-        # The slugs, as GET /api/v1/providers gave them on 23 October 2026, fall back nowhere.
-        self.assertEqual(ROUTE, {"order": ["gmicloud", "deepinfra", "streamlake"], "allow_fallbacks": False})
+        # The slugs, as GET /api/v1/providers gave them on 23 October 2026, fall back nowhere,
+        # and since the verifier's check of 281c7e8 hold to fp8 (part of decision 9).
+        self.assertEqual(ROUTE, {"order": ["gmicloud", "deepinfra", "streamlake"], "allow_fallbacks": False,
+                                 "quantizations": ["fp8"]})
         self.assertEqual(provider_routing.setting(ON), provider_routing.PROPOSED)
+
+    def test_a_key_openrouter_does_not_document_is_refused(self):
+        # The verifier's check of 281c7e8: "allow_fallback" would be sent and ignored.
+        for typo in ({"order": ["gmicloud"], "allow_fallback": False}, {"quantisations": ["fp8"]}, {"zone": "eu"}):
+            raw = json.dumps({DEEPSEEK: typo})
+            with self.subTest(typo=typo), self.assertRaisesRegex(ValueError, "does not document"):
+                provider_routing.setting({provider_routing.ENV: raw})
+        # Quiet on every key OpenRouter documents, the verifier's list, named here and not read
+        # from the code it checks.
+        documented = ("order", "allow_fallbacks", "only", "ignore", "quantizations", "sort", "require_parameters",
+                      "data_collection", "max_price")
+        every = {key: None for key in documented}
+        self.assertEqual(provider_routing.setting({provider_routing.ENV: json.dumps({DEEPSEEK: every})}),
+                         {DEEPSEEK: every})
+        self.assertEqual(sorted(provider_routing.PROVIDER_KEYS), sorted(documented))
+        self.assertEqual(provider_routing.unknown_keys({"order": [], "allow_fallback": True}), ["allow_fallback"])
 
 
 # ---------------------------------------------------------------------------
@@ -398,6 +416,54 @@ class TheLogsProviders(unittest.TestCase):
             for name, n in count.items():
                 total[name] = total.get(name, 0) + n
         self.assertEqual(total, {"Relace": 750, "GMICloud": 410, "Parasail": 195, "StreamLake": 147})
+
+
+class TheReRunLines(unittest.TestCase):
+    """voids.py's re-run lines (the verifier's check of 281c7e8): the flags cannot carry the
+    routing, so the batch's recorded routing is printed beside them, and where a re-run here
+    would be routed otherwise no flags are printed at all."""
+
+    def report(self, routing, environ: dict, model: str = DEEPSEEK) -> str:
+        with tempfile.TemporaryDirectory() as tmp:
+            batch = pathlib.Path(tmp)
+            payload = {"tasks_file": "tasks_aplus_dev.json", "model": model, "box": True, "parser": "model",
+                       "parser_model": model, "reading": "own", "rows": []}
+            if routing != "absent":
+                payload["provider_routing"] = routing
+            (batch / "suite.json").write_text(json.dumps(payload))
+            void = voids.Run(batch=batch.name, name="tee-top-3-2", task="tee-top-3", repeat=2,
+                             outcome=voids.VOID, reason="provider error", why="429", log_read=True)
+            with mock.patch.dict(os.environ, {}, clear=False), contextlib.redirect_stdout(io.StringIO()) as out:
+                os.environ.pop(provider_routing.ENV, None)
+                os.environ.update(environ)
+                voids.report(batch, [void], False)
+        return out.getvalue()
+
+    def test_routed_alike_the_flags_and_the_routing_side_by_side(self):
+        text = self.report({"agent": ROUTE, "parser": ROUTE}, ON)
+        self.assertIn(f"the batch ran under provider routing: agent {json.dumps(ROUTE)}, parser {json.dumps(ROUTE)}", text)
+        self.assertIn("--only tee-top-3 --repeat-start 2", text)
+        # Off alike, a batch from before routing included, and Haiku under DeepSeek's export.
+        for routing, environ, model in (({"agent": None, "parser": None}, {}, DEEPSEEK), ("absent", {}, DEEPSEEK),
+                                        ({"agent": None, "parser": None}, ON, HAIKU)):
+            with self.subTest(routing=routing, model=model):
+                text = self.report(routing, environ, model)
+                self.assertIn("--only tee-top-3 --repeat-start 2", text)
+                self.assertIn("agent null, parser null", text)
+
+    def test_routed_otherwise_no_flags_are_printed(self):
+        for routing, environ, words in (
+                ({"agent": ROUTE, "parser": ROUTE}, {}, "here gives agent null, parser null"),
+                ({"agent": None, "parser": None}, ON, f"here gives agent {json.dumps(ROUTE)}"),
+                ({"agent": ROUTE, "parser": ROUTE},
+                 {provider_routing.ENV: json.dumps({DEEPSEEK: {**ROUTE, "allow_fallback": True}})},
+                 "does not document")):
+            with self.subTest(routing=routing, environ=environ):
+                text = self.report(routing, environ)
+                self.assertIn("NO re-run flags: a re-run here would not be routed as the batch was", text)
+                self.assertIn(words, text)
+                self.assertNotIn("--only", text)
+                self.assertIn("    tee-top-3-2", text)
 
 
 class AnOutageIsAVoid(unittest.TestCase):

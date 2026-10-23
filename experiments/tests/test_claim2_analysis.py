@@ -919,6 +919,11 @@ class Run2Faults(unittest.TestCase):
                  f"requires null for {HAIKU}"),
                 ("DeepSeek's parse unrouted", DEEPSEEK, "the block (model)", {"agent": proposed, "parser": None}, proposed,
                  "the block (model) with parser provider routing null"),
+                # The verifier's point 1: the parse's routing is per arm, null outside the model arm.
+                ("a parse routing recorded in the rules arm", DEEPSEEK, "the block (rules)",
+                 {"agent": proposed, "parser": proposed}, proposed,
+                 f"the block (rules) with parser provider routing {json.dumps(proposed)}, where the protocol "
+                 f"requires null"),
                 ("a batch from before routing, for DeepSeek", DEEPSEEK, "the block (rules)", "absent", "absent",
                  "the block (rules) with agent provider routing null")):
             with self.subTest(fault=label):
@@ -1290,6 +1295,10 @@ class ProtocolFile(unittest.TestCase):
                 ("a routing required of an arm by hand",
                  lambda c: c["arms"]["shipped"].update(require={"provider_routing_agent": None}),
                  "which the protocol names by model under provider_routing"),
+                # The verifier's check of 281c7e8: a typo OpenRouter would ignore.
+                ("a routing key OpenRouter does not document",
+                 lambda c: c["provider_routing"][DEEPSEEK].update(allow_fallback=False),
+                 "the provider keys ['allow_fallback'], which OpenRouter does not document"),
                 # Protocol analysis v2, 23 October 2026.
                 ("two primaries", lambda c: c["roles"].update({HAIKU: "primary"}), "other than one primary"),
                 ("a role this analysis has not", lambda c: c["roles"].update({HAIKU: "lead"}), "role is not one of"),
@@ -1451,11 +1460,17 @@ class ThePreflight(unittest.TestCase):
         self.assertIn(f"agent provider routing {json.dumps({'order': ['amazon-bedrock']})} from "
                       f"{provider_routing.ENV}, where the protocol requires null for {HAIKU}",
                       self.preflight("shipped", model=HAIKU, routed=haiku))
-        # Another order for DeepSeek, and a value that is no model-to-object map.
+        # Another order for DeepSeek, the proposed one without its quantisation, a value that is
+        # no model-to-object map, and a key OpenRouter does not document, which it would ignore.
         other = json.dumps({DEEPSEEK: {"order": ["deepinfra"], "allow_fallbacks": False}})
         self.assertTrue(any(p.startswith("agent provider routing") for p in self.preflight("shipped", routed=other)))
+        loose = {key: value for key, value in provider_routing.PROPOSED[DEEPSEEK].items() if key != "quantizations"}
+        self.assertTrue(any(p.startswith("agent provider routing")
+                            for p in self.preflight("shipped", routed=json.dumps({DEEPSEEK: loose}))))
         self.assertTrue(any("must map model ids" in p or "is not JSON" in p
                             for p in self.preflight("shipped", routed="[1, 2]")))
+        typo = json.dumps({DEEPSEEK: {**provider_routing.PROPOSED[DEEPSEEK], "allow_fallback": False}})
+        self.assertTrue(any("does not document" in p for p in self.preflight("shipped", routed=typo)))
 
     def test_every_arm_passes_under_the_code_this_repository_pins(self):
         for name in self.config["arms"]:

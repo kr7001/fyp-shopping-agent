@@ -1747,6 +1747,12 @@ def check_protocol(config: dict) -> list[str]:
             found.append("provider_routing does not name the protocol's models, one each")
         elif any(value is not None and not isinstance(value, dict) for value in routing.values()):
             found.append("provider_routing gives a model a value that is neither a provider object nor null")
+        else:
+            # A key OpenRouter does not document would be ignored by it without a word, and the
+            # routing then held exactly to a value no call carried (the verifier's check of 281c7e8).
+            found += [f"provider_routing gives {model} the provider keys {routing_module.unknown_keys(value)}, "
+                      f"which OpenRouter does not document"
+                      for model, value in routing.items() if value and routing_module.unknown_keys(value)]
     for name in config.get("secondary_measures") or []:
         if name not in SECONDARY_MEASURES:
             found.append(f"no secondary measure this analysis has is called {name!r}")

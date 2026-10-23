@@ -64,6 +64,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
+import provider_routing  # noqa: E402  (the routing a re-run would get, read as suite.py reads it)
 import score as scoring  # noqa: E402
 import suite  # noqa: E402  (the agent's default limits, one definition)
 import trace_stats  # noqa: E402
@@ -292,10 +293,47 @@ def report(folder: pathlib.Path, runs: list[Run], every: bool) -> None:
             print(f"  {run.name:{width}} {run.outcome:22} {run.reason:15} {run.why}")
     voids = [run for run in runs if run.outcome == VOID]
     if voids:
+        # The routing the batch ran under, which the flags cannot carry, beside them; and no
+        # flags at all where a re-run here would be routed otherwise (the verifier's check of
+        # 281c7e8: a re-run outside a chain that exports the routing would run unrouted).
+        recorded = recorded_routing(folder)
+        print(f"  the batch ran under provider routing: agent {json.dumps(recorded['agent'])}, "
+              f"parser {json.dumps(recorded['parser'])}")
+        try:
+            now = rerun_routing(folder)
+            otherwise = None if now == recorded else (f"{provider_routing.ENV} here gives agent "
+                                                      f"{json.dumps(now['agent'])}, parser {json.dumps(now['parser'])}")
+        except ValueError as fault:
+            otherwise = str(fault)
+        if otherwise:
+            print(f"  NO re-run flags: a re-run here would not be routed as the batch was ({otherwise}). Set "
+                  f"{provider_routing.ENV} as the batch ran, then list its voids again:")
+            for run in voids:
+                print(f"    {run.name}")
+            return
         print(f"  re-run the {len(voids)} void, each with {rerun_flags(folder)}:")
         for run in voids:
             print(f"    --only {run.task} --repeat-start {run.repeat}" if run.repeat is not None
                   else f"    {run.name}: not a task-repeat run, re-run by hand")
+
+
+def recorded_routing(folder: pathlib.Path) -> dict:
+    """The OpenRouter provider routing a batch ran under, from its payload: {agent, parser},
+    each None when off, as for a batch from before 23 October 2026, which records none."""
+    suite_path = folder / "suite.json"
+    routing = (json.loads(suite_path.read_text()).get("provider_routing") if suite_path.exists() else None) or {}
+    return {"agent": routing.get("agent"), "parser": routing.get("parser")}
+
+
+def rerun_routing(folder: pathlib.Path, environ=None) -> dict:
+    """The routing a re-run of the batch would get from IGR_PROVIDER_ROUTING here, as suite.py
+    reads it: for the batch's model, and under the model parser for the parser's model. Raises
+    ValueError on a setting suite.py would refuse."""
+    suite_path = folder / "suite.json"
+    payload = json.loads(suite_path.read_text()) if suite_path.exists() else {}
+    parser_model = payload.get("parser_model") if payload.get("parser") == "model" else None
+    return {"agent": provider_routing.routing_for(payload.get("model"), environ),
+            "parser": provider_routing.routing_for(parser_model, environ) if parser_model else None}
 
 
 def main() -> int:
