@@ -975,12 +975,12 @@ OFFER_REPLY = reply(quantifier="forall", objective="availability", filters=[f("s
 PARSE_TOKENS = {"prompt": 5200, "completion": 140}
 
 
-def replying(cost: float | None = 0.004, tokens: dict | None = PARSE_TOKENS):
+def replying(cost: float | None = 0.004, tokens: dict | None = PARSE_TOKENS, served: str | None = None):
     """A faked `parse_probe.call_model`: the cheapest question gets CHEAPEST_REPLY, every
-    other OFFER_REPLY, each charged `cost` and counted `tokens`."""
+    other OFFER_REPLY, each charged `cost`, counted `tokens` and served by `served`."""
     def call_model(key, model, prompt):
         question = prompt.rsplit("The question:\n", 1)[1]
-        return (CHEAPEST_REPLY if "cheapest" in question else OFFER_REPLY), cost, tokens
+        return (CHEAPEST_REPLY if "cheapest" in question else OFFER_REPLY), cost, tokens, served
     return call_model
 
 

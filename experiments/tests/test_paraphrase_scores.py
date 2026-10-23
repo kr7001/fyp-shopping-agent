@@ -261,7 +261,7 @@ class TheRealRulesHalf(unittest.TestCase):
         by_question = {entry["question"]: entry for entry in parse_probe.load_questions(PARAPHRASES)[1]}
 
         def call_model(key, model, prompt):
-            return planted_reply(by_question[prompt.rsplit("The question:\n", 1)[1]], cls.page), 0.001, None
+            return planted_reply(by_question[prompt.rsplit("The question:\n", 1)[1]], cls.page), 0.001, None, None
 
         with mock.patch.object(parse_probe, "RESULTS", pathlib.Path(cls.folder.name)), \
                 mock.patch.object(page, "fetch", side_effect=AssertionError("the probe fetched")), \

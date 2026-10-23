@@ -334,7 +334,7 @@ class TheParsesTokens(unittest.TestCase):
             return mock.patch.object(parse_probe.requests, "post", return_value=reply)
 
         with answered({"choices": [{"message": {"content": "a form"}}], "usage": usage}):
-            self.assertEqual(parse_probe.call_model("k", "m", "p"), ("a form", 0.004, PARSE_TOKENS))
+            self.assertEqual(parse_probe.call_model("k", "m", "p"), ("a form", 0.004, PARSE_TOKENS, None))
         with answered({"usage": usage}), self.assertRaises(parse_probe.UnexpectedReply) as raised:
             parse_probe.call_model("k", "m", "p")
         self.assertEqual((raised.exception.cost, raised.exception.tokens), (0.004, PARSE_TOKENS))

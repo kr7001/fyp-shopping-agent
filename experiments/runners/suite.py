@@ -30,6 +30,7 @@ import normalise as normalise_module
 import page as page_module
 import parse_probe  # the one call to the provider a parse makes, and its charge
 import plan_probe  # the key and the agent's model, read the same way
+import provider_routing  # OpenRouter provider routing, off unless IGR_PROVIDER_ROUTING is set
 import policy as policy_module
 import primitives as primitives_module
 import sufficiency
@@ -153,7 +154,8 @@ def agent_model() -> str:
     return DEFAULT_MODEL
 
 
-def parser_call(model: str, key: str, charges: list, tokens: list | None = None):
+def parser_call(model: str, key: str, charges: list, tokens: list | None = None,
+                served: list | None = None):
     """The model parser's call for one run: one request to `model` through
     `parse_probe.call_model` (temperature 0, no retry), the provider's charge for it
     appended to `charges`. A reply that is no completion raises as a failed call with the
@@ -164,11 +166,13 @@ def parser_call(model: str, key: str, charges: list, tokens: list | None = None)
     same way (23 October 2026): the provider's count, or None where it gave none."""
     def call(prompt: str) -> str:
         try:
-            text, cost, used = parse_probe.call_model(key, model, prompt)
+            text, cost, used, provider = parse_probe.call_model(key, model, prompt)
         except parse_probe.UnexpectedReply as fault:
             charges.append(fault.cost)
             if tokens is not None:
                 tokens.append(fault.tokens)
+            if served is not None:
+                served.append(fault.served)
             raise
         except Exception:
             charges.append(None)
@@ -178,6 +182,8 @@ def parser_call(model: str, key: str, charges: list, tokens: list | None = None)
         charges.append(cost)
         if tokens is not None:
             tokens.append(used)
+        if served is not None:
+            served.append(provider)
         return text
     return call
 
@@ -334,7 +340,7 @@ def run_tokens(agent: dict | None, parse: dict | None) -> dict | None:
 
 
 def charge_parse(record: dict, parsed: float | None, record_path: pathlib.Path,
-                 parsed_tokens: dict | None = None) -> dict:
+                 parsed_tokens: dict | None = None, parsed_provider: str | None = None) -> dict:
     """A run's record with its parse charged to it (22 October 2026): `cost_usd` becomes
     what the run cost, the agent's charges and the parse's, beside `agent_cost_usd`, which
     the log's own charges re-sum to (`verify_cells`), and `parse_cost_usd`. None when either
@@ -348,7 +354,9 @@ def charge_parse(record: dict, parsed: float | None, record_path: pathlib.Path,
     record = {**record, "agent_cost_usd": agent, "parse_cost_usd": parsed,
               "cost_usd": None if agent is None or parsed is None else round(agent + parsed, 6),
               "agent_tokens": agent_tokens, "parse_tokens": parsed_tokens,
-              "tokens": run_tokens(agent_tokens, parsed_tokens)}
+              "tokens": run_tokens(agent_tokens, parsed_tokens),
+              # The provider OpenRouter served the parse from (23 October 2026).
+              "parse_provider": parsed_provider}
     if record_path.exists():
         record_path.write_text(json.dumps(record, indent=2, default=str) + "\n")
     return record
@@ -1004,6 +1012,14 @@ def main() -> int:
         parser.error("--parser-replies stands in for the model's replies in a dry run, so it "
                      "needs --parser model and --dry-run")
     parser_model = (args.parser_model or agent_model()) if model_parser else None
+    # OpenRouter provider routing (23 October 2026): one setting for the whole batch,
+    # every arm alike, read once here and by the agent's runner from the same environment. A
+    # setting that is not a model-to-object map stops the batch before anything is spent.
+    try:
+        routing = {"agent": provider_routing.routing_for(agent_model()),
+                   "parser": provider_routing.routing_for(parser_model) if model_parser else None}
+    except ValueError as fault:
+        parser.error(str(fault))
 
     # Task files moved into experiments/tasks/ on 8 Oct 2026. Commands in the decision log
     # still name the old place, so a missing path falls back to the same file name there.
@@ -1073,6 +1089,9 @@ def main() -> int:
     # The rate plan when it is not the default (box v18), so a default header is unchanged.
     if boxed and args.rate_plan != "bound":
         print(f"rate plan: {args.rate_plan}, a rate question opens every listing, with no bound")
+    # OpenRouter provider routing, printed only when on, so a header without it is unchanged.
+    if routing["agent"] or routing["parser"]:
+        print(f"provider routing: agent {json.dumps(routing['agent'])}, parser {json.dumps(routing['parser'])}")
     # Under the model parser, who reads the question and with what. Not printed under the
     # rules, so a rules batch's header is what it always was.
     if model_parser:
@@ -1121,10 +1140,25 @@ def main() -> int:
             # it was charged is part of the run's cost (22 October 2026).
             charges: list = []
             counts: list = []
-            call = parser_call(parser_model, key, charges, counts) if model_parser else None
+            served: list = []
+            call = parser_call(parser_model, key, charges, counts, served) if model_parser else None
             query, applied = build_query(task, spec, args, call=call)
             parsed = parse_cost(charges)
             parsed_tokens = parse_tokens(counts)
+            parse_provider = served[0] if served else None
+            failed = ((applied["box"] or {}).get("parse") or {}).get("fallback_reason") or ""
+            if routing["parser"] and failed.startswith("the model call failed"):
+                # Under routing a parse call that fails is no run of the model arm: no agent
+                # runs, the slot is void and re-run once at the end (voids.py, "no record"),
+                # where without routing the rules' form decides it as before.
+                rows.append({"task": task["id"], "family": task["family"], "gated": task["gated"],
+                             "repeat": repeat, "verdict": "void", "why": failed[:300], "answer": "",
+                             "tool_calls": None, "actions": None, "observations": None,
+                             "cost_usd": parsed, "elapsed_s": 0, "error": failed[:300], "log": None,
+                             "box": applied["box"], "reading": None, "parse_cost_usd": parsed,
+                             "parse_tokens": parsed_tokens, "parse_provider": parse_provider})
+                print(f"[{done}/{total}] {tag:32} void       the parse call failed under provider routing")
+                continue
             strategy = applied["strategy"]
             if query is None:
                 # The box asked and no scripted reply was given, or it refused. Either is
@@ -1133,6 +1167,7 @@ def main() -> int:
                 if model_parser:
                     row["parse_cost_usd"] = parsed
                     row["parse_tokens"] = parsed_tokens
+                    row["parse_provider"] = parse_provider
                 rows.append(row)
                 declined = ((applied["box"] or {}).get("parse") or {}).get("declined")
                 print(f"[{done}/{total}] {tag:32} {row['verdict']:10} the box {row['verdict']}"
@@ -1142,7 +1177,7 @@ def main() -> int:
                               scaffold=args.scaffold, shop=args.shop, probe=args.probe,
                               max_steps=args.max_steps, clock_s=args.clock)
             if model_parser:
-                record = charge_parse(record, parsed, out_dir / f"{tag}.json", parsed_tokens)
+                record = charge_parse(record, parsed, out_dir / f"{tag}.json", parsed_tokens, parse_provider)
             result = record.get("result") or {}
             answer = str(result.get("final") or "")
             trace = record.get("trace") or {}
@@ -1194,6 +1229,10 @@ def main() -> int:
             if model_parser:
                 row["parse_cost_usd"] = parsed
                 row["parse_tokens"] = parsed_tokens
+                row["parse_provider"] = parse_provider
+            # The providers OpenRouter served the agent's calls from, by count, read from the
+            # log (`trace_stats.served_by`); None for a log that records none.
+            row["providers"] = trace.get("providers")
             if args.confidence != "off":
                 row["confidence"] = confidence
                 row["confidence_reason"] = reason
@@ -1283,6 +1322,9 @@ def main() -> int:
                # How the box planned a rate question (box v18): "bound" or "every"; None
                # without the box. A box batch without the field planned it with the bound.
                "rate_plan": args.rate_plan,
+               # OpenRouter provider routing for the agent's model and the parser's, None where
+               # off (23 October 2026); the same for every arm of a chain.
+               "provider_routing": routing,
                # The pinned browser tool, the origins the browser may request and the
                # flags it runs with, see `browser_conditions`: `browser_tool`,
                # `browser_origins` and `browser_flags`.

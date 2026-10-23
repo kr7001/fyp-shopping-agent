@@ -67,6 +67,23 @@ USAGE = re.compile(
 COST_FIELD = re.compile(r"(?<![\w_])cost=([0-9.]+),\s*is_byok")
 
 
+# The provider OpenRouter served each completion from, the `provider='...'` its response
+# carries, which openJiuwen's log prints inside the ChatCompletion repr (23 October 2026). On
+# every log of the pilot of 23 October there is one per usage record: 1,502 calls, Relace
+# 750, GMICloud 410, Parasail 195, StreamLake 147, as the verifier counted.
+SERVED = re.compile(r"\bprovider='([^']*)'")
+
+
+def served_by(text: str) -> dict | None:
+    """How many of the run's completions each provider served, or None when the log names
+    no provider for as many completions as it records usage for, so a count is never
+    reported for calls it cannot account for."""
+    providers = SERVED.findall(text)
+    if not providers or len(providers) != len(USAGE.findall(text)):
+        return None
+    return dict(collections.Counter(providers).most_common())
+
+
 def tokens_used(text: str) -> dict:
     """Every completion's token counts, summed."""
     out = {"prompt": 0, "completion": 0, "total": 0, "calls": 0}
@@ -296,6 +313,7 @@ def stats(log_path: pathlib.Path) -> dict:
         "sequence": sequence,
         "tokens": tokens_used(text),
         "cost_reported_usd": cost_reported(text),
+        "providers": served_by(text),
     }
 
 
