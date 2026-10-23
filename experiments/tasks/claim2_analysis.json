@@ -25,10 +25,14 @@
     "require: every arm is also held to the agent's code, the agent-core submodule's commit and the digest of agent/openjiuwen-local.patch (suite.agent_code_identity), and to the browser's origins and flags (suite.browser_conditions). The model arm's parser_model is held to the run's own model ({\"same_as\": \"model\"}).",
     "The claim command checks each invocation before it runs: claim.py --protocol experiments/tasks/claim2_analysis.json --preflight <arm> --flags \"<the suite.py flags>\" works out what the batch would record under the code as it stands and exits 1 on any condition outside require, spending nothing.",
     "secondary_measures adds the parse's fallbacks by arm and model, from each run's box record: the survey fallback (its 'fallback', a shopping question no shape fits) and, under the model parser, the rules' form used and why (its parse's 'fallback_reason').",
-    "failure_breakdown: a shipped run that sorted the results or changed their page size and read its own first page alone is coded 'sorted or resized, its first page alone', never 'page 2 never reached', since where a key's listings render holds for the relevance order at 36 a page only. env/check_aplus_market.py checks the live order against the order claim.py reads where the listings render, the one the seed search recorded when it accepted the market, as well as against the predicted one."
+    "failure_breakdown: a shipped run that sorted the results or changed their page size and read its own first page alone is coded 'sorted or resized, its first page alone', never 'page 2 never reached', since where a key's listings render holds for the relevance order at 36 a page only. env/check_aplus_market.py checks the live order against the order claim.py reads where the listings render, the one the seed search recorded when it accepted the market, as well as against the predicted one.",
+    "Version 5, 23 October 2026, the freeze candidate with OpenRouter provider routing (IGR_PROVIDER_ROUTING, experiments/runners/provider_routing.py), before any run 2 data exists:",
+    "provider_routing: the OpenRouter provider object every call of a model's arms carries, the agent's and, in the arm the model parser reads, the parse's; null is off. Every arm of a model is held to it: a batch whose payload's provider_routing, or a run whose record's, is not it is outside require, void as a whole, and so is a run whose record's routing is not the one its batch's payload says the agent ran under. claim.py --preflight reads IGR_PROVIDER_ROUTING from the environment and refuses an invocation it would route otherwise.",
+    "Pending decision 9 on the evening of 23 October 2026: DeepSeek V4 Flash routed to gmicloud, deepinfra and streamlake in that order with no fallback, the value provider_routing.PROPOSED holds, and Haiku off. If routing is not chosen, 'off' means null for DeepSeek too, and the batches are run with IGR_PROVIDER_ROUTING unset.",
+    "The serving-provider mix by arm and model is read from each row's count of who served the agent's calls and from its parse_provider, a batch from before routing by the same reading of its logs, and a run whose count is missing is unknown, never zero."
   ],
   "protocol": "docs/content/claim2-protocol.md",
-  "version": 4,
+  "version": 5,
   "roles": {"deepseek/deepseek-v4-flash": "primary", "anthropic/claude-haiku-4.5": "replication"},
   "arms": {
     "shipped": {"arm": "none", "reading": null,
@@ -53,6 +57,9 @@
               "agent_core_commit": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
               "agent_core_patch": "e455d3eba23bc37528505e59e4d13ed265fff67e"},
   "models": ["deepseek/deepseek-v4-flash", "anthropic/claude-haiku-4.5"],
+  "provider_routing": {"deepseek/deepseek-v4-flash": {"order": ["gmicloud", "deepinfra", "streamlake"],
+                                                      "allow_fallbacks": false},
+                       "anthropic/claude-haiku-4.5": null},
   "sets": {
     "control": ["tee-headline"],
     "decline": ["decline-delivery", "decline-taste"],
