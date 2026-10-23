@@ -13,7 +13,7 @@ one of three classes, in this order, and the first that fits wins:
                           a provider or runner error says why: an HTTP error from the
                           provider, an exception in the runner, a runtime failure, or an
                           LLM call error in the log
-  reported, not correct   the step budget, the 600 second clock, no answer, an abstention
+  reported, not correct   the step budget, the run's clock, no answer, an abstention
   answered                everything else, which the scorer then judges
 
 The void decision reads no answer at all, only whether a final exists, so whether a run is
@@ -41,8 +41,12 @@ experiments/runs holds four provider errors and one runtime failure, from 8 Sept
   budget      `result.error` `max_iterations_reached` and the final `Max iterations reached
               without completion` (three stored runs); for the second agent an empty final
               after its 100 calls (`naive_agent.STEP_LIMIT`)
-  clock       `result.error` `task_timeout: exceeded 600s`, with an empty final (two stored
-              runs, both also silent for over 60 seconds, so void by the first rule)
+  clock       `result.error` `task_timeout: exceeded <S>s`, with an empty final, S the run's
+              own clock: suite.py's `--clock`, recorded as each run's `clock_s` since 22 October
+              2026, 600 seconds by default (`suite.DEFAULT_CLOCK_S`) and 1800 in the second
+              claim. The marker is read whatever S is (`CLOCK`). Two stored runs, at 600, both
+              also silent for over 60 seconds, so void by the first rule. Until 23 October 2026
+              this said the clock was 600 seconds, which only the default is
 
     python3 experiments/analysis/voids.py experiments/results/<batch> [...]
     python3 experiments/analysis/voids.py experiments/results/2026* --all
@@ -60,6 +64,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
+import provider_routing  # noqa: E402  (the routing a re-run would get, read as suite.py reads it)
 import score as scoring  # noqa: E402
 import suite  # noqa: E402  (the agent's default limits, one definition)
 import trace_stats  # noqa: E402
@@ -288,10 +293,47 @@ def report(folder: pathlib.Path, runs: list[Run], every: bool) -> None:
             print(f"  {run.name:{width}} {run.outcome:22} {run.reason:15} {run.why}")
     voids = [run for run in runs if run.outcome == VOID]
     if voids:
+        # The routing the batch ran under, which the flags cannot carry, beside them; and no
+        # flags at all where a re-run here would be routed otherwise (the verifier's check of
+        # 281c7e8: a re-run outside a chain that exports the routing would run unrouted).
+        recorded = recorded_routing(folder)
+        print(f"  the batch ran under provider routing: agent {json.dumps(recorded['agent'])}, "
+              f"parser {json.dumps(recorded['parser'])}")
+        try:
+            now = rerun_routing(folder)
+            otherwise = None if now == recorded else (f"{provider_routing.ENV} here gives agent "
+                                                      f"{json.dumps(now['agent'])}, parser {json.dumps(now['parser'])}")
+        except ValueError as fault:
+            otherwise = str(fault)
+        if otherwise:
+            print(f"  NO re-run flags: a re-run here would not be routed as the batch was ({otherwise}). Set "
+                  f"{provider_routing.ENV} as the batch ran, then list its voids again:")
+            for run in voids:
+                print(f"    {run.name}")
+            return
         print(f"  re-run the {len(voids)} void, each with {rerun_flags(folder)}:")
         for run in voids:
             print(f"    --only {run.task} --repeat-start {run.repeat}" if run.repeat is not None
                   else f"    {run.name}: not a task-repeat run, re-run by hand")
+
+
+def recorded_routing(folder: pathlib.Path) -> dict:
+    """The OpenRouter provider routing a batch ran under, from its payload: {agent, parser},
+    each None when off, as for a batch from before 23 October 2026, which records none."""
+    suite_path = folder / "suite.json"
+    routing = (json.loads(suite_path.read_text()).get("provider_routing") if suite_path.exists() else None) or {}
+    return {"agent": routing.get("agent"), "parser": routing.get("parser")}
+
+
+def rerun_routing(folder: pathlib.Path, environ=None) -> dict:
+    """The routing a re-run of the batch would get from IGR_PROVIDER_ROUTING here, as suite.py
+    reads it: for the batch's model, and under the model parser for the parser's model. Raises
+    ValueError on a setting suite.py would refuse."""
+    suite_path = folder / "suite.json"
+    payload = json.loads(suite_path.read_text()) if suite_path.exists() else {}
+    parser_model = payload.get("parser_model") if payload.get("parser") == "model" else None
+    return {"agent": provider_routing.routing_for(payload.get("model"), environ),
+            "parser": provider_routing.routing_for(parser_model, environ) if parser_model else None}
 
 
 def main() -> int:

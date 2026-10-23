@@ -27,10 +27,12 @@ import contextlib
 import csv
 import dataclasses
 import datetime as dt
+import hashlib
 import io
 import json
 import os
 import pathlib
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -44,13 +46,19 @@ import claim  # noqa: E402
 import form  # noqa: E402
 import normalise  # noqa: E402
 import page as page_module  # noqa: E402
+import parse_probe  # noqa: E402
+import plan_probe  # noqa: E402
 import planner  # noqa: E402
 import policy  # noqa: E402
 import primitives  # noqa: E402
+import provider_routing  # noqa: E402
 import score  # noqa: E402
 import suite  # noqa: E402
 import targeting  # noqa: E402
+import toolbar  # noqa: E402
 import voids  # noqa: E402
+from test_claim_arms import run_suite  # noqa: E402  (suite.main with nothing sent)
+from test_model_parser import replying  # noqa: E402  (the model parser's call, stubbed)
 
 PROTOCOL = paths.TASKS / "claim2_analysis.json"
 FIXTURE = paths.FIXTURES / "aplus_dev.json"
@@ -59,6 +67,22 @@ DEEPSEEK, HAIKU = "deepseek/deepseek-v4-flash", "anthropic/claude-haiku-4.5"
 TASKS_FILE = "tasks_claim2dev.json"
 READINGS_FILE = "readings_claim2dev.json"
 RIGHT_ON = {"shipped": {"tee-headline"}}       # besides the arms below
+
+
+def pinned_agent_code() -> dict:
+    """The agent's code a batch records when it runs the code this repository pins: the commit
+    its gitlink holds agent-core at, and the sha1 of the committed patch, which is the digest
+    a batch reads off the submodule's diff (`suite.agent_code_identity`, test_box.AgentCode)."""
+    tree = subprocess.run(["git", "-C", str(paths.REPO), "ls-tree", "HEAD", "agent/agent-core"],
+                          capture_output=True, text=True, check=True).stdout.split()
+    patch = (paths.REPO / "agent" / "openjiuwen-local.patch").read_bytes()
+    return {"agent_core_commit": tree[2], "agent_core_patch": hashlib.sha1(patch).hexdigest()}
+
+
+AGENT_CODE = pinned_agent_code()
+# Each model's OpenRouter provider routing as the protocol file names it, which the synthetic
+# batches record as suite.py and the runner would under IGR_PROVIDER_ROUTING set to it (v5).
+ROUTING = json.loads(PROTOCOL.read_text())["provider_routing"]
 
 
 def build_task_files(folder: pathlib.Path) -> None:
@@ -208,7 +232,9 @@ def write_batch(root: pathlib.Path, name: str, arm: Plan, model: str, spec: dict
                 "result": {"ok": True, "final": answer},
                 "trace": {"tokens": {"prompt": arm.tokens - 1000, "completion": 1000}},
                 "log": f"{tag}.log", "shop": "gated", "probe": "viewport", "scaffold": "openjiuwen",
-                "max_steps": 300, "clock_s": 1800}))
+                "max_steps": 300, "clock_s": 1800,
+                # The routing the runner applied, the protocol's for the model (v5).
+                "provider_routing": ROUTING.get(model)}))
             row = {"task": task_id, "family": task["family"], "gated": task["gated"], "repeat": repeat,
                    "answer": answer[:300], "cost_usd": arm.cost, "error": None, "log": f"{tag}.log"}
             if boxed:
@@ -232,26 +258,28 @@ def write_batch(root: pathlib.Path, name: str, arm: Plan, model: str, spec: dict
                "primitives_version": primitives.VERSION if boxed else None,
                "page_reader": page_module.READERS[0] if boxed else None,
                "rate_plan": "every" if boxed else None,
+               "provider_routing": {"agent": ROUTING.get(model), "parser": ROUTING.get(model) if model_parser else None},
                "parser": ("model" if model_parser else "rules") if boxed else None,
                "parser_model": model if model_parser else None,
                "parser_temperature": suite.PARSER_TEMPERATURE if model_parser else None,
                "prompt_version": form.PROMPT_VERSION if model_parser else None,
                "normalise_version": normalise.VERSION if model_parser else None,
-               "reading": arm.reading, "browser_tool": suite.BROWSER_TOOL, "browser_origins": "http://localhost:7770",
-               "browser_flags": "--block-service-workers --isolated", "scorer_version": score.VERSION,
+               "reading": arm.reading, "browser_tool": suite.BROWSER_TOOL, "browser_origins": suite.ALLOWED_ORIGINS,
+               "browser_flags": suite.BROWSER_FLAGS, "scorer_version": score.VERSION,
                "rules_version": None, "model": model, "scaffold": "openjiuwen",
-               "agent_core_commit": "a" * 40, "agent_core_patch": "b" * 40, "max_steps": 300, "clock_s": 1800,
+               **AGENT_CODE, "max_steps": 300, "clock_s": 1800,
                "tasks_file": TASKS_FILE, "draw": suite.draw_id(spec), "instance": spec["_instance"],
                "summary": {}, "rows": rows}
     (folder / "suite.json").write_text(json.dumps(payload))
     return folder
 
 
-def build_run2(root: pathlib.Path, models=(DEEPSEEK, HAIKU), plant=None, asks=None) -> pathlib.Path:
+def build_run2(root: pathlib.Path, models=(DEEPSEEK, HAIKU), plant=None, asks=None, again=()) -> pathlib.Path:
     """The task files under root/tasks, every arm's batch for each model, and the claim
     command's manifest naming them, whose path is returned. For a fault, `plant(model, arm,
     folder)` alters a batch once it is written, and `asks(design)` the questions each arm
-    is given."""
+    is given. `again` names (model, arm) pairs whose batch is run a second time, after every
+    other, as a void batch is re-run, with nothing planted in it."""
     tasks_dir = root / "tasks"
     tasks_dir.mkdir()
     build_task_files(tasks_dir)
@@ -270,18 +298,23 @@ def build_run2(root: pathlib.Path, models=(DEEPSEEK, HAIKU), plant=None, asks=No
             if plant is not None:
                 plant(model, arm, folder)
             lines.append(f"batch|{folder}|{config['arms'][arm.name]['flags']}")
+    for model, name in again:
+        n += 1
+        arm = next(plan for plan in ARMS if plan.name == name)
+        folder = write_batch(root, f"202611{n:02d}T100000", arm, model, spec, keys, page, design)
+        lines.append(f"batch|{folder}|{config['arms'][arm.name]['flags']}")
     manifest = root / "claim2-test.manifest"
     manifest.write_text("start 2026-11-01T10:00:00 usage 20.0 cap 60\n" + "\n".join(lines)
                         + "\nend 2026-11-01T16:00:00 usage 41.0\n")
     return manifest
 
 
-def analyse(manifest: pathlib.Path) -> tuple[int, dict, str]:
+def analyse(manifest: pathlib.Path, protocol: pathlib.Path = PROTOCOL) -> tuple[int, dict, str]:
     """claim.py --protocol on the manifest, as the command line runs it: its exit code, the
     analysis it writes beside the manifest, and what it prints."""
     with mock.patch.object(paths, "TASKS", manifest.parent / "tasks"), \
             contextlib.redirect_stdout(io.StringIO()) as out:
-        code = claim.main(["--protocol", str(PROTOCOL), str(manifest)])
+        code = claim.main(["--protocol", str(protocol), str(manifest)])
     return code, json.loads(manifest.with_suffix(".analysis.json").read_text()), out.getvalue()
 
 
@@ -368,8 +401,8 @@ class SyntheticRun2(unittest.TestCase):
 
     def test_the_audits_rules_stay_quiet_on_a_plain_run(self):
         # Protocol analysis v2: no closed slot on a gated question, nothing sorted or resized,
-        # so the three sensitivities give the primary's p. No log names a provider, so every
-        # run's is "not recorded", the two arms of H3 have one mix and H3 is not split (v3).
+        # so the three sensitivities give the primary's p. No row or log names a provider, so
+        # every run's is unknown, the two arms of H3 have one mix and H3 is not split (v3, v5).
         for model, m in self.result["models"].items():
             with self.subTest(model=model):
                 self.assertEqual((m["primary"]["H2"]["closed"], m["primary"]["H3"]["closed"]), ([], []))
@@ -381,7 +414,7 @@ class SyntheticRun2(unittest.TestCase):
                                      {t: v["p"] for t, v in m["primary"].items()})
                 providers = m["secondary"]["providers"]
                 self.assertEqual({arm: list(row["by_provider"]) for arm, row in providers["by_arm"].items()},
-                                 {arm: ["not recorded"] for arm in self.config["arms"]})
+                                 {arm: ["unknown"] for arm in self.config["arms"]})
                 self.assertEqual((providers["h3"]["differs"], providers["h3"]["tests"]), (False, {}))
 
     def test_the_shipped_failures_on_the_h1_questions_by_where_the_key_renders(self):
@@ -398,7 +431,8 @@ class SyntheticRun2(unittest.TestCase):
             fb = m["secondary"]["failure_breakdown"]
             with self.subTest(model=model):
                 self.assertEqual((fb["on"], fb["failures"], fb["of"]), ("reading_independent", 27, 27))
-                self.assertEqual(fb["pooled"], {"page 2 never reached": 15, "a card or sold-out price taken": 0, "other": 12})
+                self.assertEqual(fb["pooled"], {"page 2 never reached": 15, "sorted or resized, its first page alone": 0,
+                                                "a card or sold-out price taken": 0, "other": 12})
                 self.assertEqual({q: next(code for code, n in row.items() if n) for q, row in fb["by_question"].items()},
                                  {q: "page 2 never reached" if q in later else "other"
                                   for q in self.config["sets"]["reading_independent"]})
@@ -531,9 +565,23 @@ class SyntheticRun2(unittest.TestCase):
                       "stratified exact test by template", "380k",
                       "and on the run's tokens, the model parser's included, outside Holm", "3. Correct, the block (model) against open everything",
                       "4. The held-out rewordings, by template", "5. Secondary and exploratory",
-                      "c. The questions the block should not plan", "6. Sensitivity"):
+                      "c. The questions the block should not plan", "6. Sensitivity",
+                      # v4: the log reader's version, and the parse's fallbacks.
+                      f"every log's results pages read by toolbar.py v{toolbar.VERSION}", "i. The parse's fallbacks"):
             with self.subTest(words=words):
                 self.assertIn(words, self.out)
+        self.assertEqual(self.result["toolbar_version"], toolbar.VERSION)
+
+    def test_no_fallback_in_a_plain_run(self):
+        # Every template decision of the block's arms has its record, the rewordings' a record
+        # with no plan: 135 runs an arm, none by the survey fallback, and the model's form used
+        # wherever the model read the question. The arms without the box have no record.
+        for model, m in self.result["models"].items():
+            with self.subTest(model=model):
+                self.assertEqual({arm: (row["runs"], row["survey_fallback"], row["parse_fallback"])
+                                  for arm, row in m["secondary"]["fallbacks"].items()},
+                                 {"shipped": (0, 0, 0), "open everything (product)": (0, 0, 0),
+                                  "the block (rules)": (135, 0, 0), "the block (model)": (135, 0, 0)})
 
     def test_no_rewording_text_is_printed_or_stored(self):
         # Checked without showing any: only whether one appears.
@@ -550,6 +598,19 @@ def set_conditions(folder: pathlib.Path, **values) -> None:
     for path in folder.glob("*.json"):
         data = json.loads(path.read_text())
         data.update({key: value for key, value in values.items() if path.name == "suite.json" or key in data})
+        path.write_text(json.dumps(data))
+
+
+def set_routing(folder: pathlib.Path, batch, records) -> None:
+    """A written batch's provider routing: its payload's {agent, parser} and every run record's,
+    each left out where "absent", as a batch from before 23 October 2026 has none."""
+    for path in folder.glob("*.json"):
+        data = json.loads(path.read_text())
+        value = batch if path.name == "suite.json" else records
+        if value == "absent":
+            data.pop("provider_routing", None)
+        else:
+            data["provider_routing"] = value
         path.write_text(json.dumps(data))
 
 
@@ -655,13 +716,27 @@ def another_seller(expect: dict) -> str:
 
 
 def serve(folder: pathlib.Path, task_id: str, repeat: int, *providers: str) -> None:
-    """Model calls in a run's log, one a provider named, as openJiuwen logs each response,
-    its repr ending with the provider that served it, before its last line."""
+    """Model calls in a run's log, one a provider named, as openJiuwen logs each response: its
+    repr with its usage and ending with the provider that served it, before the log's last line,
+    as a batch from before suite.py recorded the count in its row has them (v5)."""
     path = folder / f"{task_id}-{repeat}.log"
     lines = path.read_text().splitlines()
-    calls = [f"ChatCompletion(id='gen-{n}', object='chat.completion', provider='{name}')"
-             for n, name in enumerate(providers)]
+    calls = [f"ChatCompletion(id='gen-{n}', object='chat.completion', usage=CompletionUsage(completion_tokens=10, "
+             f"prompt_tokens=100, total_tokens=110), provider='{name}')" for n, name in enumerate(providers)]
     path.write_text("\n".join(lines[:-1] + calls + lines[-1:]) + "\n")
+
+
+def served_rows(folder: pathlib.Path, providers, parse_provider=None) -> None:
+    """Every row of a written batch given the count suite.py records of who served the agent's
+    calls, `providers(row)`, where the agent ran, and the parse call's provider where given,
+    as a batch since 23 October 2026 records them (`providers`, `parse_provider`)."""
+    payload = json.loads((folder / "suite.json").read_text())
+    for row in payload["rows"]:
+        if row.get("log"):
+            row["providers"] = providers(row)
+        if parse_provider is not None:
+            row["parse_provider"] = parse_provider(row)
+    (folder / "suite.json").write_text(json.dumps(payload))
 
 
 def showcase(model: str, arm: Plan, folder: pathlib.Path) -> None:
@@ -675,14 +750,16 @@ def showcase(model: str, arm: Plan, folder: pathlib.Path) -> None:
     And its re-audit's (protocol analysis v3): shipped reaches page 2 on a question whose key
     is there; and the provider that served each call, GMICloud every one of the block
     (model)'s, GMICloud open everything's on the tee and Relace on the water, both in one of
-    shipped's runs, and none named anywhere else."""
+    shipped's runs, and none named anywhere else. Since v5 the block (model)'s and open
+    everything's are counted in their rows, as suite.py records them, and shipped's in its
+    log alone, as a batch from before; the block (model)'s parse calls were served by
+    DeepInfra, but one whose row names no provider."""
     card, sold_out = fixture_prices()
     if arm.name == "the block (model)":
         close_slot(folder, "tee-count-stocked", 1)
         close_slot(folder, "water-all-stocked", 2)
-        for log in folder.glob("*.log"):
-            task_id, repeat = log.stem.rsplit("-", 1)
-            serve(folder, task_id, int(repeat), "GMICloud", "GMICloud")
+        served_rows(folder, lambda row: {"GMICloud": 2},
+                    lambda row: None if (row["task"], row["repeat"]) == ("decline-taste", 1) else "DeepInfra")
     if arm.name == "shipped":
         add_pages(folder, "tee-target-price", 1, f"{SEARCH}&p=2")
         answer_with(folder, "tee-target-price", 1, f"The lowest is ${card:.2f}.")
@@ -697,9 +774,7 @@ def showcase(model: str, arm: Plan, folder: pathlib.Path) -> None:
         serve(folder, "tee-headline", 1, "GMICloud", "Relace")
     if arm.name == "open everything (product)":
         add_pages(folder, "tee-count-buyable", 2, f"{SEARCH}&product_list_order=name")
-        for log in folder.glob("*.log"):
-            task_id, repeat = log.stem.rsplit("-", 1)
-            serve(folder, task_id, int(repeat), "GMICloud" if task_id.startswith("tee-") else "Relace")
+        served_rows(folder, lambda row: {"GMICloud" if row["task"].startswith("tee-") else "Relace": 1})
     if arm.name == "the block (rules)":
         # Stored correct, as a scorer without the market's sellers stored it before score v7.
         expect = task_of(folder, "tee-cheapest-target")["expect"]
@@ -721,9 +796,17 @@ class Run2Faults(unittest.TestCase):
     """The run-2 analysis's own checks, each firing on a fault planted in the synthetic
     batches, and quiet without it. One model's batches, so the other named model has none."""
 
-    def run2(self, plant=None, models=(HAIKU,), asks=None) -> tuple[int, dict, str]:
+    def run2(self, plant=None, models=(HAIKU,), asks=None, again=(), protocol=None) -> tuple[int, dict, str]:
+        """The synthetic run with `plant`, analysed. `protocol`, if given, changes a copy of the
+        protocol file first, which the run is then analysed under."""
         with tempfile.TemporaryDirectory() as tmp:
-            return analyse(build_run2(pathlib.Path(tmp), models, plant, asks))
+            path = PROTOCOL
+            if protocol is not None:
+                config = json.loads(PROTOCOL.read_text())
+                protocol(config)
+                path = pathlib.Path(tmp) / "claim2_changed.json"
+                path.write_text(json.dumps(config))
+            return analyse(build_run2(pathlib.Path(tmp), models, plant, asks, again), path)
 
     def test_quiet_but_for_the_named_model_with_no_run(self):
         code, result, out = self.run2()
@@ -731,48 +814,156 @@ class Run2Faults(unittest.TestCase):
         self.assertIn("Problems found: 1", out)
         self.assertEqual(list(result["models"]), [HAIKU])
 
-    def test_a_step_budget_the_protocol_does_not_require_is_refused(self):
-        # Until protocol analysis v3 it was listed among the problems and analysed all the same.
+    def test_a_batch_outside_require_is_void_and_its_model_refused(self):
+        # Until protocol analysis v3 it was listed among the problems and analysed all the same,
+        # and in v3 it stopped the whole analysis. Since v4 the batch is void as a whole, and a
+        # model it leaves a slot empty for is refused: the exit says so.
         def plant(model, arm, folder):
             if arm.name == "shipped":
                 set_conditions(folder, max_steps=150)
-        with self.assertRaises(SystemExit) as raised:
-            self.run2(plant)
-        self.assertIn(f"refused, since batches ran under conditions the protocol does not require: {HAIKU}: "
-                      f"shipped ran with max_steps 150, where the protocol requires 300", str(raised.exception))
+        code, result, out = self.run2(plant)
+        self.assertEqual(code, 1)
+        refused = result["models"][HAIKU]["refused"]
+        self.assertEqual(len(refused), 1)
+        self.assertIn("20261101T100000 ran outside what the protocol requires (shipped with max_steps 150, where "
+                      "the protocol requires 300), so it is void as a whole, and 45 of its slots have no re-run",
+                      refused[0])
+        self.assertIn(f"{HAIKU}: refused: 20261101T100000 ran outside", " ".join(result["problems"]))
+        self.assertEqual([(v["batch"], v["re_run"]) for v in result["void_batches"]], [("20261101T100000", False)])
+        self.assertIn("REFUSED: this model's analysis is not made", out)
+
+    def test_a_batch_outside_require_refuses_its_own_model_alone(self):
+        def plant(model, arm, folder):
+            if model == HAIKU and arm.name == "the block (model)":
+                set_conditions(folder, rate_plan="bound")
+        code, result, out = self.run2(plant, models=(DEEPSEEK, HAIKU))
+        self.assertEqual(code, 1)
+        self.assertIn("the block (model) with rate_plan bound", result["models"][HAIKU]["refused"][0])
+        deepseek = result["models"][DEEPSEEK]
+        self.assertNotIn("refused", deepseek)
+        self.assertEqual({arm: a["runs"] for arm, a in deepseek["arms"].items()},
+                         {"shipped": 45, "open everything (product)": 36, "the block (rules)": 135,
+                          "the block (model)": 135})
+        self.assertEqual(list(deepseek["primary"]), ["H1", "H2", "H3", "H4"])
+        self.assertEqual(deepseek["exclusions"]["void_batches"], [])
+        self.assertIn("1. Each arm by question", out)
+
+    def test_two_conditions_in_one_arm_refuse_that_model_alone(self):
+        # Haiku's shipped batch run twice, the first on another market draw: one arm under two
+        # conditions is two arms (LESSONS 7). Until v4 that stopped every model's analysis.
+        def plant(model, arm, folder):
+            if model == HAIKU and arm.name == "shipped":
+                set_conditions(folder, draw="Larchmere:another")
+        code, result, _ = self.run2(plant, models=(DEEPSEEK, HAIKU), again=((HAIKU, "shipped"),))
+        self.assertEqual(code, 1)
+        self.assertIn("shipped under anthropic/claude-haiku-4.5 has runs under more than one condition",
+                      result["models"][HAIKU]["refused"][0])
+        self.assertEqual(list(result["models"][DEEPSEEK]["primary"]), ["H1", "H2", "H3", "H4"])
+
+    def test_a_void_batch_run_again_is_listed_and_its_model_analysed(self):
+        # The protocol's note: void as a whole, re-run, and listed. The re-run fills every slot.
+        def plant(model, arm, folder):
+            if arm.name == "shipped":
+                set_conditions(folder, max_steps=150)
+        code, result, out = self.run2(plant, again=((HAIKU, "shipped"),))
+        self.assertEqual(code, 0)
+        m = result["models"][HAIKU]
+        self.assertEqual((m["arms"]["shipped"]["runs"], m["arms"]["shipped"]["batches"]), (45, ["20261105T100000"]))
+        self.assertEqual([(v["batch"], v["re_run"]) for v in m["exclusions"]["void_batches"]], [("20261101T100000", True)])
+        self.assertEqual(result["problems"], [f"the protocol's model {DEEPSEEK} has no run"])
+        self.assertIn("void as a whole, outside what the protocol requires, and run again: 20261101T100000", out)
 
     def test_each_condition_an_arm_is_required_to_run_under(self):
-        # The re-audit's R4: every arm's browser tool, and each arm's own conditions. A batch
-        # run under another is refused, and names the arm and the condition.
+        # The re-audit's R4: every arm's browser and agent code, and each arm's own conditions.
+        # A batch run under another is void, and its model's refusal names the arm and the
+        # condition. The model arm's parser is held to the run's own model (v4).
         for arm_name, change, words in (
-                ("shipped", {"browser_tool": "0.0.84"}, "shipped ran with browser_tool 0.0.84, where the protocol "
+                ("shipped", {"browser_tool": "0.0.84"}, "shipped with browser_tool 0.0.84, where the protocol "
                                                         "requires 0.0.83"),
+                ("shipped", {"browser_flags": "--isolated"}, "shipped with browser_flags --isolated"),
+                ("shipped", {"browser_origins": "http://localhost:7770 https://example.com"},
+                 "shipped with browser_origins http://localhost:7770 https://example.com"),
+                ("open everything (product)", {"agent_core_commit": "c" * 40},
+                 f"open everything (product) with agent_core_commit {'c' * 40}"),
+                ("the block (rules)", {"agent_core_patch": "unknown"}, "the block (rules) with agent_core_patch unknown"),
                 ("open everything (product)", {"exhaustive_wording_version": 1},
-                 "open everything (product) ran with exhaustive_wording_version 1"),
-                ("the block (rules)", {"rate_plan": "bound"}, "the block (rules) ran with rate_plan bound, where the "
+                 "open everything (product) with exhaustive_wording_version 1"),
+                ("the block (rules)", {"rate_plan": "bound"}, "the block (rules) with rate_plan bound, where the "
                                                               "protocol requires every"),
-                ("the block (rules)", {"page_reader": "fetch"}, "the block (rules) ran with page_reader fetch"),
-                ("the block (rules)", {"box_version": 17}, "the block (rules) ran with box_version 17"),
-                ("the block (rules)", {"form_version": 12}, "the block (rules) ran with form_version 12"),
-                ("the block (model)", {"prompt_version": 2}, "the block (model) ran with prompt_version 2"),
-                ("the block (model)", {"parser_temperature": 0.2}, "the block (model) ran with parser_temperature 0.2"),
-                ("the block (model)", {"rate_plan": "bound"}, "the block (model) ran with rate_plan bound")):
+                ("the block (rules)", {"page_reader": "fetch"}, "the block (rules) with page_reader fetch"),
+                ("the block (rules)", {"box_version": 17}, "the block (rules) with box_version 17"),
+                ("the block (rules)", {"form_version": 12}, "the block (rules) with form_version 12"),
+                ("the block (model)", {"prompt_version": 2}, "the block (model) with prompt_version 2"),
+                ("the block (model)", {"parser_temperature": 0.2}, "the block (model) with parser_temperature 0.2"),
+                ("the block (model)", {"rate_plan": "bound"}, "the block (model) with rate_plan bound"),
+                ("the block (model)", {"parser_model": "x-ai/grok-5-mini"},
+                 f"the block (model) with parser_model x-ai/grok-5-mini, where the protocol requires its model, {HAIKU}")):
             with self.subTest(arm=arm_name, change=change):
                 def plant(model, arm, folder, arm_name=arm_name, change=change):
                     if arm.name == arm_name:
                         set_conditions(folder, **change)
-                with self.assertRaises(SystemExit) as raised:
-                    self.run2(plant)
-                self.assertIn(f"{HAIKU}: {words}", str(raised.exception))
+                code, result, _ = self.run2(plant)
+                self.assertEqual(code, 1)
+                self.assertIn(words, " ".join(result["models"][HAIKU]["refused"]))
+
+    def test_a_batch_routed_otherwise_than_the_protocol_names_for_its_model(self):
+        # The pilot coder's point a (v5): each model's routing, the agent's and in the model arm
+        # the parse's, as the batch's payload and its runs' records say. Quiet on the plain run
+        # (SyntheticRun2), where DeepSeek's are routed and Haiku's off.
+        proposed = ROUTING[DEEPSEEK]
+        for label, model, arm_name, batch, records, words in (
+                ("DeepSeek run unrouted", DEEPSEEK, "shipped", {"agent": None, "parser": None}, None,
+                 f"shipped with agent provider routing null, where the protocol requires {json.dumps(proposed)}"),
+                ("Haiku routed", HAIKU, "open everything (product)", {"agent": proposed, "parser": None}, proposed,
+                 f"open everything (product) with agent provider routing {json.dumps(proposed)}, where the protocol "
+                 f"requires null for {HAIKU}"),
+                ("DeepSeek's parse unrouted", DEEPSEEK, "the block (model)", {"agent": proposed, "parser": None}, proposed,
+                 "the block (model) with parser provider routing null"),
+                # The verifier's point 1: the parse's routing is per arm, null outside the model arm.
+                ("a parse routing recorded in the rules arm", DEEPSEEK, "the block (rules)",
+                 {"agent": proposed, "parser": proposed}, proposed,
+                 f"the block (rules) with parser provider routing {json.dumps(proposed)}, where the protocol "
+                 f"requires null"),
+                ("a batch from before routing, for DeepSeek", DEEPSEEK, "the block (rules)", "absent", "absent",
+                 "the block (rules) with agent provider routing null")):
+            with self.subTest(fault=label):
+                def plant(planted_model, arm, folder, model=model, arm_name=arm_name, batch=batch, records=records):
+                    if planted_model == model and arm.name == arm_name:
+                        set_routing(folder, batch, records)
+                code, result, _ = self.run2(plant, models=(model,))
+                self.assertEqual(code, 1)
+                self.assertIn(words, " ".join(result["models"][model]["refused"]))
+        # Haiku from before routing is off, as the protocol names it: no refusal.
+        def before(model, arm, folder):
+            set_routing(folder, "absent", "absent")
+        code, result, _ = self.run2(before)
+        self.assertNotIn("refused", result["models"][HAIKU])
+
+    def test_a_record_routed_otherwise_than_its_batch(self):
+        # The pilot coder's point b (v5): a run's record holds what its runner applied, held to
+        # what its batch's payload says the agent ran under.
+        def plant(model, arm, folder):
+            if arm.name == "shipped":
+                record = folder / "tee-top-3-2.json"
+                data = json.loads(record.read_text())
+                data["provider_routing"] = {"order": ["deepinfra"]}
+                record.write_text(json.dumps(data))
+        code, result, _ = self.run2(plant)
+        self.assertEqual(code, 1)
+        self.assertIn(f"provider routing {json.dumps({'order': ['deepinfra']})} in the record of tee-top-3-2, where "
+                      f"its batch says the agent ran under null", " ".join(result["models"][HAIKU]["refused"]))
 
     def test_a_condition_that_differs_between_the_arms(self):
-        # One the protocol requires of no arm: listed among the problems, and the analysis goes on.
+        # One the protocol requires of no arm, in a copy of the file that does not require the
+        # patch's digest: listed among the problems, and the analysis goes on.
         def plant(model, arm, folder):
             if arm.name == "open everything (product)":
                 set_conditions(folder, agent_core_patch="c" * 40)
-        _, result, out = self.run2(plant)
-        self.assertIn(f"{HAIKU}: agent_core_patch differs between the arms: shipped {'b' * 40}; open everything "
-                      f"(product) {'c' * 40}; the block (rules) {'b' * 40}; the block (model) {'b' * 40}",
+        code, result, out = self.run2(plant, protocol=lambda config: config["require"].pop("agent_core_patch"))
+        patch = AGENT_CODE["agent_core_patch"]
+        self.assertEqual(code, 0)
+        self.assertIn(f"{HAIKU}: agent_core_patch differs between the arms: shipped {patch}; open everything "
+                      f"(product) {'c' * 40}; the block (rules) {patch}; the block (model) {patch}",
                       result["problems"])
         self.assertIn("DIFFERS between arms, agent_core_patch", out)
 
@@ -840,6 +1031,25 @@ class Run2Faults(unittest.TestCase):
         self.assertIn(f"{HAIKU}: {found['batch']}/rw-09-1 has no key for the reading it answered, buyable, so it is "
                       f"unscored and in no test of correct", result["problems"])
         self.assertRegex(out, r"\n     tee-count-stocked +5/5  asked")
+
+    def test_the_parses_fallbacks_are_counted_by_arm_with_their_reasons(self):
+        # One planted of each kind: the block (model) left the model's form for the rules' on
+        # one run, and the block (rules) planned one question by the survey fallback.
+        def plant(model, arm, folder):
+            payload = json.loads((folder / "suite.json").read_text())
+            for row in payload["rows"]:
+                if arm.name == "the block (model)" and (row["task"], row["repeat"]) == ("tee-target-price", 1):
+                    row["box"]["parse"].update(used="rules", fallback_reason="the reply is not a form")
+                if arm.name == "the block (rules)" and (row["task"], row["repeat"]) == ("tee-top-3", 2):
+                    row["box"]["fallback"] = True
+            (folder / "suite.json").write_text(json.dumps(payload))
+        _, result, out = self.run2(plant)
+        fallbacks = result["models"][HAIKU]["secondary"]["fallbacks"]
+        self.assertEqual((fallbacks["the block (model)"]["parse_fallback"], fallbacks["the block (model)"]["reasons"],
+                          fallbacks["the block (model)"]["survey_fallback"]), (1, {"the reply is not a form": 1}, 0))
+        self.assertEqual((fallbacks["the block (rules)"]["survey_fallback"], fallbacks["the block (rules)"]["parse_fallback"]),
+                         (1, 0))
+        self.assertIn("1 the reply is not a form", out)
 
     def test_a_closed_slot_with_no_charge_is_unknown_not_free(self):
         def plant(model, arm, folder):
@@ -924,9 +1134,10 @@ class AuditItems(unittest.TestCase):
                           "tee-target-price-2": "a card or sold-out price taken",
                           # 60 a page shows every listing: past page 1, and $1.00 is no price shown.
                           "tee-target-price-3": "other",
-                          # Sorted and never past the first page, where its key's listing is
-                          # (Elmsworth, 8th): until v3, "page 2 never reached".
-                          "tee-cheapest-target-1": "other",
+                          # Sorted by price and never past its first page: whether it needed
+                          # a later page is not known (v4); "other" in v3, and before that
+                          # "page 2 never reached".
+                          "tee-cheapest-target-1": "sorted or resized, its first page alone",
                           # Page 1 alone too, where its key is: the card price decides (v3).
                           "tee-exists-under-1": "a card or sold-out price taken",
                           # Its key is on page 2 (Dalston, 37th): reached in round 1, not in 2.
@@ -935,9 +1146,12 @@ class AuditItems(unittest.TestCase):
         evidence = {run["run"].split("/")[1]: run["evidence"] for run in fb["runs"]}
         self.assertEqual(evidence["tee-target-price-1"], f"card ${card:.2f}")
         self.assertEqual(evidence["tee-target-price-2"], f"sold out ${sold_out:.2f}")
-        # The plain run's 15, 0 and 12 (SyntheticRun2), less water-cheapest-target-1 from the
-        # first, and tee-target-price-1 and -2 and tee-exists-under-1 from the last.
-        self.assertEqual(fb["pooled"], {"page 2 never reached": 14, "a card or sold-out price taken": 3, "other": 10})
+        self.assertEqual(evidence["tee-cheapest-target-1"], "sorted price, page size -; results pages seen: []")
+        # The plain run's 15, 0, 0 and 12 (SyntheticRun2), less water-cheapest-target-1 from
+        # the first, and tee-cheapest-target-1, tee-target-price-1 and -2 and tee-exists-under-1
+        # from the last.
+        self.assertEqual(fb["pooled"], {"page 2 never reached": 14, "sorted or resized, its first page alone": 1,
+                                        "a card or sold-out price taken": 3, "other": 9})
         self.assertIn("f. Why shipped was not correct", self.out)
 
     def test_the_cautious_sensitivity_puts_a_closed_slot_at_open_everythings_median(self):
@@ -960,12 +1174,23 @@ class AuditItems(unittest.TestCase):
         providers = self.m["secondary"]["providers"]
         by_arm = {arm: row["by_provider"] for arm, row in providers["by_arm"].items()}
         # The block (model) ran 115 of its 135 slots: two closed, and the 18 declines refused.
-        # Open everything's 36 are its 21 tee runs and 15 water runs. Shipped's one run is mixed.
-        self.assertEqual(by_arm, {"shipped": {"mixed: GMICloud, Relace": 1, "not recorded": 44},
+        # Open everything's 36 are its 21 tee runs and 15 water runs, from their rows. Shipped's
+        # one run is mixed, read from its log, and the rest unknown: no row or log counts them.
+        self.assertEqual(by_arm, {"shipped": {"mixed: GMICloud, Relace": 1, "unknown": 44},
                                   "open everything (product)": {"GMICloud": 21, "Relace": 15},
-                                  "the block (rules)": {"not recorded": 117},
+                                  "the block (rules)": {"unknown": 117},
                                   "the block (model)": {"GMICloud": 115}})
-        self.assertEqual(providers["by_arm"]["the block (model)"]["calls"], {"GMICloud": 230})
+        rows = providers["by_arm"]
+        self.assertEqual((rows["the block (model)"]["calls"], rows["the block (model)"]["calls_unknown"]),
+                         ({"GMICloud": 230}, 0))
+        # A run whose count is missing is unknown, never zero calls (v5).
+        self.assertEqual((rows["shipped"]["calls"], rows["shipped"]["calls_unknown"]),
+                         ({"GMICloud": 1, "Relace": 1}, 44))
+        # The parse calls, every slot of the model arm, the closed ones too, by their rows: one
+        # names no provider and is unknown. No other arm parses.
+        self.assertEqual(rows["the block (model)"]["parse_calls"], {"DeepInfra": 134, "unknown": 1})
+        self.assertEqual({arm: row["parse_calls"] for arm, row in rows.items() if arm != "the block (model)"},
+                         {"shipped": {}, "open everything (product)": {}, "the block (rules)": {}})
         h3 = providers["h3"]
         self.assertEqual((h3["test"], h3["a"], h3["b"], h3["differs"]),
                          ("H3", "the block (model)", "open everything (product)", True))
@@ -1024,6 +1249,19 @@ class ProtocolFile(unittest.TestCase):
     def test_the_file_is_whole(self):
         self.assertEqual(claim.check_protocol(json.loads(PROTOCOL.read_text())), [])
 
+    def test_the_note_on_when_an_answer_is_unscorable(self):
+        # The auditor's check of the freeze candidate: only an answer that cannot be read at all.
+        notes = [note for note in json.loads(PROTOCOL.read_text())["_about"] if "'unscorable'" in note]
+        self.assertEqual(len(notes), 1)
+        self.assertIn("only when it cannot be read at all, being empty, garbled, or about another question", notes[0])
+
+    def test_a_note_the_code_has_moved_past_says_it_is_superseded(self):
+        # The first version's note on H3's tokens said the parse's are not recorded; since
+        # cce9ab0 they are, and the note says so where it stands (v4).
+        notes = [note for note in json.loads(PROTOCOL.read_text())["_about"] if "tokens are not recorded" in note]
+        self.assertEqual(len(notes), 1)
+        self.assertIn("Superseded in part: since cce9ab0", notes[0])
+
     def test_a_file_that_does_not_hold_together_is_refused_before_any_batch(self):
         config = json.loads(PROTOCOL.read_text())
         for label, change, words in (
@@ -1042,6 +1280,25 @@ class ProtocolFile(unittest.TestCase):
                  "arm 'the block (model)' requires 'colour', which no run records"),
                 ("a secondary measure unknown", lambda c: c["secondary_measures"].append("speed"),
                  "no secondary measure"),
+                # Protocol analysis v4.
+                ("a required value that is another condition no run records",
+                 lambda c: c["arms"]["the block (model)"]["require"].update(parser_model={"same_as": "colour"}),
+                 "which is no value and no other condition a run records"),
+                # Protocol analysis v5.
+                ("a routing for a model the protocol has not",
+                 lambda c: c["provider_routing"].update({"x-ai/grok-5-mini": None}),
+                 "provider_routing does not name the protocol's models"),
+                ("a routing for one model only", lambda c: c["provider_routing"].pop(HAIKU),
+                 "provider_routing does not name the protocol's models"),
+                ("a routing that is no provider object", lambda c: c["provider_routing"].update({HAIKU: "off"}),
+                 "neither a provider object nor null"),
+                ("a routing required of an arm by hand",
+                 lambda c: c["arms"]["shipped"].update(require={"provider_routing_agent": None}),
+                 "which the protocol names by model under provider_routing"),
+                # The verifier's check of 281c7e8: a typo OpenRouter would ignore.
+                ("a routing key OpenRouter does not document",
+                 lambda c: c["provider_routing"][DEEPSEEK].update(allow_fallback=False),
+                 "the provider keys ['allow_fallback'], which OpenRouter does not document"),
                 # Protocol analysis v2, 23 October 2026.
                 ("two primaries", lambda c: c["roles"].update({HAIKU: "primary"}), "other than one primary"),
                 ("a role this analysis has not", lambda c: c["roles"].update({HAIKU: "lead"}), "role is not one of"),
@@ -1076,7 +1333,10 @@ class TheRequiredConditions(unittest.TestCase):
             "form_version": form.VERSION, "primitives_version": primitives.VERSION,
             "prompt_version": form.PROMPT_VERSION, "normalise_version": normalise.VERSION,
             "parser_temperature": suite.PARSER_TEMPERATURE,
-            "exhaustive_wording_version": policy.EXHAUSTIVE_PRODUCT_VERSION, "browser_tool": suite.BROWSER_TOOL}
+            "exhaustive_wording_version": policy.EXHAUSTIVE_PRODUCT_VERSION, "browser_tool": suite.BROWSER_TOOL,
+            # Since protocol version 4: the browser's confinement and the agent's code, the
+            # commit this repository pins agent-core at and its committed patch's digest.
+            "browser_origins": suite.ALLOWED_ORIGINS, "browser_flags": suite.BROWSER_FLAGS, **AGENT_CODE}
 
     def setUp(self):
         self.config = json.loads(PROTOCOL.read_text())
@@ -1091,8 +1351,18 @@ class TheRequiredConditions(unittest.TestCase):
                     checked += 1
                     with self.subTest(scope=scope, key=key):
                         self.assertEqual(value, self.CODE[key])
-        # The browser tool, the wording's version, and the block's seven and the model's three.
-        self.assertEqual(checked, 1 + 1 + 5 + 8)
+        # Every arm's browser tool, origins, flags, commit and patch; the wording's version; and
+        # the block's five versions under the rules and eight under the model.
+        self.assertEqual(checked, 5 + 1 + 5 + 8)
+        # The model arm's parser is the run's own model, whichever model runs it.
+        self.assertEqual(self.config["arms"]["the block (model)"]["require"]["parser_model"], {"same_as": "model"})
+
+    def test_the_routing_is_the_one_proposed_pending_decision_9(self):
+        # Protocol version 5: DeepSeek routed as provider_routing.PROPOSED holds it, Haiku off.
+        self.assertEqual(self.config["provider_routing"],
+                         {DEEPSEEK: provider_routing.PROPOSED[DEEPSEEK], HAIKU: None})
+        self.assertTrue(any("Pending decision 9" in note and "'off' means null for DeepSeek too" in note
+                            for note in self.config["_about"]))
 
     def test_each_arms_flags_make_what_it_requires(self):
         for name, arm in self.config["arms"].items():
@@ -1112,6 +1382,144 @@ class TheRequiredConditions(unittest.TestCase):
         for name in ("the block (rules)", "the block (model)"):
             self.assertEqual((self.config["arms"][name]["reading"], self.config["arms"][name]["require"]["rate_plan"]),
                              ("own", "every"))
+
+
+class ThePreflight(unittest.TestCase):
+    """`claim.py --preflight` (protocol analysis v4, R4): what a batch of each arm would
+    record, worked out from its flags and the code before anything runs, against what the
+    protocol requires of the arm. Nothing is sent: suite.main runs with its agent and the
+    model parser's call stubbed (test_claim_arms.run_suite)."""
+
+    DEV_TASKS = paths.TASKS / "tasks_aplus_dev.json"
+    MORE = f"--tasks {DEV_TASKS} --repeats 1 --only tee-target-price"
+    # The routing the claim command exports for a chain (v5): the proposed one, DeepSeek alone.
+    ROUTED = json.dumps(provider_routing.PROPOSED)
+
+    def setUp(self):
+        self.config = json.loads(PROTOCOL.read_text())
+
+    def flags(self, name: str) -> str:
+        return f"{self.config['arms'][name]['flags']} {self.MORE}"
+
+    @staticmethod
+    @contextlib.contextmanager
+    def environment(model: str = DEEPSEEK, routed: str | None = ROUTED):
+        """The environment a chain's invocation runs in: its model, and IGR_PROVIDER_ROUTING, or
+        none where `routed` is None."""
+        with mock.patch.dict(os.environ, {"MODEL_NAME": model}):
+            os.environ.pop(provider_routing.ENV, None)
+            if routed is not None:
+                os.environ[provider_routing.ENV] = routed
+            yield
+
+    def preflight(self, name: str, flags: str | None = None, identity: dict | None = None,
+                  model: str = DEEPSEEK, routed: str | None = ROUTED) -> list[str]:
+        with self.environment(model, routed), \
+                mock.patch.object(suite, "agent_code_identity", return_value=identity or AGENT_CODE):
+            return claim.preflight(PROTOCOL, name, flags if flags is not None else self.flags(name))[1]
+
+    def test_it_reads_the_flags_as_suite_records_them_for_every_arm(self):
+        # suite.main's own payload for each arm's flags, condition by condition, against the
+        # preflight's reading of the same flags, under the same agent code, model and routing.
+        page = larchmere_page(json.loads(self.DEV_TASKS.read_text()))
+        identity = {"agent_core_commit": "a" * 40, "agent_core_patch": "b" * 40}    # run_suite's own
+        for name in self.config["arms"]:
+            flags = self.flags(name)
+            with self.subTest(arm=name), self.environment(), \
+                    mock.patch.object(parse_probe, "call_model", replying()), \
+                    mock.patch.object(plan_probe, "load_key", return_value="fake-key"):
+                run = run_suite(*shlex.split(flags), page=page)
+                self.addCleanup(run.owner.cleanup)
+                self.assertEqual(run.code, 0, run.out)
+                payload = json.loads((run.batch / "suite.json").read_text())
+                record = json.loads((run.batch / "tee-target-price-1.json").read_text())
+                # Each condition as the analysis reads it: the run's own record for the shop,
+                # probe, scaffold and limits, the batch's payload for the rest; the model the
+                # payload's, since the stubbed runner's record says "fake/model".
+                recorded = {**claim.conditions_of(payload, record, claim.PROTOCOL_CONDITIONS),
+                            "model": payload["model"]}
+                with mock.patch.object(suite, "agent_code_identity", return_value=identity):
+                    planned = claim.planned_conditions(flags)
+                self.assertEqual({key: planned[key] for key in claim.PROTOCOL_CONDITIONS}, recorded)
+                self.assertEqual((planned["arm"], planned["reading"]), (payload["arm"], payload["reading"]))
+                self.assertEqual(payload["model"], DEEPSEEK)
+                # The routing both read from the environment, the agent's on every arm.
+                self.assertEqual(planned["provider_routing_agent"], provider_routing.PROPOSED[DEEPSEEK])
+
+    def test_the_routing_in_the_environment_is_held_to_the_protocols_for_the_model(self):
+        # The pilot coder's point d: IGR_PROVIDER_ROUTING as the invocation would run under.
+        model_arm = "the block (model)"
+        self.assertEqual(self.preflight(model_arm), [])
+        unset = self.preflight(model_arm, routed=None)
+        self.assertIn(f"agent provider routing null from {provider_routing.ENV}, where the protocol requires "
+                      f"{json.dumps(provider_routing.PROPOSED[DEEPSEEK])} for {DEEPSEEK}", unset)
+        self.assertTrue(any(p.startswith("parser provider routing null") for p in unset), unset)
+        # Haiku is off: the same export leaves it unrouted, and routing it is refused.
+        self.assertEqual(self.preflight("shipped", model=HAIKU), [])
+        haiku = json.dumps({HAIKU: {"order": ["amazon-bedrock"]}})
+        self.assertIn(f"agent provider routing {json.dumps({'order': ['amazon-bedrock']})} from "
+                      f"{provider_routing.ENV}, where the protocol requires null for {HAIKU}",
+                      self.preflight("shipped", model=HAIKU, routed=haiku))
+        # Another order for DeepSeek, the proposed one without its quantisation, a value that is
+        # no model-to-object map, and a key OpenRouter does not document, which it would ignore.
+        other = json.dumps({DEEPSEEK: {"order": ["deepinfra"], "allow_fallbacks": False}})
+        self.assertTrue(any(p.startswith("agent provider routing") for p in self.preflight("shipped", routed=other)))
+        loose = {key: value for key, value in provider_routing.PROPOSED[DEEPSEEK].items() if key != "quantizations"}
+        self.assertTrue(any(p.startswith("agent provider routing")
+                            for p in self.preflight("shipped", routed=json.dumps({DEEPSEEK: loose}))))
+        self.assertTrue(any("must map model ids" in p or "is not JSON" in p
+                            for p in self.preflight("shipped", routed="[1, 2]")))
+        typo = json.dumps({DEEPSEEK: {**provider_routing.PROPOSED[DEEPSEEK], "allow_fallback": False}})
+        self.assertTrue(any("does not document" in p for p in self.preflight("shipped", routed=typo)))
+
+    def test_every_arm_passes_under_the_code_this_repository_pins(self):
+        for name in self.config["arms"]:
+            with self.subTest(arm=name):
+                self.assertEqual(self.preflight(name), [])
+
+    def test_a_batch_outside_require_is_refused_before_it_runs(self):
+        for name, flags, words in (
+                ("the block (rules)", "--box --parser rules --reading own --max-steps 300 --clock 1800",
+                 "rate_plan bound, where the protocol requires every"),
+                ("the block (model)", "--box --parser model --reading menu --rate-plan every --max-steps 300 --clock 1800",
+                 "the flags make arm box-model with reading menu, where the block (model) is arm box-model with "
+                 "reading own"),
+                ("shipped", "--max-steps 150 --clock 1800", "max_steps 150, where the protocol requires 300"),
+                ("the block (model)", "--box --parser model --parser-model x-ai/grok-5-mini --reading own --rate-plan "
+                                      "every --max-steps 300 --clock 1800",
+                 f"parser_model x-ai/grok-5-mini, where the protocol requires its model, {DEEPSEEK}"),
+                ("open everything (product)", "--exhaustive --max-steps 300 --clock 1800",
+                 "the flags make arm exhaustive with reading None"),
+                ("shipped", "--shop default --max-steps 300 --clock 1800", "shop default, where the protocol holds gated fixed")):
+            with self.subTest(arm=name, flags=flags):
+                self.assertTrue(any(words in problem for problem in self.preflight(name, f"{flags} {self.MORE}")),
+                                self.preflight(name, f"{flags} {self.MORE}"))
+        # The agent's code unknown, as where the submodule is not checked out, and a version the
+        # code moved since the protocol was fixed.
+        unknown = {"agent_core_commit": "unknown", "agent_core_patch": "unknown"}
+        self.assertIn("agent_core_commit unknown, where the protocol requires " + AGENT_CODE["agent_core_commit"],
+                      self.preflight("shipped", identity=unknown))
+        with mock.patch.object(box, "VERSION", box.VERSION + 1):
+            self.assertIn(f"box_version {box.VERSION}, where the protocol requires 18",
+                          self.preflight("the block (rules)"))
+
+    def test_the_command_line_exits_one_on_a_refusal_and_reads_no_batch(self):
+        def preflight(*argv: str) -> tuple[int, str]:
+            with self.environment(), \
+                    mock.patch.object(suite, "agent_code_identity", return_value=AGENT_CODE), \
+                    contextlib.redirect_stdout(io.StringIO()) as out:
+                return claim.main(["--protocol", str(PROTOCOL), *argv]), out.getvalue()
+        code, out = preflight("--preflight", "shipped", "--flags", self.flags("shipped"))
+        self.assertEqual(code, 0, out)
+        self.assertIn("within what the protocol requires: the batch may run", out)
+        code, out = preflight("--preflight", "shipped", "--flags", f"--max-steps 150 {self.MORE}")
+        self.assertEqual(code, 1)
+        self.assertIn("REFUSED: max_steps 150", out)
+        for argv in (("--preflight", "shipped"), ("--preflight", "shipped", "--flags", "", "some.manifest")):
+            with self.subTest(argv=argv), contextlib.redirect_stderr(io.StringIO()) as err, \
+                    self.assertRaises(SystemExit):
+                preflight(*argv)
+            self.assertIn("needs --protocol and --flags", err.getvalue())
 
 
 class NeedsALaterPage(unittest.TestCase):
@@ -1136,6 +1544,24 @@ class NeedsALaterPage(unittest.TestCase):
         # Unknown where the key renders: never coded as page 2.
         self.assertEqual(claim.failure_code({**later, "key_where": {}}, 36)[0], "other")
 
+    def test_a_run_that_sorted_or_resized_on_its_first_page_has_its_own_code(self):
+        # Where a key's listings render holds for the relevance order at 36 a page only (v4).
+        plain = {"results_pages": [], "results_limits": [], "order": [], "direction": [], "limit": [], "mode": [],
+                 "sorted": False, "resized": False}
+        sorted_ = {**plain, "order": ["price"], "sorted": True}
+        resized = {**plain, "limit": ["24"], "results_limits": [24], "resized": True}
+        for where in ({"positions": [37], "rule": "any"}, {"positions": [8], "rule": "any"}, {}):
+            for reading in (sorted_, resized):
+                with self.subTest(where=where, reading=reading["order"] or reading["limit"]):
+                    run = {"toolbar": reading, "key_where": where, "taken": {"card": [14.18]}}
+                    self.assertEqual(claim.failure_code(run, 36)[0], "sorted or resized, its first page alone")
+        # Quiet: one that went on to a second page, or to 60 a page, is coded by the rules after.
+        for reading in ({**sorted_, "results_pages": [1, 2]}, {**resized, "limit": ["60"], "results_limits": [60]}):
+            run = {"toolbar": reading, "key_where": {"positions": [37], "rule": "any"}, "taken": {"card": [14.18]}}
+            self.assertEqual(claim.failure_code(run, 36)[0], "a card or sold-out price taken")
+        self.assertEqual(claim.failure_code({"toolbar": sorted_, "key_where": {}, "taken": {}}, 36)[1],
+                         "sorted price, page size -; results pages seen: []")
+
 
 class AsksByLabel(unittest.TestCase):
     def test_a_run_asked_if_the_box_or_the_agent_did(self):
@@ -1152,22 +1578,43 @@ class AsksByLabel(unittest.TestCase):
 
 
 class ServedBy(unittest.TestCase):
-    """Who served a run's model calls, from its log (R11)."""
+    """Who served a run's agent calls (R11; since v5 the row's count first, the log second, by
+    `trace_stats.served_by`, and a missing count unknown)."""
 
-    def test_each_call_by_its_provider_and_never_the_clients_setting(self):
+    USAGE = "usage=CompletionUsage(completion_tokens=10, prompt_tokens=100, total_tokens=110)"
+
+    def test_the_row_first_and_its_log_by_the_same_reader(self):
         with tempfile.TemporaryDirectory() as tmp:
             log = pathlib.Path(tmp) / "x-1.log"
             log.write_text('{"model_provider": "OpenAI"}\n'
-                           "ChatCompletion(id='a', usage=CompletionUsage(cost=0.1), provider='Baidu')\n"
-                           "ChatCompletion(id='b', provider='Relace')\nChatCompletion(id='c', provider='Baidu')\n")
-            self.assertEqual(claim.serving_providers(log), {"Baidu": 2, "Relace": 1})
+                           + "".join(f"ChatCompletion(id='{n}', {self.USAGE}, provider='{p}')\n"
+                                     for n, p in enumerate(("Baidu", "Relace", "Baidu"))))
+            self.assertEqual(claim.agent_providers({}, log), {"Baidu": 2, "Relace": 1})
+            # The row's own count wins, a recorded None too: suite.py read the log and could not
+            # account for every call.
+            self.assertEqual(claim.agent_providers({"providers": {"GMICloud": 3}}, log), {"GMICloud": 3})
+            self.assertIsNone(claim.agent_providers({"providers": None}, log))
+            # A log that names a provider for fewer calls than it records is unknown, not a count.
+            log.write_text(f"ChatCompletion(id='a', {self.USAGE}, provider='Baidu')\n"
+                           f"ChatCompletion(id='b', {self.USAGE})\n")
+            self.assertIsNone(claim.agent_providers({}, log))
             log.write_text('{"model_provider": "OpenAI"}\n')
-            self.assertEqual(claim.serving_providers(log), {})
+            self.assertIsNone(claim.agent_providers({}, log))
 
-    def test_a_run_is_one_provider_mixed_or_not_recorded(self):
+    def test_a_run_is_one_provider_mixed_or_unknown(self):
         self.assertEqual(claim.run_provider({"providers": {"Baidu": 3}}), "Baidu")
         self.assertEqual(claim.run_provider({"providers": {"Relace": 1, "Baidu": 3}}), "mixed: Baidu, Relace")
-        self.assertEqual(claim.run_provider({"providers": {}}), "not recorded")
+        self.assertEqual(claim.run_provider({"providers": {}}), "unknown")
+        self.assertEqual(claim.run_provider({"providers": None}), "unknown")
+
+    def test_the_parse_calls_provider(self):
+        model = {"parser": "model"}
+        self.assertEqual(claim.parse_provider(model, {"box": {"x": 1}, "parse_provider": "DeepInfra"}), "DeepInfra")
+        # A batch from before routing records no provider: unknown; a parse with no call, none.
+        self.assertEqual(claim.parse_provider(model, {"box": {"x": 1}}), "unknown")
+        self.assertEqual(claim.parse_provider(model, {"box": {"x": 1}, "parse_provider": None,
+                                                      "parse_tokens": {"calls": 0}}), "no parse call")
+        self.assertIsNone(claim.parse_provider({"parser": "rules"}, {"box": {"x": 1}}))
 
 
 class ByProvider(unittest.TestCase):
@@ -1234,7 +1681,9 @@ class ServedByStoredRuns(unittest.TestCase):
         for batch in SERVED_BATCHES:
             for log in sorted((paths.RESULTS / batch).glob("*.log")):
                 record = json.loads(log.with_suffix(".json").read_text())
-                served = claim.serving_providers(log)
+                # These batches' rows record no count, so it is read from the log (v5).
+                served = claim.agent_providers({}, log)
+                self.assertIsNotNone(served, log.name)
                 calls = ((record.get("agent_tokens") or (record.get("trace") or {}).get("tokens")) or {}).get("calls")
                 if calls is not None:
                     counted += 1
@@ -1282,9 +1731,11 @@ class HandReadingSheet(unittest.TestCase):
         cls.owner.cleanup()
 
     def ran(self) -> list[tuple]:
+        """Every run the agent answered on a question with a key (v5: none of a keyless one)."""
+        keyed = {task["id"] for task in self.spec["tasks"] if task["expect"].get("kind") != "none"}
         return sorted((model, run["arm"], run["batch"], run["task"], run["repeat"])
                       for model, m in self.result["models"].items() for run in m["runs"]
-                      if run["outcome"] != voids.CLOSED)
+                      if run["outcome"] != voids.CLOSED and run["task"] in keyed)
 
     def test_every_answer_once_under_its_own_random_code(self):
         self.assertEqual(self.code, 0)
@@ -1294,13 +1745,18 @@ class HandReadingSheet(unittest.TestCase):
         self.assertEqual(codes, sorted(codes))
         self.assertTrue(all(len(code) == 8 and int(code, 16) >= 0 for code in codes))
         self.assertEqual(sorted(codes), sorted(self.key["codes"]))
-        # Each code one run, and every run the agent answered, no slot the box closed.
+        # Each code one run, and every run the agent answered on a question with a key, no slot
+        # the box closed.
         self.assertEqual(sorted((c["model"], c["arm"], c["batch"], c["task"], c["repeat"])
                                 for c in self.key["codes"].values()), self.ran())
         closed = sum(run["outcome"] == voids.CLOSED for m in self.result["models"].values() for run in m["runs"])
         # Each model's block arms close the 18 decline slots each, and the showcase two more.
         self.assertEqual((self.key["rows"], self.key["closed_slots_left_out"]), (len(self.rows), closed))
         self.assertEqual(closed, 2 * (18 + 18 + 2))
+        # Shipped answers the two declines, three rounds each, under each model: no key to read
+        # them against, so not on the sheet (v5).
+        self.assertEqual(self.key["keyless_answers_left_out"], 2 * 6)
+        self.assertFalse(any(c["task"].startswith("decline-") for c in self.key["codes"].values()))
 
     def test_nothing_on_the_sheet_names_an_arm_a_model_a_batch_or_a_question_id(self):
         names = (list(self.result["models"]) + list(json.loads(PROTOCOL.read_text())["arms"])
@@ -1490,6 +1946,22 @@ class HandReadBack(unittest.TestCase):
                          {t: primary[t]["p"] for t in ("H2", "H3", "H4")})
         for tests in (deepseek, haiku):
             self.assertEqual({t: v["p_holm"] for t, v in tests.items()}, claim.holm({t: v["p"] for t, v in tests.items()}))
+
+    def test_the_unscorable_are_counted_by_arm_and_beside_each_test_of_correct(self):
+        # The auditor's check of the freeze candidate: an unscorable answer leaves every test
+        # of correct, so the count is shown. DeepSeek's one, shipped's water-best-per-litre-3, is
+        # on H1's questions and not H4's; Haiku has none.
+        _, out, result = self.differed
+        deepseek, haiku = (result["models"][m]["hand_reading"] for m in (DEEPSEEK, HAIKU))
+        self.assertEqual({arm: row["unscorable"] for arm, row in deepseek["by_arm"].items()},
+                         {"shipped": 1, "open everything (product)": 0, "the block (rules)": 0, "the block (model)": 0})
+        self.assertEqual((deepseek["tests"]["H1"]["unscorable"], deepseek["tests"]["H4"]["unscorable"]),
+                         ({"a": 0, "b": 1}, {"a": 0, "b": 0}))
+        self.assertEqual(sum(row["unscorable"] for row in haiku["by_arm"].values()), 0)
+        self.assertNotIn("unscorable", deepseek["tests"]["H2"])
+        self.assertIn("H1 on the hand verdicts, pooled 25/27 against 0/26; marked unscorable, so in no test of "
+                      "correct: the block (model) 0, shipped 1", out)
+        self.assertIn("unscorable 1;", out)
 
     def test_every_disagreement_by_arm_and_which_way_the_scorer_leans(self):
         code, out, result = self.differed

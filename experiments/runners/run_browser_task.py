@@ -41,6 +41,9 @@ from openjiuwen.harness.tools.browser_move.playwright_runtime.runtime import (
 import sys as _sys
 _sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import see_everything as _see
+# OpenRouter provider routing for the run's model, off unless IGR_PROVIDER_ROUTING is set, and
+# recorded in the run record either way (23 October 2026).
+import provider_routing as _routing
 
 RUNS = pathlib.Path(__file__).resolve().parents[1] / "runs"
 OPENROUTER_KEY_URL = "https://openrouter.ai/api/v1/key"
@@ -114,6 +117,9 @@ async def run(args: argparse.Namespace) -> int:
 
     probe_setting = _see.apply()
     print(f"card probe: {probe_setting}")
+    _routing.apply_to_agent()
+    routing = _routing.routing_for(settings.model_name)
+    print(f"provider routing: {json.dumps(routing) if routing else 'off'}")
 
     runtime = BrowserAgentRuntime(
         provider=settings.provider,
@@ -155,6 +161,8 @@ async def run(args: argparse.Namespace) -> int:
         "ran_at": dt.datetime.now().isoformat(timespec="seconds"),
         "provider": settings.provider,
         "model": settings.model_name,
+        # The OpenRouter provider object every call of this run carried, None when off.
+        "provider_routing": routing,
         "query": args.query,
         "elapsed_s": elapsed,
         "cost_usd": (None if usage_before is None or usage_after is None

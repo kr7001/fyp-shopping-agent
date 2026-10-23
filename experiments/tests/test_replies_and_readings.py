@@ -140,7 +140,7 @@ class TheReplyAsText(unittest.TestCase):
         tokens = {"prompt": 5000, "completion": 90}
         for content, text in ((None, ""), ([{"type": "text", "text": REPLY}], REPLY), (REPLY, REPLY)):
             with self.subTest(content=str(content)[:20]), answered(content):
-                self.assertEqual(parse_probe.call_model("k", "m", "p"), (text, 0.0002, tokens))
+                self.assertEqual(parse_probe.call_model("k", "m", "p"), (text, 0.0002, tokens, None))
         with answered(7), self.assertRaises(parse_probe.UnexpectedReply) as raised:
             parse_probe.call_model("k", "m", "p")
         self.assertIn("of type int", str(raised.exception))

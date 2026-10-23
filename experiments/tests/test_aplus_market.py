@@ -20,6 +20,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402
 
 import ambiguity  # noqa: E402
+import claim  # noqa: E402  (the order its key positions read)
 import score  # noqa: E402
 import suite  # noqa: E402
 
@@ -1291,12 +1292,34 @@ class LiveCheckComparisons(DevMarket):
     def test_the_order_lines_judge_the_brands_form_and_the_record(self):
         order = self.fixture["_instance"]["predicted_order"]
         lines = live.order_lines(self.fixture, order)
-        self.assertEqual([ok for ok, _ in lines], [True, True, True])
+        self.assertEqual([ok for ok, _ in lines], [True, True, True, True])
         swapped = order[:]
         swapped[1], swapped[2] = swapped[2], swapped[1]
         lines = live.order_lines(self.fixture, swapped)
         self.assertFalse(lines[1][0])
         self.assertIn("differs from the fixture's recorded order in 2 positions", lines[1][1])
+        self.assertFalse(lines[2][0])
+        self.assertIn("differs from the one claim.py reads where a key's listings render, the live order its "
+                      "seed search recorded when it accepted the market, in 2 positions", lines[2][1])
+
+    def test_the_order_claim_reads_is_checked_and_not_only_the_predicted_one(self):
+        # The auditor's case (check of 41d7839): a live order that is the predicted one, where
+        # the order the seed search accepted, which claim.py's key positions read, is not.
+        order = self.fixture["_instance"]["predicted_order"]
+        other = copy.deepcopy(self.fixture)
+        accepted = [e for e in other["_generated"]["search"]["tried"] if e.get("outcome") == "accepted"][-1]
+        accepted["live_order"][0], accepted["live_order"][1] = accepted["live_order"][1], accepted["live_order"][0]
+        lines = live.order_lines(other, order)
+        self.assertEqual([ok for ok, _ in lines], [True, True, False, True])
+        self.assertEqual(claim.results_order(json.loads((paths.TASKS / "tasks_aplus_dev.json").read_text())),
+                         [sku.lower() for sku in self.fixture["_generated"]["search"]["tried"][-1]["live_order"]])
+        # A fixture whose seed search recorded no live order: claim.py reads the predicted one,
+        # and the line says so.
+        bare = copy.deepcopy(self.fixture)
+        del bare["_generated"]["search"]
+        lines = live.order_lines(bare, order)
+        self.assertEqual(lines[2], (True, "the live order is the one claim.py reads where a key's listings "
+                                          "render, the predicted order, its seed search having recorded no live order"))
 
     def test_correct_pages_pass(self):
         self.assertEqual(live.pages_problems(self.pages, self.fixture), [])
@@ -1378,6 +1401,62 @@ class LiveCheckComparisons(DevMarket):
                 self.assertEqual(live.differences({"a.html": page}, {"a.html": rendered_again.replace(*change)}),
                                  ["a.html"])
         self.assertEqual(live.differences({"a.html": page}, {}), ["a.html"])
+
+
+# Every script the Playwright venv runs (`paths.NAIVE_PYTHON`): the A+ and first claim markets'
+# live checkers, the shop's own checks, the box's rendered page reader, the second agent, and
+# the reveal race, by folder (23 October 2026, after the auditor's check of 2df6dc3).
+VENV_SCRIPTS = {"env": ("check_aplus_market", "check_market", "verify_shop", "demo_gate"),
+                "experiments/box": ("page",), "experiments/runners": ("naive_agent",),
+                "experiments/analysis": ("reveal_race",)}
+
+
+def imported_by(path: pathlib.Path) -> set[str]:
+    """Every module a script imports, at its top or inside a function, by its top name."""
+    import ast
+    found = set()
+    for node in ast.walk(ast.parse(path.read_text())):
+        if isinstance(node, ast.Import):
+            found |= {alias.name.split(".")[0] for alias in node.names}
+        elif isinstance(node, ast.ImportFrom) and node.module and node.level == 0 and node.module != "__future__":
+            found.add(node.module.split(".")[0])
+    return found
+
+
+@unittest.skipUnless(paths.NAIVE_PYTHON.exists(), "the Playwright venv, .venv-naive, is not on this machine")
+class TheVenvImports(unittest.TestCase):
+    """The checker's browser checks run under the Playwright venv, which holds Playwright and no
+    scipy. Phase 3 (2df6dc3) had the checker import claim.py, whose compare_cells imports
+    scipy, so it could not start there; the tests, run by the system Python, which has scipy and
+    no Playwright, never saw it (the auditor's check). So each script the venv runs is imported
+    under the venv's own interpreter, as a subprocess, writing no bytecode, and so is every
+    module the checker imports."""
+
+    def venv_import(self, folder: str, name: str) -> subprocess.CompletedProcess:
+        code = (f"import sys; sys.path[:0] = [{str(paths.REPO / folder)!r}, {str(paths.EXPERIMENTS)!r}]; "
+                f"import paths; import {name}")
+        return subprocess.run([str(paths.NAIVE_PYTHON), "-B", "-c", code], cwd=paths.REPO,
+                              capture_output=True, text=True, timeout=300)
+
+    def test_the_checker_starts_under_the_venv(self):
+        run = self.venv_import("env", "check_aplus_market")
+        self.assertEqual(run.returncode, 0, run.stderr[-2000:])
+
+    def test_every_module_the_checker_imports(self):
+        names = imported_by(paths.REPO / "env" / "check_aplus_market.py")
+        self.assertIn("fixture_order", names)
+        self.assertNotIn("claim", names)
+        for name in sorted(names):
+            with self.subTest(module=name):
+                run = self.venv_import("env", name)
+                self.assertEqual(run.returncode, 0, run.stderr[-2000:])
+
+    def test_every_script_the_venv_runs(self):
+        for folder, names in VENV_SCRIPTS.items():
+            for name in names:
+                with self.subTest(script=f"{folder}/{name}.py"):
+                    run = self.venv_import(folder, name)
+                    self.assertEqual(run.returncode, 0, run.stderr[-2000:])
 
 
 if __name__ == "__main__":
