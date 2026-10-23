@@ -72,7 +72,22 @@ import paths  # noqa: E402,F401  (puts box/ on the path)
 #      a task file names its fixture and without: no verdict changes. 94 reasons do: 82 price
 #      answers now name the price they gave, 10 ranked answers no longer say "in order", and
 #      two counts read 4 where v6 read a list's "(1)", both still wrong
-VERSION = 7
+#   8  23 October 2026, from the verifier's re-audit of v7, whose 24 new plausible answers it
+#      misscored 15 of. A count followed by a full stop is read ("... in stock right now is
+#      11.", unread since v1). A count is not the market's size given as a total ("21 tee
+#      listings in total;", "Total tee listings: 21", "every tee listing (21 of them)"), nor the
+#      complement ("4 do not offer M"), nor what was looked at ("looked at 21"), and "the menu
+#      of 17" is a count (`NOT_THE_COUNT`, `COVERAGE_NUMBER`). A claim of a best names its own
+#      clause's subject first, passes to the next item when its sentence takes the first back,
+#      is never taken back by a rejection of other listings ("ignoring listings where M is sold
+#      out"), is no claim when an ordinal makes it a runner-up ("second best"), and is context,
+#      not the answer, when it is about the cards ("the cheapest tee card is $14.18")
+#      (`claims`). A ranking that names more sellers of the market than its key holds is wrong
+#      (`ranked`). Re-scored over every stored run that day, 654 records in 88 batches, with
+#      the market's sellers where a task file names its fixture and without: no verdict and
+#      no reason changes; the re-audit's 24 move as it judged them, and its first audit's 51
+#      and seven controls stay as v7 scored them
+VERSION = 8
 
 # Phrases that mean the agent declined rather than answered. Kept narrow on
 # purpose: "not" alone is far too broad, "could not determine" is not.
@@ -94,10 +109,27 @@ POSITIVE_MARKERS = ("yes", "in stock", "available")
 LEADING_ANSWER = re.compile(r"^[\W_]*(yes|no)\b")
 
 # A number that says how much was examined rather than how many qualified: "all 15",
-# "of the 15", "out of 15", "across 15". Used by the count rule to skip past it.
+# "of the 15", "out of 15", "across 15". Used by the count rule to skip past it. Since score v8
+# (23 October 2026, from the verifier's re-audit) also "looked at 21", "visited 21", "went
+# through 21", and never "the menu of 17", which is the count: "Size M is in the menu of 17
+# tee listings" read as a count of the 6 sold out that it named next.
 COVERAGE_NUMBER = re.compile(
-    r"\b(?:all|of|out of|across|among|checking|checked|opened|examined)\s+(?:the\s+)?"
+    r"(?<!menu )(?<!menus )\b(?:all|of|out of|across|among|checking|checked|opened|examined|looked at|"
+    r"visited|visiting|reviewed|inspected|went through|going through|scanned|browsed)\s+(?:the\s+)?"
     r"(\d{1,3})\b", re.IGNORECASE)
+# What else a count answer says that is not its count (score v8, the re-audit): the market's
+# size given as a total, "21 tee listings in total;", "Total tee listings: 21", "every tee
+# listing (21 of them)"; and the complement, the listings without it, "4 tee listings do not
+# offer M at all, so 17 of the 21 do", which read as 4. A complement is the listings that lack
+# the thing in the menu; "6 list it sold out" is left alone, since under the menu reading of
+# "offer" a sold-out size is still offered.
+NOT_THE_COUNT = re.compile(
+    r"\b(\d{1,3})\s+(?:[a-z-]+\s+){0,3}?(?:listings?|results?|products?)\s+in\s+(?:total|all)"
+    r"(?=\s*(?:[,;:.)]|$|\band\b))"
+    r"|\btotal\s+(?:[a-z-]+\s+){0,3}?(?:listings?|results?|products?)\s*:\s*(\d{1,3})\b"
+    r"|\blistings?\s*\((\d{1,3})(?:\s+of\s+them|\s+in\s+(?:all|total))?\)"
+    r"|\b(\d{1,3})\s+(?:[a-z-]+\s+){0,3}?(?:do|does|did)(?:\s+not|n't)\s+(?:offer|have|list|carry|stock)\b"
+    r"|\b(\d{1,3})\s+(?:[a-z-]+\s+){0,3}?(?:lacks?|(?:have|has)\s+no|are\s+missing)\b", re.IGNORECASE)
 
 # Where the answer looked, which is never the count either (score v7, 23 October 2026, from
 # the verifier's audit: a right "I opened all 21 tee listings (20 on page 1 and 1 on page
@@ -184,59 +216,114 @@ REJECTION = re.compile(
     re.IGNORECASE)
 NEGATED = re.compile(r"(?:\bnot|n't|\bnever|\bno\s+longer)\s+(?:[\w-]+\s*(?:/|,|\bor\b)\s*)*(?:\w+\s+)?$",
                      re.IGNORECASE)
+# A rejection about other listings takes nothing back from the one claimed (score v8, from the
+# verifier's re-audit): "Elmsworth Apparel is the cheapest at $19.17, ignoring listings where M
+# is sold out" is right, and "Lymington ... is the cheapest for size M at $16.62, though several
+# other listings are sold out" names Lymington. So a marker does not count when the words
+# between the item and it turn to others (`ABOUT_OTHERS`), or when it describes the noun after
+# it, "after excluding sold-out listings" (`DESCRIBES_NEXT`).
+ABOUT_OTHERS = re.compile(r"\b(?:listings|others?|ones|several|some|many|most|those|these|rest|sellers|"
+                          r"stores|shops|products|items|exclud\w*|ignor\w*|except|without|apart\s+from|"
+                          r"besides|unlike)\b", re.IGNORECASE)
+DESCRIBES_NEXT = re.compile(r"\s*(?:listings?|ones|sizes?|packs?|options?|items?|products?|variants?|"
+                            r"sellers?|offers?|cards?|entries)\b", re.IGNORECASE)
+# "Second best", "the next cheapest", "third-lowest" name no best (score v8: "Crowhurst Pantry
+# Stores is second best; Ashgrove Provisions is the cheapest per litre" named Crowhurst).
+ORDINAL = re.compile(r"(?:\bsecond|\bthird|\bfourth|\b2nd|\b3rd|\b4th|\bnext)[\s-]+$", re.IGNORECASE)
+# A claim about the cards rather than what was asked: "the cheapest tee card is $14.18", "the
+# cheapest water listing overall is Oakfield at $6.93", "advertises the lowest price" (score
+# v8). For a price key, whose question always asks the price of one size or pack, such a claim
+# is context and never the answer; for an option key it is read only when the answer makes no
+# other claim, since the control question asks which listing advertises the lowest price.
+CONTEXT = re.compile(r"\b(?:cards?|advertis\w*|overall|headline|as\s+low\s+as)\b", re.IGNORECASE)
+# Where a clause of a sentence ends: a claim's own clause holds its subject and its object.
+CLAUSE_BREAK = re.compile(r"[,;:()]|\s[-–—]\s")
 
 
 def taken_back(low: str, item_end: int, others: list[int]) -> bool:
     """Whether the sentence `low` takes back what it claims of the item ending at `item_end`:
     a rejection, not negated, after the item and before the next item it names (`others`,
     where the other items start), so "Elmsworth is the cheapest, since Lymington's M is sold
-    out" takes nothing back from Elmsworth."""
+    out" takes nothing back from Elmsworth; and since v8 one said of the item, not of other
+    listings (`ABOUT_OTHERS`, `DESCRIBES_NEXT`)."""
     until = min([start for start in others if start >= item_end], default=len(low))
-    return any(not NEGATED.search(low[max(0, m.start() - 40):m.start()])
-               for m in REJECTION.finditer(low, item_end, until))
+    for m in REJECTION.finditer(low, item_end, until):
+        if NEGATED.search(low[max(0, m.start() - 40):m.start()]):
+            continue
+        if ABOUT_OTHERS.search(low[item_end:m.start()]) or DESCRIBES_NEXT.match(low, m.end()):
+            continue
+        return True
+    return False
 
 
-def first_claimed(answer: str, items_of) -> tuple[object, str] | None:
-    """What the answer's first claim of a best names, the claim its sentence does not take
-    back, and that sentence (score v7). `items_of(sentence)` gives every item a sentence
-    names, as (start, end, item) in its lowercased text: an option, or a price. Each "best",
-    "cheapest" or "lowest" in turn, sentence by sentence, is held to the item named nearest
-    it; the first that is not taken back (`taken_back`) decides, since the answer's
-    conclusion comes there however much it compares after. An item its sentence has taken
-    back is not held to a later claim in it: "the lowest listed M is $16.62 but it is sold
-    out, so the cheapest that can be bought is $19.17" claims 19.17, though 16.62 sits as
-    near the second claim. None when no sentence makes such a claim."""
+def clause_of(low: str, at: int) -> tuple[int, int]:
+    """The span of the clause of `low` that holds position `at`."""
+    starts = [m.end() for m in CLAUSE_BREAK.finditer(low, 0, at)]
+    end = CLAUSE_BREAK.search(low, at)
+    return (starts[-1] if starts else 0), (end.start() if end else len(low))
+
+
+def claims(answer: str, items_of):
+    """Every claim of a best the answer makes, in order, as (item, sentence, context), each
+    with the item it names (score v7, rewritten for v8). `items_of(sentence)` gives every item
+    a sentence names, as (start, end, item) in its lowercased text: an option, or a price.
+
+    A claim is a "best", "cheapest" or "lowest" that no ordinal makes a runner-up ("second
+    best"). It names its own clause's subject, the item before it there, else the item after
+    it there, else the item nearest it in the sentence (v8: by distance alone, "Haldane Garment
+    Works advertises the lowest price, $17.97 (Brindle, further down, shows $14.18)" named the
+    nearer Brindle). An item the sentence takes back (`taken_back`) passes the claim to the next
+    in that order (v8: the claim was dropped, and "Haldane ... is cheapest for M, since Brindle
+    has no M" named nobody), and no claim of that sentence names it, since whether an item is
+    taken back depends on the item and the sentence alone: "the lowest listed M is $16.62 but
+    it is sold out, so the cheapest that can be bought is $19.17" claims 19.17. `context` says
+    the claim's clause is about the cards (`CONTEXT`)."""
     for sentence in SENTENCE_END.split(answer or ""):
         low = sentence.lower()
         items = items_of(sentence)
-        rejected = set()
         for claim in SUPERLATIVE.finditer(low):
-            open_ = [entry for entry in items if entry[0] not in rejected]
-            if not open_:
-                break
-            def distance(item, at=claim.start()):
+            if ORDINAL.search(low, 0, claim.start()):
+                continue
+            first, last = clause_of(low, claim.start())
+            at = claim.start()
+
+            def order(item):
                 start, end, _ = item
-                return start - at if start > at else max(0, at - end)
-            start, end, item = min(open_, key=distance)
-            if not taken_back(low, end, [s for s, _, _ in items if s != start]):
-                return item, sentence
-            rejected.add(start)
-    return None
+                distance = start - at if start > at else max(0, at - end)
+                if first <= start and end <= at:
+                    return 0, distance
+                if at <= start and end <= last:
+                    return 1, distance
+                return 2, distance
+            for start, end, item in sorted(items, key=order):
+                if taken_back(low, end, [s for s, _, _ in items if s != start]):
+                    continue
+                yield item, sentence, bool(CONTEXT.search(low, first, last))
+                break
+
+
+def first_claimed(answer: str, items_of, context: str = "skip") -> tuple[object, str] | None:
+    """What the answer's first claim of a best names, and that sentence (`claims`), or None
+    when it makes none: `context` "skip" passes over a claim about the cards, "fallback" reads
+    one only when the answer makes no other."""
+    found = list(claims(answer, items_of))
+    chosen = [c for c in found if not c[2]] or (found if context == "fallback" else [])
+    return (chosen[0][0], chosen[0][1]) if chosen else None
 
 
 def named_best(answer: str, wanted: list[str], excluded: list[str]) -> str | None:
     """Which side the answer names as the best, "wanted" or "excluded", or None when no
     sentence makes a superlative claim about either (score v6, 22 October 2026). The first
-    sentence that says "best", "cheapest" or "lowest" and names an option decides, by the
-    option named nearest that word: the answer's conclusion comes in it however much it
-    compares after. Since v7 a claim the sentence takes back names nothing (`first_claimed`),
-    and a caller that knows the market passes every other seller in `excluded`."""
+    claim of a best decides (`claims`): the answer's conclusion comes there however much it
+    compares after. Since v7 a claim the sentence takes back names nothing, and a caller that
+    knows the market passes every other seller in `excluded`; since v8 a claim about the cards
+    decides only where the answer makes no other, as for the control question it must."""
     def options(sentence: str) -> list[tuple[int, int, str]]:
         low = sentence.lower()
         return [(m.start(), m.end(), side)
                 for side, tokens in (("wanted", wanted), ("excluded", excluded))
                 for token in tokens for m in re.finditer(re.escape(token.lower()), low)]
-    claimed = first_claimed(answer, options)
+    claimed = first_claimed(answer, options, context="fallback")
     return None if claimed is None else claimed[0]
 
 
@@ -516,13 +603,17 @@ def score(task: dict, answer: str, ok: bool, sellers: list[str] | None = None) -
         # 2-pack". If that leaves nothing, the first number is used after all, since "All 15
         # listings offer it" is a count of 15.
         bare = without_labels(PACK_LABEL.sub(lambda m: " " * len(m.group(0)), answer))
-        numbers = list(re.finditer(r"(?<![\d.$])(\d{1,3})(?![\d.])", bare))
+        # A whole number, never a decimal's part. Until v8 a number followed by a full stop
+        # was never read, so "... in stock right now is 11." gave no count at all.
+        numbers = list(re.finditer(r"(?<![\d.$])(\d{1,3})(?!\d|\.\d)", bare))
         if not numbers:
             return {"verdict": "ambiguous", "why": "no number given", "prices": found}
         coverage = {m.start(1) for m in COVERAGE_NUMBER.finditer(bare)}
         coverage |= {m.start(group) for m in MARKET_SIZE.finditer(bare)
                      for group in range(1, 6) if m.group(group)}
         coverage |= {m.start(group) for m in ENUMERATOR.finditer(bare) for group in (1, 2) if m.group(group)}
+        coverage |= {m.start(group) for m in NOT_THE_COUNT.finditer(bare)
+                     for group in range(1, 6) if m.group(group)}
         spans = [m.span() for m in PAGE_NUMBERS.finditer(bare)]
         coverage |= {m.start(1) for m in numbers if any(a <= m.start(1) < b for a, b in spans)}
         kept = [m for m in numbers if m.start(1) not in coverage]
@@ -540,7 +631,7 @@ def score(task: dict, answer: str, ok: bool, sellers: list[str] | None = None) -
         return {"verdict": "wrong", "why": f"missing {missing}", "prices": found}
 
     if kind == "ranked":
-        return ranked(expect, answer, found)
+        return ranked(expect, answer, found, sellers)
 
     raise ValueError(f"unknown expect kind: {kind}")
 
@@ -554,7 +645,14 @@ def mentions_of(low: str, items: list[dict]) -> list[tuple[int, int]]:
     return sorted(found)
 
 
-def ranked(expect: dict, answer: str, found: list[float]) -> dict:
+# A seller an answer names as outside its ranking, "ahead of Kelsall", "then Kelsall", "beating
+# Kelsall" (score v8).
+OUTSIDE_THE_RANKING = re.compile(r"\b(?:ahead\s+of|before|beating|beats?|over|then|next|followed\s+by|after|"
+                                 r"than|unlike|not|excluding|except|skipp\w*|ignor\w*)\s+(?:[\w$.]+\s+){0,2}$",
+                                 re.IGNORECASE)
+
+
+def ranked(expect: dict, answer: str, found: list[float], sellers: list[str] | None = None) -> dict:
     """The k sellers, each with its price. Written 14 October 2026 for the top-k and
     named-comparison questions of the box v2 batch. Until score v7 the sellers had to be named
     in the key's order, and the three right sellers out of order were wrong (verifier's audit,
@@ -571,13 +669,30 @@ def ranked(expect: dict, answer: str, found: list[float]) -> dict:
 
     An item marked optional need not be named, but when it is named with a price the price
     must be its own: the loser of a comparison quoted at its advertised price is a wrong
-    answer, however the winner is reported. Not caught: an extra seller ranked ahead of the
-    expected ones, which the verifier reads for (LESSONS 4).
+    answer, however the winner is reported.
+
+    Since v8, where the caller names the market's `sellers`, a sentence that names the
+    expected sellers and more sellers of the market than the key holds answers with more than
+    were asked: "The cheapest are Elmsworth $19.17, Everleigh $21.54, Bexhill $21.71 and
+    Kelsall $27.45" is four for three, and wrong (verifier's re-audit, 23 October 2026). A
+    seller named as outside the ranking, "ahead of Kelsall", "then Kelsall", is not counted
+    (`OUTSIDE_THE_RANKING`), nor one in a sentence that names none of the expected sellers.
+    Without the sellers, an extra seller is not caught, and the verifier reads for it.
     """
     low = answer.lower()
     items = expect["items"]
     mentions = mentions_of(low, items)
     cuts = [position for position, _ in mentions]
+    extra = other_sellers(sellers, [token for item in items for token in item["any"]])
+    for sentence in SENTENCE_END.split(answer or ""):
+        said = sentence.lower()
+        named = {index for _, index in mentions_of(said, items)}
+        listed = sorted({token for token in extra for m in re.finditer(re.escape(token), said)
+                         if not OUTSIDE_THE_RANKING.search(said, 0, m.start())})
+        if named and listed and len(named) + len(listed) > len(items):
+            return {"verdict": "wrong", "why": f"named {len(named) + len(listed)} sellers where the key "
+                                               f"holds {len(items)}, {', '.join(listed)} besides",
+                    "prices": found}
 
     def nearby(position: int) -> list[float]:
         before = max([c for c in cuts if c < position], default=0)

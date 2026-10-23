@@ -118,6 +118,20 @@ class RankedRule(unittest.TestCase):
             with self.subTest(answer=answer):
                 self.assertEqual(verdict(self.TOP3, answer), expected)
 
+    def test_four_sellers_for_three(self):
+        # Score v8, from the verifier's re-audit (k27). Planted: the check left out, it was
+        # correct. Only with the market's sellers.
+        sellers = ["Harbour Lane", "Mellow Fields", "Quiet Oak", "Kelsall Supply"]
+        four = "The cheapest are Harbour Lane $12.15, Mellow Fields $13.15, Quiet Oak $14.15 and Kelsall $15.40."
+        self.assertEqual(score.score({"expect": self.TOP3}, four, True, sellers)["verdict"], "wrong")
+        self.assertEqual(verdict(self.TOP3, four), "correct")      # without them, not caught
+        # Quiet: a fourth named as outside the three, or in a sentence of its own.
+        for answer in ("The three cheapest are Harbour Lane ($12.15), Mellow Fields ($13.15) and Quiet Oak ($14.15), "
+                       "ahead of Kelsall ($15.40).",
+                       "Harbour Lane $12.15, Mellow Fields $13.15, Quiet Oak $14.15. Kelsall is fourth at $15.40."):
+            with self.subTest(answer=answer[:40]):
+                self.assertEqual(score.score({"expect": self.TOP3}, answer, True, sellers)["verdict"], "correct")
+
     def test_a_comparison_holds_the_optional_loser_to_its_own_price(self):
         for answer in ("Mellow Fields is cheaper for size M, at $13.15.",
                        "Between Harbour Lane and Mellow Fields, Mellow Fields is cheaper at "
@@ -366,7 +380,60 @@ class TheAudit(unittest.TestCase):
         wrong = [n for n, (task_id, truth, answer) in enumerate(AUDIT, 1)
                  if (score.score(self.tasks[task_id], answer, True)["verdict"] == "correct") != (truth == "right")]
         self.assertEqual(set(wrong), NEEDS_THE_MARKET)
-        self.assertEqual(score.VERSION, 7)
+
+
+# The verifier's re-audit of v7 (23 October 2026), its 24 answers word for word, of which v7
+# misscored 15, and its seven controls, right answers that name more sellers after the winner.
+REAUDIT = [
+    ("c1", "tee-cheapest-target", "right", "Elmsworth Apparel is the cheapest at $19.17, ignoring listings where M is sold out. Lymington had the lowest listed price, $16.62."),
+    ("c2", "tee-cheapest-target", "right", "The cheapest seller that can actually supply size M is Elmsworth Apparel at $19.17 (it is in stock; Lymington's is sold out)."),
+    ("c3", "tee-cheapest-target", "right", "Elmsworth Apparel is the cheapest seller for size M that is not sold out, at $19.17."),
+    ("c5", "tee-cheapest-target", "wrong", "Lymington Uniform Supply is the cheapest for size M at $16.62, though several other listings are sold out. Elmsworth Apparel charges $19.17."),
+    ("c7", "tee-cheapest-target", "wrong", "Haldane Garment Works ($17.97) is cheapest for M, since Brindle has no M. Elmsworth Apparel charges $19.17."),
+    ("p10", "tee-target-price", "right", "Size M's lowest available price is $19.17 (Elmsworth Apparel), after excluding sold-out listings."),
+    ("p13", "tee-target-price", "wrong", "The lowest price is $17.83 (Elmsworth's advertised price); I did not check M."),
+    ("p14", "tee-target-price", "right", "Brindle Clothing Co has the cheapest card at $14.18, but it does not offer size M. The lowest price for size M that can be bought is $19.17 at Elmsworth Apparel."),
+    ("p15", "tee-target-price", "right", "The cheapest tee card is $14.18 (Brindle). For size M, the lowest buyable price is $19.17 at Elmsworth."),
+    ("p16", "water-target-price", "right", "Oakfield Provisions has the cheapest card at $6.93 for its 24 x 350ml. The lowest 2 x 9.5L that can be bought is $20.30 at Dalston."),
+    ("p17", "water-target-price", "right", "The cheapest water listing overall is Oakfield at $6.93, a smaller pack. For the 2 x 9.5L, the lowest price that can be bought is $20.30 (Dalston Trading Company)."),
+    ("n19", "tee-count-buyable", "right", "21 tee listings in total; 11 have size M in stock."),
+    ("n20", "tee-count-buyable", "right", "Total tee listings: 21. In stock with M: 11."),
+    ("n21", "tee-count-buyable", "right", "I looked at 21 tee listings and 11 have size M in stock."),
+    ("n22", "tee-count-buyable", "right", "After visiting every tee listing (21 of them), 11 have size M in stock."),
+    ("n23", "water-count-buyable", "right", "Across both result pages, 13 water listings have the 2 x 9.5 L pack in stock."),
+    ("n24", "tee-count-stocked", "right", "Size M is in the menu of 17 tee listings (6 of them sold out, 4 listings have no M)."),
+    ("n25", "tee-count-stocked", "right", "4 tee listings do not offer M at all, so 17 of the 21 do."),
+    ("k27", "tee-top-3", "wrong", "The cheapest are Elmsworth $19.17, Everleigh $21.54, Bexhill $21.71 and Kelsall $27.45, in that order, though Kelsall is fourth."),
+    ("r33", "water-best-per-litre", "wrong", "Crowhurst Pantry Stores is second best; Ashgrove Provisions is the cheapest per litre."),
+    ("r34", "water-best-per-litre", "right", "Westmere would be the cheapest per litre at $0.92, but its 2 x 9.5L is sold out, so the best you can buy is Crowhurst Pantry Stores at $0.95 a litre."),
+    ("h35", "tee-headline", "wrong", "Haldane Garment Works advertises the lowest price, $17.97 (Brindle, further down, shows $14.18)."),
+    ("h36", "tee-headline", "right", "On the results pages, Brindle Clothing Co shows the lowest tee price: $14.18. The first screen's cheapest tee is Haldane Garment Works at $17.97."),
+    ("e37", "tee-exists-under", "right", "Yes - Elmsworth Apparel has size M in stock for $19.17. Cheaper-looking listings such as Brindle do not offer M."),
+    ("names1", "water-cheapest-target", "right", "Dalston Trading Company is cheapest for the 2 x 9.5L at $20.30, then Fenwick."),
+    ("names2", "water-cheapest-target", "right", "Dalston Trading Company is cheapest at $20.30, followed by Pembroke Provisions Official Store."),
+    ("names3", "water-cheapest-target", "right", "Dalston Trading Company has the cheapest buyable 2 x 9.5L, $20.30; next is Thornbury at $22.06."),
+    ("names4", "water-best-per-litre", "right", "Crowhurst Pantry Stores is the best value per litre, ahead of Oakfield Provisions."),
+    ("names5", "water-best-per-litre", "right", "Crowhurst Pantry Stores has the lowest price per litre, beating Brockwell and Holbeck."),
+    ("names6", "tee-cheapest-target", "right", "Elmsworth Apparel is cheapest for size M at $19.17, with Everleigh Threads next at $21.54."),
+    ("names7", "tee-cheapest-target", "right", "Elmsworth Apparel is cheapest, then Everleigh Threads ($21.54); Elmsworth charges $19.17."),
+]
+# The fifteen v7 misscored.
+V7_MISSCORED = {"c1", "c5", "c7", "p15", "p16", "p17", "n19", "n20", "n21", "n22", "n24", "n25", "k27", "r33", "h35"}
+
+
+class TheReaudit(unittest.TestCase):
+    """Score v8 on the verifier's re-audit of v7: every answer judged as a reader would, with the
+    market's sellers. The first audit's still hold (`TheAudit`)."""
+
+    setUpClass = classmethod(TheAudit.setUpClass.__func__)
+
+    def test_every_reaudit_answer_with_the_market(self):
+        for cid, task_id, truth, answer in REAUDIT:
+            with self.subTest(case=cid):
+                got = score.score(self.tasks[task_id], answer, True, self.sellers)
+                self.assertEqual(got["verdict"] == "correct", truth == "right", got)
+        self.assertEqual(len(V7_MISSCORED), 15)
+        self.assertEqual(score.VERSION, 8)
 
 
 class CountCoverage(unittest.TestCase):
@@ -427,6 +494,102 @@ class CountCoverage(unittest.TestCase):
         # Quiet: a count in parentheses that numbers nothing.
         self.assertEqual(verdict({"kind": "count", "value": 17}, "Listings offering M (17): every one but four."),
                          "correct")
+
+
+class CountV8(unittest.TestCase):
+    """Score v8, from the verifier's re-audit: what else a count answer says that is not its count."""
+
+    def test_a_count_before_a_full_stop_is_read(self):
+        # Planted: the number pattern of v1 to v7, "no number given".
+        self.assertEqual(verdict({"kind": "count", "value": 11},
+                                 "The number of tee listings with size M in stock right now is 11."), "correct")
+        # Quiet: a decimal's parts are no count.
+        self.assertEqual(verdict({"kind": "count", "value": 11}, "A share of 52.4 per cent: 11 listings have it."),
+                         "correct")
+
+    def test_the_total_the_complement_and_what_was_looked_at_are_not_the_count(self):
+        # Planted: each alternative of `NOT_THE_COUNT`, and the verbs added to `COVERAGE_NUMBER`.
+        for value, answer in ((11, "21 tee listings in total; 11 have size M in stock."),
+                              (11, "Total tee listings: 21. In stock with M: 11."),
+                              (11, "I looked at 21 tee listings and 11 have size M in stock."),
+                              (11, "After visiting every tee listing (21 of them), 11 have size M in stock."),
+                              (17, "4 tee listings do not offer M at all, so 17 of the 21 do."),
+                              (17, "4 tee listings have no M, and 17 of the 21 do.")):
+            with self.subTest(answer=answer[:40]):
+                self.assertEqual(verdict({"kind": "count", "value": value}, answer), "correct")
+        # Each verb of what was looked at, on its own.
+        for verb in ("visited", "reviewed", "inspected", "went through", "scanned", "browsed"):
+            with self.subTest(verb=verb):
+                self.assertEqual(verdict({"kind": "count", "value": 11}, f"I {verb} 21 tee listings; 11 have M."),
+                                 "correct")
+        # Quiet: a total that is the count, a count before its complement, and a complement
+        # alone, which is all the answer gives.
+        self.assertEqual(verdict({"kind": "count", "value": 11}, "11 listings in total have size M in stock."),
+                         "correct")
+        self.assertEqual(verdict({"kind": "count", "value": 11}, "11 have it in stock; 10 do not."), "correct")
+        self.assertEqual(verdict({"kind": "count", "value": 17}, "4 tee listings do not offer M."), "wrong")
+
+    def test_the_menu_of_seventeen_is_the_count(self):
+        # Planted: "of" coverage after "menu", the count read as the 6 sold out named next.
+        self.assertEqual(verdict({"kind": "count", "value": 17}, "Size M is in the menu of 17 tee listings (6 of "
+                                                                 "them sold out, 4 listings have no M)."), "correct")
+        # Quiet: "of the 21" is still coverage.
+        self.assertEqual(verdict({"kind": "count", "value": 17}, "17 of the 21 tee listings offer M."), "correct")
+
+
+class ClaimsV8(unittest.TestCase):
+    """Score v8, from the verifier's re-audit: which claim of a best names what."""
+
+    def test_a_rejection_of_other_listings_takes_nothing_back(self):
+        # Planted: `ABOUT_OTHERS` matching nothing, the right c1 named Lymington (it took back
+        # Elmsworth) and the wrong c5 named nobody but Elmsworth.
+        self.assertEqual(score.named_best("Elmsworth Apparel is the cheapest at $19.17, ignoring listings where M "
+                                          "is sold out. Lymington had the lowest listed price, $16.62.",
+                                          ["Elmsworth"], ["Lymington"]), "wanted")
+        self.assertEqual(score.named_best("Lymington Uniform Supply is the cheapest for size M at $16.62, though "
+                                          "several other listings are sold out.", ["Elmsworth"], ["Lymington"]),
+                         "excluded")
+        # Quiet: a rejection of the item itself still takes it back.
+        self.assertEqual(score.named_best("Lymington has the lowest M at $16.62, but it is sold out; Elmsworth is "
+                                          "the cheapest at $19.17.", ["Elmsworth"], ["Lymington"]), "wanted")
+
+    def test_a_marker_that_describes_the_next_noun_takes_nothing_back(self):
+        # Planted: `DESCRIBES_NEXT` matching nothing, the claim was taken back and the answer,
+        # naming the trap too, read as ambiguous.
+        expect = {"kind": "price", "value": 20.30, "trap": 6.93}
+        self.assertEqual(verdict(expect, "The lowest 2 x 9.5L that can be bought is $20.30 at Dalston, with sold-out "
+                                         "packs set aside, against the $6.93 card."), "correct")
+
+    def test_the_claim_passes_on_and_names_its_subject(self):
+        # Planted: the claim dropped after a take-back (c7), and attribution by distance alone
+        # (h35): both wrong winners scored correct.
+        self.assertEqual(score.named_best("Haldane Garment Works ($17.97) is cheapest for M, since Brindle has no "
+                                          "M.", ["Elmsworth"], ["Haldane", "Brindle"]), "excluded")
+        self.assertEqual(score.named_best("Haldane Garment Works advertises the lowest price, $17.97 (Brindle, "
+                                          "further down, shows $14.18).", ["Brindle"], ["Haldane"]), "excluded")
+        # Quiet: the object of "the cheapest is" when nothing comes before it in its clause.
+        self.assertEqual(score.named_best("The cheapest seller that can supply M is Elmsworth Apparel at $19.17, "
+                                          "Haldane being dearer.", ["Elmsworth"], ["Haldane"]), "wanted")
+
+    def test_a_runner_up_is_no_best(self):
+        # Planted: `ORDINAL` matching nothing, r33 named Crowhurst.
+        self.assertEqual(score.named_best("Crowhurst Pantry Stores is second best; Ashgrove Provisions is the "
+                                          "cheapest per litre.", ["Crowhurst"], ["Ashgrove"]), "excluded")
+        self.assertEqual(score.named_best("Crowhurst is the best per litre; Ashgrove is second best.",
+                                          ["Crowhurst"], ["Ashgrove"]), "wanted")
+
+    def test_a_claim_about_the_cards_is_context(self):
+        # Planted: `CONTEXT` matching nothing, each gave the card's price as its answer.
+        self.assertEqual(score.answer_price("The cheapest tee card is $14.18 (Brindle). For size M, the lowest "
+                                            "buyable price is $19.17 at Elmsworth."), 19.17)
+        self.assertEqual(score.answer_price("The cheapest water listing overall is Oakfield at $6.93, a smaller "
+                                            "pack. For the 2 x 9.5L, the lowest price that can be bought is $20.30."),
+                         20.30)
+        # Quiet: for an option key a claim about the cards is read where the answer makes no
+        # other, as the control question asks which listing advertises the lowest price.
+        self.assertEqual(score.named_best("Brindle Clothing Co advertises the lowest price, $14.18.",
+                                          ["Brindle"], ["Haldane"]), "wanted")
+        self.assertIsNone(score.answer_price("Brindle advertises the lowest card, $14.18."))
 
 
 class PriceAsAnswer(unittest.TestCase):
