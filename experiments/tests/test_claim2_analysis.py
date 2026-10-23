@@ -1326,7 +1326,9 @@ class HandReadingSheet(unittest.TestCase):
             task = tasks[run["task"]]
             asked = tasks[task["template"]] if task.get("template") else task
             self.assertEqual(row["question"], asked["query"].format(base=self.spec["base_url"]))
-            self.assertEqual((row["scorer_verdict"], mapped["verdict"]), (run["verdict"], run["verdict"]))
+            # The scorer's verdict is the key file's alone (v4): the reader is blind to it.
+            self.assertNotIn("scorer_verdict", row)
+            self.assertEqual(mapped["verdict"], run["verdict"])
             self.assertEqual(row["answer"], " ".join(run["answer"].split()))
             self.assertEqual((row["hand_verdict"], row["note"]), ("", ""))
             # The key for the reading the run answered under: the question's own with none, or
@@ -1347,13 +1349,22 @@ class HandReadingSheet(unittest.TestCase):
         self.assertNotEqual(sidecar["readings"]["buyable"]["tee-count-stocked"], tasks["tee-count-stocked"]["expect"])
         self.assertEqual({row["key"] for row in buyable},
                          {json.dumps(sidecar["readings"]["buyable"]["tee-count-stocked"], sort_keys=True)})
-        # The block (rules)' tee-cheapest-target-1, stored correct and scored wrong today, shows
-        # the scorer's verdict, never the stored one.
+        # The block (rules)' tee-cheapest-target-1, stored correct and scored wrong today: its
+        # key file holds the scorer's verdict, never the stored one.
         moved = next(row for row in self.rows if self.key["codes"][row["code"]]["arm"] == "the block (rules)"
                      and self.key["codes"][row["code"]]["task"] == "tee-cheapest-target"
                      and self.key["codes"][row["code"]]["repeat"] == 1)
         self.assertEqual(json.loads(moved["key"]), tasks["tee-cheapest-target"]["expect"])
-        self.assertEqual(moved["scorer_verdict"], "wrong")
+        self.assertEqual(self.key["codes"][moved["code"]]["verdict"], "wrong")
+
+    def test_the_sheet_is_blind_to_the_scorer(self):
+        # Its columns are the code, the question, the key, the answer and two for the reader;
+        # no column holds a scorer's verdict (v4).
+        self.assertEqual(self.text.splitlines()[0], "code,question,key,answer,hand_verdict,note")
+        self.assertTrue({"correct", "wrong"} <= {c["verdict"] for c in self.key["codes"].values()})
+        for row in self.rows:
+            self.assertEqual(sorted(row), sorted(claim.SHEET_COLUMNS))
+            self.assertEqual((row["hand_verdict"], row["note"]), ("", ""))
 
     def test_the_codes_are_drawn_afresh_and_no_sheet_is_written_over(self):
         again = self.sheet.with_name("again.csv")
@@ -1371,6 +1382,184 @@ class HandReadingSheet(unittest.TestCase):
             with contextlib.redirect_stderr(io.StringIO()) as err, self.assertRaises(SystemExit):
                 claim.main([str(self.manifest), "--sheet", str(self.sheet.with_name("first.csv"))])
             self.assertIn("needs --protocol", err.getvalue())
+
+
+def agreeing(verdict: str) -> str:
+    """The hand verdict that agrees with a scorer's verdict."""
+    return "correct" if verdict == "correct" else "unscorable" if verdict == "unscored" else "not correct"
+
+
+def fill(sheet: pathlib.Path, name: str, hand=None, drop: set | None = None) -> pathlib.Path:
+    """A filled copy of a hand-reading sheet beside it, called `name`, with its key copied
+    beside the copy: each row's hand verdict `hand(row, mapped)` where it gives one, else the
+    one agreeing with the scorer's verdict in the key; the codes in `drop` left out."""
+    key = json.loads(sheet.with_name(sheet.stem + ".key.json").read_text())
+    with sheet.open(newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    for row in rows:
+        mapped = key["codes"][row["code"]]
+        given = hand(row, mapped) if hand else None
+        row["hand_verdict"] = given if given is not None else agreeing(mapped["verdict"])
+    out = sheet.with_name(name)
+    with out.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(row for row in rows if row["code"] not in (drop or set()))
+    out.with_name(out.stem + ".key.json").write_text(json.dumps(key))
+    return out
+
+
+def is_run(mapped: dict, model: str, arm: str, task: str, repeat: int) -> bool:
+    return (mapped["model"], mapped["arm"], mapped["task"], mapped["repeat"]) == (model, arm, task, repeat)
+
+
+# Four disagreements planted on the showcase run (`showcase`): the scorer kinder twice, where
+# the block (model) under DeepSeek was right on tee-target-price and the reader says not; harsher
+# once, on shipped's card price under Haiku, which the reader takes as correct; and one answer
+# the reader leaves unscorable, shipped's water-best-per-litre under DeepSeek.
+PLANTED = {(DEEPSEEK, "the block (model)", "tee-target-price", 1): ("not correct", "says the price, not who sells it"),
+           (DEEPSEEK, "the block (model)", "tee-target-price", 2): ("not correct", ""),
+           (HAIKU, "shipped", "tee-target-price", 1): ("correct", "reads as a fair answer"),
+           (DEEPSEEK, "shipped", "water-best-per-litre", 3): ("unscorable", "two answers given")}
+
+
+def planted(row: dict, mapped: dict) -> str | None:
+    for (model, arm, task, repeat), (verdict, note) in PLANTED.items():
+        if is_run(mapped, model, arm, task, repeat):
+            row["note"] = note
+            return verdict
+    return None
+
+
+class HandReadBack(unittest.TestCase):
+    """`claim.py --hand`: a filled sheet read back, the primary tests on its verdicts per model
+    with Holm over the four, and every disagreement with the scorer by arm (v4)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.owner = tempfile.TemporaryDirectory()
+        root = pathlib.Path(cls.owner.name)
+        cls.manifest = build_run2(root, plant=showcase)
+        cls.sheet = root / "sheet.csv"
+        cls.code, cls.out, cls.result = cls.run_claim(["--sheet", str(cls.sheet)])
+        cls.agreed = cls.run_claim(["--hand", str(fill(cls.sheet, "agreed.csv"))])
+        cls.differed = cls.run_claim(["--hand", str(fill(cls.sheet, "differed.csv", planted))])
+
+    @classmethod
+    def run_claim(cls, extra: list[str]) -> tuple[int, str, dict]:
+        with mock.patch.object(paths, "TASKS", cls.manifest.parent / "tasks"), \
+                contextlib.redirect_stdout(io.StringIO()) as out:
+            code = claim.main(["--protocol", str(PROTOCOL), str(cls.manifest), *extra])
+        return code, out.getvalue(), json.loads(cls.manifest.with_suffix(".analysis.json").read_text())
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.owner.cleanup()
+
+    def refused(self, sheet: pathlib.Path) -> str:
+        with self.assertRaises(SystemExit) as raised:
+            self.run_claim(["--hand", str(sheet)])
+        return str(raised.exception)
+
+    def test_a_reading_that_agrees_gives_the_scorers_tests_and_no_disagreement(self):
+        code, out, result = self.agreed
+        self.assertEqual(code, 0)
+        for model, m in result["models"].items():
+            hr = m["hand_reading"]
+            with self.subTest(model=model):
+                self.assertEqual({t: (v["p"], v["p_holm"]) for t, v in hr["tests"].items()},
+                                 {t: (v["p"], v["p_holm"]) for t, v in m["primary"].items()})
+                self.assertEqual(hr["disagreements"], [])
+                self.assertTrue(all(row["agree"] == row["read"] for row in hr["by_arm"].values()))
+        self.assertIn("7. The hand reading", out)
+        # Without --hand there is none.
+        self.assertIsNone(self.result["models"][HAIKU]["hand_reading"])
+
+    def test_the_hand_verdicts_go_into_h1_to_h4_with_holm_over_the_four(self):
+        _, _, result = self.differed
+        deepseek, haiku = (result["models"][m]["hand_reading"]["tests"] for m in (DEEPSEEK, HAIKU))
+        # H1, the block (model) against shipped on the nine reading-independent questions:
+        # under DeepSeek the block's 27 of 27 become 25, and shipped's unscorable run leaves 26
+        # judged; under Haiku shipped's 0 of 27 become 1.
+        self.assertEqual((deepseek["H1"]["pooled"]["a"], deepseek["H1"]["pooled"]["b"]), ([25, 27], [0, 26]))
+        self.assertEqual((haiku["H1"]["pooled"]["a"], haiku["H1"]["pooled"]["b"]), ([27, 27], [1, 27]))
+        primary = result["models"][DEEPSEEK]["primary"]
+        self.assertNotEqual(deepseek["H1"]["p"], primary["H1"]["p"])
+        # H2, H3 and H4 read no verdict the reader changed.
+        self.assertEqual({t: deepseek[t]["p"] for t in ("H2", "H3", "H4")},
+                         {t: primary[t]["p"] for t in ("H2", "H3", "H4")})
+        for tests in (deepseek, haiku):
+            self.assertEqual({t: v["p_holm"] for t, v in tests.items()}, claim.holm({t: v["p"] for t, v in tests.items()}))
+
+    def test_every_disagreement_by_arm_and_which_way_the_scorer_leans(self):
+        code, out, result = self.differed
+        self.assertEqual(code, 0)
+        leans = {model: {arm: {lean: row[lean] for lean in claim.LEANS if row[lean]}
+                         for arm, row in m["hand_reading"]["by_arm"].items() if any(row[lean] for lean in claim.LEANS)}
+                 for model, m in result["models"].items()}
+        self.assertEqual(leans, {DEEPSEEK: {"the block (model)": {"the scorer kinder": 2},
+                                            "shipped": {"unscorable on one side": 1}},
+                                 HAIKU: {"shipped": {"the scorer harsher": 1}}})
+        listed = {(model, d["arm"], d["run"].split("/")[1]): (d["scorer"], d["hand"], d["note"])
+                  for model, m in result["models"].items() for d in m["hand_reading"]["disagreements"]}
+        self.assertEqual(listed, {
+            (DEEPSEEK, "the block (model)", "tee-target-price-1"): ("correct", "not correct", "says the price, not who sells it"),
+            (DEEPSEEK, "the block (model)", "tee-target-price-2"): ("correct", "not correct", ""),
+            (DEEPSEEK, "shipped", "water-best-per-litre-3"): ("wrong", "unscorable", "two answers given"),
+            (HAIKU, "shipped", "tee-target-price-1"): ("wrong", "correct", "reads as a fair answer")})
+        # Every answered run was read: the block (model)'s 135 less its 20 closed slots.
+        self.assertEqual(result["models"][DEEPSEEK]["hand_reading"]["by_arm"]["the block (model)"]["read"], 115)
+        self.assertIn("the scorer kinder 2", out)
+
+    def test_a_sheet_with_a_gap_is_refused(self):
+        key = json.loads(self.sheet.with_name("sheet.key.json").read_text())
+        one = sorted(key["codes"])[0]
+        for label, sheet, words in (
+                ("a row left unfilled", fill(self.sheet, "unfilled.csv", lambda row, mapped: "" if row["code"] == one else None),
+                 "no hand verdict"),
+                ("a verdict of its own", fill(self.sheet, "maybe.csv", lambda row, mapped: "maybe" if row["code"] == one else None),
+                 "is not one of correct, not correct, unscorable"),
+                ("a row taken out", fill(self.sheet, "short.csv", drop={one}), "1 codes of the key have no row"),
+                ("a code the key has not", self.recoded(one), "is not in the key")):
+            with self.subTest(fault=label):
+                self.assertIn(words, self.refused(sheet))
+
+    def recoded(self, code: str) -> pathlib.Path:
+        sheet = fill(self.sheet, "recoded.csv")
+        sheet.write_text(sheet.read_text().replace(code, "ffffffff", 1))
+        return sheet
+
+    def test_a_sheet_of_another_analysis_is_refused(self):
+        # An answer that is not the run's, and a key of another task file.
+        sheet = fill(self.sheet, "other.csv")
+        with sheet.open(newline="") as handle:
+            rows = list(csv.DictReader(handle))
+        rows[0]["answer"] = "An answer no run gave."
+        with sheet.open("w", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+            writer.writeheader()
+            writer.writerows(rows)
+        self.assertIn("answer on the sheet is not the one", self.refused(sheet))
+        sheet = fill(self.sheet, "elsewhere.csv")
+        key_path = sheet.with_name("elsewhere.key.json")
+        key_path.write_text(json.dumps({**json.loads(key_path.read_text()), "tasks_file": "tasks_aplus_dev.json"}))
+        self.assertIn("its key is of tasks_aplus_dev.json", self.refused(sheet))
+        # A sheet whole against its own key, which leaves out a run this analysis counts.
+        key = json.loads(self.sheet.with_name("sheet.key.json").read_text())
+        one = sorted(key["codes"])[0]
+        sheet = fill(self.sheet, "fewer.csv", drop={one})
+        key_path = sheet.with_name("fewer.key.json")
+        key_path.write_text(json.dumps({**key, "codes": {c: v for c, v in key["codes"].items() if c != one}}))
+        self.assertIn("1 runs the agent answered have no row", self.refused(sheet))
+
+    def test_hand_needs_the_protocol_and_is_never_asked_with_a_new_sheet(self):
+        with contextlib.redirect_stderr(io.StringIO()) as err, self.assertRaises(SystemExit):
+            claim.main([str(self.manifest), "--hand", str(self.sheet)])
+        self.assertIn("needs --protocol", err.getvalue())
+        with contextlib.redirect_stderr(io.StringIO()) as err, self.assertRaises(SystemExit):
+            claim.main(["--protocol", str(PROTOCOL), str(self.manifest), "--hand", str(self.sheet),
+                        "--sheet", str(self.sheet.with_name("new.csv"))])
+        self.assertIn("one at a time", err.getvalue())
 
 
 if __name__ == "__main__":

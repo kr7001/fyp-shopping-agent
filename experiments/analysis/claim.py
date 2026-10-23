@@ -4,7 +4,7 @@
     python3 experiments/analysis/claim.py experiments/results/claim-20261020.manifest
     python3 experiments/analysis/claim.py experiments/results/<batch> [...] [--json PATH]
     python3 experiments/analysis/claim.py --protocol experiments/tasks/claim2_analysis.json \
-        <the second claim's manifest> [--sheet PATH]
+        <the second claim's manifest> [--sheet PATH | --hand PATH]
 
 The protocol's Measures, Analysis and Exclusions sections are the specification. Written on
 20 October 2026, before the claim run, and tried in-sample on Thornwood, with the box v2
@@ -1521,7 +1521,11 @@ def render_test(t: dict) -> str:
 #      measures the file names: asks by the sidecar's label (`asks_by_label`), the serving
 #      provider by arm and H3 by provider (`provider_table`, `by_provider`, R11). And the
 #      blind hand-reading sheet, `--sheet` (`hand_reading_sheet`)
-PROTOCOL_ANALYSIS_VERSION = 3
+#   4  23 October 2026, from the auditor's check of 41d7839, before the second claim run. The
+#      hand reading is made real: the sheet no longer shows the scorer's verdict, and `--hand`
+#      reads a filled sheet back, refusing one with a gap, and runs the primary tests on its
+#      verdicts for each model, with every disagreement with the scorer by arm (`hand_reading`)
+PROTOCOL_ANALYSIS_VERSION = 4
 # The conditions a protocol's arms are held to: the first claim's and the model parser's,
 # the open-everything wording, the agent's limits. Of them, the ones an arm has by design.
 # The box's rate plan and the product wording's version (23 October 2026) join them, so two
@@ -2136,8 +2140,10 @@ def not_as_required(conditions: dict, protocol: Protocol) -> list[str]:
             for key, value in required_of(arm, protocol).items() if c[key] != value]
 
 
-def protocol_model(model: str | None, population: dict, conditions: dict, protocol: Protocol) -> dict:
-    """Everything for one model's arms under a protocol file. Two models are never pooled."""
+def protocol_model(model: str | None, population: dict, conditions: dict, protocol: Protocol,
+                   hand: dict | None = None) -> dict:
+    """Everything for one model's arms under a protocol file. Two models are never pooled.
+    `hand`, each answered run's hand verdict (`hand_by_run`), adds the primary tests on them."""
     kept = [s for s in population["kept"] if s["model"] == model]
     present = {s["arm"] for s in kept}
     arms = {arm: [s for s in kept if s["arm"] == arm]
@@ -2221,6 +2227,7 @@ def protocol_model(model: str | None, population: dict, conditions: dict, protoc
                       # The secondary measures the file names (v3), each computed only if named.
                       **secondary_measures(arms, protocol)},
         "sensitivity": protocol_sensitivity(arms, voided, protocol),
+        "hand_reading": hand_reading(arms, protocol, hand) if hand is not None else None,
         "runs": [{key: s.get(key) for key in ("arm", "batch", "task", "template", "repeat", "outcome", "reason",
                                               "own", "buyable", "verdict", "answered", "opened", "skus",
                                               "covered", "missed", "cost", "tokens_total", "calls", "actions",
@@ -2230,8 +2237,11 @@ def protocol_model(model: str | None, population: dict, conditions: dict, protoc
     }
 
 
-def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib.Path) -> dict:
-    """Every figure under a protocol file, as data: `render_protocol` prints it."""
+def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib.Path,
+                     hand: dict | None = None) -> dict:
+    """Every figure under a protocol file, as data: `render_protocol` prints it. `hand`, a
+    filled hand-reading sheet read back (`read_hand_sheet`), adds the primary tests on its
+    verdicts for each model, and every disagreement with the scorer (`hand_reading`)."""
     config = json.loads(path.read_text())
     broken = check_protocol(config)
     if broken:
@@ -2279,6 +2289,8 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
     named = [m for m in protocol.models if protocol.roles.get(m) == "primary"] + \
         [m for m in protocol.models if protocol.roles.get(m) != "primary"]
     models = [m for m in named if m in models] + [m for m in models if m not in named]
+    # The hand verdicts by run, each matched to a run this analysis counts (v4).
+    by_run = hand_by_run(hand, population["kept"], files[0], shown_path(path)) if hand else None
     out = {"analysis_version": VERSION, "protocol_analysis_version": PROTOCOL_ANALYSIS_VERSION,
            "scorer_version": scoring.VERSION, "protocol": config["protocol"],
            "protocol_file": shown_path(path), "protocol_version": config.get("version"), "tasks_file": files[0],
@@ -2286,9 +2298,10 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
                     for key, value in protocol.sets.items()},
            "design": {arm: len(questions) * len(protocol.rounds) for arm, questions in protocol.design.items()},
            "source": source(lines, manifest, every), "problems": problems, "models": {},
-           "models_named": list(protocol.models), "roles": dict(protocol.roles)}
+           "models_named": list(protocol.models), "roles": dict(protocol.roles),
+           "hand_sheet": {"sheet": hand["sheet"], "rows": len(hand["rows"])} if hand else None}
     for model in models:
-        result = protocol_model(model, population, conditions, protocol)
+        result = protocol_model(model, population, conditions, protocol, by_run)
         # A condition that is no arm's own and differs between arms makes two experiments of
         # one (LESSONS 7, 10), and the design's slots are the protocol's, fixed before the run.
         out["problems"] += [f"{model}: {key} differs between the arms: "
@@ -2308,24 +2321,31 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
 
 
 # The blind hand-reading sheet's columns: the run's random code, what was asked, the key it was
-# judged by, the answer, the scorer's verdict, and two left blank for the reader.
-SHEET_COLUMNS = ("code", "question", "key", "answer", "scorer_verdict", "hand_verdict", "note")
+# judged by, the answer, and two left blank for the reader. The scorer's verdict is not among
+# them (v4, the auditor's check of 41d7839): a reader who sees it reads against it, so the
+# reading is blind to the scorer as it is to the arm and the model. The key file holds it.
+SHEET_COLUMNS = ("code", "question", "key", "answer", "hand_verdict", "note")
+# What a reader may write as a hand verdict, and what each is for a test of correct: correct
+# counts as correct, not correct as not, and unscorable is left out of any test of correct, as
+# a run no key judged is (`scored`).
+HAND_VERDICTS = {"correct": "correct", "not correct": "not correct", "unscorable": "unscored"}
 
 
 def hand_reading_sheet(result: dict) -> tuple[list[dict], dict]:
     """Every answer a protocol's analysis counted, to be read by hand against its key without
-    the arm or the model in view (the re-audit, 23 October 2026, in case the hand reading is
-    chosen as a sensitivity), and the key that maps each row back.
+    the arm, the model or the scorer's verdict in view (the re-audit, 23 October 2026, in case
+    the hand reading is chosen as a sensitivity), and the key that maps each row back.
 
     A row is one run where the agent answered: the question, the key the scorer judged it by
-    (the key for the reading the run answered under, `score.run_key`), the answer as stored,
-    and the scorer's verdict. Its arm, model, batch, task and repeat are replaced by a
-    random code, drawn afresh each time (`secrets`), one a run, so no code is shared by two
-    runs of an arm and the rows, sorted by code, are in no arm's order; the key file maps each
-    code back. A held-out rewording is shown by its template's question, which it rewords with
-    the meaning kept and whose key it has: only the block's arms ask the rewordings, so their
-    own texts, or their ids, would name the arm, and this code never reads them. A slot the
-    box closed answered nothing and is left out, counted in the key file.
+    (the key for the reading the run answered under, `score.run_key`), and the answer as
+    stored. Its arm, model, batch, task and repeat are replaced by a random code, drawn afresh
+    each time (`secrets`), one a run, so no code is shared by two runs of an arm and the rows,
+    sorted by code, are in no arm's order; the key file maps each code back, with the scorer's
+    verdict (`read_hand_sheet` and `--hand` read the sheet back). A held-out rewording is shown
+    by its template's question, which it rewords with the meaning kept and whose key it has:
+    only the block's arms ask the rewordings, so their own texts, or their ids, would name the
+    arm, and this code never reads them. A slot the box closed answered nothing and is left
+    out, counted in the key file.
 
     What the sheet cannot hide: an answer's own words, which may say how many listings it
     opened, and on a question with two readings a buyable key, which only the box can give a
@@ -2350,8 +2370,7 @@ def hand_reading_sheet(result: dict) -> tuple[list[dict], dict]:
             except scoring.NoKeyForReading:
                 key = "no key for the reading this run answered under"
             rows.append({"code": code, "question": asked["query"].format(base=spec["base_url"]), "key": key,
-                         "answer": " ".join((run["answer"] or "").split()), "scorer_verdict": run["verdict"],
-                         "hand_verdict": "", "note": ""})
+                         "answer": " ".join((run["answer"] or "").split()), "hand_verdict": "", "note": ""})
             codes[code] = {"model": model, "arm": run["arm"], "batch": run["batch"], "task": run["task"],
                            "repeat": run["repeat"], "answered": run["answered"], "verdict": run["verdict"]}
     rows.sort(key=lambda row: row["code"])
@@ -2383,6 +2402,124 @@ def write_sheet(path: pathlib.Path, rows: list[dict], mapping: dict) -> pathlib.
         writer.writerows(rows)
     key_path.write_text(json.dumps(mapping, indent=2) + "\n")
     return key_path
+
+
+def read_hand_sheet(path: pathlib.Path) -> dict:
+    """A filled hand-reading sheet and its key, read back for `--hand` (v4, the auditor's
+    check of 41d7839): each code's hand verdict, note and answer, and the key. Refused before
+    any batch is read on a row with no hand verdict, or one that is not correct, not correct
+    or unscorable; on a code the key does not hold, or one on the sheet twice; and on a code of
+    the key with no row. A reading with a gap in it is no reading."""
+    sheet_path, key_path = sheet_paths(path)
+    absent = [str(p) for p in (sheet_path, key_path) if not p.exists()]
+    if absent:
+        raise SystemExit(f"refused: the hand reading needs the sheet and its key, and {', '.join(absent)} "
+                         f"is not there")
+    key = json.loads(key_path.read_text())
+    with sheet_path.open(newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    problems, read = [], {}
+    for line, row in enumerate(rows, 2):        # the CSV's own line numbers, the header the first
+        code = (row.get("code") or "").strip()
+        verdict = " ".join((row.get("hand_verdict") or "").split()).lower()
+        if code not in key["codes"]:
+            problems.append(f"line {line}: the code {code!r} is not in the key")
+        elif code in read:
+            problems.append(f"line {line}: the code {code} is on the sheet twice")
+        if not verdict:
+            problems.append(f"line {line}: no hand verdict")
+        elif verdict not in HAND_VERDICTS:
+            problems.append(f"line {line}: the hand verdict {row.get('hand_verdict')!r} is not one of "
+                            + ", ".join(HAND_VERDICTS))
+        read.setdefault(code, {"hand": verdict, "note": (row.get("note") or "").strip(),
+                               "answer": " ".join((row.get("answer") or "").split())})
+    missing = sorted(set(key["codes"]) - set(read))
+    if missing:
+        problems.append(f"{len(missing)} codes of the key have no row on the sheet: {', '.join(missing[:8])}"
+                        + (" ..." if len(missing) > 8 else ""))
+    if problems:
+        raise SystemExit(f"{sheet_path.name}: refused, the hand reading is not whole, {len(problems)} "
+                         f"problems: " + "; ".join(problems[:12]) + (" ..." if len(problems) > 12 else ""))
+    return {"sheet": str(sheet_path), "key": key, "rows": read}
+
+
+def hand_by_run(hand: dict, kept: list[dict], tasks_file: str, protocol_file: str) -> dict:
+    """Each answered run's hand verdict, by its model, batch, task and repeat, from a sheet
+    read back (`read_hand_sheet`). Refused where the sheet is not this analysis's: its key
+    names another task or protocol file, a code stands for a run this analysis does not count
+    or whose answer is not the one on the sheet, or a run the agent answered has no row."""
+    key, problems = hand["key"], []
+    if (key.get("tasks_file"), key.get("protocol_file")) != (tasks_file, protocol_file):
+        problems.append(f"its key is of {key.get('tasks_file')} under {key.get('protocol_file')}, "
+                        f"and this analysis of {tasks_file} under {protocol_file}")
+    runs = {(s["model"], s["batch"], s["task"], s["repeat"]): s for s in kept if s["outcome"] != voids.CLOSED}
+    found = {}
+    for code, mapped in key["codes"].items():
+        name = (mapped["model"], mapped["batch"], mapped["task"], mapped["repeat"])
+        run = runs.get(name)
+        if run is None:
+            problems.append(f"the code {code} stands for {mapped['batch']}/{mapped['task']}-{mapped['repeat']}, "
+                            f"which this analysis does not count")
+            continue
+        if code not in hand["rows"]:
+            problems.append(f"the code {code} has no row on the sheet")
+            continue
+        if hand["rows"][code]["answer"] != " ".join((run["answer"] or "").split()):
+            problems.append(f"the code {code}'s answer on the sheet is not the one "
+                            f"{mapped['batch']}/{mapped['task']}-{mapped['repeat']} gave")
+        found[name] = {**hand["rows"][code], "code": code}
+    unread = sorted(set(runs) - set(found), key=str)
+    if unread:
+        problems.append(f"{len(unread)} runs the agent answered have no row: "
+                        + ", ".join(f"{b}/{t}-{r}" for _, b, t, r in unread[:6]) + (" ..." if len(unread) > 6 else ""))
+    if problems:
+        raise SystemExit(f"{pathlib.Path(hand['sheet']).name}: refused, the sheet is not this analysis's: "
+                         + "; ".join(problems[:10]) + (" ..." if len(problems) > 10 else ""))
+    return found
+
+
+# Which way the scorer leans where it and the hand reader differ.
+LEANS = ("the scorer kinder", "the scorer harsher", "unscorable on one side")
+
+
+def lean_of(scorer: str, hand: str) -> str | None:
+    """How the scorer's verdict leans against the hand reader's (`HAND_VERDICTS`), None where
+    the two agree: kinder where it alone holds the answer correct, harsher where the reader
+    alone does, and unscorable on one side where one of them left it unjudged. Every verdict
+    of the scorer's but correct and unscored is not correct (`answered_correct`)."""
+    if (scorer == "unscored") != (hand == "unscored"):
+        return LEANS[2]
+    if scorer == "unscored" or (scorer == "correct") == (hand == "correct"):
+        return None
+    return LEANS[0] if scorer == "correct" else LEANS[1]
+
+
+def hand_reading(arms: dict[str, list[dict]], protocol: Protocol, hand: dict) -> dict:
+    """The primary tests again on the hand verdicts, for one model (v4): each answered run
+    judged by the hand reader (`HAND_VERDICTS`), each slot the box closed as the scorer has it,
+    the same four tests with Holm over the four (`protocol_tests`); and, after unblinding,
+    every run where the reader and the scorer differ, by arm, with which way the scorer leans
+    (`lean_of`) and the reader's note."""
+    def name(run: dict) -> tuple:
+        return run["model"], run["batch"], run["task"], run["repeat"]
+    read = {arm: [run if name(run) not in hand else {**run, "verdict": HAND_VERDICTS[hand[name(run)]["hand"]]}
+                  for run in runs] for arm, runs in arms.items()}
+    by_arm, listed = {}, []
+    for arm, runs in arms.items():
+        counts = {"read": 0, "agree": 0, **{lean: 0 for lean in LEANS}}
+        for run in runs:
+            row = hand.get(name(run))
+            if row is None:
+                continue
+            counts["read"] += 1
+            lean = lean_of(run["verdict"], HAND_VERDICTS[row["hand"]])
+            counts[lean or "agree"] += 1
+            if lean is not None:
+                listed.append({"run": f"{run['batch']}/{run['task']}-{run['repeat']}", "arm": arm,
+                               "code": row["code"], "scorer": run["verdict"], "hand": row["hand"],
+                               "lean": lean, "note": row["note"]})
+        by_arm[arm] = counts
+    return {"tests": protocol_tests(read, protocol), "by_arm": by_arm, "disagreements": listed}
 
 
 def shown_path(path: pathlib.Path) -> str:
@@ -2626,6 +2763,27 @@ def render_protocol_model(m: dict, say) -> None:
         say(f"     {name:64} " + " ".join(f"{p_text(t['p']) + ' (' + p_text(t['p_holm']) + ')':>22}"
                                           for t in tests.values()))
 
+    hr = m.get("hand_reading")
+    if hr:
+        say("\n7. The hand reading: the primary tests on the hand verdicts, Holm over the four, and every "
+            "disagreement with the scorer, read after unblinding")
+        say(f"     {'':64} " + " ".join(f"{name:>22}" for name in names))
+        for label, tests in (("the scorer's verdicts", m["primary"]), ("the hand verdicts", hr["tests"])):
+            say(f"     {label:64} " + " ".join(f"{p_text(t['p']) + ' (' + p_text(t['p_holm']) + ')':>22}"
+                                               for t in tests.values()))
+        for name in names:
+            t = hr["tests"][name]
+            if t["measure"] == "correct" and t["per_question"]:
+                say(f"     {name} on the hand verdicts, pooled {t['pooled']['a'][0]}/{t['pooled']['a'][1]} against "
+                    f"{t['pooled']['b'][0]}/{t['pooled']['b'][1]}")
+        say("     by arm: answers read, agreed, and where they differ which way the scorer leans")
+        for arm, row in hr["by_arm"].items():
+            say(f"     {arm:30} read {row['read']}, agreed {row['agree']}; "
+                + "; ".join(f"{lean} {row[lean]}" for lean in LEANS))
+        for d in hr["disagreements"]:
+            say(f"       {d['run']} ({d['arm']}, code {d['code']}): scorer {d['scorer']}, hand {d['hand']}, "
+                f"{d['lean']}" + (f"; note: {d['note']}" if d["note"] else ""))
+
 
 # ---------------------------------------------------------------------------
 
@@ -2648,16 +2806,26 @@ def main(argv: list[str] | None = None) -> int:
                         help="under --protocol, also write every answer counted as a blind "
                              "hand-reading sheet, CSV, and its key beside it as <name>.key.json "
                              "(`hand_reading_sheet`); neither is ever written over")
+    parser.add_argument("--hand", type=pathlib.Path, metavar="SHEET",
+                        help="under --protocol, read a filled hand-reading sheet back, with its key "
+                             "beside it, and add the primary tests on its verdicts and every "
+                             "disagreement with the scorer (`read_hand_sheet`, `hand_reading`)")
     args = parser.parse_args(argv)
     if args.sets and args.protocol:
         parser.error("--sets is the first claim's analysis under other question sets; a protocol "
                      "file names its own")
     if args.sheet and not args.protocol:
         parser.error("--sheet is the hand-reading sheet of a protocol's runs, so it needs --protocol")
+    if args.hand and not args.protocol:
+        parser.error("--hand reads back the hand-reading sheet of a protocol's runs, so it needs --protocol")
+    if args.hand and args.sheet:
+        parser.error("--sheet writes a sheet to be read and --hand reads one back: one at a time")
     if args.sheet:
         there = [str(p) for p in sheet_paths(args.sheet) if p.exists()]
         if there:
             parser.error(f"{', '.join(there)} already there, and may hold a reading. Move it away first")
+    # The sheet is read back, and refused if it is not whole, before any batch is read.
+    hand = read_hand_sheet(args.hand) if args.hand else None
     if args.sets:
         apply_sets(read_sets(args.sets))
     manifest = None
@@ -2670,7 +2838,7 @@ def main(argv: list[str] | None = None) -> int:
         lines = [Line("folder", resolve(str(path))) for path in args.sources]
         target = args.json
     if args.protocol:
-        result = analyse_protocol(lines, manifest, args.protocol)
+        result = analyse_protocol(lines, manifest, args.protocol, hand)
         print(render_protocol(result))
         if args.sheet:
             rows, mapping = hand_reading_sheet(result)
