@@ -174,9 +174,12 @@ def as_bought(families: list[dict]) -> list[dict]:
 
 def checked_keys(fixture: dict) -> dict:
     """`generate_aplus.keys` from the variants, compared with `_instance` where they overlap,
-    and refused when the market cannot give a key one answer."""
+    and refused when the market cannot give a key one answer: every rule of the version the
+    market was drawn under, its `_generated.version` (23 October 2026), so a market drawn under
+    version 3 is held to `top_3_margin` here too, and development's, drawn under version 2, is
+    not."""
     families = fixture["families"]
-    broken = aplus.market_check(families, fixture["_generated"]["brand"])
+    broken = aplus.market_check(families, fixture["_generated"]["brand"], fixture["_generated"]["version"])
     if broken:
         raise SystemExit(f"the market breaks its own rules, so its keys are not single: {broken}")
     k = aplus.keys(families)

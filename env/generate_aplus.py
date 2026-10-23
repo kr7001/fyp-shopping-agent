@@ -674,8 +674,8 @@ def name_problems(families: list[dict], brand: str) -> list[str]:
 
 def held_to(rule: str, version: int | None) -> bool:
     """Whether a market drawn under `version` is held to `rule`. None asks for the rules every
-    version holds, as a caller that cannot say which version its market was drawn under
-    (generate_aplus_tasks.py's check of a fixture's keys) must."""
+    version holds, for a caller that cannot say which version its market was drawn under;
+    generate_aplus_tasks.py passes its fixture's `_generated.version` (since 23 October 2026)."""
     return rule not in RULES_SINCE or (version is not None and version >= RULES_SINCE[rule])
 
 
@@ -741,8 +741,8 @@ def market_check(families: list[dict], brand: str, version: int | None = None) -
     """Every rule of `MARKET_RULES` that the fixture alone decides: those about one product
     (`tee_market_rules`, `water_market_rules`) and those about the market as a whole, as a
     market drawn under `version` is held to them. Without a version, the rules every version
-    holds: generate_aplus_tasks.py checks a fixture's keys so, and the generator, which
-    holds every draw to its own version's, passes it."""
+    holds. The generator holds every draw to its own version's, and generate_aplus_tasks.py
+    a fixture to the version it records."""
     k = keys(families)
     broken = []
     if not PAGE_SIZE < len(families) <= 2 * PAGE_SIZE:

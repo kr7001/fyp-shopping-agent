@@ -605,6 +605,18 @@ class Versions(unittest.TestCase):
     """Version 3: a market is held to the rules of the version it was drawn under and drawn
     again under the version its seed search accepted it under."""
 
+    def test_the_task_writer_holds_a_fixture_to_its_own_versions_rules(self):
+        # Development's (version 2) is written as before; the same market said to be drawn
+        # under version 3 is refused, its second and third 0.8 per cent apart. Planted: the
+        # task writer naming no version, the version 3 market was written.
+        fixture = load(DEV)
+        self.assertTrue(aplus_tasks.checked_keys(fixture))
+        later = copy.deepcopy(fixture)
+        later["_generated"]["version"] = 3
+        with self.assertRaises(SystemExit) as refused:
+            aplus_tasks.checked_keys(later)
+        self.assertIn("top_3_margin", str(refused.exception))
+
     def test_which_rules_a_version_holds(self):
         self.assertEqual([aplus.held_to("top_3_margin", v) for v in (None, 2, 3)], [False, False, True])
         self.assertTrue(aplus.held_to("names_distinct", None))
