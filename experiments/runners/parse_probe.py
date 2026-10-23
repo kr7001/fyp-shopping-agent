@@ -56,6 +56,7 @@ import form
 import normalise
 import page as page_module
 import plan_probe  # the key, the model name and the account usage, read the same way
+import provider_routing  # the routing the agent's calls get, off unless IGR_PROVIDER_ROUTING is set
 import planner
 import primitives
 import targeting
@@ -110,10 +111,12 @@ class UnexpectedReply(Exception):
     so do its tokens (`tokens_of`) since 23 October 2026. Until 14 October 2026 the
     KeyError stopped the loop and lost the row (verifier finding)."""
 
-    def __init__(self, why: str, cost: float | None, tokens: dict | None = None):
+    def __init__(self, why: str, cost: float | None, tokens: dict | None = None,
+                 served: str | None = None):
         super().__init__(why)
         self.cost = cost
         self.tokens = tokens
+        self.served = served
 
 
 def tokens_of(usage) -> dict | None:
@@ -128,16 +131,22 @@ def tokens_of(usage) -> dict | None:
     return {"prompt": prompt, "completion": completion}
 
 
-def call_model(key: str, model: str, prompt: str) -> tuple[str, float | None, dict | None]:
+def call_model(key: str, model: str, prompt: str) -> tuple[str, float | None, dict | None, str | None]:
     """One call: its reply, what the provider charged for it, or None when it did not say,
-    and its tokens (`tokens_of`), or None when it did not count them. A 200 with a body that
-    is not JSON raises requests' own `JSONDecodeError`, a request failure; a JSON body
-    without the completion raises `UnexpectedReply`."""
+    its tokens (`tokens_of`), or None when it did not count them, and the provider OpenRouter
+    served it from, or None when the reply does not say. A 200 with a body that is not JSON
+    raises requests' own `JSONDecodeError`, a request failure; a JSON body without the
+    completion raises `UnexpectedReply`. The model's routing, when IGR_PROVIDER_ROUTING sets
+    one, goes in the body as OpenRouter's "provider" object (`provider_routing`)."""
+    body = {"model": model, "temperature": 0, "usage": {"include": True},
+            "messages": [{"role": "user", "content": prompt}]}
+    routing = provider_routing.routing_for(model)
+    if routing is not None:
+        body["provider"] = routing
     reply = requests.post(
         ENDPOINT,
         headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-        json={"model": model, "temperature": 0, "usage": {"include": True},
-              "messages": [{"role": "user", "content": prompt}]},
+        json=body,
         timeout=120,
     )
     reply.raise_for_status()
@@ -146,19 +155,22 @@ def call_model(key: str, model: str, prompt: str) -> tuple[str, float | None, di
     cost = usage.get("cost") if isinstance(usage, dict) else None
     cost = float(cost) if cost is not None else None
     tokens = tokens_of(usage)
+    served = payload.get("provider") if isinstance(payload, dict) else None
+    served = served if isinstance(served, str) else None
     try:
         content = payload["choices"][0]["message"]["content"]
     except (KeyError, IndexError, TypeError) as fault:
         raise UnexpectedReply(f"the reply holds no choices[0].message.content "
-                              f"({type(fault).__name__}: {fault}): {str(payload)[:200]!r}", cost, tokens)
+                              f"({type(fault).__name__}: {fault}): {str(payload)[:200]!r}", cost, tokens,
+                              served)
     # As text, the way `form.parse_reply` reads it (23 October 2026): a null content is
     # nothing and a list of parts its text parts. Content of any other type is a reply that
     # is no completion, with its charge and tokens kept, never a TypeError later.
     try:
         text = form.reply_text(content)
     except ValueError as fault:
-        raise UnexpectedReply(f"the reply's content is not text: {fault}", cost, tokens)
-    return text, cost, tokens
+        raise UnexpectedReply(f"the reply's content is not text: {fault}", cost, tokens, served)
+    return text, cost, tokens, served
 
 
 def summary(record: dict) -> str:
@@ -223,9 +235,11 @@ def propose(question: str, model: str, key: str, page: page_module.Page | None =
     October 2026 the form is normalised as the box normalises it (box v13)."""
     charged: list[float | None] = []
     replies: list[str] = []
+    providers: list[str | None] = []      # the provider each call was served from
 
     def call(prompt: str) -> str:
-        text, cost, _ = call_model(key, model, prompt)     # the probe keeps the charge alone
+        text, cost, _, served = call_model(key, model, prompt)     # the probe keeps the charge
+        providers.append(served)
         charged.append(cost)
         replies.append(text)
         return text
@@ -241,12 +255,13 @@ def propose(question: str, model: str, key: str, page: page_module.Page | None =
     except UnexpectedReply as fault:
         error, failed = f"reply not a completion: {fault}", True
         charged.append(fault.cost)
+        providers.append(fault.served)
     except ValueError as fault:         # a reply that is not a form in the vocabulary
         error = str(fault)
     normalised, changes = normalise.normalise(raw, question, page) if raw is not None else (None, [])
     return {"raw": raw, "form": normalised, "changes": changes,
             "reply": replies[0] if replies else None, "error": error, "failed": failed,
-            "cost": charged[0] if charged else None}
+            "cost": charged[0] if charged else None, "provider": providers[0] if providers else None}
 
 
 def model_fields(got: dict, question: str, page: page_module.Page | None) -> dict:
@@ -259,7 +274,9 @@ def model_fields(got: dict, question: str, page: page_module.Page | None) -> dic
             "normalised": list(got["changes"]),
             "model_problems": (normalise.problems(proposed, question, page) if proposed
                                else [] if got["failed"] else [got["error"]]),
-            "error": got["error"], "call_failed": got["failed"], "cost_usd": got["cost"]}
+            "error": got["error"], "call_failed": got["failed"], "cost_usd": got["cost"],
+            # The provider OpenRouter served the call from (23 October 2026).
+            "provider": got["provider"]}
 
 
 def probe_one(name: str, question: str, model: str, key: str) -> dict:
@@ -302,6 +319,8 @@ def report(rows: list[dict], model: str, key: str, before: float | None) -> path
     stamp = dt.datetime.now().strftime("%Y%m%dT%H%M%S")
     out = RESULTS / f"parse-probe-{stamp}.json"
     out.write_text(json.dumps({"ran_at": stamp, "model": model, "temperature": 0,
+                               # The routing every call carried, None when off (23 October 2026).
+                               "provider_routing": provider_routing.routing_for(model),
                                "form_version": form.VERSION,
                                "prompt_version": form.PROMPT_VERSION,
                                "normalise_version": normalise.VERSION,
@@ -655,7 +674,9 @@ def report_questions(rows: list[dict], path: pathlib.Path, spec: dict, page: pag
     out = RESULTS / f"parse-probe-{path.stem}-{stamp}.json"
     out.write_text(json.dumps({
         "ran_at": stamp, "questions": path.name, "comparison_version": COMPARISON_VERSION,
-        "model": model, "temperature": 0, "form_version": form.VERSION,
+        "model": model, "temperature": 0,
+        # The routing every call carried, None when off (23 October 2026).
+        "provider_routing": provider_routing.routing_for(model), "form_version": form.VERSION,
         "prompt_version": form.PROMPT_VERSION, "normalise_version": normalise.VERSION,
         "box_version": box.VERSION, "primitives_version": primitives.VERSION,
         "planner_version": planner.VERSION, "strategy_version": targeting.VERSION,
