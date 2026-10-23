@@ -1604,7 +1604,11 @@ def render_test(t: dict) -> str:
 #      serving-provider mix by arm reads each row's count of who served the agent's calls,
 #      else the log by the same reader (`agent_providers`, `trace_stats.served_by`), a
 #      missing count unknown, never zero, and the parse calls' providers (`parse_provider`).
-#      `--preflight` holds IGR_PROVIDER_ROUTING to the protocol's value for the arm's model
+#      `--preflight` holds IGR_PROVIDER_ROUTING to the protocol's value for the arm's model.
+#      And from the auditor's check of the freeze candidate: `--hand` counts the answers
+#      marked unscorable by arm and beside each test of correct, and an answer to a question
+#      with no key is no longer on the hand-reading sheet. The market's results order is read
+#      from experiments/analysis/fixture_order.py, which the A+ checker reads too, unchanged
 PROTOCOL_ANALYSIS_VERSION = 5
 # The conditions a protocol's arms are held to: the first claim's and the model parser's,
 # the open-everything wording, the agent's limits. Of them, the ones an arm has by design.
