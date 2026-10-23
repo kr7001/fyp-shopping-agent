@@ -2612,7 +2612,7 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
         [m for m in protocol.models if protocol.roles.get(m) != "primary"]
     models = [m for m in named if m in models] + [m for m in models if m not in named]
     # The hand verdicts by run, each matched to a run this analysis counts (v4).
-    by_run = hand_by_run(hand, population["kept"], files[0], shown_path(path)) if hand else None
+    by_run = hand_by_run(hand, population["kept"], files[0], shown_path(path), protocol.keyed) if hand else None
     out = {"analysis_version": VERSION, "protocol_analysis_version": PROTOCOL_ANALYSIS_VERSION,
            "scorer_version": scoring.VERSION, "toolbar_version": toolbar.VERSION, "protocol": config["protocol"],
            "protocol_file": shown_path(path), "protocol_version": config.get("version"), "tasks_file": files[0],
@@ -2665,7 +2665,9 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
 SHEET_COLUMNS = ("code", "question", "key", "answer", "hand_verdict", "note")
 # What a reader may write as a hand verdict, and what each is for a test of correct: correct
 # counts as correct, not correct as not, and unscorable is left out of any test of correct, as
-# a run no key judged is (`scored`).
+# a run no key judged is (`scored`). Unscorable is for an answer that cannot be read at all,
+# empty, garbled, or about another question (the protocol file's note, v5); any other answer is
+# correct or not correct against its key.
 HAND_VERDICTS = {"correct": "correct", "not correct": "not correct", "unscorable": "unscored"}
 
 
@@ -2692,12 +2694,18 @@ def hand_reading_sheet(result: dict) -> tuple[list[dict], dict]:
     spec = json.loads(tasks_path.read_text())
     tasks = {task["id"]: task for task in spec["tasks"]}
     keys = scoring.keys_for(tasks_path)
-    rows, codes, closed = [], {}, 0
+    rows, codes, closed, keyless = [], {}, 0, 0
     for model, m in result["models"].items():
         # A refused model has no analysis, so nothing of it is read (v4).
         for run in m.get("runs") or []:
             if run["outcome"] == voids.CLOSED:
                 closed += 1
+                continue
+            # A question with no key, a decline or one of its rewordings, has nothing to read an
+            # answer against and is in no test of correct, so it is not on the sheet (v5): a
+            # reader marks unscorable only an answer that cannot be read at all.
+            if tasks[run["task"]]["expect"].get("kind") == "none":
+                keyless += 1
                 continue
             code = secrets.token_hex(4)
             while code in codes:
@@ -2719,7 +2727,8 @@ def hand_reading_sheet(result: dict) -> tuple[list[dict], dict]:
                "analysis_version": result["analysis_version"],
                "protocol_analysis_version": result["protocol_analysis_version"],
                "scorer_version": result["scorer_version"], "rows": len(rows),
-               "closed_slots_left_out": closed, "codes": dict(sorted(codes.items()))}
+               "closed_slots_left_out": closed, "keyless_answers_left_out": keyless,
+               "codes": dict(sorted(codes.items()))}
     return rows, mapping
 
 
@@ -2782,16 +2791,19 @@ def read_hand_sheet(path: pathlib.Path) -> dict:
     return {"sheet": str(sheet_path), "key": key, "rows": read}
 
 
-def hand_by_run(hand: dict, kept: list[dict], tasks_file: str, protocol_file: str) -> dict:
+def hand_by_run(hand: dict, kept: list[dict], tasks_file: str, protocol_file: str,
+                keyed: frozenset | None = None) -> dict:
     """Each answered run's hand verdict, by its model, batch, task and repeat, from a sheet
     read back (`read_hand_sheet`). Refused where the sheet is not this analysis's: its key
     names another task or protocol file, a code stands for a run this analysis does not count
-    or whose answer is not the one on the sheet, or a run the agent answered has no row."""
+    or whose answer is not the one on the sheet, or a run the agent answered on a question with
+    a key (`keyed`, every question where None) has no row."""
     key, problems = hand["key"], []
     if (key.get("tasks_file"), key.get("protocol_file")) != (tasks_file, protocol_file):
         problems.append(f"its key is of {key.get('tasks_file')} under {key.get('protocol_file')}, "
                         f"and this analysis of {tasks_file} under {protocol_file}")
-    runs = {(s["model"], s["batch"], s["task"], s["repeat"]): s for s in kept if s["outcome"] != voids.CLOSED}
+    runs = {(s["model"], s["batch"], s["task"], s["repeat"]): s for s in kept
+            if s["outcome"] != voids.CLOSED and (keyed is None or s["task"] in keyed)}
     found = {}
     for code, mapped in key["codes"].items():
         name = (mapped["model"], mapped["batch"], mapped["task"], mapped["repeat"])
@@ -2838,19 +2850,25 @@ def hand_reading(arms: dict[str, list[dict]], protocol: Protocol, hand: dict) ->
     judged by the hand reader (`HAND_VERDICTS`), each slot the box closed as the scorer has it,
     the same four tests with Holm over the four (`protocol_tests`); and, after unblinding,
     every run where the reader and the scorer differ, by arm, with which way the scorer leans
-    (`lean_of`) and the reader's note."""
+    (`lean_of`) and the reader's note.
+
+    An answer the reader marks unscorable leaves every test of correct, as an unscored run
+    does, so how many each arm has is counted (`unscorable`, by arm), and beside each test of
+    correct how many of its two arms' runs it leaves out (the auditor's check of the freeze
+    candidate, 23 October 2026)."""
     def name(run: dict) -> tuple:
         return run["model"], run["batch"], run["task"], run["repeat"]
     read = {arm: [run if name(run) not in hand else {**run, "verdict": HAND_VERDICTS[hand[name(run)]["hand"]]}
                   for run in runs] for arm, runs in arms.items()}
     by_arm, listed = {}, []
     for arm, runs in arms.items():
-        counts = {"read": 0, "agree": 0, **{lean: 0 for lean in LEANS}}
+        counts = {"read": 0, "agree": 0, "unscorable": 0, **{lean: 0 for lean in LEANS}}
         for run in runs:
             row = hand.get(name(run))
             if row is None:
                 continue
             counts["read"] += 1
+            counts["unscorable"] += row["hand"] == "unscorable"
             lean = lean_of(run["verdict"], HAND_VERDICTS[row["hand"]])
             counts[lean or "agree"] += 1
             if lean is not None:
@@ -2858,7 +2876,15 @@ def hand_reading(arms: dict[str, list[dict]], protocol: Protocol, hand: dict) ->
                                "code": row["code"], "scorer": run["verdict"], "hand": row["hand"],
                                "lean": lean, "note": row["note"]})
         by_arm[arm] = counts
-    return {"tests": protocol_tests(read, protocol), "by_arm": by_arm, "disagreements": listed}
+    tests = protocol_tests(read, protocol)
+    for test_name, spec in protocol.tests.items():
+        if spec["measure"] == "correct":
+            questions = set(questions_of(spec, protocol))
+            tests[test_name]["unscorable"] = {
+                side: sum(1 for run in read.get(spec[side], []) if run["verdict"] == HAND_VERDICTS["unscorable"]
+                          and name(run) in hand and run["task"] in questions)
+                for side in ("a", "b")}
+    return {"tests": tests, "by_arm": by_arm, "disagreements": listed}
 
 
 def shown_path(path: pathlib.Path) -> str:
@@ -3140,11 +3166,13 @@ def render_protocol_model(m: dict, say) -> None:
         for name in names:
             t = hr["tests"][name]
             if t["measure"] == "correct" and t["per_question"]:
+                gone = t.get("unscorable") or {"a": 0, "b": 0}
                 say(f"     {name} on the hand verdicts, pooled {t['pooled']['a'][0]}/{t['pooled']['a'][1]} against "
-                    f"{t['pooled']['b'][0]}/{t['pooled']['b'][1]}")
-        say("     by arm: answers read, agreed, and where they differ which way the scorer leans")
+                    f"{t['pooled']['b'][0]}/{t['pooled']['b'][1]}; marked unscorable, so in no test of correct: "
+                    f"{t['a']} {gone['a']}, {t['b']} {gone['b']}")
+        say("     by arm: answers read, agreed, marked unscorable, and where they differ which way the scorer leans")
         for arm, row in hr["by_arm"].items():
-            say(f"     {arm:30} read {row['read']}, agreed {row['agree']}; "
+            say(f"     {arm:30} read {row['read']}, agreed {row['agree']}, unscorable {row['unscorable']}; "
                 + "; ".join(f"{lean} {row[lean]}" for lean in LEANS))
         for d in hr["disagreements"]:
             say(f"       {d['run']} ({d['arm']}, code {d['code']}): scorer {d['scorer']}, hand {d['hand']}, "
@@ -3231,7 +3259,9 @@ def main(argv: list[str] | None = None) -> int:
             rows, mapping = hand_reading_sheet(result)
             key_path = write_sheet(args.sheet, rows, mapping)
             print(f"\nthe hand-reading sheet, {len(rows)} answers under random codes: {args.sheet}; "
-                  f"its key, to be kept apart until every row is read: {key_path}")
+                  f"its key, to be kept apart until every row is read: {key_path}. Write correct or not "
+                  f"correct in hand_verdict for every answer that can be read, and unscorable only for "
+                  f"one that cannot: empty, garbled, or about another question")
     else:
         result = analyse(lines, manifest)
         print(render(result))

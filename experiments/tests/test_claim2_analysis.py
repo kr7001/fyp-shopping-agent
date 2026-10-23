@@ -1244,6 +1244,12 @@ class ProtocolFile(unittest.TestCase):
     def test_the_file_is_whole(self):
         self.assertEqual(claim.check_protocol(json.loads(PROTOCOL.read_text())), [])
 
+    def test_the_note_on_when_an_answer_is_unscorable(self):
+        # The auditor's check of the freeze candidate: only an answer that cannot be read at all.
+        notes = [note for note in json.loads(PROTOCOL.read_text())["_about"] if "'unscorable'" in note]
+        self.assertEqual(len(notes), 1)
+        self.assertIn("only when it cannot be read at all, being empty, garbled, or about another question", notes[0])
+
     def test_a_note_the_code_has_moved_past_says_it_is_superseded(self):
         # The first version's note on H3's tokens said the parse's are not recorded; since
         # cce9ab0 they are, and the note says so where it stands (v4).
@@ -1710,9 +1716,11 @@ class HandReadingSheet(unittest.TestCase):
         cls.owner.cleanup()
 
     def ran(self) -> list[tuple]:
+        """Every run the agent answered on a question with a key (v5: none of a keyless one)."""
+        keyed = {task["id"] for task in self.spec["tasks"] if task["expect"].get("kind") != "none"}
         return sorted((model, run["arm"], run["batch"], run["task"], run["repeat"])
                       for model, m in self.result["models"].items() for run in m["runs"]
-                      if run["outcome"] != voids.CLOSED)
+                      if run["outcome"] != voids.CLOSED and run["task"] in keyed)
 
     def test_every_answer_once_under_its_own_random_code(self):
         self.assertEqual(self.code, 0)
@@ -1722,13 +1730,18 @@ class HandReadingSheet(unittest.TestCase):
         self.assertEqual(codes, sorted(codes))
         self.assertTrue(all(len(code) == 8 and int(code, 16) >= 0 for code in codes))
         self.assertEqual(sorted(codes), sorted(self.key["codes"]))
-        # Each code one run, and every run the agent answered, no slot the box closed.
+        # Each code one run, and every run the agent answered on a question with a key, no slot
+        # the box closed.
         self.assertEqual(sorted((c["model"], c["arm"], c["batch"], c["task"], c["repeat"])
                                 for c in self.key["codes"].values()), self.ran())
         closed = sum(run["outcome"] == voids.CLOSED for m in self.result["models"].values() for run in m["runs"])
         # Each model's block arms close the 18 decline slots each, and the showcase two more.
         self.assertEqual((self.key["rows"], self.key["closed_slots_left_out"]), (len(self.rows), closed))
         self.assertEqual(closed, 2 * (18 + 18 + 2))
+        # Shipped answers the two declines, three rounds each, under each model: no key to read
+        # them against, so not on the sheet (v5).
+        self.assertEqual(self.key["keyless_answers_left_out"], 2 * 6)
+        self.assertFalse(any(c["task"].startswith("decline-") for c in self.key["codes"].values()))
 
     def test_nothing_on_the_sheet_names_an_arm_a_model_a_batch_or_a_question_id(self):
         names = (list(self.result["models"]) + list(json.loads(PROTOCOL.read_text())["arms"])
@@ -1918,6 +1931,22 @@ class HandReadBack(unittest.TestCase):
                          {t: primary[t]["p"] for t in ("H2", "H3", "H4")})
         for tests in (deepseek, haiku):
             self.assertEqual({t: v["p_holm"] for t, v in tests.items()}, claim.holm({t: v["p"] for t, v in tests.items()}))
+
+    def test_the_unscorable_are_counted_by_arm_and_beside_each_test_of_correct(self):
+        # The auditor's check of the freeze candidate: an unscorable answer leaves every test
+        # of correct, so the count is shown. DeepSeek's one, shipped's water-best-per-litre-3, is
+        # on H1's questions and not H4's; Haiku has none.
+        _, out, result = self.differed
+        deepseek, haiku = (result["models"][m]["hand_reading"] for m in (DEEPSEEK, HAIKU))
+        self.assertEqual({arm: row["unscorable"] for arm, row in deepseek["by_arm"].items()},
+                         {"shipped": 1, "open everything (product)": 0, "the block (rules)": 0, "the block (model)": 0})
+        self.assertEqual((deepseek["tests"]["H1"]["unscorable"], deepseek["tests"]["H4"]["unscorable"]),
+                         ({"a": 0, "b": 1}, {"a": 0, "b": 0}))
+        self.assertEqual(sum(row["unscorable"] for row in haiku["by_arm"].values()), 0)
+        self.assertNotIn("unscorable", deepseek["tests"]["H2"])
+        self.assertIn("H1 on the hand verdicts, pooled 25/27 against 0/26; marked unscorable, so in no test of "
+                      "correct: the block (model) 0, shipped 1", out)
+        self.assertIn("unscorable 1;", out)
 
     def test_every_disagreement_by_arm_and_which_way_the_scorer_leans(self):
         code, out, result = self.differed
