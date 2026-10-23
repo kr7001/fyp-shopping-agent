@@ -27,10 +27,12 @@ import contextlib
 import csv
 import dataclasses
 import datetime as dt
+import hashlib
 import io
 import json
 import os
 import pathlib
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -44,6 +46,8 @@ import claim  # noqa: E402
 import form  # noqa: E402
 import normalise  # noqa: E402
 import page as page_module  # noqa: E402
+import parse_probe  # noqa: E402
+import plan_probe  # noqa: E402
 import planner  # noqa: E402
 import policy  # noqa: E402
 import primitives  # noqa: E402
@@ -51,6 +55,8 @@ import score  # noqa: E402
 import suite  # noqa: E402
 import targeting  # noqa: E402
 import voids  # noqa: E402
+from test_claim_arms import run_suite  # noqa: E402  (suite.main with nothing sent)
+from test_model_parser import replying  # noqa: E402  (the model parser's call, stubbed)
 
 PROTOCOL = paths.TASKS / "claim2_analysis.json"
 FIXTURE = paths.FIXTURES / "aplus_dev.json"
@@ -59,6 +65,19 @@ DEEPSEEK, HAIKU = "deepseek/deepseek-v4-flash", "anthropic/claude-haiku-4.5"
 TASKS_FILE = "tasks_claim2dev.json"
 READINGS_FILE = "readings_claim2dev.json"
 RIGHT_ON = {"shipped": {"tee-headline"}}       # besides the arms below
+
+
+def pinned_agent_code() -> dict:
+    """The agent's code a batch records when it runs the code this repository pins: the commit
+    its gitlink holds agent-core at, and the sha1 of the committed patch, which is the digest
+    a batch reads off the submodule's diff (`suite.agent_code_identity`, test_box.AgentCode)."""
+    tree = subprocess.run(["git", "-C", str(paths.REPO), "ls-tree", "HEAD", "agent/agent-core"],
+                          capture_output=True, text=True, check=True).stdout.split()
+    patch = (paths.REPO / "agent" / "openjiuwen-local.patch").read_bytes()
+    return {"agent_core_commit": tree[2], "agent_core_patch": hashlib.sha1(patch).hexdigest()}
+
+
+AGENT_CODE = pinned_agent_code()
 
 
 def build_task_files(folder: pathlib.Path) -> None:
@@ -237,21 +256,22 @@ def write_batch(root: pathlib.Path, name: str, arm: Plan, model: str, spec: dict
                "parser_temperature": suite.PARSER_TEMPERATURE if model_parser else None,
                "prompt_version": form.PROMPT_VERSION if model_parser else None,
                "normalise_version": normalise.VERSION if model_parser else None,
-               "reading": arm.reading, "browser_tool": suite.BROWSER_TOOL, "browser_origins": "http://localhost:7770",
-               "browser_flags": "--block-service-workers --isolated", "scorer_version": score.VERSION,
+               "reading": arm.reading, "browser_tool": suite.BROWSER_TOOL, "browser_origins": suite.ALLOWED_ORIGINS,
+               "browser_flags": suite.BROWSER_FLAGS, "scorer_version": score.VERSION,
                "rules_version": None, "model": model, "scaffold": "openjiuwen",
-               "agent_core_commit": "a" * 40, "agent_core_patch": "b" * 40, "max_steps": 300, "clock_s": 1800,
+               **AGENT_CODE, "max_steps": 300, "clock_s": 1800,
                "tasks_file": TASKS_FILE, "draw": suite.draw_id(spec), "instance": spec["_instance"],
                "summary": {}, "rows": rows}
     (folder / "suite.json").write_text(json.dumps(payload))
     return folder
 
 
-def build_run2(root: pathlib.Path, models=(DEEPSEEK, HAIKU), plant=None, asks=None) -> pathlib.Path:
+def build_run2(root: pathlib.Path, models=(DEEPSEEK, HAIKU), plant=None, asks=None, again=()) -> pathlib.Path:
     """The task files under root/tasks, every arm's batch for each model, and the claim
     command's manifest naming them, whose path is returned. For a fault, `plant(model, arm,
     folder)` alters a batch once it is written, and `asks(design)` the questions each arm
-    is given."""
+    is given. `again` names (model, arm) pairs whose batch is run a second time, after every
+    other, as a void batch is re-run, with nothing planted in it."""
     tasks_dir = root / "tasks"
     tasks_dir.mkdir()
     build_task_files(tasks_dir)
@@ -270,18 +290,23 @@ def build_run2(root: pathlib.Path, models=(DEEPSEEK, HAIKU), plant=None, asks=No
             if plant is not None:
                 plant(model, arm, folder)
             lines.append(f"batch|{folder}|{config['arms'][arm.name]['flags']}")
+    for model, name in again:
+        n += 1
+        arm = next(plan for plan in ARMS if plan.name == name)
+        folder = write_batch(root, f"202611{n:02d}T100000", arm, model, spec, keys, page, design)
+        lines.append(f"batch|{folder}|{config['arms'][arm.name]['flags']}")
     manifest = root / "claim2-test.manifest"
     manifest.write_text("start 2026-11-01T10:00:00 usage 20.0 cap 60\n" + "\n".join(lines)
                         + "\nend 2026-11-01T16:00:00 usage 41.0\n")
     return manifest
 
 
-def analyse(manifest: pathlib.Path) -> tuple[int, dict, str]:
+def analyse(manifest: pathlib.Path, protocol: pathlib.Path = PROTOCOL) -> tuple[int, dict, str]:
     """claim.py --protocol on the manifest, as the command line runs it: its exit code, the
     analysis it writes beside the manifest, and what it prints."""
     with mock.patch.object(paths, "TASKS", manifest.parent / "tasks"), \
             contextlib.redirect_stdout(io.StringIO()) as out:
-        code = claim.main(["--protocol", str(PROTOCOL), str(manifest)])
+        code = claim.main(["--protocol", str(protocol), str(manifest)])
     return code, json.loads(manifest.with_suffix(".analysis.json").read_text()), out.getvalue()
 
 
@@ -721,9 +746,17 @@ class Run2Faults(unittest.TestCase):
     """The run-2 analysis's own checks, each firing on a fault planted in the synthetic
     batches, and quiet without it. One model's batches, so the other named model has none."""
 
-    def run2(self, plant=None, models=(HAIKU,), asks=None) -> tuple[int, dict, str]:
+    def run2(self, plant=None, models=(HAIKU,), asks=None, again=(), protocol=None) -> tuple[int, dict, str]:
+        """The synthetic run with `plant`, analysed. `protocol`, if given, changes a copy of the
+        protocol file first, which the run is then analysed under."""
         with tempfile.TemporaryDirectory() as tmp:
-            return analyse(build_run2(pathlib.Path(tmp), models, plant, asks))
+            path = PROTOCOL
+            if protocol is not None:
+                config = json.loads(PROTOCOL.read_text())
+                protocol(config)
+                path = pathlib.Path(tmp) / "claim2_changed.json"
+                path.write_text(json.dumps(config))
+            return analyse(build_run2(pathlib.Path(tmp), models, plant, asks, again), path)
 
     def test_quiet_but_for_the_named_model_with_no_run(self):
         code, result, out = self.run2()
@@ -731,48 +764,109 @@ class Run2Faults(unittest.TestCase):
         self.assertIn("Problems found: 1", out)
         self.assertEqual(list(result["models"]), [HAIKU])
 
-    def test_a_step_budget_the_protocol_does_not_require_is_refused(self):
-        # Until protocol analysis v3 it was listed among the problems and analysed all the same.
+    def test_a_batch_outside_require_is_void_and_its_model_refused(self):
+        # Until protocol analysis v3 it was listed among the problems and analysed all the same,
+        # and in v3 it stopped the whole analysis. Since v4 the batch is void as a whole, and a
+        # model it leaves a slot empty for is refused: the exit says so.
         def plant(model, arm, folder):
             if arm.name == "shipped":
                 set_conditions(folder, max_steps=150)
-        with self.assertRaises(SystemExit) as raised:
-            self.run2(plant)
-        self.assertIn(f"refused, since batches ran under conditions the protocol does not require: {HAIKU}: "
-                      f"shipped ran with max_steps 150, where the protocol requires 300", str(raised.exception))
+        code, result, out = self.run2(plant)
+        self.assertEqual(code, 1)
+        refused = result["models"][HAIKU]["refused"]
+        self.assertEqual(len(refused), 1)
+        self.assertIn("20261101T100000 ran outside what the protocol requires (shipped with max_steps 150, where "
+                      "the protocol requires 300), so it is void as a whole, and 45 of its slots have no re-run",
+                      refused[0])
+        self.assertIn(f"{HAIKU}: refused: 20261101T100000 ran outside", " ".join(result["problems"]))
+        self.assertEqual([(v["batch"], v["re_run"]) for v in result["void_batches"]], [("20261101T100000", False)])
+        self.assertIn("REFUSED: this model's analysis is not made", out)
+
+    def test_a_batch_outside_require_refuses_its_own_model_alone(self):
+        def plant(model, arm, folder):
+            if model == HAIKU and arm.name == "the block (model)":
+                set_conditions(folder, rate_plan="bound")
+        code, result, out = self.run2(plant, models=(DEEPSEEK, HAIKU))
+        self.assertEqual(code, 1)
+        self.assertIn("the block (model) with rate_plan bound", result["models"][HAIKU]["refused"][0])
+        deepseek = result["models"][DEEPSEEK]
+        self.assertNotIn("refused", deepseek)
+        self.assertEqual({arm: a["runs"] for arm, a in deepseek["arms"].items()},
+                         {"shipped": 45, "open everything (product)": 36, "the block (rules)": 135,
+                          "the block (model)": 135})
+        self.assertEqual(list(deepseek["primary"]), ["H1", "H2", "H3", "H4"])
+        self.assertEqual(deepseek["exclusions"]["void_batches"], [])
+        self.assertIn("1. Each arm by question", out)
+
+    def test_two_conditions_in_one_arm_refuse_that_model_alone(self):
+        # Haiku's shipped batch run twice, the first on another market draw: one arm under two
+        # conditions is two arms (LESSONS 7). Until v4 that stopped every model's analysis.
+        def plant(model, arm, folder):
+            if model == HAIKU and arm.name == "shipped":
+                set_conditions(folder, draw="Larchmere:another")
+        code, result, _ = self.run2(plant, models=(DEEPSEEK, HAIKU), again=((HAIKU, "shipped"),))
+        self.assertEqual(code, 1)
+        self.assertIn("shipped under anthropic/claude-haiku-4.5 has runs under more than one condition",
+                      result["models"][HAIKU]["refused"][0])
+        self.assertEqual(list(result["models"][DEEPSEEK]["primary"]), ["H1", "H2", "H3", "H4"])
+
+    def test_a_void_batch_run_again_is_listed_and_its_model_analysed(self):
+        # The protocol's note: void as a whole, re-run, and listed. The re-run fills every slot.
+        def plant(model, arm, folder):
+            if arm.name == "shipped":
+                set_conditions(folder, max_steps=150)
+        code, result, out = self.run2(plant, again=((HAIKU, "shipped"),))
+        self.assertEqual(code, 0)
+        m = result["models"][HAIKU]
+        self.assertEqual((m["arms"]["shipped"]["runs"], m["arms"]["shipped"]["batches"]), (45, ["20261105T100000"]))
+        self.assertEqual([(v["batch"], v["re_run"]) for v in m["exclusions"]["void_batches"]], [("20261101T100000", True)])
+        self.assertEqual(result["problems"], [f"the protocol's model {DEEPSEEK} has no run"])
+        self.assertIn("void as a whole, outside what the protocol requires, and run again: 20261101T100000", out)
 
     def test_each_condition_an_arm_is_required_to_run_under(self):
-        # The re-audit's R4: every arm's browser tool, and each arm's own conditions. A batch
-        # run under another is refused, and names the arm and the condition.
+        # The re-audit's R4: every arm's browser and agent code, and each arm's own conditions.
+        # A batch run under another is void, and its model's refusal names the arm and the
+        # condition. The model arm's parser is held to the run's own model (v4).
         for arm_name, change, words in (
-                ("shipped", {"browser_tool": "0.0.84"}, "shipped ran with browser_tool 0.0.84, where the protocol "
+                ("shipped", {"browser_tool": "0.0.84"}, "shipped with browser_tool 0.0.84, where the protocol "
                                                         "requires 0.0.83"),
+                ("shipped", {"browser_flags": "--isolated"}, "shipped with browser_flags --isolated"),
+                ("shipped", {"browser_origins": "http://localhost:7770 https://example.com"},
+                 "shipped with browser_origins http://localhost:7770 https://example.com"),
+                ("open everything (product)", {"agent_core_commit": "c" * 40},
+                 f"open everything (product) with agent_core_commit {'c' * 40}"),
+                ("the block (rules)", {"agent_core_patch": "unknown"}, "the block (rules) with agent_core_patch unknown"),
                 ("open everything (product)", {"exhaustive_wording_version": 1},
-                 "open everything (product) ran with exhaustive_wording_version 1"),
-                ("the block (rules)", {"rate_plan": "bound"}, "the block (rules) ran with rate_plan bound, where the "
+                 "open everything (product) with exhaustive_wording_version 1"),
+                ("the block (rules)", {"rate_plan": "bound"}, "the block (rules) with rate_plan bound, where the "
                                                               "protocol requires every"),
-                ("the block (rules)", {"page_reader": "fetch"}, "the block (rules) ran with page_reader fetch"),
-                ("the block (rules)", {"box_version": 17}, "the block (rules) ran with box_version 17"),
-                ("the block (rules)", {"form_version": 12}, "the block (rules) ran with form_version 12"),
-                ("the block (model)", {"prompt_version": 2}, "the block (model) ran with prompt_version 2"),
-                ("the block (model)", {"parser_temperature": 0.2}, "the block (model) ran with parser_temperature 0.2"),
-                ("the block (model)", {"rate_plan": "bound"}, "the block (model) ran with rate_plan bound")):
+                ("the block (rules)", {"page_reader": "fetch"}, "the block (rules) with page_reader fetch"),
+                ("the block (rules)", {"box_version": 17}, "the block (rules) with box_version 17"),
+                ("the block (rules)", {"form_version": 12}, "the block (rules) with form_version 12"),
+                ("the block (model)", {"prompt_version": 2}, "the block (model) with prompt_version 2"),
+                ("the block (model)", {"parser_temperature": 0.2}, "the block (model) with parser_temperature 0.2"),
+                ("the block (model)", {"rate_plan": "bound"}, "the block (model) with rate_plan bound"),
+                ("the block (model)", {"parser_model": "x-ai/grok-5-mini"},
+                 f"the block (model) with parser_model x-ai/grok-5-mini, where the protocol requires its model, {HAIKU}")):
             with self.subTest(arm=arm_name, change=change):
                 def plant(model, arm, folder, arm_name=arm_name, change=change):
                     if arm.name == arm_name:
                         set_conditions(folder, **change)
-                with self.assertRaises(SystemExit) as raised:
-                    self.run2(plant)
-                self.assertIn(f"{HAIKU}: {words}", str(raised.exception))
+                code, result, _ = self.run2(plant)
+                self.assertEqual(code, 1)
+                self.assertIn(words, " ".join(result["models"][HAIKU]["refused"]))
 
     def test_a_condition_that_differs_between_the_arms(self):
-        # One the protocol requires of no arm: listed among the problems, and the analysis goes on.
+        # One the protocol requires of no arm, in a copy of the file that does not require the
+        # patch's digest: listed among the problems, and the analysis goes on.
         def plant(model, arm, folder):
             if arm.name == "open everything (product)":
                 set_conditions(folder, agent_core_patch="c" * 40)
-        _, result, out = self.run2(plant)
-        self.assertIn(f"{HAIKU}: agent_core_patch differs between the arms: shipped {'b' * 40}; open everything "
-                      f"(product) {'c' * 40}; the block (rules) {'b' * 40}; the block (model) {'b' * 40}",
+        code, result, out = self.run2(plant, protocol=lambda config: config["require"].pop("agent_core_patch"))
+        patch = AGENT_CODE["agent_core_patch"]
+        self.assertEqual(code, 0)
+        self.assertIn(f"{HAIKU}: agent_core_patch differs between the arms: shipped {patch}; open everything "
+                      f"(product) {'c' * 40}; the block (rules) {patch}; the block (model) {patch}",
                       result["problems"])
         self.assertIn("DIFFERS between arms, agent_core_patch", out)
 
@@ -1042,6 +1136,10 @@ class ProtocolFile(unittest.TestCase):
                  "arm 'the block (model)' requires 'colour', which no run records"),
                 ("a secondary measure unknown", lambda c: c["secondary_measures"].append("speed"),
                  "no secondary measure"),
+                # Protocol analysis v4.
+                ("a required value that is another condition no run records",
+                 lambda c: c["arms"]["the block (model)"]["require"].update(parser_model={"same_as": "colour"}),
+                 "which is no value and no other condition a run records"),
                 # Protocol analysis v2, 23 October 2026.
                 ("two primaries", lambda c: c["roles"].update({HAIKU: "primary"}), "other than one primary"),
                 ("a role this analysis has not", lambda c: c["roles"].update({HAIKU: "lead"}), "role is not one of"),
@@ -1076,7 +1174,10 @@ class TheRequiredConditions(unittest.TestCase):
             "form_version": form.VERSION, "primitives_version": primitives.VERSION,
             "prompt_version": form.PROMPT_VERSION, "normalise_version": normalise.VERSION,
             "parser_temperature": suite.PARSER_TEMPERATURE,
-            "exhaustive_wording_version": policy.EXHAUSTIVE_PRODUCT_VERSION, "browser_tool": suite.BROWSER_TOOL}
+            "exhaustive_wording_version": policy.EXHAUSTIVE_PRODUCT_VERSION, "browser_tool": suite.BROWSER_TOOL,
+            # Since protocol version 4: the browser's confinement and the agent's code, the
+            # commit this repository pins agent-core at and its committed patch's digest.
+            "browser_origins": suite.ALLOWED_ORIGINS, "browser_flags": suite.BROWSER_FLAGS, **AGENT_CODE}
 
     def setUp(self):
         self.config = json.loads(PROTOCOL.read_text())
@@ -1091,8 +1192,11 @@ class TheRequiredConditions(unittest.TestCase):
                     checked += 1
                     with self.subTest(scope=scope, key=key):
                         self.assertEqual(value, self.CODE[key])
-        # The browser tool, the wording's version, and the block's seven and the model's three.
-        self.assertEqual(checked, 1 + 1 + 5 + 8)
+        # Every arm's browser tool, origins, flags, commit and patch; the wording's version; and
+        # the block's five versions under the rules and eight under the model.
+        self.assertEqual(checked, 5 + 1 + 5 + 8)
+        # The model arm's parser is the run's own model, whichever model runs it.
+        self.assertEqual(self.config["arms"]["the block (model)"]["require"]["parser_model"], {"same_as": "model"})
 
     def test_each_arms_flags_make_what_it_requires(self):
         for name, arm in self.config["arms"].items():
@@ -1112,6 +1216,102 @@ class TheRequiredConditions(unittest.TestCase):
         for name in ("the block (rules)", "the block (model)"):
             self.assertEqual((self.config["arms"][name]["reading"], self.config["arms"][name]["require"]["rate_plan"]),
                              ("own", "every"))
+
+
+class ThePreflight(unittest.TestCase):
+    """`claim.py --preflight` (protocol analysis v4, R4): what a batch of each arm would
+    record, worked out from its flags and the code before anything runs, against what the
+    protocol requires of the arm. Nothing is sent: suite.main runs with its agent and the
+    model parser's call stubbed (test_claim_arms.run_suite)."""
+
+    DEV_TASKS = paths.TASKS / "tasks_aplus_dev.json"
+    MORE = f"--tasks {DEV_TASKS} --repeats 1 --only tee-target-price"
+
+    def setUp(self):
+        self.config = json.loads(PROTOCOL.read_text())
+
+    def flags(self, name: str) -> str:
+        return f"{self.config['arms'][name]['flags']} {self.MORE}"
+
+    def preflight(self, name: str, flags: str | None = None, identity: dict | None = None) -> list[str]:
+        with mock.patch.dict(os.environ, {"MODEL_NAME": DEEPSEEK}), \
+                mock.patch.object(suite, "agent_code_identity", return_value=identity or AGENT_CODE):
+            return claim.preflight(PROTOCOL, name, flags if flags is not None else self.flags(name))[1]
+
+    def test_it_reads_the_flags_as_suite_records_them_for_every_arm(self):
+        # suite.main's own payload for each arm's flags, condition by condition, against the
+        # preflight's reading of the same flags, under the same agent code and model.
+        page = larchmere_page(json.loads(self.DEV_TASKS.read_text()))
+        identity = {"agent_core_commit": "a" * 40, "agent_core_patch": "b" * 40}    # run_suite's own
+        for name in self.config["arms"]:
+            flags = self.flags(name)
+            with self.subTest(arm=name), mock.patch.dict(os.environ, {"MODEL_NAME": DEEPSEEK}), \
+                    mock.patch.object(parse_probe, "call_model", replying()), \
+                    mock.patch.object(plan_probe, "load_key", return_value="fake-key"):
+                run = run_suite(*shlex.split(flags), page=page)
+                self.addCleanup(run.owner.cleanup)
+                self.assertEqual(run.code, 0, run.out)
+                payload = json.loads((run.batch / "suite.json").read_text())
+                record = json.loads((run.batch / "tee-target-price-1.json").read_text())
+                # Each condition as the analysis reads it: the run's own record for the shop,
+                # probe, scaffold and limits, the batch's payload for the rest; the model the
+                # payload's, since the stubbed runner's record says "fake/model".
+                recorded = {**claim.conditions_of(payload, record, claim.PROTOCOL_CONDITIONS),
+                            "model": payload["model"]}
+                with mock.patch.object(suite, "agent_code_identity", return_value=identity):
+                    planned = claim.planned_conditions(flags)
+                self.assertEqual({key: planned[key] for key in claim.PROTOCOL_CONDITIONS}, recorded)
+                self.assertEqual((planned["arm"], planned["reading"]), (payload["arm"], payload["reading"]))
+                self.assertEqual(payload["model"], DEEPSEEK)
+
+    def test_every_arm_passes_under_the_code_this_repository_pins(self):
+        for name in self.config["arms"]:
+            with self.subTest(arm=name):
+                self.assertEqual(self.preflight(name), [])
+
+    def test_a_batch_outside_require_is_refused_before_it_runs(self):
+        for name, flags, words in (
+                ("the block (rules)", "--box --parser rules --reading own --max-steps 300 --clock 1800",
+                 "rate_plan bound, where the protocol requires every"),
+                ("the block (model)", "--box --parser model --reading menu --rate-plan every --max-steps 300 --clock 1800",
+                 "the flags make arm box-model with reading menu, where the block (model) is arm box-model with "
+                 "reading own"),
+                ("shipped", "--max-steps 150 --clock 1800", "max_steps 150, where the protocol requires 300"),
+                ("the block (model)", "--box --parser model --parser-model x-ai/grok-5-mini --reading own --rate-plan "
+                                      "every --max-steps 300 --clock 1800",
+                 f"parser_model x-ai/grok-5-mini, where the protocol requires its model, {DEEPSEEK}"),
+                ("open everything (product)", "--exhaustive --max-steps 300 --clock 1800",
+                 "the flags make arm exhaustive with reading None"),
+                ("shipped", "--shop default --max-steps 300 --clock 1800", "shop default, where the protocol holds gated fixed")):
+            with self.subTest(arm=name, flags=flags):
+                self.assertTrue(any(words in problem for problem in self.preflight(name, f"{flags} {self.MORE}")),
+                                self.preflight(name, f"{flags} {self.MORE}"))
+        # The agent's code unknown, as where the submodule is not checked out, and a version the
+        # code moved since the protocol was fixed.
+        unknown = {"agent_core_commit": "unknown", "agent_core_patch": "unknown"}
+        self.assertIn("agent_core_commit unknown, where the protocol requires " + AGENT_CODE["agent_core_commit"],
+                      self.preflight("shipped", identity=unknown))
+        with mock.patch.object(box, "VERSION", box.VERSION + 1):
+            self.assertIn(f"box_version {box.VERSION}, where the protocol requires 18",
+                          self.preflight("the block (rules)"))
+
+    def test_the_command_line_exits_one_on_a_refusal_and_reads_no_batch(self):
+        def preflight(*argv: str) -> tuple[int, str]:
+            with mock.patch.dict(os.environ, {"MODEL_NAME": DEEPSEEK}), \
+                    mock.patch.object(suite, "agent_code_identity", return_value=AGENT_CODE), \
+                    contextlib.redirect_stdout(io.StringIO()) as out:
+                return claim.main(["--protocol", str(PROTOCOL), *argv]), out.getvalue()
+        code, out = preflight("--preflight", "shipped", "--flags", self.flags("shipped"))
+        self.assertEqual(code, 0, out)
+        self.assertIn("within what the protocol requires: the batch may run", out)
+        code, out = preflight("--preflight", "shipped", "--flags", f"--max-steps 150 {self.MORE}")
+        self.assertEqual(code, 1)
+        self.assertIn("REFUSED: max_steps 150", out)
+        for argv in (("--preflight", "shipped"), ("--preflight", "shipped", "--flags", "", "some.manifest")):
+            with self.subTest(argv=argv), contextlib.redirect_stderr(io.StringIO()) as err, \
+                    self.assertRaises(SystemExit):
+                preflight(*argv)
+            self.assertIn("needs --protocol and --flags", err.getvalue())
 
 
 class NeedsALaterPage(unittest.TestCase):

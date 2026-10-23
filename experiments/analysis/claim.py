@@ -50,20 +50,30 @@ import hashlib
 import itertools
 import json
 import math
+import os
 import pathlib
 import re
 import secrets
+import shlex
 import statistics
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
+import box as box_module  # noqa: E402  (the versions a batch would record, for the preflight)
 import compare_cells  # noqa: E402  (stratified_exact, covered, distinct: one definition each)
+import form as form_module  # noqa: E402
 import leaks  # noqa: E402
+import normalise as normalise_module  # noqa: E402
+import page as page_module  # noqa: E402
+import planner as planner_module  # noqa: E402
+import policy as policy_module  # noqa: E402
+import primitives as primitives_module  # noqa: E402
 import replay_box  # noqa: E402
 import score as scoring  # noqa: E402
 import sufficiency  # noqa: E402
 import suite as suite_module  # noqa: E402  (arm_of, the one rule for a batch's arm)
+import targeting as targeting_module  # noqa: E402
 import toolbar  # noqa: E402  (the results pages a run asked for, from its log)
 import trace_stats  # noqa: E402
 import verify_cells  # noqa: E402
@@ -855,6 +865,12 @@ def brief(slot: dict) -> dict:
             "reason": slot["reason"], "evidence": slot["why"]}
 
 
+class Refused(SystemExit):
+    """A refusal to analyse, as SystemExit: uncaught it stops the analysis with its message,
+    as every refusal here always has. Under a protocol file it is caught for the model whose
+    runs it is about, so that model's analysis alone is refused (protocol analysis v4)."""
+
+
 def one_condition_each(slots: list[dict], keys: tuple = CONDITIONS) -> dict[tuple[str, str], dict]:
     """Each arm's conditions, by arm and model, or a refusal naming the conditions that
     differ: runs of one arm under two conditions are two arms and are never pooled
@@ -871,9 +887,9 @@ def one_condition_each(slots: list[dict], keys: tuple = CONDITIONS) -> dict[tupl
             differ = sorted({key for run in runs for key in keys
                              if run["conditions"][key] != runs[0]["conditions"][key]})
             values = {key: sorted({str(run["conditions"][key]) for run in runs}) for key in differ}
-            raise SystemExit(f"{arm} under {model} has runs under more than one condition, so they "
-                             f"are not one arm and are never pooled (LESSONS 7): {values}. Analyse "
-                             f"the batches of each condition on their own")
+            raise Refused(f"{arm} under {model} has runs under more than one condition, so they "
+                          f"are not one arm and are never pooled (LESSONS 7): {values}. Analyse "
+                          f"the batches of each condition on their own")
         out[(arm, model)] = runs[0]["conditions"]
     return out
 
@@ -1524,7 +1540,11 @@ def render_test(t: dict) -> str:
 #   4  23 October 2026, from the auditor's check of 41d7839, before the second claim run. The
 #      hand reading is made real: the sheet no longer shows the scorer's verdict, and `--hand`
 #      reads a filled sheet back, refusing one with a gap, and runs the primary tests on its
-#      verdicts for each model, with every disagreement with the scorer by arm (`hand_reading`)
+#      verdicts for each model, with every disagreement with the scorer by arm (`hand_reading`).
+#      A batch outside require is void as a whole and listed, and refuses only its own model's
+#      analysis, unless it was run again; so do two conditions in one arm and two draws; a
+#      required value may be another condition of the run (`mismatches`, "same_as"); and
+#      `--preflight` checks a batch's flags against require before it runs (`preflight`)
 PROTOCOL_ANALYSIS_VERSION = 4
 # The conditions a protocol's arms are held to: the first claim's and the model parser's,
 # the open-everything wording, the agent's limits. Of them, the ones an arm has by design.
@@ -1634,6 +1654,14 @@ def check_protocol(config: dict) -> list[str]:
         for key in (arm.get("require") or {}) if isinstance(arm, dict) else {}:
             if key not in PROTOCOL_CONDITIONS:
                 found.append(f"arm {name!r} requires {key!r}, which no run records")
+    # A required value may be another condition of the same run (v4): {"same_as": key}.
+    scopes = [("the protocol", config.get("require") or {})] + [
+        (f"arm {name!r}", arm.get("require") or {}) for name, arm in arms.items() if isinstance(arm, dict)]
+    for scope, required in scopes:
+        for key, value in required.items():
+            if isinstance(value, dict) and (set(value) != {"same_as"} or value["same_as"] not in PROTOCOL_CONDITIONS):
+                found.append(f"{scope} requires {key!r} to be {value!r}, which is no value and no "
+                             f"other condition a run records")
     for name in config.get("secondary_measures") or []:
         if name not in SECONDARY_MEASURES:
             found.append(f"no secondary measure this analysis has is called {name!r}")
@@ -2128,16 +2156,125 @@ def required_of(arm: str, protocol: Protocol) -> dict:
     return {**protocol.require, **protocol.arm_require.get(arm, {})}
 
 
-def not_as_required(conditions: dict, protocol: Protocol) -> list[str]:
-    """Every arm, under every model, that ran under a condition other than the one the
-    protocol requires of it (`required_of`), by the conditions its runs record
-    (`one_condition_each`). Until v3 the protocol required the step budget and the clock
-    alone, and a batch under another was listed among the problems and analysed all the
-    same; since the re-audit (R4, 23 October 2026) a batch under another rate plan, wording,
-    prompt, temperature, box, page reader or browser tool is refused (`analyse_protocol`)."""
-    return [f"{model}: {arm} ran with {key} {c[key]}, where the protocol requires {value}"
-            for (arm, model), c in conditions.items()
-            for key, value in required_of(arm, protocol).items() if c[key] != value]
+def mismatches(conditions: dict, required: dict) -> list[str]:
+    """Each condition a run records, or a batch would (`planned_conditions`), that is not the
+    one `required` names (`required_of`): a value, or {"same_as": key}, the run's own value of
+    another condition (v4: the model parser's model is the run's own model)."""
+    found = []
+    for key, value in required.items():
+        same = value.get("same_as") if isinstance(value, dict) else None
+        want = conditions.get(same) if same else value
+        if conditions.get(key) != want:
+            found.append(f"{key} {conditions.get(key)}, where the protocol requires "
+                         + (f"its {same}, {want}" if same else f"{value}"))
+    return found
+
+
+def outside_require(slots: list[dict], protocol: Protocol) -> list[str]:
+    """Why a batch is outside what the protocol requires of its arm: each condition a run of
+    it records that is not the required one (`mismatches`), once each. Empty for a batch
+    within it. Until v3 the protocol required the step budget and the clock alone, and a
+    batch under another was listed among the problems and analysed all the same; in v3 any
+    such batch stopped the whole analysis; since v4 (the auditor's check of 41d7839) it is
+    void as a whole, and refuses only its own model's analysis unless it was run again
+    (`analyse_protocol`)."""
+    found = []
+    for slot in slots:
+        for text in mismatches(slot["conditions"], required_of(slot["arm"], protocol)):
+            if f"{slot['arm']} with {text}" not in found:
+                found.append(f"{slot['arm']} with {text}")
+    return found
+
+
+def planned_conditions(flags: str) -> dict:
+    """What a batch run with these suite.py flags would record, from the code as it stands and
+    before anything runs (v4, R4: the claim command's preflight). Each condition a protocol
+    may require is worked out as suite.main writes it into the payload: the arm by
+    `suite.arm_of`, the reading and the setting from the flags, the limits by `suite.limits`,
+    the browser by `suite.browser_conditions`, the agent's code by `suite.agent_code_identity`,
+    the model as the agent reads it (`suite.agent_model`), and every version from its module.
+    The flags are read with suite.py's own choices; any other flag is left to suite.py. A
+    test runs suite.main on each arm's flags and holds the two to the same values, so the
+    two never drift apart (tests/test_claim2_analysis.py, ThePreflight)."""
+    parser = argparse.ArgumentParser(prog="the preflight's reading of the suite flags", add_help=False)
+    parser.add_argument("--tasks", type=pathlib.Path)
+    for flag in ("--targeting", "--exhaustive", "--box", "--box-exhaust"):
+        parser.add_argument(flag, action="store_true")
+    parser.add_argument("--exhaustive-wording", choices=("every", "product"))
+    parser.add_argument("--confidence", choices=("off", "plain", "retrieval"), default="off")
+    parser.add_argument("--policy", choices=("off", "gate", "retry", "investigate"), default="off")
+    parser.add_argument("--scaffold", choices=("openjiuwen", "naive"), default="openjiuwen")
+    parser.add_argument("--shop", choices=("gated", "default"), default="gated")
+    parser.add_argument("--probe", choices=("viewport", "whole-page"), default="viewport")
+    parser.add_argument("--reading", choices=suite_module.SCRIPTED_READINGS)
+    parser.add_argument("--parser", choices=box_module.PARSERS, default="rules")
+    parser.add_argument("--parser-model")
+    parser.add_argument("--page-reader", choices=page_module.READERS)
+    parser.add_argument("--rate-plan", choices=box_module.RATE_PLANS)
+    parser.add_argument("--max-steps", type=int)
+    parser.add_argument("--clock", type=int)
+    args, _ = parser.parse_known_args(shlex.split(flags))
+    boxed = args.box or args.box_exhaust
+    model_parser = args.parser == "model"
+    wording = (args.exhaustive_wording or "every") if args.exhaustive else None
+    model = suite_module.agent_model()
+    agent = (suite_module.agent_code_identity() if args.scaffold == "openjiuwen"
+             else {"agent_core_commit": None, "agent_core_patch": None})
+    arm = suite_module.arm_of(argparse.Namespace(box=args.box, box_exhaust=args.box_exhaust,
+                                                 targeting=args.targeting, exhaustive=args.exhaustive,
+                                                 parser=args.parser, exhaustive_wording=wording))
+    planned = {
+        "arm": arm, "reading": args.reading, "model": os.environ.get("MODEL_NAME") or model,
+        "scaffold": args.scaffold, "shop": args.shop, "probe": args.probe, "policy": args.policy,
+        "confidence": args.confidence, "targeting": args.targeting,
+        "targeting_version": targeting_module.VERSION if args.targeting or boxed else None,
+        "planner_version": planner_module.VERSION if args.targeting or boxed else None,
+        "box_version": box_module.VERSION if boxed else None,
+        "form_version": form_module.VERSION if boxed else None,
+        "primitives_version": primitives_module.VERSION if boxed else None,
+        "page_reader": (args.page_reader or page_module.READERS[0]) if boxed else None,
+        "rate_plan": (args.rate_plan or "bound") if boxed else None,
+        "parser": args.parser if boxed else None,
+        "parser_model": (args.parser_model or model) if model_parser else None,
+        "parser_temperature": suite_module.PARSER_TEMPERATURE if model_parser else None,
+        "prompt_version": form_module.PROMPT_VERSION if model_parser else None,
+        "normalise_version": normalise_module.VERSION if model_parser else None,
+        "exhaustive_wording": wording,
+        "exhaustive_wording_version": policy_module.EXHAUSTIVE_PRODUCT_VERSION if wording == "product" else None,
+        **suite_module.browser_conditions(args.scaffold, args.shop),
+        **agent,
+        **suite_module.limits(args.scaffold, args.max_steps, args.clock),
+    }
+    if args.tasks is not None:
+        planned.update(tasks_file=suite_module.tasks_file_name(args.tasks),
+                       draw=suite_module.draw_id(json.loads(args.tasks.read_text())))
+    return planned
+
+
+def preflight(protocol_path: pathlib.Path, arm_name: str, flags: str) -> tuple[dict, list[str]]:
+    """Whether a batch of the protocol's arm `arm_name`, run with these suite.py flags under
+    the code as it stands, would be within what the protocol requires of it (v4, R4): what
+    the batch would record (`planned_conditions`), and every way it would not be. The flags
+    must make the arm the protocol names, with its reading and the setting the protocol
+    holds fixed, and each required condition must hold (`mismatches`). Nothing is run and
+    nothing is spent; the claim command calls it before each invocation."""
+    config = json.loads(protocol_path.read_text())
+    broken = check_protocol(config)
+    if broken:
+        raise SystemExit(f"{protocol_path.name} cannot be checked against: " + "; ".join(broken))
+    arms = config["arms"]
+    if arm_name not in arms:
+        raise SystemExit(f"{protocol_path.name} has no arm {arm_name!r}; its arms are {', '.join(arms)}")
+    arm = arms[arm_name]
+    planned = planned_conditions(flags)
+    problems = []
+    if (planned["arm"], planned["reading"]) != (arm["arm"], arm["reading"]):
+        problems.append(f"the flags make arm {planned['arm']} with reading {planned['reading']}, where "
+                        f"{arm_name} is arm {arm['arm']} with reading {arm['reading']}")
+    problems += [f"{key} {planned[key]}, where the protocol holds {value} fixed"
+                 for key, value in SETTING.items() if planned[key] != value]
+    problems += mismatches(planned, {**(config.get("require") or {}), **(arm.get("require") or {})})
+    return planned, problems
 
 
 def protocol_model(model: str | None, population: dict, conditions: dict, protocol: Protocol,
@@ -2160,8 +2297,8 @@ def protocol_model(model: str | None, population: dict, conditions: dict, protoc
         else:
             differ[key] = seen
     if "draw" in differ:
-        raise SystemExit(f"the arms under {model} ran on more than one market draw, so they are "
-                         f"never set against each other: {differ['draw']}")
+        raise Refused(f"the arms under {model} ran on more than one market draw, so they are "
+                      f"never set against each other: {differ['draw']}")
     by_arm = {arm: {key: c[key] for key in PROTOCOL_ARM_CONDITIONS} for arm, c in mine.items()}
     # What every arm was held to, and each arm's own, all met: `analyse_protocol` refuses the
     # batches before this is reached otherwise (v3, `not_as_required`).
@@ -2272,18 +2409,38 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
         raise SystemExit(f"the batches read {len(files)} task files ({', '.join(files)}), where the "
                          f"protocol's sets are one task file's ids")
     protocol = resolve_protocol(path, config, json.loads((paths.TASKS / files[0]).read_text()))
-    population = assemble(loaded, manifest is not None)
+    # A batch with a run under a condition its arm is not required to run under is void as a
+    # whole (v4, from the auditor's check of 41d7839, as the protocol file's note says): left
+    # out, listed, and its slots filled by a re-run of it or by nothing. A model it leaves a
+    # slot empty for is refused, and the other model's analysis goes on. Its charges still
+    # count among the money spent (`source`). The claim command's preflight keeps such a batch
+    # from being run at all (`preflight`).
+    void_batches, within = [], []
+    for line, payload, slots in loaded:
+        why = outside_require(slots, protocol)
+        if not why:
+            within.append((line, payload, slots))
+            continue
+        void_batches.append({"batch": line.folder.name, "kind": line.kind, "why": why,
+                             "models": sorted({slot["model"] for slot in slots}, key=str),
+                             "slots": sorted({(slot["model"], slot["arm"], slot["task"], slot["repeat"])
+                                              for slot in slots}, key=str)})
+    population = assemble(within, manifest is not None)
     problems += population["problems"]
     every = [slot for _, _, slots in loaded for slot in slots]
-    conditions = one_condition_each(population["kept"] + population["voided"], PROTOCOL_CONDITIONS)
-    # A batch run under a condition the protocol does not require of its arm is no batch of
-    # this protocol: refused before any figure is made of it (v3, R4).
-    refused = not_as_required(conditions, protocol)
-    if refused:
-        raise SystemExit(f"{path.name}: refused, since batches ran under conditions the protocol does not "
-                         f"require: " + "; ".join(refused))
-    models = sorted({slot["model"] for slot in population["kept"]} | {m["model"] for m in population["missing"]},
-                    key=str)
+    filled = {(slot["model"], slot["arm"], slot["task"], slot["repeat"]) for slot in population["kept"]}
+    refused = collections.defaultdict(list)
+    for void in void_batches:
+        empty = [slot for slot in void["slots"] if slot not in filled]
+        void["re_run"] = not empty
+        for model in void["models"]:
+            left = sum(1 for slot in empty if slot[0] == model)
+            if left:
+                refused[model].append(f"{void['batch']} ran outside what the protocol requires "
+                                      f"({'; '.join(void['why'])}), so it is void as a whole, and {left} "
+                                      f"of its slots have no re-run")
+    models = sorted({slot["model"] for slot in population["kept"]} | {m["model"] for m in population["missing"]}
+                    | set(refused), key=str)
     # The primary model first, then its replications in the file's order, then any the file
     # does not name (v2): the report is read in that order.
     named = [m for m in protocol.models if protocol.roles.get(m) == "primary"] + \
@@ -2299,9 +2456,25 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
            "design": {arm: len(questions) * len(protocol.rounds) for arm, questions in protocol.design.items()},
            "source": source(lines, manifest, every), "problems": problems, "models": {},
            "models_named": list(protocol.models), "roles": dict(protocol.roles),
-           "hand_sheet": {"sheet": hand["sheet"], "rows": len(hand["rows"])} if hand else None}
+           "hand_sheet": {"sheet": hand["sheet"], "rows": len(hand["rows"])} if hand else None,
+           "void_batches": void_batches}
     for model in models:
-        result = protocol_model(model, population, conditions, protocol, by_run)
+        why = list(refused.get(model, []))
+        if not why:
+            # Two conditions in one arm, or two market draws, refuse this model alone (v4).
+            try:
+                conditions = one_condition_each([s for s in population["kept"] + population["voided"]
+                                                 if s["model"] == model], PROTOCOL_CONDITIONS)
+                result = protocol_model(model, population, conditions, protocol, by_run)
+            except Refused as refusal:
+                why.append(str(refusal))
+        if why:
+            out["models"][str(model)] = {"refused": why, "named": model in protocol.models,
+                                         "role": protocol.roles.get(model) if model in protocol.models else None,
+                                         "void_batches": [v for v in void_batches if model in v["models"]]}
+            out["problems"] += [f"{model}: refused: {text}" for text in why]
+            continue
+        result["exclusions"]["void_batches"] = [v for v in void_batches if model in v["models"]]
         # A condition that is no arm's own and differs between arms makes two experiments of
         # one (LESSONS 7, 10), and the design's slots are the protocol's, fixed before the run.
         out["problems"] += [f"{model}: {key} differs between the arms: "
@@ -2356,7 +2529,8 @@ def hand_reading_sheet(result: dict) -> tuple[list[dict], dict]:
     keys = scoring.keys_for(tasks_path)
     rows, codes, closed = [], {}, 0
     for model, m in result["models"].items():
-        for run in m["runs"]:
+        # A refused model has no analysis, so nothing of it is read (v4).
+        for run in m.get("runs") or []:
             if run["outcome"] == voids.CLOSED:
                 closed += 1
                 continue
@@ -2562,11 +2736,19 @@ def render_protocol(result: dict) -> str:
     say(f"\nProblems found: {len(result['problems'])}")
     for text in result["problems"]:
         say(f"  {text}")
+    for void in result.get("void_batches") or []:
+        say(f"Void as a whole, outside what the protocol requires: {void['batch']} ({'; '.join(void['why'])}); "
+            + ("every slot of it run again" if void["re_run"] else "not run again"))
     for model, m in result["models"].items():
         role = {"primary": ", the primary: its four tests are the claim, Holm over the four",
                 "replication": ", a replication of the primary: its own Holm over its four"}.get(m.get("role"), "")
         say(f"\n{'=' * 100}\nModel {model}" + ("" if m["named"] else ", which the protocol does not name")
             + role + ". Each model is its own result and is never pooled with another.")
+        if m.get("refused"):
+            say("REFUSED: this model's analysis is not made, and no other model's is touched:")
+            for text in m["refused"]:
+                say(f"  {text}")
+            continue
         render_protocol_model(m, say)
     return "\n".join(out)
 
@@ -2592,6 +2774,9 @@ def render_protocol_model(m: dict, say) -> None:
                                                f"{v['reason']}, {v['evidence']}" for v in e["voids"]))
     for r in e["replaced"]:
         say(f"    replaced by its re-run in {r['by']}: {r['batch']}/{r['task']}-{r['repeat']}")
+    for void in e.get("void_batches") or []:
+        say(f"  void as a whole, outside what the protocol requires, and run again: {void['batch']} "
+            f"({'; '.join(void['why'])})")
     say(f"  missing {len(e['missing'])}" + "".join(f"\n    {x['batch']}/{x['task']}-{x['repeat']} "
                                                    f"({x['arm']}): {x['why']}" for x in e["missing"]))
     reasons = collections.Counter(x["reason"] for x in e["not_correct"])
@@ -2789,8 +2974,8 @@ def render_protocol_model(m: dict, say) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("sources", nargs="+", type=pathlib.Path,
-                        help="the claim command's manifest, or batch folders")
+    parser.add_argument("sources", nargs="*", type=pathlib.Path,
+                        help="the claim command's manifest, or batch folders; none with --preflight")
     parser.add_argument("--json", type=pathlib.Path,
                         help="write the figures here; by default next to a manifest, as "
                              "<name>.analysis.json, and nowhere for a list of folders")
@@ -2810,7 +2995,28 @@ def main(argv: list[str] | None = None) -> int:
                         help="under --protocol, read a filled hand-reading sheet back, with its key "
                              "beside it, and add the primary tests on its verdicts and every "
                              "disagreement with the scorer (`read_hand_sheet`, `hand_reading`)")
+    parser.add_argument("--preflight", metavar="ARM",
+                        help="under --protocol, read no batch: check that a batch of the protocol's "
+                             "arm ARM run with --flags under the code as it stands would be within "
+                             "what the protocol requires of it, and exit 1 if not (`preflight`). "
+                             "Nothing runs and nothing is spent")
+    parser.add_argument("--flags", default=None,
+                        help="with --preflight, the suite.py flags the claim command will run the arm with")
     args = parser.parse_args(argv)
+    if args.preflight is not None:
+        if not args.protocol or args.flags is None or args.sources or args.sheet or args.hand:
+            parser.error("--preflight ARM needs --protocol and --flags, and reads no batch, sheet or manifest")
+        planned, problems = preflight(args.protocol, args.preflight, args.flags)
+        print(f"preflight of {args.preflight!r} under {shown_path(args.protocol)}, flags: {args.flags}")
+        for key in sorted(planned):
+            print(f"  {key} {planned[key]}")
+        for text in problems:
+            print(f"  REFUSED: {text}")
+        print("within what the protocol requires: the batch may run" if not problems else
+              f"{len(problems)} conditions outside what the protocol requires: do not run this batch")
+        return 1 if problems else 0
+    if not args.sources:
+        parser.error("name the claim command's manifest, or batch folders")
     if args.sets and args.protocol:
         parser.error("--sets is the first claim's analysis under other question sets; a protocol "
                      "file names its own")
@@ -2851,7 +3057,8 @@ def main(argv: list[str] | None = None) -> int:
     if target is not None:
         target.write_text(json.dumps(result, indent=2, default=str) + "\n")
         print(f"\nthe same figures as JSON: {target}")
-    return 0
+    # A model refused under a protocol (v4) leaves the analysis incomplete, which the exit says.
+    return 1 if any(m.get("refused") for m in (result.get("models") or {}).values()) else 0
 
 
 if __name__ == "__main__":
