@@ -7,20 +7,26 @@ code, the question (a held-out rewording appears under its template's question),
 key, and the answer. The arm, the model, the round and the scorer's verdict are not on it. The
 reader writes one verdict per row: correct, not correct, or unscorable, with an optional note.
 
-## The answer key, column by column
+## The sheet and the answer key
+
+The sheet's columns are `code`, `question`, `key`, `answer`, `hand_verdict` and `note`. The reader
+writes exactly `correct`, `not correct` or `unscorable` in `hand_verdict`, and any reason in
+`note`. The `key` column holds one object, its fields in alphabetical order:
 
 - **kind**: what the question asks for: `price` (a price), `contains` (a seller, with its price
   where asked), `count` (a number), `boolean` (yes or no), `ranked` (the three cheapest).
-- **any**: the sellers that make the answer right. For "is there a listing under $X", the
-  witnesses: the sellers that can sell size M under the limit.
-- **not_any**: sellers that make the answer wrong if named as the answer: traps, such as a
-  listing whose size M is sold out, and non-witnesses.
-- **price** or **value**: the right price, to the cent, or the right number, or yes or no. For a
-  count on a two-reading question, the key already holds the number for the reading the run was
-  answered under.
-- **items**: for the three cheapest, the right three sellers with their prices.
-- **trap**: a price that is wrong if given as the answer: the cheapest water card's advertised
-  price, which is for a smaller pack (for example 6.93).
+- **any**: a list of the sellers that make the answer right, for example `["Elmsworth"]`. For "is
+  there a listing under $X", the witnesses: the sellers that can sell size M under the limit.
+- **not_any**: a list of sellers that make the answer wrong if named as the answer: traps, such
+  as a listing whose size M is sold out, and non-witnesses.
+- **price**: the right price, to the cent, on the headline and cheapest-target keys.
+- **value**: on the other keys, the right price (target price), the right number (counts), or
+  `true` or `false` for yes or no. For a count on a two-reading question, the key already holds
+  the number for the reading the run was answered under.
+- **items**: for the three cheapest, the right three, each as `{"any": ["Elmsworth"], "price":
+  19.17}`.
+- **trap**: on the water target-price key only, a price that is wrong if given as the answer:
+  the cheapest water card's advertised price, which is for a smaller pack (for example 6.93).
 - Sellers appear by their first word (for example "Elmsworth" for Elmsworth Apparel).
 
 ## What is "the answer"

@@ -200,11 +200,25 @@ within each provider wherever the two arms' provider mixes differ.
 
 ## Design and order
 
-Each round runs every arm once (`--repeats 1 --repeat-start r`), and the order of the arms
-rotates: round 1 shipped, open everything, the block (rules), the block (model); round 2 starts
-at open everything; round 3 at the block (rules). Shipped asks the fifteen templates; open
-everything the twelve gated ones; each block arm the fifteen templates and the held-out
-rewordings. Rounds and what each model runs: to fix from the budget (decision 2).
+Each round runs every arm a model's design names once (`--repeats 1 --repeat-start r`), and the
+order of the arms rotates: round 1 shipped, open everything, the block (rules), the block
+(model); round 2 starts at open everything; round 3 at the block (rules). Shipped asks the
+fifteen templates; open everything the twelve gated ones; each block arm the fifteen templates
+and, in the rounds the design names, the held-out rewordings (all 30 kept entries, of which the
+4 that reword the decline templates are refusals).
+
+Each model has its own design in the analysis file (protocol analysis version 7), written there
+under plan 2a and changed to the plan decision 2 chooses:
+
+- **DeepSeek V4 Flash:** all four arms; the templates in rounds 1 to 3; the held-out rewordings
+  in round 1 for both block arms (plan 2b: rounds 1 to 3; plan 2c: every set in rounds 1 and 2).
+  Its family is H1 to H4, with Holm over the four.
+- **Claude Haiku 4.5:** shipped and the block (model) only, on the nine reading-independent
+  questions, in round 1. Its family is H1 alone. Open everything, the block (rules), H2 to H4,
+  the comparison with open everything and the held-out table are reported as not run by
+  design, never as missing.
+
+A run the design does not ask for is listed and left out of every figure.
 
 ## Budget and stopping
 
@@ -253,9 +267,10 @@ Beside the scorer, every keyed answer is read by hand from a sheet written by `c
 --sheet`: one random code per run hides its arm, model, batch, task and round; the scorer's
 verdict is not on the sheet, only in the key file; a held-out rewording is shown under its
 template's question, since only the block arms ask rewordings. Closed slots and answers to the
-keyless questions (the decline templates and their rewordings) are not on the sheet. The
+keyless questions (the decline templates and their rewordings), and runs with no key for the
+reading they were answered under, are not on the sheet. The
 filled sheet is read back by `claim.py --hand`, which refuses a sheet with any gap or foreign
-code; H1 to H4 are rerun on the hand verdicts per model, and every disagreement with the scorer
+code; each model's family of tests is rerun on the hand verdicts, and every disagreement with the scorer
 is listed by arm and model after unblinding, with its lean. A hand reading cannot be blind to
 an answer's own style, which is stated. The reader is named (the student) and reads under the
 written rules in `docs/content/claim2-reading-rules.md`, fixed with this protocol; a run may be
@@ -263,12 +278,13 @@ marked unscorable only when its answer cannot be read at all (empty, garbled, or
 question), and unscorable runs are counted by arm and model beside each test. A second reader,
 the verifier, reads 40 rows of the same sheet blind, drawn with Python's
 `random.Random(20261023).sample` over the sheet's codes in sorted order, and the agreement
-between the two readers (the share of rows read alike, and Cohen's kappa) is reported.
+between the two readers (the share of rows read alike, and Cohen's kappa) is computed by a short
+script committed with the results and reported.
 
 ## Tests
 
 Stratified exact tests of correct and van Elteren tests of listings and cost, two-sided, by
-question then pooled, Holm over the four within each model:
+question then pooled, Holm within each model's family (DeepSeek: H1 to H4; Haiku: H1):
 
 - **H1:** the block (model) is correct more often than shipped, on the nine reading-independent
   questions.
