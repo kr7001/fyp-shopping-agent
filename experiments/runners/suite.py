@@ -378,6 +378,20 @@ def _git(git: str, where: pathlib.Path, *args: str) -> bytes:
                           check=True).stdout
 
 
+def tasks_file_name(path: pathlib.Path) -> str:
+    """The task file as a batch records it (`tasks_file`), which every reader opens again as
+    `paths.TASKS / tasks_file`: verify_cells, claim, replay_box, voids, rescore, leaks and
+    the layout test. Its path under experiments/tasks/, so a pilot's file in
+    experiments/tasks/pilot/ is found again (23 October 2026); for a file directly there that
+    is its name, as every batch before recorded. A file outside, a test's, keeps its name, and
+    so does a link to one of ours there: only the folder is resolved, never the file."""
+    try:
+        folder = path.absolute().parent.resolve().relative_to(paths.TASKS.resolve())
+    except ValueError:
+        return path.name
+    return (folder / path.name).as_posix()
+
+
 def draw_id(spec: dict) -> str:
     """Which catalogue, in which state, a task file's answers belong to.
 
@@ -1147,7 +1161,8 @@ def main() -> int:
                # its uncommitted patch, see `agent_code_identity`. None for the naive loop.
                "agent_core_commit": agent_code["agent_core_commit"],
                "agent_core_patch": agent_code["agent_core_patch"],
-               "tasks_file": args.tasks.name,
+               # Under experiments/tasks/, where every reader looks (`tasks_file_name`).
+               "tasks_file": tasks_file_name(args.tasks),
                "draw": draw_id(spec),
                # The ground truth this suite was scored against. The catalogue is
                # regenerated between rounds, so without it an old result cannot be told

@@ -1,0 +1,269 @@
+{
+  "_about": [
+    "Computed by env/generate_aplus_tasks.py from env/fixtures/aplus_dev.json: the scripted",
+    "user's buyable reading of every keyed question in tasks_pilot_v1rw_larchmere.json, used",
+    "by suite.py --reading buyable, by the model parser, which can lead any question it reads",
+    "to this reading, and by verify_cells.py when a run records it. Do not hand edit.",
+    "Here a size or pack counts only if it can be bought now. The questions in two_readings",
+    "say \"offer\" or \"stock\", and their own expect is the menu reading, a sold-out size or",
+    "pack counted as offered or stocked: here is their second key. The others say \"can",
+    "actually be bought\", \"can actually supply\" or \"available to buy\", or ask what a card",
+    "advertises, which is the cheapest variant that can be bought: here is their own key,",
+    "computed again over the market with every sold-out variant taken out, and checked equal",
+    "to it.",
+    "The development rewordings, pv1-NN, are described by their templates and not by the",
+    "words above: each keeps its template's meaning, so it has its template's key here and is",
+    "in two_readings where its template is."
+  ],
+  "two_readings": [
+    "tee-all-stocked",
+    "tee-count-stocked",
+    "water-all-stocked",
+    "pv1-09",
+    "pv1-12",
+    "pv1-13",
+    "pv1-14"
+  ],
+  "readings": {
+    "buyable": {
+      "tee-headline": {
+        "kind": "contains",
+        "any": [
+          "Brindle"
+        ],
+        "price": 14.18
+      },
+      "tee-target-price": {
+        "kind": "price",
+        "value": 19.17
+      },
+      "tee-cheapest-target": {
+        "kind": "contains",
+        "any": [
+          "Elmsworth"
+        ],
+        "not_any": [
+          "Brindle",
+          "Lymington"
+        ],
+        "price": 19.17
+      },
+      "tee-all-stocked": {
+        "kind": "boolean",
+        "value": false
+      },
+      "tee-count-stocked": {
+        "kind": "count",
+        "value": 11
+      },
+      "tee-count-buyable": {
+        "kind": "count",
+        "value": 11
+      },
+      "tee-exists-under": {
+        "kind": "boolean",
+        "value": true,
+        "any": [
+          "Elmsworth"
+        ],
+        "not_any": [
+          "Brindle",
+          "Lymington",
+          "Dunmore",
+          "Bexhill",
+          "Haldane",
+          "Northwick",
+          "Everleigh"
+        ]
+      },
+      "tee-top-3": {
+        "kind": "ranked",
+        "items": [
+          {
+            "any": [
+              "Elmsworth"
+            ],
+            "price": 19.17
+          },
+          {
+            "any": [
+              "Everleigh"
+            ],
+            "price": 21.54
+          },
+          {
+            "any": [
+              "Bexhill"
+            ],
+            "price": 21.71
+          }
+        ]
+      },
+      "water-target-price": {
+        "kind": "price",
+        "value": 20.3,
+        "trap": 6.93
+      },
+      "water-cheapest-target": {
+        "kind": "contains",
+        "any": [
+          "Dalston"
+        ],
+        "not_any": [
+          "Oakfield",
+          "Fenwick",
+          "Westmere"
+        ],
+        "price": 20.3
+      },
+      "water-all-stocked": {
+        "kind": "boolean",
+        "value": false
+      },
+      "water-count-buyable": {
+        "kind": "count",
+        "value": 13
+      },
+      "water-best-per-litre": {
+        "kind": "contains",
+        "any": [
+          "Crowhurst"
+        ],
+        "not_any": [
+          "Oakfield",
+          "Dalston",
+          "Westmere"
+        ]
+      },
+      "pv1-01": {
+        "kind": "contains",
+        "any": [
+          "Brindle"
+        ],
+        "price": 14.18
+      },
+      "pv1-02": {
+        "kind": "contains",
+        "any": [
+          "Brindle"
+        ],
+        "price": 14.18
+      },
+      "pv1-03": {
+        "kind": "price",
+        "value": 19.17
+      },
+      "pv1-04": {
+        "kind": "price",
+        "value": 19.17
+      },
+      "pv1-05": {
+        "kind": "price",
+        "value": 19.17
+      },
+      "pv1-06": {
+        "kind": "contains",
+        "any": [
+          "Elmsworth"
+        ],
+        "not_any": [
+          "Brindle",
+          "Lymington"
+        ],
+        "price": 19.17
+      },
+      "pv1-07": {
+        "kind": "contains",
+        "any": [
+          "Elmsworth"
+        ],
+        "not_any": [
+          "Brindle",
+          "Lymington"
+        ],
+        "price": 19.17
+      },
+      "pv1-08": {
+        "kind": "contains",
+        "any": [
+          "Elmsworth"
+        ],
+        "not_any": [
+          "Brindle",
+          "Lymington"
+        ],
+        "price": 19.17
+      },
+      "pv1-09": {
+        "kind": "boolean",
+        "value": false
+      },
+      "pv1-12": {
+        "kind": "count",
+        "value": 11
+      },
+      "pv1-13": {
+        "kind": "count",
+        "value": 11
+      },
+      "pv1-14": {
+        "kind": "count",
+        "value": 11
+      },
+      "pv1-15": {
+        "kind": "count",
+        "value": 11
+      },
+      "pv1-16": {
+        "kind": "count",
+        "value": 11
+      },
+      "pv1-19": {
+        "kind": "ranked",
+        "items": [
+          {
+            "any": [
+              "Elmsworth"
+            ],
+            "price": 19.17
+          },
+          {
+            "any": [
+              "Everleigh"
+            ],
+            "price": 21.54
+          },
+          {
+            "any": [
+              "Bexhill"
+            ],
+            "price": 21.71
+          }
+        ]
+      },
+      "pv1-20": {
+        "kind": "ranked",
+        "items": [
+          {
+            "any": [
+              "Elmsworth"
+            ],
+            "price": 19.17
+          },
+          {
+            "any": [
+              "Everleigh"
+            ],
+            "price": 21.54
+          },
+          {
+            "any": [
+              "Bexhill"
+            ],
+            "price": 21.71
+          }
+        ]
+      }
+    }
+  }
+}
