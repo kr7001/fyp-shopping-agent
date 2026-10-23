@@ -1403,5 +1403,61 @@ class LiveCheckComparisons(DevMarket):
         self.assertEqual(live.differences({"a.html": page}, {}), ["a.html"])
 
 
+# Every script the Playwright venv runs (`paths.NAIVE_PYTHON`): the A+ and first claim markets'
+# live checkers, the shop's own checks, the box's rendered page reader, the second agent, and
+# the reveal race, by folder (23 October 2026, after the auditor's check of 2df6dc3).
+VENV_SCRIPTS = {"env": ("check_aplus_market", "check_market", "verify_shop", "demo_gate"),
+                "experiments/box": ("page",), "experiments/runners": ("naive_agent",),
+                "experiments/analysis": ("reveal_race",)}
+
+
+def imported_by(path: pathlib.Path) -> set[str]:
+    """Every module a script imports, at its top or inside a function, by its top name."""
+    import ast
+    found = set()
+    for node in ast.walk(ast.parse(path.read_text())):
+        if isinstance(node, ast.Import):
+            found |= {alias.name.split(".")[0] for alias in node.names}
+        elif isinstance(node, ast.ImportFrom) and node.module and node.level == 0 and node.module != "__future__":
+            found.add(node.module.split(".")[0])
+    return found
+
+
+@unittest.skipUnless(paths.NAIVE_PYTHON.exists(), "the Playwright venv, .venv-naive, is not on this machine")
+class TheVenvImports(unittest.TestCase):
+    """The checker's browser checks run under the Playwright venv, which holds Playwright and no
+    scipy. Phase 3 (2df6dc3) had the checker import claim.py, whose compare_cells imports
+    scipy, so it could not start there; the tests, run by the system Python, which has scipy and
+    no Playwright, never saw it (the auditor's check). So each script the venv runs is imported
+    under the venv's own interpreter, as a subprocess, writing no bytecode, and so is every
+    module the checker imports."""
+
+    def venv_import(self, folder: str, name: str) -> subprocess.CompletedProcess:
+        code = (f"import sys; sys.path[:0] = [{str(paths.REPO / folder)!r}, {str(paths.EXPERIMENTS)!r}]; "
+                f"import paths; import {name}")
+        return subprocess.run([str(paths.NAIVE_PYTHON), "-B", "-c", code], cwd=paths.REPO,
+                              capture_output=True, text=True, timeout=300)
+
+    def test_the_checker_starts_under_the_venv(self):
+        run = self.venv_import("env", "check_aplus_market")
+        self.assertEqual(run.returncode, 0, run.stderr[-2000:])
+
+    def test_every_module_the_checker_imports(self):
+        names = imported_by(paths.REPO / "env" / "check_aplus_market.py")
+        self.assertIn("fixture_order", names)
+        self.assertNotIn("claim", names)
+        for name in sorted(names):
+            with self.subTest(module=name):
+                run = self.venv_import("env", name)
+                self.assertEqual(run.returncode, 0, run.stderr[-2000:])
+
+    def test_every_script_the_venv_runs(self):
+        for folder, names in VENV_SCRIPTS.items():
+            for name in names:
+                with self.subTest(script=f"{folder}/{name}.py"):
+                    run = self.venv_import(folder, name)
+                    self.assertEqual(run.returncode, 0, run.stderr[-2000:])
+
+
 if __name__ == "__main__":
     unittest.main()

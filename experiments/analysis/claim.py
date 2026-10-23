@@ -62,6 +62,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402  (puts box/, runners/, analysis/, water/ on the path)
 import box as box_module  # noqa: E402  (the versions a batch would record, for the preflight)
 import compare_cells  # noqa: E402  (stratified_exact, covered, distinct: one definition each)
+from fixture_order import fixture_order  # noqa: E402  (the market's results order, the checker's too)
 import form as form_module  # noqa: E402
 import leaks  # noqa: E402
 import normalise as normalise_module  # noqa: E402
@@ -761,25 +762,11 @@ def prices_taken(answer: str, task: dict, expect: dict, truth: dict) -> dict:
     return {"card": sorted(stated & cards), "sold_out": sorted(stated & sold_out)}
 
 
-def fixture_order(fixture: dict) -> tuple[list[str] | None, str]:
-    """A fixture's listings, as lowercased SKUs, in the order its results pages list them, and
-    which order that is (23 October 2026, for the failure code "page 2 never reached"): the
-    live order its seed search recorded when it accepted the market, which the fixture holds
-    under `_generated.search`, else the order the generator predicted
-    (`_instance.predicted_order`). env/check_aplus_market.py checks the live shop against the
-    same order (v4, R5), so the order the code reads is the order the shop shows."""
-    tried = ((fixture.get("_generated") or {}).get("search") or {}).get("tried") or []
-    accepted = [entry for entry in tried if entry.get("outcome") == "accepted" and entry.get("live_order")]
-    if accepted:
-        return [sku.lower() for sku in accepted[-1]["live_order"]], "accepted"
-    predicted = (fixture.get("_instance") or {}).get("predicted_order")
-    return ([sku.lower() for sku in predicted], "predicted") if predicted else (None, "none")
-
-
 def results_order(spec: dict) -> list[str] | None:
-    """The market's results order (`fixture_order`) for a task file that names its fixture.
-    None for one that names none, or a fixture that holds no order, as every market before the
-    A+ one."""
+    """The market's results order (`fixture_order.fixture_order`, one definition, which
+    env/check_aplus_market.py checks the live shop against) for a task file that names its
+    fixture, for the failure code "page 2 never reached". None for one that names none, or a
+    fixture that holds no order, as every market before the A+ one."""
     if spec.get("fixture") is None:
         return None
     return fixture_order(json.loads(verify_cells.fixture_for(spec).read_text()))[0]

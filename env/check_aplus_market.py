@@ -19,7 +19,7 @@ and two products. Each check prints one line:
    leak test on the ordinary theme finds prices, or the test is blind (LESSONS 24).
 5. The live order against the order `search_order.py` predicted, against the order claim.py
    reads where a key's listings render (the live order the seed search recorded when it
-   accepted the market, `claim.fixture_order`), and the market's page rules
+   accepted the market, `fixture_order.fixture_order`), and the market's page rules
    (`generate_aplus.PAGE_RULES`) on the live order, which is what counts.
 6. With --unchanged, every earlier market's results pages and listing pages, under both user
    agents, byte for byte against a snapshot taken before the market was seeded, with only
@@ -53,7 +53,7 @@ import check_market  # noqa: E402  (expected, check_listing, money)
 import generate_aplus as aplus  # noqa: E402  (PAGE_SIZE, page_problems, predicted_orders)
 import generate_apparel as apparel  # noqa: E402  (from_price)
 import paths  # noqa: E402,F401  (puts experiments/box on the path)
-import claim  # noqa: E402  (fixture_order, the order its key positions read)
+import fixture_order  # noqa: E402  (the order claim.py reads where a key's listings render; no scipy)
 import page as page_module  # noqa: E402  (the box's own patterns for a results page)
 
 BASE = check_market.BASE
@@ -181,10 +181,12 @@ def order_lines(fixture: dict, order: list[str]) -> list[tuple[bool, str]]:
     """The live order against the model's for the brand's own analyzer form, against the
     order the fixture records (`_instance.predicted_order`, the brand's form since version 2),
     and against the order claim.py reads where a key's listings render, the live order the
-    seed search recorded when it accepted the market (`claim.fixture_order`, 23 October 2026,
-    from the auditor's check of 41d7839: the predicted order alone could hold while the order
-    claim.py reads did not); and the page rules on the live order. A fixture from before the
-    form was recorded is compared with both forms' orders."""
+    seed search recorded when it accepted the market (`fixture_order.fixture_order`, 23
+    October 2026, from the auditor's check of 41d7839: the predicted order alone could hold
+    while the order claim.py reads did not); and the page rules on the live order. A fixture
+    from before the form was recorded is compared with both forms' orders. The order is read
+    from experiments/analysis/fixture_order.py, never through claim.py, whose imports need
+    scipy, which the Playwright venv this runs under has not (the auditor's check of 2df6dc3)."""
     forms = fixture["_generated"].get("brand_forms")
     families = fixture["families"]
     predicted = (aplus.predicted_orders(families, forms == 2) if forms else
@@ -198,7 +200,7 @@ def order_lines(fixture: dict, order: list[str]) -> list[tuple[bool, str]]:
              (recorded, "the live order is the order the fixture records" if recorded else
               f"the live order differs from the fixture's recorded order in "
               f"{sum(a != b for a, b in zip(order, fixture['_instance']['predicted_order']))} positions")]
-    read, which = claim.fixture_order(fixture)
+    read, which = fixture_order.fixture_order(fixture)
     live = [sku.lower() for sku in order]
     named = ("the live order its seed search recorded when it accepted the market" if which == "accepted"
              else "the predicted order, its seed search having recorded no live order")
