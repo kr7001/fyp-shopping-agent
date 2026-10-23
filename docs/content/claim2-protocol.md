@@ -308,7 +308,10 @@ in the accepted order; a separate code for a run that sorted or changed the page
 stayed on page 1; "a card or sold-out price taken"; "other"); sorts and page-size changes by
 arm; runs that saw a hidden price; the DeepSeek provider mix by arm. The reading test: each
 model parses all 36 held-out entries once, as text, at the frozen prompt (`parse_probe.py
---questions experiments/tasks/paraphrases_v2.json`), each form compared with its template's
+--questions experiments/tasks/paraphrases_v2.json --spec-from experiments/tasks/<the claim
+market's task file> --page-from experiments/results/<the stage's first block batch>`, which
+fills the brand, the limit and the results page from the claim market without editing v2),
+each form compared with its template's
 in the probe's four tiers and each outcome with the entry's expected one (plan, ask or
 decline), and the rules' form beside it. It runs after the stage's last block run, so no
 parse of a v2 entry precedes the run that answers it.
@@ -355,6 +358,11 @@ parse of a v2 entry precedes the run that answers it.
   parts) came from preparing that pilot. No v2 entry was used in any of it.
 - The verifier read the prompt and v2 for its audits. It reported nothing from v2 beyond entry
   ids and counts, and no v2 text reached the parser's development.
+- On 23 October the coder adding the reading test's loader printed four lines of v2's `_about`
+  (where its template wording came from, the counts of kept entries and of expected outcomes,
+  which templates have the last six ids, and that its null fields are placeholders) and the
+  distinct values of four entry fields (expected outcome, template, label, meaning kept). It
+  printed no entry's text and parsed none, and no change to the parser followed.
 
 ## Decisions before the freeze
 
