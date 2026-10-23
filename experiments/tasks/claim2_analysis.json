@@ -5,10 +5,17 @@
     "sets: question ids of the claim market's task file, which env/generate_aplus_tasks.py --rewordings writes. 'held_out' is no list: it is every task of that file with a 'template', the meaning-kept rewordings of experiments/tasks/paraphrases_v2.json, read by id and template only.",
     "tests: the four primary tests, two-sided, Holm over the four. H1 and H4 are stratified exact tests of correct, by question and by template; H2 and H3 van Elteren's stratified exact rank test, by question, and H3 is reported on the agent's tokens beside its cost, outside Holm (the model parser's tokens are not recorded, its charge is in the cost).",
     "design: the questions each arm asks, every round. 'templates' are the market's fifteen questions; the rewordings are asked under the block alone, since only H4 reads them. The number of rounds is the protocol's to fix from the dry run's estimate.",
-    "models: each its own result, never pooled. The ids are those the runs record (MODEL_NAME); a model the runs record that is not named here is analysed and said to be unnamed, and a model named here with no run is a problem."
+    "models: each its own result, never pooled. The ids are those the runs record (MODEL_NAME); a model the runs record that is not named here is analysed and said to be unnamed, and a model named here with no run is a problem.",
+    "Version 2, 23 October 2026, from the verifier's fairness audit, before any run 2 data exists:",
+    "roles: DeepSeek's four tests are the primary result and the claim, with Holm over its four. Haiku's four are a replication of it, a family of their own with their own Holm over four; the two are never pooled and neither corrects the other.",
+    "H2 and H3 count only the slots where the agent ran. A slot the box closes, an ask with no reply or a decline, runs no agent, and entered H2 and H3 as 0 listings and the parse's cost; only the block under the model closes such slots on the gated questions, so it could only favour the model. The closed slots are left out and reported beside each test by question and arm, and the sensitivity 'with the closed slots in H2 and H3' puts them back.",
+    "Every run's sorting and page size are counted from its log, by arm: product_list_order or product_list_dir in an address its navigations asked for or its replies reported is a sort (relevance, the default, is none), product_list_limit or the list view is a change of page size (experiments/analysis/toolbar.py). The page rules hold for the relevance order at 36 a page only; at 60 a page all 42 listings render on one. The sensitivity 'without the runs that sorted or changed the page size' drops them.",
+    "H4 stays one test of all thirteen keyed templates. splits: H4 again on each part of two pre-specified splits, secondary and unadjusted: the first claim's six templates against the seven added for the second, and the tee's eight against the water's five. Both parsers are deterministic, so the box makes one plan of a rewording whatever the round, and the unit at the front door is the 26 keyed rewordings, not the runs: the sensitivity 'H4 by rewording, not by run' takes each rewording's share of its runs correct, one value a rewording and arm, van Elteren's stratified exact rank test by template.",
+    "failure_breakdown: the shipped arm's runs on the gated questions that a key judged not correct, each coded by the first of these written rules that holds. 'page 2 never reached': no address the run's navigations asked for or its replies reported is a results page numbered 2 or more, or one whose product_list_limit exceeds the page size, 36; on this market both products have listings on page 2 (env/generate_aplus.py, rule interleaved). 'a card or sold-out price taken': the answer states a listing's advertised price, or the price of the question's size or pack at a listing where it is sold out, among the listings of the question's product in the fixture the shop was seeded from, that the key does not hold as right. 'other': anything else."
   ],
   "protocol": "docs/content/claim2-protocol.md",
-  "version": 1,
+  "version": 2,
+  "roles": {"deepseek/deepseek-v4-flash": "primary", "anthropic/claude-haiku-4.5": "replication"},
   "arms": {
     "shipped": {"arm": "none", "reading": null,
                 "flags": "--max-steps 300 --clock 1800"},
@@ -32,7 +39,15 @@
                             "tee-exists-under", "tee-top-3", "water-target-price",
                             "water-cheapest-target", "water-count-buyable", "water-best-per-litre"],
     "count_two_readings": "tee-count-stocked",
-    "held_out": "template"
+    "held_out": "template",
+    "first_claim_templates": ["tee-headline", "tee-target-price", "tee-cheapest-target", "tee-all-stocked",
+                              "tee-count-stocked", "tee-count-buyable"],
+    "added_templates": ["tee-exists-under", "tee-top-3", "water-target-price", "water-cheapest-target",
+                        "water-all-stocked", "water-count-buyable", "water-best-per-litre"],
+    "tee_templates": ["tee-headline", "tee-target-price", "tee-cheapest-target", "tee-all-stocked",
+                      "tee-count-stocked", "tee-count-buyable", "tee-exists-under", "tee-top-3"],
+    "water_templates": ["water-target-price", "water-cheapest-target", "water-all-stocked",
+                        "water-count-buyable", "water-best-per-litre"]
   },
   "design": {
     "rounds": [1, 2, 3],
@@ -53,7 +68,20 @@
     "H4": {"measure": "correct", "a": "the block (model)", "b": "the block (rules)", "on": "held_out",
            "strata": "template"}
   },
+  "splits": {
+    "H4": {"the first claim's six templates against the seven added later": ["first_claim_templates", "added_templates"],
+           "tee against water": ["tee_templates", "water_templates"]}
+  },
   "against_open_everything": {"a": "the block (model)", "b": "open everything (product)", "on": "reading_independent"},
+  "failure_breakdown": {
+    "arm": "shipped", "on": "gated", "page_size": 36,
+    "codes": [
+      {"code": "page 2 never reached", "rule": "no results page numbered 2 or more, and no product_list_limit above the page size, among the addresses the run's navigations asked for and its replies reported"},
+      {"code": "a card or sold-out price taken", "rule": "the answer states a listing's advertised price, or the price of the question's variant where it is sold out, among the question's product's listings, that the key does not hold as right"},
+      {"code": "other", "rule": "anything else"}
+    ]
+  },
   "sensitivity": ["without the two-reading questions", "distinct runs only", "with the voids included",
-                  "without the runs that saw a hidden price"]
+                  "without the runs that saw a hidden price", "with the closed slots in H2 and H3",
+                  "without the runs that sorted or changed the page size", "H4 by rewording, not by run"]
 }

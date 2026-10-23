@@ -60,13 +60,19 @@ import replay_box  # noqa: E402
 import score as scoring  # noqa: E402
 import sufficiency  # noqa: E402
 import suite as suite_module  # noqa: E402  (arm_of, the one rule for a batch's arm)
+import toolbar  # noqa: E402  (the results pages a run asked for, from its log)
 import trace_stats  # noqa: E402
 import verify_cells  # noqa: E402
 import voids  # noqa: E402
 
 # Bumped when a figure this prints would change for the same runs, and written into the JSON.
 #   1  20 October 2026, before the claim run
-VERSION = 1
+#   2  23 October 2026, from the verifier's fairness audit. Every answer is scored with the
+#      market's sellers where its task file names its fixture (score v7, `market_sellers`),
+#      and a stored verdict is held to that score, not to verify_cells' re-score without
+#      them, so a verdict the sellers would move is listed as a problem, never silently
+#      applied. Over the first claim's stored runs no verdict moves
+VERSION = 2
 
 # The question sets the analysis reads. These are the first claim's (claim-protocol.md), the
 # default. Since 22 October 2026 a protocol may name its own in a file (`--sets`,
@@ -508,6 +514,9 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
     ambiguous = set(named) if named is not None else {task for keys in readings.values() for task in keys}
     truth = verify_cells.ground_truth(verify_cells.fixture_for(spec))
     market = verify_cells.market_urls(spec)
+    # Every seller of the market, so a best is judged against all of them (score v7), where
+    # the task file names its fixture; None before the first claim market's file.
+    sellers = scoring.market_sellers(spec)
     rows = {(row["task"], row["repeat"]): row for row in payload.get("rows", [])}
     _, found = verify_cells.verify_batch(folder)
     checked = {(run["task"], run["repeat"]): run for run in found}
@@ -535,15 +544,19 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
         if measured is not None:
             slot.update(measure(measured, folder, row, slot["reading"], task, buyable.get(run.task),
                                 truth, market, seen.get(f"{run.task}-{run.repeat}", []),
-                                answered=slot["answered"]))
+                                answered=slot["answered"], sellers=sellers))
             if measured["tool_calls"] is not None and measured["tool_calls"] != slot["calls"]:
                 problems.append(f"{folder.name}/{run.task}-{run.repeat}: the record counts "
                                 f"{measured['tool_calls']} tool calls, the page count {slot['calls']}")
             # The verdict the batch stored against today's scorer under the same reading, so
-            # a scorer that changed since is seen, never silently applied (LESSONS 4, 34).
-            if measured["stored"] is not None and measured["stored"] != measured["rescored"]:
+            # a scorer that changed since is seen, never silently applied (LESSONS 4, 34). The
+            # re-score is this analysis's own, with the market's sellers (score v7): until 23
+            # October 2026 it was verify_cells', which has none, so a verdict the sellers move
+            # would have been applied here without a word.
+            rescored = slot["verdict"]
+            if measured["stored"] is not None and measured["stored"] != rescored:
                 problems.append(f"{folder.name}/{run.task}-{run.repeat}: stored verdict "
-                                f"{measured['stored']}, re-scored {measured['rescored']}")
+                                f"{measured['stored']}, re-scored {rescored}")
         elif run.outcome == voids.CLOSED:
             closed = "closed by the box"
             # What the slot cost: nothing under the rules, and under the model parser the
@@ -558,7 +571,7 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
                          "calls": 0, "actions": 0, "pages": {"calls": {}, "actions": {}},
                          "agent_asks": 0, "leaks": [], "outside": [], "tokens": (None, None),
                          "model": payload.get("model"), "scaffold": payload.get("scaffold"),
-                         "shop": None, "probe": None})
+                         "shop": None, "probe": None, "toolbar": None, "taken": None})
         slot["model"] = slot.get("model") or payload.get("model")
         slot["arm"] = arm_of(payload, slot if slot["measured"] else None, names)
         slot["conditions"] = conditions_of(payload, slot, condition_keys)
@@ -568,22 +581,28 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
 
 def measure(run: dict, folder: pathlib.Path, row: dict, reading: str | None, task: dict,
             buyable_key: dict | None, truth: dict, market: list[str] | None,
-            leak: list[str], answered: str | None = None) -> dict:
+            leak: list[str], answered: str | None = None, sellers: list[str] | None = None) -> dict:
     """What one run did, from verify_cells' re-derivation and the log: the answer under the
-    task's own key and, for the two offer questions, under the buyable key; the market's
+    task's own key and, for the two offer questions, under the buyable key, each judged
+    against every seller of the market where `sellers` names them (score v7); the market's
     listings opened, and whether they were what the answer needs under the reading the run
-    answered; the cost; the calls by page; the asks; the leaks."""
+    answered; the cost; the calls by page; the asks; the leaks; the results pages it asked
+    for (`toolbar.read`), and the advertised or sold-out prices its answer gives
+    (`prices_taken`)."""
     record = json.loads((folder / f"{run['task']}-{run['repeat']}.json").read_text())
     tokens = record.get("tokens") or (record.get("trace") or {}).get("tokens") or {}
     # The listings a page counts as the market's: the task file's fixture's, as verify_cells
     # counts them, else those of the results page the box read.
     page = ((row.get("box") or {}).get("page") or {})
     own = market or [item["url"] for item in page.get("listings") or []] or None
-    calls, actions, names = page_calls(folder / f"{run['task']}-{run['repeat']}.log", own)
+    log = folder / f"{run['task']}-{run['repeat']}.log"
+    calls, actions, names = page_calls(log, own)
     answer, ok = run["answer"], run["ok"]
-    own = scoring.score(task, answer, ok)["verdict"]
-    under_buyable = scoring.score({"expect": buyable_key}, answer, ok)["verdict"] if buyable_key else None
+    own = scoring.score(task, answer, ok, sellers)["verdict"]
+    under_buyable = (scoring.score({"expect": buyable_key}, answer, ok, sellers)["verdict"]
+                     if buyable_key else None)
     total = (tokens.get("prompt") or 0) + (tokens.get("completion") or 0) if tokens else None
+    keyed = buyable_key if answered == "buyable" and buyable_key else task.get("expect") or {}
     return {
         "measured": True, "answer": answer, "ok": ok,
         "own": own,
@@ -609,7 +628,39 @@ def measure(run: dict, folder: pathlib.Path, row: dict, reading: str | None, tas
         "model": run["model"], "scaffold": run["scaffold"], "shop": run["shop"], "probe": run["probe"],
         "tokens": (tokens.get("prompt"), tokens.get("completion")),
         "error": run["error"], "elapsed_s": run["elapsed_s"],
+        # The results pages the run asked the shop for: sort, page size, view and page
+        # numbers (23 October 2026), for the sorting count and its sensitivity.
+        "toolbar": toolbar.read(log),
+        "taken": prices_taken(answer, task, keyed, truth),
     }
+
+
+def key_prices(expect: dict) -> set[float]:
+    """Every price an answer key holds as right: a price key's value, a key's price, a ranked
+    key's items' prices. A count's value is no price."""
+    found = {expect.get("price")} | {item.get("price") for item in expect.get("items") or []}
+    if expect.get("kind") == "price":
+        found.add(expect.get("value"))
+    return {round(price, 2) for price in found if isinstance(price, (int, float))}
+
+
+def prices_taken(answer: str, task: dict, expect: dict, truth: dict) -> dict:
+    """The prices the answer states that are what the results page or a sold-out variant shows
+    rather than what can be bought (23 October 2026, for the shipped agent's failure
+    breakdown): a listing's advertised card price, or the price of the question's variant at
+    a listing where it is sold out, among the listings of the question's product where the
+    fixture names products; either way not a price the key `expect` holds as right. The
+    fixture is what the shop was seeded from, so a card price here is the one the run's
+    results page printed."""
+    variant = verify_cells.question_variant(task) if task.get("query") else None
+    product = task.get("product")
+    listings = [t for t in truth.values() if product is None or t.get("product") in (None, product)]
+    cards = {round(t["from"], 2) for t in listings}
+    sold_out = {round(t["sizes"][variant], 2) for t in listings
+                if variant and variant in t["sizes"] and variant not in t["buyable"]}
+    right = key_prices(expect)
+    stated = {round(price, 2) for price in scoring.prices_in(answer or "")} - right
+    return {"card": sorted(stated & cards), "sold_out": sorted(stated & sold_out)}
 
 
 # ---------------------------------------------------------------------------
@@ -1331,7 +1382,17 @@ def render_test(t: dict) -> str:
 
 # Bumped when a figure the protocol path prints would change for the same runs and file.
 #   1  22 October 2026, before the second claim run
-PROTOCOL_ANALYSIS_VERSION = 1
+#   2  23 October 2026, from the verifier's fairness audit, before the second claim run. H2
+#      and H3 count only the slots where the agent ran, and list the closed ones beside them
+#      by question (`one_test`): a slot the box closes, an ask with no reply or a decline,
+#      entered them as 0 listings and the parse's cost, and only the model arm closes them.
+#      The runs that sorted the results or changed their page size are counted by arm
+#      (`toolbar_table`). H4 is also reported on the pre-specified splits the file names
+#      (`split_tests`), unadjusted. Each model's role, primary or replication, is the file's,
+#      each with its own Holm over its four. The shipped arm's wrong answers are coded by
+#      written rules (`failure_breakdown`). Three sensitivities: the closed slots in H2 and
+#      H3, without the runs that sorted or changed the page size, and H4 by rewording
+PROTOCOL_ANALYSIS_VERSION = 2
 # The conditions a protocol's arms are held to: the first claim's and the model parser's,
 # the open-everything wording, the agent's limits. Of them, the ones an arm has by design.
 PROTOCOL_CONDITIONS = CONDITIONS + ("parser", "parser_model", "parser_temperature", "prompt_version",
@@ -1340,7 +1401,16 @@ PROTOCOL_ARM_CONDITIONS = BOX_CONDITIONS + ("parser", "parser_model", "parser_te
                                             "normalise_version", "exhaustive_wording")
 TEST_MEASURES = ("correct", "opened", "cost", "tokens_total")
 SENSITIVITIES = ("without the two-reading questions", "distinct runs only", "with the voids included",
-                 "without the runs that saw a hidden price")
+                 "without the runs that saw a hidden price",
+                 # 23 October 2026, from the verifier's fairness audit (protocol analysis v2).
+                 "with the closed slots in H2 and H3",
+                 "without the runs that sorted or changed the page size",
+                 "H4 by rewording, not by run")
+# The roles a protocol file gives its models (v2): one primary, whose tests are the claim, and
+# replications, each with its own Holm.
+ROLES = ("primary", "replication")
+# The shipped arm's failure codes, in the order they are tried, each rule `failure_code`'s.
+FAILURE_CODES = ("page 2 never reached", "a card or sold-out price taken", "other")
 # The sets a protocol file must name, and the one the design calls every template question.
 PROTOCOL_SETS = ("control", "decline", "gated", "two_readings", "reading_independent",
                  "count_two_readings", "held_out")
@@ -1361,6 +1431,9 @@ class Protocol:
     tests: dict
     require: dict
     models: tuple
+    roles: dict = dataclasses.field(default_factory=dict)      # model -> "primary" or "replication"
+    splits: dict = dataclasses.field(default_factory=dict)     # test -> {label: (set, set)}
+    breakdown: dict = dataclasses.field(default_factory=dict)  # the shipped arm's failure codes
 
 
 def check_protocol(config: dict) -> list[str]:
@@ -1409,6 +1482,31 @@ def check_protocol(config: dict) -> list[str]:
     for key in config.get("require") or {}:
         if key not in PROTOCOL_CONDITIONS:
             found.append(f"the protocol requires {key!r}, which no run records")
+    # Since protocol analysis v2 (23 October 2026): each model's role, the splits of a test,
+    # and the shipped arm's failure codes, every one named before any run.
+    roles = config.get("roles") or {}
+    if roles:
+        if sorted(roles) != sorted(config.get("models") or []):
+            found.append("the roles are not the protocol's models, one each")
+        if any(role not in ROLES for role in roles.values()):
+            found.append(f"a model's role is not one of {', '.join(ROLES)}")
+        if list(roles.values()).count("primary") != 1:
+            found.append("the roles name other than one primary model")
+    for name, splits in (config.get("splits") or {}).items():
+        if name not in (config.get("tests") or {}):
+            found.append(f"the splits are of a test the protocol has not: {name!r}")
+        for label, parts in splits.items():
+            if len(parts) != 2 or any(part not in sets for part in parts):
+                found.append(f"the split {label!r} of {name} is not two sets the protocol names")
+    breakdown = config.get("failure_breakdown") or {}
+    if breakdown:
+        if breakdown.get("arm") not in arms or breakdown.get("on") not in sets:
+            found.append("the failure breakdown names an arm or set the protocol has not")
+        if tuple(code.get("code") for code in breakdown.get("codes") or []) != FAILURE_CODES:
+            found.append(f"the failure breakdown's codes are not this analysis's, in order: "
+                         f"{', '.join(FAILURE_CODES)}")
+        if not isinstance(breakdown.get("page_size"), int):
+            found.append("the failure breakdown names no page size")
     return found
 
 
@@ -1438,11 +1536,26 @@ def resolve_protocol(path: pathlib.Path, config: dict, spec: dict) -> Protocol:
         design[arm] = tuple(dict.fromkeys(q for group in groups
                                           for q in (templates if group == "templates" else sets[group])))
     keyed = frozenset(task_id for task_id, task in tasks.items() if task["expect"].get("kind") != "none")
-    return Protocol(path=path, config=config,
-                    names={(arm["arm"], arm["reading"]): name for name, arm in config["arms"].items()},
-                    arms=tuple(config["arms"]), sets=sets, templates_of=templates_of, keyed=keyed,
-                    design=design, rounds=tuple(config["design"]["rounds"]), tests=config["tests"],
-                    require=config.get("require") or {}, models=tuple(config.get("models") or ()))
+    protocol = Protocol(path=path, config=config,
+                        names={(arm["arm"], arm["reading"]): name for name, arm in config["arms"].items()},
+                        arms=tuple(config["arms"]), sets=sets, templates_of=templates_of, keyed=keyed,
+                        design=design, rounds=tuple(config["design"]["rounds"]), tests=config["tests"],
+                        require=config.get("require") or {}, models=tuple(config.get("models") or ()),
+                        roles=dict(config.get("roles") or {}),
+                        splits={name: {label: tuple(parts) for label, parts in splits.items()}
+                                for name, splits in (config.get("splits") or {}).items()},
+                        breakdown=dict(config.get("failure_breakdown") or {}))
+    # A split is of the strata its test is on, the two parts disjoint and every stratum in
+    # one: for H4, the thirteen keyed templates the rewordings reword.
+    for name, splits in protocol.splits.items():
+        universe = strata_of(protocol.tests[name], protocol)
+        for label, parts in splits.items():
+            first, second = (set(sets[part]) for part in parts)
+            if first & second or first | second != set(universe):
+                raise SystemExit(f"the split {label!r} of {name} does not divide its {len(universe)} "
+                                 f"strata in two: {sorted(set(universe) ^ (first | second))} "
+                                 f"{'and the parts overlap' if first & second else ''}".strip())
+    return protocol
 
 
 def answered_correct(run: dict) -> bool:
@@ -1457,39 +1570,122 @@ def scored(runs: list[dict]) -> list[dict]:
     return [run for run in runs if run.get("verdict") != "unscored"]
 
 
-def protocol_tests(arms: dict[str, list[dict]], protocol: Protocol, drop: frozenset = frozenset()) -> dict:
-    """The protocol's primary tests, two-sided, with Holm over all of them. A test of correct
-    counts only the questions with a key. A test stratified by template sets each held-out
-    rewording's runs under its template's stratum. `drop` leaves questions out, and a
-    rewording of a dropped template with them, for a sensitivity."""
-    tests = {}
-    for name, spec in protocol.tests.items():
-        questions = [q for q in protocol.sets[spec["on"]] if q not in drop
-                     and protocol.templates_of.get(q) not in drop
-                     and (spec["measure"] != "correct" or q in protocol.keyed)]
-        a, b = arms.get(spec["a"], []), arms.get(spec["b"], [])
-        if spec["strata"] == "template":
-            strata = list(dict.fromkeys(protocol.templates_of[q] for q in questions))
+def questions_of(spec: dict, protocol: Protocol, drop: frozenset = frozenset()) -> list[str]:
+    """The questions a test reads: its set's, less `drop` and the rewordings of a dropped
+    template, and for a test of correct only those with a key."""
+    return [q for q in protocol.sets[spec["on"]] if q not in drop
+            and protocol.templates_of.get(q) not in drop
+            and (spec["measure"] != "correct" or q in protocol.keyed)]
+
+
+def strata_of(spec: dict, protocol: Protocol, drop: frozenset = frozenset()) -> list[str]:
+    """A test's strata: its questions, or for a test by template the templates they reword."""
+    questions = questions_of(spec, protocol, drop)
+    if spec["strata"] == "template":
+        return list(dict.fromkeys(protocol.templates_of[q] for q in questions))
+    return questions
+
+
+def by_rewording(runs: list[dict], templates_of: dict) -> list[dict]:
+    """One unit a held-out rewording, for H4 at the level its parsers act on (23 October 2026):
+    both parsers are deterministic, so the box makes one plan of each rewording whatever the
+    round, and the rounds repeat the agent, not the parse. A unit is the share of the
+    rewording's runs that a key judged and that were correct, under its template."""
+    groups = collections.defaultdict(list)
+    for run in scored(runs):
+        groups[run["task"]].append(answered_correct(run))
+    return [{"task": templates_of[rewording], "rewording": rewording, "share": sum(got) / len(got)}
+            for rewording, got in groups.items()]
+
+
+def one_test(spec: dict, arms: dict[str, list[dict]], protocol: Protocol, drop: frozenset = frozenset(),
+             closed_in: bool = False, rewordings: bool = False) -> dict:
+    """One of the protocol's tests, two-sided and unadjusted. A test of correct counts only
+    the questions with a key, and a test stratified by template sets each held-out
+    rewording's runs under its template's stratum.
+
+    A test of what a run opened or cost counts only the slots where the agent ran (protocol
+    analysis v2, 23 October 2026, from the verifier's audit). A slot the box closes, an ask
+    no reply answered or a decline, runs no agent: it entered H2 and H3 as 0 listings and the
+    parse's cost, and only the model arm closes slots on the gated questions, so it could
+    only favour the model. The closed slots are left out and listed by question and arm;
+    `closed_in` puts them back, for the sensitivity. `rewordings` takes a test by template at
+    one unit a rewording (`by_rewording`), for the sensitivity."""
+    questions = questions_of(spec, protocol, drop)
+    a, b = arms.get(spec["a"], []), arms.get(spec["b"], [])
+    if spec["strata"] == "template":
+        strata = strata_of(spec, protocol, drop)
+        if rewordings:
+            a = by_rewording([run for run in a if run["task"] in questions], protocol.templates_of)
+            b = by_rewording([run for run in b if run["task"] in questions], protocol.templates_of)
+        else:
             a = [{**run, "task": protocol.templates_of[run["task"]]} for run in a if run["task"] in questions]
             b = [{**run, "task": protocol.templates_of[run["task"]]} for run in b if run["task"] in questions]
-        else:
-            strata = questions
-        if spec["measure"] == "correct":
-            result = compare_correct(scored(a), scored(b), strata, answered_correct)
-            if spec["strata"] == "template":
-                result["test"] = "stratified exact test by template (compare_cells.stratified_exact)"
-        else:
-            result = compare_ranks(a, b, strata, spec["measure"])
-        result.update({"a": spec["a"], "b": spec["b"], "on": spec["on"], "strata": spec["strata"],
-                       "questions": strata})
-        if spec.get("also"):
-            result["also"] = {**compare_ranks(a, b, strata, spec["also"]), "a": spec["a"], "b": spec["b"]}
-        tests[name] = result
+    else:
+        strata = questions
+    closed = []
+    if spec["measure"] != "correct":
+        for q in strata:
+            shut = {side: sum(1 for run in runs if run["task"] == q and run.get("outcome") == voids.CLOSED)
+                    for side, runs in (("a", a), ("b", b))}
+            if shut["a"] or shut["b"]:
+                closed.append({"task": q, **shut})
+        if not closed_in:
+            a = [run for run in a if run.get("outcome") != voids.CLOSED]
+            b = [run for run in b if run.get("outcome") != voids.CLOSED]
+    if spec["measure"] == "correct" and rewordings and spec["strata"] == "template":
+        result = compare_ranks(a, b, strata, "share")
+        result["test"] = ("stratified exact rank test by template on each rewording's share of its runs "
+                          "correct (van Elteren, equal weights, mid-ranks)")
+        result["unit"] = "rewording"
+    elif spec["measure"] == "correct":
+        result = compare_correct(scored(a), scored(b), strata, answered_correct)
+        if spec["strata"] == "template":
+            result["test"] = "stratified exact test by template (compare_cells.stratified_exact)"
+    else:
+        result = compare_ranks(a, b, strata, spec["measure"])
+    result.update({"a": spec["a"], "b": spec["b"], "on": spec["on"], "strata": spec["strata"],
+                   "questions": strata})
+    if spec["measure"] != "correct":
+        result["closed"] = closed
+        result["closed_rule"] = "in" if closed_in else "left out"
+    if spec.get("also"):
+        result["also"] = {**compare_ranks(a, b, strata, spec["also"]), "a": spec["a"], "b": spec["b"]}
+    return result
+
+
+def protocol_tests(arms: dict[str, list[dict]], protocol: Protocol, drop: frozenset = frozenset(),
+                   closed_in: bool = False, rewordings: bool = False) -> dict:
+    """The protocol's primary tests, two-sided, with Holm over all of them (`one_test`). `drop`
+    leaves questions out, and a rewording of a dropped template with them, for a
+    sensitivity, as `closed_in` and `rewordings` do in their way."""
+    tests = {name: one_test(spec, arms, protocol, drop, closed_in, rewordings)
+             for name, spec in protocol.tests.items()}
     adjusted = holm({name: test["p"] for name, test in tests.items()})
     for name, test in tests.items():
         test["p_holm"] = adjusted[name]
         test["rejected"] = adjusted[name] <= ALPHA
     return tests
+
+
+def split_tests(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
+    """Each test the protocol splits, on each part of each split it names, unadjusted: a
+    secondary reading of where the effect is, fixed before the run (protocol analysis v2,
+    23 October 2026). For H4, the first claim's six templates against the seven added for
+    the second, and the tee's against the water's."""
+    out = {}
+    for name, splits in protocol.splits.items():
+        spec = protocol.tests[name]
+        universe = strata_of(spec, protocol)
+        out[name] = []
+        for label, parts in splits.items():
+            got = []
+            for part in parts:
+                keep = set(protocol.sets[part])
+                result = one_test(spec, arms, protocol, frozenset(s for s in universe if s not in keep))
+                got.append({"set": part, **result})
+            out[name].append({"split": label, "parts": got})
+    return out
 
 
 def protocol_against(arms: dict[str, list[dict]], protocol: Protocol) -> dict | None:
@@ -1551,6 +1747,81 @@ def held_out_table(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
     return out
 
 
+def sorted_or_resized(run: dict) -> bool:
+    """Whether a run asked the shop to sort its results or change their page size
+    (`toolbar.read`). A slot the box closed asked nothing."""
+    reading = run.get("toolbar") or {}
+    return bool(reading.get("sorted") or reading.get("resized"))
+
+
+def toolbar_table(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
+    """The runs of each arm that sorted the results or changed their page size, counted from
+    each run's log (protocol analysis v2, 23 October 2026, from the verifier's audit): the
+    page rules hold for the shop's relevance order at 36 a page only, and at 60 a page every
+    listing of the A+ market renders on one. Each such run is named with what it asked."""
+    out = {}
+    for arm in [a for a in protocol.arms if a in arms] + sorted(set(arms) - set(protocol.arms)):
+        runs = [run for run in arms[arm] if run.get("toolbar") is not None]
+        named = []
+        for run in runs:
+            reading = run["toolbar"]
+            if reading["sorted"] or reading["resized"]:
+                named.append({"run": f"{run['batch']}/{run['task']}-{run['repeat']}",
+                              "sorted": reading["order"] + reading["direction"],
+                              "page size": reading["limit"] + [m for m in reading["mode"] if m == "list"]})
+        out[arm] = {"runs": len(runs), "sorted": sum(1 for r in runs if r["toolbar"]["sorted"]),
+                    "resized": sum(1 for r in runs if r["toolbar"]["resized"]), "named": named}
+    return out
+
+
+def failure_code(run: dict, page_size: int) -> tuple[str, str]:
+    """A run's failure code and its evidence, by the protocol file's written rules, tried in
+    order (`FAILURE_CODES`), the first that holds decides:
+
+      page 2 never reached            the log shows no results page numbered 2 or more and no
+                                      page size above the shop's, so the run read the first
+                                      results page alone (`toolbar.past_page_one`); on the A+
+                                      market both products have listings on page 2
+                                      (env/generate_aplus.py, rule `interleaved`)
+      a card or sold-out price taken  the answer states a listing's advertised price, or the
+                                      price of the question's variant at a listing where it
+                                      is sold out, that the key does not hold as right
+                                      (`prices_taken`)
+      other                           anything else"""
+    reading = run.get("toolbar") or {"results_pages": [], "results_limits": []}
+    if not toolbar.past_page_one(reading, page_size):
+        pages = reading["results_pages"]
+        return FAILURE_CODES[0], (f"results pages seen: {pages}" if pages else "no results page numbered")
+    taken = run.get("taken") or {}
+    if taken.get("card") or taken.get("sold_out"):
+        return FAILURE_CODES[1], "; ".join(f"{kind.replace('_', ' ')} {', '.join(f'${p:.2f}' for p in prices)}"
+                                           for kind, prices in taken.items() if prices)
+    return FAILURE_CODES[2], f"results pages {reading['results_pages']}, limits {reading['results_limits']}"
+
+
+def failure_breakdown(arms: dict[str, list[dict]], protocol: Protocol) -> dict | None:
+    """The protocol arm's runs that a key judged and found not correct, on its set, each coded
+    by `failure_code` from its log and answer (protocol analysis v2, 23 October 2026): by
+    question, pooled, and every run named with its code and evidence."""
+    spec = protocol.breakdown
+    if not spec:
+        return None
+    wanted = set(protocol.sets[spec["on"]])
+    runs = [run for run in scored(arms.get(spec["arm"], [])) if run["task"] in wanted and not answered_correct(run)]
+    coded = [(run, *failure_code(run, spec["page_size"])) for run in runs]
+    by_question = {}
+    for q in protocol.sets[spec["on"]]:
+        mine = [code for run, code, _ in coded if run["task"] == q]
+        if mine:
+            by_question[q] = {code: mine.count(code) for code in FAILURE_CODES}
+    return {"arm": spec["arm"], "on": spec["on"], "page_size": spec["page_size"],
+            "failures": len(coded), "of": len([r for r in scored(arms.get(spec["arm"], [])) if r["task"] in wanted]),
+            "pooled": {code: sum(1 for _, got, _ in coded if got == code) for code in FAILURE_CODES},
+            "by_question": by_question,
+            "runs": [{"run": f"{run['batch']}/{run['task']}-{run['repeat']}", "code": code, "evidence": why}
+                     for run, code, why in coded]}
+
+
 def protocol_sensitivity(arms: dict[str, list[dict]], voided: list[dict], protocol: Protocol) -> dict:
     """The primary tests again under each sensitivity the protocol names."""
     out = {}
@@ -1565,6 +1836,13 @@ def protocol_sensitivity(arms: dict[str, list[dict]], voided: list[dict], protoc
         elif name == "without the runs that saw a hidden price":
             out[name] = protocol_tests({arm: [run for run in runs if not run["leaks"]]
                                         for arm, runs in arms.items()}, protocol)
+        elif name == "with the closed slots in H2 and H3":
+            out[name] = protocol_tests(arms, protocol, closed_in=True)
+        elif name == "without the runs that sorted or changed the page size":
+            out[name] = protocol_tests({arm: [run for run in runs if not sorted_or_resized(run)]
+                                        for arm, runs in arms.items()}, protocol)
+        elif name == "H4 by rewording, not by run":
+            out[name] = protocol_tests(arms, protocol, rewordings=True)
     return out
 
 
@@ -1626,6 +1904,9 @@ def protocol_model(model: str | None, population: dict, conditions: dict, protoc
         tables_[arm] = rows
     return {
         "named": model in protocol.models,
+        # The model's role, the file's (v2): the primary's tests are the claim, a
+        # replication's are its own family, each with Holm over its four.
+        "role": protocol.roles.get(model) if model in protocol.models else None,
         "arms": {arm: {"batches": sorted({s["batch"] for s in runs}), "runs": len(runs),
                        "repeats": sorted({s["repeat"] for s in runs}),
                        "distinct": len(compare_cells.distinct(runs)), "conditions": mine.get(arm)}
@@ -1639,15 +1920,19 @@ def protocol_model(model: str | None, population: dict, conditions: dict, protoc
         "tables": tables_,
         "held_out": held_out_table(arms, protocol),
         "primary": protocol_tests(arms, protocol),
+        "splits": split_tests(arms, protocol),
         "against_open_everything": protocol_against(arms, protocol),
         "secondary": {"count_two_readings": count_stocked(arms, protocol.sets["count_two_readings"], list(protocol.arms)),
                       "asks": asks(arms, list(protocol.arms)), "declines": declines(arms, protocol),
-                      "answer_check": answer_check(arms, list(protocol.arms))},
+                      "answer_check": answer_check(arms, list(protocol.arms)),
+                      "toolbar": toolbar_table(arms, protocol),
+                      "failure_breakdown": failure_breakdown(arms, protocol)},
         "sensitivity": protocol_sensitivity(arms, voided, protocol),
         "runs": [{key: s.get(key) for key in ("arm", "batch", "task", "template", "repeat", "outcome", "reason",
                                               "own", "buyable", "verdict", "answered", "opened", "skus",
                                               "covered", "missed", "cost", "tokens_total", "calls", "actions",
-                                              "asked", "refused", "agent_asks", "leaks", "outside", "answer")}
+                                              "asked", "refused", "agent_asks", "leaks", "outside", "toolbar",
+                                              "taken", "answer")}
                  for s in kept],
     }
 
@@ -1690,6 +1975,11 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
     conditions = one_condition_each(population["kept"] + population["voided"], PROTOCOL_CONDITIONS)
     models = sorted({slot["model"] for slot in population["kept"]} | {m["model"] for m in population["missing"]},
                     key=str)
+    # The primary model first, then its replications in the file's order, then any the file
+    # does not name (v2): the report is read in that order.
+    named = [m for m in protocol.models if protocol.roles.get(m) == "primary"] + \
+        [m for m in protocol.models if protocol.roles.get(m) != "primary"]
+    models = [m for m in named if m in models] + [m for m in models if m not in named]
     out = {"analysis_version": VERSION, "protocol_analysis_version": PROTOCOL_ANALYSIS_VERSION,
            "scorer_version": scoring.VERSION, "protocol": config["protocol"],
            "protocol_file": shown_path(path), "protocol_version": config.get("version"), "tasks_file": files[0],
@@ -1697,7 +1987,7 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
                     for key, value in protocol.sets.items()},
            "design": {arm: len(questions) * len(protocol.rounds) for arm, questions in protocol.design.items()},
            "source": source(lines, manifest, every), "problems": problems, "models": {},
-           "models_named": list(protocol.models)}
+           "models_named": list(protocol.models), "roles": dict(protocol.roles)}
     for model in models:
         result = protocol_model(model, population, conditions, protocol)
         out["problems"] += [f"{model}: {text}" for text in result["conditions"]["required"]]
@@ -1739,6 +2029,12 @@ def render_protocol(result: dict) -> str:
         f"readings: {', '.join(sets['two_readings'])}; reading-independent: {len(sets['reading_independent'])}")
     say("The design, slots each model: " + "; ".join(f"{arm} {n}" for arm, n in result["design"].items())
         + f"; models named: {', '.join(result['models_named'])}")
+    roles = result.get("roles") or {}
+    if roles:
+        say("The tests' families, fixed before the run: " + "; ".join(
+            f"{model} {role}" for model, role in roles.items())
+            + ". The primary model's four tests are the claim, with Holm over the four; each replication's "
+              "four are its own family, with its own Holm, and never pooled with the primary's.")
     src = result["source"]
     kinds = collections.Counter(line["kind"] for line in src["lines"])
     say("Read " + ", ".join(f"{n} {kind}{'s' if n > 1 else ''}" if kind == "folder" else
@@ -1754,8 +2050,10 @@ def render_protocol(result: dict) -> str:
     for text in result["problems"]:
         say(f"  {text}")
     for model, m in result["models"].items():
+        role = {"primary": ", the primary: its four tests are the claim, Holm over the four",
+                "replication": ", a replication of the primary: its own Holm over its four"}.get(m.get("role"), "")
         say(f"\n{'=' * 100}\nModel {model}" + ("" if m["named"] else ", which the protocol does not name")
-            + ". Each model is its own result and is never pooled with another.")
+            + role + ". Each model is its own result and is never pooled with another.")
         render_protocol_model(m, say)
     return "\n".join(out)
 
@@ -1830,6 +2128,24 @@ def render_protocol_model(m: dict, say) -> None:
             label = "the agent's tokens" if also["measure"] == "tokens_total" else also["measure"]
             say(f"     and on {label}, outside Holm: "
                 + (render_test(also) + f"; p = {p_text(also['p'])}" if also["per_question"] else "not computed"))
+        if "closed" in t:
+            say(f"     slots the box closed, no agent run, {t['closed_rule']} (a {t['a']}, b {t['b']}): "
+                + (", ".join(f"{row['task']} {row['a']}/{row['b']}" for row in t["closed"]) or "none"))
+    for name, splits in (m.get("splits") or {}).items():
+        say(f"  {name} on the pre-specified splits, secondary and unadjusted, each part on its own:")
+        for split in splits:
+            say(f"     {split['split']}")
+            for part in split["parts"]:
+                if not part["per_question"]:
+                    say(f"       {part['set']:24} not computed: an arm has no runs on these strata")
+                    continue
+                if part["measure"] == "correct":
+                    pooled = part["pooled"]
+                    shown = (f"{len(part['questions'])} strata, pooled {pooled['a'][0]}/{pooled['a'][1]} "
+                             f"against {pooled['b'][0]}/{pooled['b'][1]}")
+                else:
+                    shown = render_test(part)
+                say(f"       {part['set']:24} {shown}; p = {p_text(part['p'])}")
 
     o = m["against_open_everything"]
     if o:
@@ -1878,12 +2194,28 @@ def render_protocol_model(m: dict, say) -> None:
         for name in ("not_reproduced", "decided_differently", "not_replayed"):
             for text in row[name]:
                 say(f"       {name.replace('_', ' ')}: {text}")
+    say("  e. Runs that sorted the results or changed their page size, read from each log's navigations "
+        "and reported pages (toolbar.py)")
+    for arm, row in s["toolbar"].items():
+        say(f"     {arm:30} of {row['runs']} runs with a log: sorted {row['sorted']}, page size changed "
+            f"{row['resized']}")
+        for named in row["named"]:
+            say(f"       {named['run']}: sorted {', '.join(named['sorted']) or '-'}, page size "
+                f"{', '.join(named['page size']) or '-'}")
+    fb = s.get("failure_breakdown")
+    if fb:
+        say(f"  f. Why {fb['arm']} was not correct, coded from the log and the answer by the written rules, the "
+            f"first that holds: {fb['failures']} of its {fb['of']} runs a key judged on {fb['on']}, at "
+            f"{fb['page_size']} a page")
+        say("     pooled: " + "; ".join(f"{code} {n}" for code, n in fb["pooled"].items()))
+        for q, row in fb["by_question"].items():
+            say(f"     {q:22} " + "; ".join(f"{code} {n}" for code, n in row.items() if n))
 
     names = list(m["primary"])
     say("\n6. Sensitivity: the primary tests again, p (Holm p)")
-    say(f"     {'':44} " + " ".join(f"{name:>22}" for name in names))
+    say(f"     {'':54} " + " ".join(f"{name:>22}" for name in names))
     for name, tests in m["sensitivity"].items():
-        say(f"     {name:44} " + " ".join(f"{p_text(t['p']) + ' (' + p_text(t['p_holm']) + ')':>22}"
+        say(f"     {name:54} " + " ".join(f"{p_text(t['p']) + ' (' + p_text(t['p_holm']) + ')':>22}"
                                           for t in tests.values()))
 
 

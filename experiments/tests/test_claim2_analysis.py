@@ -337,6 +337,68 @@ class SyntheticRun2(unittest.TestCase):
                     self.assertEqual(row["b"], [3 * sum(t["rewording"] % 2 for t in ids), 6])
                 self.assertEqual(h4["pooled"]["a"], [78, 78])
 
+    def test_the_audits_rules_stay_quiet_on_a_plain_run(self):
+        # Protocol analysis v2: no closed slot on a gated question, nothing sorted or resized,
+        # so the two sensitivities give the primary's p; and every shipped failure, with no
+        # results page in its log, never reached page 2.
+        for model, m in self.result["models"].items():
+            with self.subTest(model=model):
+                self.assertEqual((m["primary"]["H2"]["closed"], m["primary"]["H3"]["closed"]), ([], []))
+                self.assertEqual({arm: (row["sorted"], row["resized"]) for arm, row in m["secondary"]["toolbar"].items()},
+                                 {arm: (0, 0) for arm in self.config["arms"]})
+                for name in ("with the closed slots in H2 and H3", "without the runs that sorted or changed the page size"):
+                    self.assertEqual({t: v["p"] for t, v in m["sensitivity"][name].items()},
+                                     {t: v["p"] for t, v in m["primary"].items()})
+                self.assertEqual(m["secondary"]["failure_breakdown"]["pooled"],
+                                 {"page 2 never reached": 36, "a card or sold-out price taken": 0, "other": 0})
+
+    def test_h4_on_each_part_of_each_split(self):
+        # The model right on all, the rules on the odd-numbered rewordings: each part's counts
+        # follow from its templates, and the two parts of a split are H4's thirteen strata.
+        held = [task for task in self.spec["tasks"] if task.get("template")]
+        sets = self.config["sets"]
+        for model, m in self.result["models"].items():
+            splits = m["splits"]["H4"]
+            with self.subTest(model=model):
+                self.assertEqual([s["split"] for s in splits], list(self.config["splits"]["H4"]))
+                for split in splits:
+                    for part in split["parts"]:
+                        templates = sets[part["set"]]
+                        odd = sum(t["rewording"] % 2 for t in held if t["template"] in templates)
+                        self.assertEqual(sorted(part["questions"]), sorted(templates))
+                        self.assertEqual((part["pooled"]["a"], part["pooled"]["b"]),
+                                         ([6 * len(templates)] * 2, [3 * odd, 6 * len(templates)]))
+                    self.assertEqual(sorted(q for part in split["parts"] for q in part["questions"]),
+                                     sorted(m["primary"]["H4"]["questions"]))
+        self.assertIn("H4 on the pre-specified splits, secondary and unadjusted", self.out)
+
+    def test_h4_by_rewording(self):
+        # One unit a rewording: the model's share is 1 on every one, the rules' 1 on the odd
+        # ones and 0 on the even, 26 units an arm; H1 to H3 are the primary's.
+        held = [task for task in self.spec["tasks"] if task.get("template") and task["expect"]["kind"] != "none"]
+        for model, m in self.result["models"].items():
+            tests = m["sensitivity"]["H4 by rewording, not by run"]
+            h4 = tests["H4"]
+            with self.subTest(model=model):
+                self.assertEqual((h4.get("unit"), len(h4["pooled"]["a"]), len(h4["pooled"]["b"])), ("rewording", 26, 26))
+                for row in h4["per_question"]:
+                    ids = [t for t in held if t["template"] == row["task"]]
+                    self.assertEqual(row["a"], [1.0] * len(ids))
+                    self.assertEqual(sorted(row["b"]), sorted(float(t["rewording"] % 2) for t in ids))
+                self.assertEqual({t: tests[t]["p"] for t in ("H1", "H2", "H3")},
+                                 {t: m["primary"][t]["p"] for t in ("H1", "H2", "H3")})
+
+    def test_a_split_that_does_not_divide_the_strata_is_refused(self):
+        for label, change, words in (
+                ("a template in neither part", lambda s: s["water_templates"].pop(), "does not divide"),
+                ("a template in both", lambda s: s["water_templates"].append("tee-headline"), "overlap")):
+            with self.subTest(fault=label):
+                broken = json.loads(json.dumps(self.config))
+                change(broken["sets"])
+                with self.assertRaises(SystemExit) as raised:
+                    claim.resolve_protocol(PROTOCOL, broken, self.spec)
+                self.assertIn(words, str(raised.exception))
+
     def test_holm_over_the_four(self):
         for model, m in self.result["models"].items():
             tests = m["primary"]
@@ -458,6 +520,94 @@ def answer_under(folder: pathlib.Path, task_id: str, repeat: int, reading: str, 
             row["box"]["reading"] = row["reading"] = reading
             row.update(answer=answer[:300], verdict=score.score_under(task, reading, readings, answer, True)["verdict"])
     (folder / "suite.json").write_text(json.dumps(payload))
+
+
+def task_of(folder: pathlib.Path, task_id: str) -> dict:
+    return next(t for t in json.loads((folder.parent / "tasks" / TASKS_FILE).read_text())["tasks"]
+                if t["id"] == task_id)
+
+
+def close_slot(folder: pathlib.Path, task_id: str, repeat: int, cost: float = 0.002) -> None:
+    """A run of a written batch turned into a slot the box closed: it asked, no reply came, no
+    agent ran, and the model parser's parse was paid for, as suite.py writes such a slot."""
+    for suffix in (".json", ".log"):
+        (folder / f"{task_id}-{repeat}{suffix}").unlink()
+    record = {"asked": True, "ask": "Do you mean listed, or in stock now?", "refuse": None, "query": None,
+              "page": None, "reading": None, "bypassed": False, "fallback": False}
+    payload = json.loads((folder / "suite.json").read_text())
+    payload["rows"] = [suite.asked_row(task_of(folder, task_id), repeat, record, cost=cost) | {"parse_cost_usd": cost}
+                       if (row["task"], row["repeat"]) == (task_id, repeat) else row for row in payload["rows"]]
+    (folder / "suite.json").write_text(json.dumps(payload))
+
+
+def add_pages(folder: pathlib.Path, task_id: str, repeat: int, *urls: str) -> None:
+    """Pages a run of a written batch was on, as its log reports them, before its last line."""
+    path = folder / f"{task_id}-{repeat}.log"
+    lines = path.read_text().splitlines()
+    path.write_text("\n".join(lines[:-1] + [f"Page URL: {url}" for url in urls] + lines[-1:]) + "\n")
+
+
+def answer_with(folder: pathlib.Path, task_id: str, repeat: int, answer: str) -> None:
+    """A run of a written batch given another answer, and the verdict the batch would have
+    stored for it."""
+    path = folder / f"{task_id}-{repeat}.json"
+    record = json.loads(path.read_text())
+    record["result"]["final"] = answer
+    path.write_text(json.dumps(record))
+    readings = json.loads((folder.parent / "tasks" / READINGS_FILE).read_text())["readings"]
+    payload = json.loads((folder / "suite.json").read_text())
+    for row in payload["rows"]:
+        if (row["task"], row["repeat"]) == (task_id, repeat):
+            row.update(answer=answer[:300],
+                       verdict=score.score_under(task_of(folder, task_id), None, readings, answer, True)["verdict"])
+    (folder / "suite.json").write_text(json.dumps(payload))
+
+
+def fixture_prices() -> tuple[float, float]:
+    """The development market's cheapest tee card and its cheapest size M that is sold out,
+    from its fixture: a price a card shows and one a sold-out size shows."""
+    tees = [f for f in json.loads(FIXTURE.read_text())["families"] if f["product"] == "tee"]
+    card = min(min(v["price"] for v in f["variants"] if v["qty"] > 0) for f in tees)
+    sold_out = min(v["price"] for f in tees for v in f["variants"] if v["option"] == "M" and v["qty"] == 0)
+    return card, sold_out
+
+
+SEARCH = "http://localhost:7770/catalogsearch/result/index/?q=Larchmere"
+
+
+def another_seller(expect: dict) -> str:
+    """A tee seller of the development market that a contains key neither wants nor excludes."""
+    named = {token.lower() for token in expect["any"] + expect.get("not_any", [])}
+    return next(f["seller"] for f in json.loads(FIXTURE.read_text())["families"]
+                if f["product"] == "tee" and f["seller"].split()[0].lower() not in named)
+
+
+def showcase(model: str, arm: Plan, folder: pathlib.Path) -> None:
+    """Every fault the verifier's fairness audit of 23 October 2026 named, planted in one run
+    of the synthetic batches: the block (model) closes two slots on the gated questions, an
+    ask no reply answered; shipped sorts one run and sets 60 a page in another, gives a card
+    price, a sold-out price and a plain wrong one after reaching page 2, and a card price
+    without reaching it; open everything sorts one run; and the block (rules) names as the
+    cheapest a seller its key never excluded, which the batch stored as correct."""
+    card, sold_out = fixture_prices()
+    if arm.name == "the block (model)":
+        close_slot(folder, "tee-count-stocked", 1)
+        close_slot(folder, "water-all-stocked", 2)
+    if arm.name == "shipped":
+        add_pages(folder, "tee-target-price", 1, f"{SEARCH}&p=2")
+        answer_with(folder, "tee-target-price", 1, f"The lowest is ${card:.2f}.")
+        add_pages(folder, "tee-target-price", 2, f"{SEARCH}&p=2")
+        answer_with(folder, "tee-target-price", 2, f"The lowest is ${sold_out:.2f}.")
+        add_pages(folder, "tee-target-price", 3, f"{SEARCH}&product_list_limit=60")
+        add_pages(folder, "tee-cheapest-target", 1, f"{SEARCH}&product_list_order=price")
+        # The first rule that holds decides: a card price, but page 1 alone.
+        answer_with(folder, "tee-exists-under", 1, f"Yes, at ${card:.2f}.")
+    if arm.name == "open everything (product)":
+        add_pages(folder, "tee-count-buyable", 2, f"{SEARCH}&product_list_order=name")
+    if arm.name == "the block (rules)":
+        expect = task_of(folder, "tee-cheapest-target")["expect"]
+        answer_with(folder, "tee-cheapest-target", 1, f"{another_seller(expect)} is the cheapest for size M at "
+                                                      f"$1.00. {expect['any'][0]} is next at ${expect['price']:.2f}.")
 
 
 def drop_key(tasks_dir: pathlib.Path, task_id: str) -> dict:
@@ -589,6 +739,100 @@ class Run2Faults(unittest.TestCase):
         self.assertIn("the batches read 2 task files", str(raised.exception))
 
 
+class AuditItems(unittest.TestCase):
+    """Protocol analysis v2 (23 October 2026): each rule the verifier's fairness audit asked
+    for, firing on the synthetic run that carries its fault (`showcase`). The plain run, where
+    each must stay quiet, is SyntheticRun2's."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.owner = tempfile.TemporaryDirectory()
+        cls.code, cls.result, cls.out = analyse(build_run2(pathlib.Path(cls.owner.name), plant=showcase))
+        cls.m = cls.result["models"][HAIKU]
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.owner.cleanup()
+
+    def row(self, test: dict, task: str) -> dict:
+        return next(row for row in test["per_question"] if row["task"] == task)
+
+    def test_h2_and_h3_count_only_the_slots_where_the_agent_ran(self):
+        # The block (model) closed tee-count-stocked's first round and water-all-stocked's
+        # second: each stratum holds its two runs, 8 opened at $0.30, and the closed slots are
+        # listed. Put back, each is 0 listings at the parse's $0.002.
+        for name, value, closed_value in (("H2", 8, 0), ("H3", 0.30, 0.002)):
+            test = self.m["primary"][name]
+            with self.subTest(test=name):
+                for task in ("tee-count-stocked", "water-all-stocked"):
+                    self.assertEqual(self.row(test, task)["a"], [value, value])
+                self.assertEqual(test["closed"], [{"task": "tee-count-stocked", "a": 1, "b": 0},
+                                                  {"task": "water-all-stocked", "a": 1, "b": 0}])
+                back = self.m["sensitivity"]["with the closed slots in H2 and H3"][name]
+                self.assertEqual(sorted(self.row(back, "tee-count-stocked")["a"]), [closed_value, value, value])
+        self.assertIn("slots the box closed, no agent run, left out (a the block (model), b open everything "
+                      "(product)): tee-count-stocked 1/0, water-all-stocked 1/0", self.out)
+
+    def test_sorting_and_page_size_are_counted_by_arm(self):
+        table = self.m["secondary"]["toolbar"]
+        got = {arm: (row["sorted"], row["resized"]) for arm, row in table.items()}
+        self.assertEqual(got, {"shipped": (1, 1), "open everything (product)": (1, 0),
+                               "the block (rules)": (0, 0), "the block (model)": (0, 0)})
+        named = {n["run"].split("/")[1]: (n["sorted"], n["page size"]) for n in table["shipped"]["named"]}
+        self.assertEqual(named, {"tee-cheapest-target-1": (["price"], []), "tee-target-price-3": ([], ["60"])})
+        # Dropped in the sensitivity: shipped's tee-target-price and tee-cheapest-target keep
+        # two runs each in H1, open everything's tee-count-buyable two in H2.
+        dropped = self.m["sensitivity"]["without the runs that sorted or changed the page size"]
+        self.assertEqual(self.row(dropped["H1"], "tee-cheapest-target")["b"], [0, 2])
+        self.assertEqual(self.row(dropped["H1"], "tee-target-price")["b"], [0, 2])
+        self.assertEqual(len(self.row(dropped["H2"], "tee-count-buyable")["b"]), 2)
+        self.assertEqual(self.row(self.m["primary"]["H1"], "tee-target-price")["b"], [0, 3])
+
+    def test_the_shipped_failures_are_coded_by_the_written_rules(self):
+        fb = self.m["secondary"]["failure_breakdown"]
+        codes = {run["run"].split("/")[1]: run["code"] for run in fb["runs"]}
+        self.assertEqual((fb["failures"], fb["of"]), (36, 36))
+        card, sold_out = fixture_prices()
+        self.assertEqual({tag: codes[tag] for tag in ("tee-target-price-1", "tee-target-price-2", "tee-target-price-3",
+                                                      "tee-cheapest-target-1", "tee-exists-under-1")},
+                         {"tee-target-price-1": "a card or sold-out price taken",
+                          "tee-target-price-2": "a card or sold-out price taken",
+                          # 60 a page shows every listing: past page 1, and $1.00 is no price shown.
+                          "tee-target-price-3": "other",
+                          # Sorted, but never past the first page.
+                          "tee-cheapest-target-1": "page 2 never reached",
+                          # A card price too, but the rules are tried in order and the first holds.
+                          "tee-exists-under-1": "page 2 never reached"})
+        evidence = {run["run"].split("/")[1]: run["evidence"] for run in fb["runs"]}
+        self.assertEqual(evidence["tee-target-price-1"], f"card ${card:.2f}")
+        self.assertEqual(evidence["tee-target-price-2"], f"sold out ${sold_out:.2f}")
+        self.assertEqual(fb["pooled"], {"page 2 never reached": 33, "a card or sold-out price taken": 2, "other": 1})
+        self.assertIn("f. Why shipped was not correct", self.out)
+
+    def test_a_verdict_the_markets_sellers_move_is_listed(self):
+        # The block (rules) named a seller the key never excluded the cheapest: the batch
+        # stored it correct, scored without the market's sellers as suite.py scores today;
+        # this analysis scores it with them, wrong, and says so rather than applying it unseen.
+        run = next(r for r in self.m["runs"] if (r["arm"], r["task"], r["repeat"])
+                   == ("the block (rules)", "tee-cheapest-target", 1))
+        self.assertEqual(run["verdict"], "wrong")
+        # One problem a model's rules batch: "<batch>/tee-cheapest-target-1: stored verdict ...".
+        moved = [p for p in self.result["problems"] if "stored verdict correct, re-scored wrong" in p]
+        self.assertEqual([p.split(": ")[0].split("/")[1] for p in moved], ["tee-cheapest-target-1"] * 2)
+        self.assertEqual(len(self.result["problems"]), 2)
+
+    def test_each_model_has_its_role_and_its_own_holm(self):
+        self.assertEqual(list(self.result["models"]), [DEEPSEEK, HAIKU])
+        self.assertEqual({m: r["role"] for m, r in self.result["models"].items()},
+                         {DEEPSEEK: "primary", HAIKU: "replication"})
+        self.assertIn(f"Model {DEEPSEEK}, the primary: its four tests are the claim, Holm over the four.", self.out)
+        self.assertIn(f"Model {HAIKU}, a replication of the primary: its own Holm over its four.", self.out)
+        for model, m in self.result["models"].items():
+            with self.subTest(model=model):
+                ps = {name: t["p"] for name, t in m["primary"].items()}
+                self.assertEqual({name: t["p_holm"] for name, t in m["primary"].items()}, claim.holm(ps))
+
+
 class TwoReadings(unittest.TestCase):
     """Which questions have two readings, for claim.py (task F, item 1): the A+ sidecar keys
     every question, so being keyed no longer says a question has two, and its `two_readings`
@@ -620,7 +864,19 @@ class ProtocolFile(unittest.TestCase):
                 ("a sensitivity unknown", lambda c: c["sensitivity"].append("with luck"), "no sensitivity"),
                 ("a condition no run records", lambda c: c["require"].update(colour="red"), "no run records"),
                 ("two arms alike", lambda c: c["arms"]["shipped"].update(arm="box", reading="menu"),
-                 "same instruction and reading")):
+                 "same instruction and reading"),
+                # Protocol analysis v2, 23 October 2026.
+                ("two primaries", lambda c: c["roles"].update({HAIKU: "primary"}), "other than one primary"),
+                ("a role this analysis has not", lambda c: c["roles"].update({HAIKU: "lead"}), "role is not one of"),
+                ("a role for a model not named", lambda c: c["roles"].update({"x-ai/grok-5-mini": "replication"}),
+                 "not the protocol's models"),
+                ("a split of a test the file has not", lambda c: c["splits"].update({"H9": {}}),
+                 "a test the protocol has not"),
+                ("a split of one set", lambda c: c["splits"]["H4"].update({"one": ["tee_templates"]}),
+                 "is not two sets"),
+                ("the failure codes out of order", lambda c: c["failure_breakdown"]["codes"].reverse(),
+                 "codes are not this analysis's"),
+                ("no page size", lambda c: c["failure_breakdown"].pop("page_size"), "names no page size")):
             with self.subTest(fault=label):
                 broken = json.loads(json.dumps(config))
                 change(broken)
