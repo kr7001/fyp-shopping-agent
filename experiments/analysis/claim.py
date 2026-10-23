@@ -555,7 +555,11 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
                 # The reading the run was answered under, from its own box record (score v4),
                 # and the template a held-out rewording rewords (22 October 2026).
                 "answered": verify_cells.run_reading(row, payload) if row else None,
-                "template": task.get("template"), "refused": bool(record.get("refuse"))}
+                "template": task.get("template"), "refused": bool(record.get("refuse")),
+                # The box's record and its fallbacks (v4, from the auditor's check of 41d7839):
+                # the survey fallback, and the model's form left for the rules' (`parse_fallback`).
+                "boxed": bool(row.get("box")), "survey_fallback": bool(record.get("fallback")),
+                "parse_fallback": parse_fallback(record)}
         measured = checked.get((run.task, run.repeat))
         if measured is not None:
             slot.update(measure(measured, folder, row, slot["reading"], task, buyable.get(run.task),
@@ -599,6 +603,15 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
         slot["conditions"] = conditions_of(payload, slot, condition_keys)
         slots.append(slot)
     return payload, slots, problems
+
+
+def parse_fallback(record: dict) -> str | None:
+    """Why the box decided on the rules' form of a question the model parser read, from a run's
+    box record (`box.Parse`, its `fallback_reason`): the call failed, the reply was no form,
+    the form failed a check, or the model was not called at all. None under the rules, and
+    where the model's form was used."""
+    parse = record.get("parse") or {}
+    return parse.get("fallback_reason") if parse.get("parser") == "model" and parse.get("used") == "rules" else None
 
 
 def stated_tokens(record: dict) -> dict | None:
@@ -1555,7 +1568,9 @@ def render_test(t: dict) -> str:
 #      required value may be another condition of the run (`mismatches`, "same_as"); and
 #      `--preflight` checks a batch's flags against require before it runs (`preflight`). A
 #      shipped run that sorted or changed the page size and read its first page alone has a
-#      failure code of its own, "sorted or resized, its first page alone" (R5)
+#      failure code of its own, "sorted or resized, its first page alone" (R5). The parse's
+#      fallbacks by arm are a secondary measure (`fallbacks_by_arm`), and the analysis records
+#      the version of the log reader it counts sorts and page sizes with (`toolbar.VERSION`)
 PROTOCOL_ANALYSIS_VERSION = 4
 # The conditions a protocol's arms are held to: the first claim's and the model parser's,
 # the open-everything wording, the agent's limits. Of them, the ones an arm has by design.
@@ -1580,7 +1595,9 @@ SENSITIVITIES = ("without the two-reading questions", "distinct runs only", "wit
 # The secondary measures a protocol file may name (v3, from the re-audit), each reported by
 # arm and model.
 SECONDARY_MEASURES = ("asks on questions labelled clear", "asks on questions labelled ambiguous",
-                      "the serving provider by arm, and H3 by provider")
+                      "the serving provider by arm, and H3 by provider",
+                      # v4, from the auditor's check of 41d7839.
+                      "the parse's fallbacks by arm")
 # The roles a protocol file gives its models (v2): one primary, whose tests are the claim, and
 # replications, each with its own Holm.
 ROLES = ("primary", "replication")
@@ -2146,6 +2163,23 @@ def secondary_measures(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
         out["asks_by_label"] = asks_by_label(arms, protocol)
     if "the serving provider by arm, and H3 by provider" in named:
         out["providers"] = {"by_arm": provider_table(arms, protocol), "h3": by_provider(arms, protocol)}
+    if "the parse's fallbacks by arm" in named:
+        out["fallbacks"] = fallbacks_by_arm(arms, protocol)
+    return out
+
+
+def fallbacks_by_arm(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
+    """The secondary measure "the parse's fallbacks by arm" (v4, from the auditor's check of
+    41d7839), each model in its own section: of each arm's runs with a box record, those whose
+    question the box planned by the survey fallback, a shopping question no shape fits (the
+    record's `fallback`), and, under the model parser, those where the box decided on the
+    rules' form, counted by the reason its record gives (`parse_fallback`)."""
+    out = {}
+    for arm in [a for a in protocol.arms if a in arms] + sorted(set(arms) - set(protocol.arms)):
+        boxed = [run for run in arms[arm] if run.get("boxed")]
+        reasons = collections.Counter(run["parse_fallback"] for run in boxed if run.get("parse_fallback"))
+        out[arm] = {"runs": len(boxed), "survey_fallback": sum(1 for run in boxed if run.get("survey_fallback")),
+                    "parse_fallback": sum(reasons.values()), "reasons": dict(reasons.most_common())}
     return out
 
 
@@ -2474,7 +2508,7 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
     # The hand verdicts by run, each matched to a run this analysis counts (v4).
     by_run = hand_by_run(hand, population["kept"], files[0], shown_path(path)) if hand else None
     out = {"analysis_version": VERSION, "protocol_analysis_version": PROTOCOL_ANALYSIS_VERSION,
-           "scorer_version": scoring.VERSION, "protocol": config["protocol"],
+           "scorer_version": scoring.VERSION, "toolbar_version": toolbar.VERSION, "protocol": config["protocol"],
            "protocol_file": shown_path(path), "protocol_version": config.get("version"), "tasks_file": files[0],
            "sets": {key: list(value) if not isinstance(value, str) else value
                     for key, value in protocol.sets.items()},
@@ -2734,7 +2768,8 @@ def render_protocol(result: dict) -> str:
     say = out.append
     say(f"The claim analysis under {result['protocol_file']} (version {result['protocol_version']}), for "
         f"{result['protocol']}: claim.py v{result['analysis_version']}, protocol analysis "
-        f"v{result['protocol_analysis_version']}, every answer scored again by score.py v{result['scorer_version']}")
+        f"v{result['protocol_analysis_version']}, every answer scored again by score.py v{result['scorer_version']}, "
+        f"every log's results pages read by toolbar.py v{result['toolbar_version']}")
     sets = result["sets"]
     say(f"Task file {result['tasks_file']}: {len(sets['control'])} control, {len(sets['gated'])} gated, "
         f"{len(sets['decline'])} the block should not plan, {len(sets['held_out'])} held-out rewordings; two "
@@ -2965,6 +3000,17 @@ def render_protocol_model(m: dict, say) -> None:
                                                 else "not computed: no question both arms asked"))
             if h3["differs"] and not h3["tests"]:
                 say("       no provider served whole runs of both arms")
+    fallbacks = s.get("fallbacks")
+    if fallbacks:
+        say("  i. The parse's fallbacks, from each run's box record: the survey fallback, a shopping question no "
+            "shape fits, and under the model parser the rules' form used, by the reason the record gives")
+        for arm, row in fallbacks.items():
+            if not row["runs"]:
+                continue
+            say(f"     {arm:30} of {row['runs']} runs with a box record: survey fallback {row['survey_fallback']}, "
+                f"rules' form used {row['parse_fallback']}")
+            for reason, n in row["reasons"].items():
+                say(f"       {n} {reason}")
 
     names = list(m["primary"])
     say("\n6. Sensitivity: the primary tests again, p (Holm p)")

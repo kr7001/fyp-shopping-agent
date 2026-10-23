@@ -54,6 +54,7 @@ import primitives  # noqa: E402
 import score  # noqa: E402
 import suite  # noqa: E402
 import targeting  # noqa: E402
+import toolbar  # noqa: E402
 import voids  # noqa: E402
 from test_claim_arms import run_suite  # noqa: E402  (suite.main with nothing sent)
 from test_model_parser import replying  # noqa: E402  (the model parser's call, stubbed)
@@ -557,9 +558,23 @@ class SyntheticRun2(unittest.TestCase):
                       "stratified exact test by template", "380k",
                       "and on the run's tokens, the model parser's included, outside Holm", "3. Correct, the block (model) against open everything",
                       "4. The held-out rewordings, by template", "5. Secondary and exploratory",
-                      "c. The questions the block should not plan", "6. Sensitivity"):
+                      "c. The questions the block should not plan", "6. Sensitivity",
+                      # v4: the log reader's version, and the parse's fallbacks.
+                      f"every log's results pages read by toolbar.py v{toolbar.VERSION}", "i. The parse's fallbacks"):
             with self.subTest(words=words):
                 self.assertIn(words, self.out)
+        self.assertEqual(self.result["toolbar_version"], toolbar.VERSION)
+
+    def test_no_fallback_in_a_plain_run(self):
+        # Every template decision of the block's arms has its record, the rewordings' a record
+        # with no plan: 135 runs an arm, none by the survey fallback, and the model's form used
+        # wherever the model read the question. The arms without the box have no record.
+        for model, m in self.result["models"].items():
+            with self.subTest(model=model):
+                self.assertEqual({arm: (row["runs"], row["survey_fallback"], row["parse_fallback"])
+                                  for arm, row in m["secondary"]["fallbacks"].items()},
+                                 {"shipped": (0, 0, 0), "open everything (product)": (0, 0, 0),
+                                  "the block (rules)": (135, 0, 0), "the block (model)": (135, 0, 0)})
 
     def test_no_rewording_text_is_printed_or_stored(self):
         # Checked without showing any: only whether one appears.
@@ -936,6 +951,25 @@ class Run2Faults(unittest.TestCase):
                       f"unscored and in no test of correct", result["problems"])
         self.assertRegex(out, r"\n     tee-count-stocked +5/5  asked")
 
+    def test_the_parses_fallbacks_are_counted_by_arm_with_their_reasons(self):
+        # One planted of each kind: the block (model) left the model's form for the rules' on
+        # one run, and the block (rules) planned one question by the survey fallback.
+        def plant(model, arm, folder):
+            payload = json.loads((folder / "suite.json").read_text())
+            for row in payload["rows"]:
+                if arm.name == "the block (model)" and (row["task"], row["repeat"]) == ("tee-target-price", 1):
+                    row["box"]["parse"].update(used="rules", fallback_reason="the reply is not a form")
+                if arm.name == "the block (rules)" and (row["task"], row["repeat"]) == ("tee-top-3", 2):
+                    row["box"]["fallback"] = True
+            (folder / "suite.json").write_text(json.dumps(payload))
+        _, result, out = self.run2(plant)
+        fallbacks = result["models"][HAIKU]["secondary"]["fallbacks"]
+        self.assertEqual((fallbacks["the block (model)"]["parse_fallback"], fallbacks["the block (model)"]["reasons"],
+                          fallbacks["the block (model)"]["survey_fallback"]), (1, {"the reply is not a form": 1}, 0))
+        self.assertEqual((fallbacks["the block (rules)"]["survey_fallback"], fallbacks["the block (rules)"]["parse_fallback"]),
+                         (1, 0))
+        self.assertIn("1 the reply is not a form", out)
+
     def test_a_closed_slot_with_no_charge_is_unknown_not_free(self):
         def plant(model, arm, folder):
             if arm.name == "the block (model)":
@@ -1122,6 +1156,13 @@ class TwoReadings(unittest.TestCase):
 class ProtocolFile(unittest.TestCase):
     def test_the_file_is_whole(self):
         self.assertEqual(claim.check_protocol(json.loads(PROTOCOL.read_text())), [])
+
+    def test_a_note_the_code_has_moved_past_says_it_is_superseded(self):
+        # The first version's note on H3's tokens said the parse's are not recorded; since
+        # cce9ab0 they are, and the note says so where it stands (v4).
+        notes = [note for note in json.loads(PROTOCOL.read_text())["_about"] if "tokens are not recorded" in note]
+        self.assertEqual(len(notes), 1)
+        self.assertIn("Superseded in part: since cce9ab0", notes[0])
 
     def test_a_file_that_does_not_hold_together_is_refused_before_any_batch(self):
         config = json.loads(PROTOCOL.read_text())

@@ -13,7 +13,7 @@ one of three classes, in this order, and the first that fits wins:
                           a provider or runner error says why: an HTTP error from the
                           provider, an exception in the runner, a runtime failure, or an
                           LLM call error in the log
-  reported, not correct   the step budget, the 600 second clock, no answer, an abstention
+  reported, not correct   the step budget, the run's clock, no answer, an abstention
   answered                everything else, which the scorer then judges
 
 The void decision reads no answer at all, only whether a final exists, so whether a run is
@@ -41,8 +41,12 @@ experiments/runs holds four provider errors and one runtime failure, from 8 Sept
   budget      `result.error` `max_iterations_reached` and the final `Max iterations reached
               without completion` (three stored runs); for the second agent an empty final
               after its 100 calls (`naive_agent.STEP_LIMIT`)
-  clock       `result.error` `task_timeout: exceeded 600s`, with an empty final (two stored
-              runs, both also silent for over 60 seconds, so void by the first rule)
+  clock       `result.error` `task_timeout: exceeded <S>s`, with an empty final, S the run's
+              own clock: suite.py's `--clock`, recorded as each run's `clock_s` since 22 October
+              2026, 600 seconds by default (`suite.DEFAULT_CLOCK_S`) and 1800 in the second
+              claim. The marker is read whatever S is (`CLOCK`). Two stored runs, at 600, both
+              also silent for over 60 seconds, so void by the first rule. Until 23 October 2026
+              this said the clock was 600 seconds, which only the default is
 
     python3 experiments/analysis/voids.py experiments/results/<batch> [...]
     python3 experiments/analysis/voids.py experiments/results/2026* --all

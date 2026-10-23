@@ -47,6 +47,13 @@ import paths  # noqa: E402,F401  (puts box/ and analysis/ on the path)
 import sufficiency  # noqa: E402  (PAGE_MARKER, the one reading of a reply's page line)
 import trace_stats  # noqa: E402
 
+# Bumped when what this reads from a log would change for the same logs, and recorded in each
+# protocol analysis that counts sorts and page sizes with it (claim.py).
+#   1  23 October 2026, from the verifier's fairness audit: the sort, page size, view and
+#      page numbers a run asked for, from its navigations and its replies' pages. A VERSION
+#      since the auditor's check of 41d7839; what the module reads is unchanged
+VERSION = 1
+
 # How an openJiuwen reply states the page the browser is on after the call, besides the
 # Playwright tools' "Page URL:" line (`sufficiency.PAGE_MARKER`): a probe's leading url, and a
 # batch's page_state.

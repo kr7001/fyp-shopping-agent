@@ -919,6 +919,10 @@ class VoidClassifier(unittest.TestCase):
         self.assertEqual(voids.classify(clock, stamped(0, 30))[:2], (voids.NOT_CORRECT, "clock"))
         # That run was in fact silent for 3018 seconds, and the silence comes first.
         self.assertEqual(voids.classify(clock, stamped(0, 3018))[:2], (voids.VOID, "suspended"))
+        # The clock is the run's own, `--clock`: 1800 seconds in the second claim, and its
+        # marker is read the same way (23 October 2026, the docstring said 600).
+        longer = {**clock, "result": {**clock["result"], "error": "task_timeout: exceeded 1800s"}, "clock_s": 1800}
+        self.assertEqual(voids.classify(longer, stamped(0, 30))[:2], (voids.NOT_CORRECT, "clock"))
         naive = {"scaffold": "naive", "error": None, "result": {"final": "", "ok": False},
                  "tokens": {"calls": voids.NAIVE_STEP_LIMIT}}
         self.assertEqual(voids.classify(naive, None)[:2], (voids.NOT_CORRECT, "step budget"))
