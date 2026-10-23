@@ -84,7 +84,12 @@ import targeting
 #      number, and the values of "in" are words; a model's null, dict or nested list is
 #      refused rather than printed into a word, and so is a list of filters that is not a
 #      list. The rules write only such values, so they parse every question as they did
-VERSION = 11
+#  12  23 October 2026, from the verifier's fairness audit of d357c72. A generic superlative
+#      whose attribute the shop does not show is named by the word beside it that names one,
+#      "tastes best" by taste (`NAMED_BESIDE`), where the refusal said "what 'best' ranks
+#      by"; the question is refused as before. The reading a user chose is read back from a
+#      pack's sentences as from a size's (`PACK_READING_MARKS`)
+VERSION = 12
 
 # The model parser's prompt, recorded in every form a model proposes. Runs made under
 # different prompts are different parsers and are never pooled.
@@ -581,6 +586,9 @@ BUYABLE_WORDS = ambiguity.whole_words(ambiguity.BUYABLE)
 # The sentence the box writes into a question when the user chooses a reading, without the
 # user's own phrase, so the reading can be read back out of the question.
 READING_MARKS = {key: sentence.split("' ", 1)[1] for key, (_, sentence) in ambiguity.READINGS.items()}
+# The same sentences in a pack's words (box v18, `ambiguity.PACK_READINGS`).
+PACK_READING_MARKS = {key: sentence.split("' ", 1)[1]
+                      for key, (_, sentence) in ambiguity.PACK_READINGS.items()}
 # What makes a question one about this shop when none of the shapes above fits: a URL into
 # it, a word for what the market holds, a word for what the shop shows (a price, a variant,
 # whether it can be bought, its reviews), an attribute the shop lacks, or a filter the words
@@ -637,11 +645,13 @@ def population_of(question: str, evidence: dict) -> tuple[str, tuple[str, ...]]:
 
 
 def reading_in(question: str, evidence: dict) -> str | None:
-    """The reading the user chose, read back from the sentence the box wrote in."""
-    for key, mark in READING_MARKS.items():
-        if mark in question:
-            evidence["reading"] = mark
-            return key
+    """The reading the user chose, read back from the sentence the box wrote in, in a
+    size's words or a pack's."""
+    for marks in (READING_MARKS, PACK_READING_MARKS):
+        for key, mark in marks.items():
+            if mark in question:
+                evidence["reading"] = mark
+                return key
     return None
 
 
@@ -774,16 +784,29 @@ def graded_attribute(before: str, phrase: str, after: str) -> str | None:
     return None
 
 
+# The attribute a generic superlative ranks by when a word beside it names one the shop does
+# not show (form v12, 23 October 2026, the verifier's fairness audit of d357c72): "Which water
+# tastes best?" was refused for "what 'best' ranks by", where the question says taste. Only
+# the name changes: the question is refused as it was.
+NAMED_BESIDE = {"taste": "taste", "tastes": "taste", "tasting": "taste", "tasted": "taste",
+                "smell": "smell", "smells": "smell", "smelling": "smell",
+                "fit": "fit", "fits": "fit", "fitting": "fit"}
+
+
 def graded_unknown(question: str) -> tuple[str, str] | None:
     """The first superlative or comparative whose attribute the shop does not show, as
     (what the form calls the attribute, the words that asked), or None. A question an
     entry of OTHER_ATTRIBUTES already names ("delivers fastest") is left to that entry,
-    which names the attribute better."""
+    which names the attribute better. A generic word is named by the attribute the word
+    before or after it names, "tastes best" by taste (`NAMED_BESIDE`), and any other by
+    what it ranks by."""
     if other_attribute(question):
         return None
     for before, phrase, after in graded_words(question):
         if graded_attribute(before, phrase, after) is None:
-            return f"what '{phrase.lower()}' ranks by", phrase
+            generic = len(phrase.split()) == 1 and phrase.lower() in GENERIC_GRADED
+            named = (NAMED_BESIDE.get(before) or NAMED_BESIDE.get(after)) if generic else None
+            return named or f"what '{phrase.lower()}' ranks by", phrase
     return None
 
 

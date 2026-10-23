@@ -460,8 +460,12 @@ def build_query(task: dict, spec: dict, args, call=None) -> tuple[str | None, di
         # Anything but the word "model" is the rules: a namespace a test builds, a mock
         # among them, may have no parser of its own. The command line allows only the two.
         parser = "model" if getattr(args, "parser", "rules") == "model" else "rules"
+        # How a rate question is planned (box v18). Anything but the word "every" is the bound,
+        # the default, as for the parser: a namespace a test builds, a mock among them, may
+        # have no rate plan of its own.
+        rate = "every" if getattr(args, "rate_plan", None) == "every" else "bound"
         decision = box_module.decide(query, page, reply=args.reading, exhaust=exhaust,
-                                     parser=parser, call=call)
+                                     parser=parser, call=call, rate=rate)
         applied.update(strategy=decision.kind, box=decision.record(), page=page,
                        decision=decision)
         if decision.query is None:
@@ -807,6 +811,13 @@ def main() -> int:
                              "agent's user agent, run in the Playwright venv. fetch: each "
                              "page's HTML over HTTP, the box's reader until box v16, when it "
                              "read the first page alone. Needs --box or --box-exhaust")
+    parser.add_argument("--rate-plan", choices=box_module.RATE_PLANS, default=None,
+                        help="how the box plans a rate question, such as the best price per "
+                             "litre: bound, the default, skips a listing whose advertised price "
+                             "over the largest pack cannot win, as every box batch before 23 "
+                             "October 2026; every opens every listing, with no bound, since the "
+                             "largest pack is a figure the results pages do not show. Needs --box or "
+                             "--box-exhaust")
     parser.add_argument("--max-steps", type=int, default=None, metavar="N",
                         help=f"openJiuwen's step limit, passed as BROWSER_GUARDRAIL_MAX_STEPS; "
                              f"{DEFAULT_MAX_STEPS} by default, its own, as every batch before 22 "
@@ -856,6 +867,11 @@ def main() -> int:
         parser.error("--page-reader is how the box reads the results pages, so it needs --box "
                      "or --box-exhaust")
     args.page_reader = (args.page_reader or page_module.READERS[0]) if boxed else None
+    # The rate plan is the box's (box v18), so with no box it would name a plan nobody made.
+    if args.rate_plan and not boxed:
+        parser.error("--rate-plan is how the box plans a rate question, so it needs --box or "
+                     "--box-exhaust")
+    args.rate_plan = (args.rate_plan or "bound") if boxed else None
     if boxed and args.policy in ("retry", "investigate"):
         parser.error("--box supports --policy off or gate only in v1: the retry arms "
                      "rebuild the query without the box's plan")
@@ -944,6 +960,9 @@ def main() -> int:
     # How the box reads the results pages (box v16), a condition of every box batch.
     if boxed:
         print(f"page reader: {args.page_reader}, every results page")
+    # The rate plan when it is not the default (box v18), so a default header is unchanged.
+    if boxed and args.rate_plan != "bound":
+        print(f"rate plan: {args.rate_plan}, a rate question opens every listing, with no bound")
     # Under the model parser, who reads the question and with what. Not printed under the
     # rules, so a rules batch's header is what it always was.
     if model_parser:
@@ -1100,6 +1119,9 @@ def main() -> int:
                # Which open-everything instruction (22 October 2026): "every" listing, as every
                # batch before, or every listing of the task's "product"; None without it.
                "exhaustive_wording": args.exhaustive_wording,
+               # The product wording's own version (23 October 2026); None under any other.
+               "exhaustive_wording_version": (policy_module.EXHAUSTIVE_PRODUCT_VERSION
+                                              if args.exhaustive_wording == "product" else None),
                "targeting": args.targeting,
                # The box plans through the same classifier and planner, so both versions
                # are recorded under it too.
@@ -1135,6 +1157,9 @@ def main() -> int:
                # 2026); None without the box. A box batch without the field read the first
                # page alone over HTTP.
                "page_reader": args.page_reader,
+               # How the box planned a rate question (box v18): "bound" or "every"; None
+               # without the box. A box batch without the field planned it with the bound.
+               "rate_plan": args.rate_plan,
                # The pinned browser tool, the origins the browser may request and the
                # flags it runs with, see `browser_conditions`: `browser_tool`,
                # `browser_origins` and `browser_flags`.

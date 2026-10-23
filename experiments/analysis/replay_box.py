@@ -64,12 +64,15 @@ def stored_decision(row: dict) -> box_module.Decision:
     # Over the listings the plan ranged over (box v17): one product's, when it was scoped.
     scope = box_module.Scope.from_record(record.get("scope"))
     planned = scope.apply(page) if scope is not None else page
-    plan = primitives.compose(form, planned, exhaust=exhaust) if record.get("plan") else None
+    # With the rate plan it ran under (box v18); a record before the field had the bound.
+    rate = record.get("rate_plan") or "bound"
+    plan = primitives.compose(form, planned, exhaust=exhaust, rate=rate) if record.get("plan") else None
     question = record["query"].split("\n\n", 1)[0]
     return box_module.Decision(question=question, kind=record["kind"], ask=None,
                                reading=record.get("reading"), query=record["query"],
                                plan=plan, page=page, form=form, refuse=record.get("refuse"),
-                               bypass=bool(record.get("bypassed")), exhaust=exhaust, scope=scope)
+                               bypass=bool(record.get("bypassed")), exhaust=exhaust, scope=scope,
+                               rate=rate)
 
 
 def parsed_by(record: dict) -> dict:
@@ -138,7 +141,7 @@ def compared_today(today: box_module.Decision, record: dict) -> tuple[str, str]:
     if stored_limit and stored_limit.get("op") == "<=" and limit is not None and limit.op == "<":
         old = dataclasses.replace(today.form, filters=tuple(
             dataclasses.replace(f, op="<=") if f is limit else f for f in today.form.filters))
-        plan = primitives.compose(old, today.planned, exhaust=today.exhaust)
+        plan = primitives.compose(old, today.planned, exhaust=today.exhaust, rate=today.rate)
         if as_sent(f"{today.question}\n\n{plan.text}", record) == record["query"]:
             return "expected", f"the limit is strict since form v9 (price < {limit.value:g})"
     return "unexpected", first_difference(record["query"], as_sent(today.query, record))
@@ -165,7 +168,7 @@ def replay(batch: pathlib.Path) -> list[dict]:
         question = tasks[row["task"]]["query"].format(base=spec["base_url"])
         reply = row.get("reading") or suite.get("reading")
         today = box_module.decide(question, decision.page, reply=reply, exhaust=decision.exhaust,
-                                  **parsed_by(record))
+                                  rate=decision.rate, **parsed_by(record))
         status, change = compared_today(today, record)
         verdict = box_module.check(decision, answer, batch / row["log"])
         rescored = verify_cells.rescore(tasks[row["task"]], answer,

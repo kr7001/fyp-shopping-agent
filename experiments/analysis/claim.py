@@ -1334,10 +1334,14 @@ def render_test(t: dict) -> str:
 PROTOCOL_ANALYSIS_VERSION = 1
 # The conditions a protocol's arms are held to: the first claim's and the model parser's,
 # the open-everything wording, the agent's limits. Of them, the ones an arm has by design.
+# The box's rate plan and the product wording's version (23 October 2026) join them, so two
+# rate plans or two wordings are never pooled in one arm; each differs between arms by design.
 PROTOCOL_CONDITIONS = CONDITIONS + ("parser", "parser_model", "parser_temperature", "prompt_version",
-                                    "normalise_version", "exhaustive_wording")
+                                    "normalise_version", "exhaustive_wording", "rate_plan",
+                                    "exhaustive_wording_version")
 PROTOCOL_ARM_CONDITIONS = BOX_CONDITIONS + ("parser", "parser_model", "parser_temperature", "prompt_version",
-                                            "normalise_version", "exhaustive_wording")
+                                            "normalise_version", "exhaustive_wording", "rate_plan",
+                                            "exhaustive_wording_version")
 TEST_MEASURES = ("correct", "opened", "cost", "tokens_total")
 SENSITIVITIES = ("without the two-reading questions", "distinct runs only", "with the voids included",
                  "without the runs that saw a hidden price")

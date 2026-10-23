@@ -254,6 +254,10 @@ def rerun_flags(folder: pathlib.Path) -> str:
     # reader is the default and needs no flag.
     if (payload.get("box") or payload.get("box_exhaust")) and payload.get("page_reader") != "rendered":
         flags.append("--page-reader fetch")
+    # How the box planned a rate question (box v18). A batch without the field planned it
+    # with the bound, the default, which needs no flag.
+    if payload.get("rate_plan") == "every":
+        flags.append("--rate-plan every")
     # The agent's limits (22 October 2026). A batch without them ran under the defaults,
     # which need no flag, and a naive batch under its loop's own.
     if payload.get("scaffold") != "naive":
