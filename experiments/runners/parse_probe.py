@@ -147,10 +147,17 @@ def call_model(key: str, model: str, prompt: str) -> tuple[str, float | None, di
     cost = float(cost) if cost is not None else None
     tokens = tokens_of(usage)
     try:
-        text = payload["choices"][0]["message"]["content"]
+        content = payload["choices"][0]["message"]["content"]
     except (KeyError, IndexError, TypeError) as fault:
         raise UnexpectedReply(f"the reply holds no choices[0].message.content "
                               f"({type(fault).__name__}: {fault}): {str(payload)[:200]!r}", cost, tokens)
+    # As text, the way `form.parse_reply` reads it (23 October 2026): a null content is
+    # nothing and a list of parts its text parts. Content of any other type is a reply that
+    # is no completion, with its charge and tokens kept, never a TypeError later.
+    try:
+        text = form.reply_text(content)
+    except ValueError as fault:
+        raise UnexpectedReply(f"the reply's content is not text: {fault}", cost, tokens)
     return text, cost, tokens
 
 

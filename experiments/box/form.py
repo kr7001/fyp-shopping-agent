@@ -89,7 +89,13 @@ import targeting
 #      "tastes best" by taste (`NAMED_BESIDE`), where the refusal said "what 'best' ranks
 #      by"; the question is refused as before. The reading a user chose is read back from a
 #      pack's sentences as from a size's (`PACK_READING_MARKS`)
-VERSION = 12
+#  13  23 October 2026, from the verifier's FAIL at cce9ab0, before DeepSeek first reads a
+#      question. A model's reply is read as text, None as nothing and a list of content parts
+#      by its text parts, and any other content refused with its type, never a TypeError
+#      (`reply_text`). When the first '{' to the last '}' is not one form, each object in the
+#      reply is tried and the last that is a form taken (`last_form`), for reasoning with
+#      braces in it. Every reply the first attempt parsed parses to the same form
+VERSION = 13
 
 # The model parser's prompt, recorded in every form a model proposes. Runs made under
 # different prompts are different parsers and are never pooled.
@@ -1263,19 +1269,69 @@ def prompt(question: str, page: page_module.Page | None = None,
     raise ValueError(f"no prompt version {version!r}: there are 1, 2 and 3")
 
 
-def parse_reply(reply: str | None, version: int = PROMPT_VERSION) -> Form:
+def reply_text(content) -> str:
+    """A model's message content as text (23 October 2026, before DeepSeek, which has never
+    been the parser, first reads a question): a string as it is, None as nothing, and a list
+    of OpenAI-style content parts as the join of their text parts, a part of any other type
+    left out. Any other content is refused with its type named, a ValueError, so the box
+    records a fallback to the rules and the batch goes on, where a TypeError stopped it."""
+    if content is None:
+        return ""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return "".join(part if isinstance(part, str) else part["text"] for part in content
+                       if isinstance(part, str) or (isinstance(part, dict) and part.get("type") == "text"
+                                                    and isinstance(part.get("text"), str)))
+    raise ValueError(f"the model's reply is of type {type(content).__name__}, not text")
+
+
+def last_form(text: str) -> Form | None:
+    """The last JSON object in `text` that is a form, for a reply whose reasoning holds
+    braces before or after its form, so that the first '{' to the last '}' is not one object
+    (23 October 2026). Each '{' is decoded where it stands (`json.JSONDecoder.raw_decode`),
+    and of those `from_record` accepts the last is taken, the model's final answer. One that
+    lies inside another it accepts is passed over: a form's own evidence can read as a form,
+    when its lines name a quantifier, an objective and a population in the vocabulary. None
+    when no object is a form."""
+    decoder, found = json.JSONDecoder(), []
+    for brace in re.finditer(r"\{", text):
+        try:
+            data, end = decoder.raw_decode(text, brace.start())
+            found.append((brace.start(), end, from_record(data, source="model")))
+        except (ValueError, TypeError):    # not an object here, or not a form
+            continue
+    outermost = [one for one in found
+                 if not any(other[0] < one[0] and one[1] <= other[1] for other in found)]
+    return outermost[-1][2] if outermost else None
+
+
+def parse_reply(reply, version: int = PROMPT_VERSION) -> Form:
     """A model's reply to prompt `version` as a form, which records that version, refused
     with the fault named when it is not one JSON object in the vocabulary. Taken out of
     `from_model` on 22 October 2026, so the box can tell a call that failed from a reply
-    that is not a form."""
-    block = re.search(r"\{.*\}", reply or "", re.DOTALL)
-    if not block:
-        raise ValueError(f"the model's reply holds no JSON object: {(reply or '')[:200]!r}")
+    that is not a form.
+
+    Since 23 October 2026 the reply is read as text first (`reply_text`), and the first
+    attempt is the one every stored parse was made by: the first '{' to the last '}', one
+    object. Only when that fails is each object in the reply tried (`last_form`), and when
+    none is a form the first attempt's fault is the one raised, so a reply that failed
+    before fails as it did."""
+    text = reply_text(reply)
     try:
-        data = json.loads(block.group(0))
-    except json.JSONDecodeError as error:
-        raise ValueError(f"the model's JSON does not parse ({error}): {block.group(0)[:200]!r}")
-    return dataclasses.replace(from_record(data, source="model"), prompt_version=version)
+        block = re.search(r"\{.*\}", text, re.DOTALL)
+        if not block:
+            raise ValueError(f"the model's reply holds no JSON object: {text[:200]!r}")
+        try:
+            data = json.loads(block.group(0))
+        except json.JSONDecodeError as error:
+            raise ValueError(f"the model's JSON does not parse ({error}): {block.group(0)[:200]!r}")
+        parsed = from_record(data, source="model")
+    except ValueError as first:
+        parsed = last_form(text)
+        if parsed is None:
+            raise first
+    return dataclasses.replace(parsed, prompt_version=version)
 
 
 def from_model(question: str, page: page_module.Page | None, call) -> Form:

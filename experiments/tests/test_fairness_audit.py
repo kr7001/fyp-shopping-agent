@@ -398,7 +398,7 @@ class TheParsesTokens(unittest.TestCase):
 class TheVersions(unittest.TestCase):
     def test_they_moved_together(self):
         self.assertEqual((box.VERSION, primitives.VERSION, form.VERSION, targeting.VERSION),
-                         (18, 12, 12, 9))
+                         (18, 12, 13, 9))
 
 
 if __name__ == "__main__":
