@@ -709,19 +709,28 @@ def prices_taken(answer: str, task: dict, expect: dict, truth: dict) -> dict:
     return {"card": sorted(stated & cards), "sold_out": sorted(stated & sold_out)}
 
 
-def results_order(spec: dict) -> list[str] | None:
-    """The market's listings, as lowercased SKUs, in the order its results pages list them
-    (23 October 2026, for the failure code "page 2 never reached"): the live order its seed
-    search recorded when it accepted the market, which the fixture holds under
-    `_generated.search`, else the order the generator predicted (`_instance.predicted_order`).
-    None for a fixture that holds neither, as every market before the A+ one."""
-    if spec.get("fixture") is None:
-        return None
-    fixture = json.loads(verify_cells.fixture_for(spec).read_text())
+def fixture_order(fixture: dict) -> tuple[list[str] | None, str]:
+    """A fixture's listings, as lowercased SKUs, in the order its results pages list them, and
+    which order that is (23 October 2026, for the failure code "page 2 never reached"): the
+    live order its seed search recorded when it accepted the market, which the fixture holds
+    under `_generated.search`, else the order the generator predicted
+    (`_instance.predicted_order`). env/check_aplus_market.py checks the live shop against the
+    same order (v4, R5), so the order the code reads is the order the shop shows."""
     tried = ((fixture.get("_generated") or {}).get("search") or {}).get("tried") or []
     accepted = [entry for entry in tried if entry.get("outcome") == "accepted" and entry.get("live_order")]
-    order = accepted[-1]["live_order"] if accepted else (fixture.get("_instance") or {}).get("predicted_order")
-    return [sku.lower() for sku in order] if order else None
+    if accepted:
+        return [sku.lower() for sku in accepted[-1]["live_order"]], "accepted"
+    predicted = (fixture.get("_instance") or {}).get("predicted_order")
+    return ([sku.lower() for sku in predicted], "predicted") if predicted else (None, "none")
+
+
+def results_order(spec: dict) -> list[str] | None:
+    """The market's results order (`fixture_order`) for a task file that names its fixture.
+    None for one that names none, or a fixture that holds no order, as every market before the
+    A+ one."""
+    if spec.get("fixture") is None:
+        return None
+    return fixture_order(json.loads(verify_cells.fixture_for(spec).read_text()))[0]
 
 
 def key_listings(task: dict, expect: dict, truth: dict, reading: str | None) -> tuple[set[str], str] | None:
@@ -1544,7 +1553,9 @@ def render_test(t: dict) -> str:
 #      A batch outside require is void as a whole and listed, and refuses only its own model's
 #      analysis, unless it was run again; so do two conditions in one arm and two draws; a
 #      required value may be another condition of the run (`mismatches`, "same_as"); and
-#      `--preflight` checks a batch's flags against require before it runs (`preflight`)
+#      `--preflight` checks a batch's flags against require before it runs (`preflight`). A
+#      shipped run that sorted or changed the page size and read its first page alone has a
+#      failure code of its own, "sorted or resized, its first page alone" (R5)
 PROTOCOL_ANALYSIS_VERSION = 4
 # The conditions a protocol's arms are held to: the first claim's and the model parser's,
 # the open-everything wording, the agent's limits. Of them, the ones an arm has by design.
@@ -1574,7 +1585,9 @@ SECONDARY_MEASURES = ("asks on questions labelled clear", "asks on questions lab
 # replications, each with its own Holm.
 ROLES = ("primary", "replication")
 # The shipped arm's failure codes, in the order they are tried, each rule `failure_code`'s.
-FAILURE_CODES = ("page 2 never reached", "a card or sold-out price taken", "other")
+# The second since v4 (the auditor's check of 41d7839).
+FAILURE_CODES = ("page 2 never reached", "sorted or resized, its first page alone", "a card or sold-out price taken",
+                 "other")
 # The sets a protocol file must name, and the one the design calls every template question.
 PROTOCOL_SETS = ("control", "decline", "gated", "two_readings", "reading_independent",
                  "count_two_readings", "held_out")
@@ -1988,13 +2001,20 @@ def failure_code(run: dict, page_size: int) -> tuple[str, str]:
     """A run's failure code and its evidence, by the protocol file's written rules, tried in
     order (`FAILURE_CODES`), the first that holds decides:
 
-      page 2 never reached            the question's key needs a listing past the first results
+      page 2 never reached            the run kept the shop's relevance order at its page size,
+                                      the question's key needs a listing past the first results
                                       page (`needs_a_later_page`, from where the key's listings
-                                      render in the market's results order), and the log shows
-                                      no results page numbered 2 or more and no page size
-                                      above the shop's, so the run read the first page alone
-                                      (`toolbar.past_page_one`). Since the re-audit (R5): until
-                                      then it applied whatever the key needed
+                                      render in that order), and the log shows no results page
+                                      numbered 2 or more and no page size above the shop's, so
+                                      the run read the first page alone (`toolbar.past_page_one`).
+                                      Since the re-audit (R5): until then it applied whatever the
+                                      key needed
+      sorted or resized, its first    the run sorted the results or changed their page size
+      page alone                      (`sorted_or_resized`), and read its own first page alone.
+                                      Where a key's listings render holds for the relevance order
+                                      at the shop's page size only, so whether such a run's
+                                      answer needed a later page is not known (v4, the auditor's
+                                      check of 41d7839: until then it was coded by the rule above)
       a card or sold-out price taken  the answer states a listing's advertised price, or the
                                       price of the question's variant at a listing where it
                                       is sold out, that the key does not hold as right
@@ -2002,15 +2022,20 @@ def failure_code(run: dict, page_size: int) -> tuple[str, str]:
       other                           anything else"""
     reading = run.get("toolbar") or {"results_pages": [], "results_limits": []}
     where = run.get("key_where") or {}
-    if needs_a_later_page(where, page_size) and not toolbar.past_page_one(reading, page_size):
+    alone = not toolbar.past_page_one(reading, page_size)
+    if alone and not sorted_or_resized(run) and needs_a_later_page(where, page_size):
         pages = reading["results_pages"]
         return FAILURE_CODES[0], (f"the key's listings at {where['positions']} ({where['rule']}); "
                                   + (f"results pages seen: {pages}" if pages else "no results page numbered"))
+    if alone and sorted_or_resized(run):
+        return FAILURE_CODES[1], (f"sorted {', '.join(reading['order'] + reading['direction']) or '-'}, page size "
+                                  f"{', '.join(reading['limit'] + [m for m in reading['mode'] if m == 'list']) or '-'}; "
+                                  f"results pages seen: {reading['results_pages']}")
     taken = run.get("taken") or {}
     if taken.get("card") or taken.get("sold_out"):
-        return FAILURE_CODES[1], "; ".join(f"{kind.replace('_', ' ')} {', '.join(f'${p:.2f}' for p in prices)}"
+        return FAILURE_CODES[2], "; ".join(f"{kind.replace('_', ' ')} {', '.join(f'${p:.2f}' for p in prices)}"
                                            for kind, prices in taken.items() if prices)
-    return FAILURE_CODES[2], f"results pages {reading['results_pages']}, limits {reading['results_limits']}"
+    return FAILURE_CODES[3], f"results pages {reading['results_pages']}, limits {reading['results_limits']}"
 
 
 def failure_breakdown(arms: dict[str, list[dict]], protocol: Protocol) -> dict | None:

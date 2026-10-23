@@ -20,6 +20,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402
 
 import ambiguity  # noqa: E402
+import claim  # noqa: E402  (the order its key positions read)
 import score  # noqa: E402
 import suite  # noqa: E402
 
@@ -1291,12 +1292,34 @@ class LiveCheckComparisons(DevMarket):
     def test_the_order_lines_judge_the_brands_form_and_the_record(self):
         order = self.fixture["_instance"]["predicted_order"]
         lines = live.order_lines(self.fixture, order)
-        self.assertEqual([ok for ok, _ in lines], [True, True, True])
+        self.assertEqual([ok for ok, _ in lines], [True, True, True, True])
         swapped = order[:]
         swapped[1], swapped[2] = swapped[2], swapped[1]
         lines = live.order_lines(self.fixture, swapped)
         self.assertFalse(lines[1][0])
         self.assertIn("differs from the fixture's recorded order in 2 positions", lines[1][1])
+        self.assertFalse(lines[2][0])
+        self.assertIn("differs from the one claim.py reads where a key's listings render, the live order its "
+                      "seed search recorded when it accepted the market, in 2 positions", lines[2][1])
+
+    def test_the_order_claim_reads_is_checked_and_not_only_the_predicted_one(self):
+        # The auditor's case (check of 41d7839): a live order that is the predicted one, where
+        # the order the seed search accepted, which claim.py's key positions read, is not.
+        order = self.fixture["_instance"]["predicted_order"]
+        other = copy.deepcopy(self.fixture)
+        accepted = [e for e in other["_generated"]["search"]["tried"] if e.get("outcome") == "accepted"][-1]
+        accepted["live_order"][0], accepted["live_order"][1] = accepted["live_order"][1], accepted["live_order"][0]
+        lines = live.order_lines(other, order)
+        self.assertEqual([ok for ok, _ in lines], [True, True, False, True])
+        self.assertEqual(claim.results_order(json.loads((paths.TASKS / "tasks_aplus_dev.json").read_text())),
+                         [sku.lower() for sku in self.fixture["_generated"]["search"]["tried"][-1]["live_order"]])
+        # A fixture whose seed search recorded no live order: claim.py reads the predicted one,
+        # and the line says so.
+        bare = copy.deepcopy(self.fixture)
+        del bare["_generated"]["search"]
+        lines = live.order_lines(bare, order)
+        self.assertEqual(lines[2], (True, "the live order is the one claim.py reads where a key's listings "
+                                          "render, the predicted order, its seed search having recorded no live order"))
 
     def test_correct_pages_pass(self):
         self.assertEqual(live.pages_problems(self.pages, self.fixture), [])

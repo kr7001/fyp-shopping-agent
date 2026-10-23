@@ -23,7 +23,8 @@
     "Version 4, 23 October 2026, from the auditor's check of version 3 (41d7839), before any run 2 data exists:",
     "A batch outside require is void as a whole, re-run, and listed. claim.py leaves it out of every figure and lists it with the conditions it ran under; a model it leaves a slot empty for, not run again, is refused, and the other model's analysis is not touched. Its charges still count among the money spent.",
     "require: every arm is also held to the agent's code, the agent-core submodule's commit and the digest of agent/openjiuwen-local.patch (suite.agent_code_identity), and to the browser's origins and flags (suite.browser_conditions). The model arm's parser_model is held to the run's own model ({\"same_as\": \"model\"}).",
-    "The claim command checks each invocation before it runs: claim.py --protocol experiments/tasks/claim2_analysis.json --preflight <arm> --flags \"<the suite.py flags>\" works out what the batch would record under the code as it stands and exits 1 on any condition outside require, spending nothing."
+    "The claim command checks each invocation before it runs: claim.py --protocol experiments/tasks/claim2_analysis.json --preflight <arm> --flags \"<the suite.py flags>\" works out what the batch would record under the code as it stands and exits 1 on any condition outside require, spending nothing.",
+    "failure_breakdown: a shipped run that sorted the results or changed their page size and read its own first page alone is coded 'sorted or resized, its first page alone', never 'page 2 never reached', since where a key's listings render holds for the relevance order at 36 a page only. env/check_aplus_market.py checks the live order against the order claim.py reads where the listings render, the one the seed search recorded when it accepted the market, as well as against the predicted one."
   ],
   "protocol": "docs/content/claim2-protocol.md",
   "version": 4,
@@ -99,7 +100,8 @@
   "failure_breakdown": {
     "arm": "shipped", "on": "reading_independent", "page_size": 36,
     "codes": [
-      {"code": "page 2 never reached", "rule": "the question's key needs a listing past the first results page, by where its listings render in the market's results order, and no results page numbered 2 or more, and no product_list_limit above the page size, is among the addresses the run's navigations asked for and its replies reported"},
+      {"code": "page 2 never reached", "rule": "the run kept the shop's relevance order at its page size, the question's key needs a listing past the first results page, by where its listings render in the market's results order, and no results page numbered 2 or more, and no product_list_limit above the page size, is among the addresses the run's navigations asked for and its replies reported"},
+      {"code": "sorted or resized, its first page alone", "rule": "the run sorted the results or changed their page size, and no results page numbered 2 or more, and no product_list_limit above the page size, is among the addresses the run's navigations asked for and its replies reported; where a key's listings render holds for the relevance order at the shop's page size only"},
       {"code": "a card or sold-out price taken", "rule": "the answer states a listing's advertised price, or the price of the question's variant where it is sold out, among the question's product's listings, that the key does not hold as right"},
       {"code": "other", "rule": "anything else"}
     ]

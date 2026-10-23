@@ -423,7 +423,8 @@ class SyntheticRun2(unittest.TestCase):
             fb = m["secondary"]["failure_breakdown"]
             with self.subTest(model=model):
                 self.assertEqual((fb["on"], fb["failures"], fb["of"]), ("reading_independent", 27, 27))
-                self.assertEqual(fb["pooled"], {"page 2 never reached": 15, "a card or sold-out price taken": 0, "other": 12})
+                self.assertEqual(fb["pooled"], {"page 2 never reached": 15, "sorted or resized, its first page alone": 0,
+                                                "a card or sold-out price taken": 0, "other": 12})
                 self.assertEqual({q: next(code for code, n in row.items() if n) for q, row in fb["by_question"].items()},
                                  {q: "page 2 never reached" if q in later else "other"
                                   for q in self.config["sets"]["reading_independent"]})
@@ -1018,9 +1019,10 @@ class AuditItems(unittest.TestCase):
                           "tee-target-price-2": "a card or sold-out price taken",
                           # 60 a page shows every listing: past page 1, and $1.00 is no price shown.
                           "tee-target-price-3": "other",
-                          # Sorted and never past the first page, where its key's listing is
-                          # (Elmsworth, 8th): until v3, "page 2 never reached".
-                          "tee-cheapest-target-1": "other",
+                          # Sorted by price and never past its first page: whether it needed
+                          # a later page is not known (v4); "other" in v3, and before that
+                          # "page 2 never reached".
+                          "tee-cheapest-target-1": "sorted or resized, its first page alone",
                           # Page 1 alone too, where its key is: the card price decides (v3).
                           "tee-exists-under-1": "a card or sold-out price taken",
                           # Its key is on page 2 (Dalston, 37th): reached in round 1, not in 2.
@@ -1029,9 +1031,12 @@ class AuditItems(unittest.TestCase):
         evidence = {run["run"].split("/")[1]: run["evidence"] for run in fb["runs"]}
         self.assertEqual(evidence["tee-target-price-1"], f"card ${card:.2f}")
         self.assertEqual(evidence["tee-target-price-2"], f"sold out ${sold_out:.2f}")
-        # The plain run's 15, 0 and 12 (SyntheticRun2), less water-cheapest-target-1 from the
-        # first, and tee-target-price-1 and -2 and tee-exists-under-1 from the last.
-        self.assertEqual(fb["pooled"], {"page 2 never reached": 14, "a card or sold-out price taken": 3, "other": 10})
+        self.assertEqual(evidence["tee-cheapest-target-1"], "sorted price, page size -; results pages seen: []")
+        # The plain run's 15, 0, 0 and 12 (SyntheticRun2), less water-cheapest-target-1 from
+        # the first, and tee-cheapest-target-1, tee-target-price-1 and -2 and tee-exists-under-1
+        # from the last.
+        self.assertEqual(fb["pooled"], {"page 2 never reached": 14, "sorted or resized, its first page alone": 1,
+                                        "a card or sold-out price taken": 3, "other": 9})
         self.assertIn("f. Why shipped was not correct", self.out)
 
     def test_the_cautious_sensitivity_puts_a_closed_slot_at_open_everythings_median(self):
@@ -1335,6 +1340,24 @@ class NeedsALaterPage(unittest.TestCase):
         self.assertEqual(claim.failure_code({**later, "toolbar": {**reading, "results_pages": [2]}}, 36)[0], "other")
         # Unknown where the key renders: never coded as page 2.
         self.assertEqual(claim.failure_code({**later, "key_where": {}}, 36)[0], "other")
+
+    def test_a_run_that_sorted_or_resized_on_its_first_page_has_its_own_code(self):
+        # Where a key's listings render holds for the relevance order at 36 a page only (v4).
+        plain = {"results_pages": [], "results_limits": [], "order": [], "direction": [], "limit": [], "mode": [],
+                 "sorted": False, "resized": False}
+        sorted_ = {**plain, "order": ["price"], "sorted": True}
+        resized = {**plain, "limit": ["24"], "results_limits": [24], "resized": True}
+        for where in ({"positions": [37], "rule": "any"}, {"positions": [8], "rule": "any"}, {}):
+            for reading in (sorted_, resized):
+                with self.subTest(where=where, reading=reading["order"] or reading["limit"]):
+                    run = {"toolbar": reading, "key_where": where, "taken": {"card": [14.18]}}
+                    self.assertEqual(claim.failure_code(run, 36)[0], "sorted or resized, its first page alone")
+        # Quiet: one that went on to a second page, or to 60 a page, is coded by the rules after.
+        for reading in ({**sorted_, "results_pages": [1, 2]}, {**resized, "limit": ["60"], "results_limits": [60]}):
+            run = {"toolbar": reading, "key_where": {"positions": [37], "rule": "any"}, "taken": {"card": [14.18]}}
+            self.assertEqual(claim.failure_code(run, 36)[0], "a card or sold-out price taken")
+        self.assertEqual(claim.failure_code({"toolbar": sorted_, "key_where": {}, "taken": {}}, 36)[1],
+                         "sorted price, page size -; results pages seen: []")
 
 
 class AsksByLabel(unittest.TestCase):
