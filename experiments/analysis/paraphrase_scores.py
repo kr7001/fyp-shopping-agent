@@ -44,7 +44,10 @@ import parse_probe  # noqa: E402  (the comparison: tiers, question_totals, the p
 #      same under today's comparison, and refused otherwise; the paraphrase file's v1
 #      result is one, made under comparison 1. And the limits a result file states, that it
 #      is in sample or that its page kept no titles, are printed before the figures
-VERSION = 2
+#   3  24 October 2026. An entry with no template, the v3 held-out file's reading-test-only
+#      entries, is a third group beside meaning_kept and meaning_differs, compared with its
+#      expected outcome alone and needing no meaning_kept flag; it has no tiers to recompute
+VERSION = 3
 
 # The run's conditions, as the result file names them, printed and kept in the JSON. The
 # prompt and the normalisation joined on 22 October 2026 (box v13): a file written before
@@ -63,7 +66,11 @@ def paraphrase_file(result: dict) -> dict:
 
 def recomputed(row: dict) -> list[str]:
     """Each tier the row stores that `parse_probe.tiers` computes otherwise, from the forms
-    the row stores: the expected form against the rules' form, and against the model's."""
+    the row stores: the expected form against the rules' form, and against the model's. A
+    row with no template (24 October 2026) stores no expected form and no tiers: nothing to
+    recompute."""
+    if row.get("expected") is None:
+        return []
     expected = form.from_record(row["expected"], "rules")
     found = []
     for who in ("rules", "model"):
@@ -98,7 +105,11 @@ def scores(result: dict, spec: dict) -> dict:
             raise SystemExit(f"the result was compared under version {version}, and read again "
                              f"under {parse_probe.COMPARISON_VERSION} its tiers move: {moved[0]}")
     entries = {entry["id"]: entry for entry in spec["paraphrases"]}
-    unflagged = sorted(n for n, entry in entries.items() if not isinstance(entry.get("meaning_kept"), bool))
+    # An entry with no template (24 October 2026) keeps or changes no template's meaning: it
+    # is a third group, compared with its expected outcome alone, and needs no flag.
+    untemplated = {n for n, entry in entries.items() if entry.get("template") is None}
+    unflagged = sorted(n for n, entry in entries.items()
+                       if n not in untemplated and not isinstance(entry.get("meaning_kept"), bool))
     if unflagged:
         raise SystemExit(f"{result['questions']} does not say whether entries {unflagged} keep "
                          f"their template's meaning, and that is decided before any call")
@@ -113,11 +124,18 @@ def scores(result: dict, spec: dict) -> dict:
                              f"the file stands, so its meaning_kept says nothing about it")
     problems = [text for row in result["rows"] for text in recomputed(row)]
     rows = sorted(result["rows"], key=lambda row: row["id"])
-    kept = [row for row in rows if entries[row["id"]]["meaning_kept"]]
-    differ = [row for row in rows if not entries[row["id"]]["meaning_kept"]]
+    without = [row for row in rows if row["id"] in untemplated]
+    kept = [row for row in rows if row["id"] not in untemplated and entries[row["id"]]["meaning_kept"]]
+    differ = [row for row in rows if row["id"] not in untemplated and not entries[row["id"]]["meaning_kept"]]
     with_model = all("model_tiers" in row for row in rows)
     return {
         "version": VERSION, "comparison_version": parse_probe.COMPARISON_VERSION,
+        # The entries with no template, compared with their expected outcome alone (24
+        # October 2026): their totals' audit figures are the ones that say anything.
+        "without_template": {
+            "entries": len(untemplated), "ids": [row["id"] for row in without],
+            "no_row": sorted(n for n in untemplated if n not in ids),
+            "totals": parse_probe.question_totals(without, with_model) if without else None},
         "conditions": {key: result.get(key) for key in CONDITIONS},
         # What the probe itself said its figures cannot show (parse_probe.limits); none in a
         # file written before 22 October 2026.
@@ -164,6 +182,17 @@ def render(found: dict) -> str:
             n = len(kept["ids"])
             print(f"model forms failing verification: {kept['model_forms_failing_verification']} of {n}; "
                   f"calls failed: {kept['calls_failed']} of {n}")
+
+        without = found.get("without_template") or {}
+        if without.get("entries"):
+            t = without["totals"] or {}
+            print(f"\nThe {len(without['ids'])} with no template, compared with the expected outcome alone, of "
+                  f"the {without['entries']} the file holds"
+                  + (f"; no row for {without['no_row']}" if without["no_row"] else ""))
+            if t:
+                print(f"  the outcome the audit expected, the rules {t['box_as_audit_expected']} of {t['paraphrases']}"
+                      + (f", the model parser {t['model_box_as_audit_expected']} of {t['paraphrases']}"
+                         if "model_box_as_audit_expected" in t else ""))
 
         differ = found["meaning_differs"]
         print(f"\nThe {len(differ['rows'])} whose meaning differs from the template's, read by hand and "

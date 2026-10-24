@@ -451,7 +451,10 @@ class ProbeComparesTheNegation(unittest.TestCase):
         for one in (plain, turned):
             self.assertTrue(parse_probe.agree(one, one))
             self.assertTrue(all(parse_probe.tiers(one, one).values()))
-        self.assertEqual(parse_probe.COMPARISON_VERSION, 2)
+        # The negation came in with comparison 2; version 3 (24 October 2026) added the ask
+        # kinds and the template-less entries, and still reads a file made under 2.
+        self.assertGreaterEqual(parse_probe.COMPARISON_VERSION, 2)
+        self.assertIn(2, parse_probe.READ_AGAIN)
 
 
 if __name__ == "__main__":

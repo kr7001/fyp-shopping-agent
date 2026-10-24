@@ -134,8 +134,11 @@ class Market(unittest.TestCase):
                  for task in self.pilot["tasks"]]
         return self.write(name, {**self.pilot, "tasks": tasks})
 
-    def load(self, spec: dict | None = None, task_file: pathlib.Path = PILOT, batch: pathlib.Path = BATCH):
-        return parse_probe.from_market(self.write("standin.json", spec or standin()), task_file, batch)
+    def load(self, spec: dict | None = None, task_file: pathlib.Path = PILOT, batch: pathlib.Path = BATCH,
+             name: str = "standin.json", only_templates: list[str] | None = None):
+        """`name` is the stand-in's file name: a held-out task names the file its rewording
+        came from, so a test of the held-task match writes the stand-in under that name."""
+        return parse_probe.from_market(self.write(name, spec or standin()), task_file, batch, only_templates)
 
     def refused(self, cases) -> None:
         """Each case, a name, the keywords for `load` and the reason, refused for that reason."""
@@ -229,7 +232,7 @@ class FromMarket(Market):
     def test_a_text_that_cannot_be_filled_is_refused_without_its_words(self):
         cases = (
             ("another placeholder", changed(2, text="Which {brand} tee in {size} sells best?"),
-             "paraphrase 2's text holds a placeholder other than {brand} and {limit}", "sells best"),
+             "paraphrase 2's text holds a placeholder other than {brand}, {limit}, {seller}, {promo}", "sells best"),
             ("a limit no template states",
              changed(2, spec=standin(paraphrases=standin()["paraphrases"][1:]), text="Is a {brand} tee under ${limit}?"),
              "paraphrase 2 needs a limit, and no template in tasks_pilot_v1rw_larchmere.json states one", "tee under"),
@@ -248,13 +251,19 @@ class FromMarket(Market):
         # The generator's own tasks for the stand-in's rewordings that keep their meaning, as
         # it writes them into a claim market's task file.
         reworded = aplus_tasks.reworded(templates, standin(), "Larchmere", self.pilot["_instance"]["exists_limit"])
-        spec, entries, _ = self.load(task_file=self.write("tasks_claim.json", {**self.pilot, "tasks": templates + reworded}))
+        # The generator's tasks name paraphrases_v2.json as their source, so the stand-in is
+        # written under that name here: a task from another file is never an entry's (24
+        # October 2026, `parse_probe.held_task`).
+        claim = self.write("tasks_claim.json", {**self.pilot, "tasks": templates + reworded})
+        spec, entries, _ = self.load(task_file=claim, name="paraphrases_v2.json")
         self.assertEqual(spec["held_to_tasks"], 4)
         asked = {task["rewording"]: task["query"].format(base=BASE) for task in reworded}
         self.assertEqual({e["id"]: e["question"] for e in entries if e["id"] in asked}, asked)
+        # Under another name the same tasks are another file's: nothing is held, nothing refused.
+        self.assertEqual(self.load(task_file=claim)[0]["held_to_tasks"], 0)
         reworded[1] = dict(reworded[1], query=reworded[1]["query"].replace("lowest", "least"))
         edited = self.write("tasks_claim_edited.json", {**self.pilot, "tasks": templates + reworded})
-        self.refused((("a task in other words", {"task_file": edited},
+        self.refused((("a task in other words", {"task_file": edited, "name": "paraphrases_v2.json"},
                        "paraphrase 2 would be parsed in other words than task rw-02 asked it"),))
 
 
