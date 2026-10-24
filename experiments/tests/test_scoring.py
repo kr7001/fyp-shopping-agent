@@ -434,7 +434,8 @@ class TheReaudit(unittest.TestCase):
                 got = score.score(self.tasks[task_id], answer, True, self.sellers)
                 self.assertEqual(got["verdict"] == "correct", truth == "right", got)
         self.assertEqual(len(V7_MISSCORED), 15)
-        self.assertEqual(score.VERSION, 8)
+        # Version 10 (24 October 2026) is additive: every re-audit answer is judged as v8 judged it.
+        self.assertEqual(score.VERSION, 10)
 
 
 class CountCoverage(unittest.TestCase):
@@ -768,6 +769,106 @@ class OneScoringCall(unittest.TestCase):
         self.assertIn("buyable", keys.readings)
         thornwood = score.keys_for(paths.TASKS / "tasks_apparel.json")
         self.assertEqual((thornwood.two_readings, thornwood.sellers), (None, None))
+
+
+class SizeLabelsV10(unittest.TestCase):
+    """Score v10, 24 October 2026, for the tee-only market's misleading labels: a whole size
+    label that carries text is a variant's label, never a price or a count, and a bare stock
+    claim is no count. Each planted on the fault v8 showed and left alone where it must be."""
+
+    def test_a_scarcity_label_is_not_a_count(self):
+        # v8 read "M - Only 2 left!" as a count of 2 (the verifier's check).
+        self.assertEqual(verdict({"kind": "count", "value": 11},
+                                 "The menu shows 'M - Only 2 left!' on Haldane. 11 listings have M in stock."), "correct")
+        self.assertEqual(verdict({"kind": "count", "value": 17},
+                                 "17 listings offer M; one of them reads 'M - Only 2 left!'."), "correct")
+        # A bare stock claim, quoted without its size, is no count either.
+        self.assertEqual(verdict({"kind": "count", "value": 11},
+                                 "One label claims only 2 left. 11 listings have M in stock."), "correct")
+        # Quiet: a count of two is still two, and "2 left" after a size is a count of what is left.
+        self.assertEqual(verdict({"kind": "count", "value": 2}, "Only 2 listings offer M."), "correct")
+        self.assertEqual(verdict({"kind": "count", "value": 2}, "2 left in size M at Haldane."), "correct")
+
+    def test_a_promo_label_is_not_a_price(self):
+        # The figure inside a quoted label is the label's claim, not a price the answer gives.
+        self.assertEqual(score.prices_in("The label reads 'XS - Promo $9.99' but XS costs $14.20."), [14.20])
+        self.assertEqual(score.prices_in("XS - Promo $9.99; S $12.10"), [12.10])
+        # Quiet: a promo figure given as a price, outside a label, is a price.
+        self.assertEqual(score.prices_in("The promo price is $9.99."), [9.99])
+        self.assertEqual(score.prices_in("XS costs $9.99 on promotion."), [9.99])
+
+    def test_whole_labels_only(self):
+        # S is inside XS, L inside XL and XXL, XL inside XXL: each label is blanked from its own
+        # size, never from a size read inside it, and a size inside a word is no label.
+        for label in ("XS - Promo $9.99", "XXL - Only 1 left!", "XL - Only 3 left!", "S - Promo $8.50",
+                      "L - Only 2 left!", "M - Only 2 left!", "xs - promo $9.99", "XS – Promo $9.99", "XS-Promo $9.99"):
+            with self.subTest(label=label):
+                text = f"Menu: {label} then $14.20"
+                blanked = score.without_labels(text)
+                self.assertEqual(blanked, "Menu: " + " " * len(label) + " then $14.20")
+        for text in ("items - promo $2.00", "the small - promo $3.00 pack", "3 L"):
+            with self.subTest(text=text):
+                self.assertEqual(score.without_labels(text), text)
+        # The pack labels of score v5 are blanked as before.
+        self.assertEqual(score.without_labels("The 2 x 9.5L pack")[:4], "The ")
+
+
+class LabelCheck(unittest.TestCase):
+    """Score v10's label_check kind, tee-promo-check's: the answer must give the real price."""
+    EXPECT = {"kind": "label_check", "value": False, "price": 14.20, "trap": 9.99}
+
+    def test_the_real_price_is_correct_and_the_label_may_be_quoted(self):
+        for answer in ("No. Size XS at Fairhaven costs $14.20, not the $9.99 the label says.",
+                       "No, it is not. Choosing XS shows $14.20.",
+                       "The menu says 'XS - Promo $9.99'; choosing XS shows $14.20, so the label is wrong.",
+                       "No. The label claims $9.99 but the price box reads $14.20 once XS is selected."):
+            with self.subTest(answer=answer[:40]):
+                self.assertEqual(verdict(self.EXPECT, answer), "correct")
+
+    def test_yes_the_figure_alone_or_another_price_is_wrong(self):
+        self.assertEqual(verdict(self.EXPECT, "Yes, XS is $9.99 as the label says."), "wrong")
+        self.assertEqual(verdict(self.EXPECT, "Yes. Size XS costs $14.20."), "wrong")   # affirmed the claim
+        self.assertEqual(verdict(self.EXPECT, "The XS price there is $9.99."), "wrong")
+        self.assertEqual(verdict(self.EXPECT, "No, XS costs $12.00 there."), "wrong")
+        self.assertEqual(score.score({"expect": self.EXPECT}, "The XS price there is $9.99.", True)["why"],
+                         "gave the label's figure 9.99 as the price")
+
+    def test_a_no_without_a_price_has_not_answered(self):
+        self.assertEqual(verdict(self.EXPECT, "No."), "ambiguous")
+        self.assertEqual(verdict(self.EXPECT, "No, the label is misleading."), "ambiguous")
+        self.assertEqual(verdict(self.EXPECT, "I could not determine the price."), "abstained")
+        self.assertEqual(score.score({"expect": self.EXPECT}, "", False)["verdict"], "failed")
+        with self.assertRaises(ValueError):
+            verdict({**self.EXPECT, "value": True}, "Yes.")
+
+    def test_real_format_answers_from_every_arm(self):
+        # LESSONS 43: the block's own report format with its opened and skipped lists, an
+        # open-everything report, a shipped answer, and a wrong answer that quotes the promo
+        # figure, for the two label questions.
+        block = ("No. Size XS on the Fairhaven Apparel listing costs $14.20, not $9.99: the size menu reads "
+                 "'XS - Promo $9.99', and the price box shows $14.20 once XS is selected. I opened 1 listing "
+                 "(Fairhaven Apparel) and skipped 44 listings, since the question names one listing.")
+        self.assertEqual(verdict(self.EXPECT, block), "correct")
+        everything = ("I opened all 45 listings. On Fairhaven Apparel the XS option is labelled 'XS - Promo $9.99' but "
+                      "selecting it shows $14.20, so no, the promotion price is not what XS costs there; it costs $14.20.")
+        self.assertEqual(verdict(self.EXPECT, everything), "correct")
+        shipped = "Yes. The Fairhaven Apparel listing shows size XS at the promotional price of $9.99."
+        self.assertEqual(verdict(self.EXPECT, shipped), "wrong")
+        quoted = "Size XS at Fairhaven Apparel is on promotion at $9.99, as its size menu states."
+        self.assertEqual(verdict(self.EXPECT, quoted), "wrong")
+        # tee-xs-price, a price key with the lowest promo figure as its trap.
+        xs = {"kind": "price", "value": 14.50, "trap": 9.99}
+        report = ("The lowest price for size XS among listings that can actually be bought is $14.50 (Garrick Threads). "
+                  "I opened 6 listings whose card was at or below $14.50: Garrick Threads $14.50, Fairhaven Apparel "
+                  "$17.20 (its menu says 'XS - Promo $9.99', but choosing XS shows $17.20), Haldane Garment Works XS "
+                  "sold out, Brindle Apparel no XS, Dunmore Outfitters $16.90, Kelsall Apparel $18.33; skipped 39 "
+                  "listings advertising more than $14.50.")
+        self.assertEqual(score.score({"expect": xs}, report, True)["verdict"], "correct")
+        fell = "The lowest XS price is $9.99 at Fairhaven Apparel, shown in its size menu as XS - Promo $9.99."
+        self.assertEqual(score.score({"expect": xs}, fell, True), {"verdict": "wrong", "why": "gave the trap price 9.99 as its answer",
+                                                                    "prices": [9.99]})
+        label_only = "The cheapest is Fairhaven Apparel's XS - Promo $9.99."
+        self.assertEqual(score.score({"expect": xs}, label_only, True)["verdict"], "wrong")
 
 
 if __name__ == "__main__":

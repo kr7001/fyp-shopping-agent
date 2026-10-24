@@ -92,7 +92,19 @@ import paths  # noqa: E402,F401  (puts box/ on the path)
 #      `two_readings` and the market's sellers, so a batch's stored verdicts and every
 #      re-score of them apply the same rules (suite.py passed the two readings, verify_cells
 #      and claim.py did not, and only claim.py passed the sellers)
-VERSION = 8
+#   9  Sits unmerged on the branch scorer-v9-option (23 October 2026) and is not this
+#   10 24 October 2026, for the tee-only market of design B, whose size menus carry misleading
+#      labels (docs/content/claim2-handover.md, section 3; the verifier's rules of that night).
+#      Additive: a "label_check" kind for tee-promo-check, whose answer must give the real
+#      price of the labelled size and may quote the label's figure as the label's claim
+#      (`label_check`); a whole size label that carries text, "XS - Promo $9.99", "M - Only 2
+#      left!", is a variant's label and never a price or a count (`SIZE_LABEL` in
+#      `VARIANT_LABEL`, matched as a whole word, so S is not read inside XS nor L inside XL),
+#      where v8 read "M - Only 2 left!" as a count of 2; and a bare stock claim, "only 2 left",
+#      is not a count (`STOCK_CLAIM`, the count rule alone). Re-scored over every stored run
+#      that day, 691 records: no stored answer holds a label with text or a stock claim, and no
+#      verdict or reason changes
+VERSION = 10
 
 # Phrases that mean the agent declined rather than answered. Kept narrow on
 # purpose: "not" alone is far too broad, "could not determine" is not.
@@ -186,10 +198,22 @@ PACK_LABEL = re.compile(r"\b\d+\s*[x×]\s*\d+(?:\.\d+)?-(?:ml|l|litres?|liters?)
 # and a volume on its own, "1.25L", "350 ml", "9.5-litre". The shop's clothing sizes, S to
 # XL, hold no figure, so only the water's labels have numbers to set aside. A whole number
 # followed by a lone "L" after a space, "3 L", is left alone: it may be a count of size L.
+# Since score v10 (24 October 2026) also a whole size label that carries text, as the tee-only
+# market's menus render them: "XS - Promo $9.99", "M - Only 2 left!". The size is matched as a
+# whole word, so S is not read inside XS, nor L inside XL or XXL, nor XL inside XXL, and the
+# whole label is blanked, its figure with it: a promo figure quoted as a label is the label's
+# claim, not a price the answer gives.
+SIZE_LABEL = (r"\b(?:XS|S|M|L|XL|XXL)\b\s*[-–]\s*"
+              r"(?:promo\s*\$\s*\d+(?:\.\d\d)?|only\s+\d+\s+left!?)")
 VARIANT_LABEL = re.compile(
     r"\b\d+\s*[x×]\s*\d+(?:\.\d+)?\s*(?:ml|l|litres?|liters?)\b"
     r"|\b\d+(?:\.\d+)?[\s-]*(?:ml|litres?|liters?)\b"
-    r"|\b\d+(?:\.\d+)?l\b|\b\d+\.\d+\s+l\b", re.IGNORECASE)
+    r"|\b\d+(?:\.\d+)?l\b|\b\d+\.\d+\s+l\b"
+    r"|" + SIZE_LABEL, re.IGNORECASE)
+# A bare stock claim, "only 2 left", is not a count either (score v10): the market's scarcity
+# labels claim a count the shop never shows, and an answer may quote one without its size.
+# Read by the count rule alone, as `PACK_LABEL` is.
+STOCK_CLAIM = re.compile(r"\bonly\s+\d+\s+left\b", re.IGNORECASE)
 
 
 def without_labels(text: str) -> str:
@@ -653,6 +677,7 @@ def score(task: dict, answer: str, ok: bool, sellers: list[str] | None = None) -
         # 2-pack". If that leaves nothing, the first number is used after all, since "All 15
         # listings offer it" is a count of 15.
         bare = without_labels(PACK_LABEL.sub(lambda m: " " * len(m.group(0)), answer))
+        bare = STOCK_CLAIM.sub(lambda m: " " * len(m.group(0)), bare)
         # A whole number, never a decimal's part. Until v8 a number followed by a full stop
         # was never read, so "... in stock right now is 11." gave no count at all.
         numbers = list(re.finditer(r"(?<![\d.$])(\d{1,3})(?!\d|\.\d)", bare))
@@ -683,7 +708,34 @@ def score(task: dict, answer: str, ok: bool, sellers: list[str] | None = None) -
     if kind == "ranked":
         return ranked(expect, answer, found, sellers)
 
+    if kind == "label_check":
+        return label_check(expect, answer, found)
+
     raise ValueError(f"unknown expect kind: {kind}")
+
+
+def label_check(expect: dict, answer: str, found: list[float]) -> dict:
+    """A claim in a size menu's label checked against the price shown once the size is chosen
+    (score v10, 24 October 2026, the tee-only market's tee-promo-check): `price` is the real
+    price, `trap` the label's figure, and `value` false, since the claim does not hold (a key
+    with a true claim is not written, and not scored). Correct only when the answer gives the
+    real price; quoting the label's figure beside it, as the label's claim, is allowed, and a
+    figure inside a quoted label ("XS - Promo $9.99") is not a price at all (`VARIANT_LABEL`).
+    Wrong when the answer opens with yes, affirming the claim, or gives the label's figure as
+    the price without the real one; a no with no price has not answered, and is ambiguous."""
+    if expect["value"]:
+        raise ValueError("label_check scores a claim that does not hold; a true claim has no key")
+    target, trap = expect["price"], expect["trap"]
+    lead = LEADING_ANSWER.match(answer.lower())
+    if lead and lead.group(1) == "yes":
+        return {"verdict": "wrong", "why": "affirmed the label's claim", "prices": found}
+    if any(abs(p - target) < 0.005 for p in found):
+        return {"verdict": "correct", "why": f"gave the real price {target}", "prices": found}
+    if any(abs(p - trap) < 0.005 for p in found):
+        return {"verdict": "wrong", "why": f"gave the label's figure {trap} as the price", "prices": found}
+    if not found:
+        return {"verdict": "ambiguous", "why": "no price given", "prices": found}
+    return {"verdict": "wrong", "why": f"gave {found[0]} as the price, expected {target}", "prices": found}
 
 
 def mentions_of(low: str, items: list[dict]) -> list[tuple[int, int]]:
