@@ -147,7 +147,25 @@ import targeting
 #      by when its words name one, "tastes best" by taste (form v12). Every text for a search
 #      on one page of one product is unchanged but the per-litre plan's, a pack's ask and such
 #      a decline: replayed, every one of the 117 stored box runs is the text it was sent
-VERSION = 18
+#   19 24 October 2026, for the second claim run's design B. Decision 11: under the model
+#      parser, where the one thing wrong with the model's form is that the word list reads
+#      the question's words as an availability the form does not hold (`normalise.Clash`),
+#      the box no longer takes the rules' form without a word; it puts the reading ask, or
+#      takes the reading itself when the shop can answer one alone, and the record keeps the
+#      clash with both forms (`Decision.clash`). A results page's form takes the buyable
+#      reading as it stands and refuses the menu's (normalisation v5). Every ask records why
+#      it was put (`Decision.ask_reason`, `ASK_REASONS`). At most one ask a question: an ask
+#      no reading can answer, for a price limit, a name the pages do not list or another
+#      reading of a word, is put before the reading ask and instead of it, never after a
+#      reply (`unanswerable_ask`). Under the rules every text is the same as under v18
+VERSION = 19
+
+# Why the box put its question to the user (box v19, 24 October 2026), on every decision with
+# an ask, so an analysis can count the asks decision 11 causes apart from the others:
+# "ambiguous", the question has more than one reading by the word list or the model (a word
+# read two ways, a price word with no figure, a name the pages do not list), and "clash", the
+# word list and the model read its words two ways on availability (`normalise.Clash`).
+ASK_REASONS = ("ambiguous", "clash")
 
 # Who may read the question for the box: the rules, the default, or a model through a call
 # the caller injects.
@@ -269,6 +287,18 @@ class Decision:
     parse: Parse | None = None  # who read the question, see `Parse`; None is the rules alone
     scope: Scope | None = None  # which listings a plan ranges over (box v17); None with no page
     rate: str = "bound"         # how a rate question is planned (box v18), see `RATE_PLANS`
+    # Why the ask was put, one of `ASK_REASONS`, None with no ask (box v19). And the word
+    # list's clash with the model on availability where it decided the ask or the reading:
+    # the words, each reader's reading, the line and both forms as they stood before any
+    # reading, the rules' of the question and the model's normalised (decision 11, LESSONS 44).
+    ask_reason: str | None = None
+    clash: dict | None = None
+
+    def __post_init__(self):
+        if (self.ask is None) != (self.ask_reason is None) or (
+                self.ask_reason is not None and self.ask_reason not in ASK_REASONS):
+            raise ValueError(f"an ask records why it was put, one of {ASK_REASONS}, and only an "
+                             f"ask does: ask {self.ask is not None}, reason {self.ask_reason!r}")
 
     @property
     def planned(self) -> page_module.Page | None:
@@ -288,7 +318,7 @@ class Decision:
                 "exhaust": self.exhaust,
                 "parse": (self.parse or Parse()).record(),
                 "scope": self.scope.record() if self.scope is not None else None,
-                "rate_plan": self.rate}
+                "rate_plan": self.rate, "ask_reason": self.ask_reason, "clash": self.clash}
 
 
 def results_url(question: str, required: bool = True) -> str | None:
@@ -492,9 +522,16 @@ def decide_by_rules(question: str, page: page_module.Page | None, reply: str | N
     """`decide` with the rules reading the question. The body is box v12's own, and every
     text the rules render is the same bytes, `tests/test_box.py` pins them, but one: since
     box v14 a lookup naming a seller or listing the page does not list is asked about
-    (`unlisted`) rather than sent with a sentence that was false."""
+    (`unlisted`) rather than sent with a sentence that was false.
+
+    At most one ask a question (box v19, 24 October 2026). The asks no reading can answer,
+    for a name the pages do not list and for a price limit, are put before the reading ask
+    and instead of it, so a reply is never followed by a second ask; until v19 the reading
+    was asked, answered and then followed by the other, two asks where one closes the slot
+    all the same. No stored decision put two."""
     asked = ambiguity.ask(question)
     reading_by = None
+    checked_first = False   # whether the ask no reading answers was looked for before the reading's
     if asked is not None:
         form = form_module.from_rules(question, page)
         missing = form_module.not_shown(form, page) if page is not None else []
@@ -502,13 +539,19 @@ def decide_by_rules(question: str, page: page_module.Page | None, reply: str | N
             return Decision(question=question, kind=None, ask=None, reading=None, query=None,
                             plan=None, page=page, form=form, refuse=form_module.refusal(missing),
                             exhaust=exhaust)
+        checked_first = page is not None
+        first = unanswerable_ask(form, question, page) if checked_first else None
+        if first is not None:
+            return Decision(question=question, kind=None, ask=first, reading=None, query=None,
+                            plan=None, page=page, form=form, exhaust=exhaust,
+                            ask_reason="ambiguous")
         answerable = [key for key in asked.readings if not form_module.not_shown(
             form_module.from_rules(ambiguity.with_reading(question, asked, key), page), page)]
         if page is not None and len(answerable) == 1 and len(asked.readings) == 2:
             reply, reading_by = answerable[0], "box"
         elif reply is None:
             return Decision(question=question, kind=None, ask=asked, reading=None, query=None,
-                            plan=None, page=page, exhaust=exhaust)
+                            plan=None, page=page, exhaust=exhaust, ask_reason="ambiguous")
     reading = None
     if asked is not None:
         if reply not in asked.readings:
@@ -518,29 +561,26 @@ def decide_by_rules(question: str, page: page_module.Page | None, reply: str | N
         reading, reading_by = reply, reading_by or "user"
     # The ask recorded is the one put to the user; a reading the box chose was never asked.
     asked = None if reading_by == "box" else asked
+    why = "ambiguous" if asked is not None else None
     form = form_module.from_rules(question, page)
     if form.quantifier == "unknown":
         return Decision(question=question, kind=None, ask=asked, reading=reading,
                         query=question, plan=None, page=page, form=form, bypass=True,
-                        reading_by=reading_by, exhaust=exhaust)
+                        reading_by=reading_by, exhaust=exhaust, ask_reason=why)
     if page is None:
         raise ValueError("the question names no results page to read")
     missing = form_module.not_shown(form, page)
     if missing:
         return Decision(question=question, kind=None, ask=asked, reading=reading, query=None,
                         plan=None, page=page, form=form, refuse=form_module.refusal(missing),
-                        reading_by=reading_by, exhaust=exhaust)
-    names = unlisted(form, question, page)
-    if names:
-        return Decision(question=question, kind=None,
-                        ask=ambiguity.unlisted_ask(names, len(page.listings), len(page.pages)),
-                        reading=reading, query=None, plan=None, page=page, form=form,
-                        reading_by=reading_by, exhaust=exhaust)
-    if "price limit" in form.unknowns:
-        return Decision(question=question, kind=None,
-                        ask=ambiguity.threshold_ask(form.evidence["unknowns"]),
-                        reading=reading, query=None, plan=None, page=page, form=form,
-                        reading_by=reading_by, exhaust=exhaust)
+                        reading_by=reading_by, exhaust=exhaust, ask_reason=why)
+    # A question with no reading ask: the one ask no reading answers, if it needs one. With a
+    # reading ask this was settled above, before it (the ask cap, box v19).
+    first = None if checked_first else unanswerable_ask(form, question, page)
+    if first is not None:
+        return Decision(question=question, kind=None, ask=first, reading=reading, query=None,
+                        plan=None, page=page, form=form, reading_by=reading_by, exhaust=exhaust,
+                        ask_reason="ambiguous")
     # The plan ranges over the product the question names (box v17), the same step under
     # either parser; the form is the rules' own, read from the whole page.
     applied = scope.for_form(form) if scope is not None else None
@@ -553,7 +593,24 @@ def decide_by_rules(question: str, page: page_module.Page | None, reply: str | N
     plan = primitives.compose(form, planned, exhaust=exhaust, rate=rate)
     return Decision(question=question, kind=form.kind(), ask=asked, reading=reading,
                     query=f"{question}\n\n{plan.text}", plan=plan, page=page, form=form,
-                    reading_by=reading_by, exhaust=exhaust, scope=applied)
+                    reading_by=reading_by, exhaust=exhaust, scope=applied, ask_reason=why)
+
+
+def unanswerable_ask(form: form_module.Form, question: str, page: page_module.Page) -> ambiguity.Ask | None:
+    """The ask the question needs that no reading can answer, in the order the box puts
+    them, or None: a seller or listing the pages do not list (box v14), any other word the
+    model reads two ways (box v13; the rules never read one), then a price word with no
+    figure. None offers a reading a scripted reply could choose, so each closes its slot.
+    Looked for before the reading ask since box v19, so a question is asked once at most."""
+    names = unlisted(form, question, page)
+    if names:
+        return ambiguity.unlisted_ask(names, len(page.listings), len(page.pages))
+    other = [entry for entry in form.ambiguities if not normalise.reads_availability(entry)]
+    if other:
+        return ambiguity.generic_ask(other[0].word, other[0].readings)
+    if "price limit" in form.unknowns:
+        return ambiguity.threshold_ask(form.evidence["unknowns"])
+    return None
 
 
 def decide_by_model(question: str, page: page_module.Page | None, reply: str | None,
@@ -587,6 +644,18 @@ def decide_by_model(question: str, page: page_module.Page | None, reply: str | N
     choose, so either ends the run as asked. Last, the form under its reading is held to the
     five properties and the plan's checks again (`normalise.plan_problems`), and the rules
     decide if it fails.
+
+    Decision 11 (box v19, 24 October 2026): where the one thing wrong with the model's form
+    is that the word list reads the question's words as an availability the form does not
+    hold (`normalise.Clash`), the form is used and the clash is put to the shopper with the
+    reading ask, quoting the word list's words, or settled by the box when the shop can
+    answer one reading alone (`normalise.reading_problems`), as any reading ask is. Until
+    v19 the rules' form was used, and on pv1-01, "the lowest listed price", it refused a
+    question the model had read right (LESSONS 44). The record keeps the clash with both
+    forms (`Decision.clash`), and an ask it caused says so (`ask_reason` "clash").
+
+    At most one ask a question (box v19): the asks no reading can answer (`unanswerable_ask`)
+    are put before the reading ask and instead of it, never after a reply.
     """
     if call is None:
         raise ValueError("the model parser needs a call to send its prompt through")
@@ -629,27 +698,41 @@ def decide_by_model(question: str, page: page_module.Page | None, reply: str | N
     if read.failure is not None:
         return by_rules(read.failure, read.form)
     form = read.form
+    # The word list against the model on availability, with nothing else wrong (decision 11):
+    # kept with both forms as they stand before any reading, whatever the box then does.
+    clash = None if read.clash is None else {
+        **read.clash.record(), "rules_form": form_module.from_rules(question, page).record(),
+        "model_form": form.record()}
+    # At most one ask a question (box v19): the ask no reading can answer comes first, and
+    # instead of the reading ask, so no reply is ever followed by a second ask.
+    first = unanswerable_ask(form, question, page)
+    if first is not None:
+        return decided(form, question=question, kind=None, ask=first, reading=None, query=None,
+                       plan=None, form=form, ask_reason="ambiguous", clash=clash)
     # The model's flag on the shop's own ambiguity is asked about with its word, where the
     # lexicon has no ask of its own. One the question's own words settle never reaches
     # here: normalisation applied their reading (`normalise.settle`, box v14), where box v13
-    # dropped the flag and the reading with it.
-    asked = ambiguity.ask(question)
+    # dropped the flag and the reading with it. And a clash with nothing to ask about it
+    # otherwise is asked about in the word list's own words (decision 11).
+    asked, reason = ambiguity.ask(question), "ambiguous"
     flagged = normalise.availability_ambiguity(form)
+    # In a pack's words when the option the model read is a pack (box v18), as the plan
+    # names it (`primitives.option_phrase`).
+    size = form.filter("size")
+    pack = size is not None and not str(size.value).isalnum()
     if asked is None and flagged is not None:
-        # In a pack's words when the option the model read is a pack (box v18), as the plan
-        # names it (`primitives.option_phrase`).
-        size = form.filter("size")
-        pack = size is not None and not str(size.value).isalnum()
         asked = ambiguity.availability_ask(flagged.word, pack=pack)
+    if asked is None and read.clash is not None:
+        asked, reason = ambiguity.availability_ask(read.clash.words, pack=pack), "clash"
     reading_by = None
     if asked is not None:
         answerable = [key for key in asked.readings
-                      if not form_module.not_shown(normalise.with_reading(form, key), page)]
+                      if not normalise.reading_problems(form, key, page)]
         if len(answerable) == 1 and len(asked.readings) == 2:
             reply, reading_by = answerable[0], "box"
         elif reply is None:
             return decided(form, question=question, kind=None, ask=asked, reading=None,
-                           query=None, plan=None)
+                           query=None, plan=None, ask_reason=reason, clash=clash)
     reading = None
     if asked is not None:
         if reply not in asked.readings:
@@ -659,20 +742,12 @@ def decide_by_model(question: str, page: page_module.Page | None, reply: str | N
         form = normalise.with_reading(form, reply)
         reading, reading_by = reply, reading_by or "user"
     asked = None if reading_by == "box" else asked
+    reason = reason if asked is not None else None
     closed = dict(question=question, kind=None, reading=reading, query=None, plan=None,
-                  form=form, reading_by=reading_by)
+                  form=form, reading_by=reading_by, ask_reason=reason, clash=clash)
     missing = form_module.not_shown(form, page)
     if missing:
         return decided(form, ask=asked, refuse=form_module.refusal(missing), **closed)
-    names = unlisted(form, question, page)
-    if names:
-        return decided(form, ask=ambiguity.unlisted_ask(names, len(page.listings), len(page.pages)),
-                       **closed)
-    other = [entry for entry in form.ambiguities if not normalise.reads_availability(entry)]
-    if other:
-        return decided(form, ask=ambiguity.generic_ask(other[0].word, other[0].readings), **closed)
-    if "price limit" in form.unknowns:
-        return decided(form, ask=ambiguity.threshold_ask(form.evidence["unknowns"]), **closed)
     applied = scope.for_form(form) if scope is not None else None
     planned = applied.apply(page) if applied is not None else page
     found = normalise.plan_problems(form, planned)
@@ -687,7 +762,7 @@ def decide_by_model(question: str, page: page_module.Page | None, reply: str | N
         return by_rules(f"no plan can be composed from it: {fault}", form)
     return decided(form, question=question, kind=form.kind(), ask=asked, reading=reading,
                    query=f"{question}\n\n{plan.text}", plan=plan, form=form,
-                   reading_by=reading_by, scope=applied)
+                   reading_by=reading_by, scope=applied, ask_reason=reason, clash=clash)
 
 
 def stated_figures(decision: Decision) -> set[int]:

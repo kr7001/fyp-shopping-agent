@@ -30,6 +30,12 @@ does not show, and has nothing else wrong with it, by the rules' own check of th
 attributes. The box then declines the question on the model's form (`declines`, box v15,
 22 October 2026), where until then the rules' form decided.
 
+And one is no failure at all since normalisation v5 (decision 11, 24 October 2026): the word
+list reading the question's words as an availability the model's form does not hold, with
+nothing else wrong, is a clash between two readers (`availability_clash`), which the box
+puts to the shopper as the reading ask, or settles itself when the shop can answer one
+reading alone, rather than taking the word list's reading without a word.
+
 It calls no model and reads no file. `call` is the caller's, and only `read` uses it.
 """
 
@@ -72,7 +78,15 @@ from form import Filter, Form  # noqa: E402
 #      range over: on a page of two products, those of the one the question names, so one
 #      naming that product restates them and is dropped, and one that tells the products
 #      apart on the whole page is never taken for a restatement of it (`normalise`)
-VERSION = 4
+#   5  24 October 2026, box v19, for the second claim run's design B. Decision 11: where the
+#      one thing wrong with a model's form is that the rules' word list reads the question's
+#      words as an availability the form does not hold, that is no failure but a clash
+#      (`availability_clash`), which the box asks the shopper about, or settles itself when
+#      the shop can answer one reading alone. And a form whose plan carries no availability,
+#      the results page's, takes the buyable reading as it stands, its figure being the
+#      cheapest option that can be bought, while its menu reading asks for the price of a
+#      sold-out size (`with_reading`, `reading_problems`)
+VERSION = 5
 
 # The clothing listings whose price depends on the size chosen name their sizes S, M, L and
 # XL: the options of the shop's configurable attribute apparel_size, read from its database
@@ -370,14 +384,35 @@ def with_reading(form: Form, key: str) -> Form:
     """The form under a reading of the shop's ambiguity, as the rules read a question with
     the reading's sentence written in: availability "listed" for the menu, "buyable" for
     buying, the reading recorded, and the ambiguity it settles gone. Done in code, so a reply
-    costs no second call."""
+    costs no second call.
+
+    A form whose plan carries no availability, the results page's (`carried`), takes the
+    buyable reading as it stands (normalisation v5, 24 October 2026): its figure, each
+    listing's advertised price, is already the cheapest option that can be bought, and the
+    filter would only be one its plan drops. Its menu reading keeps the filter, for
+    `reading_problems` to refuse. pv1-01, "which tee has the lowest listed price", is such a
+    form, which the word list read as "listed" in the menu (LESSONS 44)."""
     value = {"menu": "listed", "buyable": "buyable"}[key]
     mark = form_module.READING_MARKS[key]
-    filters = tuple(f for f in form.filters if f.attribute != "availability") \
-        + (Filter("availability", "=", value),)
-    evidence = {**form.evidence, "reading": mark, "filter:availability": mark}
+    filters = tuple(f for f in form.filters if f.attribute != "availability")
+    evidence = {**form.evidence, "reading": mark}
+    if key == "menu" or "availability" in carried(form):
+        filters += (Filter("availability", "=", value),)
+        evidence["filter:availability"] = mark
     return dataclasses.replace(without_availability(form), filters=filters, reading=key,
                                evidence=evidence)
+
+
+def reading_problems(form: Form, key: str, page: page_module.Page | None) -> list[str]:
+    """Why the shop cannot answer the model's form under the reading `key`, empty when it
+    can: property 5 on the form under that reading (`with_reading`), which refuses the price
+    of a sold-out size under the menu reading of a price question, and, since normalisation
+    v5, the same for an advertised price, which is the cheapest option that can be bought
+    and so, read as any size listed, sold out or not, would need a sold-out size's price."""
+    found = form_module.not_shown(with_reading(form, key), page)
+    if key == "menu" and form.objective == "advertised price" and "the price of a sold-out size" not in found:
+        found.append("the price of a sold-out size")
+    return found
 
 
 # ---------------------------------------------------------------------------
@@ -506,6 +541,58 @@ def sizes_named(question: str) -> set[str]:
     return found | {size for size in SIZES if re.search(rf"(?<![\w-]){size}(?![\w-])", question)}
 
 
+def filter_conflict(condition: Filter, words: str, mine: Filter | None) -> str | None:
+    """How the model's filter on one attribute differs from the one the rules derive from
+    the question's `words`, None when it does not: missing, or another comparison or value.
+    The rules keep only the names the page has, so a model may name more of the question's
+    sellers or URLs, which the box then asks about (`box.unlisted`), but never fewer."""
+    if mine is None:
+        return (f"the question's {words!r} gives {said(condition)}, and the form has no "
+                f"{condition.attribute} filter")
+    if condition.attribute in ("seller", "url") and isinstance(mine.value, tuple):
+        left_out = comparable(condition.value) - comparable(mine.value)
+        return (f"the question's {words!r} names {sorted(left_out)}, which the form leaves out"
+                if left_out else None)
+    if (mine.op, comparable(mine.value)) != (condition.op, comparable(condition.value)):
+        return (f"the question's {words!r} gives {said(condition)}, where the form says "
+                f"{said(mine)}")
+    return None
+
+
+@dataclasses.dataclass(frozen=True)
+class Clash:
+    """The rules' word list and the model reading the question's words two ways on what is
+    asked of a size, in the menu or able to be bought (decision 11, normalisation v5, 24
+    October 2026): the words the word list read, its reading of them, the model form's
+    availability, None where the form holds none, and the line `conflicts` writes for it.
+    Until v5 that line sent the box to the rules' form, and on pv1-01, "the lowest listed
+    price", the word list's "listed" in the menu made the model arm's one miss (LESSONS 44)."""
+    words: str
+    rules: str
+    model: str | None
+    line: str
+
+    def record(self) -> dict:
+        return {"words": self.words, "rules": self.rules, "model": self.model, "line": self.line}
+
+
+def availability_clash(form: Form, question: str, page: page_module.Page | None) -> Clash | None:
+    """The clash on availability between the rules' reading of the question's words and the
+    model's form, None when the two agree or the rules read no availability from the words
+    (their silent default, buyable on an existence question, is not the question's words)."""
+    rules = form_module.from_rules(question, page)
+    condition = rules.filter("availability")
+    words = rules.evidence.get("filter:availability")
+    if condition is None or words is None:
+        return None
+    mine = form.filter("availability")
+    line = filter_conflict(condition, words, mine)
+    if line is None:
+        return None
+    return Clash(words=words, rules=str(condition.value),
+                 model=None if mine is None else str(mine.value), line=line)
+
+
 def conflicts(form: Form, question: str, page: page_module.Page | None) -> list[str]:
     """How the model's form contradicts the question's own words, empty when it does not
     (normalisation v2, 22 October 2026, verifier finding).
@@ -529,20 +616,9 @@ def conflicts(form: Form, question: str, page: page_module.Page | None) -> list[
         words = rules.evidence.get(f"filter:{condition.attribute}")
         if words is None or condition.attribute == "review text":
             continue
-        mine = form.filter(condition.attribute)
-        if mine is None:
-            found.append(f"the question's {words!r} gives {said(condition)}, and the form has no "
-                         f"{condition.attribute} filter")
-        elif condition.attribute in ("seller", "url") and isinstance(mine.value, tuple):
-            # The rules keep only the names the page has, so a model may name more of the
-            # question's, which the box then asks about (`box.unlisted`), but never fewer.
-            left_out = comparable(condition.value) - comparable(mine.value)
-            if left_out:
-                found.append(f"the question's {words!r} names {sorted(left_out)}, which the form "
-                             f"leaves out")
-        elif (mine.op, comparable(mine.value)) != (condition.op, comparable(condition.value)):
-            found.append(f"the question's {words!r} gives {said(condition)}, where the form says "
-                         f"{said(mine)}")
+        line = filter_conflict(condition, words, form.filter(condition.attribute))
+        if line is not None:
+            found.append(line)
     # A direction of price only: the rules make any superlative on an attribute the shop does
     # not show "argmax" of it ("soonest", "the least I'd pay" read as a graded word), which
     # says nothing of cheapest or dearest.
@@ -644,13 +720,17 @@ class ModelRead:
     """What one call made of the question: the reply, the form as the model wrote it, the
     form normalised, each change, and why the box will not use it, None when it may. And,
     when the one thing wrong is what the shop does not show, those attributes, on which the
-    box declines the question (`declines`)."""
+    box declines the question (`declines`). And, when the one thing wrong is that the word
+    list reads an availability from the question's words that the form does not hold, that
+    clash, which is then no failure (decision 11, normalisation v5): the box asks the
+    shopper which reading is meant, or takes the one the shop can answer."""
     reply: str | None
     raw: Form | None
     form: Form | None
     changes: tuple[str, ...]
     failure: str | None
     declines: tuple[str, ...] = ()
+    clash: Clash | None = None
 
 
 def read(question: str, page: page_module.Page | None, call,
@@ -658,7 +738,13 @@ def read(question: str, page: page_module.Page | None, call,
     """One call through `call(prompt) -> str`, the reply parsed, normalised and checked. A
     call that raises, whatever it raises, is a failed call: the call is the caller's, a
     request to a provider. A reply that is not a form is refused with its fault. A fault in
-    the normalising or the checks is a fault of this code, and is not caught."""
+    the normalising or the checks is a fault of this code, and is not caught.
+
+    A clash on availability alone (`availability_clash`) is no failure: the form is used,
+    and the box asks about the reading or takes the one the shop can answer. With anything
+    else wrong besides, the clash's line stays among the failure's, as before v5, and it
+    keeps the form from declining, so a question the word list reads as about buying is
+    never declined on a model's form that drops it."""
     try:
         reply = call(form_module.prompt(question, page))
     except Exception as fault:  # noqa: BLE001  (see the docstring)
@@ -669,5 +755,7 @@ def read(question: str, page: page_module.Page | None, call,
         return ModelRead(reply, None, None, (), f"the model's reply is not a form: {fault}")
     normalised, changes = normalise(raw, question, page, planned)
     found = problems(normalised, question, page)
-    return ModelRead(reply, raw, normalised, tuple(changes), "; ".join(found) or None,
-                     tuple(declines(normalised, found, page)))
+    clash = availability_clash(normalised, question, page)
+    alone = clash is not None and found == [clash.line]
+    return ModelRead(reply, raw, normalised, tuple(changes), None if alone else ("; ".join(found) or None),
+                     tuple(declines(normalised, found, page)), clash if alone else None)
