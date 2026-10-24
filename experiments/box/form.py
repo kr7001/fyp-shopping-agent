@@ -103,7 +103,16 @@ import targeting
 #      "running out", "sell out", "low stock", "only 2 left"). The decline says, for fit,
 #      that the shop cannot know the shopper's size, and for stock, that the shop does not
 #      display stock counts and a label's claim of one is no checked count (`refusal`)
-VERSION = 14
+#  15  24 October 2026, the verifier's audit at cd49128 (FAIL, blocker 1). Two sentences of
+#      every refusal were false of the design B market. "On a review page, the text, rating
+#      and page of each review" is gone: every one of its 45 listings says "Be the first to
+#      review this product", and the box reads no review page. And stock is no longer said
+#      to be unanswerable: the cart refuses a quantity above stock (checked live), so a count
+#      could be bounded by probing a cart. A decline on stock says the shop displays no stock
+#      counts, that finding one would mean probing a cart, which is out of scope, and that a
+#      label's claim of one is no checked count; stock is not named among what the shop "does
+#      not show". Every other refusal reads as before, less the review sentence
+VERSION = 15
 
 # The model parser's prompt, recorded in every form a model proposes. Runs made under
 # different prompts are different parsers and are never pooled.
@@ -415,26 +424,32 @@ def not_shown(form: Form, page: page_module.Page | None = None) -> list[str]:
 # knows the shopper's size. Stock: no page of the shop displays a stock count, the product
 # page's "Only %1 left" block being a template with no threshold set (checked by the verifier
 # that day), and design B's labels can claim one ("M - Only 2 left!"), which is no checked
-# count. Nothing is said of what the stock is or could be found to be: whether a cart refuses
-# a quantity above it is not settled.
+# count. Since form v15 the decline also says a count could only be found by probing a cart,
+# which the cart allows (it refuses a quantity above stock, checked live by the verifier on 24
+# October 2026) and which is out of scope.
 FIT_NAMED = re.compile(r"\bfit", re.IGNORECASE)
 STOCK_NAMED = re.compile(r"\bstock\b|\binventor\w*|\bunits?\b|\bleft\b|\bremaining\b", re.IGNORECASE)
 REFUSAL_FIT = " The shop cannot know your size, so it cannot say which size will fit you."
-REFUSAL_STOCK = (" The shop does not display stock counts, and a size's label that claims one is not "
-                 "a checked count.")
+REFUSAL_STOCK = (" The shop displays no stock counts; finding one would mean probing a cart, which is "
+                 "out of scope, and a size's label that claims one is not a checked count.")
 
 
 def refusal(missing: list[str]) -> str:
     """What the box says instead of planning: what is missing, and what the shop does show,
-    and since form v14 a sentence for fit and one for stock when they are missing."""
-    text = (f"The shop does not show {', '.join(missing)}, so this question cannot be answered "
-            "from it. What it shows: on the results page, each listing's seller, title, URL and "
-            "advertised price. On a listing, its size menu, the price of a size once chosen and "
-            "whether a size can be bought. On a review page, the text, rating and page of each "
-            "review.")
-    if any(FIT_NAMED.search(name) for name in missing):
+    and since form v14 a sentence for fit and one for stock when they are missing. Since form
+    v15 stock is not named among what the shop "does not show", since a cart probe could bound
+    it (`REFUSAL_STOCK` says so), and nothing is said of review pages, which the box does not
+    read and design B's listings do not have (the verifier's audit at cd49128)."""
+    stock = [name for name in missing if STOCK_NAMED.search(name)]
+    others = [name for name in missing if name not in stock]
+    text = (f"The shop does not show {', '.join(others)}, so this question cannot be answered "
+            "from it." if others else "This question cannot be answered from what the shop shows.")
+    text += (" What it shows: on the results page, each listing's seller, title, URL and "
+             "advertised price. On a listing, its size menu, the price of a size once chosen and "
+             "whether a size can be bought.")
+    if any(FIT_NAMED.search(name) for name in others):
         text += REFUSAL_FIT
-    if any(STOCK_NAMED.search(name) for name in missing):
+    if stock:
         text += REFUSAL_STOCK
     return text
 

@@ -219,9 +219,10 @@ class StrategyTextV8(unittest.TestCase):
         # the second claim run. Box 18, form 12 and primitives 12 on 23 October 2026, the
         # verifier's fairness audit of d357c72 (test_fairness_audit.py), and form 13, a reply read
         # as text (test_replies_and_readings.py). Box 19, form 14 and primitives 13 on 24 October
-        # 2026, for design B (test_design_b.py). The strategy texts are v9 still.
+        # 2026, for design B (test_design_b.py), then box 20 and form 15 the same day, the
+        # verifier's audit at cd49128. The strategy texts are v9 still.
         self.assertEqual((targeting.VERSION, box.VERSION, form_module.VERSION, primitives.VERSION),
-                         (9, 19, 14, 13))
+                         (9, 20, 15, 13))
 
     def test_no_text_the_box_sends_holds_an_old_wording(self):
         texts = every_text()

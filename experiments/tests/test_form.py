@@ -523,7 +523,9 @@ class Shown(unittest.TestCase):
         text = form.refusal(["delivery time"])
         self.assertTrue(text.startswith("The shop does not show delivery time, so"))
         self.assertIn("advertised price", text)
-        self.assertIn("review", text)
+        # Since form v15 (the verifier's audit at cd49128) no refusal speaks of review pages,
+        # which the box does not read and the design B listings do not have.
+        self.assertNotIn("review", text)
 
 
 class Verify(unittest.TestCase):

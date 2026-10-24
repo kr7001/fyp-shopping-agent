@@ -162,7 +162,12 @@ import targeting
 #      (`primitives.LABEL_NOTE`, `ADDED`), and the checks never take a label's figure as a
 #      price nor a label's claim as stock (rules v6, primitives v13). Under the rules every
 #      other text is the same as under v18
-VERSION = 19
+#   20 24 October 2026, the verifier's audit at cd49128 (FAIL). Every refusal drops its false
+#      sentence about review pages, and a decline on stock says no count is displayed and
+#      finding one would mean probing a cart, out of scope (form v15). And a clash the box
+#      settles itself, taking the one reading the shop can answer, is recorded as such
+#      (`clash_settled`), beside the clash asks, so an analysis counts both (LESSONS 44)
+VERSION = 20
 
 # Why the box put its question to the user (box v19, 24 October 2026), on every decision with
 # an ask, so an analysis can count the asks decision 11 causes apart from the others:
@@ -336,7 +341,10 @@ class Decision:
                 "exhaust": self.exhaust,
                 "parse": (self.parse or Parse()).record(),
                 "scope": self.scope.record() if self.scope is not None else None,
-                "rate_plan": self.rate, "ask_reason": self.ask_reason, "clash": self.clash}
+                "rate_plan": self.rate, "ask_reason": self.ask_reason, "clash": self.clash,
+                # A clash the box settled itself, taking the one reading the shop can answer,
+                # with no ask (box v20); `clash` holds both forms (LESSONS 44).
+                "clash_settled": self.clash is not None and self.reading_by == "box"}
 
 
 def results_url(question: str, required: bool = True) -> str | None:

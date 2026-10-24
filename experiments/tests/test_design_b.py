@@ -122,6 +122,22 @@ class Decision11(unittest.TestCase):
         self.assertEqual((decision.clash["words"], decision.clash["rules"], decision.clash["model"]),
                          ("lists", "listed", "buyable"))
 
+    def test_a_clash_the_box_settles_itself_is_recorded_as_settled(self):
+        # Box v20, the verifier's finding 3 at cd49128: a clash settled with no ask is marked,
+        # beside the clash asks, both forms in `clash`. Planted: the field always false.
+        settled = box.decide(LISTS_LOWEST, self.page, parser="model", call=stub(reply(filters=[SIZE_M, BUYABLE])))
+        record = settled.record()
+        self.assertEqual((record["clash_settled"], record["ask_reason"], record["reading_by"]), (True, None, "box"))
+        self.assertIsNotNone(record["clash"]["rules_form"])
+        self.assertIsNotNone(record["clash"]["model_form"])
+        asked = box.decide(COUNT_IN_STOCK, self.page, parser="model", call=stub(count(SIZE_M))).record()
+        self.assertEqual((asked["clash_settled"], asked["ask_reason"]), (False, "clash"))
+        self.assertFalse(box.decide(CHEAPEST_M, self.page).record()["clash_settled"])
+        # A reading the box takes with no clash is not a settled clash.
+        q = THORNWOOD + "Which seller has the best price for size M?"
+        self.assertEqual((box.decide(q, self.page).record()["clash_settled"],
+                          box.decide(q, self.page).reading_by), (False, "box"))
+
     def test_quiet_where_the_readers_agree_or_the_words_give_no_availability(self):
         # The model holds the word list's reading: no clash, nothing asked.
         same = box.decide(COUNT_IN_STOCK, self.page, parser="model", call=stub(count(SIZE_M, BUYABLE)))
@@ -570,10 +586,14 @@ class Declines(unittest.TestCase):
                                                      call=stub(stock_model)))):
             with self.subTest(parser=label):
                 self.assertEqual((decision.query, decision.plan, decision.ask), (None, None, None))
-                self.assertTrue(decision.refuse.startswith("The shop does not show stock quantity"))
+                # Form v15 (the verifier's audit at cd49128): stock is not named among what the
+                # shop "does not show", since a cart probe could bound it; the decline says so.
+                self.assertTrue(decision.refuse.startswith("This question cannot be answered from what the shop shows."))
                 self.assertIn(SHOWS, decision.refuse)
-                self.assertIn("does not display stock counts", decision.refuse)
+                self.assertIn("displays no stock counts; finding one would mean probing a cart, which is out of "
+                              "scope", decision.refuse)
                 self.assertTrue(decision.refuse.endswith(form.REFUSAL_STOCK))
+                self.assertNotIn("does not show stock", decision.refuse)
                 # The coordinator's finding of 24 October 2026: never "cannot know the stock left".
                 self.assertNotIn("stock left", decision.refuse)
         # A model's own name for it gets the same sentence.
@@ -598,8 +618,12 @@ class Declines(unittest.TestCase):
             for question in questions:
                 with self.subTest(fires=question):
                     decision = box.decide(GO + question, self.page)
-                    self.assertTrue(decision.refuse and decision.refuse.startswith(
-                        f"The shop does not show {attribute}"), decision.refuse)
+                    self.assertTrue(decision.refuse, decision.refuse)
+                    self.assertIn(attribute, form.not_shown(decision.form, self.page))
+                    if attribute == "fit":
+                        self.assertTrue(decision.refuse.startswith("The shop does not show fit"))
+                    else:
+                        self.assertTrue(decision.refuse.endswith(form.REFUSAL_STOCK))
         # Quiet: a size after "which size", being between two sellers, a sold-out size, a
         # size in stock and a size menu that leaves one out are all things the shop shows.
         # Planted: the size's lookahead taken out of the fit words, the first was refused;
@@ -613,7 +637,22 @@ class Declines(unittest.TestCase):
                 decision = box.decide(GO + question, self.page, reply="menu")
                 self.assertIsNone(form.other_attribute(GO + question))
                 self.assertFalse(decision.refuse and ("fit" in decision.refuse.split(",")[0]
-                                                      or "stock quantity" in decision.refuse.split(",")[0]))
+                                                      or form.REFUSAL_STOCK in decision.refuse))
+
+    def test_no_refusal_speaks_of_review_pages(self):
+        # Form v15, the verifier's audit at cd49128: every design B listing says "Be the first
+        # to review this product" and the box reads no review page, so no refusal says what
+        # one shows. Planted: the sentence put back, every refusal here failed.
+        for question in (DECLINE_FIT, DECLINE_SCARCITY, GO + "Which Example seller delivers fastest?",
+                         GO + "Which seller has the best warranty for size M?"):
+            with self.subTest(question=question[-40:]):
+                refuse = box.decide(question, self.page).refuse
+                self.assertTrue(refuse)
+                self.assertNotIn("review", refuse)
+        # Another attribute beside stock is still named, and stock gets its own sentence.
+        both = form.refusal(["delivery time", "stock quantity"])
+        self.assertTrue(both.startswith("The shop does not show delivery time, so this question"))
+        self.assertTrue(both.endswith(form.REFUSAL_STOCK))
 
 
 # ---------------------------------------------------------------------------
