@@ -162,8 +162,8 @@ class TheEmittedText(Tree):
         self.assertTrue(head.startswith("caffeinate -i env -u BROWSER_WORKER_TEMPERATURE -u BROWSER_WORKER_TOP_P "
                                         "-u BROWSER_MODEL_TEMPERATURE -u BROWSER_MODEL_TOP_P -u MODEL_TEMPERATURE "
                                         "-u MODEL_TOP_P IGR_ESTIMATE_USD="), head)
-        self.assertIn("grep -oE '^(BROWSER_WORKER_TEMPERATURE|BROWSER_WORKER_TOP_P|BROWSER_MODEL_TEMPERATURE|"
-                      "BROWSER_MODEL_TOP_P|MODEL_TEMPERATURE|MODEL_TOP_P)=' .env", text)
+        self.assertIn("grep -oE '^[[:space:]]*(export[[:space:]]+)?(BROWSER_WORKER_TEMPERATURE|BROWSER_WORKER_TOP_P|"
+                      "BROWSER_MODEL_TEMPERATURE|BROWSER_MODEL_TOP_P|MODEL_TEMPERATURE|MODEL_TOP_P)[[:space:]]*=' .env", text)
         self.assertIn("exit 10", text)
         self.assertIn(" IGR_PROVIDER_ROUTING='", head)
 
@@ -294,7 +294,7 @@ class ThePilotChain(Tree):
         self.build({"env_keys": ["BROWSER_WORKER_TEMPERATURE", "OPENROUTER_API_KEY"]})
         code, manifest, text = self.run_stage("pilot")
         self.assertEqual(code, 10)
-        self.assertIn("STOP .env sets the sampling key(s) BROWSER_WORKER_TEMPERATURE , which the runner would refill",
+        self.assertIn("STOP .env sets the sampling key(s) BROWSER_WORKER_TEMPERATURE, which the runner would refill",
                       manifest)
         self.assertNotIn("0.73", manifest + text)
         self.assertNotIn("OPENROUTER", manifest)
@@ -303,13 +303,25 @@ class ThePilotChain(Tree):
         self.build({"env_keys": ["MODEL_TOP_P", "MODEL_TEMPERATURE", "MODEL_TOP_P"]})
         code, manifest, _ = self.run_stage("pilot")
         self.assertEqual(code, 10)
-        self.assertIn("MODEL_TEMPERATURE MODEL_TOP_P ,", manifest)
-        # Quiet: a .env that sets no sampling key, and the whole pilot runs.
-        self.build({"env_keys": ["OPENROUTER_API_KEY"]})
+        self.assertIn("MODEL_TEMPERATURE MODEL_TOP_P, which", manifest)
+        # The other forms python-dotenv reads, each firing on its own: an export prefix, spaces
+        # around the equals sign, both, and leading spaces. The value is never in the manifest.
+        for line, key in (("export MODEL_TEMPERATURE=0.7137", "MODEL_TEMPERATURE"), ("MODEL_TOP_P = 0.5137", "MODEL_TOP_P"),
+                          ("export  BROWSER_MODEL_TOP_P =0.9137", "BROWSER_MODEL_TOP_P"),
+                          ("  BROWSER_WORKER_TOP_P=0.1137", "BROWSER_WORKER_TOP_P")):
+            with self.subTest(line=line):
+                self.build({"env_lines": [line, "OPENROUTER_API_KEY=sk-made-up"]})
+                code, manifest, text = self.run_stage("pilot")
+                self.assertEqual(code, 10, manifest)
+                self.assertIn(f"STOP .env sets the sampling key(s) {key}, which", manifest.splitlines()[-1])
+                self.assertFalse(any(value in manifest + text for value in ("137", "sk-made-up")))
+        # Quiet: a .env that sets no sampling key, a key commented out, and a key inside another
+        # key's value, and the whole pilot runs.
+        self.build({"env_lines": ["OPENROUTER_API_KEY=sk-made-up", "# MODEL_TEMPERATURE=0.7", "OTHER=MODEL_TOP_P=1"]})
         code, manifest, _ = self.run_stage("pilot")
         self.assertEqual(code, 0, manifest)
-        # The stub root keeps one manifest, so the two STOP lines are the runs above and no more.
-        self.assertEqual(manifest.count("STOP"), 2)
+        # The stub root keeps one manifest, so the STOP lines are the six runs above and no more.
+        self.assertEqual(manifest.count("STOP"), 6)
 
     def test_exit_7_when_a_call_was_served_outside_the_routing(self):
         self.build({"provider": "Relace"})

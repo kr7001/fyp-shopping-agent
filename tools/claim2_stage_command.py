@@ -104,9 +104,11 @@ def header(a, est_total: float, routing: str, invocations: int, what: str, brand
            f"CAP={a.cap:.2f}",
            'rm -f "$DONE"',
            "trap 'date +%FT%T > \"$DONE\"; kill ${WATCHDOG:-} 2>/dev/null' EXIT",
-           "# The runner refills a sampling key the shell left unset from .env: stop if .env sets one.",
-           "# Key names only are read, never a value.",
-           f"SAMPLING=$(grep -oE '^({'|'.join(SAMPLING_KEYS)})=' .env 2>/dev/null | tr -d = | sort -u | tr '\\n' ' ')",
+           "# The runner refills a sampling key the shell left unset from .env: stop if .env sets one, in",
+           "# any form python-dotenv reads (an optional 'export ', spaces around '='). Key names only are",
+           "# read, never a value.",
+           f"SAMPLING=$(grep -oE '^[[:space:]]*(export[[:space:]]+)?({'|'.join(SAMPLING_KEYS)})[[:space:]]*=' .env 2>/dev/null"
+           " | sed -E 's/^[[:space:]]*(export[[:space:]]+)?//; s/[[:space:]]*=$//' | sort -u | tr '\\n' ' ' | sed 's/ $//')",
            f'[ -z "$SAMPLING" ] || {{ echo "STOP .env sets the sampling key(s) $SAMPLING, which the runner would refill '
            f'after the chain unset them" >> "$MANIFEST"; exit {EXIT_ENV_SAMPLING}; }}',
            "usage() {",

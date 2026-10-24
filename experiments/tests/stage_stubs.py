@@ -270,9 +270,11 @@ def build(root: pathlib.Path, scenario: dict | None = None, usage: float = 10.0)
     write(root / SCENARIO, scenario or {})
     (root / USAGE).write_text(f"{usage:.4f}")
     # A .env with the keys the scenario names, each set to a made-up value the chain must never
-    # read or print (`env_keys`); none of them is in the environment the chain runs under.
-    if (scenario or {}).get("env_keys"):
-        (root / ".env").write_text("".join(f"{key}=0.73\n" for key in scenario["env_keys"]))
+    # read or print (`env_keys`), or with the raw lines it gives (`env_lines`, for the other forms
+    # python-dotenv reads); none of the keys is in the environment the chain runs under.
+    lines = [f"{key}=0.73" for key in (scenario or {}).get("env_keys", [])] + (scenario or {}).get("env_lines", [])
+    if lines:
+        (root / ".env").write_text("".join(line + "\n" for line in lines))
     return root
 
 
