@@ -1,0 +1,106 @@
+{
+  "_about": [
+    "Computed by env/generate_aplus_tasks.py from env/fixtures/tee_dev.json: the scripted",
+    "user's buyable reading of every keyed question in tasks_tee_dev.json, used by suite.py",
+    "--reading buyable or own, by the model parser, which can lead any question it reads to",
+    "this reading, and by verify_cells.py when a run records it. Do not hand edit.",
+    "Here a size counts only if it can be bought now. The questions in two_readings say",
+    "\"offer\", and their own expect is the menu reading, a sold-out size counted as offered:",
+    "here is their second key. The others say \"can actually be bought\", \"can actually supply\"",
+    "or \"available to buy\", ask what a card advertises, or look up one named listing: here is",
+    "their own key, computed again over the market with every sold-out variant taken out, and",
+    "checked equal to it."
+  ],
+  "two_readings": [
+    "tee-all-stocked",
+    "tee-count-stocked"
+  ],
+  "readings": {
+    "buyable": {
+      "tee-headline": {
+        "kind": "contains",
+        "any": [
+          "Quarles"
+        ],
+        "price": 11.41
+      },
+      "tee-target-price": {
+        "kind": "price",
+        "value": 14.87
+      },
+      "tee-cheapest-target": {
+        "kind": "contains",
+        "any": [
+          "Thirsk"
+        ],
+        "not_any": [
+          "Quarles",
+          "Everleigh"
+        ],
+        "price": 14.87
+      },
+      "tee-all-stocked": {
+        "kind": "boolean",
+        "value": false
+      },
+      "tee-count-stocked": {
+        "kind": "count",
+        "value": 23
+      },
+      "tee-count-buyable": {
+        "kind": "count",
+        "value": 23
+      },
+      "tee-exists-under": {
+        "kind": "boolean",
+        "value": true,
+        "any": [
+          "Thirsk"
+        ],
+        "not_any": [
+          "Quarles",
+          "Crowhurst",
+          "Everleigh",
+          "Jarrow",
+          "Redhill",
+          "Oakhurst",
+          "Ashgrove"
+        ]
+      },
+      "tee-top-3": {
+        "kind": "ranked",
+        "items": [
+          {
+            "any": [
+              "Thirsk"
+            ],
+            "price": 14.87
+          },
+          {
+            "any": [
+              "Oakhurst"
+            ],
+            "price": 16.77
+          },
+          {
+            "any": [
+              "Marlow"
+            ],
+            "price": 19.29
+          }
+        ]
+      },
+      "tee-xs-price": {
+        "kind": "price",
+        "value": 14.34,
+        "trap": 12.0
+      },
+      "tee-promo-check": {
+        "kind": "label_check",
+        "value": false,
+        "price": 19.04,
+        "trap": 16.5
+      }
+    }
+  }
+}

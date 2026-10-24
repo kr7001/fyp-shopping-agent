@@ -202,7 +202,7 @@ class Rules(DevMarket):
             v["label"] = aplus.B_PROMO_LABEL.format(size=XS, promo=v["label_price"])
 
         def on_s(fs):
-            f = next(g for g in fs if variant(g, "S") if "S" in [v["option"] for v in g["variants"]])
+            f = next(g for g in fs if "S" in [v["option"] for v in g["variants"]])
             s = variant(f, "S")
             s.update(label=aplus.B_PROMO_LABEL.format(size="S", promo=round(s["price"] * 0.8, 2)),
                      label_kind="promo", label_price=round(s["price"] * 0.8, 2))
@@ -287,8 +287,8 @@ class Rules(DevMarket):
         self.assertIn("promo_check_choice", self.broken(none_pass, self.two_forms))
         self.assertNotIn("promo_check_choice", self.broken(none_pass, None))   # not asked without the form
         order = self.fixture["_instance"]["predicted_order"]
-        self.assertIn("promo_check_choice", aplus.page_problems_b(copy.deepcopy(self.families), order)
-                      if none_pass(fs := copy.deepcopy(self.families)) or True else [])
+        fs = copy.deepcopy(self.families)
+        none_pass(fs)
         self.assertIn("promo_check_choice", aplus.page_problems_b(fs, order))
         # Two scenarios whose first passing listing differs: the reversed order puts another first.
         passing = [s for s in order if aplus.promo_check_passes(by_sku(self.families, s))]
@@ -481,12 +481,18 @@ class PageRules(DevMarket):
         self.assertIn("answer_on_page_2", aplus.page_problems_b(self.families, order))
 
     def test_counts_need_page_2_fires_for_each_count_and_reading(self):
+        page_2 = len(self.order) - aplus.PAGE_SIZE
         for question, reading, counted in aplus.B_COUNTED:
             with self.subTest(question=question, reading=reading):
                 self.assertTrue(any(counted(by_sku(self.families, s)) for s in self.order[aplus.PAGE_SIZE:]))
                 moved = [s for s in self.order if counted(by_sku(self.families, s))]
-                order = moved + [s for s in self.order if s not in moved]
-                self.assertIn(f"counts_need_page_2:{question} ({reading})", aplus.page_problems_b(self.families, order))
+                rest = [s for s in self.order if s not in moved]
+                if len(rest) < page_2:
+                    # More listings count than page 1 holds, so no order can keep them all off
+                    # page 2 and the rule cannot be planted for this reading; it holds trivially.
+                    self.assertGreater(len(moved), aplus.PAGE_SIZE)
+                    continue
+                self.assertIn(f"counts_need_page_2:{question} ({reading})", aplus.page_problems_b(self.families, moved + rest))
 
     def test_headline_on_page_1_fires_off_page_1_and_without_its_margin(self):
         headline = min(self.families, key=apparel.from_price)["parent_sku"]
@@ -669,14 +675,21 @@ class Files(unittest.TestCase):
         generated = load(DEV)["_generated"]
         with tempfile.TemporaryDirectory() as tmp:
             out = pathlib.Path(tmp) / DEV.name
+            # From the recorded attempt: the full search took 13,597,212 draws (the search record).
             subprocess.run([sys.executable, "env/generate_aplus.py", "--seed", str(generated["seed"]),
                             "--brand", generated["brand"], "--brand-forms", str(generated["brand_forms"]),
                             "--sku-prefix", generated["sku_prefix"], "--design", "B", "--listings",
-                            str(generated["listings"]["tee"]), "--out", str(out),
-                            "--search-log", str(DEV_SEARCH.relative_to(paths.REPO))],
+                            str(generated["listings"]["tee"]), "--from-attempt", str(generated["attempts"]["tee"]),
+                            "--out", str(out), "--search-log", str(DEV_SEARCH.relative_to(paths.REPO))],
                            cwd=paths.REPO, check=True, capture_output=True, timeout=3600)
             self.assertEqual(out.read_bytes(), DEV.read_bytes())
         self.assertEqual(generated["search"], load(DEV_SEARCH))
+        # No earlier attempt of the first block passes, and the recorded one does, read directly.
+        args = (generated["seed"], 0, 50000, generated["brand"], generated["sku_prefix"],
+                generated["brand_forms"] == 2, generated["listings"]["tee"], False, generated["version"])
+        self.assertIsNone(aplus._first_passing(args))
+        self.assertEqual(aplus._first_passing((*args[:1], generated["attempts"]["tee"], generated["attempts"]["tee"] + 1, *args[3:])),
+                         generated["attempts"]["tee"])
 
     def test_the_fixture_records_its_design_and_the_search_its_versions(self):
         fixture = load(DEV)
@@ -752,7 +765,8 @@ class LiveCheckComparisons(DevMarket):
                 plant(menus, texts)
                 lines = live.label_lines(self.fixture, menus, texts)
                 self.assertFalse(lines[line][0], lines[line][1])
-                others = [ok for i, (ok, _) in enumerate(lines) if i != line]
+                # A menu out of order is also a menu not as seeded, so its first line fires too.
+                others = [ok for i, (ok, _) in enumerate(lines) if i != line and not (line == 1 and i == 0)]
                 self.assertTrue(all(others), name)
         # Quiet: a seeded scarcity label is the one "Only N left" a page may show.
         menus, texts = self.menus(), self.texts()
@@ -855,10 +869,11 @@ class Questions(DevMarket):
         self.assertEqual((sorted(buyable), len(keyed)), (sorted(keyed), 10))
         for task_id in keyed:
             with self.subTest(task=task_id):
-                if task_id in aplus_tasks.TWO_READINGS_B:
-                    self.assertNotEqual(buyable[task_id], self.by[task_id]["expect"])
-                else:
+                if task_id not in aplus_tasks.TWO_READINGS_B:
                     self.assertEqual(buyable[task_id], self.by[task_id]["expect"])
+        # The two readings differ by the sold-out M: the count moves, the no stays a no.
+        self.assertLess(buyable["tee-count-stocked"]["value"], self.by["tee-count-stocked"]["expect"]["value"])
+        self.assertEqual(buyable["tee-all-stocked"], {"kind": "boolean", "value": False})
         can = sum(1 for f in self.families if any(v["option"] == M and v["qty"] for v in f["variants"]))
         self.assertEqual(buyable["tee-count-stocked"], {"kind": "count", "value": can})
         # Planted: a one-reading key that counted a sold-out size.
@@ -942,9 +957,12 @@ class Rewordings(DevMarket):
     def test_v2_is_filtered_to_the_tee_templates_and_decline_delivery(self):
         kept = [e for e in self.held["paraphrases"] if e["meaning_kept"] and e["template"] in aplus.B_TEMPLATES]
         self.assertEqual(len(kept), 18)      # 16 keyed and 2 declines (the handover, section 4)
-        v2 = [t for t in self.spec["tasks"] if t.get("held_out") == "v2"]
+        v2 = [t for t in self.spec["tasks"] if t.get("source") == "paraphrases_v2.json"]
         self.assertEqual([t["id"] for t in v2], [f"rw-{e['id']:02d}" for e in kept])
         self.assertEqual(sum(1 for t in v2 if t["expect"]["kind"] != "none"), 16)
+        self.assertTrue(all("paraphrases_v2.json" in t["note"] and t["rewording"] == int(t["id"][3:]) for t in v2))
+        # A template's own task carries none of template, rewording or source.
+        self.assertFalse(any(k in t for t in self.spec["tasks"][:13] for k in ("template", "rewording", "source")))
         skipped = {s["rewording"]: s["why"] for s in self.spec["_skipped"]}
         water = [e["id"] for e in self.held["paraphrases"] if e["template"].startswith("water-") or e["template"] == "decline-taste"]
         self.assertTrue(all(n in skipped for n in water))
@@ -956,12 +974,14 @@ class Rewordings(DevMarket):
         self.assertFalse(any(t in json.dumps(self.spec["_skipped"]) for t in texts))
 
     def test_v3_entries_become_rw3_tasks_and_the_reading_test_only_ones_are_skipped(self):
-        v3 = [t for t in self.spec["tasks"] if t.get("held_out") == "v3"]
+        v3 = [t for t in self.spec["tasks"] if t.get("source") == "paraphrases_v3.json"]
         self.assertEqual([t["id"] for t in v3], ["rw3-01", "rw3-02", "rw3-03", "rw3-04", "rw3-05", "rw3-06"])
         self.assertEqual([t["template"] for t in v3], ["tee-xs-price", "tee-promo-check", "tee-count-stocked",
                                                        "decline-fit", "decline-scarcity", "tee-exists-under"])
         for task in v3:
             with self.subTest(task=task["id"]):
+                self.assertIn("paraphrases_v3.json", task["note"])
+                self.assertEqual(task["rewording"], f"v3-{task['id'][4:]}")
                 template = self.by[task["template"]]
                 for field in ("family", "product", "gated", "expect", "box"):
                     self.assertEqual(task[field], template[field], field)

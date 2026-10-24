@@ -77,7 +77,7 @@ and the index holds them in the children's names, which `search_order.py` counts
     python3 env/generate_aplus.py --seed 900 --brand <Brand> --brand-forms 2 --sku-prefix IGR-DEV \\
         --out env/fixtures/aplus_dev.json
     python3 env/generate_aplus.py --seed 900 --brand <Brand> --brand-forms 2 --sku-prefix IGR-TDV \\
-        --design B --out env/fixtures/<the design-B development fixture>
+        --design B --out env/fixtures/tee_dev.json
 """
 
 from __future__ import annotations
@@ -1183,23 +1183,34 @@ def add_labels(families: list[dict], rng: random.Random) -> None:
     able = buyable(families, XS_TARGET)
     taken = {v["price"] for f in families for v in f["variants"]} | {apparel.from_price(f) for f in families}
     count = min(rng.randint(*B_PROMO_COUNT), len(carriers))
-    # The first label is the trap (rule 10): on the second or third cheapest buyable XS, its
-    # share drawn so that the figure lands at least 8 per cent below the XS winner's price where
-    # that listing's real price allows a share in `B_PROMO_SHARE`; the rule still judges it.
-    chosen = [rng.choice(able[1:3])] if len(able) > 1 and count else []
+    # Where a label goes is construction; what the market then is, the rules judge. Rule 12
+    # turns on a listing's card against its promo figure, a share of its XS price: a promo on a
+    # listing whose card is at least 0.9 of its XS price (XS its cheapest size, or near it) can
+    # never pass, whatever share in `B_PROMO_SHARE`; one on a listing whose card is at most 0.85
+    # of its XS price passes when its share is drawn above that ratio. (Under the size factors a
+    # card is never below 0.71 of the XS price, so "well below" means this and no more.) So the
+    # first label, the trap (rule 10), goes on the second or third cheapest buyable XS, one of
+    # the cheapest-size kind where there is one, its share drawn so that the figure lands at
+    # least 8 per cent below the XS winner's price where its real price allows; the second on a
+    # dearer-size listing, the one tee-promo-check names (`promo_check_named`), its share above
+    # its ratio; and the rest on cheapest-size listings, so the named listing is the only one
+    # that passes rules 11 to 13, whatever the order.
+    ratio = lambda f: apparel.from_price(f) / size_variant(f, XS_TARGET)["price"]  # noqa: E731
+    cheapest_kind = lambda f: ratio(f) >= 0.9  # noqa: E731
+    trap_from = [f for f in able[1:3] if cheapest_kind(f)] or able[1:3]
+    chosen = [rng.choice(trap_from)] if len(able) > 1 and count else []
     shares = {}
     if chosen:
         real = size_variant(chosen[0], XS_TARGET)["price"]
         cap = apparel.buyable_price_for(able[0], XS_TARGET) * (1 - apparel.MIN_MARGIN_REL) / real
         shares[chosen[0]["parent_sku"]] = (B_PROMO_SHARE[0], min(B_PROMO_SHARE[1], cap))
-    # The second goes, where one exists, on a listing whose card is well below its XS price, a
-    # promo on a listing's dearer size, as the named listing of tee-promo-check needs its card
-    # under the promo figure (`promo_check_card`); the rest on any listing that lists XS.
-    dearer = [f for f in able if f not in chosen
-              and apparel.from_price(f) <= size_variant(f, XS_TARGET)["price"] * (B_PROMO_SHARE[0] - 0.02)]
+    dearer = [f for f in able if f not in chosen and ratio(f) <= 0.85]
     if dearer and count > len(chosen):
-        chosen.append(rng.choice(dearer))
-    chosen += rng.sample([f for f in carriers if f not in chosen], count - len(chosen))
+        named = rng.choice(dearer)
+        chosen.append(named)
+        shares[named["parent_sku"]] = (max(B_PROMO_SHARE[0], ratio(named) + 0.02), B_PROMO_SHARE[1])
+    rest = [f for f in carriers if f not in chosen and cheapest_kind(f)] or [f for f in carriers if f not in chosen]
+    chosen += rng.sample(rest, min(count - len(chosen), len(rest)))
     for listing in chosen:
         variant = size_variant(listing, XS_TARGET)
         low, high = shares.get(listing["parent_sku"], B_PROMO_SHARE)
@@ -1373,7 +1384,7 @@ def b_rules(families: list[dict], k: dict, two_forms: bool | None) -> list[str]:
         if best in cards:
             broken.append("xs_answer_not_on_cards")
     promo = k["promo"]
-    if any(v["label_price"] > money(size_variant(f, XS_TARGET)["price"] * margin) or v["label_price"] in prices
+    if any(v["label_price"] > money(v["price"] * margin) or v["label_price"] in prices
            or v["label_price"] in cards for f, v in promo):
         broken.append("promo_labels_false")
     if any(v["option"] != XS_TARGET for _, v in promo) or any(
@@ -1391,8 +1402,9 @@ def b_rules(families: list[dict], k: dict, two_forms: bool | None) -> list[str]:
         if len(named) != 1 or None in named:
             broken.append("promo_check_choice")
     scarcity = k["scarcity"]
-    lefts = [int(re.search(r"\d+", v["label"]).group()) for _, v in scarcity]
-    if (len(scarcity) < B_SCARCITY_COUNT[0] or lefts.count(min(lefts, default=0)) != 1
+    figures = [re.search(r"\d+", v["label"]) for _, v in scarcity]
+    lefts = [int(m.group()) for m in figures if m is not None]
+    if (len(scarcity) < B_SCARCITY_COUNT[0] or None in figures or lefts.count(min(lefts, default=0)) != 1
             or any(v["option"] != TEE_TARGET or v["qty"] == 0 or left == v["qty"] for (_, v), left in zip(scarcity, lefts))):
         broken.append("scarcity_labels")
     if label_problems(families):
@@ -1518,16 +1530,18 @@ B_BLOCK = 50000
 
 def generate_b(seed: int, brand: str, sku_prefix: str, two_forms: bool, listings: int = B_LISTINGS,
                claim: bool = False, attempts: int = B_ATTEMPTS, version: int = VERSION,
-               jobs: int | None = None) -> tuple[list[dict], dict, dict]:
+               jobs: int | None = None, from_attempt: int = 0) -> tuple[list[dict], dict, dict]:
     """The first draw of `listings` tee listings that passes every rule of design B, from the
     seed's own stream (`generate_apparel.generate`'s string seeds), searched `B_BLOCK` attempts
     at a time over `jobs` processes (every core by default, one process for `jobs` 1). The
     attempt found is the lowest that passes, so the market is the seed's whatever `jobs` is;
-    the attempt is recorded in the fixture."""
+    the attempt is recorded in the fixture. `from_attempt` starts the search there, for drawing
+    a recorded market again without repeating its search (the development market's took
+    13,597,212 draws); the seed search's record says the attempt is the first."""
     import multiprocessing
     jobs = jobs or multiprocessing.cpu_count()
     blocks = [(seed, start, min(start + B_BLOCK, attempts), brand, sku_prefix, two_forms, listings, claim, version)
-              for start in range(0, attempts, B_BLOCK)]
+              for start in range(from_attempt, attempts, B_BLOCK)]
     found = None
     if jobs <= 1:
         found = next((hit for hit in map(_first_passing, blocks) if hit is not None), None)
@@ -1893,6 +1907,9 @@ def main() -> int:
                              "tee-only market of six sizes and misleading labels (version 4)")
     parser.add_argument("--listings", type=int, default=B_LISTINGS,
                         help="design B's number of listings, 45 by default; design A takes --tees and --waters")
+    parser.add_argument("--from-attempt", type=int, default=0,
+                        help="design B: start the seed's search at this attempt, to draw a recorded market "
+                             "again without its search (its fixture records the attempt)")
     parser.add_argument("--out", type=pathlib.Path)
     parser.add_argument("--search-log", type=pathlib.Path,
                         help="the seed search that chose this market, written by "
@@ -1922,7 +1939,8 @@ def main() -> int:
         if version < 4:
             raise SystemExit(f"refusing: a design-B market is drawn under version 4 or later, not {version}")
         families, facts, attempts = generate_b(args.seed, args.brand, args.sku_prefix, two_forms,
-                                               args.listings, claim=args.claim, version=version)
+                                               args.listings, claim=args.claim, version=version,
+                                               from_attempt=args.from_attempt)
         shape = f"--design B --listings {args.listings}"
     else:
         families, facts, attempts = generate(args.seed, args.brand, args.sku_prefix, two_forms,

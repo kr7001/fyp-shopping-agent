@@ -1,0 +1,88 @@
+{
+  "brand": "Thurlby",
+  "sku_prefix": "IGR-TDV",
+  "seeded": "24 October 2026",
+  "tried": [
+    {
+      "seed": 900,
+      "generator_version": 4,
+      "search_order_version": 1,
+      "brand_forms": 2,
+      "design": "B",
+      "attempts": {
+        "tee": 13597212
+      },
+      "outcome": "accepted",
+      "seeding_manifest": "20261024T123008-gated-pricing.json",
+      "live_order": [
+        "IGR-TDV-14",
+        "IGR-TDV-43",
+        "IGR-TDV-11",
+        "IGR-TDV-02",
+        "IGR-TDV-25",
+        "IGR-TDV-38",
+        "IGR-TDV-41",
+        "IGR-TDV-31",
+        "IGR-TDV-35",
+        "IGR-TDV-24",
+        "IGR-TDV-26",
+        "IGR-TDV-05",
+        "IGR-TDV-09",
+        "IGR-TDV-15",
+        "IGR-TDV-21",
+        "IGR-TDV-37",
+        "IGR-TDV-04",
+        "IGR-TDV-07",
+        "IGR-TDV-12",
+        "IGR-TDV-16",
+        "IGR-TDV-36",
+        "IGR-TDV-44",
+        "IGR-TDV-01",
+        "IGR-TDV-18",
+        "IGR-TDV-23",
+        "IGR-TDV-20",
+        "IGR-TDV-22",
+        "IGR-TDV-27",
+        "IGR-TDV-39",
+        "IGR-TDV-33",
+        "IGR-TDV-32",
+        "IGR-TDV-10",
+        "IGR-TDV-42",
+        "IGR-TDV-40",
+        "IGR-TDV-08",
+        "IGR-TDV-13",
+        "IGR-TDV-19",
+        "IGR-TDV-17",
+        "IGR-TDV-45",
+        "IGR-TDV-30",
+        "IGR-TDV-29",
+        "IGR-TDV-34",
+        "IGR-TDV-03",
+        "IGR-TDV-28",
+        "IGR-TDV-06"
+      ],
+      "live_order_is": "two forms, average lengths x1.0",
+      "broken": [],
+      "answer_cards": {
+        "tee-target-price": [
+          11
+        ],
+        "tee-cheapest-target": [
+          11
+        ],
+        "tee-exists-under": [
+          11
+        ],
+        "tee-top-3": [
+          11,
+          7,
+          38
+        ],
+        "tee-xs-price": [
+          7
+        ]
+      },
+      "summary": "seed 900 (generator v4, design B), draw 13597212 by every rule on the predicted pages: accepted on the live pages, whose order is the predicted one (two forms, average lengths x1.0)"
+    }
+  ]
+}

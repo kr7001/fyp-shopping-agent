@@ -1,0 +1,2090 @@
+{
+  "seeded_at": "2026-10-24T12:30:08",
+  "base_url": "http://localhost:7770",
+  "fixture": "tee_dev.json",
+  "parent_skus": [
+    "IGR-TDV-01",
+    "IGR-TDV-02",
+    "IGR-TDV-03",
+    "IGR-TDV-04",
+    "IGR-TDV-05",
+    "IGR-TDV-06",
+    "IGR-TDV-07",
+    "IGR-TDV-08",
+    "IGR-TDV-09",
+    "IGR-TDV-10",
+    "IGR-TDV-11",
+    "IGR-TDV-12",
+    "IGR-TDV-13",
+    "IGR-TDV-14",
+    "IGR-TDV-15",
+    "IGR-TDV-16",
+    "IGR-TDV-17",
+    "IGR-TDV-18",
+    "IGR-TDV-19",
+    "IGR-TDV-20",
+    "IGR-TDV-21",
+    "IGR-TDV-22",
+    "IGR-TDV-23",
+    "IGR-TDV-24",
+    "IGR-TDV-25",
+    "IGR-TDV-26",
+    "IGR-TDV-27",
+    "IGR-TDV-28",
+    "IGR-TDV-29",
+    "IGR-TDV-30",
+    "IGR-TDV-31",
+    "IGR-TDV-32",
+    "IGR-TDV-33",
+    "IGR-TDV-34",
+    "IGR-TDV-35",
+    "IGR-TDV-36",
+    "IGR-TDV-37",
+    "IGR-TDV-38",
+    "IGR-TDV-39",
+    "IGR-TDV-40",
+    "IGR-TDV-41",
+    "IGR-TDV-42",
+    "IGR-TDV-43",
+    "IGR-TDV-44",
+    "IGR-TDV-45"
+  ],
+  "child_skus": [
+    "IGR-TDV-01-XS",
+    "IGR-TDV-01-XL",
+    "IGR-TDV-01-XXL",
+    "IGR-TDV-02-XS",
+    "IGR-TDV-02-S",
+    "IGR-TDV-02-M",
+    "IGR-TDV-02-L",
+    "IGR-TDV-02-XL",
+    "IGR-TDV-02-XXL",
+    "IGR-TDV-03-S",
+    "IGR-TDV-03-M",
+    "IGR-TDV-03-L",
+    "IGR-TDV-04-XS",
+    "IGR-TDV-04-M",
+    "IGR-TDV-04-L",
+    "IGR-TDV-04-XL",
+    "IGR-TDV-04-XXL",
+    "IGR-TDV-05-XS",
+    "IGR-TDV-05-S",
+    "IGR-TDV-05-M",
+    "IGR-TDV-05-L",
+    "IGR-TDV-05-XL",
+    "IGR-TDV-05-XXL",
+    "IGR-TDV-06-M",
+    "IGR-TDV-06-L",
+    "IGR-TDV-06-XL",
+    "IGR-TDV-07-XS",
+    "IGR-TDV-07-S",
+    "IGR-TDV-07-M",
+    "IGR-TDV-07-L",
+    "IGR-TDV-07-XXL",
+    "IGR-TDV-08-M",
+    "IGR-TDV-08-XL",
+    "IGR-TDV-08-XXL",
+    "IGR-TDV-09-XS",
+    "IGR-TDV-09-S",
+    "IGR-TDV-09-M",
+    "IGR-TDV-09-L",
+    "IGR-TDV-09-XL",
+    "IGR-TDV-09-XXL",
+    "IGR-TDV-10-XS",
+    "IGR-TDV-10-S",
+    "IGR-TDV-10-M",
+    "IGR-TDV-10-L",
+    "IGR-TDV-10-XL",
+    "IGR-TDV-10-XXL",
+    "IGR-TDV-11-S",
+    "IGR-TDV-11-M",
+    "IGR-TDV-11-L",
+    "IGR-TDV-11-XL",
+    "IGR-TDV-11-XXL",
+    "IGR-TDV-12-XS",
+    "IGR-TDV-12-M",
+    "IGR-TDV-12-L",
+    "IGR-TDV-12-XL",
+    "IGR-TDV-12-XXL",
+    "IGR-TDV-13-S",
+    "IGR-TDV-13-M",
+    "IGR-TDV-13-L",
+    "IGR-TDV-14-XS",
+    "IGR-TDV-14-S",
+    "IGR-TDV-14-M",
+    "IGR-TDV-14-L",
+    "IGR-TDV-14-XL",
+    "IGR-TDV-14-XXL",
+    "IGR-TDV-15-XS",
+    "IGR-TDV-15-S",
+    "IGR-TDV-15-M",
+    "IGR-TDV-15-L",
+    "IGR-TDV-15-XL",
+    "IGR-TDV-15-XXL",
+    "IGR-TDV-16-XS",
+    "IGR-TDV-16-M",
+    "IGR-TDV-16-L",
+    "IGR-TDV-16-XL",
+    "IGR-TDV-16-XXL",
+    "IGR-TDV-17-XS",
+    "IGR-TDV-17-S",
+    "IGR-TDV-17-M",
+    "IGR-TDV-17-L",
+    "IGR-TDV-17-XL",
+    "IGR-TDV-17-XXL",
+    "IGR-TDV-18-M",
+    "IGR-TDV-18-L",
+    "IGR-TDV-18-XXL",
+    "IGR-TDV-19-S",
+    "IGR-TDV-19-L",
+    "IGR-TDV-19-XL",
+    "IGR-TDV-20-XS",
+    "IGR-TDV-20-L",
+    "IGR-TDV-20-XL",
+    "IGR-TDV-20-XXL",
+    "IGR-TDV-21-XS",
+    "IGR-TDV-21-S",
+    "IGR-TDV-21-M",
+    "IGR-TDV-21-L",
+    "IGR-TDV-21-XL",
+    "IGR-TDV-21-XXL",
+    "IGR-TDV-22-XS",
+    "IGR-TDV-22-L",
+    "IGR-TDV-22-XL",
+    "IGR-TDV-22-XXL",
+    "IGR-TDV-23-XS",
+    "IGR-TDV-23-S",
+    "IGR-TDV-23-M",
+    "IGR-TDV-23-L",
+    "IGR-TDV-23-XXL",
+    "IGR-TDV-24-XS",
+    "IGR-TDV-24-S",
+    "IGR-TDV-24-L",
+    "IGR-TDV-24-XXL",
+    "IGR-TDV-25-XS",
+    "IGR-TDV-25-S",
+    "IGR-TDV-25-M",
+    "IGR-TDV-25-L",
+    "IGR-TDV-25-XL",
+    "IGR-TDV-25-XXL",
+    "IGR-TDV-26-S",
+    "IGR-TDV-26-M",
+    "IGR-TDV-26-L",
+    "IGR-TDV-26-XXL",
+    "IGR-TDV-27-S",
+    "IGR-TDV-27-L",
+    "IGR-TDV-27-XL",
+    "IGR-TDV-27-XXL",
+    "IGR-TDV-28-XS",
+    "IGR-TDV-28-S",
+    "IGR-TDV-28-M",
+    "IGR-TDV-28-XXL",
+    "IGR-TDV-29-XS",
+    "IGR-TDV-29-S",
+    "IGR-TDV-29-M",
+    "IGR-TDV-29-L",
+    "IGR-TDV-30-XS",
+    "IGR-TDV-30-S",
+    "IGR-TDV-30-M",
+    "IGR-TDV-30-L",
+    "IGR-TDV-31-S",
+    "IGR-TDV-31-M",
+    "IGR-TDV-31-L",
+    "IGR-TDV-31-XL",
+    "IGR-TDV-31-XXL",
+    "IGR-TDV-32-XS",
+    "IGR-TDV-32-S",
+    "IGR-TDV-32-M",
+    "IGR-TDV-32-L",
+    "IGR-TDV-32-XXL",
+    "IGR-TDV-33-XS",
+    "IGR-TDV-33-S",
+    "IGR-TDV-33-M",
+    "IGR-TDV-33-L",
+    "IGR-TDV-33-XL",
+    "IGR-TDV-34-XS",
+    "IGR-TDV-34-S",
+    "IGR-TDV-34-M",
+    "IGR-TDV-34-L",
+    "IGR-TDV-34-XL",
+    "IGR-TDV-35-XS",
+    "IGR-TDV-35-S",
+    "IGR-TDV-35-M",
+    "IGR-TDV-35-XL",
+    "IGR-TDV-35-XXL",
+    "IGR-TDV-36-XS",
+    "IGR-TDV-36-S",
+    "IGR-TDV-36-M",
+    "IGR-TDV-36-L",
+    "IGR-TDV-36-XXL",
+    "IGR-TDV-37-XS",
+    "IGR-TDV-37-S",
+    "IGR-TDV-37-M",
+    "IGR-TDV-37-L",
+    "IGR-TDV-37-XL",
+    "IGR-TDV-37-XXL",
+    "IGR-TDV-38-XS",
+    "IGR-TDV-38-S",
+    "IGR-TDV-38-M",
+    "IGR-TDV-38-L",
+    "IGR-TDV-38-XL",
+    "IGR-TDV-38-XXL",
+    "IGR-TDV-39-XS",
+    "IGR-TDV-39-L",
+    "IGR-TDV-39-XL",
+    "IGR-TDV-39-XXL",
+    "IGR-TDV-40-XS",
+    "IGR-TDV-40-M",
+    "IGR-TDV-40-L",
+    "IGR-TDV-40-XXL",
+    "IGR-TDV-41-XS",
+    "IGR-TDV-41-S",
+    "IGR-TDV-41-M",
+    "IGR-TDV-41-L",
+    "IGR-TDV-41-XL",
+    "IGR-TDV-41-XXL",
+    "IGR-TDV-42-XS",
+    "IGR-TDV-42-S",
+    "IGR-TDV-42-M",
+    "IGR-TDV-42-L",
+    "IGR-TDV-42-XL",
+    "IGR-TDV-42-XXL",
+    "IGR-TDV-43-XS",
+    "IGR-TDV-43-S",
+    "IGR-TDV-43-M",
+    "IGR-TDV-43-L",
+    "IGR-TDV-43-XL",
+    "IGR-TDV-43-XXL",
+    "IGR-TDV-44-XS",
+    "IGR-TDV-44-S",
+    "IGR-TDV-44-M",
+    "IGR-TDV-44-L",
+    "IGR-TDV-44-XXL",
+    "IGR-TDV-45-XS",
+    "IGR-TDV-45-S",
+    "IGR-TDV-45-M",
+    "IGR-TDV-45-L",
+    "IGR-TDV-45-XL"
+  ],
+  "ground_truth": {
+    "families": {
+      "tee-01": {
+        "parent_sku": "IGR-TDV-01",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 17.95,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-01-XS",
+            "price": 20.54,
+            "qty": 40,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-01-XL",
+            "price": 17.95,
+            "qty": 122,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-01-XXL",
+            "price": 20.18,
+            "qty": 121,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-02": {
+        "parent_sku": "IGR-TDV-02",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 32.88,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-02-XS",
+            "price": 32.88,
+            "qty": 133,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-02-S",
+            "price": 37.55,
+            "qty": 40,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-02-M",
+            "price": 34.8,
+            "qty": 39,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-02-L",
+            "price": 33.83,
+            "qty": 51,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-02-XL",
+            "price": 35.93,
+            "qty": 92,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-02-XXL",
+            "price": 40.81,
+            "qty": 30,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-03": {
+        "parent_sku": "IGR-TDV-03",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 26.87,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-TDV-03-S",
+            "price": 28.38,
+            "qty": 64,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-03-M",
+            "price": 26.87,
+            "qty": 104,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-03-L",
+            "price": 28.76,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "tee-04": {
+        "parent_sku": "IGR-TDV-04",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 28.45,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-04-XS",
+            "price": 31.03,
+            "qty": 27,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-04-M",
+            "price": 31.87,
+            "qty": 59,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-04-L",
+            "price": 32.08,
+            "qty": 59,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-04-XL",
+            "price": 28.45,
+            "qty": 17,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-04-XXL",
+            "price": 34.69,
+            "qty": 71,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-05": {
+        "parent_sku": "IGR-TDV-05",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 20.03,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-05-XS",
+            "price": 27.62,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-05-S",
+            "price": 26.31,
+            "qty": 96,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-05-M",
+            "price": 26.06,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-05-L",
+            "price": 24.48,
+            "qty": 97,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-05-XL",
+            "price": 20.03,
+            "qty": 102,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-05-XXL",
+            "price": 24.94,
+            "qty": 98,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "M"
+        ]
+      },
+      "tee-06": {
+        "parent_sku": "IGR-TDV-06",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 20.69,
+        "from_price_option": "L",
+        "variants": {
+          "M": {
+            "sku": "IGR-TDV-06-M",
+            "price": 22.36,
+            "qty": 18,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-06-L",
+            "price": 20.69,
+            "qty": 61,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-06-XL",
+            "price": 24.13,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XL"
+        ]
+      },
+      "tee-07": {
+        "parent_sku": "IGR-TDV-07",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 26.12,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-07-XS",
+            "price": 33.07,
+            "qty": 107,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-07-S",
+            "price": 29.91,
+            "qty": 120,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-07-M",
+            "price": 28.43,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-07-L",
+            "price": 34.96,
+            "qty": 133,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-07-XXL",
+            "price": 26.12,
+            "qty": 118,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "tee-08": {
+        "parent_sku": "IGR-TDV-08",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 32.78,
+        "from_price_option": "XXL",
+        "variants": {
+          "M": {
+            "sku": "IGR-TDV-08-M",
+            "price": 42.15,
+            "qty": 124,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-08-XL",
+            "price": 41.26,
+            "qty": 84,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-08-XXL",
+            "price": 32.78,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XXL"
+        ]
+      },
+      "tee-09": {
+        "parent_sku": "IGR-TDV-09",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 22.47,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-09-XS",
+            "price": 22.47,
+            "qty": 123,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-09-S",
+            "price": 22.93,
+            "qty": 102,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-09-M",
+            "price": 24.86,
+            "qty": 85,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-09-L",
+            "price": 29.45,
+            "qty": 136,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-09-XL",
+            "price": 28.51,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-09-XXL",
+            "price": 28.17,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XL",
+          "XXL"
+        ]
+      },
+      "tee-10": {
+        "parent_sku": "IGR-TDV-10",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 31.46,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-10-XS",
+            "price": 38.49,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-10-S",
+            "price": 37.55,
+            "qty": 24,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-10-M",
+            "price": 32.53,
+            "qty": 57,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-10-L",
+            "price": 37.04,
+            "qty": 129,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-10-XL",
+            "price": 31.46,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-10-XXL",
+            "price": 41.64,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "XL",
+          "XXL"
+        ]
+      },
+      "tee-11": {
+        "parent_sku": "IGR-TDV-11",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 11.62,
+        "from_price_option": "XXL",
+        "variants": {
+          "S": {
+            "sku": "IGR-TDV-11-S",
+            "price": 15.52,
+            "qty": 45,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-11-M",
+            "price": 12.47,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-11-L",
+            "price": 14.41,
+            "qty": 138,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-11-XL",
+            "price": 14.54,
+            "qty": 57,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-11-XXL",
+            "price": 11.62,
+            "qty": 91,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "tee-12": {
+        "parent_sku": "IGR-TDV-12",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 19.83,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-12-XS",
+            "price": 24.4,
+            "qty": 65,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-12-M",
+            "price": 25.01,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-12-L",
+            "price": 23.14,
+            "qty": 19,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-12-XL",
+            "price": 19.83,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-12-XXL",
+            "price": 21.29,
+            "qty": 121,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "XL"
+        ]
+      },
+      "tee-13": {
+        "parent_sku": "IGR-TDV-13",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 14.88,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-TDV-13-S",
+            "price": 16.7,
+            "qty": 46,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-13-M",
+            "price": 14.88,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-13-L",
+            "price": 18.54,
+            "qty": 129,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "tee-14": {
+        "parent_sku": "IGR-TDV-14",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 22.37,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-14-XS",
+            "price": 23.71,
+            "qty": 45,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-14-S",
+            "price": 26.94,
+            "qty": 106,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-14-M",
+            "price": 22.37,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-14-L",
+            "price": 27.36,
+            "qty": 38,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-14-XL",
+            "price": 26.0,
+            "qty": 140,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-14-XXL",
+            "price": 24.4,
+            "qty": 70,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "tee-15": {
+        "parent_sku": "IGR-TDV-15",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 30.19,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-15-XS",
+            "price": 36.58,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-15-S",
+            "price": 30.19,
+            "qty": 118,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-15-M",
+            "price": 37.37,
+            "qty": 79,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-15-L",
+            "price": 40.91,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-15-XL",
+            "price": 33.45,
+            "qty": 114,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-15-XXL",
+            "price": 38.72,
+            "qty": 95,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "L"
+        ]
+      },
+      "tee-16": {
+        "parent_sku": "IGR-TDV-16",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 20.32,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-16-XS",
+            "price": 27.36,
+            "qty": 82,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-16-M",
+            "price": 23.42,
+            "qty": 129,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-16-L",
+            "price": 20.74,
+            "qty": 24,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-16-XL",
+            "price": 21.06,
+            "qty": 21,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-16-XXL",
+            "price": 20.32,
+            "qty": 67,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-17": {
+        "parent_sku": "IGR-TDV-17",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 16.49,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-17-XS",
+            "price": 16.49,
+            "qty": 136,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-17-S",
+            "price": 17.23,
+            "qty": 31,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-17-M",
+            "price": 19.29,
+            "qty": 51,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-17-L",
+            "price": 20.73,
+            "qty": 77,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-17-XL",
+            "price": 19.16,
+            "qty": 132,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-17-XXL",
+            "price": 18.49,
+            "qty": 111,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-18": {
+        "parent_sku": "IGR-TDV-18",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 27.42,
+        "from_price_option": "L",
+        "variants": {
+          "M": {
+            "sku": "IGR-TDV-18-M",
+            "price": 32.88,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-18-L",
+            "price": 27.42,
+            "qty": 124,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-18-XXL",
+            "price": 34.61,
+            "qty": 125,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "tee-19": {
+        "parent_sku": "IGR-TDV-19",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 14.4,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-TDV-19-S",
+            "price": 16.73,
+            "qty": 126,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-19-L",
+            "price": 14.4,
+            "qty": 98,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-19-XL",
+            "price": 16.81,
+            "qty": 80,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-20": {
+        "parent_sku": "IGR-TDV-20",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 11.42,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-20-XS",
+            "price": 13.71,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-20-L",
+            "price": 11.42,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-20-XL",
+            "price": 13.59,
+            "qty": 139,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-20-XXL",
+            "price": 13.27,
+            "qty": 135,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "L"
+        ]
+      },
+      "tee-21": {
+        "parent_sku": "IGR-TDV-21",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 21.9,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-21-XS",
+            "price": 28.39,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-21-S",
+            "price": 26.26,
+            "qty": 66,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-21-M",
+            "price": 27.86,
+            "qty": 43,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-21-L",
+            "price": 21.9,
+            "qty": 100,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-21-XL",
+            "price": 23.46,
+            "qty": 125,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-21-XXL",
+            "price": 25.34,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "XXL"
+        ]
+      },
+      "tee-22": {
+        "parent_sku": "IGR-TDV-22",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 33.08,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-22-XS",
+            "price": 36.55,
+            "qty": 25,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-22-L",
+            "price": 36.82,
+            "qty": 108,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-22-XL",
+            "price": 37.8,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-22-XXL",
+            "price": 33.08,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XL",
+          "XXL"
+        ]
+      },
+      "tee-23": {
+        "parent_sku": "IGR-TDV-23",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 15.23,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-23-XS",
+            "price": 19.04,
+            "qty": 98,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-23-S",
+            "price": 15.23,
+            "qty": 32,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-23-M",
+            "price": 21.32,
+            "qty": 81,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-23-L",
+            "price": 19.05,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-23-XXL",
+            "price": 15.83,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L",
+          "XXL"
+        ]
+      },
+      "tee-24": {
+        "parent_sku": "IGR-TDV-24",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 28.72,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-24-XS",
+            "price": 36.36,
+            "qty": 83,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-24-S",
+            "price": 39.54,
+            "qty": 36,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-24-L",
+            "price": 30.39,
+            "qty": 46,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-24-XXL",
+            "price": 28.72,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XXL"
+        ]
+      },
+      "tee-25": {
+        "parent_sku": "IGR-TDV-25",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 11.9,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-25-XS",
+            "price": 11.9,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-25-S",
+            "price": 14.06,
+            "qty": 125,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-25-M",
+            "price": 12.41,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-25-L",
+            "price": 13.48,
+            "qty": 77,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-25-XL",
+            "price": 15.53,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-25-XXL",
+            "price": 12.93,
+            "qty": 82,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "M",
+          "XL"
+        ]
+      },
+      "tee-26": {
+        "parent_sku": "IGR-TDV-26",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 11.73,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-TDV-26-S",
+            "price": 11.73,
+            "qty": 27,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-26-M",
+            "price": 14.87,
+            "qty": 53,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-26-L",
+            "price": 14.38,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-26-XXL",
+            "price": 14.63,
+            "qty": 110,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "tee-27": {
+        "parent_sku": "IGR-TDV-27",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 15.66,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-TDV-27-S",
+            "price": 15.66,
+            "qty": 137,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-27-L",
+            "price": 16.33,
+            "qty": 101,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-27-XL",
+            "price": 17.48,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-27-XXL",
+            "price": 19.82,
+            "qty": 96,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XL"
+        ]
+      },
+      "tee-28": {
+        "parent_sku": "IGR-TDV-28",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 30.17,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-28-XS",
+            "price": 30.17,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-28-S",
+            "price": 32.26,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-28-M",
+            "price": 32.14,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-28-XXL",
+            "price": 34.28,
+            "qty": 120,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "S",
+          "M"
+        ]
+      },
+      "tee-29": {
+        "parent_sku": "IGR-TDV-29",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 21.27,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-29-XS",
+            "price": 21.27,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-29-S",
+            "price": 22.63,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-29-M",
+            "price": 24.86,
+            "qty": 34,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-29-L",
+            "price": 23.05,
+            "qty": 125,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "S"
+        ]
+      },
+      "tee-30": {
+        "parent_sku": "IGR-TDV-30",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 24.15,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-30-XS",
+            "price": 31.96,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-30-S",
+            "price": 28.78,
+            "qty": 117,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-30-M",
+            "price": 24.15,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-30-L",
+            "price": 28.59,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "M",
+          "L"
+        ]
+      },
+      "tee-31": {
+        "parent_sku": "IGR-TDV-31",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 19.5,
+        "from_price_option": "XXL",
+        "variants": {
+          "S": {
+            "sku": "IGR-TDV-31-S",
+            "price": 19.91,
+            "qty": 44,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-31-M",
+            "price": 22.13,
+            "qty": 89,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-31-L",
+            "price": 23.31,
+            "qty": 70,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-31-XL",
+            "price": 25.86,
+            "qty": 120,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-31-XXL",
+            "price": 19.5,
+            "qty": 120,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-32": {
+        "parent_sku": "IGR-TDV-32",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 28.07,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-32-XS",
+            "price": 29.39,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-32-S",
+            "price": 28.07,
+            "qty": 108,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-32-M",
+            "price": 30.42,
+            "qty": 112,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-32-L",
+            "price": 31.62,
+            "qty": 109,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-32-XXL",
+            "price": 31.51,
+            "qty": 33,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS"
+        ]
+      },
+      "tee-33": {
+        "parent_sku": "IGR-TDV-33",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 32.06,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-33-XS",
+            "price": 40.07,
+            "qty": 81,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-33-S",
+            "price": 36.85,
+            "qty": 51,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-33-M",
+            "price": 32.07,
+            "qty": 78,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-33-L",
+            "price": 39.21,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-33-XL",
+            "price": 32.06,
+            "qty": 61,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "tee-34": {
+        "parent_sku": "IGR-TDV-34",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 28.92,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-34-XS",
+            "price": 28.92,
+            "qty": 54,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-34-S",
+            "price": 36.33,
+            "qty": 46,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-34-M",
+            "price": 30.81,
+            "qty": 25,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-34-L",
+            "price": 32.5,
+            "qty": 105,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-34-XL",
+            "price": 31.3,
+            "qty": 25,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-35": {
+        "parent_sku": "IGR-TDV-35",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 32.93,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-35-XS",
+            "price": 32.93,
+            "qty": 74,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-35-S",
+            "price": 41.84,
+            "qty": 77,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-35-M",
+            "price": 42.87,
+            "qty": 116,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-35-XL",
+            "price": 35.05,
+            "qty": 18,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-35-XXL",
+            "price": 43.43,
+            "qty": 101,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-36": {
+        "parent_sku": "IGR-TDV-36",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 29.38,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-36-XS",
+            "price": 36.21,
+            "qty": 84,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-36-S",
+            "price": 31.46,
+            "qty": 121,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-36-M",
+            "price": 32.5,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-36-L",
+            "price": 29.38,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-36-XXL",
+            "price": 31.24,
+            "qty": 55,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "L"
+        ]
+      },
+      "tee-37": {
+        "parent_sku": "IGR-TDV-37",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 35.45,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-37-XS",
+            "price": 42.37,
+            "qty": 132,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-37-S",
+            "price": 44.91,
+            "qty": 59,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-37-M",
+            "price": 38.0,
+            "qty": 138,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-37-L",
+            "price": 38.38,
+            "qty": 96,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-37-XL",
+            "price": 36.83,
+            "qty": 71,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-37-XXL",
+            "price": 35.45,
+            "qty": 56,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-38": {
+        "parent_sku": "IGR-TDV-38",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 24.44,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-38-XS",
+            "price": 26.75,
+            "qty": 14,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-38-S",
+            "price": 25.45,
+            "qty": 123,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-38-M",
+            "price": 31.58,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-38-L",
+            "price": 31.63,
+            "qty": 99,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-38-XL",
+            "price": 29.89,
+            "qty": 44,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-38-XXL",
+            "price": 24.44,
+            "qty": 136,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "tee-39": {
+        "parent_sku": "IGR-TDV-39",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 10.11,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-39-XS",
+            "price": 10.11,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-39-L",
+            "price": 10.92,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-39-XL",
+            "price": 11.41,
+            "qty": 70,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-39-XXL",
+            "price": 12.45,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "L",
+          "XXL"
+        ]
+      },
+      "tee-40": {
+        "parent_sku": "IGR-TDV-40",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 26.02,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-40-XS",
+            "price": 31.12,
+            "qty": 99,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-40-M",
+            "price": 32.58,
+            "qty": 101,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-40-L",
+            "price": 31.04,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-40-XXL",
+            "price": 26.02,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L",
+          "XXL"
+        ]
+      },
+      "tee-41": {
+        "parent_sku": "IGR-TDV-41",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 12.22,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-41-XS",
+            "price": 14.34,
+            "qty": 37,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-41-S",
+            "price": 12.22,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-41-M",
+            "price": 16.77,
+            "qty": 107,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-41-L",
+            "price": 16.88,
+            "qty": 24,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-41-XL",
+            "price": 14.58,
+            "qty": 62,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-41-XXL",
+            "price": 14.11,
+            "qty": 113,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      },
+      "tee-42": {
+        "parent_sku": "IGR-TDV-42",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 37.09,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-42-XS",
+            "price": 41.12,
+            "qty": 41,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-42-S",
+            "price": 37.09,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-42-M",
+            "price": 42.01,
+            "qty": 87,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-42-L",
+            "price": 41.8,
+            "qty": 65,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-42-XL",
+            "price": 40.78,
+            "qty": 100,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-42-XXL",
+            "price": 37.54,
+            "qty": 98,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      },
+      "tee-43": {
+        "parent_sku": "IGR-TDV-43",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 13.85,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-43-XS",
+            "price": 17.35,
+            "qty": 92,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-43-S",
+            "price": 18.42,
+            "qty": 138,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-43-M",
+            "price": 14.11,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-43-L",
+            "price": 18.94,
+            "qty": 74,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-43-XL",
+            "price": 14.7,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-43-XXL",
+            "price": 13.85,
+            "qty": 126,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "XL"
+        ]
+      },
+      "tee-44": {
+        "parent_sku": "IGR-TDV-44",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 39.34,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-44-XS",
+            "price": 40.84,
+            "qty": 122,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-44-S",
+            "price": 39.34,
+            "qty": 101,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-44-M",
+            "price": 46.23,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-44-L",
+            "price": 44.35,
+            "qty": 66,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TDV-44-XXL",
+            "price": 41.38,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "XXL"
+        ]
+      },
+      "tee-45": {
+        "parent_sku": "IGR-TDV-45",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 15.32,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TDV-45-XS",
+            "price": 17.75,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TDV-45-S",
+            "price": 16.65,
+            "qty": 128,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TDV-45-M",
+            "price": 15.32,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TDV-45-L",
+            "price": 16.76,
+            "qty": 31,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TDV-45-XL",
+            "price": 17.56,
+            "qty": 84,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "M"
+        ]
+      }
+    },
+    "cross_listing": {
+      "XS": {
+        "cheapest_listing": "tee-39",
+        "cheapest_price": 10.11,
+        "listing_a_card_probe_would_pick": "tee-39",
+        "card_probe_wrong": false
+      },
+      "XL": {
+        "cheapest_listing": "tee-39",
+        "cheapest_price": 11.41,
+        "listing_a_card_probe_would_pick": "tee-39",
+        "card_probe_wrong": false
+      },
+      "XXL": {
+        "cheapest_listing": "tee-11",
+        "cheapest_price": 11.62,
+        "listing_a_card_probe_would_pick": "tee-39",
+        "card_probe_wrong": true
+      },
+      "S": {
+        "cheapest_listing": "tee-26",
+        "cheapest_price": 11.73,
+        "listing_a_card_probe_would_pick": "tee-11",
+        "card_probe_wrong": true
+      },
+      "M": {
+        "cheapest_listing": "tee-25",
+        "cheapest_price": 12.41,
+        "listing_a_card_probe_would_pick": "tee-11",
+        "card_probe_wrong": true
+      },
+      "L": {
+        "cheapest_listing": "tee-39",
+        "cheapest_price": 10.92,
+        "listing_a_card_probe_would_pick": "tee-39",
+        "card_probe_wrong": false
+      }
+    }
+  }
+}
