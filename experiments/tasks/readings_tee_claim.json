@@ -1,0 +1,416 @@
+{
+  "_about": [
+    "Computed by env/generate_aplus_tasks.py from env/fixtures/tee_claim.json: the scripted",
+    "user's buyable reading of every keyed question in tasks_tee_claim.json, used by suite.py",
+    "--reading buyable or own, by the model parser, which can lead any question it reads to",
+    "this reading, and by verify_cells.py when a run records it. Do not hand edit.",
+    "Here a size counts only if it can be bought now. The questions in two_readings say",
+    "\"offer\", and their own expect is the menu reading, a sold-out size counted as offered:",
+    "here is their second key. The others say \"can actually be bought\", \"can actually supply\"",
+    "or \"available to buy\", ask what a card advertises, or look up one named listing: here is",
+    "their own key, computed again over the market with every sold-out variant taken out, and",
+    "checked equal to it.",
+    "The held-out rewordings, rw-NN and rw3-NN, are described by their templates and not by",
+    "the words above: each keeps its template's meaning, so it has its template's key here",
+    "and is in two_readings where its template is."
+  ],
+  "two_readings": [
+    "tee-all-stocked",
+    "tee-count-stocked",
+    "rw-07",
+    "rw-09",
+    "rw-10",
+    "rw-33",
+    "rw3-07",
+    "rw3-08",
+    "rw3-09",
+    "rw3-10"
+  ],
+  "readings": {
+    "buyable": {
+      "tee-headline": {
+        "kind": "contains",
+        "any": [
+          "Dovercourt"
+        ],
+        "price": 10.13
+      },
+      "tee-target-price": {
+        "kind": "price",
+        "value": 11.92
+      },
+      "tee-cheapest-target": {
+        "kind": "contains",
+        "any": [
+          "Haldane"
+        ],
+        "not_any": [
+          "Dovercourt",
+          "Kettering"
+        ],
+        "price": 11.92
+      },
+      "tee-all-stocked": {
+        "kind": "boolean",
+        "value": false
+      },
+      "tee-count-stocked": {
+        "kind": "count",
+        "value": 26
+      },
+      "tee-count-buyable": {
+        "kind": "count",
+        "value": 26
+      },
+      "tee-exists-under": {
+        "kind": "boolean",
+        "value": true,
+        "any": [
+          "Haldane"
+        ],
+        "not_any": [
+          "Dovercourt",
+          "Whitlock",
+          "Carnforth",
+          "Oakfield"
+        ]
+      },
+      "tee-top-3": {
+        "kind": "ranked",
+        "items": [
+          {
+            "any": [
+              "Haldane"
+            ],
+            "price": 11.92
+          },
+          {
+            "any": [
+              "Carnforth"
+            ],
+            "price": 13.02
+          },
+          {
+            "any": [
+              "Dalston"
+            ],
+            "price": 14.48
+          }
+        ]
+      },
+      "tee-xs-price": {
+        "kind": "price",
+        "value": 12.61,
+        "trap": 10.91
+      },
+      "tee-promo-check": {
+        "kind": "label_check",
+        "value": false,
+        "price": 32.95,
+        "trap": 28.55
+      },
+      "rw-01": {
+        "kind": "contains",
+        "any": [
+          "Dovercourt"
+        ],
+        "price": 10.13
+      },
+      "rw-03": {
+        "kind": "price",
+        "value": 11.92
+      },
+      "rw-04": {
+        "kind": "price",
+        "value": 11.92
+      },
+      "rw-05": {
+        "kind": "contains",
+        "any": [
+          "Haldane"
+        ],
+        "not_any": [
+          "Dovercourt",
+          "Kettering"
+        ],
+        "price": 11.92
+      },
+      "rw-07": {
+        "kind": "boolean",
+        "value": false
+      },
+      "rw-09": {
+        "kind": "count",
+        "value": 26
+      },
+      "rw-10": {
+        "kind": "count",
+        "value": 26
+      },
+      "rw-11": {
+        "kind": "count",
+        "value": 26
+      },
+      "rw-12": {
+        "kind": "count",
+        "value": 26
+      },
+      "rw-13": {
+        "kind": "boolean",
+        "value": true,
+        "any": [
+          "Haldane"
+        ],
+        "not_any": [
+          "Dovercourt",
+          "Whitlock",
+          "Carnforth",
+          "Oakfield"
+        ]
+      },
+      "rw-15": {
+        "kind": "ranked",
+        "items": [
+          {
+            "any": [
+              "Haldane"
+            ],
+            "price": 11.92
+          },
+          {
+            "any": [
+              "Carnforth"
+            ],
+            "price": 13.02
+          },
+          {
+            "any": [
+              "Dalston"
+            ],
+            "price": 14.48
+          }
+        ]
+      },
+      "rw-16": {
+        "kind": "ranked",
+        "items": [
+          {
+            "any": [
+              "Haldane"
+            ],
+            "price": 11.92
+          },
+          {
+            "any": [
+              "Carnforth"
+            ],
+            "price": 13.02
+          },
+          {
+            "any": [
+              "Dalston"
+            ],
+            "price": 14.48
+          }
+        ]
+      },
+      "rw-31": {
+        "kind": "contains",
+        "any": [
+          "Dovercourt"
+        ],
+        "price": 10.13
+      },
+      "rw-32": {
+        "kind": "contains",
+        "any": [
+          "Haldane"
+        ],
+        "not_any": [
+          "Dovercourt",
+          "Kettering"
+        ],
+        "price": 11.92
+      },
+      "rw-33": {
+        "kind": "boolean",
+        "value": false
+      },
+      "rw-34": {
+        "kind": "boolean",
+        "value": true,
+        "any": [
+          "Haldane"
+        ],
+        "not_any": [
+          "Dovercourt",
+          "Whitlock",
+          "Carnforth",
+          "Oakfield"
+        ]
+      },
+      "rw3-01": {
+        "kind": "contains",
+        "any": [
+          "Dovercourt"
+        ],
+        "price": 10.13
+      },
+      "rw3-02": {
+        "kind": "contains",
+        "any": [
+          "Dovercourt"
+        ],
+        "price": 10.13
+      },
+      "rw3-03": {
+        "kind": "price",
+        "value": 11.92
+      },
+      "rw3-04": {
+        "kind": "price",
+        "value": 11.92
+      },
+      "rw3-05": {
+        "kind": "contains",
+        "any": [
+          "Haldane"
+        ],
+        "not_any": [
+          "Dovercourt",
+          "Kettering"
+        ],
+        "price": 11.92
+      },
+      "rw3-06": {
+        "kind": "contains",
+        "any": [
+          "Haldane"
+        ],
+        "not_any": [
+          "Dovercourt",
+          "Kettering"
+        ],
+        "price": 11.92
+      },
+      "rw3-07": {
+        "kind": "boolean",
+        "value": false
+      },
+      "rw3-08": {
+        "kind": "boolean",
+        "value": false
+      },
+      "rw3-09": {
+        "kind": "count",
+        "value": 26
+      },
+      "rw3-10": {
+        "kind": "count",
+        "value": 26
+      },
+      "rw3-11": {
+        "kind": "count",
+        "value": 26
+      },
+      "rw3-12": {
+        "kind": "count",
+        "value": 26
+      },
+      "rw3-13": {
+        "kind": "boolean",
+        "value": true,
+        "any": [
+          "Haldane"
+        ],
+        "not_any": [
+          "Dovercourt",
+          "Whitlock",
+          "Carnforth",
+          "Oakfield"
+        ]
+      },
+      "rw3-14": {
+        "kind": "boolean",
+        "value": true,
+        "any": [
+          "Haldane"
+        ],
+        "not_any": [
+          "Dovercourt",
+          "Whitlock",
+          "Carnforth",
+          "Oakfield"
+        ]
+      },
+      "rw3-15": {
+        "kind": "ranked",
+        "items": [
+          {
+            "any": [
+              "Haldane"
+            ],
+            "price": 11.92
+          },
+          {
+            "any": [
+              "Carnforth"
+            ],
+            "price": 13.02
+          },
+          {
+            "any": [
+              "Dalston"
+            ],
+            "price": 14.48
+          }
+        ]
+      },
+      "rw3-16": {
+        "kind": "ranked",
+        "items": [
+          {
+            "any": [
+              "Haldane"
+            ],
+            "price": 11.92
+          },
+          {
+            "any": [
+              "Carnforth"
+            ],
+            "price": 13.02
+          },
+          {
+            "any": [
+              "Dalston"
+            ],
+            "price": 14.48
+          }
+        ]
+      },
+      "rw3-17": {
+        "kind": "price",
+        "value": 12.61,
+        "trap": 10.91
+      },
+      "rw3-18": {
+        "kind": "price",
+        "value": 12.61,
+        "trap": 10.91
+      },
+      "rw3-19": {
+        "kind": "label_check",
+        "value": false,
+        "price": 32.95,
+        "trap": 28.55
+      },
+      "rw3-20": {
+        "kind": "label_check",
+        "value": false,
+        "price": 32.95,
+        "trap": 28.55
+      }
+    }
+  }
+}
