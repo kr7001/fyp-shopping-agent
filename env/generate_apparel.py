@@ -308,7 +308,11 @@ def hypothetical_target(listing: dict, rng_note: None = None) -> float:
     return from_price(listing)
 
 
-def measure(listings: list[dict]) -> dict:
+def measure(listings: list[dict], sizes: tuple[str, ...] = SIZES) -> dict:
+    """The facts the 13 rules read. `sizes` is the menu the market draws from, this
+    generator's four by default: the largest size, which `crossover` and `four_answers`
+    read, is its last. A market of six sizes passes its own (the tee-only market of
+    24 October 2026, `generate_aplus.B_SIZES`), and every market before it reads as it did."""
     # Three populations rather than two, matching the three states the page can render.
     # `carriers` offer the size in the menu. `buyable` offer it and can ship it. `absent`
     # never list it at all.
@@ -330,7 +334,7 @@ def measure(listings: list[dict]) -> dict:
     cheapest_card = min(listings, key=from_price)
     must_open = [l for l in listings if from_price(l) <= best]
 
-    largest = SIZES[-1]
+    largest = sizes[-1]
     large_carriers = [l for l in listings if price_for(l, largest) is not None]
     large_winner = min(large_carriers, key=lambda l: price_for(l, largest))
 

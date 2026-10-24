@@ -188,6 +188,7 @@ def order_lines(fixture: dict, order: list[str]) -> list[tuple[bool, str]]:
     from experiments/analysis/fixture_order.py, never through claim.py, whose imports need
     scipy, which the Playwright venv this runs under has not (the auditor's check of 2df6dc3)."""
     forms = fixture["_generated"].get("brand_forms")
+    design = fixture["_generated"].get("design", aplus.DESIGN_A)
     families = fixture["families"]
     predicted = (aplus.predicted_orders(families, forms == 2) if forms else
                  {**aplus.predicted_orders(families, False), **aplus.predicted_orders(families, True)})
@@ -212,10 +213,80 @@ def order_lines(fixture: dict, order: list[str]) -> list[tuple[bool, str]]:
                       f"the live order differs from the one claim.py reads where a key's listings render, "
                       f"{named}, in {sum(a != b for a, b in zip(live, read)) + abs(len(live) - len(read))} "
                       f"positions"))
-    broken = aplus.page_problems(fixture["families"], order)
-    lines.append((not broken, "the page rules hold on the live order: " + ", ".join(aplus.PAGE_RULES)
+    broken = aplus.page_problems(fixture["families"], order, design)
+    rules = aplus.B_PAGE_RULES if design == aplus.DESIGN_B else aplus.PAGE_RULES
+    lines.append((not broken, "the page rules hold on the live order: " + ", ".join(rules)
                   if not broken else "page rules broken on the live order: " + "; ".join(broken)))
+    if design == aplus.DESIGN_B:
+        # The listing tee-promo-check names is the first passing one in the live order (rule
+        # 14), and it is the one the fixture recorded, which the task file names.
+        named = aplus.promo_check_named(families, order)
+        recorded = (fixture["_instance"].get("promo_check") or {}).get("sku")
+        same = named is not None and named["parent_sku"] == recorded
+        lines.append((same, f"the named listing of tee-promo-check, the first in the live order that passes "
+                            f"rules 11 to 13, is the fixture's {recorded}" if same else
+                      f"the named listing of tee-promo-check in the live order is "
+                      f"{named['parent_sku'] if named else 'none'}, not the fixture's {recorded}"))
     return lines
+
+
+# ----------------------------------------------------------- the tee-only market's labels
+
+# Magento's own stock-threshold text, "Only %1 left", which the product page carries as a
+# hidden template with no threshold set (seen on igr-dev-23.html, 24 October 2026). It must
+# never render a count: the only "Only N left" a page shows is a seeded scarcity label.
+ONLY_LEFT = re.compile(r"\bonly\s+\d+\s+left\b", re.IGNORECASE)
+REVIEWS_EMPTY = "Be the first to review this product"
+
+
+def label_lines(fixture: dict, menus: dict[str, list[dict]], texts: dict[str, dict[str, str]]) -> list[tuple[bool, str]]:
+    """The tee-only market's label checks, from what the gated browser showed per listing
+    (`menus`, by URL key, each entry {"label", "buyable", "price"}) and each page's rendered
+    text under both themes (`texts`): every label rendered as seeded and no label holding a
+    price of any listing; every menu's sizes XS to XXL in order; Magento's stock-threshold
+    text never rendered as a count beyond the seeded labels; and the Reviews tab empty."""
+    families = {f["parent_sku"].lower(): f for f in fixture["families"]}
+    prices = {check_market.money(v["price"]) for f in fixture["families"] for v in f["variants"]}
+    prices |= {check_market.money(apparel.from_price(f)) for f in fixture["families"]}
+    seeded = {f["parent_sku"].lower(): [v.get("label") or v["option"] for v in f["variants"]]
+              for f in fixture["families"]}
+    kinds = {(f["parent_sku"].lower(), v["label"]): v["label_kind"]
+             for f in fixture["families"] for v in f["variants"] if v.get("label")}
+    unlike, priced, misordered, counts, reviews = [], [], [], [], []
+    for key, menu in menus.items():
+        shown = [entry["label"] for entry in menu]
+        if shown != seeded[key]:
+            unlike.append(key)
+        for label in shown:
+            if any(figure in prices for figure in re.findall(r"\d+\.\d\d", label)):
+                priced.append(f"{key}: {label!r}")
+        sizes = [label.split(" - ")[0] for label in shown]
+        if sizes != [s for s in aplus.B_SIZES if s in sizes] or len(set(sizes)) != len(sizes):
+            misordered.append(key)
+        own = {v["label"].lower() for v in families[key]["variants"] if v.get("label_kind") == "scarcity"}
+        for theme, text in texts.get(key, {}).items():
+            # Each "Only N left" the page shows, with the seeded scarcity labels taken out.
+            left = [m.group(0) for m in ONLY_LEFT.finditer(text)
+                    if not any(m.group(0).lower() in label for label in own)]
+            if left:
+                counts.append(f"{key} ({theme}): {left[:3]}")
+            if REVIEWS_EMPTY not in text:
+                reviews.append(f"{key} ({theme})")
+    promo = sum(1 for (key, _), kind in kinds.items() if key in menus and kind == "promo")
+    scarcity = sum(1 for (key, _), kind in kinds.items() if key in menus and kind == "scarcity")
+    return [
+        (not unlike and not priced,
+         f"the gated size menus show every label as seeded, {promo} promo and {scarcity} scarcity, and "
+         f"no label holds a price of any listing or card of the market" if not unlike and not priced else
+         f"labels not as seeded on {unlike[:6]}; labels holding a market price: {priced[:6]}"),
+        (not misordered, f"every menu lists sizes of {', '.join(aplus.B_SIZES)} in that order, "
+                         f"{len(menus)} listings" if not misordered else f"menus out of size order: {misordered[:6]}"),
+        (not counts, "Magento's stock-threshold text renders no count on any listing page under either "
+                     "theme beyond the seeded scarcity labels" if not counts else
+         f"a page shows a stock count: {counts[:6]}"),
+        (not reviews, f"the Reviews tab reads {REVIEWS_EMPTY!r} on every listing page under both themes"
+         if not reviews else f"the Reviews tab does not read {REVIEWS_EMPTY!r} on {reviews[:6]}"),
+    ]
 
 
 # ---------------------------------------------------------------- the earlier markets
@@ -403,6 +474,8 @@ def main() -> int:
                        f"results page {number} in the gated browser: {cards} cards in the grid, "
                        f"next link {'present' if pager else 'absent'}")
             leaks_plain = checked = 0
+            menus: dict[str, list[dict]] = {}
+            pages_text: dict[str, dict[str, str]] = {}
             for listing in listings:
                 key = listing["url"].rsplit("/", 1)[-1].removesuffix(".html")
                 if args.only and key not in args.only:
@@ -410,6 +483,8 @@ def main() -> int:
                 checked += 1
                 problems, seen = check_market.check_listing(browser, listing)
                 leaks_plain += bool(seen["plain_leaks"])
+                menus[key] = seen["gated"]
+                pages_text[key] = seen.get("texts", {})
                 money = check_market.money
                 options = ", ".join(f"{e['label']} {money(e['price']) if e['price'] is not None else '?'}"
                                     f"{'' if e['buyable'] else ' sold out'}" for e in seen["plain"])
@@ -417,6 +492,9 @@ def main() -> int:
                        f"{key} {listing['seller']}: {options}; gated shows {money(seen['before'] or 0)} "
                        f"until chosen, then {', '.join(f'{s} {money(v)}' for s, v in seen['revealed'].items())}"
                        if not problems else f"{key} {listing['seller']}: " + "; ".join(problems))
+            if fixture["_generated"].get("design") == aplus.DESIGN_B:
+                for ok, text in label_lines(fixture, menus, pages_text):
+                    record(ok, text)
             browser.close()
         multi = sum(1 for l in listings
                     if (not args.only or l["url"].rsplit("/", 1)[-1].removesuffix(".html") in args.only)

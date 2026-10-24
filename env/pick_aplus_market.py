@@ -70,6 +70,8 @@ class Market:
     waters: int = aplus.WATER_LISTINGS
     claim: bool = False
     two_forms: bool = False         # how the shop's analyzer reads the brand, measured live
+    design: str = aplus.DESIGN_A    # A, tees and water; B, the tee-only market (24 October 2026)
+    listings: int = aplus.B_LISTINGS  # design B's count
 
 
 def versions() -> dict:
@@ -121,8 +123,12 @@ def generate_command(seed: int, market: Market, log: pathlib.Path | None = None)
     whether the seed may be drawn (`generate_aplus.claim_record_problem`)."""
     command = [sys.executable, "env/generate_aplus.py", "--seed", str(seed), "--brand",
                market.brand, "--brand-forms", "2" if market.two_forms else "1", "--sku-prefix",
-               market.sku_prefix, "--tees", str(market.tees), "--waters", str(market.waters),
-               "--out", str(market.fixture)]
+               market.sku_prefix]
+    if market.design == aplus.DESIGN_B:
+        command += ["--design", aplus.DESIGN_B, "--listings", str(market.listings)]
+    else:
+        command += ["--tees", str(market.tees), "--waters", str(market.waters)]
+    command += ["--out", str(market.fixture)]
     if market.claim:
         command += ["--claim", "--search-log", str(log)]
     return command
@@ -201,19 +207,24 @@ def attempt(seed: int, market: Market, log: pathlib.Path | None = None) -> dict:
     matched, problem = order_match(fixture["families"], order, market.two_forms)
     if problem:
         raise pick.Stop(f"seed {seed}: {problem}. Live: {order}")
-    broken = aplus.page_problems(fixture["families"], order)
+    design = market.design
+    broken = aplus.page_problems(fixture["families"], order, design)
     attempts = fixture["_generated"]["attempts"]
+    k = aplus.keys(fixture["families"], design)
     cards = {question: [order.index(l["parent_sku"]) + 1 for l in listings]
-             for question, (listings, _) in aplus.answer_listings(aplus.keys(fixture["families"])).items()}
+             for question, (listings, _) in aplus.answer_listings(k, design).items()}
     ok = not broken
+    drawn = (f"draw {attempts['tee']}" if design == aplus.DESIGN_B else
+             f"tee draw {attempts['tee']} and water draw {attempts['water']}")
     # The live order itself is kept, so the order model can be checked against it offline:
     # this market's first seed is the case that showed the model wrong (`search_order.py`).
     return {"seed": seed, **versions(), "brand_forms": 2 if market.two_forms else 1,
+            **({"design": design} if design == aplus.DESIGN_B else {}),
             "attempts": attempts, "outcome": "accepted" if ok else "rejected",
             "seeding_manifest": SEEDING["manifest"],
             "live_order": order, "live_order_is": matched, "broken": broken, "answer_cards": cards,
-            "summary": (f"seed {seed} (generator v{aplus.VERSION}), tee draw {attempts['tee']} and "
-                        f"water draw {attempts['water']} by every rule on the predicted pages: "
+            "summary": (f"seed {seed} (generator v{aplus.VERSION}{', design B' if design == aplus.DESIGN_B else ''}), "
+                        f"{drawn} by every rule on the predicted pages: "
                         f"{'accepted' if ok else 'rejected'} on the live pages, whose order is the "
                         f"predicted one ({matched})"
                         + (f"; broken there: {', '.join(broken)}" if broken else ""))}
@@ -324,6 +335,10 @@ def main() -> int:
                         help="the fixture to write, under env/fixtures")
     parser.add_argument("--tees", type=int, default=aplus.TEE_LISTINGS)
     parser.add_argument("--waters", type=int, default=aplus.WATER_LISTINGS)
+    parser.add_argument("--design", choices=(aplus.DESIGN_A, aplus.DESIGN_B), default=aplus.DESIGN_A,
+                        help="A, the A+ market (the default); B, the tee-only market of six sizes "
+                             "and labels (24 October 2026), which never uses Larchmere's prefix or fixture")
+    parser.add_argument("--listings", type=int, default=aplus.B_LISTINGS, help="design B's count, 45")
     parser.add_argument("--seeds", type=int, nargs="+")
     parser.add_argument("--search-log", type=pathlib.Path)
     parser.add_argument("--claim", action="store_true",
@@ -353,7 +368,7 @@ def main() -> int:
     if refused:
         parser.error(refused)
     for seed in args.seeds:
-        why = aplus.refused(seed, args.claim, fixture_path, args.sku_prefix)
+        why = aplus.refused(seed, args.claim, fixture_path, args.sku_prefix, design=args.design)
         if why:
             parser.error(why)
     if args.claim and args.search_log is None:
@@ -364,7 +379,8 @@ def main() -> int:
     if forms not in (1, 2):
         parser.error(f"the shop's analyzer gave {args.brand} {forms} forms; it is checked as 1 or 2")
     market = Market(fixture=fixture_path, brand=args.brand, sku_prefix=args.sku_prefix,
-                    tees=args.tees, waters=args.waters, claim=args.claim, two_forms=forms == 2)
+                    tees=args.tees, waters=args.waters, claim=args.claim, two_forms=forms == 2,
+                    design=args.design, listings=args.listings)
     log = args.search_log.resolve() if args.search_log else None
     tried = earlier_tries(market, log)
     seed = None

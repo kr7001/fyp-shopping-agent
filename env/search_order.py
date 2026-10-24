@@ -73,7 +73,10 @@ HERE = pathlib.Path(__file__).resolve().parent
 # Bumped whenever the order it predicts would change, since the A+ generator accepts or
 # rejects a draw by it. Recorded in every A+ fixture's `_generated`.
 #   1  22 October 2026, with the phrase prefix of a two-form brand as one term (the module
-#      docstring)
+#      docstring). Since 24 October 2026 a variant's menu label is counted in its child's
+#      name where a fixture gives one (`menu_label`, `lengths`), for the tee-only market
+#      (generate_aplus.py version 4). No market before it had a label, so no order predicted
+#      for any earlier market changes, and the version stays
 VERSION = 1
 
 K1, B = 1.2, 0.75
@@ -125,11 +128,20 @@ def child_sku(family: dict, variant: dict) -> str:
     return variant.get("sku") or f"{family['parent_sku']}-{option.upper()}"
 
 
+def menu_label(variant: dict) -> str:
+    """What the size menu shows for a variant, and so what the seeder puts in its child's
+    name: its `label` where the fixture gives one ("XS - Promo $9.99", the tee-only market
+    of 24 October 2026, `generate_aplus.add_labels`), else its plain option."""
+    return variant.get("label") or variant["option"]
+
+
 def lengths(family: dict, description_words: int = 0) -> tuple[int, int, int]:
     """(how often the brand occurs, the `name` length, the `_search` length) of one listing
-    as the index holds it. `description_words` is for a listing seeded with a description,
-    which the seeder no longer writes."""
-    names = [family["name"]] + [f"{family['name']} - {v['option']}" for v in family["variants"]]
+    as the index holds it. A child's name carries its menu label (`menu_label`), so a label
+    with words in it lengthens the `name` field and renders the listing later; a listing
+    without labels counts as it did under every market before. `description_words` is for a
+    listing seeded with a description, which the seeder no longer writes."""
+    names = [family["name"]] + [f"{family['name']} - {menu_label(v)}" for v in family["variants"]]
     name = sum(words(n) for n in names)
     skus = 2 * len(family["parent_sku"].split("-")) + sum(
         len(child_sku(family, v).split("-")) for v in family["variants"])

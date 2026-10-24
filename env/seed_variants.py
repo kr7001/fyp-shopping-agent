@@ -78,6 +78,13 @@ def ensure_attribute(m: Magento, spec: dict, dry_run: bool = False) -> dict:
 
     for position, option_label in enumerate(spec["options"]):
         ensure_attribute_option(m, code, option_label, position, dry_run)
+    # A size menu's misleading labels (the tee-only market, 24 October 2026): each label text
+    # is one more option, at its plain size's position, so a menu that shows it shows it where
+    # the size would sit. A listing has either the size or its label, never both, so the tie
+    # in position never shows. The attribute is that market's own (`tee_size`), so the four
+    # options of `apparel_size`, which the earlier markets render, are untouched.
+    for option_label, size in spec.get("labels", {}).items():
+        ensure_attribute_option(m, code, option_label, spec["options"].index(size), dry_run)
 
     return existing
 
@@ -138,11 +145,18 @@ def ensure_attribute_in_set(m: Magento, code: str, set_id: int,
 # ----------------------------------------------------------------------- products
 
 
+def menu_label(variant: dict) -> str:
+    """What the size menu shows for a variant: its `label` where the fixture gives one ("XS -
+    Promo $9.99", the tee-only market of 24 October 2026), else its plain option. The child's
+    attribute value and its name carry it; its SKU keeps the plain option (`expand_skus`)."""
+    return variant.get("label") or variant["option"]
+
+
 def ensure_child(m: Magento, family: dict, variant: dict, value_index: str,
                  fixture: dict, dry_run: bool = False) -> str:
     """Create one purchasable variant. Hidden from listings so its price is gated."""
     sku = variant["sku"]
-    name = f"{family['name']} - {variant['option']}"
+    name = f"{family['name']} - {menu_label(variant)}"
     qty = variant["qty"]
 
     if m.product(sku) is not None:
@@ -376,7 +390,7 @@ def cmd_seed(m: Magento, args: argparse.Namespace) -> int:
 
         child_skus, value_indexes = [], []
         for variant in family["variants"]:
-            value_index = labels.get(variant["option"], "0")
+            value_index = labels.get(menu_label(variant), "0")
             value_indexes.append(value_index)
             child_skus.append(
                 ensure_child(m, family, variant, value_index, fixture, args.dry_run))
@@ -436,6 +450,7 @@ def cmd_verify(m: Magento, args: argparse.Namespace) -> int:
 
         children = m.get(f"/configurable-products/{parent_sku}/children")
         prices = {c["sku"]: c["price"] for c in children}
+        names = {c["sku"]: c["name"] for c in children}
         expected = {v["sku"]: v["price"] for v in family["variants"]}
 
         if set(prices) != set(expected):
@@ -446,6 +461,13 @@ def cmd_verify(m: Magento, args: argparse.Namespace) -> int:
         for sku, price in expected.items():
             if sku in prices and abs(prices[sku] - price) > 0.001:
                 print(f"PRICE MISMATCH {sku}: {prices[sku]} != {price}")
+                problems += 1
+        # Each child's name carries its menu label, which the size menu renders and the
+        # search index reads (24 October 2026).
+        for variant in family["variants"]:
+            want = f"{family['name']} - {menu_label(variant)}"
+            if variant["sku"] in names and names[variant["sku"]] != want:
+                print(f"NAME MISMATCH {variant['sku']}: {names[variant['sku']]!r} != {want!r}")
                 problems += 1
 
         distinct = len({round(p, 2) for p in prices.values()})

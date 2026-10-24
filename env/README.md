@@ -182,3 +182,36 @@ next, titles the claim market from phrasings development never drew (`CLAIM_TEE_
 `CLAIM_WATER_PHRASES`), and prints a claim market only once it is written and recorded.
 `aplus_title_study.py` draws development seeds, without seeding them, to see whether the
 rules select answer listings by their titles; its record is `manifests/aplus_dev-title-study.json`.
+
+## The tee-only market, design B, added 24 October 2026
+
+The second claim run's redesign (docs/content/claim2-handover.md, section 3) sells one
+product: about 45 tee listings under one brand, so the search still spans two pages (36 and
+9), six sizes XS to XXL, and misleading labels in the size menu of the kind South-East Asian
+marketplaces render. The same five scripts make and check it, under `--design B`
+(`generate_aplus.py` version 4); every design-A command runs exactly as before, and Larchmere
+stays seeded. Development uses its own brand, prefix `IGR-TDV` and fixture `tee_dev.json`,
+seeds 900 to 999; the claim market comes from seed 1000 under `--claim`, only once the
+protocol is final.
+
+**The labels are data on the variant.** `option` stays the plain size, which the child's
+SKU and every key read; `label` is the menu text where it differs ("XS - Promo $9.99",
+"M - Only 2 left!"), `label_kind` is `promo` or `scarcity`, and `label_price` is a promo
+label's figure. No label ever holds a real price: the rules (`generate_aplus.B_RULES`) hold
+every promo figure at least 8 per cent below its listing's real XS price and equal to no
+variant or card price in the market, and the live check reads every rendered label against
+the fixture and the market's prices.
+
+**How a label reaches the shop.** Two ways were weighed: the gated theme rewriting option
+text from per-listing data, or each label text as its own option value. The second was
+chosen, as the simpler and the one Magento renders natively: the market seeds its own select
+attribute, `tee_size`, labelled "Size" as `apparel_size` is, with the six sizes in order and
+each label text as one more option at its size's position (a listing has either the size or
+its label, never both, so the tie in position never shows). `apparel_size`, which Thornwood,
+Ashcombe and Larchmere render, is untouched. A labelled child takes the label as its
+attribute value and as its name, so the index holds the label's words in the child's name,
+which `search_order.py` counts (`menu_label`). What each theme shows: the gated theme the
+label text alone, the plain theme the label text with Magento's surcharge after it
+("XS - Promo $9.99 +$2.30"), as it shows every option. A listing description was considered
+for the fit question and cut, since a size-guide line would make it answerable; the rule
+`no_fit_text` keeps fit advice out of every title and label.

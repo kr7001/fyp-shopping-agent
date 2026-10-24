@@ -67,13 +67,15 @@ INIT = re.compile(r'<script type="text/x-magento-init">(.*?)</script>', re.S)
 
 def expected(fixture: dict) -> list[dict]:
     """Per listing, in fixture order: its URL, seller, advertised price, and every size in
-    menu order with its price and whether it can be bought."""
+    menu order with its price and whether it can be bought. A size is named as the menu shows
+    it: its `label` where the fixture gives one ("XS - Promo $9.99", the tee-only market of
+    24 October 2026), else its plain option, as every market before has."""
     out = []
     for family in fixture["families"]:
         out.append({"url": f"{BASE}/{family['parent_sku'].lower()}.html",
                     "name": family["name"], "seller": family["seller"],
                     "advertised": apparel.from_price(family),
-                    "sizes": [(v["option"], v["price"], v["qty"] > 0)
+                    "sizes": [(v.get("label") or v["option"], v["price"], v["qty"] > 0)
                               for v in family["variants"]]})
     return out
 
@@ -229,6 +231,9 @@ def check_listing(browser, listing: dict) -> tuple[list[str], dict]:
     base = price_box(page)
     menu = plain_menu(menu_options(page), spconfig_in(sent), base or 0.0)
     plain_text = page.inner_text("body") + "\n" + sent
+    # The text each theme renders, for checks on what a page says beyond its menu and prices
+    # (check_aplus_market.label_lines, 24 October 2026).
+    seen["texts"] = {"plain": page.inner_text("body")}
     plain.close()
     problems += menu_problems(menu, listing, "plain")
     # The ordinary theme publishes every size's price twice, in its price table and as the
@@ -253,6 +258,7 @@ def check_listing(browser, listing: dict) -> tuple[list[str], dict]:
     menu = [{"label": o["text"], "buyable": not o["disabled"], "price": None} for o in options]
     problems += menu_problems(menu, listing, "gated")
     before = price_box(page)
+    seen["texts"]["gated"] = page.inner_text("body")
     if before is None or abs(before - listing["advertised"]) > 0.001:
         problems.append(f"gated price box {before} before a size is chosen, not the advertised "
                         f"{money(listing['advertised'])}")
