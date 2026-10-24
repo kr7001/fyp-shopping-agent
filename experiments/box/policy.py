@@ -110,10 +110,15 @@ def page_floor(question: str, page, answer: str) -> int | None:
     the whole page. Any other question has no floor of this kind: a count needs the
     population, which `sufficiency.check` applies on its own, and a universal needs one
     counterexample.
+
+    The price the answer names is never a label's or a promotion's figure (24 October
+    2026, rules v6): "the XS label says Promo $9.99, but XS costs $14.20 at Seller B" names
+    $14.20, and a floor at $9.99 would excuse every listing advertised between the two
+    (`sufficiency.without_label_figures`).
     """
     if not sufficiency.superlative_over_population(question):
         return None
-    named = scoring.prices_in(answer)
+    named = scoring.prices_in(sufficiency.without_label_figures(answer))
     if not named:
         return len(page.listings)
     return bound_floor(page, named[0], answer)

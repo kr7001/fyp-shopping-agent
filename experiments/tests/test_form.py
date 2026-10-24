@@ -574,7 +574,9 @@ class Compose(unittest.TestCase):
                 with self.subTest(task=task_id, reading=reading):
                     text = question if reading is None else ambiguity.with_reading(question, asked, reading)
                     plan = primitives.compose(form.from_rules(text, self.page), self.page)
-                    self.assertEqual(plan.instruction, targeting.BODIES[plan.kind])
+                    # The v7 body, and since box v19 the label sentence on a plan that opens a listing.
+                    note = "" if plan.kind == "results_page" else f"\n{primitives.LABEL_NOTE}"
+                    self.assertEqual(plan.instruction, targeting.BODIES[plan.kind] + note)
                     self.assertEqual(plan.text, f"{box.preamble(self.page)}\n\n{plan.instruction}")
                     self.assertEqual(plan.stop_rule, planner.STOP_RULES[plan.kind])
 
@@ -586,12 +588,13 @@ class Compose(unittest.TestCase):
         self.assertNotIn("at or below $20.00", exists.instruction)
         self.assertIn("choose size M, then look at the page again", exists.instruction)
         self.assertIn("disabled or greyed out", exists.instruction)
-        self.assertTrue(exists.instruction.endswith(targeting.QUARANTINE))
+        # The quarantine, then since box v19 the label sentence on its own line.
+        self.assertTrue(exists.instruction.endswith(f"{targeting.QUARANTINE}\n{primitives.LABEL_NOTE}"))
         top3 = primitives.compose(form.from_rules(GO + "Which are the three cheapest sellers for size M?"), self.page)
         self.assertEqual((top3.primitive, top3.kind), ("bound_prune", "topk_price"))
         self.assertIn("Keep the 3 cheapest available totals", top3.instruction)
         self.assertEqual(top3.stop_rule, planner.STOP_RULES["topk_price"].replace("{k}", "3"))
-        self.assertTrue(top3.instruction.endswith(targeting.QUARANTINE))
+        self.assertTrue(top3.instruction.endswith(f"{targeting.QUARANTINE}\n{primitives.LABEL_NOTE}"))
         dearest = primitives.compose(form.from_rules(GO + "Which seller is the most expensive for size M?"), self.page)
         self.assertIn("no listing can be skipped", dearest.instruction)
         self.assertNotIn(targeting.QUARANTINE, dearest.instruction)

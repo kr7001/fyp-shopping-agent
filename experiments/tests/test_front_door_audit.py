@@ -187,11 +187,9 @@ CONTRADICTIONS = {
     "dearest for cheapest": (CHEAPEST, dict(quantifier="argmax", filters=[f("size", "=", "XL"), BUYABLE]),
                              "asks for the cheapest, where the form asks for the dearest",
                              dict(filters=[f("size", "=", "XL"), BUYABLE])),
-    "listed for in stock": (IN_STOCK, dict(quantifier="count", objective="availability",
-                                           filters=[f("size", "=", "M"), f("availability", "=", "listed")]),
-                            "the question's 'in stock' gives availability = 'buyable', where the form says "
-                            "availability = 'listed'",
-                            dict(quantifier="count", objective="availability", filters=[f("size", "=", "M"), BUYABLE])),
+    # "listed for in stock" left on 24 October 2026: since box v19 an availability the words
+    # give and the model's form does not hold, with nothing else wrong, is a clash the box asks
+    # about (decision 11, tests/test_design_b.py, Decision11), not a fall back to the rules.
     "a negation dropped": (LACKS, dict(quantifier="forall", objective="availability", filters=[f("size", "=", "M")]),
                            "the question's \"n't\" is a negation, which the form's universal drops",
                            dict(quantifier="forall", objective="availability", filters=[f("size", "=", "M")],
@@ -451,7 +449,10 @@ class ProbeComparesTheNegation(unittest.TestCase):
         for one in (plain, turned):
             self.assertTrue(parse_probe.agree(one, one))
             self.assertTrue(all(parse_probe.tiers(one, one).values()))
-        self.assertEqual(parse_probe.COMPARISON_VERSION, 2)
+        # The negation came in with comparison 2; version 3 (24 October 2026) added the ask
+        # kinds and the template-less entries, and still reads a file made under 2.
+        self.assertGreaterEqual(parse_probe.COMPARISON_VERSION, 2)
+        self.assertIn(2, parse_probe.READ_AGAIN)
 
 
 if __name__ == "__main__":

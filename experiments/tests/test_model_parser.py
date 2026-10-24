@@ -161,7 +161,7 @@ class FormV10(unittest.TestCase):
     def test_the_prompt_version_is_recorded(self):
         question = GO + "Which seller is cheapest for size M?"
         self.assertEqual(form.from_model(question, None, stub(reply())).prompt_version, form.PROMPT_VERSION)
-        self.assertEqual(form.PROMPT_VERSION, 3)
+        self.assertEqual(form.PROMPT_VERSION, 4)     # 4 since 24 October 2026 (test_design_b.PromptV4)
         self.assertEqual(form.parse_reply(reply(), version=1).prompt_version, 1)
         self.assertIsNone(form.from_rules(question).prompt_version)
         for bad in (0, True, "2"):
@@ -210,7 +210,7 @@ class PromptV3(unittest.TestCase):
         self.assertTrue(sent.startswith(form.CONTEXT + "\n\n"))
 
     def test_version_3_is_version_2_with_its_context_corrected(self):
-        two, three = form.prompt(V1_QUESTION, version=2), form.prompt(V1_QUESTION)
+        two, three = form.prompt(V1_QUESTION, version=2), form.prompt(V1_QUESTION, version=3)
         self.assertEqual(three, form.CONTEXT_V3 + two[len(form.CONTEXT):])
         for false in ("lists competing listings for one product", "Reviews of a listing are on their own pages"):
             with self.subTest(sentence=false):
@@ -231,11 +231,12 @@ class PromptV2(unittest.TestCase):
         self.assertEqual(hashlib.sha256(sent.encode()).hexdigest(), V1_PROMPT_SHA256)
         self.assertNotIn("Worked examples", sent)
         with self.assertRaises(ValueError):
-            form.prompt(V1_QUESTION, version=4)
+            form.prompt(V1_QUESTION, version=5)
 
     def test_version_2_says_what_the_task_asked_and_ends_with_the_question(self):
-        sent = form.prompt(V1_QUESTION)
-        self.assertEqual(sent, form.prompt(V1_QUESTION, stored_thornwood()))
+        # Version 3's words, the current prompt until version 4 (24 October 2026).
+        sent = form.prompt(V1_QUESTION, version=3)
+        self.assertEqual(sent, form.prompt(V1_QUESTION, stored_thornwood(), version=3))
         self.assertTrue(sent.endswith(f"\n\nThe question:\n{V1_QUESTION}"))
         self.assertEqual(sent.count("The question:\n"), 1)
         for needle in ("name their sizes S, M, L and XL",
@@ -328,14 +329,17 @@ class PromptV2(unittest.TestCase):
             self.assertNotIn(f"{item.advertised:.2f}", prices)
 
     def test_the_size_words_are_the_generated_clothing_markets(self):
-        # The prompt says the listings whose price depends on the size name their sizes S,
+        # Prompts 2 and 3 say the listings whose price depends on the size name their sizes S,
         # M, L and XL. Checked here against both clothing markets the shop was seeded from;
-        # the box itself never reads a fixture.
+        # the box itself never reads a fixture. Since normalisation v5 (24 October 2026) the
+        # shop's sizes are six, XS and XXL the design B markets' too, so each of those
+        # markets' sizes is among them (tests/test_design_b.py, SizeXS).
         for name in ("scaled_apparel.json", "claim_apparel.json"):
             with self.subTest(market=name):
                 fixture = json.loads((paths.FIXTURES / name).read_text())
                 options = {v["option"] for family in fixture["families"] for v in family["variants"]}
-                self.assertEqual(options, set(normalise.SIZES))
+                self.assertEqual(options, {"S", "M", "L", "XL"})
+                self.assertLessEqual(options, set(normalise.SIZES))
         self.assertIn("S, M, L and XL", form.SIZES)
 
 
@@ -889,9 +893,10 @@ class Negation(unittest.TestCase):
         decision = self.decision()
         self.assertEqual((decision.kind, decision.plan.primitive, decision.plan.stop_rule),
                          ("negated_refutation", "counterexample", planner.STOP_RULES["negated_refutation"]))
-        self.assertEqual(decision.plan.instruction, primitives.NEGATED_REFUTATION)
+        # The search's own text, and since box v19 the label sentence on its own line.
+        self.assertEqual(decision.plan.instruction, f"{primitives.NEGATED_REFUTATION}\n{primitives.LABEL_NOTE}")
         self.assertEqual(decision.query, f"{decision.question}\n\n{box.preamble(self.page)}\n\n"
-                                         f"{primitives.NEGATED_REFUTATION}")
+                                         f"{primitives.NEGATED_REFUTATION}\n{primitives.LABEL_NOTE}")
         for needle in ("To answer Yes you need exactly ONE listing that lacks the option.",
                        "Answer Yes, name that listing as your evidence, and stop immediately.",
                        "To answer No you must have opened every single one.",
@@ -902,9 +907,9 @@ class Negation(unittest.TestCase):
             self.assertNotIn(wrong, decision.plan.instruction)
         self.assertEqual([c.seller for c in decision.plan.candidates], ["Seller A", "Seller B", "Seller C"])
         self.assertEqual(form.verify(decision.form, self.page), [])
-        # The universal it negates keeps v1's text, word for word.
+        # The universal it negates keeps v1's text, word for word, and the label sentence.
         universal = box.decide(GO + "Does every listing have size M?", self.page, reply="menu")
-        self.assertEqual(universal.plan.instruction, targeting.BODIES["refutation"])
+        self.assertEqual(universal.plan.instruction, f"{targeting.BODIES['refutation']}\n{primitives.LABEL_NOTE}")
 
     def verdict(self, answer: str, log: pathlib.Path, reading: str = "menu") -> dict:
         return box.check(self.decision(reading), answer, log)
