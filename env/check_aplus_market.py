@@ -300,6 +300,35 @@ def mysql(sql: str) -> str:
     return done.stdout
 
 
+def flush_cache() -> None:
+    """Magento's cache flushed, so a snapshot and the pages it is later compared with are both
+    rendered afresh (24 October 2026, the verifier's logic audit at cd49128: a page served from
+    the cache can differ from a fresh render in what the mask does not cover, and the earlier
+    markets were reported changed by nothing but that)."""
+    subprocess.run(["docker", "exec", CONTAINER, "php", "/var/www/magento2/bin/magento", "cache:flush"],
+                   capture_output=True, text=True, check=True)
+
+
+BRAND_WORD = re.compile(r"^[A-Za-z]+$")
+
+
+def search_terms_sql(brand: str) -> str:
+    """The query for the brand's rows in Magento's search_query table: every search the shop has
+    seen that names the brand, with its result count, popularity and time. A search adds a
+    "Related search terms" block to the results page, so these rows say which pages a run saw;
+    the claim chain writes them to its manifest before and after each invocation
+    (`--search-terms`, 24 October 2026). The brand is one word of letters, or this refuses."""
+    if not BRAND_WORD.match(brand):
+        raise ValueError(f"a brand is one word of letters, not {brand!r}")
+    return ("SELECT query_text, num_results, popularity, updated_at FROM search_query "
+            f"WHERE query_text LIKE '%{brand}%' ORDER BY query_id")
+
+
+def search_terms(brand: str) -> str:
+    """The brand's search_query rows, tab-separated, one a line (`search_terms_sql`)."""
+    return mysql(search_terms_sql(brand))
+
+
 def earlier_brands(exclude: pathlib.Path | None = None) -> list[str]:
     """Every brand a fixture under env/fixtures was seeded with, the A+ fixture checked left
     out: a generated market's from `_generated`, the hand-written families' from the first
@@ -373,6 +402,7 @@ def unchanged_lines(folder: pathlib.Path, exclude_prefixes: tuple[str, ...]) -> 
     """The earlier markets now against the snapshot in `folder`."""
     before = {p.name: p.read_bytes() for p in folder.glob("*.html")}
     brands = sorted({name.split("-")[1] for name in before if name.startswith("results-")})
+    flush_cache()
     after = snapshot_pages(brands, listing_paths(exclude_prefixes))
     changed = differences(before, after)
     rows_before = (folder / "db-igr.tsv").read_text()
@@ -393,6 +423,7 @@ def write_snapshot(folder: pathlib.Path, exclude_prefixes: tuple[str, ...],
     """Every market's pages and rows but the one about to be seeded (`exclude`, its fixture,
     and `exclude_prefixes`, its SKU prefix)."""
     folder.mkdir(parents=True, exist_ok=True)
+    flush_cache()
     pages = snapshot_pages(earlier_brands(exclude), listing_paths(exclude_prefixes))
     for name, body in pages.items():
         (folder / name).write_bytes(body)
@@ -414,10 +445,15 @@ def main() -> int:
     parser.add_argument("--no-browser", action="store_true",
                         help="skip the checks that need a browser (3 and 4)")
     parser.add_argument("--only", nargs="*", help="check only these listings' URL keys in the browser")
+    parser.add_argument("--search-terms", metavar="BRAND",
+                        help="print the brand's search_query rows, tab-separated, and nothing else")
     args = parser.parse_args()
 
+    if args.search_terms:
+        print(search_terms(args.search_terms), end="")
+        return 0
     if not args.fixture and not args.snapshot:
-        parser.error("name --fixture, or ask for --snapshot")
+        parser.error("name --fixture, or ask for --snapshot, or --search-terms")
     path = pathlib.Path(args.fixture or "")
     path = path if path.exists() else HERE / "fixtures" / (args.fixture or "")
     if args.snapshot:

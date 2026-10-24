@@ -67,12 +67,16 @@ HAIKU = "anthropic/claude-haiku-4.5"
 EXIT_PILOT_CHECK = 9
 
 
-def header(a, est_total: float, routing: str, invocations: int, what: str) -> list[str]:
+def header(a, est_total: float, routing: str, invocations: int, what: str, brand: str) -> list[str]:
     """The chain up to and including the `run` function: the manifest, the account at the
     start, the conditions line, the live check, the cap gate, the routing check and the
-    watchdog. The same for both commands."""
+    watchdog. The same for both commands. MODEL_TEMPERATURE and MODEL_TOP_P are unset for the
+    whole chain, so the agent's code defaults, 0.2 and 0.1, hold whatever the shell carried
+    (the verifier's logic audit at cd49128), and the brand's search_query rows are written to
+    the manifest before and after each invocation (`terms`), since a search adds a "Related
+    search terms" block to the results page."""
     env = f"IGR_ESTIMATE_USD={est_total:.2f}"
-    out = [f"caffeinate -i env {env}{routing} bash <<'CHAIN'",
+    out = [f"caffeinate -i env -u MODEL_TEMPERATURE -u MODEL_TOP_P {env}{routing} bash <<'CHAIN'",
            f"# The second claim run, {what}: {a.model}, {invocations} invocations. Expected ${est_total:.2f}",
            f"# at list price (the 23 October pilot's charges over {stage_plan.PILOT_PRICE_FACTOR}, a growing question",
            f"# scaled by the listings ratio to the power {a.growth:g}). Every invocation runs only if spent + 2 x its",
@@ -84,6 +88,7 @@ def header(a, est_total: float, routing: str, invocations: int, what: str) -> li
            f"F={a.analysis}",
            f"MODEL={a.model}",
            f"TAG={a.tag}",
+           f"BRAND={brand}",
            "MANIFEST=experiments/results/$TAG.manifest",
            "DONE=experiments/results/$TAG.done",
            f"CAP={a.cap:.2f}",
@@ -105,6 +110,11 @@ def header(a, est_total: float, routing: str, invocations: int, what: str) -> li
            f".venv-naive/bin/python env/check_aplus_market.py --fixture {a.fixture} >> experiments/results/$TAG.livecheck 2>&1 || {{ echo \"STOP the live check failed\" >> \"$MANIFEST\"; exit 5; }}",
            "fits() {",
            "  python3 -c 'import sys; s, n, c, h = sys.argv[1:]; sys.exit(0 if \"None\" not in (s, n) and float(n) - float(s) + float(h) < float(c) else 1)' \"$START\" \"$(usage)\" \"$CAP\" \"$1\"",
+           "}",
+           "# The brand's search_query rows, before and after each invocation: which searches the shop",
+           "# has seen, since each adds a \"Related search terms\" block to the results page.",
+           "terms() {",
+           "  echo \"search-terms|$1|$BRAND|$(python3 env/check_aplus_market.py --search-terms \"$BRAND\" 2>/dev/null | tr '\\t' ',' | tr '\\n' ';')|$2\" >> \"$MANIFEST\"",
            "}"]
     if routing:
         out += ["# The routing check: one DeepSeek probe on the 30 development rewordings (about $0.02);",
@@ -134,10 +144,12 @@ def header(a, est_total: float, routing: str, invocations: int, what: str) -> li
             "  arm=$1; high=$2; round=$3; shift 3",
             "  fits \"$high\" || { echo \"STOP spent + high \\$$high would reach \\$$CAP $(date +%FT%T): $arm round $round $*\" >> \"$MANIFEST\"; exit 3; }",
             "  MODEL_NAME=$MODEL python3 experiments/analysis/claim.py --protocol \"$F\" --preflight \"$arm\" --flags \"$FLAGS\" >> experiments/results/$TAG.preflight 2>&1 || { echo \"STOP preflight refused $arm\" >> \"$MANIFEST\"; exit 6; }",
+            "  terms before \"$arm round $round $*\"",
             "  folder=$(MODEL_NAME=$MODEL python3 experiments/runners/suite.py --tasks \"$T\" --repeats 1 --repeat-start \"$round\" $FLAGS \"$@\" 2>&1 | tee -a \"experiments/results/$TAG.log\" | sed -n 's#^full results: \\(.*\\)/suite.json$#\\1#p' | tail -1)",
             # --repeats and --repeat-start on the line too, so a reader of the manifest alone
             # knows the round the invocation asked for (claim.intended reads --repeat-start).
             "  echo \"batch|$folder|model=$MODEL arm=$arm round=$round --repeats 1 --repeat-start $round $FLAGS $*\" >> \"$MANIFEST\"",
+            "  terms after \"$arm round $round $*\"",
             "}"]
     return out
 
@@ -166,10 +178,16 @@ def voids_lines() -> list[str]:
             "  report=$(python3 experiments/analysis/voids.py \"$folder\" </dev/null)",
             "  vflags=$(printf '%s\\n' \"$report\" | sed -n 's/^  re-run the [0-9]* void, each with \\(.*\\):$/\\1/p')",
             "  [ -n \"$vflags\" ] || continue",
+            # The arm the batch line names, for the re-run's preflight (the verifier's audit at
+            # cd49128: a re-run is an invocation too, checked like every other before it runs).
+            "  arm=$(printf '%s' \"$args\" | sed -n 's/.* arm=\\(.*\\) round=.*/\\1/p')",
             "  while read -r only; do",
             "    fits 2.50 || { echo \"STOP before a void re-run $(date +%FT%T): $folder $only\" >> \"$MANIFEST\"; exit 3; }",
+            "    MODEL_NAME=$MODEL python3 experiments/analysis/claim.py --protocol \"$F\" --preflight \"$arm\" --flags \"$vflags $only\" >> experiments/results/$TAG.preflight 2>&1 </dev/null || { echo \"STOP preflight refused the re-run of $arm\" >> \"$MANIFEST\"; exit 6; }",
+            "    terms before \"re-run $arm $only\"",
             "    again=$(MODEL_NAME=$MODEL python3 experiments/runners/suite.py $vflags $only </dev/null 2>&1 | tee -a \"experiments/results/$TAG.log\" | sed -n 's#^full results: \\(.*\\)/suite.json$#\\1#p' | tail -1)",
             "    echo \"rerun|$again|$folder $only\" >> \"$MANIFEST\"",
+            "    terms after \"re-run $arm $only\"",
             "  done < <(printf '%s\\n' \"$report\" | sed -n 's/^    \\(--only .*\\)$/\\1/p')",
             "done < <(grep '^batch|' \"$MANIFEST\")"]
 
@@ -242,9 +260,15 @@ def main() -> int:
     fixture = pathlib.Path(a.fixture)
     fixture = fixture if fixture.exists() else paths.FIXTURES / a.fixture
     costs = stage_plan.costs_for(fixture, growth=a.growth)
+    # The routing the chain exports is held to the analysis file's for the run's model (the
+    # verifier's logic audit at cd49128): another object, or none for a model the file routes,
+    # is refused here, where the preflight would refuse every invocation later.
+    given = json.loads(a.routing).get(a.model) if a.routing and a.routing != "none" else None
+    wanted = (analysis.get("provider_routing") or {}).get(a.model)
+    if given != wanted:
+        ap.error(f"--routing gives {a.model} {json.dumps(given)}, where {a.analysis} requires {json.dumps(wanted)}")
     routing = ""
     if a.routing and a.routing != "none":
-        json.loads(a.routing)
         routing = f" IGR_PROVIDER_ROUTING='{a.routing}'"
 
     if a.stage == "pilot":
@@ -265,7 +289,7 @@ def main() -> int:
     lines, runs_total = run_lines(invocations, analysis, spec, costs)
     est_total = runs_total + sum(extras.values())
 
-    out = header(a, est_total, routing, len(invocations), what) + lines
+    out = header(a, est_total, routing, len(invocations), what, spec.get("brand", "")) + lines
     if a.stage == "pilot":
         out += pilot_check_lines(a)
     else:

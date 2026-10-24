@@ -155,10 +155,13 @@ print("within what the protocol requires: the batch may run")
 '''
 
 STUB_CHECK = '''#!/usr/bin/env python3
-"""Stub check_aplus_market.py: passes or fails by the scenario."""
+"""Stub check_aplus_market.py: passes or fails by the scenario; --search-terms prints one row."""
 import json, pathlib, sys
 HERE = pathlib.Path(__file__).resolve().parents[1]
 scenario = json.loads((HERE / %(scenario)r).read_text())
+if "--search-terms" in sys.argv:
+    print(sys.argv[-1].lower() + " tee\\t45\\t3\\t2026-10-24 10:00:00")
+    sys.exit(0)
 print("live check of", sys.argv[1:])
 sys.exit(scenario.get("livecheck_exit", 0))
 '''
