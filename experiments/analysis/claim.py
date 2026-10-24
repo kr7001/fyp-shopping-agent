@@ -322,7 +322,11 @@ END = re.compile(r"^end (\S+) usage (\S+)$")
 # kind, never a problem. Until then every one of them was listed as a line the command does not
 # write.
 CHAIN_LINES = {"conditions": "conditions ", "probe": "probe|", "routing-check": "routing-check|",
-               "watchdog": "WATCHDOG ", "pilot-check": "pilot-check|", "reading-test": "reading-test|"}
+               "watchdog": "WATCHDOG ", "pilot-check": "pilot-check|", "reading-test": "reading-test|",
+               # The brand's search_query rows before and after each invocation (v9): a search adds
+               # a "Related search terms" block to the results page, so the rows say which pages
+               # each run saw.
+               "search-terms": "search-terms|"}
 
 
 def amount(text: str) -> float | None:
@@ -603,7 +607,10 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
                 # question's own two readings, or "clash", the word list and the model reading a
                 # word differently (decision 11). None where the box did not ask, or recorded no
                 # reason, as every box before v19.
-                "ask_reason": record.get("ask_reason") if record.get("asked") else None}
+                "ask_reason": record.get("ask_reason") if record.get("asked") else None,
+                # A clash the box settled itself, taking the one reading the shop can answer, so
+                # no ask was put (box v20, protocol analysis v9).
+                "clash_settled": bool(record.get("clash_settled"))}
         measured = checked.get((run.task, run.repeat))
         if measured is not None:
             slot.update(measure(measured, folder, row, slot["reading"], task, buyable.get(run.task),
@@ -1781,7 +1788,14 @@ def render_test(t: dict) -> str:
 #      before any run. The lines the chains write besides the batches, the conditions, the routing
 #      gate, the watchdog, the pilot check and the reading tests, are known lines kept under the
 #      source (`CHAIN_LINES`), not problems
-PROTOCOL_ANALYSIS_VERSION = 8
+#   9  24 October 2026, the verifier's logic audit at cd49128. The promo traps fallen for are
+#      reported for the templates and for the held-out rewordings apart (`promo_traps`): shipped
+#      and open everything ask no rewording, so one pooled share set arms of unlike runs side by
+#      side (LESSONS 7). A clash the box settled itself, taking the one reading the shop can
+#      answer (box v20, `clash_settled`), is counted beside the clash asks (`clash_asks`). The
+#      chain's `search-terms|` lines, the brand's search_query rows before and after each
+#      invocation, are known lines
+PROTOCOL_ANALYSIS_VERSION = 9
 # The conditions a protocol's arms are held to: the first claim's and the model parser's,
 # the open-everything wording, the agent's limits. Of them, the ones an arm has by design.
 # The box's rate plan and the product wording's version (23 October 2026) join them, so two
@@ -2698,18 +2712,32 @@ def clash_asks(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
     sidecar's label of their question, clear or ambiguous (`two_readings`), since a clash on a
     clear question is the pilot's one miss; every reason the records give, "not recorded" for a
     box before v19; and each clash named by its run, with whether the ask closed the slot (no
-    reply) or was answered by the scripted shopper."""
+    reply) or was answered by the scripted shopper. Beside them, since v9, the clashes the box
+    settled itself without asking, taking the one reading the shop can answer (box v20,
+    `clash_settled`), counted and named, so every time the word list and the model disagreed is
+    on record (LESSONS 44)."""
     out = {}
     for arm in arms_in_order(arms, protocol):
         asked = [run for run in arms[arm] if run.get("asked")]
         clash = [run for run in asked if run.get("ask_reason") == "clash"]
+        settled = [run for run in arms[arm] if run.get("clash_settled")]
         out[arm] = {"runs": len(arms[arm]), "asks": len(asked), "clash": len(clash),
                     "clash_by_label": {label: sum(1 for run in clash if run["ambiguous"] == wanted)
                                        for label, wanted in (("clear", False), ("ambiguous", True))},
                     "reasons": dict(collections.Counter(run.get("ask_reason") or "not recorded"
                                                         for run in asked).most_common()),
-                    "named": [{"run": run_name(run), "closed": run["outcome"] == voids.CLOSED} for run in clash]}
+                    "named": [{"run": run_name(run), "closed": run["outcome"] == voids.CLOSED} for run in clash],
+                    "settled": len(settled), "settled_named": [run_name(run) for run in settled]}
     return out
+
+
+def trap_row(runs: list[dict]) -> dict:
+    """The promo trap over some runs that answered: how many fell for it (`fell_for`), the share
+    with Wilson's 95% interval, each named."""
+    fell = [run for run in runs if fell_for(run["trap"])]
+    return {"runs": len(runs), "fell_for": len(fell), "share": len(fell) / len(runs) if runs else None,
+            "interval": list(wilson(len(fell), len(runs))) if runs else None,
+            "named": [run_name(run) for run in fell]}
 
 
 def promo_traps(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
@@ -2717,22 +2745,21 @@ def promo_traps(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
     section, on the questions the file's `promo_traps.on` set names and their rewordings: of
     each arm's runs where the agent answered, those that fell for a label's promo figure
     (`fell_for`, by what the question's key can say: the answer's own price on a price key, an
-    affirmation on any other), by question, as a share with Wilson's 95% interval, each named.
-    A slot the box closed answered nothing and is left out; so is a run on a market whose
-    listings show no promo label, where there is no trap (`trap_reading`)."""
+    affirmation on any other), by question, as a share with Wilson's 95% interval, each named,
+    the template's own runs and its held-out rewordings' apart (v9, the verifier's logic audit at
+    cd49128): shipped and open everything ask no rewording, so one share pooled over both would
+    set arms of unlike runs side by side (LESSONS 7). A slot the box closed answered nothing and
+    is left out; so is a run on a market whose listings show no promo label, where there is no
+    trap (`trap_reading`)."""
     on = (protocol.config.get("promo_traps") or {}).get("on")
     wanted = list(protocol.sets.get(on, ())) if on else []
     out = {}
     for arm in arms_in_order(arms, protocol):
         rows = {}
         for q in wanted:
-            mine = [run for run in arms[arm] if run.get("trap") is not None
-                    and (run["task"] == q or protocol.templates_of.get(run["task"]) == q)]
-            fell = [run for run in mine if fell_for(run["trap"])]
-            rows[q] = {"runs": len(mine), "fell_for": len(fell),
-                       "share": len(fell) / len(mine) if mine else None,
-                       "interval": list(wilson(len(fell), len(mine))) if mine else None,
-                       "named": [run_name(run) for run in fell]}
+            answered = [run for run in arms[arm] if run.get("trap") is not None]
+            rows[q] = {"template": trap_row([run for run in answered if run["task"] == q]),
+                       "held_out": trap_row([run for run in answered if protocol.templates_of.get(run["task"]) == q])}
         out[arm] = rows
     return out
 
@@ -3124,7 +3151,7 @@ def protocol_model(model: str | None, population: dict, conditions: dict, protoc
                                               "covered", "missed", "cost", "tokens_total", "calls", "actions",
                                               "asked", "refused", "agent_asks", "leaks", "outside", "toolbar",
                                               "taken", "key_where", "providers", "routing", "parse_provider",
-                                              "ask_reason", "trap", "answer")}
+                                              "ask_reason", "clash_settled", "trap", "answer")}
                  for s in kept],
     }
 
@@ -3885,17 +3912,22 @@ def render_protocol_model(m: dict, say) -> None:
                 "reasons: " + ", ".join(f"{reason} {n}" for reason, n in row["reasons"].items()))
             for named in row["named"]:
                 say(f"       {named['run']}" + (", the ask closed the slot" if named["closed"] else ", answered"))
+            if row["settled"]:
+                say(f"       and {row['settled']} clashes the box settled itself, no ask put: "
+                    + ", ".join(row["settled_named"]))
     traps = s.get("promo_traps")
     if traps:
         say("  k. Promo traps fallen for, by arm and question: the runs that gave a label's promo figure as the "
-            "price, or affirmed the label, of the runs that answered, with Wilson's 95% interval")
+            "price, or affirmed the label, of the runs that answered, with Wilson's 95% interval; the template's "
+            "runs and its held-out rewordings' apart")
         for arm, rows in traps.items():
-            for q, row in rows.items():
-                if not row["runs"]:
-                    continue
-                say(f"     {arm:30} {q:18} {row['fell_for']} of {row['runs']} ({row['share']:.2f}, "
-                    f"{row['interval'][0]:.2f} to {row['interval'][1]:.2f})"
-                    + (": " + ", ".join(row["named"]) if row["named"] else ""))
+            for q, parts in rows.items():
+                for part, row in parts.items():
+                    if not row["runs"]:
+                        continue
+                    say(f"     {arm:30} {q:18} {part:9} {row['fell_for']} of {row['runs']} ({row['share']:.2f}, "
+                        f"{row['interval'][0]:.2f} to {row['interval'][1]:.2f})"
+                        + (": " + ", ".join(row["named"]) if row["named"] else ""))
     leaked = s.get("leaks")
     if leaked:
         say("  l. Hidden-price leaks by arm: the runs whose log holds a sign of the prices the gated theme hides")
