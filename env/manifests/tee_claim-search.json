@@ -1,0 +1,88 @@
+{
+  "brand": "Wexcombe",
+  "sku_prefix": "IGR-TCL",
+  "seeded": "24 October 2026",
+  "tried": [
+    {
+      "seed": 1000,
+      "generator_version": 4,
+      "search_order_version": 1,
+      "brand_forms": 2,
+      "design": "B",
+      "attempts": {
+        "tee": 2124456
+      },
+      "outcome": "accepted",
+      "seeding_manifest": "20261024T180635-gated-pricing.json",
+      "live_order": [
+        "IGR-TCL-23",
+        "IGR-TCL-38",
+        "IGR-TCL-41",
+        "IGR-TCL-11",
+        "IGR-TCL-17",
+        "IGR-TCL-25",
+        "IGR-TCL-26",
+        "IGR-TCL-27",
+        "IGR-TCL-12",
+        "IGR-TCL-13",
+        "IGR-TCL-30",
+        "IGR-TCL-08",
+        "IGR-TCL-21",
+        "IGR-TCL-28",
+        "IGR-TCL-44",
+        "IGR-TCL-03",
+        "IGR-TCL-07",
+        "IGR-TCL-09",
+        "IGR-TCL-24",
+        "IGR-TCL-32",
+        "IGR-TCL-42",
+        "IGR-TCL-43",
+        "IGR-TCL-34",
+        "IGR-TCL-40",
+        "IGR-TCL-31",
+        "IGR-TCL-45",
+        "IGR-TCL-01",
+        "IGR-TCL-14",
+        "IGR-TCL-16",
+        "IGR-TCL-22",
+        "IGR-TCL-33",
+        "IGR-TCL-39",
+        "IGR-TCL-05",
+        "IGR-TCL-20",
+        "IGR-TCL-15",
+        "IGR-TCL-29",
+        "IGR-TCL-06",
+        "IGR-TCL-02",
+        "IGR-TCL-04",
+        "IGR-TCL-10",
+        "IGR-TCL-37",
+        "IGR-TCL-36",
+        "IGR-TCL-18",
+        "IGR-TCL-35",
+        "IGR-TCL-19"
+      ],
+      "live_order_is": "two forms, average lengths x1.0",
+      "broken": [],
+      "answer_cards": {
+        "tee-target-price": [
+          24
+        ],
+        "tee-cheapest-target": [
+          24
+        ],
+        "tee-exists-under": [
+          24
+        ],
+        "tee-top-3": [
+          24,
+          19,
+          38
+        ],
+        "tee-xs-price": [
+          18
+        ]
+      },
+      "summary": "seed 1000 (generator v4, design B), draw 2124456 by every rule on the predicted pages: accepted on the live pages, whose order is the predicted one (two forms, average lengths x1.0)"
+    }
+  ]
+}

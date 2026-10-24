@@ -1,0 +1,2205 @@
+{
+  "seeded_at": "2026-10-24T18:06:35",
+  "base_url": "http://localhost:7770",
+  "fixture": "tee_claim.json",
+  "parent_skus": [
+    "IGR-TCL-01",
+    "IGR-TCL-02",
+    "IGR-TCL-03",
+    "IGR-TCL-04",
+    "IGR-TCL-05",
+    "IGR-TCL-06",
+    "IGR-TCL-07",
+    "IGR-TCL-08",
+    "IGR-TCL-09",
+    "IGR-TCL-10",
+    "IGR-TCL-11",
+    "IGR-TCL-12",
+    "IGR-TCL-13",
+    "IGR-TCL-14",
+    "IGR-TCL-15",
+    "IGR-TCL-16",
+    "IGR-TCL-17",
+    "IGR-TCL-18",
+    "IGR-TCL-19",
+    "IGR-TCL-20",
+    "IGR-TCL-21",
+    "IGR-TCL-22",
+    "IGR-TCL-23",
+    "IGR-TCL-24",
+    "IGR-TCL-25",
+    "IGR-TCL-26",
+    "IGR-TCL-27",
+    "IGR-TCL-28",
+    "IGR-TCL-29",
+    "IGR-TCL-30",
+    "IGR-TCL-31",
+    "IGR-TCL-32",
+    "IGR-TCL-33",
+    "IGR-TCL-34",
+    "IGR-TCL-35",
+    "IGR-TCL-36",
+    "IGR-TCL-37",
+    "IGR-TCL-38",
+    "IGR-TCL-39",
+    "IGR-TCL-40",
+    "IGR-TCL-41",
+    "IGR-TCL-42",
+    "IGR-TCL-43",
+    "IGR-TCL-44",
+    "IGR-TCL-45"
+  ],
+  "child_skus": [
+    "IGR-TCL-01-XS",
+    "IGR-TCL-01-S",
+    "IGR-TCL-01-M",
+    "IGR-TCL-01-L",
+    "IGR-TCL-01-XL",
+    "IGR-TCL-01-XXL",
+    "IGR-TCL-02-XS",
+    "IGR-TCL-02-S",
+    "IGR-TCL-02-M",
+    "IGR-TCL-02-L",
+    "IGR-TCL-02-XL",
+    "IGR-TCL-02-XXL",
+    "IGR-TCL-03-S",
+    "IGR-TCL-03-M",
+    "IGR-TCL-03-L",
+    "IGR-TCL-03-XL",
+    "IGR-TCL-03-XXL",
+    "IGR-TCL-04-XS",
+    "IGR-TCL-04-S",
+    "IGR-TCL-04-M",
+    "IGR-TCL-04-L",
+    "IGR-TCL-04-XL",
+    "IGR-TCL-04-XXL",
+    "IGR-TCL-05-L",
+    "IGR-TCL-05-XL",
+    "IGR-TCL-05-XXL",
+    "IGR-TCL-06-XS",
+    "IGR-TCL-06-S",
+    "IGR-TCL-06-L",
+    "IGR-TCL-06-XXL",
+    "IGR-TCL-07-XS",
+    "IGR-TCL-07-S",
+    "IGR-TCL-07-M",
+    "IGR-TCL-07-XL",
+    "IGR-TCL-07-XXL",
+    "IGR-TCL-08-XS",
+    "IGR-TCL-08-S",
+    "IGR-TCL-08-M",
+    "IGR-TCL-08-L",
+    "IGR-TCL-08-XL",
+    "IGR-TCL-08-XXL",
+    "IGR-TCL-09-XS",
+    "IGR-TCL-09-S",
+    "IGR-TCL-09-L",
+    "IGR-TCL-09-XL",
+    "IGR-TCL-09-XXL",
+    "IGR-TCL-10-XS",
+    "IGR-TCL-10-S",
+    "IGR-TCL-10-M",
+    "IGR-TCL-10-L",
+    "IGR-TCL-10-XL",
+    "IGR-TCL-10-XXL",
+    "IGR-TCL-11-XS",
+    "IGR-TCL-11-S",
+    "IGR-TCL-11-M",
+    "IGR-TCL-11-L",
+    "IGR-TCL-11-XL",
+    "IGR-TCL-11-XXL",
+    "IGR-TCL-12-XS",
+    "IGR-TCL-12-S",
+    "IGR-TCL-12-L",
+    "IGR-TCL-12-XL",
+    "IGR-TCL-12-XXL",
+    "IGR-TCL-13-XS",
+    "IGR-TCL-13-S",
+    "IGR-TCL-13-M",
+    "IGR-TCL-13-L",
+    "IGR-TCL-13-XL",
+    "IGR-TCL-14-XS",
+    "IGR-TCL-14-S",
+    "IGR-TCL-14-M",
+    "IGR-TCL-14-L",
+    "IGR-TCL-14-XL",
+    "IGR-TCL-14-XXL",
+    "IGR-TCL-15-XS",
+    "IGR-TCL-15-S",
+    "IGR-TCL-15-M",
+    "IGR-TCL-15-L",
+    "IGR-TCL-15-XL",
+    "IGR-TCL-16-XS",
+    "IGR-TCL-16-S",
+    "IGR-TCL-16-M",
+    "IGR-TCL-16-L",
+    "IGR-TCL-16-XL",
+    "IGR-TCL-16-XXL",
+    "IGR-TCL-17-XS",
+    "IGR-TCL-17-S",
+    "IGR-TCL-17-M",
+    "IGR-TCL-17-L",
+    "IGR-TCL-17-XL",
+    "IGR-TCL-17-XXL",
+    "IGR-TCL-18-XS",
+    "IGR-TCL-18-S",
+    "IGR-TCL-18-L",
+    "IGR-TCL-18-XXL",
+    "IGR-TCL-19-XS",
+    "IGR-TCL-19-M",
+    "IGR-TCL-19-L",
+    "IGR-TCL-19-XL",
+    "IGR-TCL-19-XXL",
+    "IGR-TCL-20-M",
+    "IGR-TCL-20-L",
+    "IGR-TCL-20-XXL",
+    "IGR-TCL-21-XS",
+    "IGR-TCL-21-S",
+    "IGR-TCL-21-M",
+    "IGR-TCL-21-L",
+    "IGR-TCL-21-XL",
+    "IGR-TCL-21-XXL",
+    "IGR-TCL-22-XS",
+    "IGR-TCL-22-S",
+    "IGR-TCL-22-M",
+    "IGR-TCL-22-L",
+    "IGR-TCL-22-XL",
+    "IGR-TCL-22-XXL",
+    "IGR-TCL-23-XS",
+    "IGR-TCL-23-S",
+    "IGR-TCL-23-M",
+    "IGR-TCL-23-L",
+    "IGR-TCL-23-XL",
+    "IGR-TCL-23-XXL",
+    "IGR-TCL-24-S",
+    "IGR-TCL-24-M",
+    "IGR-TCL-24-L",
+    "IGR-TCL-24-XL",
+    "IGR-TCL-24-XXL",
+    "IGR-TCL-25-XS",
+    "IGR-TCL-25-S",
+    "IGR-TCL-25-M",
+    "IGR-TCL-25-L",
+    "IGR-TCL-25-XL",
+    "IGR-TCL-25-XXL",
+    "IGR-TCL-26-XS",
+    "IGR-TCL-26-S",
+    "IGR-TCL-26-M",
+    "IGR-TCL-26-L",
+    "IGR-TCL-26-XL",
+    "IGR-TCL-26-XXL",
+    "IGR-TCL-27-XS",
+    "IGR-TCL-27-S",
+    "IGR-TCL-27-M",
+    "IGR-TCL-27-L",
+    "IGR-TCL-27-XL",
+    "IGR-TCL-27-XXL",
+    "IGR-TCL-28-XS",
+    "IGR-TCL-28-S",
+    "IGR-TCL-28-M",
+    "IGR-TCL-28-L",
+    "IGR-TCL-28-XL",
+    "IGR-TCL-28-XXL",
+    "IGR-TCL-29-XS",
+    "IGR-TCL-29-S",
+    "IGR-TCL-29-M",
+    "IGR-TCL-29-XL",
+    "IGR-TCL-29-XXL",
+    "IGR-TCL-30-S",
+    "IGR-TCL-30-M",
+    "IGR-TCL-30-L",
+    "IGR-TCL-31-S",
+    "IGR-TCL-31-L",
+    "IGR-TCL-31-XL",
+    "IGR-TCL-31-XXL",
+    "IGR-TCL-32-XS",
+    "IGR-TCL-32-S",
+    "IGR-TCL-32-M",
+    "IGR-TCL-32-L",
+    "IGR-TCL-32-XXL",
+    "IGR-TCL-33-XS",
+    "IGR-TCL-33-S",
+    "IGR-TCL-33-M",
+    "IGR-TCL-33-L",
+    "IGR-TCL-33-XL",
+    "IGR-TCL-33-XXL",
+    "IGR-TCL-34-XS",
+    "IGR-TCL-34-S",
+    "IGR-TCL-34-M",
+    "IGR-TCL-34-L",
+    "IGR-TCL-34-XL",
+    "IGR-TCL-34-XXL",
+    "IGR-TCL-35-XS",
+    "IGR-TCL-35-S",
+    "IGR-TCL-35-L",
+    "IGR-TCL-35-XXL",
+    "IGR-TCL-36-S",
+    "IGR-TCL-36-M",
+    "IGR-TCL-36-XXL",
+    "IGR-TCL-37-S",
+    "IGR-TCL-37-M",
+    "IGR-TCL-37-L",
+    "IGR-TCL-37-XL",
+    "IGR-TCL-37-XXL",
+    "IGR-TCL-38-XS",
+    "IGR-TCL-38-S",
+    "IGR-TCL-38-M",
+    "IGR-TCL-38-L",
+    "IGR-TCL-38-XL",
+    "IGR-TCL-38-XXL",
+    "IGR-TCL-39-XS",
+    "IGR-TCL-39-M",
+    "IGR-TCL-39-L",
+    "IGR-TCL-39-XXL",
+    "IGR-TCL-40-XS",
+    "IGR-TCL-40-S",
+    "IGR-TCL-40-M",
+    "IGR-TCL-40-L",
+    "IGR-TCL-40-XL",
+    "IGR-TCL-40-XXL",
+    "IGR-TCL-41-XS",
+    "IGR-TCL-41-S",
+    "IGR-TCL-41-L",
+    "IGR-TCL-41-XXL",
+    "IGR-TCL-42-XS",
+    "IGR-TCL-42-S",
+    "IGR-TCL-42-M",
+    "IGR-TCL-42-L",
+    "IGR-TCL-42-XXL",
+    "IGR-TCL-43-S",
+    "IGR-TCL-43-M",
+    "IGR-TCL-43-L",
+    "IGR-TCL-43-XL",
+    "IGR-TCL-43-XXL",
+    "IGR-TCL-44-XS",
+    "IGR-TCL-44-S",
+    "IGR-TCL-44-M",
+    "IGR-TCL-44-L",
+    "IGR-TCL-44-XL",
+    "IGR-TCL-44-XXL",
+    "IGR-TCL-45-XS",
+    "IGR-TCL-45-M",
+    "IGR-TCL-45-L",
+    "IGR-TCL-45-XXL"
+  ],
+  "ground_truth": {
+    "families": {
+      "tee-01": {
+        "parent_sku": "IGR-TCL-01",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 30.65,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-01-XS",
+            "price": 39.73,
+            "qty": 114,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-01-S",
+            "price": 30.65,
+            "qty": 96,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-01-M",
+            "price": 38.08,
+            "qty": 117,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-01-L",
+            "price": 40.14,
+            "qty": 82,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-01-XL",
+            "price": 37.34,
+            "qty": 66,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-01-XXL",
+            "price": 40.67,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XXL"
+        ]
+      },
+      "tee-02": {
+        "parent_sku": "IGR-TCL-02",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 12.85,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-02-XS",
+            "price": 14.67,
+            "qty": 87,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-02-S",
+            "price": 15.62,
+            "qty": 37,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-02-M",
+            "price": 14.48,
+            "qty": 97,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-02-L",
+            "price": 16.01,
+            "qty": 49,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-02-XL",
+            "price": 12.85,
+            "qty": 116,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-02-XXL",
+            "price": 14.78,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XXL"
+        ]
+      },
+      "tee-03": {
+        "parent_sku": "IGR-TCL-03",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 28.76,
+        "from_price_option": "XXL",
+        "variants": {
+          "S": {
+            "sku": "IGR-TCL-03-S",
+            "price": 32.04,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-03-M",
+            "price": 33.48,
+            "qty": 21,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-03-L",
+            "price": 31.79,
+            "qty": 78,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-03-XL",
+            "price": 33.15,
+            "qty": 56,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-03-XXL",
+            "price": 28.76,
+            "qty": 85,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      },
+      "tee-04": {
+        "parent_sku": "IGR-TCL-04",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 18.32,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-04-XS",
+            "price": 24.58,
+            "qty": 107,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-04-S",
+            "price": 18.41,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-04-M",
+            "price": 18.32,
+            "qty": 129,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-04-L",
+            "price": 20.16,
+            "qty": 20,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-04-XL",
+            "price": 21.82,
+            "qty": 83,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-04-XXL",
+            "price": 23.58,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S",
+          "XXL"
+        ]
+      },
+      "tee-05": {
+        "parent_sku": "IGR-TCL-05",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 15.26,
+        "from_price_option": "L",
+        "variants": {
+          "L": {
+            "sku": "IGR-TCL-05-L",
+            "price": 15.26,
+            "qty": 29,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-05-XL",
+            "price": 20.62,
+            "qty": 34,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-05-XXL",
+            "price": 15.36,
+            "qty": 90,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-06": {
+        "parent_sku": "IGR-TCL-06",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 15.61,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-06-XS",
+            "price": 18.96,
+            "qty": 96,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-06-S",
+            "price": 18.8,
+            "qty": 48,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-06-L",
+            "price": 17.27,
+            "qty": 111,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-06-XXL",
+            "price": 15.61,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XXL"
+        ]
+      },
+      "tee-07": {
+        "parent_sku": "IGR-TCL-07",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 23.01,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-07-XS",
+            "price": 26.1,
+            "qty": 133,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-07-S",
+            "price": 30.23,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-07-M",
+            "price": 23.01,
+            "qty": 74,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-07-XL",
+            "price": 24.25,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-07-XXL",
+            "price": 26.46,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S",
+          "XL",
+          "XXL"
+        ]
+      },
+      "tee-08": {
+        "parent_sku": "IGR-TCL-08",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 22.25,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-08-XS",
+            "price": 23.17,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-08-S",
+            "price": 24.53,
+            "qty": 59,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-08-M",
+            "price": 22.25,
+            "qty": 81,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-08-L",
+            "price": 23.5,
+            "qty": 28,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-08-XL",
+            "price": 26.89,
+            "qty": 59,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-08-XXL",
+            "price": 28.57,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "XXL"
+        ]
+      },
+      "tee-09": {
+        "parent_sku": "IGR-TCL-09",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 10.13,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-09-XS",
+            "price": 12.61,
+            "qty": 56,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-09-S",
+            "price": 12.79,
+            "qty": 110,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-09-L",
+            "price": 12.84,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-09-XL",
+            "price": 10.13,
+            "qty": 80,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-09-XXL",
+            "price": 13.71,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L",
+          "XXL"
+        ]
+      },
+      "tee-10": {
+        "parent_sku": "IGR-TCL-10",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 15.86,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-10-XS",
+            "price": 15.86,
+            "qty": 58,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-10-S",
+            "price": 16.17,
+            "qty": 33,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-10-M",
+            "price": 16.67,
+            "qty": 88,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-10-L",
+            "price": 18.83,
+            "qty": 135,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-10-XL",
+            "price": 16.23,
+            "qty": 40,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-10-XXL",
+            "price": 16.69,
+            "qty": 33,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-11": {
+        "parent_sku": "IGR-TCL-11",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 10.71,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-11-XS",
+            "price": 11.51,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-11-S",
+            "price": 10.71,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-11-M",
+            "price": 12.85,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-11-L",
+            "price": 11.09,
+            "qty": 75,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-11-XL",
+            "price": 12.93,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-11-XXL",
+            "price": 11.64,
+            "qty": 82,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "S",
+          "M",
+          "XL"
+        ]
+      },
+      "tee-12": {
+        "parent_sku": "IGR-TCL-12",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 33.07,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-12-XS",
+            "price": 33.99,
+            "qty": 138,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-12-S",
+            "price": 33.07,
+            "qty": 79,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-12-L",
+            "price": 41.81,
+            "qty": 124,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-12-XL",
+            "price": 36.97,
+            "qty": 12,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-12-XXL",
+            "price": 42.18,
+            "qty": 90,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-13": {
+        "parent_sku": "IGR-TCL-13",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 32.45,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-13-XS",
+            "price": 43.39,
+            "qty": 118,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-13-S",
+            "price": 38.11,
+            "qty": 34,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-13-M",
+            "price": 39.06,
+            "qty": 118,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-13-L",
+            "price": 37.86,
+            "qty": 68,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-13-XL",
+            "price": 32.45,
+            "qty": 127,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-14": {
+        "parent_sku": "IGR-TCL-14",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 26.98,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-14-XS",
+            "price": 34.46,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-14-S",
+            "price": 28.7,
+            "qty": 20,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-14-M",
+            "price": 26.98,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-14-L",
+            "price": 36.6,
+            "qty": 85,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-14-XL",
+            "price": 35.13,
+            "qty": 53,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-14-XXL",
+            "price": 32.45,
+            "qty": 50,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "M"
+        ]
+      },
+      "tee-15": {
+        "parent_sku": "IGR-TCL-15",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 13.57,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-15-XS",
+            "price": 14.54,
+            "qty": 136,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-15-S",
+            "price": 14.16,
+            "qty": 93,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-15-M",
+            "price": 18.23,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-15-L",
+            "price": 16.32,
+            "qty": 101,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-15-XL",
+            "price": 13.57,
+            "qty": 36,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "tee-16": {
+        "parent_sku": "IGR-TCL-16",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 29.14,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-16-XS",
+            "price": 34.29,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-16-S",
+            "price": 36.0,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-16-M",
+            "price": 29.14,
+            "qty": 121,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-16-L",
+            "price": 33.68,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-16-XL",
+            "price": 34.56,
+            "qty": 112,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-16-XXL",
+            "price": 34.26,
+            "qty": 87,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "S",
+          "L"
+        ]
+      },
+      "tee-17": {
+        "parent_sku": "IGR-TCL-17",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 11.69,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-17-XS",
+            "price": 15.4,
+            "qty": 102,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-17-S",
+            "price": 13.53,
+            "qty": 88,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-17-M",
+            "price": 14.06,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-17-L",
+            "price": 12.85,
+            "qty": 103,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-17-XL",
+            "price": 11.69,
+            "qty": 82,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-17-XXL",
+            "price": 15.3,
+            "qty": 114,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "tee-18": {
+        "parent_sku": "IGR-TCL-18",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 35.7,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-18-XS",
+            "price": 35.7,
+            "qty": 129,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-18-S",
+            "price": 36.19,
+            "qty": 15,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-18-L",
+            "price": 39.64,
+            "qty": 13,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-18-XXL",
+            "price": 38.18,
+            "qty": 80,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-19": {
+        "parent_sku": "IGR-TCL-19",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 26.99,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-19-XS",
+            "price": 32.95,
+            "qty": 87,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-19-M",
+            "price": 29.24,
+            "qty": 138,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-19-L",
+            "price": 26.99,
+            "qty": 70,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-19-XL",
+            "price": 34.9,
+            "qty": 139,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-19-XXL",
+            "price": 34.07,
+            "qty": 110,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-20": {
+        "parent_sku": "IGR-TCL-20",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 36.87,
+        "from_price_option": "L",
+        "variants": {
+          "M": {
+            "sku": "IGR-TCL-20-M",
+            "price": 40.76,
+            "qty": 106,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-20-L",
+            "price": 36.87,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-20-XXL",
+            "price": 39.23,
+            "qty": 140,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "tee-21": {
+        "parent_sku": "IGR-TCL-21",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 32.61,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-21-XS",
+            "price": 35.84,
+            "qty": 112,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-21-S",
+            "price": 36.29,
+            "qty": 87,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-21-M",
+            "price": 32.61,
+            "qty": 32,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-21-L",
+            "price": 44.16,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-21-XL",
+            "price": 42.6,
+            "qty": 32,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-21-XXL",
+            "price": 36.85,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L",
+          "XXL"
+        ]
+      },
+      "tee-22": {
+        "parent_sku": "IGR-TCL-22",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 27.98,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-22-XS",
+            "price": 32.3,
+            "qty": 95,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-22-S",
+            "price": 31.32,
+            "qty": 73,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-22-M",
+            "price": 27.98,
+            "qty": 42,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-22-L",
+            "price": 35.34,
+            "qty": 130,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-22-XL",
+            "price": 36.89,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-22-XXL",
+            "price": 29.85,
+            "qty": 110,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XL"
+        ]
+      },
+      "tee-23": {
+        "parent_sku": "IGR-TCL-23",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 14.47,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-23-XS",
+            "price": 17.51,
+            "qty": 90,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-23-S",
+            "price": 18.78,
+            "qty": 118,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-23-M",
+            "price": 14.49,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-23-L",
+            "price": 15.63,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-23-XL",
+            "price": 19.01,
+            "qty": 108,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-23-XXL",
+            "price": 14.47,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "L",
+          "XXL"
+        ]
+      },
+      "tee-24": {
+        "parent_sku": "IGR-TCL-24",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 11.38,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-TCL-24-S",
+            "price": 11.38,
+            "qty": 41,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-24-M",
+            "price": 13.02,
+            "qty": 133,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-24-L",
+            "price": 12.68,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-24-XL",
+            "price": 14.28,
+            "qty": 52,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-24-XXL",
+            "price": 12.81,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L",
+          "XXL"
+        ]
+      },
+      "tee-25": {
+        "parent_sku": "IGR-TCL-25",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 15.87,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-25-XS",
+            "price": 20.33,
+            "qty": 116,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-25-S",
+            "price": 19.54,
+            "qty": 55,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-25-M",
+            "price": 16.3,
+            "qty": 67,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-25-L",
+            "price": 21.24,
+            "qty": 72,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-25-XL",
+            "price": 15.87,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-25-XXL",
+            "price": 18.85,
+            "qty": 113,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XL"
+        ]
+      },
+      "tee-26": {
+        "parent_sku": "IGR-TCL-26",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 24.38,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-26-XS",
+            "price": 24.38,
+            "qty": 124,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-26-S",
+            "price": 30.97,
+            "qty": 139,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-26-M",
+            "price": 24.87,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-26-L",
+            "price": 24.5,
+            "qty": 52,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-26-XL",
+            "price": 25.47,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-26-XXL",
+            "price": 26.02,
+            "qty": 139,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "XL"
+        ]
+      },
+      "tee-27": {
+        "parent_sku": "IGR-TCL-27",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 21.85,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-27-XS",
+            "price": 23.17,
+            "qty": 99,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-27-S",
+            "price": 29.23,
+            "qty": 32,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-27-M",
+            "price": 23.42,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-27-L",
+            "price": 23.99,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-27-XL",
+            "price": 26.65,
+            "qty": 106,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-27-XXL",
+            "price": 21.85,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "L",
+          "XXL"
+        ]
+      },
+      "tee-28": {
+        "parent_sku": "IGR-TCL-28",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 32.56,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-28-XS",
+            "price": 32.74,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-28-S",
+            "price": 35.79,
+            "qty": 46,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-28-M",
+            "price": 33.83,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-28-L",
+            "price": 34.95,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-28-XL",
+            "price": 32.56,
+            "qty": 50,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-28-XXL",
+            "price": 36.41,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "M",
+          "L",
+          "XXL"
+        ]
+      },
+      "tee-29": {
+        "parent_sku": "IGR-TCL-29",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 30.35,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-29-XS",
+            "price": 35.4,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-29-S",
+            "price": 30.35,
+            "qty": 20,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-29-M",
+            "price": 40.92,
+            "qty": 128,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-29-XL",
+            "price": 37.04,
+            "qty": 140,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-29-XXL",
+            "price": 36.97,
+            "qty": 80,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS"
+        ]
+      },
+      "tee-30": {
+        "parent_sku": "IGR-TCL-30",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 29.35,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-TCL-30-S",
+            "price": 36.0,
+            "qty": 43,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-30-M",
+            "price": 37.02,
+            "qty": 86,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-30-L",
+            "price": 29.35,
+            "qty": 90,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-31": {
+        "parent_sku": "IGR-TCL-31",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 33.62,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-TCL-31-S",
+            "price": 44.07,
+            "qty": 52,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-31-L",
+            "price": 33.62,
+            "qty": 74,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-31-XL",
+            "price": 43.56,
+            "qty": 133,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-31-XXL",
+            "price": 34.02,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XXL"
+        ]
+      },
+      "tee-32": {
+        "parent_sku": "IGR-TCL-32",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 24.79,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-32-XS",
+            "price": 28.13,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-32-S",
+            "price": 24.79,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-32-M",
+            "price": 26.15,
+            "qty": 50,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-32-L",
+            "price": 30.89,
+            "qty": 46,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-32-XXL",
+            "price": 27.77,
+            "qty": 96,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "S"
+        ]
+      },
+      "tee-33": {
+        "parent_sku": "IGR-TCL-33",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 29.42,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-33-XS",
+            "price": 29.61,
+            "qty": 121,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-33-S",
+            "price": 35.87,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-33-M",
+            "price": 36.8,
+            "qty": 84,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-33-L",
+            "price": 31.78,
+            "qty": 25,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-33-XL",
+            "price": 30.98,
+            "qty": 102,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-33-XXL",
+            "price": 29.42,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S",
+          "XXL"
+        ]
+      },
+      "tee-34": {
+        "parent_sku": "IGR-TCL-34",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 17.81,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-34-XS",
+            "price": 23.72,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-34-S",
+            "price": 19.69,
+            "qty": 118,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-34-M",
+            "price": 21.51,
+            "qty": 52,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-34-L",
+            "price": 23.44,
+            "qty": 118,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-34-XL",
+            "price": 19.95,
+            "qty": 83,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-34-XXL",
+            "price": 17.81,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "XXL"
+        ]
+      },
+      "tee-35": {
+        "parent_sku": "IGR-TCL-35",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 32.84,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-35-XS",
+            "price": 39.82,
+            "qty": 53,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-35-S",
+            "price": 32.84,
+            "qty": 13,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-35-L",
+            "price": 35.37,
+            "qty": 16,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-35-XXL",
+            "price": 41.89,
+            "qty": 48,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-36": {
+        "parent_sku": "IGR-TCL-36",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 21.37,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-TCL-36-S",
+            "price": 23.43,
+            "qty": 89,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-36-M",
+            "price": 21.37,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-36-XXL",
+            "price": 22.23,
+            "qty": 84,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "tee-37": {
+        "parent_sku": "IGR-TCL-37",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 31.22,
+        "from_price_option": "XXL",
+        "variants": {
+          "S": {
+            "sku": "IGR-TCL-37-S",
+            "price": 31.7,
+            "qty": 80,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-37-M",
+            "price": 34.28,
+            "qty": 131,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-37-L",
+            "price": 38.89,
+            "qty": 113,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-37-XL",
+            "price": 35.1,
+            "qty": 131,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-37-XXL",
+            "price": 31.22,
+            "qty": 64,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-38": {
+        "parent_sku": "IGR-TCL-38",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 17.15,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-38-XS",
+            "price": 19.32,
+            "qty": 62,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-38-S",
+            "price": 18.59,
+            "qty": 67,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-38-M",
+            "price": 19.8,
+            "qty": 109,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-38-L",
+            "price": 19.79,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-38-XL",
+            "price": 17.96,
+            "qty": 75,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-38-XXL",
+            "price": 17.15,
+            "qty": 133,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "tee-39": {
+        "parent_sku": "IGR-TCL-39",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 11.61,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-39-XS",
+            "price": 14.25,
+            "qty": 30,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-39-M",
+            "price": 11.61,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-39-L",
+            "price": 11.61,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-39-XXL",
+            "price": 13.91,
+            "qty": 82,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "L"
+        ]
+      },
+      "tee-40": {
+        "parent_sku": "IGR-TCL-40",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 11.92,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-40-XS",
+            "price": 14.11,
+            "qty": 70,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-40-S",
+            "price": 15.69,
+            "qty": 107,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-40-M",
+            "price": 11.92,
+            "qty": 94,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-40-L",
+            "price": 13.67,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-40-XL",
+            "price": 12.34,
+            "qty": 134,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-40-XXL",
+            "price": 13.92,
+            "qty": 89,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "tee-41": {
+        "parent_sku": "IGR-TCL-41",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 31.65,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-41-XS",
+            "price": 36.37,
+            "qty": 12,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-41-S",
+            "price": 34.73,
+            "qty": 108,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-41-L",
+            "price": 31.65,
+            "qty": 100,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-41-XXL",
+            "price": 32.17,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XXL"
+        ]
+      },
+      "tee-42": {
+        "parent_sku": "IGR-TCL-42",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 33.5,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-42-XS",
+            "price": 37.77,
+            "qty": 28,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-42-S",
+            "price": 33.5,
+            "qty": 131,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-42-M",
+            "price": 38.97,
+            "qty": 86,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-42-L",
+            "price": 37.38,
+            "qty": 21,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-42-XXL",
+            "price": 36.91,
+            "qty": 120,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-43": {
+        "parent_sku": "IGR-TCL-43",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 16.28,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-TCL-43-S",
+            "price": 16.28,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-43-M",
+            "price": 18.68,
+            "qty": 71,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-43-L",
+            "price": 22.16,
+            "qty": 111,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-43-XL",
+            "price": 19.57,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-43-XXL",
+            "price": 20.82,
+            "qty": 101,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S",
+          "XL"
+        ]
+      },
+      "tee-44": {
+        "parent_sku": "IGR-TCL-44",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 20.02,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-44-XS",
+            "price": 20.31,
+            "qty": 98,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-TCL-44-S",
+            "price": 26.08,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-44-M",
+            "price": 20.16,
+            "qty": 75,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-44-L",
+            "price": 20.02,
+            "qty": 21,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-TCL-44-XL",
+            "price": 22.67,
+            "qty": 91,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-44-XXL",
+            "price": 24.75,
+            "qty": 55,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      },
+      "tee-45": {
+        "parent_sku": "IGR-TCL-45",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 32.08,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-TCL-45-XS",
+            "price": 33.25,
+            "qty": 113,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-TCL-45-M",
+            "price": 33.06,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-TCL-45-L",
+            "price": 32.08,
+            "qty": 105,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-TCL-45-XXL",
+            "price": 35.93,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "XXL"
+        ]
+      }
+    },
+    "cross_listing": {
+      "XS": {
+        "cheapest_listing": "tee-11",
+        "cheapest_price": 11.51,
+        "listing_a_card_probe_would_pick": "tee-09",
+        "card_probe_wrong": true
+      },
+      "S": {
+        "cheapest_listing": "tee-11",
+        "cheapest_price": 10.71,
+        "listing_a_card_probe_would_pick": "tee-09",
+        "card_probe_wrong": true
+      },
+      "M": {
+        "cheapest_listing": "tee-39",
+        "cheapest_price": 11.61,
+        "listing_a_card_probe_would_pick": "tee-11",
+        "card_probe_wrong": true
+      },
+      "L": {
+        "cheapest_listing": "tee-11",
+        "cheapest_price": 11.09,
+        "listing_a_card_probe_would_pick": "tee-09",
+        "card_probe_wrong": true
+      },
+      "XL": {
+        "cheapest_listing": "tee-09",
+        "cheapest_price": 10.13,
+        "listing_a_card_probe_would_pick": "tee-09",
+        "card_probe_wrong": false
+      },
+      "XXL": {
+        "cheapest_listing": "tee-11",
+        "cheapest_price": 11.64,
+        "listing_a_card_probe_would_pick": "tee-09",
+        "card_probe_wrong": true
+      }
+    }
+  }
+}
