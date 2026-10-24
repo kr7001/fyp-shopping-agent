@@ -17,6 +17,7 @@ import unittest
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import paths  # noqa: E402
 
+import claim  # noqa: E402  (its manifest parser, which must accept every line the chains write)
 import stage_plan  # noqa: E402
 import stage_stubs  # noqa: E402
 
@@ -221,10 +222,16 @@ class ThePilotChain(Tree):
         batches = [l for l in lines if l.startswith("batch|")]
         self.assertEqual(len(batches), 12)
         self.assertTrue(all(pathlib.Path(l.split("|")[1]).is_dir() for l in batches))
-        self.assertIn(" arm=the block (model) round=1 --repeats 1 --repeat-start 1 --box --parser model --reading own "
-                      "--rate-plan every --max-steps 300 --clock 1800 --only decline-fit", batches[-1])
+        # The batch line carries the arm's flags as the analysis file writes them, not a literal:
+        # the literal pinned v6's `--rate-plan every` and broke when v7 dropped it (24 October 2026).
+        model_flags = stage_stubs.analysis_file()["arms"]["the block (model)"]["flags"]
+        self.assertIn(f" arm=the block (model) round=1 --repeats 1 --repeat-start 1 {model_flags} --only decline-fit",
+                      batches[-1])
         self.assertTrue(lines[-2].startswith("end "))
         self.assertEqual(lines[-1], "pilot-check|PASS|experiments/results/pilot-test.summary")
+        # Every line the chain wrote is one claim.py's manifest parser accepts (the analysis coder's
+        # CHAIN_LINES against the runner coder's chain, checked on a real emitted manifest).
+        self.assertEqual(claim.parse_manifest(manifest).problems, [])
         summary = (self.root / "experiments/results/pilot-test.summary").read_text()
         self.assertIn("verdict: PASS", summary)
         self.assertIn("projected stage 1: $", summary)
@@ -332,6 +339,8 @@ class TheStageChain(Tree):
         first_block = next(l for l in batches if "arm=the block" in l).split("|")[1]
         self.assertTrue(all(l.endswith(f" page-from {first_block}") for l in tests))
         self.assertTrue(lines[-1].startswith("end "))
+        # The re-run and reading-test lines too are ones claim.py's manifest parser accepts.
+        self.assertEqual(claim.parse_manifest(manifest).problems, [])
         # Each reading test's result: the filter, the market's task file, Haiku with no routing.
         results = [json.loads(pathlib.Path(l.split("|")[1]).read_text()) for l in tests]
         self.assertEqual([r["env_routing"] is None for r in results], [False, False, True, True])
