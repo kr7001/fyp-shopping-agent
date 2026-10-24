@@ -326,14 +326,17 @@ class PromptV2(unittest.TestCase):
             self.assertNotIn(f"{item.advertised:.2f}", prices)
 
     def test_the_size_words_are_the_generated_clothing_markets(self):
-        # The prompt says the listings whose price depends on the size name their sizes S,
+        # Prompts 2 and 3 say the listings whose price depends on the size name their sizes S,
         # M, L and XL. Checked here against both clothing markets the shop was seeded from;
-        # the box itself never reads a fixture.
+        # the box itself never reads a fixture. Since normalisation v5 (24 October 2026) the
+        # shop's sizes are six, XS and XXL the design B markets' too, so each of those
+        # markets' sizes is among them (tests/test_design_b.py, SizeXS).
         for name in ("scaled_apparel.json", "claim_apparel.json"):
             with self.subTest(market=name):
                 fixture = json.loads((paths.FIXTURES / name).read_text())
                 options = {v["option"] for family in fixture["families"] for v in family["variants"]}
-                self.assertEqual(options, set(normalise.SIZES))
+                self.assertEqual(options, {"S", "M", "L", "XL"})
+                self.assertLessEqual(options, set(normalise.SIZES))
         self.assertIn("S, M, L and XL", form.SIZES)
 
 

@@ -427,5 +427,107 @@ class LabelSentence(unittest.TestCase):
         self.assertEqual(replay_box.reproduction(replay_box.stored_decision({"box": record}), record), "")
 
 
+# ---------------------------------------------------------------------------
+# 5. Size XS as a target, and the promo check
+
+# The two templates as the verifier finalised them on 24 October 2026, filled for the made-up
+# Example search of `named_page`: a seller its titles name in full, and a promotion's figure.
+XS_PRICE = GO + ("What is the lowest price anyone charges for size XS of the Example tee, among those that "
+                 "can actually be bought?")
+PROMO_CHECK = GO + ("The Mellow Fields listing of the Example tee says in its size menu that size XS is on "
+                    "promotion at $9.99. Is that what size XS costs on that listing? If not, what does it cost?")
+
+
+class SizeXS(unittest.TestCase):
+    def setUp(self):
+        self.page = named_page()
+
+    def test_the_six_sizes_and_their_words(self):
+        # Planted: the four sizes of normalisation v4 again, "extra small" and XXL were none.
+        self.assertEqual(normalise.SIZES, ("XS", "S", "M", "L", "XL", "XXL"))
+        for value, size in (("xs", "XS"), ("XS", "XS"), ("extra small", "XS"), ("extra-small", "XS"),
+                            ("x-small", "XS"), ("size XS", "XS"), ("xxl", "XXL"), ("2XL", "XXL"),
+                            ("xx-large", "XXL"), ("double extra large", "XXL"), ("XS - Promo $9.99", "XS"),
+                            ("M - Only 2 left!", "M"), ("medium", "M")):
+            with self.subTest(value=value):
+                self.assertEqual(normalise.size_of(value), size)
+        self.assertIsNone(normalise.size_of("2 x 9.5L"))
+        # A word names its size only where no longer word holds it. Planted: every word read
+        # where it stands, "extra small" named S as well.
+        for words, named in (("an extra small tee", {"XS"}), ("a double extra large tee", {"XXL"}),
+                             ("an extra large tee", {"XL"}), ("a small tee", {"S"}), ("size XS or S", {"XS", "S"})):
+            with self.subTest(words=words):
+                self.assertEqual(normalise.sizes_named(GO + words), named)
+
+    def test_the_xs_question_plans_its_own_size(self):
+        rules = box.decide(XS_PRICE, self.page)
+        self.assertEqual((rules.kind, rules.form.filter("size").value, rules.form.filter("availability").value),
+                         ("availability_bound", "XS", "buyable"))
+        self.assertNotIn("size M", rules.query)
+        for label, value in (("XS", "XS"), ("its word", "extra small"), ("its label", "XS - Promo $9.99")):
+            with self.subTest(model=label):
+                model = box.decide(XS_PRICE, self.page, parser="model", call=stub(reply(filters=[
+                    f("size", "=", value), BUYABLE])))
+                self.assertEqual((model.parse.used, model.kind, model.form.filter("size").value),
+                                 ("model", "availability_bound", "XS"))
+        # Quiet the other way: a model that reads another size falls back.
+        wrong = box.decide(XS_PRICE, self.page, parser="model", call=stub(reply(filters=[f("size", "=", "S"), BUYABLE])))
+        self.assertEqual(wrong.parse.used, "rules")
+        self.assertIn("the form asks about size S, which the question does not name", wrong.parse.fallback_reason)
+
+    def test_no_size_is_fixed_the_size_comes_from_the_question(self):
+        for size in normalise.SIZES:
+            with self.subTest(size=size):
+                decision = box.decide(XS_PRICE.replace("size XS", f"size {size}"), self.page)
+                self.assertEqual((decision.kind, decision.form.filter("size").value), ("availability_bound", size))
+
+
+class PromoCheck(unittest.TestCase):
+    def setUp(self):
+        self.page = named_page()
+
+    def test_it_is_a_lookup_on_the_named_listing(self):
+        decision = box.decide(PROMO_CHECK, self.page)
+        mellow = next(item for item in self.page.listings if item.seller == "Mellow Fields")
+        self.assertEqual((decision.kind, decision.plan.primitive, [c.url for c in decision.plan.candidates]),
+                         ("named_lookup", "lookup", [mellow.url]))
+        self.assertEqual((decision.form.filter("seller").value, decision.form.filter("size").value,
+                          decision.form.filter("price")), (("Mellow Fields",), "XS", None))
+        for words in ("Open each of them and nothing else", f"- Mellow Fields, {mellow.url}",
+                      "choose size XS, then look at the page again and read the price it now shows",
+                      "give the figure you read for each named listing, then answer the question from those figures",
+                      primitives.LABEL_NOTE):
+            self.assertIn(words, decision.query)
+        # Held to every soundness property, as every plan is (LESSONS 35).
+        self.assertEqual(form.verify(decision.form, self.page), [])
+        # The claim the answer quotes back is the question's own figure, not an invented price.
+        self.assertIn(999, box.stated_figures(decision))
+        # The model's lookup is used as it is.
+        model = box.decide(PROMO_CHECK, self.page, parser="model", call=stub(reply(
+            quantifier="lookup", filters=[f("seller", "in", ["Mellow Fields"]), f("size", "=", "XS")])))
+        self.assertEqual((model.parse.used, model.query), ("model", decision.query))
+
+    def test_a_promotions_figure_is_never_made_a_limit(self):
+        # Planted: the check left out of `normalise.conflicts`, the model's limit at $9.99 was
+        # used and the plan counted the listing only at or below the label's figure.
+        limited = reply(quantifier="lookup", filters=[f("seller", "in", ["Mellow Fields"]), f("size", "=", "XS"),
+                                                      f("price", "<=", 9.99)])
+        decision = box.decide(PROMO_CHECK, self.page, parser="model", call=stub(limited))
+        self.assertEqual((decision.parse.used, decision.kind), ("rules", "named_lookup"))
+        self.assertIn("the form sets a price limit of 9.99, a figure the question gives as a promotion's claim, "
+                      "not a limit", decision.parse.fallback_reason)
+        self.assertNotIn("9.99", decision.plan.instruction)
+        # Quiet: a limit the question's own words set, beside a promotion's other figure; and
+        # a figure that stands once as a claim and once as a limit. Planted: `promoted` true
+        # wherever the figure stands as a claim once, the second was refused.
+        self.assertTrue(normalise.promoted(PROMO_CHECK, 9.99))
+        self.assertFalse(normalise.promoted(GO + "Is size XS under $9.99 anywhere?", 9.99))
+        both = GO + "One listing says XS is on promotion at $9.99. Can I get XS under $9.99 anywhere?"
+        self.assertFalse(normalise.promoted(both, 9.99))
+        under = box.decide(both, self.page, parser="model", call=stub(reply(
+            quantifier="exists", filters=[f("size", "=", "XS"), f("price", "<", 9.99), BUYABLE])))
+        self.assertEqual(under.parse.used, "model", under.parse.fallback_reason)
+
+
 if __name__ == "__main__":
     unittest.main()

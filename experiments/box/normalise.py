@@ -52,6 +52,7 @@ import paths  # noqa: E402,F401  (puts box/, runners/, analysis/, water/ on the 
 import ambiguity  # noqa: E402
 import form as form_module  # noqa: E402
 import page as page_module  # noqa: E402
+import sufficiency  # noqa: E402
 from form import Filter, Form  # noqa: E402
 
 # Bumped when a normalisation or a check changes what the box does with a model's form.
@@ -85,16 +86,25 @@ from form import Filter, Form  # noqa: E402
 #      the shop can answer one reading alone. And a form whose plan carries no availability,
 #      the results page's, takes the buyable reading as it stands, its figure being the
 #      cheapest option that can be bought, while its menu reading asks for the price of a
-#      sold-out size (`with_reading`, `reading_problems`)
+#      sold-out size (`with_reading`, `reading_problems`). The sizes are XS, S, M, L, XL and
+#      XXL, extra small is XS and double extra large XXL, and a size written as its menu
+#      label, "XS - Promo $9.99", is the size the label opens with; a size word names its
+#      size only where no longer one holds it, so "extra small" names XS and not S
+#      (`sizes_named`). A price limit set at a figure the question gives only as a
+#      promotion's claim contradicts it (`conflicts`): "on promotion at $9.99" is no limit
 VERSION = 5
 
-# The clothing listings whose price depends on the size chosen name their sizes S, M, L and
-# XL: the options of the shop's configurable attribute apparel_size, read from its database
-# on 22 October 2026. The words are the student's list of synonyms (22 October 2026), with
-# x-large, the same word written short, since 2.
-SIZES = ("S", "M", "L", "XL")
-SIZE_WORDS = {"small": "S", "medium": "M", "large": "L", "extra large": "XL", "extra-large": "XL",
-              "x-large": "XL", "x large": "XL"}
+# The clothing listings whose price depends on the size chosen name their sizes among XS, S,
+# M, L, XL and XXL: the options of the shop's configurable attribute apparel_size, S, M, L and
+# XL read from its database on 22 October 2026, and XS and XXL the design B markets' (24
+# October 2026). The words are the student's list of synonyms (22 October 2026), with x-large,
+# the same word written short, since 2, and the words for XS and XXL since 5.
+SIZES = ("XS", "S", "M", "L", "XL", "XXL")
+SIZE_WORDS = {"extra small": "XS", "extra-small": "XS", "x-small": "XS", "x small": "XS",
+              "small": "S", "medium": "M", "large": "L", "extra large": "XL", "extra-large": "XL",
+              "x-large": "XL", "x large": "XL", "double extra large": "XXL",
+              "double extra-large": "XXL", "extra extra large": "XXL", "xx-large": "XXL",
+              "xx large": "XXL", "2xl": "XXL"}
 # A model's availability values, as the rules write them.
 AVAILABILITY = ("buyable", "listed")
 # What reads as a price limit written as text: "20", "$20", "20.00".
@@ -125,13 +135,18 @@ def note(evidence: dict, field: str, line: str) -> None:
 
 def size_of(value) -> str | None:
     """The shop's name for a size a model wrote another way, or None when it is not one of
-    the four: "medium" and "m" are M, "size M" is M, "2 x 9.5L" stays as written."""
+    the six: "medium" and "m" are M, "size M" is M, "2 x 9.5L" stays as written. A size
+    written as its menu label, "XS - Promo $9.99", is the size the label opens with, taken
+    whole (normalisation v5, `sufficiency.label_size`), so never S."""
     if not isinstance(value, str):
         return None
     text = re.sub(r"^\s*size\s+", "", value, flags=re.IGNORECASE).strip()
     if text.lower() in SIZE_WORDS:
         return SIZE_WORDS[text.lower()]
-    return text.upper() if text.upper() in SIZES else None
+    if text.upper() in SIZES:
+        return text.upper()
+    labelled = sufficiency.label_size(text)
+    return labelled if labelled in SIZES else None
 
 
 def sizes(condition: Filter, changes: list[str], evidence: dict) -> Filter:
@@ -535,9 +550,28 @@ def figures(question: str) -> set[float]:
     return found
 
 
+def promoted(question: str, figure: float) -> bool:
+    """Whether the question states `figure` and only as a promotion's claim: every place it
+    stands, URLs aside, lies inside the words a promotion states it with
+    (`sufficiency.PROMO_FIGURE`, "on promotion at $9.99")."""
+    text = form_module.URL.sub(" ", question)
+    claims = [found.span() for found in sufficiency.PROMO_FIGURE.finditer(text)]
+    spots = [found.start() for found in re.finditer(r"\d+(?:\.\d+)?", text)
+             if abs(float(found.group(0)) - figure) < 0.005]
+    return bool(spots) and all(any(start <= spot < end for start, end in claims) for spot in spots)
+
+
 def sizes_named(question: str) -> set[str]:
-    """The shop's sizes the question names, as a size (M, case kept) or by a size word."""
-    found = {size for word, size in SIZE_WORDS.items() if words_in(word, question)}
+    """The shop's sizes the question names, as a size (M, case kept, and whole, so "XS" names
+    XS and not S) or by a size word, each word only where no longer one holds it
+    (normalisation v5): "extra small" names XS and not S, "extra large" XL and not L."""
+    text, found = question, set()
+    for word in sorted(SIZE_WORDS, key=len, reverse=True):
+        spaced = r"\s+".join(map(re.escape, word.split()))
+        pattern = re.compile(rf"(?<!\w){spaced}(?!\w)", re.IGNORECASE)
+        if pattern.search(text):
+            found.add(SIZE_WORDS[word])
+            text = pattern.sub(" ", text)
     return found | {size for size in SIZES if re.search(rf"(?<![\w-]){size}(?![\w-])", question)}
 
 
@@ -651,6 +685,14 @@ def conflicts(form: Form, question: str, page: page_module.Page | None) -> list[
             and not any(abs(float(limit.value) - figure) < 0.005 for figure in stated):
         found.append(f"the form sets a price limit of {limit.value:g}, a figure the question does "
                      f"not state")
+    # A figure the question gives only as a promotion's claim, "says size XS is on promotion
+    # at $9.99", is the claim to check, never a limit (normalisation v5, 24 October 2026,
+    # the promo check): with no limit word of the rules' around it, a limit set at it is
+    # the label's figure taken as a price.
+    if limit is not None and isinstance(limit.value, (int, float)) and not isinstance(limit.value, bool) \
+            and rules.filter("price") is None and promoted(question, float(limit.value)):
+        found.append(f"the form sets a price limit of {limit.value:g}, a figure the question gives "
+                     f"as a promotion's claim, not a limit")
     text = NOT_A_NEGATION.sub(" ", asking(question))
     negation = NEGATION.search(text)
     if form.negated and not (negation and EXISTENCE.search(text)):
