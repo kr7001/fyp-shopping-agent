@@ -89,7 +89,9 @@ def named_page() -> page.Page:
     """Made-up sellers on a search for "Example", two of whose names share a word, each
     titled the way the shop titles its listings. `ModelPath` checks they are nobody's."""
     names = ["Harbour Lane Goods", "Harbour Mill Supply", "Mellow Fields", "Quarry Street Outfitters"]
-    prices = [21.40, 12.25, 19.50, 15.75]
+    # 19.51, not 19.50: a figure no market's variant or card carries (the tee-only development
+    # market of 24 October 2026 sells a size at 19.50).
+    prices = [21.40, 12.25, 19.51, 15.75]
     listings = [page.Listing(seller=name, title=f"Example Heavyweight Tee - {name}",
                              url=f"{BASE}/example-tee-{n + 1:02d}.html", advertised=price)
                 for n, (name, price) in enumerate(zip(names, prices))]

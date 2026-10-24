@@ -494,8 +494,10 @@ class StrictUnder(unittest.TestCase):
         # The A+ development market's, written on 22 October 2026 by a generator whose key
         # reads "under" strictly too.
         self.assertEqual(self.strict_questions("tasks_aplus_dev.json")[1], ["tee-exists-under"])
+        # And the tee-only development market's (24 October 2026), by the same generator's key.
+        self.assertEqual(self.strict_questions("tasks_tee_dev.json")[1], ["tee-exists-under"])
         self.assertEqual(sorted(p.name for p in paths.TASKS.glob("tasks*.json")),
-                         sorted(self.AUDITED + ("tasks_claim_apparel.json", "tasks_aplus_dev.json")))
+                         sorted(self.AUDITED + ("tasks_claim_apparel.json", "tasks_aplus_dev.json", "tasks_tee_dev.json")))
 
 
 # ---------------------------------------------------------------------------
