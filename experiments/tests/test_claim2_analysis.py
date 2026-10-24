@@ -1607,19 +1607,23 @@ class AuditItems(unittest.TestCase):
     def test_the_asks_the_word_list_clash_caused(self):
         # The block (model) asked on tee-target-price, a clear question, for a clash, and no reply
         # closed the slot; its round-2 ask on tee-count-stocked, a two-reading question answered by
-        # the scripted shopper, was a clash too; its round-3 ask was the question's own ambiguity,
-        # and its round-1 ask, closed, recorded no reason. The rules arm's six asks record none.
+        # the scripted shopper, was a clash too. Every ask the box itself made says "ambiguous",
+        # the question's own two readings (box v19, every ask says why; until the box branch was
+        # merged on 24 October 2026 the box recorded no reason and these read "not recorded").
+        # The two slots the fixture closes by hand without a reason (`close_slot`) still read
+        # "not recorded", as a record from a box before v19 does. The rules arm's six asks are
+        # the box's own, so each says "ambiguous".
         clashes = self.m["secondary"]["clash_asks"]
         model = clashes["the block (model)"]
         # Seven asks: the two two-reading templates' six (two of them closed), and the clash's.
         self.assertEqual((model["asks"], model["clash"], model["clash_by_label"]),
                          (7, 2, {"clear": 1, "ambiguous": 1}))
-        self.assertEqual(model["reasons"], {"not recorded": 4, "clash": 2, "ambiguous": 1})
+        self.assertEqual(model["reasons"], {"ambiguous": 3, "clash": 2, "not recorded": 2})
         # The closed slot has no record, so it is read after the runs that have one.
         self.assertEqual(sorted((n["run"].split("/")[1], n["closed"]) for n in model["named"]),
                          [("tee-count-stocked-2", False), ("tee-target-price-3", True)])
         self.assertEqual((clashes["the block (rules)"]["asks"], clashes["the block (rules)"]["clash"],
-                          clashes["the block (rules)"]["reasons"]), (6, 0, {"not recorded": 6}))
+                          clashes["the block (rules)"]["reasons"]), (6, 0, {"ambiguous": 6}))
         self.assertEqual({arm: row["asks"] for arm, row in clashes.items() if not arm.startswith("the block")},
                          {"shipped": 0, "open everything (product)": 0})
         self.assertIn("clashes 2 (on clear questions 1, on two-reading questions 1)", self.out)
