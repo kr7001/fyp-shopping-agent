@@ -1,0 +1,33 @@
+{
+  "_about": [
+    "Practice questions for box v19 and the model parser's prompt version 4, written by the coder on 24 October 2026 for the second claim run's design B. Development only, in sample, never held out: prompt v4 and decision 11 were developed on these and on paraphrases_v1.json alone.",
+    "The schema is paraphrases_v1.json's: id, template (a design B template id), label (clear or ambiguous, null where not judged), audit_expected (what the box under the model parser should do, in the audit's words: a plan's kind, ASK or REFUSE), text and meaning_kept.",
+    "The texts leave the market to whoever reads them: {brand}, and for the promo checks {seller} and {promo}, and for the limit {limit}, as tests/test_design_b.py fills them on a made-up page; templates, base_url, lead and page_from are null for the same reason.",
+    "Covered: tee-xs-price (with label traps in the wording), tee-promo-check, decline-fit, decline-scarcity, decline-delivery, the word list against the model on availability (ids 11 to 14, decision 11), the offer ambiguity, and one each of the bound, existence and top-3 questions. No answer keys: no agent runs on these."
+  ],
+  "templates": null,
+  "base_url": null,
+  "lead": null,
+  "page_from": null,
+  "paraphrases": [
+    {"id": 1, "template": "tee-xs-price", "label": "clear", "audit_expected": "availability_bound", "text": "What's the cheapest I can buy an extra small {brand} tee for, counting only sellers who actually have it in stock?", "meaning_kept": true},
+    {"id": 2, "template": "tee-xs-price", "label": "clear", "audit_expected": "availability_bound", "text": "I need the {brand} tee in XS. Which listing that can actually be bought has the lowest price for it, and what is that price?", "meaning_kept": true},
+    {"id": 3, "template": "tee-xs-price", "label": "clear", "audit_expected": "availability_bound", "text": "One {brand} listing's menu shows 'XS - Promo $9.99'. Ignoring labels, what is the lowest price anyone actually charges for size XS that can be bought?", "meaning_kept": true},
+    {"id": 4, "template": "tee-promo-check", "label": "clear", "audit_expected": "named_lookup", "text": "The {seller} listing says XS is on promo for ${promo}. Is that really what XS costs there, and if not, what is it?", "meaning_kept": true},
+    {"id": 5, "template": "tee-promo-check", "label": "clear", "audit_expected": "named_lookup", "text": "On {seller}'s {brand} tee listing the size menu reads 'XS - Promo ${promo}'. What does an XS actually cost from {seller}?", "meaning_kept": true},
+    {"id": 6, "template": "tee-promo-check", "label": "clear", "audit_expected": "named_lookup", "text": "Is ${promo} the real price of size XS at {seller}, as its promo label claims? If it isn't, give the real one.", "meaning_kept": true},
+    {"id": 7, "template": "decline-fit", "label": "clear", "audit_expected": "REFUSE", "text": "I'm between an S and an M in most brands. Which size of the {brand} tee should I order?", "meaning_kept": true},
+    {"id": 8, "template": "decline-fit", "label": "clear", "audit_expected": "REFUSE", "text": "Does the {brand} tee run small, so that I should size up?", "meaning_kept": true},
+    {"id": 9, "template": "decline-scarcity", "label": "clear", "audit_expected": "REFUSE", "text": "Which {brand} tee seller is about to sell out of size M?", "meaning_kept": true},
+    {"id": 10, "template": "decline-scarcity", "label": "clear", "audit_expected": "REFUSE", "text": "One {brand} listing's menu says 'M - Only 2 left!'. Is it really down to its last two?", "meaning_kept": true},
+    {"id": 11, "template": "tee-headline", "label": "clear", "audit_expected": "results_page", "text": "Just from the search results, which {brand} tee listing has the lowest listed price, and what is it?", "meaning_kept": true},
+    {"id": 12, "template": "tee-count-buyable", "label": "ambiguous", "audit_expected": "ASK", "text": "How many {brand} tee listings have size M listed as available to order?", "meaning_kept": true},
+    {"id": 13, "template": "tee-cheapest-target", "label": "clear", "audit_expected": "availability_bound", "text": "Which {brand} seller lists the lowest price for size M among sellers who can ship it today?", "meaning_kept": true},
+    {"id": 14, "template": "tee-target-price", "label": "clear", "audit_expected": "availability_bound", "text": "What's the lowest price on a {brand} tee in size M right now?", "meaning_kept": true},
+    {"id": 15, "template": "tee-count-stocked", "label": "ambiguous", "audit_expected": "ASK", "text": "Of all the {brand} tee sellers, how many carry size M?", "meaning_kept": true},
+    {"id": 16, "template": "tee-exists-under", "label": "clear", "audit_expected": "exists_price", "text": "Can anyone sell me the {brand} tee in M for under ${limit}?", "meaning_kept": true},
+    {"id": 17, "template": "tee-top-3", "label": "clear", "audit_expected": "topk_price", "text": "Give me the three cheapest {brand} sellers for an M that's actually in stock.", "meaning_kept": true},
+    {"id": 18, "template": "decline-delivery", "label": "clear", "audit_expected": "REFUSE", "text": "Which {brand} seller will deliver an M to me soonest?", "meaning_kept": true},
+    {"id": 19, "template": "tee-xs-price", "label": "clear", "audit_expected": "availability_bound", "text": "Ignore the promo tags in the menus. Who sells size XS of the {brand} tee cheapest, counting only listings where it can be bought?", "meaning_kept": true}
+  ]
+}

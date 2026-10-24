@@ -616,5 +616,139 @@ class Declines(unittest.TestCase):
                                                       or "stock quantity" in decision.refuse.split(",")[0]))
 
 
+# ---------------------------------------------------------------------------
+# 7. Prompt version 4 and the practice questions
+
+# Prompt version 3 for test_model_parser's question, taken at 03f69fd before version 4 existed.
+V3_PROMPT_SHA256 = "5924b0e774723b2e8961def9a613391d427c9b7b8b32d1d21d7daaa8d77a8f2f"
+PRACTICE = paths.TASKS / "paraphrases_dev2.json"
+FILLED = {"brand": "Example", "seller": "Mellow Fields", "promo": "9.99", "limit": "25"}
+XS_BUY = [f("size", "=", "XS"), BUYABLE]
+M_BUY = [SIZE_M, BUYABLE]
+LOOKUP_XS = dict(quantifier="lookup", filters=[f("seller", "in", ["Mellow Fields"]), f("size", "=", "XS")])
+# A good parser's reply to each practice question, as the stub returns it.
+CANNED = {
+    1: dict(filters=XS_BUY), 2: dict(filters=XS_BUY), 3: dict(filters=XS_BUY),
+    4: LOOKUP_XS, 5: LOOKUP_XS, 6: LOOKUP_XS,
+    7: dict(quantifier="argmax", objective="attribute:fit", unknowns=["fit"]),
+    8: dict(quantifier="argmax", objective="attribute:fit", unknowns=["fit"]),
+    9: dict(quantifier="argmin", objective="attribute:stock quantity", filters=[SIZE_M], unknowns=["stock quantity"]),
+    10: dict(quantifier="lookup", objective="attribute:stock quantity", filters=[SIZE_M], unknowns=["stock quantity"]),
+    11: dict(objective="advertised price"),
+    12: dict(quantifier="count", objective="availability", filters=M_BUY),
+    13: dict(filters=M_BUY), 14: dict(filters=[SIZE_M]),
+    15: dict(quantifier="count", objective="availability", filters=[SIZE_M],
+             ambiguities=[{"word": "carry", "readings": ["listed", "buyable"]}]),
+    16: dict(quantifier="exists", filters=[SIZE_M, f("price", "<", 25), BUYABLE]),
+    17: dict(quantifier="topk", k=3, filters=M_BUY),
+    18: dict(objective="attribute:delivery time", filters=[SIZE_M], unknowns=["delivery time"]),
+    19: dict(filters=XS_BUY),
+}
+
+
+def practice() -> list[tuple[dict, str]]:
+    """Each practice entry with its question as the box gets it on `named_page`."""
+    entries = json.loads(PRACTICE.read_text())["paraphrases"]
+    return [(entry, GO + entry["text"].format(**FILLED)) for entry in entries]
+
+
+class PromptV4(unittest.TestCase):
+    QUESTION = GO + "Is there any seller under $20 for size M?"
+
+    def test_version_3_is_kept_byte_for_byte_and_version_4_is_current(self):
+        import hashlib
+        self.assertEqual(hashlib.sha256(form.prompt(self.QUESTION, version=3).encode()).hexdigest(), V3_PROMPT_SHA256)
+        self.assertEqual(form.PROMPT_VERSION, 4)
+        self.assertEqual(form.prompt(self.QUESTION), form.prompt(self.QUESTION, version=4))
+        with self.assertRaises(ValueError):
+            form.prompt(self.QUESTION, version=5)
+
+    def test_version_4_says_what_design_b_needs_and_keeps_the_reply_format(self):
+        sent = form.prompt(self.QUESTION)
+        for needle in ("does not check a label's claim", "displays no stock counts", "or fit (which size suits",
+                       "among XS, S, M, L, XL and XXL", "extra small is XS", "double extra large is XXL",
+                       "is not a price limit", '"attribute:fit"', '"attribute:stock quantity"',
+                       '"Listed price" or "shown price" is a price', form.SCHEMA_V2):
+            with self.subTest(needle=needle[:40]):
+                self.assertIn(needle, sent)
+        self.assertTrue(sent.endswith(f"\n\nThe question:\n{self.QUESTION}"))
+        self.assertNotIn("description", sent)
+        for brand in ("Larchmere", "Thornwood", "Wexcombe"):
+            self.assertNotIn(brand, sent)
+
+    def test_every_new_example_is_what_the_box_does_with_it(self):
+        page_ = named_page()
+        new = form.EXAMPLES_V4[len(form.EXAMPLES):]
+        self.assertEqual([kind for kind, _, _ in new],
+                         ["named_lookup", "availability_bound", "argmax_fit", "argmax_stock_quantity"])
+        for kind, question, example in new:
+            with self.subTest(kind=kind):
+                decision = box.decide(question, page_, parser="model", call=stub(json.dumps(example)))
+                self.assertEqual(decision.parse.changes, ())
+                if kind.startswith("argmax_"):
+                    self.assertEqual((decision.parse.used, decision.parse.declined, decision.query), ("model", True, None))
+                else:
+                    self.assertEqual((decision.parse.used, decision.kind), ("model", kind))
+                self.assertIn(f"Question: {question}\nForm: {json.dumps(example)}\n", form.prompt(self.QUESTION))
+        # No example copies a practice question: no run of six words is shared, the lead aside.
+        def grams(text: str) -> set:
+            words = re.findall(r"[a-z0-9$]+", text.split(" . ", 1)[-1].lower())
+            return {tuple(words[n:n + 6]) for n in range(len(words) - 5)}
+        for _, question, _ in new:
+            for _, text in practice():
+                self.assertEqual(grams(question) & grams(text), set())
+
+    def test_a_malformed_reply_falls_back_to_the_rules_with_its_reason(self):
+        page_ = named_page()
+        for label, text, words in (("no JSON", "I think it is the cheapest XS.", "holds no JSON object"),
+                                   ("a quantifier no one plans", reply(quantifier="cheapest"), "quantifier 'cheapest'"),
+                                   ("no content", None, "holds no JSON object"),
+                                   ("not text", 42, "of type int")):
+            with self.subTest(reply=label):
+                decision = box.decide(XS_PRICE, page_, parser="model", call=stub(text))
+                self.assertEqual((decision.parse.used, decision.kind), ("rules", "availability_bound"))
+                self.assertIn(words, decision.parse.fallback_reason)
+        # Reasoning with braces around the form, and content parts, still read the form.
+        wrapped = "Thinking {about it}. " + reply(filters=XS_BUY) + " Done {}."
+        parts = [{"type": "text", "text": reply(filters=XS_BUY)}]
+        for label, text in (("braces in reasoning", wrapped), ("content parts", parts)):
+            with self.subTest(reply=label):
+                self.assertEqual(box.decide(XS_PRICE, page_, parser="model", call=stub(text)).parse.used, "model")
+
+
+class PracticeSet(unittest.TestCase):
+    def test_the_file_is_v1s_schema_with_every_new_kind_covered(self):
+        data = json.loads(PRACTICE.read_text())
+        self.assertEqual(set(data), {"_about", "templates", "base_url", "lead", "page_from", "paraphrases"})
+        entries = data["paraphrases"]
+        self.assertTrue(16 <= len(entries) <= 20)
+        for entry in entries:
+            self.assertEqual(set(entry), {"id", "template", "label", "audit_expected", "text", "meaning_kept"})
+        templates = {entry["template"] for entry in entries}
+        self.assertLessEqual({"tee-xs-price", "tee-promo-check", "decline-fit", "decline-scarcity"}, templates)
+        self.assertEqual(set(CANNED), {entry["id"] for entry in entries})
+
+    def test_each_question_with_a_good_parsers_reply_does_what_it_should(self):
+        page_ = named_page()
+        clashes = 0
+        for entry, question in practice():
+            with self.subTest(id=entry["id"]):
+                decision = box.decide(question, page_, parser="model", call=stub(reply(**CANNED[entry["id"]])))
+                expected = entry["audit_expected"]
+                if expected == "ASK":
+                    self.assertIsNotNone(decision.ask)
+                elif expected == "REFUSE":
+                    self.assertIsNotNone(decision.refuse)
+                else:
+                    self.assertEqual((decision.kind, decision.parse.used), (expected, "model"),
+                                     decision.parse.fallback_reason)
+                clashes += decision.clash is not None
+        # At least three questions are the word list against the model (decision 11).
+        self.assertGreaterEqual(clashes, 3)
+        decision = box.decide(GO + json.loads(PRACTICE.read_text())["paraphrases"][11]["text"].format(**FILLED),
+                              page_, parser="model", call=stub(reply(**CANNED[12])))
+        self.assertEqual(decision.ask_reason, "clash")
+
+
 if __name__ == "__main__":
     unittest.main()

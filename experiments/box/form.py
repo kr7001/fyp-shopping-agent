@@ -121,7 +121,14 @@ VERSION = 14
 #      sentences of its context made true of the shop (`CONTEXT_V3`): a search lists one
 #      product or several, and a listing has reviews only when it has any. Version 2 is kept
 #      byte for byte (tests/test_model_parser.py pins its sha256)
-PROMPT_VERSION = 3
+#   4  24 October 2026, box v19, for design B, written on the practice questions of
+#      tasks/paraphrases_dev2.json and paraphrases_v1.json alone. Version 3 with: a size's
+#      label can carry the seller's text and its claim is not checked (`CONTEXT_V4`); fit
+#      and stock counts among what the shop does not show (`SHOWN_V4`); the six sizes XS to
+#      XXL (`SIZES_V4`); how to fill a promotion's claim, a listed price, fit and stock left
+#      (`FILLING_V4`); and four worked examples more (`EXAMPLES_V4`). The reply's format is
+#      version 2's. Version 3 is kept byte for byte (tests/test_design_b.py pins its sha256)
+PROMPT_VERSION = 4
 
 # The vocabulary. A form outside it is refused when it is built, so a model's reply cannot
 # smuggle in a quantifier nothing knows how to plan. "unknown" is the rules' answer to a
@@ -1291,10 +1298,73 @@ EXAMPLES = (
 )
 
 
-def worked_examples() -> str:
+# Prompt version 4 (24 October 2026, box v19, design B). Each statement about the shop was
+# checked that day by the verifier: a size's option label can carry the seller's own text, a
+# promotion with a figure on XS or a claim of how many are left on M, and the price is the one
+# the page writes once the size is chosen, no price rule being active; no page displays a
+# stock count; nothing on a listing knows the shopper's size (descriptions cut). The design B
+# markets name their sizes XS to XXL, the earlier markets S to XL, so "among".
+CONTEXT_V4 = CONTEXT_V3 + (" A size's label in the menu can carry the seller's own text after the "
+                           "size, such as a promotion with a price or a claim of how many are left; "
+                           "the price of a size is the one shown after it is chosen, and the shop "
+                           "does not check a label's claim.")
+
+SHOWN_V4 = """The attributes the shop shows, and the only ones a form may compare or filter on:
+- on the results page: {results}
+- on a listing page: {listing}
+- on a review page: {review}
+It does not show delivery time, shipping cost, warranty, stock quantity (it displays no stock \
+counts, and a label's claim of one is not one), a seller rating, or fit (which size suits a \
+shopper)."""
+
+SIZES_V4 = """How a size is written. The clothing listings whose price depends on the size \
+chosen name their sizes among XS, S, M, L, XL and XXL, so write such a size as one of those: \
+extra small is XS, small is S, medium is M, large is L, extra large is XL and double extra \
+large is XXL. A size the question quotes from a menu label, with the label's text after it, \
+is the size alone. A pack size, such as a number of bottles and their volume, is written as \
+the question writes it."""
+
+FILLING_V4 = FILLING + """
+- A figure the question says a label, a promotion or another claim gives is not a price \
+limit: leave it out of the filters. A question whether such a claim holds on a named listing \
+is a lookup of that listing's price for the size, with the seller as the filter.
+- "Listed price" or "shown price" is a price, not an availability: it adds no availability \
+filter.
+- A question about which size suits the shopper needs "attribute:fit", and one about how many \
+of a size are left, or which seller will run out first, needs "attribute:stock quantity": \
+make it the objective, name it in "unknowns", and keep the size and availability filters the \
+question gives."""
+
+# One worked example for each new thing version 4 teaches, written on 24 October 2026 about the
+# made-up brand, Example, and its made-up sellers; none copies a question of
+# tasks/paraphrases_v1.json or tasks/paraphrases_dev2.json (tests/test_design_b.py).
+EXAMPLES_V4 = EXAMPLES + (
+    _example("named_lookup", _SEARCH + "The size menu of the Mellow Fields listing of the Example "
+             "jacket shows size S on promotion at $14.50. Does size S cost that on that listing, "
+             "and if not, what does it cost?", quantifier="lookup", objective="price",
+             filters=[_f("seller", "in", ["Mellow Fields"]), _f("size", "=", "S")],
+             evidence={"quantifier": "the Mellow Fields listing", "filters": "size S; $14.50 is "
+                       "the promotion's claim to check, not a limit"}),
+    _example("availability_bound", _SEARCH + "Among the Example sellers that can sell an extra "
+             "small right now, who charges the least, and how much?", quantifier="argmin",
+             objective="price", filters=[_f("size", "=", "XS"), _f("availability", "=", "buyable")],
+             evidence={"quantifier": "charges the least", "filters": "an extra small, which is "
+                       "size XS; can sell it right now"}),
+    _example("argmax_fit", _SEARCH + "My chest is between a small and a medium. Which size of the "
+             "Example jacket would suit me?", quantifier="argmax", objective="attribute:fit",
+             unknowns=["fit"], evidence={"objective": "which size would suit me, which the shop "
+                                                      "does not show"}),
+    _example("argmax_stock_quantity", _SEARCH + "Which Example seller has the most of size L left?",
+             quantifier="argmax", objective="attribute:stock quantity",
+             filters=[_f("size", "=", "L")], unknowns=["stock quantity"],
+             evidence={"objective": "the most of size L left, which the shop does not show"}),
+)
+
+
+def worked_examples(examples: tuple = EXAMPLES) -> str:
     """The examples as prompt version 2 prints them, each form one line of JSON."""
     lines = ["Worked examples, about a made-up brand and made-up sellers on the same shop:"]
-    for _, question, example in EXAMPLES:
+    for _, question, example in examples:
         lines += [f"Question: {question}", f"Form: {json.dumps(example)}"]
     return "\n".join(lines)
 
@@ -1314,7 +1384,13 @@ def prompt(question: str, page: page_module.Page | None = None,
         context = CONTEXT if version == 2 else CONTEXT_V3
         return "\n\n".join([context, lists, SIZES, KINDS, PROPERTIES, FILLING, SCHEMA_V2,
                             worked_examples(), f"The question:\n{question}"])
-    raise ValueError(f"no prompt version {version!r}: there are 1, 2 and 3")
+    if version == 4:
+        shown_v4 = SHOWN_V4.format(results=", ".join(sorted(shown - LISTING_PAGE_SHOWS - REVIEW_PAGE_SHOWS)),
+                                   listing=", ".join(sorted(LISTING_PAGE_SHOWS)),
+                                   review=", ".join(sorted(REVIEW_PAGE_SHOWS)))
+        return "\n\n".join([CONTEXT_V4, shown_v4, SIZES_V4, KINDS, PROPERTIES, FILLING_V4, SCHEMA_V2,
+                            worked_examples(EXAMPLES_V4), f"The question:\n{question}"])
+    raise ValueError(f"no prompt version {version!r}: there are 1, 2, 3 and 4")
 
 
 def reply_text(content) -> str:

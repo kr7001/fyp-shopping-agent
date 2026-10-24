@@ -159,7 +159,7 @@ class FormV10(unittest.TestCase):
     def test_the_prompt_version_is_recorded(self):
         question = GO + "Which seller is cheapest for size M?"
         self.assertEqual(form.from_model(question, None, stub(reply())).prompt_version, form.PROMPT_VERSION)
-        self.assertEqual(form.PROMPT_VERSION, 3)
+        self.assertEqual(form.PROMPT_VERSION, 4)     # 4 since 24 October 2026 (test_design_b.PromptV4)
         self.assertEqual(form.parse_reply(reply(), version=1).prompt_version, 1)
         self.assertIsNone(form.from_rules(question).prompt_version)
         for bad in (0, True, "2"):
@@ -208,7 +208,7 @@ class PromptV3(unittest.TestCase):
         self.assertTrue(sent.startswith(form.CONTEXT + "\n\n"))
 
     def test_version_3_is_version_2_with_its_context_corrected(self):
-        two, three = form.prompt(V1_QUESTION, version=2), form.prompt(V1_QUESTION)
+        two, three = form.prompt(V1_QUESTION, version=2), form.prompt(V1_QUESTION, version=3)
         self.assertEqual(three, form.CONTEXT_V3 + two[len(form.CONTEXT):])
         for false in ("lists competing listings for one product", "Reviews of a listing are on their own pages"):
             with self.subTest(sentence=false):
@@ -229,11 +229,12 @@ class PromptV2(unittest.TestCase):
         self.assertEqual(hashlib.sha256(sent.encode()).hexdigest(), V1_PROMPT_SHA256)
         self.assertNotIn("Worked examples", sent)
         with self.assertRaises(ValueError):
-            form.prompt(V1_QUESTION, version=4)
+            form.prompt(V1_QUESTION, version=5)
 
     def test_version_2_says_what_the_task_asked_and_ends_with_the_question(self):
-        sent = form.prompt(V1_QUESTION)
-        self.assertEqual(sent, form.prompt(V1_QUESTION, stored_thornwood()))
+        # Version 3's words, the current prompt until version 4 (24 October 2026).
+        sent = form.prompt(V1_QUESTION, version=3)
+        self.assertEqual(sent, form.prompt(V1_QUESTION, stored_thornwood(), version=3))
         self.assertTrue(sent.endswith(f"\n\nThe question:\n{V1_QUESTION}"))
         self.assertEqual(sent.count("The question:\n"), 1)
         for needle in ("name their sizes S, M, L and XL",
