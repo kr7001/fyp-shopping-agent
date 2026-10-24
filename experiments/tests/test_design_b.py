@@ -1,15 +1,19 @@
 """Box v19 for the second claim run's design B (24 October 2026, docs/content/claim2-handover.md,
-section 5): decision 11, the word list against the model; why each ask was put; and at most one
-ask a question.
+section 5): decision 11, the word list against the model; why each ask was put; at most one ask
+a question; and the size labels that carry the seller's own text, read as their size, their
+figure never a price and their claim never stock, with the one plan sentence about them.
 
 Every model reply here is a stub, and nothing is sent. Every rule has a case where it fires and
 one where it stays quiet, and each fault named in a comment was planted in the code with a fresh
 bytecode cache (LESSONS 39) and seen to fail its test before the code was put back (LESSONS 31).
 """
 import argparse
+import dataclasses
 import json
 import pathlib
+import re
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
@@ -19,8 +23,12 @@ import box  # noqa: E402
 import form  # noqa: E402
 import normalise  # noqa: E402
 import page  # noqa: E402
+import policy  # noqa: E402
+import primitives  # noqa: E402
+import replay_box  # noqa: E402
 import suite  # noqa: E402
-from test_box import thornwood_page  # noqa: E402
+import sufficiency  # noqa: E402
+from test_box import menu_log, thornwood_page  # noqa: E402
 from test_model_parser import GO, every_question, f, named_page, reply, stub  # noqa: E402
 
 THORNWOOD = "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . "
@@ -262,6 +270,161 @@ class AskCap(unittest.TestCase):
         self.assertIsNotNone(query)
         self.assertEqual((applied["box"]["asked"], applied["box"]["reading_by"], applied["box"]["ask_reason"]),
                          (True, "user", "ambiguous"))
+
+
+# ---------------------------------------------------------------------------
+# 4. Size labels: read as their size, their figure never a price, their claim never stock
+
+# A design B size menu as the agent's snapshot prints it (handover section 3): a promotion's
+# figure on XS, a claim of stock on a buyable M, and the plain sizes around them.
+LABELLED = {"XS - Promo $9.99": True, "S": True, "M - Only 2 left!": True, "L": False, "XL": True,
+            "XXL": False}
+TEE_URL = "http://localhost:7770/example-tee-01.html"
+
+
+class SizeLabels(unittest.TestCase):
+    def test_a_label_reads_as_the_whole_size_it_opens_with(self):
+        # Planted, each in `sufficiency.SIZE_LABEL`, unanchored and without its boundary: with
+        # XS left out of the sizes, "XS - Promo" read as S; with XXL left out, "XXL" as XL;
+        # with XL left out, "XL" as L.
+        for label, size in (("XS - Promo $9.99", "XS"), ("M - Only 2 left!", "M"), ("XS", "XS"), ("S", "S"),
+                            ("XL", "XL"), ("XXL", "XXL"), ("L", "L"), ("XXL - Promo $5.00", "XXL"),
+                            ("XL – Promo $5.00", "XL"), ("S (Promo $5.00)", "S")):
+            with self.subTest(label=label):
+                self.assertEqual(sufficiency.label_size(label), size)
+        # Quiet: what opens with no size is kept whole, a pack with its surcharge included.
+        for label in ("2 x 9.5L +$15.01", "Medium", "Choose an Option...", "SALE", "XLarge", "Small - Promo"):
+            with self.subTest(whole=label):
+                self.assertEqual(sufficiency.label_size(label), label)
+
+    def test_the_menu_reader_reads_each_label_as_its_size(self):
+        # Planted: `menu_blocks` keyed by the label again, the menu came back with the labels.
+        with tempfile.TemporaryDirectory() as folder:
+            log = menu_log(folder, "labelled", [(TEE_URL, LABELLED)])
+            menus = sufficiency.size_menus(log)
+        self.assertEqual(menus, {"slug:example-tee-01": sufficiency.MenuReading(
+            {"XS": True, "S": True, "M": True, "L": False, "XL": True, "XXL": False}, True)})
+
+    def test_a_whole_size_is_matched_and_never_one_inside_it(self):
+        # The coordinator's finding of 24 October 2026: S is inside XS, L inside XL and XXL,
+        # and XL inside XXL. Planted, each in turn: `primitives.menu_has` matching a size
+        # anywhere in a label, and `normalise.sizes_named` without its boundaries.
+        menu = {"XS": True, "XL": True, "XXL": False}
+        self.assertEqual([primitives.menu_has(menu, size) for size in ("S", "L", "XL", "XXL", "XS")],
+                         [None, None, "XL", "XXL", "XS"])
+        for question, named in ((GO + "Who sells size XS cheapest?", {"XS"}),
+                                (GO + "Who sells size XXL cheapest?", {"XXL"}),
+                                (GO + "Who sells size XL cheapest?", {"XL"})):
+            with self.subTest(question=question[-30:]):
+                self.assertEqual(normalise.sizes_named(question) & {"S", "L", "XL", "XXL", "XS"} - named, set())
+
+    def test_a_scarcity_label_is_never_checked_stock(self):
+        # Whether a size can be bought is its disabled mark alone: a claim of two left on an M
+        # that is disabled is a sold-out M, and on one that is not, an M that can be bought,
+        # whatever the claim. Nothing the reader returns holds a count.
+        with tempfile.TemporaryDirectory() as folder:
+            enabled = sufficiency.size_menus(menu_log(folder, "on", [(TEE_URL, {"M - Only 2 left!": True})]))
+            disabled = sufficiency.size_menus(menu_log(folder, "off", [(TEE_URL, {"M - Only 2 left!": False})]))
+        self.assertEqual((enabled["slug:example-tee-01"].options, disabled["slug:example-tee-01"].options),
+                         ({"M": True}, {"M": False}))
+        self.assertEqual([field.name for field in dataclasses.fields(sufficiency.MenuReading)], ["options", "complete"])
+        # The page's hidden stock template, "Only %1 left" with no threshold set, is read by
+        # no reader: no menu, no figure.
+        hidden = ("{'result': '### Page\\n- Page URL: " + TEE_URL + "\\n### Snapshot\\n```yaml\\n"
+                  "- generic [ref=f1e70]: Only %1 left\\n```'}")
+        self.assertEqual(sufficiency.menu_blocks(hidden, whole_page=True), [])
+        self.assertEqual(sufficiency.evidence(hidden), {"deltas": set(), "absolutes": set(), "any": set()})
+        # And the buying universal is refuted by a disabled M alone, never by its label.
+        page_ = page.Page(url=GO.split()[2], total=1, next_page=False, listings=[
+            page.Listing(seller="Harbour Lane Goods", title="Example Tee - Harbour Lane Goods", url=TEE_URL,
+                         advertised=12.25)])
+        every = form.Form("forall", "availability", filters=(form.Filter("size", "=", "M"),
+                                                             form.Filter("availability", "=", "buyable")))
+        opened = {"slug:example-tee-01"}
+        self.assertIsNone(primitives.counterexample_seen(every, page_, opened, enabled))
+        self.assertIsNotNone(primitives.counterexample_seen(every, page_, opened, disabled))
+
+
+class LabelFigures(unittest.TestCase):
+    def test_a_labels_figure_is_never_a_price_seen(self):
+        # Planted: `evidence` reading the text as it is, $9.99 was seen.
+        snapshot = ('- combobox "Size *" [ref=e1]:\n  - option "Choose an Option..." [selected]\n'
+                    '  - option "XS - Promo $9.99"\n  - option "M - Only 2 left!"\n- generic: $14.20')
+        escaped = json.dumps(snapshot)      # the runtime's JSON, quotes escaped
+        for label, text in (("as printed", snapshot), ("escaped", escaped)):
+            with self.subTest(text=label):
+                seen = sufficiency.evidence(text)
+                self.assertNotIn(999, seen["absolutes"] | seen["any"])
+                self.assertIn(1420, seen["absolutes"])
+        # A promotion's figure in the page's text is a claim too.
+        self.assertNotIn(999, sufficiency.evidence("XS on promotion at $9.99. $14.20")["absolutes"])
+        # Quiet: a surcharge in a pack's label is still a surcharge, and still a figure seen.
+        pack = sufficiency.evidence('option "2 x 9.5L +$15.01"')
+        self.assertEqual((pack["deltas"], 1501 in pack["any"], pack["absolutes"]), ({1501}, True, set()))
+        self.assertEqual(sufficiency.evidence("$9.99")["absolutes"], {999})
+
+    def test_an_answer_quoting_a_label_claims_no_price_and_one_taking_it_is_caught(self):
+        # Planted: `check` reading the answer as it is, the careful answer was refused for $9.99.
+        seen = sufficiency.evidence('option "XS - Promo $9.99"\n- generic: $14.20')
+        careful = "The XS label says Promo $9.99, but XS costs $14.20 there once chosen."
+        self.assertTrue(sufficiency.check(careful, seen)["ok"])
+        taken = sufficiency.check("XS costs $9.99 at Harbour Lane Goods.", seen)
+        self.assertEqual((taken["ok"], taken["flag"]), (False, "unsupported_number"))
+        # The box's own checks read the price an answer names the same way. Planted:
+        # `primitives.answer_prices` and `policy.page_floor` without the blanking, each named $9.99.
+        self.assertEqual(primitives.answer_prices(careful), [14.20])
+        listings = [page.Listing(seller=f"Seller {c}", title=f"Example Tee - Seller {c}",
+                                 url=f"http://localhost:7770/example-tee-0{n}.html", advertised=price)
+                    for n, (c, price) in enumerate(zip("ABC", (9.50, 11.00, 13.00)), 1)]
+        page_ = page.Page(url=GO.split()[2], total=3, next_page=False, listings=listings)
+        across = GO + "Across all the listings, which seller is cheapest for size XS?"
+        self.assertEqual(policy.page_floor(across, page_, careful), 3)
+        self.assertEqual(policy.page_floor(across, page_, "Seller A charges $9.99 for XS."), 1)
+
+
+class LabelSentence(unittest.TestCase):
+    def setUp(self):
+        self.page = thornwood_page()
+
+    def test_every_plan_that_opens_a_listing_ends_with_it_and_no_other_does(self):
+        # Planted: the sentence appended to every plan, the results page's included.
+        note = f"\n{primitives.LABEL_NOTE}"
+        opens = {"availability_bound": THORNWOOD + "Which seller is cheapest for size M among those that can supply it?",
+                 "total_bound": CHEAPEST_M,
+                 "survey": THORNWOOD + "How many of the Thornwood listings have size M in stock?",
+                 "exists_price": THORNWOOD + "Is there any seller under $20 for size M?",
+                 "topk_price": THORNWOOD + "Which are the three cheapest sellers for size M?",
+                 "argmax_price": THORNWOOD + "Which seller is the most expensive for size M?"}
+        for kind, question in opens.items():
+            for exhaust in (False, True):
+                with self.subTest(kind=kind, exhaust=exhaust):
+                    decision = box.decide(question, self.page, exhaust=exhaust)
+                    self.assertEqual(decision.kind, kind)
+                    self.assertTrue(decision.query.endswith(note))
+                    self.assertEqual(decision.query.count(primitives.LABEL_NOTE), 1)
+        refutation = box.decide(THORNWOOD + "Does every Thornwood listing offer size M?", self.page, reply="menu")
+        self.assertTrue(refutation.query.endswith(note))
+        headline = box.decide(THORNWOOD + "Which listing advertises the lowest price on the results page?", self.page)
+        self.assertEqual(headline.kind, "results_page")
+        self.assertNotIn(primitives.LABEL_NOTE, headline.query)
+
+    def test_it_is_one_sentence_of_retrieval_guidance(self):
+        sentence = primitives.LABEL_NOTE
+        self.assertEqual(re.findall(r"[.!?](?=\s|$)", sentence), ["."])
+        for words in ("label", "promotional or stock text", "the price is the one shown after the size is chosen",
+                      "not a checked fact"):
+            self.assertIn(words, sentence)
+        self.assertIsNone(re.search(r"\d", sentence))     # no figure, so no arithmetic
+
+    def test_a_text_sent_before_it_was_added_is_reproduced_without_it(self):
+        # Planted: `box.ADDED` emptied, a box v18 text was not reproduced.
+        decision = box.decide(CHEAPEST_M, self.page)
+        old = box.as_sent_by(decision.query, 18)
+        self.assertNotIn(primitives.LABEL_NOTE, old)
+        self.assertEqual(old + f"\n{primitives.LABEL_NOTE}", decision.query)
+        self.assertEqual(box.as_sent_by(decision.query, 19), decision.query)
+        record = {**decision.record(), "box_version": 18, "query": old}
+        self.assertEqual(replay_box.reproduction(replay_box.stored_decision({"box": record}), record), "")
 
 
 if __name__ == "__main__":

@@ -66,11 +66,26 @@ RESULTS = paths.RESULTS
 #      whose script had not yet filled it in, is no reading, where it was a complete menu
 #      lacking every variant; no stored log holds one. No stored box run is on water, so
 #      no verdict of the box's check changes
+#   6  24 October 2026, for the second claim run's design B, whose size menus carry the
+#      seller's own text after a size, a promotion with a price or a claim of how many are
+#      left ("XS - Promo $9.99", "M - Only 2 left!"). The menu reader reads such a label as
+#      the size it opens with, a whole size, so "XS - Promo" is XS and never S, and "XXL"
+#      never XL or L (`label_size`); the label's text is not read at all, so a claim of
+#      stock is never taken as stock. And a label's figure is never a price: a figure inside
+#      a menu option's label, a surcharge "+$15.01" aside, or one a promotion states, is not
+#      a price the run saw (`evidence`), nor one an answer claims (`without_label_figures`,
+#      used by `check` and by the box's own checks). Replayed over the 702 stored logs on
+#      24 October 2026: no evidence set and no verdict of `check` on a stored answer changes,
+#      since no stored label holds a figure but a surcharge and no stored answer names a
+#      promotion. The menus of 55 logs, every one from a September batch on the shop's
+#      default theme, whose size labels carry a surcharge ("XL +$2.00", "M +$2.40"), now read
+#      each size plainly ("XL", "M") with the same marks; `primitives.menu_has` found the
+#      same sizes either way, and a pack's label, "2 x 9.5L +$15.01", is read whole as before
 #
 # Runs scored under different versions are different measurements. A figure quoted from
 # version 1 runs stays a version 1 figure, and the effect of version 2 on them is reported
 # by replay, separately, never by restating the original number.
-RULES_VERSION = 5
+RULES_VERSION = 6
 
 # Money is handled in integer cents throughout. Comparing prices as floats invites a
 # value that does not round-trip to slip past an equality test, and the whole check rests
@@ -214,6 +229,52 @@ MENU_LINE = re.compile(r'^[ \t]*- option "([^"]*)"((?: \[[^\]]*\])*)[ \t]*$')
 MENU_OPTION = re.compile(r'option "([^"]*)"((?: \[[^\]]*\])*)')
 MENU_PLACEHOLDER = "Choose an Option..."
 
+# A size's label can carry the seller's own text after the size (v6, 24 October 2026, design
+# B): "XS - Promo $9.99", "M - Only 2 left!". The option is the size the label opens with,
+# taken whole, longest first, so "XS - Promo" is XS and never S, "XL" never L, and "XXL" never
+# XL or L; the size must end the label or be followed by a space or a separator. A label that
+# opens with no size of the shop's, a pack such as "2 x 9.5L +$15.01" or a word such as
+# "Medium", is kept whole, as every label was before v6.
+SIZE_LABEL = re.compile(r"^(?P<size>XXXL|XXL|XXS|XL|XS|S|M|L)(?=$|[\s\-–—:,;(|/])")
+# A figure inside a menu option's label, as the snapshot and find replies print one: `option
+# "XS - Promo $9.99"`, or `option \"...\"` where the runtime escaped the reply into JSON.
+OPTION_LABEL = re.compile(r'option \\?"(?P<label>[^"\\\n]*)\\?"')
+# A figure a promotion states, in a page's text or an answer's: "Promo $9.99", "on promotion
+# at $9.99", "the promo price of $9.99". The promotional word comes first and the figure
+# within a few words of it; "no promotion: it costs $12.40" states none.
+PROMO_FIGURE = re.compile(r"\b(?i:promo(?:tion(?:al)?|s)?)\b(?:\s+(?i:price|figure|label|tag|offer))?"
+                          r"\s*(?i:at|of|for|is|was|:|-|–|—|=)?\s*(?i:only\s+)?\$\s*\d{1,5}(?:\.\d{1,2})?")
+
+
+def label_size(label: str) -> str:
+    """The size a menu label names: the size it opens with, whole, or the label itself when
+    it opens with none (`SIZE_LABEL`)."""
+    found = SIZE_LABEL.match(label.strip())
+    return found.group("size") if found else label
+
+
+def without_label_figures(text: str) -> str:
+    """The text with every figure a label or a promotion claims blanked, character for
+    character, so a position in it is a position in the text (v6, 24 October 2026): each
+    dollar figure inside a menu option's label but a surcharge "+$15.01", which the delta rule
+    reads as a surcharge, and each figure a promotion states (`PROMO_FIGURE`). A label's
+    figure is the seller's claim, not the price the page shows once the size is chosen, so
+    it is neither a price a run saw nor one an answer claims. A bare decimal in a label is a
+    pack's volume, "2 x 9.5L", and is left as it was."""
+    def blank_figures(found: re.Match) -> str:
+        label = found.group(0)
+        surcharges = [m.span() for m in DELTA.finditer(label)]
+        chars = list(label)
+        for money in re.finditer(r"\$\s*\d{1,5}(?:\.\d{1,2})?", label):
+            start, end = money.span()
+            if any(s <= start < e for s, e in surcharges):
+                continue
+            chars[start:end] = " " * (end - start)
+        return "".join(chars)
+
+    text = OPTION_LABEL.sub(blank_figures, text or "")
+    return PROMO_FIGURE.sub(lambda found: " " * len(found.group(0)), text)
+
 
 @dataclasses.dataclass
 class MenuReading:
@@ -298,10 +359,14 @@ def observed_text(log_path: pathlib.Path) -> str:
 
 
 def evidence(text: str) -> dict[str, set[int]]:
+    """The figures a run saw: surcharges, totals and any decimal. A figure a label or a
+    promotion claims is not a price seen (v6, `without_label_figures`); a surcharge in a
+    label still is a surcharge."""
+    shown = without_label_figures(text)
     return {
         "deltas": {cents(m) for m in DELTA.findall(text)},
-        "absolutes": {cents(m) for m in ABSOLUTE.findall(text)},
-        "any": {cents(m) for m in ANY_DECIMAL.findall(text)},
+        "absolutes": {cents(m) for m in ABSOLUTE.findall(shown)},
+        "any": {cents(m) for m in ANY_DECIMAL.findall(shown)},
     }
 
 
@@ -332,7 +397,8 @@ def listings_opened(text: str, market: Iterable[str] | None = None) -> set[str]:
 
 
 def menu_blocks(text: str, whole_page: bool) -> list[tuple[dict[str, bool], bool]]:
-    """Every size menu in one reply's text, as (the options seen, whether the reading is
+    """Every size menu in one reply's text, as (the options seen, each by the size its label
+    names (`label_size`, v6), and whether the reading is
     complete). The block is the option lines after a Size combobox line that ends with a
     colon; it is complete when it begins with the menu's placeholder and either the reply
     shows the whole page or a line of the page's tree follows the block. A block that does
@@ -365,7 +431,9 @@ def menu_blocks(text: str, whole_page: bool) -> list[tuple[dict[str, bool], bool
                 label, flags = cut.group(1), cut.group(2)
             first = label if first is None else first
             if label != MENU_PLACEHOLDER:
-                options[label] = "[disabled]" not in flags
+                # The size the label opens with (v6): "M - Only 2 left!" is M, and whether it
+                # can be chosen is its disabled mark alone, never the label's claim of stock.
+                options[label_size(label)] = "[disabled]" not in flags
             if not whole:
                 break                     # a cut line is where an excerpt ended
         if first != MENU_PLACEHOLDER:
@@ -472,7 +540,12 @@ def check(answer: str, seen: dict[str, set[int]], *, question: str = "",
     Every figure presented as an amount is tested, not only the first. Testing the first
     let a wrong value escape by appearing later in the sentence, which made word order
     decide whether the answer was checked at all.
+
+    A figure the answer gives as a label's or a promotion's, "the XS label says Promo
+    $9.99", is the seller's claim quoted, not a price the answer claims, so it is not tested
+    (v6, `without_label_figures`); the evidence holds no label's figure either.
     """
+    answer = without_label_figures(answer)
     # A universal claim is checked first, because it can be unsupported while containing
     # no figures at all. "Yes" is the whole answer in the cases this catches.
     if (question and population and opened is not None

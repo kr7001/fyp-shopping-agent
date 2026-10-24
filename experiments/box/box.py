@@ -157,7 +157,11 @@ import targeting
 #      it was put (`Decision.ask_reason`, `ASK_REASONS`). At most one ask a question: an ask
 #      no reading can answer, for a price limit, a name the pages do not list or another
 #      reading of a word, is put before the reading ask and instead of it, never after a
-#      reply (`unanswerable_ask`). Under the rules every text is the same as under v18
+#      reply (`unanswerable_ask`). Design B's size menus carry the seller's own text after a
+#      size, so every plan that opens a listing ends with one sentence on labels
+#      (`primitives.LABEL_NOTE`, `ADDED`), and the checks never take a label's figure as a
+#      price nor a label's claim as stock (rules v6, primitives v13). Under the rules every
+#      other text is the same as under v18
 VERSION = 19
 
 # Why the box put its question to the user (box v19, 24 October 2026), on every decision with
@@ -214,12 +218,26 @@ REWORDED = (
 )
 
 
+# Every sentence added to what the box sends since then, as (the box version that added it,
+# the text added, exactly as it stands in a text), so `as_sent_by` can take it off a text
+# sent before it was added: the label sentence that ends every plan that opens a listing
+# (box v19, 24 October 2026). Kept apart from REWORDED, whose entries replace one wording with
+# another.
+ADDED = (
+    (19, "\n" + primitives.LABEL_NOTE),
+)
+
+
 def as_sent_by(text: str | None, version: int | None) -> str | None:
-    """The text as box `version` sent it: today's words with every rewording made after that
-    version swapped back, the latest first (REWORDED). A record with no version is taken to
-    be from before all of them; a text from the current version comes back unchanged."""
+    """The text as box `version` sent it: today's words with every sentence added after that
+    version taken off (ADDED), and every rewording made after it swapped back, the latest
+    first (REWORDED). A record with no version is taken to be from before all of them; a
+    text from the current version comes back unchanged."""
     if text is None:
         return None
+    for since, added in reversed(ADDED):
+        if since > (version or 0):
+            text = text.replace(added, "")
     for since, before, after in reversed(REWORDED):
         if since > (version or 0):
             text = text.replace(after, before)

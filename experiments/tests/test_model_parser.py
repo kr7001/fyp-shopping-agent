@@ -887,9 +887,10 @@ class Negation(unittest.TestCase):
         decision = self.decision()
         self.assertEqual((decision.kind, decision.plan.primitive, decision.plan.stop_rule),
                          ("negated_refutation", "counterexample", planner.STOP_RULES["negated_refutation"]))
-        self.assertEqual(decision.plan.instruction, primitives.NEGATED_REFUTATION)
+        # The search's own text, and since box v19 the label sentence on its own line.
+        self.assertEqual(decision.plan.instruction, f"{primitives.NEGATED_REFUTATION}\n{primitives.LABEL_NOTE}")
         self.assertEqual(decision.query, f"{decision.question}\n\n{box.preamble(self.page)}\n\n"
-                                         f"{primitives.NEGATED_REFUTATION}")
+                                         f"{primitives.NEGATED_REFUTATION}\n{primitives.LABEL_NOTE}")
         for needle in ("To answer Yes you need exactly ONE listing that lacks the option.",
                        "Answer Yes, name that listing as your evidence, and stop immediately.",
                        "To answer No you must have opened every single one.",
@@ -900,9 +901,9 @@ class Negation(unittest.TestCase):
             self.assertNotIn(wrong, decision.plan.instruction)
         self.assertEqual([c.seller for c in decision.plan.candidates], ["Seller A", "Seller B", "Seller C"])
         self.assertEqual(form.verify(decision.form, self.page), [])
-        # The universal it negates keeps v1's text, word for word.
+        # The universal it negates keeps v1's text, word for word, and the label sentence.
         universal = box.decide(GO + "Does every listing have size M?", self.page, reply="menu")
-        self.assertEqual(universal.plan.instruction, targeting.BODIES["refutation"])
+        self.assertEqual(universal.plan.instruction, f"{targeting.BODIES['refutation']}\n{primitives.LABEL_NOTE}")
 
     def verdict(self, answer: str, log: pathlib.Path, reading: str = "menu") -> dict:
         return box.check(self.decision(reading), answer, log)
