@@ -10,6 +10,7 @@ fault named was planted with a fresh bytecode cache and seen to fail its test (L
 import json
 import pathlib
 import re
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -156,8 +157,10 @@ class TheEmittedText(Tree):
         self.build()
         text = stage_stubs.generate(self.root, "1")
         head = text.splitlines()[0]
-        self.assertTrue(head.startswith("caffeinate -i env IGR_ESTIMATE_USD="), head)
+        # The agent's sampling is its code's default: the chain unsets any shell value first.
+        self.assertTrue(head.startswith("caffeinate -i env -u MODEL_TEMPERATURE -u MODEL_TOP_P IGR_ESTIMATE_USD="), head)
         self.assertIn(" IGR_PROVIDER_ROUTING='", head)
+
         self.assertTrue(head.endswith(" bash <<'CHAIN'"))
         self.assertEqual(text.rstrip().splitlines()[-1], "CHAIN")
         self.assertEqual(len(re.findall(r"^FLAGS='.*'; run '", text, re.M)), 79)
@@ -178,6 +181,18 @@ class TheEmittedText(Tree):
                             for l in tests))
         self.assertEqual([l.startswith("rt=$(env -u IGR_PROVIDER_ROUTING python3") for l in tests], [False, False, True, True])
         self.assertEqual([("anthropic/claude-haiku-4.5" in l) for l in tests], [False, False, True, True])
+
+    def test_the_routing_is_held_to_the_analysis_files_for_the_model(self):
+        # Another object for DeepSeek, and none at all, are refused: the file routes it.
+        self.build()
+        other = json.dumps({DEEPSEEK: {"order": ["deepinfra"], "allow_fallbacks": False}})
+        for routing in (other, "none"):
+            with self.subTest(routing=routing), self.assertRaises(subprocess.CalledProcessError) as raised:
+                stage_stubs.generate(self.root, "1", routing=routing)
+            self.assertIn(f"--routing gives {DEEPSEEK}", raised.exception.stderr)
+        # The file's own object, with another model's routing beside it, passes.
+        both = json.dumps({**stage_stubs.ROUTING, "anthropic/claude-haiku-4.5": {"order": ["amazon-bedrock"]}})
+        self.assertIn("IGR_PROVIDER_ROUTING=", stage_stubs.generate(self.root, "1", routing=both))
 
     def test_the_pilot_text_has_twelve_runs_and_the_check_and_no_voids_loop(self):
         self.build()
@@ -346,11 +361,24 @@ class TheStageChain(Tree):
         self.assertEqual([r["env_routing"] is None for r in results], [False, False, True, True])
         self.assertTrue(all(r["spec_from"] == "experiments/tasks/tasks_claim.json" for r in results))
         self.assertEqual([len(r["rows"]) for r in results], [3, 4, 3, 4])
-        # The re-run carried the batch's flags and the routing, under the chain's model.
+        # The re-run carried the batch's flags and the routing, under the chain's model, and its
+        # preflight ran first, under the arm the batch line names (the audit at cd49128).
         suites = stage_stubs.calls(self.root, ".suite_calls")
         rerun = suites[-5]
         self.assertIn("--parser", rerun["argv"])
         self.assertEqual((rerun["model"], json.loads(rerun["routing"])), (DEEPSEEK, stage_stubs.ROUTING))
+        preflights = stage_stubs.calls(self.root, ".preflights")
+        for_rerun = [p for p in preflights if "--only tee-xs-price --repeat-start 1" in p["flags"]]
+        self.assertEqual([(p["arm"], p["model"]) for p in for_rerun], [("the block (model)", DEEPSEEK)])
+        self.assertEqual(len(preflights), len(batches) + 1)
+        # The brand's search terms before and after every invocation, the re-run's too, as lines
+        # the manifest parser knows.
+        terms = [l for l in lines if l.startswith("search-terms|")]
+        self.assertEqual(len(terms), 2 * (len(batches) + 1))
+        self.assertTrue(all(l.split("|")[2] == "Wexcombe" and "wexcombe tee,45,3," in l for l in terms))
+        self.assertEqual([l.split("|")[1] for l in terms[:2]], ["before", "after"])
+        self.assertTrue(any(l.endswith("|re-run the block (model) --only tee-xs-price --repeat-start 1") for l in terms))
+        self.assertEqual(claim.parse_manifest(manifest).extras["search-terms"], terms)
 
     def test_exit_8_with_no_block_batch_for_the_reading_test(self):
         self.small({"no_batch_for": ["box", "box-model"]})

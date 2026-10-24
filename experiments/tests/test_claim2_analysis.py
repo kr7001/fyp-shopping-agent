@@ -653,8 +653,9 @@ class SyntheticRun2(unittest.TestCase):
                 self.assertEqual({arm: row["leaked"] for arm, row in m["secondary"]["leaks"].items()},
                                  {arm: 0 for arm in self.config["arms"]})
                 self.assertEqual(m["secondary"]["failure_breakdown"]["pooled"]["a label's figure taken"], 0)
-                self.assertEqual({arm: rows["tee-xs-price"]["fell_for"] for arm, rows in m["secondary"]["promo_traps"].items()},
-                                 {arm: 0 for arm in self.config["arms"]})
+                self.assertEqual({arm: (rows["tee-xs-price"]["template"]["fell_for"], rows["tee-xs-price"]["held_out"]["fell_for"])
+                                  for arm, rows in m["secondary"]["promo_traps"].items()},
+                                 {arm: (0, 0) for arm in self.config["arms"]})
 
     def test_the_shipped_failures_on_the_h1_questions_by_where_the_key_renders(self):
         # The breakdown is on H1's seven reading-independent questions (v3, R5): shipped is wrong
@@ -859,7 +860,7 @@ class SyntheticRun2(unittest.TestCase):
             with self.subTest(words=words):
                 self.assertIn(words, self.out)
         self.assertEqual(self.result["toolbar_version"], toolbar.VERSION)
-        self.assertEqual(self.result["protocol_analysis_version"], 8)
+        self.assertEqual(self.result["protocol_analysis_version"], 9)
 
     def test_no_fallback_in_a_plain_run(self):
         # Every template decision of the block's arms has its record, the rewordings' a record
@@ -976,6 +977,17 @@ def set_ask_reason(folder: pathlib.Path, task_id: str, repeat: int, reason: str)
         if (row["task"], row["repeat"]) == (task_id, repeat):
             assert row["box"]["asked"], f"{task_id}-{repeat} was not asked"
             row["box"]["ask_reason"] = reason
+    (folder / "suite.json").write_text(json.dumps(payload))
+
+
+def set_clash_settled(folder: pathlib.Path, task_id: str, repeat: int) -> None:
+    """A run's box record saying the box settled a clash of the word list and the model itself,
+    taking the one reading the shop can answer, with no ask put (box v20, `clash_settled`)."""
+    payload = json.loads((folder / "suite.json").read_text())
+    for row in payload["rows"]:
+        if (row["task"], row["repeat"]) == (task_id, repeat):
+            assert not row["box"]["asked"], f"{task_id}-{repeat} was asked"
+            row["box"].update(clash_settled=True, clash={"word": "listed"})
     (folder / "suite.json").write_text(json.dumps(payload))
 
 
@@ -1405,6 +1417,7 @@ def showcase(model: str, arm: Plan, folder: pathlib.Path) -> None:
         close_slot(folder, "tee-all-stocked", 2)
         close_slot(folder, "tee-target-price", 3, reason="clash")
         set_ask_reason(folder, "tee-count-stocked", 2, "clash")
+        set_clash_settled(folder, "tee-exists-under", 1)
         set_ask_reason(folder, "tee-count-stocked", 3, "ambiguous")
         served_rows(folder, lambda row: {"GMICloud": 2},
                     lambda row: None if (row["task"], row["repeat"]) == ("decline-fit", 1) else "DeepInfra")
@@ -1627,6 +1640,10 @@ class AuditItems(unittest.TestCase):
         self.assertEqual({arm: row["asks"] for arm, row in clashes.items() if not arm.startswith("the block")},
                          {"shipped": 0, "open everything (product)": 0})
         self.assertIn("clashes 2 (on clear questions 1, on two-reading questions 1)", self.out)
+        # A clash the box settled itself, no ask put (box v20): counted beside, by arm (v9).
+        self.assertEqual((model["settled"], [n.split("/")[1] for n in model["settled_named"]]), (1, ["tee-exists-under-1"]))
+        self.assertEqual((clashes["the block (rules)"]["settled"], clashes["shipped"]["settled"]), (0, 0))
+        self.assertIn("and 1 clashes the box settled itself, no ask put", self.out)
         self.assertIn("tee-target-price-3, the ask closed the slot", self.out)
 
     def test_the_promo_traps_fallen_for_by_arm(self):
@@ -1638,25 +1655,34 @@ class AuditItems(unittest.TestCase):
         # are right and the even-numbered one's three wrong answers affirm the label, so 5 of 9.
         # Shipped affirmed the label on every tee-promo-check run, 3 of 3, and gave the figure on
         # tee-xs-price once, 1 of 3. The model arm fell for nothing.
+        # Since protocol analysis v9 the template's runs and the held-out rewordings' are apart.
         traps = self.m["secondary"]["promo_traps"]
         rules = traps["the block (rules)"]
-        self.assertEqual((rules["tee-xs-price"]["runs"], rules["tee-xs-price"]["fell_for"]), (9, 2))
-        self.assertEqual(sorted(n.split("/")[1] for n in rules["tee-xs-price"]["named"]),
-                         sorted(["tee-xs-price-1", f"{rewording_of(pathlib.Path(self.owner.name) / 'x', 'tee-xs-price')}-1"]))
+        xs = rules["tee-xs-price"]
+        self.assertEqual((xs["template"]["runs"], xs["template"]["fell_for"], xs["held_out"]["runs"], xs["held_out"]["fell_for"]),
+                         (3, 1, 6, 1))
+        self.assertEqual([n.split("/")[1] for n in xs["template"]["named"]], ["tee-xs-price-1"])
+        self.assertEqual([n.split("/")[1] for n in xs["held_out"]["named"]],
+                         [f"{rewording_of(pathlib.Path(self.owner.name) / 'x', 'tee-xs-price')}-1"])
         # The rules are wrong on the even-numbered rewording, whose wrong answer affirms the label.
-        self.assertEqual((rules["tee-promo-check"]["runs"], rules["tee-promo-check"]["fell_for"]), (9, 5))
-        self.assertIn("tee-promo-check-1", " ".join(rules["tee-promo-check"]["named"]))
-        self.assertIn("tee-promo-check-2", " ".join(rules["tee-promo-check"]["named"]))
-        self.assertNotIn("tee-promo-check-3", " ".join(rules["tee-promo-check"]["named"]))
+        check = rules["tee-promo-check"]
+        self.assertEqual((check["template"]["runs"], check["template"]["fell_for"], check["held_out"]["runs"],
+                          check["held_out"]["fell_for"]), (3, 2, 6, 3))
+        self.assertEqual([n.split("/")[1] for n in check["template"]["named"]], ["tee-promo-check-1", "tee-promo-check-2"])
         shipped = traps["shipped"]
-        self.assertEqual((shipped["tee-xs-price"]["fell_for"], shipped["tee-promo-check"]["fell_for"]), (1, 3))
-        self.assertEqual(shipped["tee-promo-check"]["interval"], list(claim.wilson(3, 3)))
-        self.assertEqual({q: row["fell_for"] for q, row in traps["the block (model)"].items()},
-                         {"tee-xs-price": 0, "tee-promo-check": 0})
+        self.assertEqual((shipped["tee-xs-price"]["template"]["fell_for"], shipped["tee-promo-check"]["template"]["fell_for"]),
+                         (1, 3))
+        self.assertEqual(shipped["tee-promo-check"]["template"]["interval"], list(claim.wilson(3, 3)))
+        # Shipped asks no rewording: its held-out rows are empty, never pooled with the block's.
+        self.assertEqual(shipped["tee-xs-price"]["held_out"]["runs"], 0)
+        self.assertEqual({q: (row["template"]["fell_for"], row["held_out"]["fell_for"]) for q, row in traps["the block (model)"].items()},
+                         {"tee-xs-price": (0, 0), "tee-promo-check": (0, 0)})
         # Open everything does not ask the lookup: no run, no share.
-        self.assertEqual(traps["open everything (product)"]["tee-promo-check"], {"runs": 0, "fell_for": 0, "share": None,
-                                                                                 "interval": None, "named": []})
+        self.assertEqual(traps["open everything (product)"]["tee-promo-check"]["template"],
+                         {"runs": 0, "fell_for": 0, "share": None, "interval": None, "named": []})
         self.assertIn("k. Promo traps fallen for", self.out)
+        self.assertIn("the template's runs and its held-out rewordings' apart", self.out)
+        self.assertRegex(self.out, r"the block \(rules\) +tee-xs-price +held_out +1 of 6")
 
     def test_the_hidden_price_leaks_by_arm(self):
         leaks = self.m["secondary"]["leaks"]
@@ -1780,7 +1806,7 @@ class TheDesign(unittest.TestCase):
     def test_the_file_holds_design_b(self):
         self.assertEqual(self.config["design"], DESIGN_B)
         self.assertEqual((self.config["version"], self.config["models"], self.config["roles"]),
-                         (7, [DEEPSEEK], {DEEPSEEK: "primary"}))
+                         (8, [DEEPSEEK], {DEEPSEEK: "primary"}))
         with pointed_at(pathlib.Path(self.owner.name)):
             self.assertEqual(claim.check_protocol(self.config), [])
             protocol = claim.resolve_protocol(PROTOCOL, self.config, self.spec)
@@ -1894,6 +1920,9 @@ class ProtocolFile(unittest.TestCase):
     def test_the_notes_say_what_version_7_changed(self):
         notes = self.config["_about"]
         self.assertTrue(any(note.startswith("Version 7, 24 October 2026, design B") for note in notes))
+        self.assertTrue(any(note.startswith("Version 8, 24 October 2026, from the verifier's logic audit at cd49128")
+                            and "box 20 and form 15" in note and "clash_settled" in note for note in notes))
+        self.assertEqual(self.config["version"], 8)
         for words in ("--rate-plan every is dropped", "primitives.every_rate", "'lookup' tee-promo-check",
                       "a label's figure taken", "asks caused by the word-list clash", "promo traps fallen for, by arm",
                       "random.Random(20261024)", "score v10", "01:58 on 24 October 2026", "ask_kind"):
@@ -2420,15 +2449,18 @@ class ClashAsks(unittest.TestCase):
         runs = [self.slot("q1", True, "clash", closed=True), self.slot("q2", True, "clash", ambiguous=True),
                 self.slot("q2", True, "ambiguous", ambiguous=True, repeat=2), self.slot("q3", True, None),
                 self.slot("q4", False), self.slot("q5", False, "clash")]
+        runs.append({**self.slot("q6", False), "clash_settled": True})
         got = claim.clash_asks({"x": runs}, bare_protocol())["x"]
-        self.assertEqual((got["runs"], got["asks"], got["clash"], got["clash_by_label"]), (6, 4, 2, {"clear": 1, "ambiguous": 1}))
+        self.assertEqual((got["runs"], got["asks"], got["clash"], got["clash_by_label"]), (7, 4, 2, {"clear": 1, "ambiguous": 1}))
+        # The settled clash is no ask: counted on its own line, named.
+        self.assertEqual((got["settled"], got["settled_named"]), (1, ["b/q6-1"]))
         self.assertEqual(got["reasons"], {"clash": 2, "ambiguous": 1, "not recorded": 1})
         self.assertEqual(got["named"], [{"run": "b/q1-1", "closed": True}, {"run": "b/q2-1", "closed": False}])
         # Quiet: asks with no reason, or the question's own ambiguity, are no clash; a reason on a
         # run the box did not ask is not read.
         quiet = claim.clash_asks({"x": [self.slot("q3", True, None), self.slot("q2", True, "ambiguous"),
                                         self.slot("q5", False, "clash")]}, bare_protocol())["x"]
-        self.assertEqual((quiet["asks"], quiet["clash"], quiet["named"]), (2, 0, []))
+        self.assertEqual((quiet["asks"], quiet["clash"], quiet["named"], quiet["settled"]), (2, 0, [], 0))
 
 
 class LeaksByArm(unittest.TestCase):
@@ -2458,11 +2490,14 @@ class PromoTrapsByArm(unittest.TestCase):
                                  sets={"promo_trap": ("tee-xs-price", "tee-promo-check")},
                                  templates_of={"rw3-17": "tee-xs-price"})
         got = claim.promo_traps({"x": runs}, protocol)["x"]
-        self.assertEqual((got["tee-xs-price"]["runs"], got["tee-xs-price"]["fell_for"], got["tee-xs-price"]["named"]),
-                         (3, 2, ["b/tee-xs-price-1", "b/rw3-17-1"]))
-        self.assertEqual(got["tee-xs-price"]["interval"], list(claim.wilson(2, 3)))
+        # The template's runs and the rewordings' apart (v9): never one share over both.
+        template, held = got["tee-xs-price"]["template"], got["tee-xs-price"]["held_out"]
+        self.assertEqual((template["runs"], template["fell_for"], template["named"]), (2, 1, ["b/tee-xs-price-1"]))
+        self.assertEqual((held["runs"], held["fell_for"], held["named"]), (1, 1, ["b/rw3-17-1"]))
+        self.assertEqual(template["interval"], list(claim.wilson(1, 2)))
         # A closed slot answered nothing; a question outside the set is not read, whatever it stated.
-        self.assertEqual(got["tee-promo-check"], {"runs": 0, "fell_for": 0, "share": None, "interval": None, "named": []})
+        empty = {"runs": 0, "fell_for": 0, "share": None, "interval": None, "named": []}
+        self.assertEqual(got["tee-promo-check"], {"template": empty, "held_out": empty})
         self.assertNotIn("tee-headline", got)
         # Without the set named, nothing is counted.
         self.assertEqual(claim.promo_traps({"x": runs}, bare_protocol())["x"], {})
@@ -3093,6 +3128,8 @@ class ManifestLines(unittest.TestCase):
              "rerun|experiments/results/20261024T103300|experiments/results/20261024T100500 --only tee-xs-price --repeat-start 1",
              "reading-test|experiments/results/probe-20261024T104000.json|model=deepseek/deepseek-v4-flash page-from x",
              "pilot-check|PASS|experiments/results/claim2-pilot.summary",
+             "search-terms|before|Wexcombe|wexcombe tee,45,3,2026-10-24 10:05:00;|the block (model) round 1 --only tee-xs-price",
+             "search-terms|after|Wexcombe|wexcombe tee,45,4,2026-10-24 10:09:00;|the block (model) round 1 --only tee-xs-price",
              "end 2026-10-24T10:41:00 usage 107.9000")
 
     def test_each_chain_line_is_known_and_kept_by_kind(self):
@@ -3100,7 +3137,8 @@ class ManifestLines(unittest.TestCase):
         self.assertEqual(found.problems, [])
         self.assertEqual([line.kind for line in found.lines], ["batch", "rerun"])
         self.assertEqual({kind: len(lines) for kind, lines in found.extras.items()},
-                         {"conditions": 1, "probe": 1, "routing-check": 1, "watchdog": 1, "reading-test": 1, "pilot-check": 1})
+                         {"conditions": 1, "probe": 1, "routing-check": 1, "watchdog": 1, "reading-test": 1, "pilot-check": 1,
+                          "search-terms": 2})
         self.assertEqual(found.extras["pilot-check"], ["pilot-check|PASS|experiments/results/claim2-pilot.summary"])
         self.assertEqual(found.extras["watchdog"][0][:9], "WATCHDOG ")
         self.assertEqual((len(found.starts), len(found.ends), found.stops), (1, 1, []))

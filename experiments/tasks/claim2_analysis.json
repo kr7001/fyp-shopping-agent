@@ -47,10 +47,11 @@
     "hand_reading: the verdict of record is the student's blind hand reading after the run (decision 5), the scorer reported beside it; the verifier reads a second sample blind, drawn by claim.py --sheet as random.Random(20261024).sample over the sheet's codes in sorted order, 40 rows, written beside the sheet as <name>.second-reader.json, so the sample is the rule's and never a hand's. The agreement of the two readers is computed by a short script committed with the results.",
     "reading_test: after the stage's last block run, each model parses the v2 entries whose template is a tee template or decline-delivery, and every v3 entry, those with template null included, once each as text (parse_probe.py --questions ... --spec-from <the claim task file> --page-from <the stage's first block batch>), DeepSeek routed as in the shop and Haiku unrouted; each form against its template's and each outcome against the entry's expected one, with a v3 entry's ask_kind (availability, threshold, other) held to the ask given, so a 'menu or buyable?' ask on a price word with no figure is not counted right. Descriptive, no test, no family.",
     "The scorer at the freeze is score v10, v8 plus additive kinds (one for tee-promo-check, no plus the real price, and the whole-label blanking so 'M - Only 2 left!' is not read as a count), reported beside the hand reading: a decision taken on the student's behalf at 01:58 on 24 October 2026, pending the generator coder's confirmation. The scorer is no arm's condition: claim.py scores every answer again with the scorer it imports and lists any stored verdict that moves.",
-    "require holds the code's constants as they stand at 02:00 on 24 October 2026 (box 18, form 13, prompt 3, normalise 4, primitives 12, targeting 9, planner 2); the box coder bumps the box to 19 and the prompt to 4, and tests/test_claim2_analysis.py holds every required version to the code's own constant, so a gap after the merge fails there before any run. Raised on the merge of the box branch into integration-b, 24 October 2026, to the merged constants: box 19, form 14, primitives 13, prompt 4, normalise 5; targeting 9 and planner 2 unchanged."
+    "require holds the code's constants as they stand at 02:00 on 24 October 2026 (box 18, form 13, prompt 3, normalise 4, primitives 12, targeting 9, planner 2); the box coder bumps the box to 19 and the prompt to 4, and tests/test_claim2_analysis.py holds every required version to the code's own constant, so a gap after the merge fails there before any run. Raised on the merge of the box branch into integration-b, 24 October 2026, to the merged constants: box 19, form 14, primitives 13, prompt 4, normalise 5; targeting 9 and planner 2 unchanged.",
+    "Version 8, 24 October 2026, from the verifier's logic audit at cd49128, before any run 2 data exists: require holds box 20 and form 15 for both block arms (box v20 drops every refusal's false sentence about review pages, says of stock that no count is displayed and that finding one would mean probing a cart, out of scope, and records a clash the box settled itself; form v15 carries the same decline texts); the model arm stays at prompt 4 and normalise 5. The analysis (protocol analysis v9) reports the promo traps fallen for on the templates and on the held-out rewordings apart, since shipped and open everything ask no rewording (LESSONS 7), counts the clashes the box settled itself beside the clash asks (clash_settled), and reads the chain's search-terms lines, the brand's search_query rows before and after each invocation, as known manifest lines."
   ],
   "protocol": "docs/content/claim2-protocol.md",
-  "version": 7,
+  "version": 8,
   "roles": {"deepseek/deepseek-v4-flash": "primary"},
   "arms": {
     "shipped": {"arm": "none", "reading": null,
@@ -60,13 +61,13 @@
                                   "require": {"exhaustive_wording_version": 2}},
     "the block (rules)": {"arm": "box", "reading": "own",
                           "flags": "--box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800",
-                          "require": {"box_version": 19, "page_reader": "rendered", "rate_plan": "bound",
-                                      "targeting_version": 9, "planner_version": 2, "form_version": 14,
+                          "require": {"box_version": 20, "page_reader": "rendered", "rate_plan": "bound",
+                                      "targeting_version": 9, "planner_version": 2, "form_version": 15,
                                       "primitives_version": 13}},
     "the block (model)": {"arm": "box-model", "reading": "own",
                           "flags": "--box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800",
-                          "require": {"box_version": 19, "page_reader": "rendered", "rate_plan": "bound",
-                                      "targeting_version": 9, "planner_version": 2, "form_version": 14,
+                          "require": {"box_version": 20, "page_reader": "rendered", "rate_plan": "bound",
+                                      "targeting_version": 9, "planner_version": 2, "form_version": 15,
                                       "primitives_version": 13, "prompt_version": 4, "parser_temperature": 0,
                                       "normalise_version": 5, "parser_model": {"same_as": "model"}}}
   },
