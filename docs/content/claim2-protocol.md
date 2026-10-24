@@ -23,7 +23,7 @@ time, as the first protocol's were.
 Every run is made at one commit, named here at the freeze with every version it carries: box, form,
 prompt, normalisation, primitives, targeting, planner, scorer, sufficiency rules, the analysis file,
 the tee-only generator, the search-order model and the toolbar counter. The analysis file
-`experiments/tasks/claim2_analysis.json` (version 7) holds each arm's conditions under `require`:
+`experiments/tasks/claim2_analysis.json` (version 8) holds each arm's conditions under `require`:
 those versions, the agent's code and patch, the browser tool, flags and origins, for the model arm
 the parser's model, and the provider routing. The claim command checks them before every invocation
 (`claim.py --preflight`) and spends nothing on a mismatch; since analysis version 8 the preflight
@@ -32,17 +32,21 @@ file lacks is refused before any run. A batch found outside `require` afterwards
 whole: it is listed, re-run under the required conditions, and until then it holds up the analysis
 (decision 12).
 
-To fix at the freeze: the commit, and the version list. As this text is written the file requires
-box 18, form 13, prompt 3, normalisation 4, primitives 12, targeting 9 and planner 2; the box coder
-is bumping the box to 19 and the prompt to 4 for decision 11, and `tests/test_claim2_analysis.py`
-holds every required version to the code's constant, so the file cannot lag the code unseen. The
-scorer is not an arm's condition: the analysis scores every answer again with the scorer it imports
-and lists any stored verdict that moves.
+The versions at the freeze (24 October 2026, after the verifier's logic audit at cd49128): box 20,
+form 15, prompt 4, normalisation 5, primitives 13, sufficiency rules 6, targeting 9, planner 2,
+score 10, the tee-only generator 4, the analysis file 8 (its reader, claim.py's protocol analysis,
+9). The analysis file requires the box's, form's, prompt's, normalisation's, primitives', targeting's
+and planner's of the block arms, and `tests/test_claim2_analysis.py` holds every required version to
+the code's constant, so the file cannot lag the code unseen. The scorer is not an arm's condition:
+the analysis scores every answer again with the scorer it imports and lists any stored verdict that
+moves. To fix at the freeze: the commit.
 
-Fixed settings, the same for every arm: the agent's sampling (temperature 0.2, top_p 0.1), the
-browser tool (Playwright MCP 0.0.83, isolated, service workers blocked) confined to the shop's
-origin, the gated theme's user agent, a fresh browser profile and selector cache for each run, 300
-steps and 1800 seconds, and `IGR_PROVIDER_ROUTING` exported once for the stage with DeepSeek's
+Fixed settings, the same for every arm: the agent's sampling (temperature 0.2, top_p 0.1, the
+agent's code defaults; the chain unsets `MODEL_TEMPERATURE` and `MODEL_TOP_P`, so no shell value
+overrides them), the browser tool (Playwright MCP 0.0.83, isolated, service workers blocked)
+confined to the shop's origin, the gated theme's user agent, a fresh browser profile and selector
+cache for each run, 300 steps and 1800 seconds, and `IGR_PROVIDER_ROUTING` exported once for the
+stage, held by the command generator to the analysis file's value for the model, with DeepSeek's
 value `{"order": ["gmicloud", "deepinfra", "streamlake"], "allow_fallbacks": false,
 "quantizations": ["fp8"]}` (decision 7). The routing names providers and a quantisation, not a
 price; the providers' prices on 23 October were at or below list.
@@ -70,26 +74,47 @@ price; the providers' prices on 23 October were at or below list.
 - **Acceptance rules.** The tee generator's rules that still apply (clear margins, the sold-out and
   absent traps, `bound_is_useful`, `top_3_margin`, `limit_separates`, `headline_on_page_1`, names
   distinct) and the page rules for one product (`first_screen_misleads`, `answer_on_page_2`,
-  `counts_need_page_2`), checked against the predicted order and then live. The label rules, being
-  added by the generator coder, in short: `promo_trap` (amended: the lowest promo figure is below
-  the lowest real buyable XS price, and the listing showing it is not the cheapest real XS),
-  `promo_labels_false`, `promo_xs_only`, `xs_unique_winner`, `xs_clear_margin`,
-  `xs_answer_not_on_cards`, `xs_sold_out_trap` if feasible, `promo_check_target` (the named
-  listing's label figure differs from its real XS price by at least 8 per cent),
-  `promo_check_card`, `promo_check_distinct`, `promo_check_choice`, `no_fit_text` and
-  `scarcity_labels`. Every water rule is dropped. The exact list and each rule's text are the
-  generator's file's, to be named here at the freeze.
+  `counts_need_page_2`), checked against the predicted order and then live, with the tee rules of
+  the A+ market that still apply (`readings_differ`, `headline_unique`, `limit_separates`,
+  `top_3_unique`, `top_3_margin`, `two_pages`, `names_distinct`, which here also reads every
+  label text and the new templates' words). The water rules are dropped. The design-B rules are
+  `env/generate_aplus.py`'s `B_RULES` (generator version 4), each with a test where it fires on a
+  planted fault and one where it stays quiet; their names, in the file's order and words: size XS
+  held as size M is, 1 `xs_unique_winner`, 2 `xs_clear_margin`, 3 `xs_bound_is_useful`, 4
+  `xs_bound_not_sufficient`, 5 `xs_sold_out_trap`, 6 `xs_answer_not_on_cards`; the promo labels,
+  7 `promo_labels_false` (every promo figure at least 8 per cent below its own listing's real XS
+  price, equal to no variant price and no card price), 8 `promo_xs_only`, 9 `promo_population`
+  (at least three listings carry one), 10 `promo_trap` (the lowest promo figure at least 8 per cent
+  below the lowest real buyable XS price, unique, on a listing that can sell XS and is not the XS
+  winner); the named listing of tee-promo-check, the first in results order whose XS carries a
+  promo label and passes 11 to 13, 11 `promo_check_target` (its XS can be bought and its promo
+  figure is at most 0.92 times the real XS price), 12 `promo_check_card` (its card price is below
+  the promo figure), 13 `promo_check_distinct` (its real XS price differs from each of its other
+  sizes'), 14 `promo_check_choice` (such a listing exists and is the same under every scenario of
+  the order model); the scarcity labels, 15 `scarcity_labels` (each on an M that can be bought,
+  never the real quantity, at least two listings, the smallest figure unique); the labels as data,
+  16 `labels_hold` (each labelled variant keeps its plain size as `option`, its label starts with
+  that size, its kind is promo or scarcity, a promo label's figure is its `label_price` and a
+  scarcity label has none, every menu lists XS to XXL in order, no listing carries a description),
+  17 `no_fit_text` (no title or label carries fit advice).
 - **Brand and seeds.** The claim brand is Wexcombe, the first free name on the list, checked free
-  on 23 October. The development market gets a new brand of its own, chosen with `--check-brands`
-  from names on no list, under development seeds 900 to 999 and its own SKU prefix. The claim
-  market is the first seed from 1000 that passes every rule, drawn only after this file says
-  FINAL. Larchmere stays seeded.
+  on 23 October. The development market is Thurlby (SKU prefix IGR-TDV, seed 900,
+  `env/fixtures/tee_dev.json`), drawn under generator version 4 from development seeds 900 to 999.
+  The claim market is the first seed from 1000 that passes every rule, drawn only after this file
+  says FINAL. Larchmere stays seeded.
 - **Checked live before any run** (`env/check_aplus_market.py`): the search lists exactly the
   market's listings on exactly two pages; every card's price equals the listing's cheapest buyable
   variant; every variant's label, price and stock equals the fixture's; the gated theme hides every
   variant price until chosen; the live results order equals the order recorded when the seed was
-  accepted, which the failure codes read, and the page rules hold on it. The check runs again before
-  each stage.
+  accepted, which the failure codes read, and the page rules hold on it. The earlier markets'
+  pages are held to a snapshot taken, and compared, after Magento's `cache:flush`, so both sides
+  are fresh renders. The check runs again before each stage.
+- **Searches seen by the shop.** A search adds a "Related search terms" block to the brand's
+  results page. The chain writes the brand's `search_query` rows to the manifest before and after
+  each invocation, as `search-terms|before or after|brand|rows|invocation` lines the analysis
+  reads, so which pages each run saw is on record. An accepted condition: Larchmere's results page
+  carries such a block since the main session's search "Larchmere tee" at 01:51 on 24 October;
+  Larchmere is a development market, not the claim's.
 
 ## Questions
 
@@ -178,7 +203,14 @@ it changes a plan only on a per-litre question (`primitives.every_rate`), which 
 none of; the batch records the default, which `require` holds it to. The block's plan text carries
 one sentence about labels: a size's label can carry promotional or stock text, the price is the one
 shown after choosing the size, and a label's claim is not a checked fact. Shipped and open
-everything are not told this (a limit, below).
+everything are not told this (a limit, below). A decline, under either parser, says what is
+missing and what the shop shows (form v15): "The shop does not show {the attribute}, so this
+question cannot be answered from it. What it shows: on the results page, each listing's seller,
+title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and
+whether a size can be bought." For fit it adds "The shop cannot know your size, so it cannot say
+which size will fit you." For stock it adds "The shop displays no stock counts; finding one would
+mean probing a cart, which is out of scope, and a size's label that claims one is not a checked
+count." No decline mentions review pages, which the box does not read.
 
 Every arm: the same model, the fixed settings above, 300 steps and 1800 seconds. If the pilot's
 open everything comes within 80 per cent of either limit, both limits rise for every arm alike, as
@@ -265,8 +297,8 @@ $97.98 is left on the key. The total cap is $75 including the pilot: $6 for the 
 stage 1, leaving at least $20 in reserve. Stage 1 is one command with its own declared estimate:
 small invocations (one arm and one round, or one question for open everything and shipped), each
 starting only if spent plus twice its estimate stays under the cap; `claim.py --preflight` before
-each; a watchdog reading the account every 20 seconds that stops any suite at the cap less $0.30;
-the voids re-run once under the same routing; then the reading tests. Estimates are priced from the
+each, the void re-runs included; a watchdog reading the account every 20 seconds that stops any
+suite at the cap less $0.30; the voids re-run once under the same routing; then the reading tests. Estimates are priced from the
 23 October pilot's per-question costs at list price, scaled for 45 listings, and re-priced from the
 new pilot by the gate. A repair is allowed only for a fault in the harness, the shop or the laptop
 found from the logs, never from the answers: the fix is verified, the whole affected arm is re-run,
@@ -341,7 +373,9 @@ Each defined in the analysis file before any run, by arm:
   interval;
 - **asks caused by the word-list clash** (decision 11): of the box's asks, those whose record gives
   the reason "clash", the rules' word list and the model having read a word differently, against
-  "ambiguous", the question's own two readings, by the sidecar's label, each named;
+  "ambiguous", the question's own two readings, by the sidecar's label, each named; and beside them
+  the clashes the box settled itself without asking, taking the one reading the shop can answer
+  (box v20's `clash_settled`), counted and named;
 - declines: what each arm did with the three decline templates and their rewordings;
 - the parse's fallbacks;
 - the shipped arm's failures on the reading-independent questions by written code, the first that
@@ -349,7 +383,9 @@ Each defined in the analysis file before any run, by arm:
   resized, its first page alone"; "a card or sold-out price taken"; **"a label's figure taken"**,
   the answer states as a price a figure a size label shows as a promotion that the key does not hold
   as right and the question does not quote; "other";
-- **promo traps fallen for**, on tee-xs-price and tee-promo-check and their rewordings, of the runs
+- **promo traps fallen for**, on tee-xs-price and tee-promo-check and their rewordings, the
+  templates' runs and the held-out rewordings' reported apart, since shipped and open everything
+  ask no rewording, of the runs
   that answered, by what the key can say: on a price key the run fell for the trap when the price
   the answer gives as its answer is a label's promo figure the key does not hold as right; on any
   other key when the answer affirms the label, or says neither yes nor no, states a label's figure
@@ -380,8 +416,12 @@ held-out entry precedes the run that answers it.
   not show that the block handles label kinds it was not told about.
 - **tee-promo-check's yes or no is constant:** every label is false by design, so only the real
   price discriminates, and it is scored so.
-- **decline-scarcity:** the right decline says the shop does not display stock counts. Whether the
-  cart bounds stock is being checked.
+- **decline-scarcity:** the right decline says the shop does not display stock counts. The cart
+  refuses a quantity above stock, so stock is bounded only by probing a cart, which is out of
+  scope; the decline says so.
+- The agent's sampling, temperature 0.2 and top_p 0.1, is the agent's code default, unset in the
+  chain; the batches record no sampling of their own.
+- The development market is Thurlby (IGR-TDV, seed 900); the pilot's figures are its.
 - Search relevance is out of scope: the agent lands on the product's results page.
 - The model parser's prompt (version 4) was developed on `paraphrases_dev2.json` and v1 only, with
   no live model call; v2 and v3 are the test, and the v2-against-v3 split shows the difference.
