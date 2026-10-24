@@ -25,6 +25,7 @@ sys.path.insert(0, str(paths.REPO / "env"))
 import check_aplus_market as live  # noqa: E402
 import check_market  # noqa: E402
 import generate_aplus as aplus  # noqa: E402
+import generate_aplus_tasks as aplus_tasks  # noqa: E402
 import generate_apparel as apparel  # noqa: E402
 import pick_aplus_market as picker  # noqa: E402
 import search_order  # noqa: E402
@@ -32,7 +33,10 @@ import seed_variants  # noqa: E402
 
 DEV = paths.FIXTURES / aplus.B_DEV_FIXTURE
 DEV_SEARCH = paths.REPO / "env" / "manifests" / "tee_dev-search.json"
+DEV_TASKS = paths.TASKS / "tasks_tee_dev.json"
+DEV_READINGS = paths.TASKS / "readings_tee_dev.json"
 LARCHMERE = paths.FIXTURES / "aplus_dev.json"
+HELD_OUT = paths.TASKS / "paraphrases_v2.json"
 XS, M = aplus.XS_TARGET, aplus.TEE_TARGET
 # The development market is drawn in the night's second phase; until its fixture exists the
 # classes that read it are skipped, and the generator's own tests run.
@@ -787,6 +791,240 @@ class LiveCheckComparisons(DevMarket):
         self.assertEqual(check_market.leaked("Size XS - Promo $9.99 $12.30", listing), ["12.30"])
         # Larchmere's sizes read as before.
         self.assertEqual(check_market.expected(load(LARCHMERE))[0]["sizes"][0][0], load(LARCHMERE)["families"][0]["variants"][0]["option"])
+
+
+@needs_market
+class Questions(DevMarket):
+    """The task writer's design-B path: the thirteen templates with every key from the variants,
+    the sidecar, and the committed development files."""
+
+    def setUp(self):
+        super().setUp()
+        self.spec = aplus_tasks.spec(self.fixture, DEV.name)
+        self.by = {t["id"]: t for t in self.spec["tasks"]}
+        self.sidecar = aplus_tasks.readings(self.fixture, DEV.name, DEV_TASKS.name)
+        self.named = by_sku(self.families, self.fixture["_instance"]["promo_check"]["sku"])
+
+    def test_the_questions_are_the_templates_word_for_word(self):
+        self.assertEqual(list(self.by), list(aplus.B_TEMPLATES))
+        label = variant(self.named, XS)
+        limit = self.fixture["_instance"]["exists_limit"]
+        for task_id, (_, template) in aplus.B_TEMPLATES.items():
+            with self.subTest(task=task_id):
+                query = self.by[task_id]["query"]
+                self.assertTrue(query.startswith(f"Go to {{base}}/catalogsearch/result/?q={self.brand} . "))
+                self.assertEqual(query.split(" . ", 1)[1], template.format(
+                    brand=self.brand, limit=limit, seller=self.named["seller"], promo=f"{label['label_price']:.2f}"))
+                self.assertNotIn("{", query.split(" . ", 1)[1])
+        check = self.by["tee-promo-check"]["query"]
+        self.assertIn(f"The {self.named['seller']} listing", check)
+        self.assertIn(f"at ${label['label_price']:.2f}.", check)
+        self.assertEqual(label["label"], f"XS - Promo ${label['label_price']:.2f}")
+
+    def test_the_keys_are_the_variants(self):
+        able = sorted((f for f in self.families if any(v["option"] == XS and v["qty"] for v in f["variants"])),
+                      key=lambda f: variant(f, XS)["price"])
+        lowest_promo = min((v["label_price"] for f in self.families for v in f["variants"] if v.get("label_kind") == "promo"))
+        self.assertEqual(self.by["tee-xs-price"]["expect"],
+                         {"kind": "price", "value": variant(able[0], XS)["price"], "trap": lowest_promo})
+        label = variant(self.named, XS)
+        self.assertEqual(self.by["tee-promo-check"]["expect"],
+                         {"kind": "label_check", "value": False, "price": label["price"], "trap": label["label_price"]})
+        self.assertLess(lowest_promo, variant(able[0], XS)["price"] * 0.92 + 0.005)
+        for decline in aplus_tasks.NOT_PLANNED_B:
+            self.assertEqual(self.by[decline]["expect"], {"kind": "none"})
+            self.assertEqual(self.by[decline]["box"], {"outcome": "refuse", "kind": None})
+            self.assertFalse(self.by[decline]["gated"])
+        self.assertFalse(self.by["tee-headline"]["gated"])
+        self.assertTrue(all(self.by[t]["gated"] for t in self.by if t not in aplus_tasks.NOT_PLANNED_B and t != "tee-headline"))
+        self.assertEqual({t: self.by[t]["box"]["outcome"] for t in ("tee-all-stocked", "tee-count-stocked")},
+                         {"tee-all-stocked": "ask", "tee-count-stocked": "ask"})
+        self.assertEqual(self.by["tee-promo-check"]["box"], {"outcome": "plan", "kind": "lookup"})
+        # The eight tee keys are design A's rule applied to this market.
+        tees = self.families
+        able_m = sorted((f for f in tees if any(v["option"] == M and v["qty"] for v in f["variants"])),
+                        key=lambda f: variant(f, M)["price"])
+        self.assertEqual(self.by["tee-target-price"]["expect"], {"kind": "price", "value": variant(able_m[0], M)["price"]})
+        self.assertEqual(self.by["tee-count-buyable"]["expect"]["value"], len(able_m))
+        self.assertEqual([i["any"][0] for i in self.by["tee-top-3"]["expect"]["items"]], [f["seller"].split()[0] for f in able_m[:3]])
+
+    def test_the_sidecar_keys_every_question_under_the_buyable_reading(self):
+        self.assertEqual(self.sidecar["two_readings"], ["tee-all-stocked", "tee-count-stocked"])
+        buyable = self.sidecar["readings"]["buyable"]
+        keyed = [t["id"] for t in self.spec["tasks"] if t["expect"]["kind"] != "none"]
+        self.assertEqual((sorted(buyable), len(keyed)), (sorted(keyed), 10))
+        for task_id in keyed:
+            with self.subTest(task=task_id):
+                if task_id in aplus_tasks.TWO_READINGS_B:
+                    self.assertNotEqual(buyable[task_id], self.by[task_id]["expect"])
+                else:
+                    self.assertEqual(buyable[task_id], self.by[task_id]["expect"])
+        can = sum(1 for f in self.families if any(v["option"] == M and v["qty"] for v in f["variants"]))
+        self.assertEqual(buyable["tee-count-stocked"], {"kind": "count", "value": can})
+        # Planted: a one-reading key that counted a sold-out size.
+        own = {t["id"]: t["expect"] for t in self.spec["tasks"]}
+        planted = {**own, "tee-count-buyable": {"kind": "count", "value": self.k["tee_listed"]}}
+        self.assertEqual(aplus_tasks.reading_problems(planted, {**own, "tee-count-buyable": buyable["tee-count-buyable"]},
+                                                      aplus_tasks.TWO_READINGS_B), ["tee-count-buyable"])
+
+    def test_the_named_listing_is_recomputed_and_refused_when_it_moves(self):
+        self.assertEqual(aplus_tasks.named_listing(self.fixture)["parent_sku"], self.named["parent_sku"])
+        other = copy.deepcopy(self.fixture)
+        other["_instance"]["promo_check"]["sku"] = "IGR-TDV-00"
+        with self.assertRaises(SystemExit) as refused:
+            aplus_tasks.named_listing(other)
+        self.assertIn("IGR-TDV-00", str(refused.exception))
+        # The keys are refused when the market breaks a rule or _instance disagrees.
+        broken = copy.deepcopy(self.fixture)
+        variant(by_sku(broken["families"], self.k["xs_runner_up"]["parent_sku"]), XS)["price"] = variant(self.k["xs_winner"], XS)["price"]
+        with self.assertRaises(SystemExit):
+            aplus_tasks.checked_keys(broken)
+        moved = copy.deepcopy(self.fixture)
+        moved["_instance"]["xs"]["winner"]["price"] += 1
+        with self.assertRaises(SystemExit) as refused:
+            aplus_tasks.checked_keys(moved)
+        self.assertIn("the XS winner", str(refused.exception))
+
+    def test_the_committed_files_are_the_writers(self):
+        self.assertEqual(json.loads(DEV_TASKS.read_text()), self.spec)
+        self.assertEqual(json.loads(DEV_READINGS.read_text()), self.sidecar)
+        self.assertEqual(self.spec["fixture"], DEV.name)
+        self.assertEqual(self.spec["_instance"], self.fixture["_instance"])
+        with tempfile.TemporaryDirectory() as tmp:
+            tasks, readings = pathlib.Path(tmp) / DEV_TASKS.name, pathlib.Path(tmp) / DEV_READINGS.name
+            subprocess.run([sys.executable, "env/generate_aplus_tasks.py", "--fixture", str(DEV.relative_to(paths.REPO)),
+                            "--out", str(tasks), "--readings-out", str(readings)], cwd=paths.REPO, check=True,
+                           capture_output=True)
+            self.assertEqual(tasks.read_bytes(), DEV_TASKS.read_bytes())
+            self.assertEqual(readings.read_bytes(), DEV_READINGS.read_bytes())
+
+
+def synthetic_v3(fixture: dict, tasks: list[dict]) -> dict:
+    """A file in the shape the v3 held-out set is being written in (the coordinator's note of
+    24 October 2026): v2's schema, ids v3-NN, `ask_kind` on the entries whose template is null.
+    Its texts are made here and are nobody's held-out set."""
+    by_id = {t["id"]: t for t in tasks}
+    templates = {name: text for name, (_, text) in aplus.B_TEMPLATES.items()}
+
+    def entry(number, template, expected, text, **more):
+        return {"id": f"v3-{number:02d}", "template": template, "label": "clear" if expected == "plan" else expected,
+                "meaning_kept": True, "expected": expected, "expected_why": "made for the test",
+                "template_text": templates.get(template), "text": text, **more}
+    entries = [
+        entry(1, "tee-xs-price", "plan", "Cheapest XS of the {brand} tee I can actually buy?"),
+        entry(2, "tee-promo-check", "plan", "{seller} shows XS at ${promo} on promo for the {brand} tee. Is that the price?"),
+        entry(3, "tee-count-stocked", "ask", "How many {brand} tee sellers have M?"),
+        entry(4, "decline-fit", "decline", "Between M and L for the {brand} tee, which fits a 5'10 person?"),
+        entry(5, "decline-scarcity", "decline", "Which {brand} tee seller is nearly out of M?"),
+        entry(6, "tee-exists-under", "plan", "Any {brand} tee with M to buy for less than ${limit}? Who?"),
+        entry(7, None, "ask", "Is there an offer on the {brand} tee?", ask_kind="offer"),
+        entry(8, "tee-headline", "ask", "Which {brand} tee is the best deal?"),            # disagrees with its template
+    ]
+    entries[7]["meaning_kept"] = True
+    return {"_about": ["made by tests/test_tee_market.py"], "templates": templates, "base_url": "http://localhost:7770",
+            "lead": by_id["tee-headline"]["query"].split(" . ")[0], "page_from": "tee-headline", "paraphrases": entries}
+
+
+@needs_market
+class Rewordings(DevMarket):
+    """`--rewordings` on a design-B market: the v2 file by its tee entries, and a v3-shaped file;
+    handled by id, template and flags, never by text (the held-out file's _about, LESSONS 19)."""
+
+    def setUp(self):
+        super().setUp()
+        self.held = load(HELD_OUT)
+        self.templates = aplus_tasks.tasks_b(self.fixture)
+        self.v3 = synthetic_v3(self.fixture, self.templates)
+        self.spec = aplus_tasks.spec(self.fixture, DEV.name, [self.held, self.v3])
+        self.sidecar = aplus_tasks.readings(self.fixture, DEV.name, DEV_TASKS.name, [self.held, self.v3])
+        self.by = {t["id"]: t for t in self.spec["tasks"]}
+
+    def test_v2_is_filtered_to_the_tee_templates_and_decline_delivery(self):
+        kept = [e for e in self.held["paraphrases"] if e["meaning_kept"] and e["template"] in aplus.B_TEMPLATES]
+        self.assertEqual(len(kept), 18)      # 16 keyed and 2 declines (the handover, section 4)
+        v2 = [t for t in self.spec["tasks"] if t.get("held_out") == "v2"]
+        self.assertEqual([t["id"] for t in v2], [f"rw-{e['id']:02d}" for e in kept])
+        self.assertEqual(sum(1 for t in v2 if t["expect"]["kind"] != "none"), 16)
+        skipped = {s["rewording"]: s["why"] for s in self.spec["_skipped"]}
+        water = [e["id"] for e in self.held["paraphrases"] if e["template"].startswith("water-") or e["template"] == "decline-taste"]
+        self.assertTrue(all(n in skipped for n in water))
+        self.assertTrue(all("does not ask" in skipped[n] or "meaning" in skipped[n] for n in water))
+        changed = [e["id"] for e in self.held["paraphrases"] if not e["meaning_kept"] and e["template"] in aplus.B_TEMPLATES]
+        self.assertTrue(all("meaning_kept false" in skipped[n] for n in changed))
+        # No text of the held-out file anywhere but in a task's query.
+        texts = [e["text"] for e in self.held["paraphrases"]]
+        self.assertFalse(any(t in json.dumps(self.spec["_skipped"]) for t in texts))
+
+    def test_v3_entries_become_rw3_tasks_and_the_reading_test_only_ones_are_skipped(self):
+        v3 = [t for t in self.spec["tasks"] if t.get("held_out") == "v3"]
+        self.assertEqual([t["id"] for t in v3], ["rw3-01", "rw3-02", "rw3-03", "rw3-04", "rw3-05", "rw3-06"])
+        self.assertEqual([t["template"] for t in v3], ["tee-xs-price", "tee-promo-check", "tee-count-stocked",
+                                                       "decline-fit", "decline-scarcity", "tee-exists-under"])
+        for task in v3:
+            with self.subTest(task=task["id"]):
+                template = self.by[task["template"]]
+                for field in ("family", "product", "gated", "expect", "box"):
+                    self.assertEqual(task[field], template[field], field)
+                rest = task["query"].split(" . ", 1)[1]
+                self.assertFalse("{" in rest or "}" in rest)
+        promo = self.by["rw3-02"]["query"]
+        named = by_sku(self.families, self.fixture["_instance"]["promo_check"]["sku"])
+        self.assertIn(named["seller"], promo)
+        self.assertIn(f"${variant(named, XS)['label_price']:.2f}", promo)
+        skipped = {s["rewording"]: s for s in self.spec["_skipped"]}
+        self.assertIn("reading-test-only", skipped["v3-07"]["why"])
+        self.assertIn("ask_kind offer", skipped["v3-07"]["why"])
+        self.assertIn("for a person to decide", skipped["v3-08"]["why"])
+        self.assertEqual(aplus_tasks.rewording_task_id("v3-12"), ("rw3-12", "v3"))
+        self.assertEqual(aplus_tasks.rewording_task_id(7), ("rw-07", "v2"))
+        with self.assertRaises(SystemExit):
+            aplus_tasks.rewording_task_id("x-1")
+
+    def test_the_sidecar_gives_each_its_templates_buyable_key(self):
+        buyable = self.sidecar["readings"]["buyable"]
+        own = aplus_tasks.readings(self.fixture, DEV.name, DEV_TASKS.name)["readings"]["buyable"]
+        for task in self.spec["tasks"][13:]:
+            with self.subTest(task=task["id"]):
+                if task["template"] in own:
+                    self.assertEqual(buyable[task["id"]], own[task["template"]])
+                else:
+                    self.assertNotIn(task["id"], buyable)
+        asked = [t["id"] for t in self.spec["tasks"][13:] if t["template"] in aplus_tasks.TWO_READINGS_B]
+        self.assertEqual(self.sidecar["two_readings"], ["tee-all-stocked", "tee-count-stocked"] + asked)
+        self.assertIn("rw3-03", asked)
+
+    def test_a_template_worded_otherwise_is_refused_by_id(self):
+        broken = copy.deepcopy(self.v3)
+        broken["paraphrases"][0]["template_text"] += " Now."
+        with self.assertRaises(SystemExit) as raised:
+            aplus_tasks.spec(self.fixture, DEV.name, [broken])
+        self.assertIn("rewording v3-01", str(raised.exception))
+        self.assertNotIn(broken["paraphrases"][0]["text"], str(raised.exception))
+        twice = copy.deepcopy(self.v3)
+        with self.assertRaises(SystemExit) as raised:
+            aplus_tasks.spec(self.fixture, DEV.name, [self.v3, twice])
+        self.assertIn("same task ids", str(raised.exception))
+
+    def test_the_command_writes_both_files_outside_experiments_tasks_and_shows_no_text(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = pathlib.Path(tmp)
+            v3 = folder / "paraphrases_v3.json"
+            v3.write_text(json.dumps(self.v3))
+            tasks, readings = folder / DEV_TASKS.name, folder / DEV_READINGS.name
+            ran = subprocess.run([sys.executable, "env/generate_aplus_tasks.py", "--fixture", str(DEV.relative_to(paths.REPO)),
+                                  "--out", str(tasks), "--readings-out", str(readings), "--rewordings",
+                                  str(HELD_OUT.relative_to(paths.REPO)), str(v3)],
+                                 cwd=paths.REPO, check=True, capture_output=True, text=True)
+            self.assertTrue(load(tasks) == self.spec, "the command's task file is not spec()'s")
+            self.assertEqual(load(readings), self.sidecar)
+        printed = ran.stdout + ran.stderr
+        self.assertIn(f"({len(self.spec['tasks'])} tasks)", printed)
+        self.assertFalse(any(e["text"] in printed for e in self.held["paraphrases"] + self.v3["paraphrases"]))
+        self.assertIn("skipped: rewording v3-07 of None: reading-test-only", printed)
+        # Beside the development market's questions, the held-out files are refused.
+        self.assertIn("would put the held-out rewordings", aplus_tasks.refused(
+            DEV, self.fixture, DEV_TASKS, DEV_READINGS, rewordings=True))
+        self.assertIsNone(aplus_tasks.refused(DEV, self.fixture, DEV_TASKS, DEV_READINGS))
 
 
 if __name__ == "__main__":
