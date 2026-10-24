@@ -99,7 +99,36 @@ import targeting
 #      bound stays the default. Every text for a search on one page of one product is
 #      unchanged but the per-litre plan's. No stored run was sent a text that changed: none
 #      of the 122 stored box rows has a scope, two pages or a rate plan
-VERSION = 12
+#  13  24 October 2026, box v19, for the second claim run's design B, whose size menus carry
+#      the seller's own text after a size. Every plan that opens a listing ends with one
+#      sentence saying where the true price is and that a label's claim is no checked fact
+#      (`LABEL_NOTE`); the results page's plan, which opens none, and the review search do
+#      not. And the checks read an answer's price with every label's or promotion's figure
+#      blanked (`answer_prices`, rules v6), so "the XS label says Promo $9.99" is never the
+#      price an answer names
+VERSION = 13
+
+# The one sentence the plans that open a listing end with (box v19, 24 October 2026). On the
+# design B markets a size's option label can carry the seller's own text after the size, a
+# promotion with a figure ("XS - Promo $9.99", on XS alone, every figure at least 8% below
+# that listing's real XS price) or a claim of how many are left ("M - Only 2 left!", on a
+# buyable M alone, whatever the stock). The price of a size is the one the gated theme writes
+# into the price box once it is chosen, and no cart or catalogue price rule is active, so that
+# is the price charged (checked by the verifier on 24 October 2026). Retrieval guidance only:
+# where the true figure is, never a sum. True of every market of the shop, since "can".
+LABEL_NOTE = ("A size's label in the menu can carry promotional or stock text; the price is the one "
+              "shown after the size is chosen, and a label's claim is not a checked fact.")
+# The kinds whose plan opens no listing, and so has no menu to read: the results page's, and
+# the review search, which turns review pages.
+NO_LISTING_OPENED = ("results_page", "depth_search")
+
+
+def answer_prices(answer: str) -> list[float]:
+    """The prices an answer names, in order, as the scorer reads them (`score.prices_in`),
+    with every figure a label or a promotion claims blanked first (`sufficiency.
+    without_label_figures`, box v19): "the XS label says Promo $9.99, but it costs $14.20"
+    names $14.20."""
+    return scoring.prices_in(sufficiency.without_label_figures(answer))
 
 # The same hazard as every v1 bound strategy: a figure derived from a bound is not a price.
 QUARANTINE = targeting.QUARANTINE
@@ -343,7 +372,7 @@ class FilterModifier:
         limit = limit_of(form)
         if limit is None:
             return ok("no price limit to hold the answer to")
-        prices = scoring.prices_in(answer)
+        prices = answer_prices(answer)
         if not prices or denies(answer):
             return ok("the answer names no price above the limit")
         if not limit.admits(prices[0]):
@@ -785,7 +814,7 @@ class BoundPrune:
         kind = form.kind()
         if kind == "results_page":
             return ok("answered from the results page, so nothing had to be opened")
-        prices = scoring.prices_in(answer)
+        prices = answer_prices(answer)
         if form.quantifier == "argmax":
             floor = len(page.listings)
         elif form.quantifier == "topk":
@@ -1017,7 +1046,11 @@ def compose(form: form_module.Form, page: page_module.Page, exhaust: bool = Fals
     listings, and no text is written for it without its stop rule, so it is refused.
 
     With `rate` "every" (box v18) a rate question opens every listing, with no bound: the
-    exhaust primitive with `rate_every_text`, which has no stop sentence to swap."""
+    exhaust primitive with `rate_every_text`, which has no stop sentence to swap.
+
+    Every plan that opens a listing ends with `LABEL_NOTE` (box v19), after the stop rule's
+    swaps and the scope's words, on a line of its own, so `box.as_sent_by` can take it off
+    a text sent before it was added."""
     every = every_rate(form, rate)
     primitive = Exhaust if every else primitive_for(form)
     instruction = rate_every_text(form) if every else primitive.instruction(form, page)
@@ -1030,6 +1063,8 @@ def compose(form: form_module.Form, page: page_module.Page, exhaust: bool = Fals
         instruction = without_stop_rule(instruction, swaps)
         stop_rule = EXHAUST_STOP if swaps else stop_rule
     instruction = in_scope(instruction, page)
+    if form.kind() not in NO_LISTING_OPENED:
+        instruction = f"{instruction}\n{LABEL_NOTE}"
     return Plan(primitive=primitive.name, kind=form.kind(), filters=form.filters,
                 candidates=tuple(candidates(form, page)), stop_rule=stop_rule,
                 instruction=instruction, text=f"{preamble(page)}\n\n{instruction}",

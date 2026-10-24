@@ -129,7 +129,9 @@ class TheTextsFollowTheScope(unittest.TestCase):
                     plan = decision.plan
                     self.assertEqual(primitives.in_scope(plan.instruction, page), plan.instruction)
                     if kind in targeting.BODIES and not exhaust and kind != "rate_bound":
-                        self.assertEqual(plan.instruction, targeting.BODIES[kind])
+                        # With the label sentence on a plan that opens a listing (box v19).
+                        note = "" if kind == "results_page" else f"\n{primitives.LABEL_NOTE}"
+                        self.assertEqual(plan.instruction, targeting.BODIES[kind] + note)
         headline = box.decide(GO + TEE["results_page"], page)
         self.assertIn("Read the whole results page, not only the first screen", headline.query)
 
@@ -397,8 +399,9 @@ class TheParsesTokens(unittest.TestCase):
 
 class TheVersions(unittest.TestCase):
     def test_they_moved_together(self):
+        # Box 19, primitives 13 and form 14 on 24 October 2026, design B (test_design_b.py).
         self.assertEqual((box.VERSION, primitives.VERSION, form.VERSION, targeting.VERSION),
-                         (18, 12, 13, 9))
+                         (19, 13, 14, 9))
 
 
 if __name__ == "__main__":

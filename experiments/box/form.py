@@ -95,7 +95,15 @@ import targeting
 #      (`reply_text`). When the first '{' to the last '}' is not one form, each object in the
 #      reply is tried and the last that is a form taken (`last_form`), for reasoning with
 #      braces in it. Every reply the first attempt parsed parses to the same form
-VERSION = 13
+#  14  24 October 2026, box v19, for the second claim run's design B and its two declines.
+#      The rules name two attributes the shop does not show where until now they planned a
+#      survey of every listing (LESSONS 35): fit, which size suits the shopper ("Will size M
+#      or size L fit me better?", "which size should I buy", "between a medium and a large",
+#      "runs small"), and stock quantity, read in more words ("the fewest units of it left",
+#      "running out", "sell out", "low stock", "only 2 left"). The decline says, for fit,
+#      that the shop cannot know the shopper's size, and for stock, that the shop does not
+#      display stock counts and a label's claim of one is no checked count (`refusal`)
+VERSION = 14
 
 # The model parser's prompt, recorded in every form a model proposes. Runs made under
 # different prompts are different parsers and are never pooled.
@@ -113,7 +121,14 @@ VERSION = 13
 #      sentences of its context made true of the shop (`CONTEXT_V3`): a search lists one
 #      product or several, and a listing has reviews only when it has any. Version 2 is kept
 #      byte for byte (tests/test_model_parser.py pins its sha256)
-PROMPT_VERSION = 3
+#   4  24 October 2026, box v19, for design B, written on the practice questions of
+#      tasks/paraphrases_dev2.json and paraphrases_v1.json alone. Version 3 with: a size's
+#      label can carry the seller's text and its claim is not checked (`CONTEXT_V4`); fit
+#      and stock counts among what the shop does not show (`SHOWN_V4`); the six sizes XS to
+#      XXL (`SIZES_V4`); how to fill a promotion's claim, a listed price, fit and stock left
+#      (`FILLING_V4`); and four worked examples more (`EXAMPLES_V4`). The reply's format is
+#      version 2's. Version 3 is kept byte for byte (tests/test_design_b.py pins its sha256)
+PROMPT_VERSION = 4
 
 # The vocabulary. A form outside it is refused when it is built, so a model's reply cannot
 # smuggle in a quantifier nothing knows how to plan. "unknown" is the rules' answer to a
@@ -395,13 +410,33 @@ def not_shown(form: Form, page: page_module.Page | None = None) -> list[str]:
     return sorted(missing)
 
 
+# What a decline adds for the two attributes design B's declines ask about (form v14, 24
+# October 2026), by the attribute's name, the rules' or a model's. Fit: nothing on the shop
+# knows the shopper's size. Stock: no page of the shop displays a stock count, the product
+# page's "Only %1 left" block being a template with no threshold set (checked by the verifier
+# that day), and design B's labels can claim one ("M - Only 2 left!"), which is no checked
+# count. Nothing is said of what the stock is or could be found to be: whether a cart refuses
+# a quantity above it is not settled.
+FIT_NAMED = re.compile(r"\bfit", re.IGNORECASE)
+STOCK_NAMED = re.compile(r"\bstock\b|\binventor\w*|\bunits?\b|\bleft\b|\bremaining\b", re.IGNORECASE)
+REFUSAL_FIT = " The shop cannot know your size, so it cannot say which size will fit you."
+REFUSAL_STOCK = (" The shop does not display stock counts, and a size's label that claims one is not "
+                 "a checked count.")
+
+
 def refusal(missing: list[str]) -> str:
-    """What the box says instead of planning: what is missing, and what the shop does show."""
-    return (f"The shop does not show {', '.join(missing)}, so this question cannot be answered "
+    """What the box says instead of planning: what is missing, and what the shop does show,
+    and since form v14 a sentence for fit and one for stock when they are missing."""
+    text = (f"The shop does not show {', '.join(missing)}, so this question cannot be answered "
             "from it. What it shows: on the results page, each listing's seller, title, URL and "
             "advertised price. On a listing, its size menu, the price of a size once chosen and "
             "whether a size can be bought. On a review page, the text, rating and page of each "
             "review.")
+    if any(FIT_NAMED.search(name) for name in missing):
+        text += REFUSAL_FIT
+    if any(STOCK_NAMED.search(name) for name in missing):
+        text += REFUSAL_STOCK
+    return text
 
 
 def plan_dict(form: Form) -> dict | None:
@@ -532,12 +567,32 @@ NAMED_PAIR = re.compile(rf"\b(?:[Bb]etween|[Oo]f)\s+(?P<a>{NAME})\s+(?:and|or)\s
                         rf"(?=\s*[,:?]|\s+which\b)")
 # Attributes a question can ask for that this shop does not show. Recognised so the form
 # names what is missing rather than planning around it (property 5).
+# Stock quantity in more words since form v14 (24 October 2026, design B's decline-scarcity,
+# "which seller has the fewest units of it left"): a quantity word before "left", a fewest or
+# most of units or stock, running or selling out (never "sold out", which is whether a size
+# can be bought), low stock, and a claim of "only N left". Fit, the size that suits the
+# shopper, since the same day (decline-fit, "Will size M or size L fit me better?"): fitting
+# someone, which size to buy or get, being between two sizes, and running small or large.
+# The descriptions that might have carried a size guide were cut from design B, so no page of
+# the shop shows how a size fits (the coordinator's decision, 24 October 2026). A size named
+# after "which size" makes the question about a size, not the shopper: "which size M seller".
+SIZE_WORD = r"(?:XXS|XS|S|M|L|XL|XXL|XXXL|small|medium|large|extra[\s-]small|extra[\s-]large)"
 OTHER_ATTRIBUTES = (
     ("delivery time", re.compile(r"\bdeliver\w*\b", re.IGNORECASE)),
     ("shipping cost", re.compile(r"\b(?:shipping|postage)\b", re.IGNORECASE)),
     ("warranty", re.compile(r"\bwarrant\w*\b|\bguarantee\w*\b", re.IGNORECASE)),
     ("stock quantity", re.compile(r"\b(?:how\s+many|units|items|pieces)\s+(?:are\s+)?left\b"
-                                  r"|\bstock\s+(?:level|quantity|count)\b", re.IGNORECASE)),
+                                  r"|\bstock\s+(?:level|levels|quantity|count|counts)\b"
+                                  r"|\b(?:units?|items?|pieces?)\s+(?:\w+\s+){0,3}?left\b"
+                                  r"|\b(?:fewest|least|most|fewer|more)\s+(?:units?|items?|pieces?|stock)\b"
+                                  r"|\b(?:run(?:s|ning)?|sell(?:s|ing)?)\s+out\b"
+                                  r"|\b(?:low|lowest|limited)\s+(?:on\s+)?stock\b"
+                                  r"|\bonly\s+\d+\s+left\b|\bhow\s+much\s+stock\b", re.IGNORECASE)),
+    ("fit", re.compile(r"\bfits?\s+(?:me|you|him|her|them|someone|a\s+person)\b"
+                       rf"|\b(?:which|what)\s+size\b(?!\s+{SIZE_WORD}\b)[^?.!]{{0,60}}?"
+                       r"\b(?:should|would|do\s+you\s+recommend|to\s+(?:buy|get|order|pick|choose))\b"
+                       rf"|\bbetween\s+(?:an?\s+)?(?:size\s+)?{SIZE_WORD}\s+and\s+(?:an?\s+)?(?:size\s+)?{SIZE_WORD}\b"
+                       r"|\bruns?\s+(?:small|large|big)\b|\btrue\s+to\s+size\b", re.IGNORECASE)),
     ("rating", re.compile(r"\brat(?:ing|ings|ed)\b|\bstars?\b", re.IGNORECASE)),
 )
 ARGMAX_WORDS = re.compile(r"\b(?:highest|most|longest|best|slowest)\b", re.IGNORECASE)
@@ -1243,10 +1298,73 @@ EXAMPLES = (
 )
 
 
-def worked_examples() -> str:
+# Prompt version 4 (24 October 2026, box v19, design B). Each statement about the shop was
+# checked that day by the verifier: a size's option label can carry the seller's own text, a
+# promotion with a figure on XS or a claim of how many are left on M, and the price is the one
+# the page writes once the size is chosen, no price rule being active; no page displays a
+# stock count; nothing on a listing knows the shopper's size (descriptions cut). The design B
+# markets name their sizes XS to XXL, the earlier markets S to XL, so "among".
+CONTEXT_V4 = CONTEXT_V3 + (" A size's label in the menu can carry the seller's own text after the "
+                           "size, such as a promotion with a price or a claim of how many are left; "
+                           "the price of a size is the one shown after it is chosen, and the shop "
+                           "does not check a label's claim.")
+
+SHOWN_V4 = """The attributes the shop shows, and the only ones a form may compare or filter on:
+- on the results page: {results}
+- on a listing page: {listing}
+- on a review page: {review}
+It does not show delivery time, shipping cost, warranty, stock quantity (it displays no stock \
+counts, and a label's claim of one is not one), a seller rating, or fit (which size suits a \
+shopper)."""
+
+SIZES_V4 = """How a size is written. The clothing listings whose price depends on the size \
+chosen name their sizes among XS, S, M, L, XL and XXL, so write such a size as one of those: \
+extra small is XS, small is S, medium is M, large is L, extra large is XL and double extra \
+large is XXL. A size the question quotes from a menu label, with the label's text after it, \
+is the size alone. A pack size, such as a number of bottles and their volume, is written as \
+the question writes it."""
+
+FILLING_V4 = FILLING + """
+- A figure the question says a label, a promotion or another claim gives is not a price \
+limit: leave it out of the filters. A question whether such a claim holds on a named listing \
+is a lookup of that listing's price for the size, with the seller as the filter.
+- "Listed price" or "shown price" is a price, not an availability: it adds no availability \
+filter.
+- A question about which size suits the shopper needs "attribute:fit", and one about how many \
+of a size are left, or which seller will run out first, needs "attribute:stock quantity": \
+make it the objective, name it in "unknowns", and keep the size and availability filters the \
+question gives."""
+
+# One worked example for each new thing version 4 teaches, written on 24 October 2026 about the
+# made-up brand, Example, and its made-up sellers; none copies a question of
+# tasks/paraphrases_v1.json or tasks/paraphrases_dev2.json (tests/test_design_b.py).
+EXAMPLES_V4 = EXAMPLES + (
+    _example("named_lookup", _SEARCH + "The size menu of the Mellow Fields listing of the Example "
+             "jacket shows size S on promotion at $14.50. Does size S cost that on that listing, "
+             "and if not, what does it cost?", quantifier="lookup", objective="price",
+             filters=[_f("seller", "in", ["Mellow Fields"]), _f("size", "=", "S")],
+             evidence={"quantifier": "the Mellow Fields listing", "filters": "size S; $14.50 is "
+                       "the promotion's claim to check, not a limit"}),
+    _example("availability_bound", _SEARCH + "Among the Example sellers that can sell an extra "
+             "small right now, who charges the least, and how much?", quantifier="argmin",
+             objective="price", filters=[_f("size", "=", "XS"), _f("availability", "=", "buyable")],
+             evidence={"quantifier": "charges the least", "filters": "an extra small, which is "
+                       "size XS; can sell it right now"}),
+    _example("argmax_fit", _SEARCH + "My chest is between a small and a medium. Which size of the "
+             "Example jacket would suit me?", quantifier="argmax", objective="attribute:fit",
+             unknowns=["fit"], evidence={"objective": "which size would suit me, which the shop "
+                                                      "does not show"}),
+    _example("argmax_stock_quantity", _SEARCH + "Which Example seller has the most of size L left?",
+             quantifier="argmax", objective="attribute:stock quantity",
+             filters=[_f("size", "=", "L")], unknowns=["stock quantity"],
+             evidence={"objective": "the most of size L left, which the shop does not show"}),
+)
+
+
+def worked_examples(examples: tuple = EXAMPLES) -> str:
     """The examples as prompt version 2 prints them, each form one line of JSON."""
     lines = ["Worked examples, about a made-up brand and made-up sellers on the same shop:"]
-    for _, question, example in EXAMPLES:
+    for _, question, example in examples:
         lines += [f"Question: {question}", f"Form: {json.dumps(example)}"]
     return "\n".join(lines)
 
@@ -1266,7 +1384,13 @@ def prompt(question: str, page: page_module.Page | None = None,
         context = CONTEXT if version == 2 else CONTEXT_V3
         return "\n\n".join([context, lists, SIZES, KINDS, PROPERTIES, FILLING, SCHEMA_V2,
                             worked_examples(), f"The question:\n{question}"])
-    raise ValueError(f"no prompt version {version!r}: there are 1, 2 and 3")
+    if version == 4:
+        shown_v4 = SHOWN_V4.format(results=", ".join(sorted(shown - LISTING_PAGE_SHOWS - REVIEW_PAGE_SHOWS)),
+                                   listing=", ".join(sorted(LISTING_PAGE_SHOWS)),
+                                   review=", ".join(sorted(REVIEW_PAGE_SHOWS)))
+        return "\n\n".join([CONTEXT_V4, shown_v4, SIZES_V4, KINDS, PROPERTIES, FILLING_V4, SCHEMA_V2,
+                            worked_examples(EXAMPLES_V4), f"The question:\n{question}"])
+    raise ValueError(f"no prompt version {version!r}: there are 1, 2, 3 and 4")
 
 
 def reply_text(content) -> str:

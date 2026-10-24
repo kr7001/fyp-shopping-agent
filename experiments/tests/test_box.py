@@ -275,9 +275,11 @@ class Decide(unittest.TestCase):
                       "3. Seller A, advertised $31.40, http://localhost:7770/example-tee-01.html",
                       decision.query)
         # The question, a blank line, the preamble, a blank line, the body: the v7 text
-        # without the enumeration step the box has already done.
+        # without the enumeration step the box has already done. Since box v19 (24 October
+        # 2026) the body is followed by the one sentence on size labels, on its own line.
         self.assertEqual(decision.query,
-                         f"{q}\n\n{box.preamble(self.page)}\n\n{targeting.BODIES[decision.kind]}")
+                         f"{q}\n\n{box.preamble(self.page)}\n\n{targeting.BODIES[decision.kind]}\n"
+                         f"{primitives.LABEL_NOTE}")
         self.assertNotIn(targeting.ENUMERATE, decision.query)
 
     def test_a_page_with_a_later_page_unread_is_not_planned_over(self):
@@ -450,7 +452,8 @@ class V1Bytes(unittest.TestCase):
     were rewritten with them reworded, deliberately, with a dated note in its `_about`.
     Every other byte is still v1's, which `test_claim_arms.V1Amendment` checks against the
     v1 queries' sha1. So since box v10 the pilot measured a text that differs from today's
-    in those five."""
+    in those five. Amended again on 24 October 2026 for box v19: every plan that opens a
+    listing ends with one sentence on size labels (`primitives.LABEL_NOTE`, `box.ADDED`)."""
 
     def test_every_frozen_entry_is_reproduced(self):
         frozen = json.loads((FIXTURES / "v1_clothing_queries.json").read_text())
@@ -466,15 +469,19 @@ class V1Bytes(unittest.TestCase):
                 self.assertEqual(decision.ask.text if decision.ask else None, row["ask"])
 
     def test_the_fixture_is_the_v1_text_and_not_a_copy_of_v2s(self):
-        # The entries are the question, the preamble and the v7 body, nothing else.
+        # The entries are the question, the preamble and the v7 body, nothing else, but the
+        # label sentence box v19 appends to a plan that opens a listing (the fixture's
+        # amendment of 24 October 2026), which `box.as_sent_by` takes off again.
         frozen = json.loads((FIXTURES / "v1_clothing_queries.json").read_text())
         page_ = synthetic_page([31.40, 12.25, 19.50])
         for row in frozen["queries"]:
             if row["query"] is None:
                 continue
             with self.subTest(task=row["task"], reading=row["reading"]):
-                body = row["query"].split(f"\n\n{box.preamble(page_)}\n\n", 1)[1]
+                body = box.as_sent_by(row["query"], 18).split(f"\n\n{box.preamble(page_)}\n\n", 1)[1]
                 self.assertIn(body, targeting.BODIES.values())
+                self.assertEqual(row["query"].endswith(f"\n{primitives.LABEL_NOTE}"),
+                                 body != targeting.BODIES["results_page"])
 
 
 class NumericalAsk(unittest.TestCase):
