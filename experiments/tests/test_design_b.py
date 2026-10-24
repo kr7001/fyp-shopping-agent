@@ -529,5 +529,92 @@ class PromoCheck(unittest.TestCase):
         self.assertEqual(under.parse.used, "model", under.parse.fallback_reason)
 
 
+# ---------------------------------------------------------------------------
+# 6. The declines for fit and for scarcity
+
+# The two decline templates as the verifier finalised them on 24 October 2026.
+DECLINE_FIT = GO + "I'm usually between a medium and a large. Will size M or size L of the Example tee fit me better?"
+DECLINE_SCARCITY = GO + ("Of the Example tee listings where size M can actually be bought, which seller has the "
+                         "fewest units of it left?")
+SHOWS = "On a listing, its size menu, the price of a size once chosen and whether a size can be bought."
+
+
+class Declines(unittest.TestCase):
+    def setUp(self):
+        self.page = named_page()
+
+    def test_fit_is_declined_and_says_what_a_listing_shows(self):
+        # Planted: the fit entry taken out of `form.OTHER_ATTRIBUTES`, the rules planned a
+        # survey of every listing (LESSONS 35); and the sentence taken out of `form.refusal`.
+        fit_model = reply(quantifier="argmax", objective="attribute:fit", filters=[f("size", "=", "M")],
+                          unknowns=["fit"])
+        for label, decision in (("rules", box.decide(DECLINE_FIT, self.page)),
+                                ("model", box.decide(DECLINE_FIT, self.page, parser="model", call=stub(fit_model)))):
+            with self.subTest(parser=label):
+                self.assertEqual((decision.query, decision.plan, decision.ask), (None, None, None))
+                self.assertTrue(decision.refuse.startswith("The shop does not show fit, so this question cannot "
+                                                           "be answered from it."))
+                self.assertIn(SHOWS, decision.refuse)
+                self.assertTrue(decision.refuse.endswith(form.REFUSAL_FIT))
+                # The descriptions were cut from design B: the decline says nothing of one.
+                self.assertNotIn("description", decision.refuse)
+        self.assertTrue(box.decide(DECLINE_FIT, self.page, parser="model", call=stub(fit_model)).parse.declined)
+
+    def test_scarcity_is_declined_and_says_no_stock_count_is_displayed(self):
+        # Planted: the stock words of form v13 again, the decline named "what 'fewest' ranks
+        # by"; and the sentence taken out of `form.refusal`.
+        stock_model = reply(quantifier="argmin", objective="attribute:stock quantity",
+                            filters=[f("size", "=", "M"), BUYABLE], unknowns=["stock quantity"])
+        for label, decision in (("rules", box.decide(DECLINE_SCARCITY, self.page)),
+                                ("model", box.decide(DECLINE_SCARCITY, self.page, parser="model",
+                                                     call=stub(stock_model)))):
+            with self.subTest(parser=label):
+                self.assertEqual((decision.query, decision.plan, decision.ask), (None, None, None))
+                self.assertTrue(decision.refuse.startswith("The shop does not show stock quantity"))
+                self.assertIn(SHOWS, decision.refuse)
+                self.assertIn("does not display stock counts", decision.refuse)
+                self.assertTrue(decision.refuse.endswith(form.REFUSAL_STOCK))
+                # The coordinator's finding of 24 October 2026: never "cannot know the stock left".
+                self.assertNotIn("stock left", decision.refuse)
+        # A model's own name for it gets the same sentence.
+        units = box.decide(DECLINE_SCARCITY, self.page, parser="model", call=stub(reply(
+            quantifier="argmin", objective="attribute:units left", filters=[f("size", "=", "M"), BUYABLE],
+            unknowns=["units left"])))
+        self.assertTrue(units.refuse.endswith(form.REFUSAL_STOCK))
+
+    def test_the_rules_words_for_fit_and_stock_fire_and_stay_quiet(self):
+        fires = {"fit": ("Will size M or size L of the Example tee fit me better?",
+                         "Which size of the Example tee should I buy?",
+                         "What size do you recommend for someone my height in the Example tee?",
+                         "I'm between a small and a medium. Any advice on the Example tee?",
+                         "Does the Example tee run small?"),
+                 "stock quantity": ("Of the Example tee listings where size M can actually be bought, which seller "
+                                    "has the fewest units of it left?",
+                                    "Which Example tee seller is closest to running out of size M?",
+                                    "Which Example listing is about to sell out of size M?",
+                                    "Which seller has the most stock of size L?",
+                                    "Is the Only 2 left claim on the Example M true?")}
+        for attribute, questions in fires.items():
+            for question in questions:
+                with self.subTest(fires=question):
+                    decision = box.decide(GO + question, self.page)
+                    self.assertTrue(decision.refuse and decision.refuse.startswith(
+                        f"The shop does not show {attribute}"), decision.refuse)
+        # Quiet: a size after "which size", being between two sellers, a sold-out size, a
+        # size in stock and a size menu that leaves one out are all things the shop shows.
+        # Planted: the size's lookahead taken out of the fit words, the first was refused;
+        # "sold out" read as running out, the third was.
+        for question in ("Which size M seller should I buy from to pay the least?",
+                         "Between Mellow Fields and Harbour Lane Goods, who is cheaper for size M?",
+                         "Is size M sold out at every Example listing?",
+                         "How many Example listings have size M in stock?",
+                         "Is there an Example listing whose size menu left out XL?"):
+            with self.subTest(quiet=question):
+                decision = box.decide(GO + question, self.page, reply="menu")
+                self.assertIsNone(form.other_attribute(GO + question))
+                self.assertFalse(decision.refuse and ("fit" in decision.refuse.split(",")[0]
+                                                      or "stock quantity" in decision.refuse.split(",")[0]))
+
+
 if __name__ == "__main__":
     unittest.main()

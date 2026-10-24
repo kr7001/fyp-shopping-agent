@@ -95,7 +95,15 @@ import targeting
 #      (`reply_text`). When the first '{' to the last '}' is not one form, each object in the
 #      reply is tried and the last that is a form taken (`last_form`), for reasoning with
 #      braces in it. Every reply the first attempt parsed parses to the same form
-VERSION = 13
+#  14  24 October 2026, box v19, for the second claim run's design B and its two declines.
+#      The rules name two attributes the shop does not show where until now they planned a
+#      survey of every listing (LESSONS 35): fit, which size suits the shopper ("Will size M
+#      or size L fit me better?", "which size should I buy", "between a medium and a large",
+#      "runs small"), and stock quantity, read in more words ("the fewest units of it left",
+#      "running out", "sell out", "low stock", "only 2 left"). The decline says, for fit,
+#      that the shop cannot know the shopper's size, and for stock, that the shop does not
+#      display stock counts and a label's claim of one is no checked count (`refusal`)
+VERSION = 14
 
 # The model parser's prompt, recorded in every form a model proposes. Runs made under
 # different prompts are different parsers and are never pooled.
@@ -395,13 +403,33 @@ def not_shown(form: Form, page: page_module.Page | None = None) -> list[str]:
     return sorted(missing)
 
 
+# What a decline adds for the two attributes design B's declines ask about (form v14, 24
+# October 2026), by the attribute's name, the rules' or a model's. Fit: nothing on the shop
+# knows the shopper's size. Stock: no page of the shop displays a stock count, the product
+# page's "Only %1 left" block being a template with no threshold set (checked by the verifier
+# that day), and design B's labels can claim one ("M - Only 2 left!"), which is no checked
+# count. Nothing is said of what the stock is or could be found to be: whether a cart refuses
+# a quantity above it is not settled.
+FIT_NAMED = re.compile(r"\bfit", re.IGNORECASE)
+STOCK_NAMED = re.compile(r"\bstock\b|\binventor\w*|\bunits?\b|\bleft\b|\bremaining\b", re.IGNORECASE)
+REFUSAL_FIT = " The shop cannot know your size, so it cannot say which size will fit you."
+REFUSAL_STOCK = (" The shop does not display stock counts, and a size's label that claims one is not "
+                 "a checked count.")
+
+
 def refusal(missing: list[str]) -> str:
-    """What the box says instead of planning: what is missing, and what the shop does show."""
-    return (f"The shop does not show {', '.join(missing)}, so this question cannot be answered "
+    """What the box says instead of planning: what is missing, and what the shop does show,
+    and since form v14 a sentence for fit and one for stock when they are missing."""
+    text = (f"The shop does not show {', '.join(missing)}, so this question cannot be answered "
             "from it. What it shows: on the results page, each listing's seller, title, URL and "
             "advertised price. On a listing, its size menu, the price of a size once chosen and "
             "whether a size can be bought. On a review page, the text, rating and page of each "
             "review.")
+    if any(FIT_NAMED.search(name) for name in missing):
+        text += REFUSAL_FIT
+    if any(STOCK_NAMED.search(name) for name in missing):
+        text += REFUSAL_STOCK
+    return text
 
 
 def plan_dict(form: Form) -> dict | None:
@@ -532,12 +560,32 @@ NAMED_PAIR = re.compile(rf"\b(?:[Bb]etween|[Oo]f)\s+(?P<a>{NAME})\s+(?:and|or)\s
                         rf"(?=\s*[,:?]|\s+which\b)")
 # Attributes a question can ask for that this shop does not show. Recognised so the form
 # names what is missing rather than planning around it (property 5).
+# Stock quantity in more words since form v14 (24 October 2026, design B's decline-scarcity,
+# "which seller has the fewest units of it left"): a quantity word before "left", a fewest or
+# most of units or stock, running or selling out (never "sold out", which is whether a size
+# can be bought), low stock, and a claim of "only N left". Fit, the size that suits the
+# shopper, since the same day (decline-fit, "Will size M or size L fit me better?"): fitting
+# someone, which size to buy or get, being between two sizes, and running small or large.
+# The descriptions that might have carried a size guide were cut from design B, so no page of
+# the shop shows how a size fits (the coordinator's decision, 24 October 2026). A size named
+# after "which size" makes the question about a size, not the shopper: "which size M seller".
+SIZE_WORD = r"(?:XXS|XS|S|M|L|XL|XXL|XXXL|small|medium|large|extra[\s-]small|extra[\s-]large)"
 OTHER_ATTRIBUTES = (
     ("delivery time", re.compile(r"\bdeliver\w*\b", re.IGNORECASE)),
     ("shipping cost", re.compile(r"\b(?:shipping|postage)\b", re.IGNORECASE)),
     ("warranty", re.compile(r"\bwarrant\w*\b|\bguarantee\w*\b", re.IGNORECASE)),
     ("stock quantity", re.compile(r"\b(?:how\s+many|units|items|pieces)\s+(?:are\s+)?left\b"
-                                  r"|\bstock\s+(?:level|quantity|count)\b", re.IGNORECASE)),
+                                  r"|\bstock\s+(?:level|levels|quantity|count|counts)\b"
+                                  r"|\b(?:units?|items?|pieces?)\s+(?:\w+\s+){0,3}?left\b"
+                                  r"|\b(?:fewest|least|most|fewer|more)\s+(?:units?|items?|pieces?|stock)\b"
+                                  r"|\b(?:run(?:s|ning)?|sell(?:s|ing)?)\s+out\b"
+                                  r"|\b(?:low|lowest|limited)\s+(?:on\s+)?stock\b"
+                                  r"|\bonly\s+\d+\s+left\b|\bhow\s+much\s+stock\b", re.IGNORECASE)),
+    ("fit", re.compile(r"\bfits?\s+(?:me|you|him|her|them|someone|a\s+person)\b"
+                       rf"|\b(?:which|what)\s+size\b(?!\s+{SIZE_WORD}\b)[^?.!]{{0,60}}?"
+                       r"\b(?:should|would|do\s+you\s+recommend|to\s+(?:buy|get|order|pick|choose))\b"
+                       rf"|\bbetween\s+(?:an?\s+)?(?:size\s+)?{SIZE_WORD}\s+and\s+(?:an?\s+)?(?:size\s+)?{SIZE_WORD}\b"
+                       r"|\bruns?\s+(?:small|large|big)\b|\btrue\s+to\s+size\b", re.IGNORECASE)),
     ("rating", re.compile(r"\brat(?:ing|ings|ed)\b|\bstars?\b", re.IGNORECASE)),
 )
 ARGMAX_WORDS = re.compile(r"\b(?:highest|most|longest|best|slowest)\b", re.IGNORECASE)
