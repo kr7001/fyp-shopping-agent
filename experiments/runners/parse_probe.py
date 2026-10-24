@@ -41,6 +41,16 @@ templates state, and a stored batch on that market gives the page (`from_market`
 file names both. A dry run prints every question, so on the held-out file it is run only once
 its texts may be read, after the stage's last block run (docs/content/claim2-protocol.md).
 
+Since 24 October 2026, for the tee-only design's reading tests: `--only-templates ID...` keeps
+the entries whose template is one of the ids, so the held-out v2 file's tee entries run on a
+market that holds no water, with the rest listed by id and template and never read; an entry
+with no template at all (`template` null, the v3 file's reading-test-only entries) is kept
+whatever the filter and compared with its expected outcome alone, with no expected form and
+no tiers, and where it expects an ask its `ask_kind` names which ask (`ASK_KINDS`: a reading
+ask does not meet a threshold ask); and `--spec-from` fills every placeholder the templates
+use, {brand}, {limit}, {seller} and {promo}, each read off the task file's wording of the
+template that states it (`stated_values`), so no figure is typed.
+
     python experiments/runners/parse_probe.py --dry-run     # prints the prompts, calls nothing
     python experiments/runners/parse_probe.py               # paid: one call per question
     python experiments/runners/parse_probe.py --questions experiments/tasks/paraphrases_v1.json --dry-run
@@ -355,11 +365,23 @@ def report(rows: list[dict], model: str, key: str, before: float | None) -> path
 #      in every tier and in `agree`: a negated universal reaches no tier against a form that
 #      is not negated. A file made under 1 holds no negated form, so its tiers are the same
 #      read again under 2 (`paraphrase_scores.scores` checks that before it reads one)
-COMPARISON_VERSION = 2
+#   3  24 October 2026, the tee-only design's reading tests. An entry expecting an ask may
+#      name which ask (`ask_kind`), and then only that ask meets it: a "menu or buyable?" ask
+#      no longer meets an entry whose ambiguity is a price threshold. An entry with no
+#      template is compared with its expected outcome alone, with no tiers. No file made
+#      before holds an ask_kind or a template-less entry, so no stored figure moves
+COMPARISON_VERSION = 3
 # Comparisons a file may have been made under and still be read today, each because no
 # figure changes for a file made under it: its stored tiers are re-derived under today's
 # comparison and must all agree.
-READ_AGAIN = (1,)
+READ_AGAIN = (1, 2)
+# Which of the box's asks meets an entry's `ask_kind` (24 October 2026): the box asks for a
+# reading ("menu or buyable?") on an availability word, for a figure on a price word with
+# none, and about another word, or a seller the page does not list, otherwise.
+ASK_KINDS = {"availability": ("reading",), "threshold": ("price limit",), "other": ("other", "unlisted")}
+# The placeholders a held-out text or a template may hold, and which of them are figures.
+PLACEHOLDERS = ("brand", "limit", "seller", "promo")
+NUMERIC = {"limit": r"\d+", "promo": r"\d+\.\d{2}"}
 
 # Paraphrase files the model parser was tuned on, and what was tuned on each. A probe of one
 # is in sample whatever the version, and says so with every figure (LESSONS 19).
@@ -408,7 +430,20 @@ def tiers(expected: form.Form, got: form.Form | None) -> dict[str, bool]:
             "every field": population and agree(expected, got)}
 
 
-def load_questions(path: pathlib.Path) -> tuple[dict, list[dict]]:
+def kept_entries(spec: dict, only_templates: list[str] | None) -> tuple[list[dict], list[dict]]:
+    """The entries `--only-templates` keeps, and those it leaves out, each as its id and
+    template alone (24 October 2026). With no filter every entry is kept. An entry with no
+    template is kept whatever the filter: it is compared with its expected outcome alone."""
+    if only_templates is None:
+        return list(spec["paraphrases"]), []
+    kept = [e for e in spec["paraphrases"] if e.get("template") is None or e["template"] in only_templates]
+    left = [{"id": e["id"], "template": e["template"]} for e in spec["paraphrases"] if e not in kept]
+    if not kept:
+        raise ValueError("no entry left to probe under --only-templates")
+    return kept, left
+
+
+def load_questions(path: pathlib.Path, only_templates: list[str] | None = None) -> tuple[dict, list[dict]]:
     """The paraphrase file, and each entry with the question as the box gets it, the file's
     lead, a space and the text, as the audit put them, and its template's question. Of the
     task file the templates come from only each task's id and query are read, never an
@@ -423,8 +458,13 @@ def load_questions(path: pathlib.Path) -> tuple[dict, list[dict]]:
     tasks = json.loads((paths.TASKS / spec["templates"]).read_text())["tasks"]
     templates = {task["id"]: task["query"].format(base=spec["base_url"]) for task in tasks}
     lead = spec["lead"].format(base=spec["base_url"])
+    kept, left_out = kept_entries(spec, only_templates)
+    spec = {**spec, "left_out": left_out, "only_templates": only_templates}
     entries = []
-    for entry in spec["paraphrases"]:
+    for entry in kept:
+        if entry.get("template") is None:
+            raise ValueError(f"paraphrase {entry['id']} has no template, and {path.name} names its own "
+                             f"templates: a template-less entry is for a file its market supplies")
         template = templates.get(entry["template"])
         if template is None:
             raise ValueError(f"paraphrase {entry['id']} rewords {entry['template']!r}, which "
@@ -456,37 +496,79 @@ def recorded_as(path: pathlib.Path, root: pathlib.Path) -> str:
     return str(path.relative_to(root)) if root in path.parents else str(path)
 
 
-def stated_limit(copy: str, wording: str) -> int | None:
-    """The whole-dollar limit a template's wording states, where its author's copy of it,
-    filled with a NUL for the limit, has one. None when the copy has none, or when the
-    wording is not the copy with a number in that place, which `from_market` then refuses
-    as another wording."""
-    if "\0" not in copy:
-        return None
-    before, _, after = copy.partition("\0")
-    found = re.fullmatch(re.escape(before) + r"(\d+)" + re.escape(after), wording)
-    return int(found.group(1)) if found else None
+PLACEHOLDER = re.compile(r"\{(\w+)\}")
 
 
-def from_market(path: pathlib.Path, task_file: pathlib.Path, batch: pathlib.Path
-                ) -> tuple[dict, list[dict], page_module.Page]:
+def stated_values(copy: str, wording: str) -> dict[str, str] | None:
+    """The value of each placeholder a template's wording states, where its author's copy of
+    it holds the placeholders: {limit} a whole-dollar figure, {promo} a figure with two
+    decimals (`NUMERIC`), any other a run of words. None when the wording is not the copy with
+    values in those places, which `from_market` then refuses as another wording. Until 24
+    October 2026 this read the limit alone (`stated_limit`)."""
+    pattern, last, seen = "", 0, set()
+    for found in PLACEHOLDER.finditer(copy):
+        pattern += re.escape(copy[last:found.start()])
+        name = found.group(1)
+        pattern += rf"(?P={name})" if name in seen else rf"(?P<{name}>{NUMERIC.get(name, '.+?')})"
+        seen.add(name)
+        last = found.end()
+    pattern += re.escape(copy[last:])
+    matched = re.fullmatch(pattern, wording)
+    return matched.groupdict() if matched else None
+
+
+NAMED_FILE = re.compile(r"paraphrases_\w+\.json")
+
+
+def named_source(task: dict) -> str | None:
+    """The paraphrase file a held-out task says its rewording came from: its `rewordings`
+    field, else the paraphrases_*.json its note names, as env/generate_aplus_tasks.py writes
+    it ("Held-out rewording 3 of tee-target-price (paraphrases_v2.json)"); None for neither."""
+    if task.get("rewordings"):
+        return task["rewordings"]
+    found = NAMED_FILE.search(task.get("note") or "")
+    return found.group(0) if found else None
+
+
+def held_task(entry: dict, tasks: dict, source: str) -> dict | None:
+    """The task the market's file asks the entry as, when it holds one and only one: a task
+    with a `template` that rewords the entry's template under the entry's id (`rewording`),
+    from this file or from none it names (`named_source`). Two held-out files numbered alike,
+    v2 and v3, share ids, so a task from another file is never the entry's, and where two
+    tasks still fit none is taken (24 October 2026; until then the task was found by its id's
+    form alone, `HELD_OUT_TASK`, v2's, which v3's tasks cannot share)."""
+    found = [task for task in tasks.values()
+             if task.get("template") and task.get("rewording") == entry["id"]
+             and task["template"] == entry.get("template")
+             and named_source(task) in (None, source)]
+    return found[0] if len(found) == 1 else None
+
+
+def from_market(path: pathlib.Path, task_file: pathlib.Path, batch: pathlib.Path,
+                only_templates: list[str] | None = None) -> tuple[dict, list[dict], page_module.Page]:
     """A paraphrase file that leaves its templates, base, lead and page null, as the held-out
     paraphrases_v2.json does, with them supplied by its market (`--spec-from`, `--page-from`,
     23 October 2026): the templates, the base and the lead from the market's task file, as
     env/generate_aplus_tasks.py writes it, and the page from a stored batch on that market,
-    as `page_from` names one. Each text's {brand} and ${limit} are filled in as the generator
-    fills them, with the task file's brand and the limit its templates state, read off their
-    wording (`stated_limit`), so the question is the one the run asked. Where the task file
-    holds the rewording as a task (`HELD_OUT_TASK`), the question is held to that task's
-    query. Of the task file only the brand, the base, each task's id and query, and the draw
-    its answers hash to (`suite.draw_id`, which reads no answer out) are used.
+    as `page_from` names one. Each text's placeholders, {brand}, {limit}, {seller} and {promo},
+    are filled in as the generator fills them, with the task file's brand and the values its
+    templates state, read off their wording (`stated_values`), so the question is the one the
+    run asked. Where the task file holds the rewording as a task (`held_task`), the question
+    is held to that task's query. Of the task file only the brand, the base, each task's id,
+    query, template and rewording, and the draw its answers hash to (`suite.draw_id`, which
+    reads no answer out) are used.
+
+    Since 24 October 2026 `only_templates` keeps the entries whose template is one of the ids
+    (`kept_entries`), and an entry with no template is kept and compared with its expected
+    outcome alone: no template question, no tiers, its `ask_kind` where it expects an ask.
 
     Refused, by ValueError: a file that names any of those fields itself, which the flags
     would overrule; a task file whose brand is not the batch's market's, or that is another
     draw of it; a template the task file lacks, templates that do not share one lead, or one
     not worded as its rewording's author read it (`template_text`, held as the generator
-    holds it); a text with a placeholder that cannot be filled; an expected outcome not in
-    `EXPECTED`; and a question in other words than its task's. A reason names the entry by
+    holds it); templates stating two values for one placeholder; a text with a placeholder
+    that cannot be filled; an expected outcome not in `EXPECTED`, or an ask_kind not in
+    `ASK_KINDS`; and a question in other words than its task's. A reason names the entry by
     its id and never quotes a text."""
     import suite  # here, not at the top: suite imports this module
 
@@ -506,18 +588,29 @@ def from_market(path: pathlib.Path, task_file: pathlib.Path, batch: pathlib.Path
                          f"{task_file.name} is draw {suite.draw_id(market)}")
     page = stored_page(batch / "suite.json")
     base, tasks = market["base_url"], {task["id"]: task for task in market["tasks"]}
+    kept, left_out = kept_entries(spec, only_templates)
 
-    def filled(entry: dict, field: str, limit) -> str:
-        try:
-            return entry[field].format(brand=brand, limit=limit)
-        except (KeyError, IndexError, ValueError):
+    def filled(entry: dict, field: str, values: dict) -> str:
+        named = set(PLACEHOLDER.findall(entry[field]))
+        unknown = sorted(named - set(PLACEHOLDERS))
+        if unknown:
             raise ValueError(f"paraphrase {entry['id']}'s {field} holds a placeholder other than "
-                             f"{{brand}} and {{limit}}") from None
+                             f"{', '.join('{' + p + '}' for p in PLACEHOLDERS)}")
+        missing = sorted(named - set(values))
+        if missing:
+            raise ValueError(f"paraphrase {entry['id']} needs {' and '.join('a ' + n for n in missing)}, and no "
+                             f"template in {task_file.name} states {'one' if len(missing) == 1 else 'them'}")
+        try:
+            return entry[field].format(**values)
+        except (KeyError, IndexError, ValueError):
+            raise ValueError(f"paraphrase {entry['id']}'s {field} cannot be filled in") from None
 
     # Each template's lead and wording, its query either side of the " . " the generator
-    # puts between them.
-    worded = {}
-    for entry in spec["paraphrases"]:
+    # puts between them, and the values its wording states for the placeholders its author's
+    # copy holds.
+    worded, values = {}, {"brand": brand}
+    with_template = [entry for entry in kept if entry.get("template") is not None]
+    for entry in with_template:
         task = tasks.get(entry["template"])
         if task is None:
             raise ValueError(f"paraphrase {entry['id']} rewords {entry['template']!r}, which "
@@ -527,40 +620,47 @@ def from_market(path: pathlib.Path, task_file: pathlib.Path, batch: pathlib.Path
                              f"template is worded as its author read it is unknown")
         lead, _, wording = task["query"].partition(" . ")
         worded[entry["template"]] = (lead, wording)
+        stated = stated_values(entry["template_text"].replace("{brand}", brand), wording)
+        if stated is None:
+            raise ValueError(f"paraphrase {entry['id']}'s template, {entry['template']}, is not "
+                             f"worded in {task_file.name} as its author read it")
+        for name, value in stated.items():
+            if values.setdefault(name, value) != value:
+                raise ValueError(f"the templates in {task_file.name} state 2 different {name}s")
     leads = {lead for lead, _ in worded.values()}
+    if not leads:
+        # No entry has a template: the lead is every task's, which must be one.
+        leads = {task["query"].partition(" . ")[0] for task in tasks.values()}
     if len(leads) != 1:
         raise ValueError(f"the templates in {task_file.name} do not share one lead")
     lead = f"{leads.pop()} ."
-    limits = {stated_limit(filled(entry, "template_text", "\0"), worded[entry["template"]][1])
-              for entry in spec["paraphrases"]} - {None}
-    if len(limits) > 1:
-        raise ValueError(f"the templates in {task_file.name} state {len(limits)} different limits")
-    limit = limits.pop() if limits else None
+    limit = int(values["limit"]) if values.get("limit", "").isdigit() else None
 
     entries, held = [], 0
-    for entry in spec["paraphrases"]:
-        if filled(entry, "template_text", limit) != worded[entry["template"]][1]:
-            raise ValueError(f"paraphrase {entry['id']}'s template, {entry['template']}, is not "
-                             f"worded in {task_file.name} as its author read it")
-        if limit is None and "{limit}" in entry["text"]:
-            raise ValueError(f"paraphrase {entry['id']} needs a limit, and no template in "
-                             f"{task_file.name} states one")
+    for entry in kept:
         if entry.get("expected") not in EXPECTED:
             raise ValueError(f"paraphrase {entry['id']} expects {entry.get('expected')!r}, not "
                              f"one of {', '.join(EXPECTED)}")
-        question = f"{lead.format(base=base)} {filled(entry, 'text', limit)}"
-        asked = tasks.get(HELD_OUT_TASK.format(id=entry["id"]))
+        if entry.get("ask_kind") is not None and entry["ask_kind"] not in ASK_KINDS:
+            raise ValueError(f"paraphrase {entry['id']} names the ask kind {entry['ask_kind']!r}, not "
+                             f"one of {', '.join(ASK_KINDS)}")
+        question = f"{lead.format(base=base)} {filled(entry, 'text', values)}"
+        asked = held_task(entry, tasks, path.name)
         if asked is not None:
             if asked["query"].format(base=base) != question:
                 raise ValueError(f"paraphrase {entry['id']} would be parsed in other words than "
                                  f"task {asked['id']} asked it")
             held += 1
+        template = entry.get("template")
         entries.append({**entry, "question": question, "audit_expected": EXPECTED[entry["expected"]],
-                        "template_question": tasks[entry["template"]]["query"].format(base=base)})
+                        "template_question": (tasks[template]["query"].format(base=base)
+                                              if template is not None else None)})
     supplied = {**spec, "templates": recorded_as(task_file, paths.TASKS), "base_url": base,
                 "lead": lead, "page_from": recorded_as(batch, paths.RESULTS),
                 "spec_from": recorded_as(task_file, paths.TASKS), "draw": draw, "limit": limit,
-                "held_to_tasks": held}
+                "placeholders": values, "held_to_tasks": held, "left_out": left_out,
+                "only_templates": only_templates,
+                "without_template": sum(1 for e in kept if e.get("template") is None)}
     return supplied, entries, page
 
 
@@ -619,7 +719,7 @@ def same_outcome(a: dict, b: dict) -> bool:
     return (a["outcome"], a["kind"], a["ask"]) == (b["outcome"], b["kind"], b["ask"])
 
 
-def meets_audit(expected: str, found: dict) -> bool:
+def meets_audit(expected: str, found: dict, ask_kind: str | None = None) -> bool:
     """Whether the outcome is the one the audit expected, by the audit's own rule: "ASK" is
     met by any ask, "REFUSE" by a refusal and "BYPASS" by a bypass, and any other word is
     the kind a plan must have, the fallback's included.
@@ -627,8 +727,14 @@ def meets_audit(expected: str, found: dict) -> bool:
     "PLAN", the held-out file's "plan" (`EXPECTED`, 23 October 2026), is met by a plan of any
     kind, the fallback's included: its author expected the box to plan, and whether the plan
     is of the template's form is the tiers' to say. No file made before holds the word, so
-    no figure made under comparison 2 moves, and the version stands."""
+    no figure made under comparison 2 moves, and the version stands.
+
+    With `ask_kind`, an entry's own word for which ask it expects (comparison 3, 24 October
+    2026), "ASK" is met only by that ask (`ASK_KINDS`): the box asking "menu or buyable?" of a
+    question whose ambiguity is a price threshold has not read the question."""
     words = {"ASK": "ask", "REFUSE": "refuse", "BYPASS": "bypass"}
+    if expected == "ASK" and ask_kind is not None:
+        return found["outcome"] == "ask" and found["ask"] in ASK_KINDS[ask_kind]
     if expected in words:
         return found["outcome"] == words[expected]
     if expected == "PLAN":
@@ -656,29 +762,32 @@ def outcome_words(found: dict) -> str:
 def rules_half(entry: dict, page: page_module.Page) -> tuple[dict, form.Form]:
     """One paraphrase's free half: the expected form, the rules' form of the paraphrase and
     the tiers it reaches, and what the box does with the paraphrase and with its template.
-    The expected form comes back too, for the model's half."""
-    expected = form.from_rules(entry["template_question"], page)
+    The expected form comes back too, for the model's half. An entry with no template (24
+    October 2026) has no expected form, no tiers and no template outcome: None for each, and
+    its `ask_kind` on the row, so the audit comparison is all that judges it."""
+    templated = entry.get("template_question") is not None
+    expected = form.from_rules(entry["template_question"], page) if templated else None
     rules = form.from_rules(entry["question"], page)
-    row = {"id": entry["id"], "template": entry["template"], "label": entry["label"],
-           "audit_expected": entry["audit_expected"], "text": entry["text"],
-           "question": entry["question"], "expected": expected.record(),
+    row = {"id": entry["id"], "template": entry.get("template"), "label": entry["label"],
+           "audit_expected": entry["audit_expected"], "ask_kind": entry.get("ask_kind"), "text": entry["text"],
+           "question": entry["question"], "expected": expected.record() if templated else None,
            "rules": rules.record(), "rules_problems": form.verify(rules, page),
-           "rules_tiers": tiers(expected, rules),
+           "rules_tiers": tiers(expected, rules) if templated else None,
            "box": outcome(entry["question"], page),
-           "template_box": outcome(entry["template_question"], page)}
+           "template_box": outcome(entry["template_question"], page) if templated else None}
     return row, expected
 
 
-def model_half(row: dict, expected: form.Form, page: page_module.Page, model: str,
+def model_half(row: dict, expected: form.Form | None, page: page_module.Page, model: str,
                key: str) -> dict:
     """The row with the model's form added, one call: the form the box would use and the
     tiers it reaches, which are the figures, and beside them the form as the model wrote it
     with its own tiers and each change, and what `box.decide` does under the model parser
-    with the same reply."""
+    with the same reply. No tiers for a row with no expected form."""
     got = propose(row["question"], model, key, page)
     return {**row, **model_fields(got, row["question"], page),
-            "model_tiers": tiers(expected, got["form"]),
-            "model_raw_tiers": tiers(expected, got["raw"]),
+            "model_tiers": tiers(expected, got["form"]) if expected is not None else None,
+            "model_raw_tiers": tiers(expected, got["raw"]) if expected is not None else None,
             "model_box": (outcome(row["question"], page, reply=got["reply"])
                           if got["reply"] is not None else None)}
 
@@ -691,42 +800,54 @@ def reached(found: dict[str, bool]) -> str:
 def print_paraphrase(row: dict) -> None:
     """One paraphrase: its words, the form expected, the rules' form and, once the model has
     been called, the model's, each with the tiers it reaches, and what the box does."""
-    print(f"{row['id']:>2} {row['template']}, labelled {row['label'] or '-'}: {row['text']}")
-    print(f"     expected: {summary(row['expected'])}")
+    templated = row.get("expected") is not None
+    kind = f" ({row['ask_kind']} ask)" if row.get("ask_kind") else ""
+    print(f"{row['id']:>2} {row['template'] or 'no template'}, labelled {row['label'] or '-'}{kind}: {row['text']}")
+    print(f"     expected: {summary(row['expected']) if templated else 'no form: compared with the expected outcome alone'}")
     print(f"     rules:    {summary(row['rules'])}")
-    print(f"               {reached(row['rules_tiers'])}; {'; '.join(row['rules_problems']) or 'sound'}")
+    print(f"               {reached(row['rules_tiers']) if templated else 'no tiers'}; "
+          f"{'; '.join(row['rules_problems']) or 'sound'}")
     if "model_tiers" in row:
         print(f"     model:    {summary(row['model']) if row['model'] else 'no form: ' + str(row['error'])}")
-        print(f"               {reached(row['model_tiers'])}; {'; '.join(row['model_problems']) or 'sound'}")
+        print(f"               {reached(row['model_tiers']) if templated else 'no tiers'}; "
+              f"{'; '.join(row['model_problems']) or 'sound'}")
         print(f"               {'$%.5f' % row['cost_usd'] if row['cost_usd'] is not None else 'cost unknown'}")
         # What normalisation changed, and what the form as written reached (22 Oct 2026).
         for change in row.get("normalised") or []:
             print(f"               normalised: {change}")
         if row.get("normalised"):
-            print(f"               as written: {summary(row['model_raw'])}; {reached(row['model_raw_tiers'])}")
-    met = "met" if meets_audit(row["audit_expected"], row["box"]) else "not met"
+            print(f"               as written: {summary(row['model_raw'])}; "
+                  + (reached(row['model_raw_tiers']) if templated else "no tiers"))
+    met = "met" if meets_audit(row["audit_expected"], row["box"], row.get("ask_kind")) else "not met"
     print(f"     box:      {outcome_words(row['box'])}; the template: "
-          f"{outcome_words(row['template_box'])}; the audit expected {row['audit_expected']}, {met}")
+          f"{outcome_words(row['template_box']) if row.get('template_box') else 'none'}; "
+          f"the audit expected {row['audit_expected']}, {met}")
     if row.get("model_box"):
         found = row["model_box"]
         why = f", since {found['fallback_reason']}" if found.get("fallback_reason") else ""
         whose = {"rules": "the rules'", "model": "the model's"}[found["parsed_by"]]
-        print(f"     model box: {outcome_words(found)}, by {whose} form{why}")
+        met = "met" if meets_audit(row["audit_expected"], found, row.get("ask_kind")) else "not met"
+        print(f"     model box: {outcome_words(found)}, by {whose} form{why}; the audit expected "
+              f"{row['audit_expected']}, {met}")
 
 
 def question_totals(rows: list[dict], with_model: bool) -> dict:
     """Every count the summary prints and the result file keeps, from the rows, so the two
     cannot differ."""
-    def count(test) -> int:
-        return sum(1 for row in rows if test(row))
+    def count(test, among=None) -> int:
+        return sum(1 for row in (rows if among is None else among) if test(row))
 
-    totals = {"paraphrases": len(rows),
-              "rules": {tier: count(lambda r: r["rules_tiers"][tier]) for tier in TIERS}}
+    # The tiers are counted over the rows that have an expected form; a row with no template
+    # (24 October 2026) has none, and is counted in the audit's figures alone.
+    tiered = [row for row in rows if row.get("rules_tiers") is not None]
+    totals = {"paraphrases": len(rows), "with_template": len(tiered),
+              "without_template": len(rows) - len(tiered),
+              "rules": {tier: count(lambda r: r["rules_tiers"][tier], tiered) for tier in TIERS}}
     if with_model:
-        totals["model"] = {tier: count(lambda r: r["model_tiers"][tier]) for tier in TIERS}
-        totals["model_only"] = {tier: count(lambda r: r["model_tiers"][tier] and not r["rules_tiers"][tier])
+        totals["model"] = {tier: count(lambda r: r["model_tiers"][tier], tiered) for tier in TIERS}
+        totals["model_only"] = {tier: count(lambda r: r["model_tiers"][tier] and not r["rules_tiers"][tier], tiered)
                                 for tier in TIERS}
-        totals["rules_only"] = {tier: count(lambda r: r["rules_tiers"][tier] and not r["model_tiers"][tier])
+        totals["rules_only"] = {tier: count(lambda r: r["rules_tiers"][tier] and not r["model_tiers"][tier], tiered)
                                 for tier in TIERS}
     totals["box"] = {name: count(lambda r: r["box"]["outcome"] == name) for name in OUTCOMES}
     if with_model:
@@ -736,8 +857,12 @@ def question_totals(rows: list[dict], with_model: bool) -> dict:
         totals["model_box"] = {name: count(lambda r: (r.get("model_box") or {}).get("outcome") == name)
                                for name in OUTCOMES}
         totals["model_box_by_rules"] = count(lambda r: (r.get("model_box") or {}).get("parsed_by") == "rules")
-    totals["box_as_template"] = count(lambda r: same_outcome(r["box"], r["template_box"]))
-    totals["box_as_audit_expected"] = count(lambda r: meets_audit(r["audit_expected"], r["box"]))
+        # The model parser's outcome against the audit's expected one, by the same rule as the
+        # rules' (24 October 2026), the reading test's own figure.
+        totals["model_box_as_audit_expected"] = count(
+            lambda r: r.get("model_box") is not None and meets_audit(r["audit_expected"], r["model_box"], r.get("ask_kind")))
+    totals["box_as_template"] = count(lambda r: same_outcome(r["box"], r["template_box"]), tiered)
+    totals["box_as_audit_expected"] = count(lambda r: meets_audit(r["audit_expected"], r["box"], r.get("ask_kind")))
     for label in ("ambiguous", "clear"):
         totals[f"labelled_{label}"] = {
             "paraphrases": count(lambda r: r["label"] == label),
@@ -747,7 +872,11 @@ def question_totals(rows: list[dict], with_model: bool) -> dict:
 
 def print_totals(totals: dict, with_model: bool) -> None:
     n = totals["paraphrases"]
-    print(f"\nagainst the expected form, the rules' form of each template, {n} paraphrases:")
+    # A file written before 24 October 2026 counts no template-less row; its totals have no
+    # with_template, and every row has a form.
+    tiered = totals.get("with_template", n)
+    print(f"\nagainst the expected form, the rules' form of each template, {n} paraphrases"
+          + (f", {tiered} with a template" if tiered != n else "") + ":")
     if with_model:
         print(f"  {'':34} {'rules':>5} {'model':>5} {'model only':>10} {'rules only':>10}")
     for tier, name in TIERS.items():
@@ -755,7 +884,7 @@ def print_totals(totals: dict, with_model: bool) -> None:
         if with_model:
             line += (f" {totals['model'][tier]:>5} {totals['model_only'][tier]:>10} "
                      f"{totals['rules_only'][tier]:>10}")
-        print(f"{line} of {n}")
+        print(f"{line} of {tiered}")
     print(f"box.decide under the rules: "
           f"{', '.join(f'{name} {got}' for name, got in totals['box'].items())}")
     # Printed only for a file that has them, so a file written before 22 October 2026
@@ -764,8 +893,10 @@ def print_totals(totals: dict, with_model: bool) -> None:
         print(f"box.decide under the model parser: "
               f"{', '.join(f'{name} {got}' for name, got in totals['model_box'].items())}; "
               f"by the rules' form {totals['model_box_by_rules']}")
-    print(f"  the same outcome and kind as its template's  {totals['box_as_template']} of {n}")
+    print(f"  the same outcome and kind as its template's  {totals['box_as_template']} of {tiered}")
     print(f"  the outcome the audit expected               {totals['box_as_audit_expected']} of {n}")
+    if with_model and "model_box_as_audit_expected" in totals:
+        print(f"  the outcome the audit expected, model parser {totals['model_box_as_audit_expected']} of {n}")
     for label in ("ambiguous", "clear"):
         got = totals[f"labelled_{label}"]
         print(f"  labelled {label} by the verifier: {got['paraphrases']}, asked back on {got['asked']}")
@@ -824,6 +955,12 @@ def report_questions(rows: list[dict], path: pathlib.Path, spec: dict, page: pag
     out.write_text(json.dumps({
         "ran_at": stamp, "questions": path.name, "comparison_version": COMPARISON_VERSION,
         "model": model, "temperature": 0,
+        # The entries --only-templates left out, by id and template, and the filter itself (24
+        # October 2026); none and None for a probe without the flag.
+        "only_templates": spec.get("only_templates"), "left_out": spec.get("left_out") or [],
+        # The placeholder values the market's task file stated (`from_market`); none for a
+        # file that names its own fields.
+        **({"placeholders": spec["placeholders"]} if spec.get("placeholders") else {}),
         # The routing every call carried, None when off (23 October 2026).
         "provider_routing": provider_routing.routing_for(model), "form_version": form.VERSION,
         "prompt_version": form.PROMPT_VERSION, "normalise_version": normalise.VERSION,
@@ -858,22 +995,30 @@ def limits(path: pathlib.Path, page: page_module.Page) -> list[str]:
 
 
 def probe_questions(path: pathlib.Path, model: str, dry_run: bool,
-                    spec_from: pathlib.Path | None = None, page_from: pathlib.Path | None = None) -> int:
+                    spec_from: pathlib.Path | None = None, page_from: pathlib.Path | None = None,
+                    only_templates: list[str] | None = None) -> int:
     """The paraphrase probe. The rules' half of every question first, free, on the stored
     page each question must name; then, in a paid run, the model's half, one call each with
     no retry and the result file written whatever stops the loop, as the census. With
     `spec_from` and `page_from`, the market supplies what the file leaves null (`from_market`),
-    and the probe first says which task file, draw, limit and batch it used."""
+    and the probe first says which task file, draw, limit and batch it used. With
+    `only_templates` it says which entries the filter left out, by id and template alone."""
     if spec_from is None:
-        spec, entries = load_questions(path)
+        spec, entries = load_questions(path, only_templates)
         page = stored_page(paths.RESULTS / spec["page_from"] / "suite.json")
     else:
-        spec, entries, page = from_market(path, spec_from, page_from)
+        spec, entries, page = from_market(path, spec_from, page_from, only_templates)
         limit = f"${spec['limit']}" if spec["limit"] is not None else "none"
         print(f"the market: {spec['spec_from']}, draw {spec['draw']}, for the templates, the base "
               f"and the lead, and the limit they state, {limit}")
         print(f"the page: batch {spec['page_from']}, {page.url}; {spec['held_to_tasks']} of "
-              f"{len(entries)} questions held to the words their tasks asked")
+              f"{len(entries)} questions held to the words their tasks asked"
+              + (f"; {spec['without_template']} with no template, compared with the expected outcome alone"
+                 if spec.get("without_template") else ""))
+    if only_templates is not None:
+        left = spec.get("left_out") or []
+        print(f"--only-templates keeps {len(entries)} entries and leaves out {len(left)}: "
+              + (", ".join(f"{e['id']} ({e['template']})" for e in left) or "none"))
     for entry in entries:
         named = box.results_url(entry["question"])
         if named != page.url:
@@ -883,7 +1028,7 @@ def probe_questions(path: pathlib.Path, model: str, dry_run: bool,
         print(f"note: {line}")
     if dry_run:
         for n, (row, _) in enumerate(halves, 1):
-            print(f"=== prompt {n} of {len(halves)}, paraphrase {row['id']} of {row['template']}")
+            print(f"=== prompt {n} of {len(halves)}, paraphrase {row['id']} of {row['template'] or 'no template'}")
             print(form.prompt(row["question"]))
             print()
         print(f"=== the rules' half, free, on the page the box read in batch {spec['page_from']}")
@@ -926,15 +1071,22 @@ def main() -> int:
     parser.add_argument("--page-from", type=pathlib.Path, default=None,
                         help="with --spec-from: a stored batch folder on that market, such as "
                              "experiments/results/<batch>, for the results page the box read")
+    parser.add_argument("--only-templates", nargs="+", default=None, metavar="ID",
+                        help="with --questions: probe only the entries whose template is one of these "
+                             "ids, or that have no template; the rest are listed by id and template, "
+                             "never read (24 October 2026, the tee-only market's reading test on v2)")
     args = parser.parse_args()
     if (args.spec_from is None) != (args.page_from is None):
         parser.error("--spec-from and --page-from go together")
     if args.spec_from is not None and args.questions is None:
         parser.error("--spec-from and --page-from supply a paraphrase file's fields, so they need --questions")
+    if args.only_templates is not None and args.questions is None:
+        parser.error("--only-templates filters a paraphrase file's entries, so it needs --questions")
 
     model = args.model or plan_probe.model_name()
     if args.questions is not None:
-        return probe_questions(args.questions, model, args.dry_run, args.spec_from, args.page_from)
+        return probe_questions(args.questions, model, args.dry_run, args.spec_from, args.page_from,
+                               args.only_templates)
     questions = census()
     if args.dry_run:
         for n, (name, question) in enumerate(questions, 1):
