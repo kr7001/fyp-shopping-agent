@@ -1,12 +1,12 @@
-# The second claim run, protocol (DRAFT)
+# The second claim run, protocol (FINAL)
 
 Drafted on 22 October 2026, before the second claim market exists. Version 2 was rewritten on 23
 October from the verifier's fairness re-audit and the front door's pilot. Version 3, this text, was
 rewritten on 24 October 2026 for design B, the student's decisions of that night (the section
-"Decisions of 24 October" at the end). Status: **draft, not frozen.** It is final only after the
-verifier's logic audit of the frozen commit, and it is committed before any seed of the claim market
-is drawn. After the market exists nothing here changes; an amendment, if any, is recorded with its
-time, as the first protocol's were.
+"Decisions of 24 October" at the end). Status: **FINAL**, frozen on 24 October 2026 at 17:56 at
+commit 55665b4, after the verifier's logic audit (abbb7189, at cd49128, re-checked at 9609f79 and
+d733c24). It was committed before any seed of the claim market was drawn. Now that it is frozen
+nothing here changes; an amendment, if any, is recorded with its time, as the first protocol's were.
 
 ## The questions it answers
 

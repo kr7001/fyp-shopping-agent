@@ -631,15 +631,19 @@ class Guards(unittest.TestCase):
 
     def test_the_design_b_claim_refuses_its_development_market_and_the_draft(self):
         B = aplus.DESIGN_B
-        self.assertIn("still says DRAFT", aplus.refused(1000, True, self.claim_out, "IGR-CL2", design=B))
-        self.assertTrue("DRAFT" in aplus.PROTOCOL.read_text())
+        # Frozen on 24 October 2026: the claim is no longer refused for the protocol; a draft still is.
+        self.assertTrue(aplus.protocol_final())
+        self.assertIsNone(aplus.refused(1000, True, self.claim_out, "IGR-CL2", design=B))
+        draft = pathlib.Path(self.tmp.name) / "draft.md"
+        draft.write_text("# The second claim run, protocol (DRAFT)\n")
+        self.assertIn("still says DRAFT", aplus.refused(1000, True, self.claim_out, "IGR-CL2", draft, B))
         self.assertIn("development's prefix", aplus.refused(1000, True, self.claim_out, "IGR-TDV", self.final, B))
         self.assertIn("development's fixture", aplus.refused(1000, True, DEV, "IGR-CL2", self.final, B))
         self.assertIsNone(aplus.refused(1000, True, self.claim_out, "IGR-CL2", self.final, B))
         self.assertIn("below 1000", aplus.refused(999, True, self.claim_out, "IGR-CL2", self.final, B))
 
     def test_the_command_line_refuses_before_drawing(self):
-        for args, words in ((["--seed", "1000", "--claim", "--report"], "still says DRAFT"),
+        for args, words in ((["--seed", "1000", "--claim", "--report"], "needs --search-log"),
                             (["--seed", "900", "--sku-prefix", "IGR-DEV", "--report"], "A+ development market's prefix"),
                             (["--seed", "1000", "--report"], "outside development")):
             with self.subTest(args=args):
