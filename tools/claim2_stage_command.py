@@ -19,6 +19,7 @@ stops any suite once the spend reaches the cap less $0.30.
                   (`stage_plan.PILOT_PLAN`, one question each), then the pilot check
                   (experiments/analysis/pilot_check.py) into the manifest and a summary file;
                   exit 9 when a check fails.
+                  Exit 10, either command, when .env sets a sampling key (SAMPLING_KEYS).
   --stage 1       command 2, tap 2 at about 10:45: the live check of the claim market, the
                   routing gate, stage 1's invocations (`stage_plan.stage1_invocations`: every
                   round of the model's design, the arms rotated, small invocations), the voids
@@ -65,18 +66,27 @@ ANALYSIS = "experiments/tasks/claim2_analysis.json"
 V1 = "experiments/tasks/paraphrases_v1.json"      # the routing gate's 30 development rewordings
 HAIKU = "anthropic/claude-haiku-4.5"
 EXIT_PILOT_CHECK = 9
+# The agent reads BROWSER_WORKER_* and BROWSER_MODEL_* before MODEL_*, and the runner refills a
+# key the shell left unset from .env, so the chain unsets all six and stops if .env sets any
+# (the verifier's re-check of the audit fixes, 24 October 2026). Only key names are read from
+# .env, never a value.
+SAMPLING_KEYS = ("BROWSER_WORKER_TEMPERATURE", "BROWSER_WORKER_TOP_P", "BROWSER_MODEL_TEMPERATURE",
+                 "BROWSER_MODEL_TOP_P", "MODEL_TEMPERATURE", "MODEL_TOP_P")
+EXIT_ENV_SAMPLING = 10
 
 
 def header(a, est_total: float, routing: str, invocations: int, what: str, brand: str) -> list[str]:
     """The chain up to and including the `run` function: the manifest, the account at the
     start, the conditions line, the live check, the cap gate, the routing check and the
-    watchdog. The same for both commands. MODEL_TEMPERATURE and MODEL_TOP_P are unset for the
-    whole chain, so the agent's code defaults, 0.2 and 0.1, hold whatever the shell carried
-    (the verifier's logic audit at cd49128), and the brand's search_query rows are written to
-    the manifest before and after each invocation (`terms`), since a search adds a "Related
-    search terms" block to the results page."""
+    watchdog. The same for both commands. The six sampling keys (`SAMPLING_KEYS`) are unset for
+    the whole chain, so the agent's code defaults, 0.2 and 0.1, hold whatever the shell carried
+    (the verifier's logic audit at cd49128), and the chain stops (exit 10) if .env sets any of
+    them, since the runner would refill it; the brand's search_query rows are written to the
+    manifest before and after each invocation (`terms`), since a search adds a "Related search
+    terms" block to the results page."""
     env = f"IGR_ESTIMATE_USD={est_total:.2f}"
-    out = [f"caffeinate -i env -u MODEL_TEMPERATURE -u MODEL_TOP_P {env}{routing} bash <<'CHAIN'",
+    unset = " ".join(f"-u {key}" for key in SAMPLING_KEYS)
+    out = [f"caffeinate -i env {unset} {env}{routing} bash <<'CHAIN'",
            f"# The second claim run, {what}: {a.model}, {invocations} invocations. Expected ${est_total:.2f}",
            f"# at list price (the 23 October pilot's charges over {stage_plan.PILOT_PRICE_FACTOR}, a growing question",
            f"# scaled by the listings ratio to the power {a.growth:g}). Every invocation runs only if spent + 2 x its",
@@ -94,6 +104,11 @@ def header(a, est_total: float, routing: str, invocations: int, what: str, brand
            f"CAP={a.cap:.2f}",
            'rm -f "$DONE"',
            "trap 'date +%FT%T > \"$DONE\"; kill ${WATCHDOG:-} 2>/dev/null' EXIT",
+           "# The runner refills a sampling key the shell left unset from .env: stop if .env sets one.",
+           "# Key names only are read, never a value.",
+           f"SAMPLING=$(grep -oE '^({'|'.join(SAMPLING_KEYS)})=' .env 2>/dev/null | tr -d = | sort -u | tr '\\n' ' ')",
+           f'[ -z "$SAMPLING" ] || {{ echo "STOP .env sets the sampling key(s) $SAMPLING, which the runner would refill '
+           f'after the chain unset them" >> "$MANIFEST"; exit {EXIT_ENV_SAMPLING}; }}',
            "usage() {",
            "python3 - <<'PY'",
            "import sys",

@@ -157,8 +157,14 @@ class TheEmittedText(Tree):
         self.build()
         text = stage_stubs.generate(self.root, "1")
         head = text.splitlines()[0]
-        # The agent's sampling is its code's default: the chain unsets any shell value first.
-        self.assertTrue(head.startswith("caffeinate -i env -u MODEL_TEMPERATURE -u MODEL_TOP_P IGR_ESTIMATE_USD="), head)
+        # The agent's sampling is its code's default: the chain unsets every key the agent or the
+        # runner would read first, and stops if .env would refill one.
+        self.assertTrue(head.startswith("caffeinate -i env -u BROWSER_WORKER_TEMPERATURE -u BROWSER_WORKER_TOP_P "
+                                        "-u BROWSER_MODEL_TEMPERATURE -u BROWSER_MODEL_TOP_P -u MODEL_TEMPERATURE "
+                                        "-u MODEL_TOP_P IGR_ESTIMATE_USD="), head)
+        self.assertIn("grep -oE '^(BROWSER_WORKER_TEMPERATURE|BROWSER_WORKER_TOP_P|BROWSER_MODEL_TEMPERATURE|"
+                      "BROWSER_MODEL_TOP_P|MODEL_TEMPERATURE|MODEL_TOP_P)=' .env", text)
+        self.assertIn("exit 10", text)
         self.assertIn(" IGR_PROVIDER_ROUTING='", head)
 
         self.assertTrue(head.endswith(" bash <<'CHAIN'"))
@@ -281,6 +287,29 @@ class ThePilotChain(Tree):
         self.assertIn("STOP the live check failed", manifest)
         self.assertIn("live check of", (self.root / "experiments/results/pilot-test.livecheck").read_text())
         self.assertEqual(stage_stubs.calls(self.root, ".suite_calls"), [])
+
+    def test_exit_10_when_env_sets_a_sampling_key_and_quiet_on_another_key(self):
+        # Fires: .env sets a key the agent reads before MODEL_*, which the runner would refill
+        # after the chain unset it. The manifest names the key and never its value.
+        self.build({"env_keys": ["BROWSER_WORKER_TEMPERATURE", "OPENROUTER_API_KEY"]})
+        code, manifest, text = self.run_stage("pilot")
+        self.assertEqual(code, 10)
+        self.assertIn("STOP .env sets the sampling key(s) BROWSER_WORKER_TEMPERATURE , which the runner would refill",
+                      manifest)
+        self.assertNotIn("0.73", manifest + text)
+        self.assertNotIn("OPENROUTER", manifest)
+        self.assertEqual(stage_stubs.calls(self.root, ".suite_calls"), [])
+        # Two keys set: both named, once each.
+        self.build({"env_keys": ["MODEL_TOP_P", "MODEL_TEMPERATURE", "MODEL_TOP_P"]})
+        code, manifest, _ = self.run_stage("pilot")
+        self.assertEqual(code, 10)
+        self.assertIn("MODEL_TEMPERATURE MODEL_TOP_P ,", manifest)
+        # Quiet: a .env that sets no sampling key, and the whole pilot runs.
+        self.build({"env_keys": ["OPENROUTER_API_KEY"]})
+        code, manifest, _ = self.run_stage("pilot")
+        self.assertEqual(code, 0, manifest)
+        # The stub root keeps one manifest, so the two STOP lines are the runs above and no more.
+        self.assertEqual(manifest.count("STOP"), 2)
 
     def test_exit_7_when_a_call_was_served_outside_the_routing(self):
         self.build({"provider": "Relace"})

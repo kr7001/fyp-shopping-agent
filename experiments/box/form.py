@@ -425,8 +425,9 @@ def not_shown(form: Form, page: page_module.Page | None = None) -> list[str]:
 # page's "Only %1 left" block being a template with no threshold set (checked by the verifier
 # that day), and design B's labels can claim one ("M - Only 2 left!"), which is no checked
 # count. Since form v15 the decline also says a count could only be found by probing a cart,
-# which the cart allows (it refuses a quantity above stock, checked live by the verifier on 24
-# October 2026) and which is out of scope.
+# which the cart allows (it refuses a quantity above stock: checked live on 24 October 2026, by
+# the generator coder, a quantity of 518 against a stock of 18 refused, and then the verifier,
+# 19 refused and 18 accepted on IGR-TDV-06 size M) and which is out of scope.
 FIT_NAMED = re.compile(r"\bfit", re.IGNORECASE)
 STOCK_NAMED = re.compile(r"\bstock\b|\binventor\w*|\bunits?\b|\bleft\b|\bremaining\b", re.IGNORECASE)
 REFUSAL_FIT = " The shop cannot know your size, so it cannot say which size will fit you."

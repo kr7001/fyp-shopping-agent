@@ -269,6 +269,10 @@ def build(root: pathlib.Path, scenario: dict | None = None, usage: float = 10.0)
     write(root / "env/fixtures/wexcombe.json", fixture("Wexcombe", 45))
     write(root / SCENARIO, scenario or {})
     (root / USAGE).write_text(f"{usage:.4f}")
+    # A .env with the keys the scenario names, each set to a made-up value the chain must never
+    # read or print (`env_keys`); none of them is in the environment the chain runs under.
+    if (scenario or {}).get("env_keys"):
+        (root / ".env").write_text("".join(f"{key}=0.73\n" for key in scenario["env_keys"]))
     return root
 
 

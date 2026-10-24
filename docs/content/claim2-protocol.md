@@ -34,16 +34,19 @@ whole: it is listed, re-run under the required conditions, and until then it hol
 
 The versions at the freeze (24 October 2026, after the verifier's logic audit at cd49128): box 20,
 form 15, prompt 4, normalisation 5, primitives 13, sufficiency rules 6, targeting 9, planner 2,
-score 10, the tee-only generator 4, the analysis file 8 (its reader, claim.py's protocol analysis,
-9). The analysis file requires the box's, form's, prompt's, normalisation's, primitives', targeting's
+score 10, the tee-only generator 4, the search-order model 1, the toolbar counter 1, the analysis
+file 8 (its reader, claim.py's protocol analysis, 9). The analysis file requires the box's, form's, prompt's, normalisation's, primitives', targeting's
 and planner's of the block arms, and `tests/test_claim2_analysis.py` holds every required version to
 the code's constant, so the file cannot lag the code unseen. The scorer is not an arm's condition:
 the analysis scores every answer again with the scorer it imports and lists any stored verdict that
 moves. To fix at the freeze: the commit.
 
 Fixed settings, the same for every arm: the agent's sampling (temperature 0.2, top_p 0.1, the
-agent's code defaults; the chain unsets `MODEL_TEMPERATURE` and `MODEL_TOP_P`, so no shell value
-overrides them), the browser tool (Playwright MCP 0.0.83, isolated, service workers blocked)
+agent's code defaults; the chain unsets the six keys the agent or the runner would read first,
+`BROWSER_WORKER_TEMPERATURE`, `BROWSER_WORKER_TOP_P`, `BROWSER_MODEL_TEMPERATURE`,
+`BROWSER_MODEL_TOP_P`, `MODEL_TEMPERATURE` and `MODEL_TOP_P`, and stops with exit 10 if `.env` sets
+any of them, since the runner refills an unset key from `.env`; it reads key names from `.env`,
+never values), the browser tool (Playwright MCP 0.0.83, isolated, service workers blocked)
 confined to the shop's origin, the gated theme's user agent, a fresh browser profile and selector
 cache for each run, 300 steps and 1800 seconds, and `IGR_PROVIDER_ROUTING` exported once for the
 stage, held by the command generator to the analysis file's value for the model, with DeepSeek's
@@ -72,9 +75,9 @@ price; the providers' prices on 23 October were at or below list.
 - **No listing description.** The fit line "Runs small" was cut (the handover's first cut line): it
   would have made decline-fit answerable. The fit decline points to the size menu.
 - **Acceptance rules.** The tee generator's rules that still apply (clear margins, the sold-out and
-  absent traps, `bound_is_useful`, `top_3_margin`, `limit_separates`, `headline_on_page_1`, names
-  distinct) and the page rules for one product (`first_screen_misleads`, `answer_on_page_2`,
-  `counts_need_page_2`), checked against the predicted order and then live, with the tee rules of
+  absent traps, `bound_is_useful`, `top_3_margin`, `limit_separates`, names distinct) and the page
+  rules for one product (`first_screen_misleads`, `answer_on_page_2`, `counts_need_page_2`,
+  `headline_on_page_1`), checked against the predicted order and then live, with the tee rules of
   the A+ market that still apply (`readings_differ`, `headline_unique`, `limit_separates`,
   `top_3_unique`, `top_3_margin`, `two_pages`, `names_distinct`, which here also reads every
   label text and the new templates' words). The water rules are dropped. The design-B rules are
@@ -204,8 +207,10 @@ none of; the batch records the default, which `require` holds it to. The block's
 one sentence about labels: a size's label can carry promotional or stock text, the price is the one
 shown after choosing the size, and a label's claim is not a checked fact. Shipped and open
 everything are not told this (a limit, below). A decline, under either parser, says what is
-missing and what the shop shows (form v15): "The shop does not show {the attribute}, so this
-question cannot be answered from it. What it shows: on the results page, each listing's seller,
+missing and what the shop shows (form v15). It opens "The shop does not show {the attribute}, so
+this question cannot be answered from it." when an attribute other than stock is missing, and
+"This question cannot be answered from what the shop shows." when stock alone is, since a cart
+probe could bound a stock count; then "What it shows: on the results page, each listing's seller,
 title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and
 whether a size can be bought." For fit it adds "The shop cannot know your size, so it cannot say
 which size will fit you." For stock it adds "The shop displays no stock counts; finding one would
@@ -419,8 +424,9 @@ held-out entry precedes the run that answers it.
 - **decline-scarcity:** the right decline says the shop does not display stock counts. The cart
   refuses a quantity above stock, so stock is bounded only by probing a cart, which is out of
   scope; the decline says so.
-- The agent's sampling, temperature 0.2 and top_p 0.1, is the agent's code default, unset in the
-  chain; the batches record no sampling of their own.
+- The agent's sampling, temperature 0.2 and top_p 0.1, is the agent's code default: the chain
+  unsets the six keys the agent or the runner would read first and stops if `.env` sets any; the
+  batches record no sampling of their own.
 - The development market is Thurlby (IGR-TDV, seed 900); the pilot's figures are its.
 - Search relevance is out of scope: the agent lands on the product's results page.
 - The model parser's prompt (version 4) was developed on `paraphrases_dev2.json` and v1 only, with
