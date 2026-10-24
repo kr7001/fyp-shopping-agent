@@ -52,6 +52,7 @@ import json
 import math
 import os
 import pathlib
+import random
 import re
 import secrets
 import shlex
@@ -305,10 +306,23 @@ class Manifest:
     ends: list[dict] = dataclasses.field(default_factory=list)
     stops: list[str] = dataclasses.field(default_factory=list)
     problems: list[str] = dataclasses.field(default_factory=list)
+    # The other lines the second claim's chains write (24 October 2026), by kind (`CHAIN_LINES`),
+    # each kept as written: the conditions line, the routing gate's probe and its result, the
+    # watchdog's stops, the pilot check's verdict and the reading tests' result files.
+    extras: dict = dataclasses.field(default_factory=dict)
 
 
 START = re.compile(r"^start (\S+) usage (\S+) cap (\S+)$")
 END = re.compile(r"^end (\S+) usage (\S+)$")
+# The lines the second claim's chains write besides the batch, re-run, start, end and STOP lines
+# (tools/claim2_stage_command.py, 24 October 2026): `conditions <commit and browser>`, the routing
+# gate's `probe|<file>|...` and `routing-check|ok or fail`, the watchdog's `WATCHDOG <time> ...`
+# when it stopped a run, the pilot's `pilot-check|PASS or FAIL|<summary file>` and the reading
+# tests' `reading-test|<file>|...`. Each is a known line, kept under `Manifest.extras` by its
+# kind, never a problem. Until then every one of them was listed as a line the command does not
+# write.
+CHAIN_LINES = {"conditions": "conditions ", "probe": "probe|", "routing-check": "routing-check|",
+               "watchdog": "WATCHDOG ", "pilot-check": "pilot-check|", "reading-test": "reading-test|"}
 
 
 def amount(text: str) -> float | None:
@@ -377,6 +391,9 @@ def parse_manifest(text: str) -> Manifest:
             if not words or task is None or repeat is None:
                 found.problems.append(f"manifest line {number}: a re-run line without its original "
                                       f"folder, task and repeat: {line[:120]}")
+        elif any(line.startswith(prefix) for prefix in CHAIN_LINES.values()):
+            kind = next(kind for kind, prefix in CHAIN_LINES.items() if line.startswith(prefix))
+            found.extras.setdefault(kind, []).append(line)
         else:
             found.problems.append(f"manifest line {number} is not one the claim command writes: "
                                   f"{line[:120]}")
@@ -548,6 +565,9 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
     truth = verify_cells.ground_truth(verify_cells.fixture_for(spec))
     market = verify_cells.market_urls(spec)
     order = results_order(spec)
+    # The promo figures the market's size labels show, by product (v8), for the failure code
+    # "a label's figure taken" and the promo traps fallen for. None of them is a price.
+    promos = promo_figures(spec)
     rows = {(row["task"], row["repeat"]): row for row in payload.get("rows", [])}
     _, found = verify_cells.verify_batch(folder)
     checked = {(run["task"], run["repeat"]): run for run in found}
@@ -578,12 +598,17 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
                 # Who served the parse call and whether one was made, from the row (v5), and the
                 # agent's routing the batch says it ran under, to hold each record to it.
                 "parse_provider": parse_provider(payload, row),
-                "routing_batch": (payload.get("provider_routing") or {}).get("agent")}
+                "routing_batch": (payload.get("provider_routing") or {}).get("agent"),
+                # Why the box asked, from its record (box v19, 24 October 2026): "ambiguous", the
+                # question's own two readings, or "clash", the word list and the model reading a
+                # word differently (decision 11). None where the box did not ask, or recorded no
+                # reason, as every box before v19.
+                "ask_reason": record.get("ask_reason") if record.get("asked") else None}
         measured = checked.get((run.task, run.repeat))
         if measured is not None:
             slot.update(measure(measured, folder, row, slot["reading"], task, buyable.get(run.task),
                                 truth, market, seen.get(f"{run.task}-{run.repeat}", []),
-                                answered=slot["answered"], keys=keys, order=order))
+                                answered=slot["answered"], keys=keys, order=order, promos=promos))
             if measured["tool_calls"] is not None and measured["tool_calls"] != slot["calls"]:
                 problems.append(f"{folder.name}/{run.task}-{run.repeat}: the record counts "
                                 f"{measured['tool_calls']} tool calls, the page count {slot['calls']}")
@@ -615,7 +640,7 @@ def load_folder(folder: pathlib.Path, names: dict | None = None,
                          "agent_asks": 0, "leaks": [], "outside": [],
                          "tokens": parts,
                          "model": payload.get("model"), "scaffold": payload.get("scaffold"),
-                         "shop": None, "probe": None, "toolbar": None, "taken": None,
+                         "shop": None, "probe": None, "toolbar": None, "taken": None, "trap": None,
                          "key_where": {}, "providers": {}})
         slot["model"] = slot.get("model") or payload.get("model")
         slot["arm"] = arm_of(payload, slot if slot["measured"] else None, names)
@@ -671,7 +696,7 @@ def closed_tokens(row: dict) -> tuple[int | None, tuple]:
 def measure(run: dict, folder: pathlib.Path, row: dict, reading: str | None, task: dict,
             buyable_key: dict | None, truth: dict, market: list[str] | None,
             leak: list[str], answered: str | None = None, keys: scoring.Keys | None = None,
-            order: list[str] | None = None) -> dict:
+            order: list[str] | None = None, promos: dict | None = None) -> dict:
     """What one run did, from verify_cells' re-derivation and the log: the answer under the
     task's own key and, for the two offer questions, under the buyable key, and the verdict
     under the reading it answered, each through the one scoring call with the task file's
@@ -723,7 +748,10 @@ def measure(run: dict, folder: pathlib.Path, row: dict, reading: str | None, tas
         # The results pages the run asked the shop for: sort, page size, view and page
         # numbers (23 October 2026), for the sorting count and its sensitivity.
         "toolbar": toolbar.read(log),
-        "taken": prices_taken(answer, task, keyed, truth),
+        "taken": prices_taken(answer, task, keyed, truth, promos),
+        # What the answer did with the market's promo labels (v8, `trap_reading`), for the
+        # promo traps fallen for; None on a market without them.
+        "trap": trap_reading(answer, task, keyed, promos),
         # Where the key's listings render, so a failure is coded "page 2 never reached" only
         # where the answer needs a later page (R5), and who served the model's calls (R11).
         "key_where": key_positions(task, keyed, truth, answered, order),
@@ -743,14 +771,20 @@ def key_prices(expect: dict) -> set[float]:
     return {round(price, 2) for price in found if isinstance(price, (int, float))}
 
 
-def prices_taken(answer: str, task: dict, expect: dict, truth: dict) -> dict:
+def prices_taken(answer: str, task: dict, expect: dict, truth: dict, promos: dict | None = None) -> dict:
     """The prices the answer states that are what the results page or a sold-out variant shows
     rather than what can be bought (23 October 2026, for the shipped agent's failure
     breakdown): a listing's advertised card price, or the price of the question's variant at
     a listing where it is sold out, among the listings of the question's product where the
     fixture names products; either way not a price the key `expect` holds as right. The
     fixture is what the shop was seeded from, so a card price here is the one the run's
-    results page printed."""
+    results page printed.
+
+    And since v8 (24 October 2026, design B) under "label": a figure a size label shows as a
+    promotion, "XS - Promo $9.99", among the question's product's listings (`promo_figures`),
+    which is no price at all, that the key does not hold as right and that the question does
+    not itself quote: tee-promo-check quotes the label's figure to ask whether it holds, so an
+    answer that repeats it to refute it has taken nothing."""
     variant = verify_cells.question_variant(task) if task.get("query") else None
     product = task.get("product")
     listings = [t for t in truth.values() if product is None or t.get("product") in (None, product)]
@@ -759,7 +793,106 @@ def prices_taken(answer: str, task: dict, expect: dict, truth: dict) -> dict:
                 if variant and variant in t["sizes"] and variant not in t["buyable"]}
     right = key_prices(expect)
     stated = {round(price, 2) for price in scoring.prices_in(answer or "")} - right
-    return {"card": sorted(stated & cards), "sold_out": sorted(stated & sold_out)}
+    quoted = {round(price, 2) for price in scoring.prices_in(task.get("query") or "")}
+    labels = promo_figures_of(task, promos) - right - quoted
+    return {"card": sorted(stated & cards), "sold_out": sorted(stated & sold_out),
+            "label": sorted(stated & labels)}
+
+
+def promo_figures(spec: dict) -> dict:
+    """The figures the market's size labels show as promotions, by product, from the fixture the
+    task file names (v8, 24 October 2026, design B): each variant whose `label_kind` is "promo"
+    and whose `label_price` is a number (the generator's fields, env/generate_aplus.py, fixed with
+    its coder on 24 October). The label is rendered in the size menu and the figure is no price:
+    the price of the size shows once it is chosen. Empty for a file that names no fixture, and
+    for a fixture whose variants carry no labels, as every market before design B."""
+    if spec.get("fixture") is None:
+        return {}
+    fixture = json.loads(verify_cells.fixture_for(spec).read_text())
+    found: dict = {}
+    for family in fixture["families"]:
+        for variant in family["variants"]:
+            if variant.get("label_kind") == "promo" and isinstance(variant.get("label_price"), (int, float)):
+                found.setdefault(family.get("product"), set()).add(round(variant["label_price"], 2))
+    return found
+
+
+def promo_figures_of(task: dict, promos: dict | None) -> set[float]:
+    """The promo figures of the question's product's listings (`promo_figures`): the product the
+    task names, or every product's where it names none or the fixture names none."""
+    if not promos:
+        return set()
+    product = task.get("product")
+    if product is not None and product in promos:
+        return set(promos[product])
+    return {figure for figures in promos.values() for figure in figures}
+
+
+def says_yes_or_no(answer: str) -> bool | None:
+    """The scorer's reading of an answer's yes or no (score.py's boolean rule, score v8, restated
+    so that it reads a trap on a key of another kind): a leading yes or no decides, else the
+    negative markers, then the positive. None where the answer says neither. A test holds this
+    to `score.score` on a yes-or-no key, so the two cannot drift apart."""
+    low = (answer or "").lower()
+    lead = scoring.LEADING_ANSWER.match(low)
+    if lead:
+        return lead.group(1) == "yes"
+    if scoring.has_marker(low, scoring.NEGATIVE_MARKERS):
+        return False
+    if scoring.has_marker(low, scoring.POSITIVE_MARKERS):
+        return True
+    return None
+
+
+def trap_reading(answer: str, task: dict, expect: dict, promos: dict | None) -> dict | None:
+    """What an answer did with the market's promo labels, for `fell_for` (v8, 24 October 2026,
+    design B; the definition written before the code, docs/content/claim2-protocol.md,
+    "Secondary measures"): the label figures of the question's product that the key does not
+    hold as right (`figures`); which of them the answer states at all (`stated_figures`), and
+    which it states without the question having quoted them (`stated_promo`, the breakdown's
+    rule); the price the answer gives as its answer, the one its first claim of a lowest names
+    (`score.answer_price`), else the first price it states (`answer_price`); the scorer's yes or
+    no (`says`); and whether it states any price the key holds as right (`right_stated`). None
+    on a market whose listings show no promo label, where there is no trap to fall for."""
+    figures = promo_figures_of(task, promos)
+    if not figures:
+        return None
+    right = key_prices(expect)
+    quoted = {round(price, 2) for price in scoring.prices_in(task.get("query") or "")}
+    figures = figures - right
+    stated = [round(price, 2) for price in scoring.prices_in(answer or "")]
+    own = scoring.answer_price(answer or "")
+    own = round(own, 2) if own is not None else (stated[0] if stated else None)
+    return {"kind": expect.get("kind"), "figures": sorted(figures),
+            "stated_figures": sorted(set(stated) & figures),
+            "stated_promo": sorted((set(stated) & figures) - quoted),
+            "answer_price": own, "says": says_yes_or_no(answer or ""),
+            "right_stated": bool(set(stated) & right)}
+
+
+def fell_for(trap: dict | None) -> bool | None:
+    """Whether a run fell for the promo trap, by what its key can say (v8, 24 October 2026):
+
+      a price key (tee-xs-price)   the price the answer gives as its answer is a label's promo
+                                   figure the key does not hold as right. An answer that names
+                                   the figure as working and gives the real price as its answer
+                                   has not fallen for it
+      any other key                the answer affirms the label, a yes by the scorer's reading
+      (tee-promo-check)            (`says_yes_or_no`); or it says neither yes nor no, states a
+                                   label's figure and states no price the key holds as right. An
+                                   answer that says no has refuted the label whatever price it
+                                   then gives
+
+    None where there is no trap to fall for (`trap_reading`)."""
+    if trap is None:
+        return None
+    if trap["kind"] == "price":
+        return trap["answer_price"] is not None and trap["answer_price"] in trap["figures"]
+    if trap["says"] is True:
+        return True
+    if trap["says"] is None:
+        return bool(trap["stated_figures"]) and not trap["right_stated"]
+    return False
 
 
 def results_order(spec: dict) -> list[str] | None:
@@ -1268,7 +1401,10 @@ def source(lines: list[Line], manifest: Manifest | None, every: list[dict]) -> d
         moved = (end["usage"] - start["usage"]) if end.get("usage") is not None and \
             start.get("usage") is not None else None
         out.update({"starts": manifest.starts, "ends": manifest.ends, "stops": manifest.stops,
-                    "account_moved": moved, "cap": start.get("cap")})
+                    "account_moved": moved, "cap": start.get("cap"),
+                    # The chain's other lines, as written (`CHAIN_LINES`), so the report keeps the
+                    # conditions, the routing gate, the watchdog's stops and the pilot check's verdict.
+                    "chain": manifest.extras})
     return out
 
 
@@ -1626,7 +1762,26 @@ def render_test(t: dict) -> str:
 #      read back is held to the runs each model's analysis reads once it is made (`sheet_gaps`):
 #      until now every run counted was asked a row, a refused model's too, and a run outside its
 #      model's design, so `--hand` refused every sheet of a run where one model was refused
-PROTOCOL_ANALYSIS_VERSION = 7
+#   8  24 October 2026, for design B, the tee-only market with misleading size labels (protocol
+#      analysis file version 7, docs/content/claim2-handover.md). A set may select the held-out
+#      rewordings by a field of their task, {"rewordings": {"source": "paraphrases_v3.json"}}
+#      (`resolve_set`), and a split may be restricted to a set, "within", with parts of templates or
+#      of rewordings (`split_scope`, `split_tests`): v2 against v3 within the kept templates, and
+#      the two new templates against the kept within v3. A reading-independent question open
+#      everything does not ask, tee-promo-check, is reported against it as not run by design, by
+#      question (`protocol_against`). The per-question tables list every template question of the
+#      task file (`Protocol.templates`), the lookup included. A fifth failure code, "a label's
+#      figure taken" (`prices_taken`, `promo_figures`), reads the fixture's promo labels. Three
+#      secondary measures: the asks the word-list clash caused, from each box record's
+#      `ask_reason` (`clash_asks`); the promo traps fallen for, by arm and question
+#      (`trap_reading`, `fell_for`, `promo_traps`); and the hidden-price leaks by arm
+#      (`leaks_by_arm`). `--sheet` also draws the second reader's sample of the sheet's codes by
+#      the file's rule (`second_reader_sample`), and `--preflight` resolves the protocol's sets
+#      against the task file the flags name, so a set naming a question the file lacks is refused
+#      before any run. The lines the chains write besides the batches, the conditions, the routing
+#      gate, the watchdog, the pilot check and the reading tests, are known lines kept under the
+#      source (`CHAIN_LINES`), not problems
+PROTOCOL_ANALYSIS_VERSION = 8
 # The conditions a protocol's arms are held to: the first claim's and the model parser's,
 # the open-everything wording, the agent's limits. Of them, the ones an arm has by design.
 # The box's rate plan and the product wording's version (23 October 2026) join them, so two
@@ -1654,14 +1809,21 @@ SENSITIVITIES = ("without the two-reading questions", "distinct runs only", "wit
 SECONDARY_MEASURES = ("asks on questions labelled clear", "asks on questions labelled ambiguous",
                       "the serving provider by arm, and H3 by provider",
                       # v4, from the auditor's check of 41d7839.
-                      "the parse's fallbacks by arm")
+                      "the parse's fallbacks by arm",
+                      # v8, 24 October 2026, design B. The first three are computed only if named; the
+                      # declines and the sorts are always computed (`declines`, `toolbar_table`), and
+                      # naming them puts the file on record that the protocol reports them.
+                      "asks caused by the word-list clash", "promo traps fallen for, by arm",
+                      "hidden-price leaks by arm", "declines by arm", "sorts and page-size changes by arm")
 # The roles a protocol file gives its models (v2): one primary, whose tests are the claim, and
 # replications, each with its own Holm.
 ROLES = ("primary", "replication")
 # The shipped arm's failure codes, in the order they are tried, each rule `failure_code`'s.
-# The second since v4 (the auditor's check of 41d7839).
+# The second since v4 (the auditor's check of 41d7839); the fourth since v8 (24 October 2026,
+# design B's promo labels), tried after the card and sold-out prices, so the order of the first
+# three codes is as it was.
 FAILURE_CODES = ("page 2 never reached", "sorted or resized, its first page alone", "a card or sold-out price taken",
-                 "other")
+                 "a label's figure taken", "other")
 # The sets a protocol file must name, and the one the design calls every template question.
 PROTOCOL_SETS = ("control", "decline", "gated", "two_readings", "reading_independent",
                  "count_two_readings", "held_out")
@@ -1713,6 +1875,9 @@ class Protocol:
     routing: dict = dataclasses.field(default_factory=dict)
     routing_named: bool = False
     designs: dict = dataclasses.field(default_factory=dict)    # model -> its `Design` (v6)
+    # The task file's template questions, every task without a `template`, in its order (v8): what
+    # the per-question tables list, whatever sets the file puts each in.
+    templates: tuple = ()
 
     def design_of(self, model: str | None) -> Design:
         """A model's design (`whose_design`)."""
@@ -1735,9 +1900,18 @@ class Protocol:
                 "tests": [name for name in self.config["tests"] if name not in d.tests]}
 
 
+def split_spec(split) -> dict:
+    """A split as the file writes it, in one shape (v8): two set names, a split within no set, or
+    {"within": a set, "parts": [two sets]}, each part run on the questions of `within` alone."""
+    if isinstance(split, dict):
+        return {"within": split.get("within"), "parts": tuple(split.get("parts") or ())}
+    return {"within": None, "parts": tuple(split)}
+
+
 def splits_of(config: dict, family) -> dict:
-    """The file's splits of the tests in `family`, each label's two sets."""
-    return {name: {label: tuple(parts) for label, parts in splits.items()}
+    """The file's splits of the tests in `family`, each label's two sets and the set it is
+    within (`split_spec`)."""
+    return {name: {label: split_spec(split) for label, split in splits.items()}
             for name, splits in (config.get("splits") or {}).items() if name in family}
 
 
@@ -1802,6 +1976,14 @@ def check_protocol(config: dict) -> list[str]:
     for key in PROTOCOL_SETS:
         if key not in sets:
             found.append(f"the protocol names no {key} set")
+    # A set is question ids, one id, the held-out field, or a selection among the held-out
+    # rewordings by the fields their tasks carry (v8, `resolve_set`).
+    for key, value in sets.items():
+        if isinstance(value, dict):
+            if list(value) != ["rewordings"] or not isinstance(value["rewordings"], dict) or not value["rewordings"]:
+                found.append(f"the set {key!r} is an object that is not {{\"rewordings\": {{a task field: its value}}}}")
+        elif not isinstance(value, str) and not (isinstance(value, list) and all(isinstance(q, str) for q in value)):
+            found.append(f"the set {key!r} is neither a list of question ids, one id, nor a selection of rewordings")
     for name, arm in arms.items():
         if not isinstance(arm, dict) or "arm" not in arm or "reading" not in arm:
             found.append(f"arm {name!r} does not say what its payloads record (arm, reading)")
@@ -1881,9 +2063,17 @@ def check_protocol(config: dict) -> list[str]:
     for name, splits in (config.get("splits") or {}).items():
         if name not in (config.get("tests") or {}):
             found.append(f"the splits are of a test the protocol has not: {name!r}")
-        for label, parts in splits.items():
-            if len(parts) != 2 or any(part not in sets for part in parts):
+        for label, split in splits.items():
+            if not isinstance(split, (list, dict)) or (isinstance(split, dict) and set(split) - {"within", "parts"}):
+                found.append(f"the split {label!r} of {name} is not two sets, or within and parts")
+                continue
+            spec = split_spec(split)
+            if len(spec["parts"]) != 2 or any(part not in sets for part in spec["parts"]):
                 found.append(f"the split {label!r} of {name} is not two sets the protocol names")
+            # Within a set the protocol names (v8), or within none.
+            if spec["within"] is not None and spec["within"] not in sets:
+                found.append(f"the split {label!r} of {name} is within a set the protocol does not name: "
+                             f"{spec['within']!r}")
     breakdown = config.get("failure_breakdown") or {}
     if breakdown:
         if breakdown.get("arm") not in arms or breakdown.get("on") not in sets:
@@ -1893,6 +2083,33 @@ def check_protocol(config: dict) -> list[str]:
                          f"{', '.join(FAILURE_CODES)}")
         if not isinstance(breakdown.get("page_size"), int):
             found.append("the failure breakdown names no page size")
+    # The promo traps fallen for (v8): the questions they are counted on, a set the file names.
+    traps = config.get("promo_traps") or {}
+    if "promo traps fallen for, by arm" in (config.get("secondary_measures") or []) and not traps:
+        found.append("the promo traps fallen for are named, and promo_traps names no set to count them on")
+    if traps and traps.get("on") not in sets:
+        found.append(f"promo_traps is on a set the protocol does not name: {traps.get('on')!r}")
+    # The second reader's sample of the hand-reading sheet (v8): how many rows, and the seed.
+    second = (config.get("hand_reading") or {}).get("second_reader")
+    if second is not None and not (isinstance(second, dict) and type(second.get("rows")) is int
+                                   and second["rows"] > 0 and type(second.get("seed")) is int):
+        found.append("hand_reading.second_reader is not {rows: a positive whole number, seed: a whole number}")
+    # The reading test (v8): its models, text only, and the routing each runs under, which is no
+    # arm's condition, since no agent runs in it.
+    reading = config.get("reading_test")
+    if reading is not None:
+        models = reading.get("models") if isinstance(reading, dict) else None
+        if not isinstance(models, list) or not models or not all(isinstance(m, str) for m in models):
+            found.append("reading_test names no models")
+        else:
+            routing = reading.get("provider_routing")
+            if not isinstance(routing, dict) or sorted(routing) != sorted(models):
+                found.append("reading_test.provider_routing does not name the reading test's models, one each")
+            else:
+                found += [f"reading_test.provider_routing gives {model} the provider keys "
+                          f"{routing_module.unknown_keys(value)}, which OpenRouter does not document"
+                          for model, value in routing.items()
+                          if value is not None and (not isinstance(value, dict) or routing_module.unknown_keys(value))]
     return found
 
 
@@ -1914,19 +2131,36 @@ def resolve_asks(model: str, asks: dict, sets: dict, templates: tuple) -> dict:
     return out
 
 
+def resolve_set(key: str, value, tasks: dict):
+    """A set of the protocol file as question ids of the task file `tasks` (v8, until then the
+    first three shapes inside `resolve_protocol`): "held_out", every task with the field it
+    names, `template`; a list, the ids as written; a string, one id; or a selection among the
+    held-out rewordings, {"rewordings": {a task field: its value}}, the tasks with a template
+    whose every named field holds the value named, so the entries of two rewording files are
+    told apart by the `source` their task carries (env/generate_aplus_tasks.py, fixed with its
+    coder on 24 October 2026). A selection no task matches is refused: a set that names no
+    question of the file would make a part of a split of nothing without a word."""
+    if key == "held_out":
+        return tuple(task_id for task_id, task in tasks.items() if task.get(value))
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict):
+        wanted = value["rewordings"]
+        found = tuple(task_id for task_id, task in tasks.items() if task.get("template")
+                      and all(task.get(field) == want for field, want in wanted.items()))
+        if not found:
+            raise SystemExit(f"the set {key!r} selects the held-out rewordings with {wanted}, and the task "
+                             f"file holds none")
+        return found
+    return tuple(value)
+
+
 def resolve_protocol(path: pathlib.Path, config: dict, spec: dict) -> Protocol:
-    """The protocol file's sets as question ids of the claim's task file `spec`. The held-out
-    rewordings are its tasks with a template, read by id and template only. Every id a set
-    names must be a task of the file, or this refuses."""
+    """The protocol file's sets as question ids of the claim's task file `spec` (`resolve_set`).
+    The held-out rewordings are its tasks with a template, read by id and template only. Every
+    id a set names must be a task of the file, or this refuses."""
     tasks = {task["id"]: task for task in spec["tasks"]}
-    sets = {}
-    for key, value in config["sets"].items():
-        if key == "held_out":
-            sets[key] = tuple(task_id for task_id, task in tasks.items() if task.get(value))
-        elif isinstance(value, str):
-            sets[key] = value
-        else:
-            sets[key] = tuple(value)
+    sets = {key: resolve_set(key, value, tasks) for key, value in config["sets"].items()}
     named = {q for key, value in sets.items() if not isinstance(value, str) for q in value}
     named |= {value for value in sets.values() if isinstance(value, str)}
     stray = sorted(named - set(tasks))
@@ -1949,7 +2183,7 @@ def resolve_protocol(path: pathlib.Path, config: dict, spec: dict) -> Protocol:
                         breakdown=dict(config.get("failure_breakdown") or {}),
                         arm_require={name: dict(arm.get("require") or {}) for name, arm in config["arms"].items()},
                         routing=dict(config.get("provider_routing") or {}),
-                        routing_named="provider_routing" in config, designs=designs)
+                        routing_named="provider_routing" in config, designs=designs, templates=templates)
     # Each test of a model's family on questions both its arms ask, and in the same rounds (v6):
     # a test whose arms were asked its questions a different number of times would set a
     # question's three runs of one arm against one run of the other.
@@ -1963,17 +2197,65 @@ def resolve_protocol(path: pathlib.Path, config: dict, spec: dict) -> Protocol:
                                      f"{spec['a']} in rounds {list(rounds['a'] or [])} and of {spec['b']} in "
                                      f"rounds {list(rounds['b'] or [])}: a test's arms are asked its questions "
                                      f"in the same rounds")
-    # A split is of the strata its test is on, the two parts disjoint and every stratum in
-    # one: for H4, the thirteen keyed templates the rewordings reword.
+    # A split divides its test's questions in two, within the set it is restricted to, as
+    # templates or as rewordings (`split_scope`, v8); it is refused here otherwise.
     for name, splits in protocol.splits.items():
-        universe = strata_of(protocol.tests[name], protocol)
-        for label, parts in splits.items():
-            first, second = (set(sets[part]) for part in parts)
-            if first & second or first | second != set(universe):
-                raise SystemExit(f"the split {label!r} of {name} does not divide its {len(universe)} "
-                                 f"strata in two: {sorted(set(universe) ^ (first | second))} "
-                                 f"{'and the parts overlap' if first & second else ''}".strip())
+        for label, split in splits.items():
+            split_scope(name, label, split, protocol)
     return protocol
+
+
+def set_kind(members, protocol: Protocol) -> str:
+    """What a set's members are (v8): "templates", every one a template question of the task
+    file, "rewordings", every one a held-out rewording, else "mixed", which no split may use."""
+    found = set(members)
+    if found and found <= set(protocol.templates):
+        return "templates"
+    if found and found <= set(protocol.templates_of):
+        return "rewordings"
+    return "mixed"
+
+
+def split_scope(name: str, label: str, split: dict, protocol: Protocol) -> dict:
+    """What a split of test `name` runs on (v8): the test's questions restricted to the split's
+    `within` set, and for each part the questions and templates `one_test` drops to read that
+    part alone. The parts are both templates or both rewordings (`set_kind`), disjoint, and
+    together cover the restricted questions, as templates or as rewordings; `within` is a set
+    of either kind, or None for the whole test. Refused otherwise, with what is in neither
+    part. Until v8 a split was two template sets over the whole test, held to divide its strata
+    exactly; the same split still passes here, with the templates no rewording rewords allowed
+    in a part, since a part may name a template the held-out file does not reach."""
+    spec = protocol.tests[name]
+    questions = questions_of(spec, protocol)
+    scope, base = set(questions), set()
+    within = split["within"]
+    if within is not None:
+        members = set(protocol.sets[within])
+        kind = set_kind(members, protocol)
+        if kind == "templates":
+            scope = {q for q in questions if protocol.templates_of.get(q, q) in members}
+            base = {t for t in strata_of(spec, protocol) if t not in members}
+        elif kind == "rewordings":
+            scope = {q for q in questions if q in members}
+            base = {q for q in questions if q not in members}
+        else:
+            raise SystemExit(f"the split {label!r} of {name} is within {within!r}, which is neither templates "
+                             f"nor held-out rewordings")
+    parts = [set(protocol.sets[part]) for part in split["parts"]]
+    kinds = {set_kind(part, protocol) for part in parts}
+    if len(kinds) != 1 or "mixed" in kinds:
+        raise SystemExit(f"the split {label!r} of {name}: its parts are not both templates or both held-out "
+                         f"rewordings")
+    kind = kinds.pop()
+    if parts[0] & parts[1]:
+        raise SystemExit(f"the split {label!r} of {name}: the parts overlap: {sorted(parts[0] & parts[1])}")
+    needed = {protocol.templates_of.get(q, q) for q in scope} if kind == "templates" else set(scope)
+    missing = sorted(needed - (parts[0] | parts[1]))
+    if missing:
+        raise SystemExit(f"the split {label!r} of {name} does not divide its {len(needed)} {kind} in two: "
+                         f"{missing} in neither part")
+    drops = [frozenset(base | {item for item in needed if item not in part}) for part in parts]
+    return {"kind": kind, "scope": sorted(scope), "drops": drops}
 
 
 def answered_correct(run: dict) -> bool:
@@ -2115,20 +2397,18 @@ def protocol_tests(arms: dict[str, list[dict]], protocol: Protocol, drop: frozen
 def split_tests(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
     """Each test the protocol splits, on each part of each split it names, unadjusted: a
     secondary reading of where the effect is, fixed before the run (protocol analysis v2,
-    23 October 2026). For H4, the first claim's six templates against the seven added for
-    the second, and the tee's against the water's."""
+    23 October 2026). Since v8 a split may be within a set, and its parts templates or
+    rewordings (`split_scope`): for design B's H4, v2 against v3 within the kept eight
+    templates, and the two new templates against the kept eight within v3."""
     out = {}
     for name, splits in protocol.splits.items():
         spec = protocol.tests[name]
-        universe = strata_of(spec, protocol)
         out[name] = []
-        for label, parts in splits.items():
-            got = []
-            for part in parts:
-                keep = set(protocol.sets[part])
-                result = one_test(spec, arms, protocol, frozenset(s for s in universe if s not in keep))
-                got.append({"set": part, **result})
-            out[name].append({"split": label, "parts": got})
+        for label, split in splits.items():
+            scope = split_scope(name, label, split, protocol)
+            got = [{"set": part, **one_test(spec, arms, protocol, drop)}
+                   for part, drop in zip(split["parts"], scope["drops"])]
+            out[name].append({"split": label, "within": split["within"], "kind": scope["kind"], "parts": got})
     return out
 
 
@@ -2142,16 +2422,22 @@ def protocol_against(arms: dict[str, list[dict]], protocol: Protocol) -> dict | 
     if spec["a"] not in protocol.design or spec["b"] not in protocol.design:
         return {"a": spec["a"], "b": spec["b"], "on": spec["on"], "not_run_by_design": True}
     a, b = scored(arms.get(spec["a"], [])), scored(arms.get(spec["b"], []))
+    # A question of the set that one arm's design does not ask, tee-promo-check under open
+    # everything in design B (v8), is reported as not run by design, by question, never as a
+    # row with no runs and never as missing.
+    unasked = [q for q in protocol.sets[spec["on"]]
+               if any(q not in protocol.design[spec[side]] for side in ("a", "b"))]
     rows = []
     for q in protocol.sets[spec["on"]]:
         ra = [run for run in a if run["task"] == q]
         rb = [run for run in b if run["task"] == q]
-        if ra and rb:
+        if q not in unasked and ra and rb:
             rows.append(difference(q, sum(map(answered_correct, ra)), len(ra),
                                    sum(map(answered_correct, rb)), len(rb)))
     pooled = difference("pooled", sum(r["a"][0] for r in rows), sum(r["a"][1] for r in rows),
                         sum(r["b"][0] for r in rows), sum(r["b"][1] for r in rows))
-    return {"a": spec["a"], "b": spec["b"], "on": spec["on"], "per_question": rows, "pooled": pooled}
+    return {"a": spec["a"], "b": spec["b"], "on": spec["on"], "per_question": rows, "pooled": pooled,
+            "not_run_by_design": unasked}
 
 
 def declines(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
@@ -2243,6 +2529,10 @@ def failure_code(run: dict, page_size: int) -> tuple[str, str]:
                                       price of the question's variant at a listing where it
                                       is sold out, that the key does not hold as right
                                       (`prices_taken`)
+      a label's figure taken          the answer states, as a price, a figure a size label
+                                      shows as a promotion, "XS - Promo $9.99", that the key
+                                      does not hold as right and the question does not quote
+                                      (v8, 24 October 2026, design B; `prices_taken`, "label")
       other                           anything else"""
     reading = run.get("toolbar") or {"results_pages": [], "results_limits": []}
     where = run.get("key_where") or {}
@@ -2257,9 +2547,11 @@ def failure_code(run: dict, page_size: int) -> tuple[str, str]:
                                   f"results pages seen: {reading['results_pages']}")
     taken = run.get("taken") or {}
     if taken.get("card") or taken.get("sold_out"):
-        return FAILURE_CODES[2], "; ".join(f"{kind.replace('_', ' ')} {', '.join(f'${p:.2f}' for p in prices)}"
-                                           for kind, prices in taken.items() if prices)
-    return FAILURE_CODES[3], f"results pages {reading['results_pages']}, limits {reading['results_limits']}"
+        return FAILURE_CODES[2], "; ".join(f"{kind.replace('_', ' ')} {', '.join(f'${p:.2f}' for p in taken[kind])}"
+                                           for kind in ("card", "sold_out") if taken.get(kind))
+    if taken.get("label"):
+        return FAILURE_CODES[3], "label " + ", ".join(f"${p:.2f}" for p in taken["label"])
+    return FAILURE_CODES[4], f"results pages {reading['results_pages']}, limits {reading['results_limits']}"
 
 
 def failure_breakdown(arms: dict[str, list[dict]], protocol: Protocol) -> dict | None:
@@ -2378,6 +2670,85 @@ def secondary_measures(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
         out["providers"] = {"by_arm": provider_table(arms, protocol), "h3": by_provider(arms, protocol)}
     if "the parse's fallbacks by arm" in named:
         out["fallbacks"] = fallbacks_by_arm(arms, protocol)
+    # Design B's three (v8). The declines and the sorts are always computed, named or not.
+    if "asks caused by the word-list clash" in named:
+        out["clash_asks"] = clash_asks(arms, protocol)
+    if "promo traps fallen for, by arm" in named:
+        out["promo_traps"] = promo_traps(arms, protocol)
+    if "hidden-price leaks by arm" in named:
+        out["leaks"] = leaks_by_arm(arms, protocol)
+    return out
+
+
+def arms_in_order(arms: dict, protocol: Protocol) -> list[str]:
+    """The arms with runs, in the protocol's order, then any the protocol does not name."""
+    return [a for a in protocol.arms if a in arms] + sorted(set(arms) - set(protocol.arms))
+
+
+def run_name(run: dict) -> str:
+    return f"{run['batch']}/{run['task']}-{run['repeat']}"
+
+
+def clash_asks(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
+    """The secondary measure "asks caused by the word-list clash" (v8, the student's decision 11
+    of 24 October 2026, LESSONS 44), each model in its own section: of each arm's runs where
+    the box asked, those whose box record gives the reason "clash", the rules' word list and
+    the model having read a word differently, where the box asks the shopper instead of taking
+    the rules' form, against "ambiguous", the question's own two readings; the clashes by the
+    sidecar's label of their question, clear or ambiguous (`two_readings`), since a clash on a
+    clear question is the pilot's one miss; every reason the records give, "not recorded" for a
+    box before v19; and each clash named by its run, with whether the ask closed the slot (no
+    reply) or was answered by the scripted shopper."""
+    out = {}
+    for arm in arms_in_order(arms, protocol):
+        asked = [run for run in arms[arm] if run.get("asked")]
+        clash = [run for run in asked if run.get("ask_reason") == "clash"]
+        out[arm] = {"runs": len(arms[arm]), "asks": len(asked), "clash": len(clash),
+                    "clash_by_label": {label: sum(1 for run in clash if run["ambiguous"] == wanted)
+                                       for label, wanted in (("clear", False), ("ambiguous", True))},
+                    "reasons": dict(collections.Counter(run.get("ask_reason") or "not recorded"
+                                                        for run in asked).most_common()),
+                    "named": [{"run": run_name(run), "closed": run["outcome"] == voids.CLOSED} for run in clash]}
+    return out
+
+
+def promo_traps(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
+    """The secondary measure "promo traps fallen for, by arm" (v8), each model in its own
+    section, on the questions the file's `promo_traps.on` set names and their rewordings: of
+    each arm's runs where the agent answered, those that fell for a label's promo figure
+    (`fell_for`, by what the question's key can say: the answer's own price on a price key, an
+    affirmation on any other), by question, as a share with Wilson's 95% interval, each named.
+    A slot the box closed answered nothing and is left out; so is a run on a market whose
+    listings show no promo label, where there is no trap (`trap_reading`)."""
+    on = (protocol.config.get("promo_traps") or {}).get("on")
+    wanted = list(protocol.sets.get(on, ())) if on else []
+    out = {}
+    for arm in arms_in_order(arms, protocol):
+        rows = {}
+        for q in wanted:
+            mine = [run for run in arms[arm] if run.get("trap") is not None
+                    and (run["task"] == q or protocol.templates_of.get(run["task"]) == q)]
+            fell = [run for run in mine if fell_for(run["trap"])]
+            rows[q] = {"runs": len(mine), "fell_for": len(fell),
+                       "share": len(fell) / len(mine) if mine else None,
+                       "interval": list(wilson(len(fell), len(mine))) if mine else None,
+                       "named": [run_name(run) for run in fell]}
+        out[arm] = rows
+    return out
+
+
+def leaks_by_arm(arms: dict[str, list[dict]], protocol: Protocol) -> dict:
+    """The secondary measure "hidden-price leaks by arm" (v8), each model in its own section: of
+    each arm's runs where the agent ran, those whose log holds a sign of the prices the gated
+    theme hides (experiments/analysis/leaks.py: the variant store, its blob, or a sold-out size's
+    price in a tool reply), each named with its first finding. The sensitivity "without the runs
+    that saw a hidden price" drops them from every test."""
+    out = {}
+    for arm in arms_in_order(arms, protocol):
+        runs = [run for run in arms[arm] if run.get("outcome") != voids.CLOSED]
+        leaked = [run for run in runs if run.get("leaks")]
+        out[arm] = {"runs": len(runs), "leaked": len(leaked),
+                    "named": [{"run": run_name(run), "found": run["leaks"][0]} for run in leaked]}
     return out
 
 
@@ -2579,6 +2950,14 @@ def planned_conditions(flags: str) -> dict:
     return planned
 
 
+def tasks_flag(flags: str) -> pathlib.Path | None:
+    """The task file the suite.py flags name with --tasks, None where they name none."""
+    words = shlex.split(flags)
+    if "--tasks" not in words or words.index("--tasks") + 1 >= len(words):
+        return None
+    return pathlib.Path(words[words.index("--tasks") + 1])
+
+
 def preflight(protocol_path: pathlib.Path, arm_name: str, flags: str) -> tuple[dict, list[str]]:
     """Whether a batch of the protocol's arm `arm_name`, run with these suite.py flags under
     the code as it stands, would be within what the protocol requires of it (v4, R4): what
@@ -2600,6 +2979,15 @@ def preflight(protocol_path: pathlib.Path, arm_name: str, flags: str) -> tuple[d
         # IGR_PROVIDER_ROUTING that is no model-to-object map: suite.py stops on it too (v5).
         return {}, [str(fault)]
     problems = []
+    # The protocol's sets against the task file the flags name (v8): a set naming a question the
+    # file lacks, a selection no task matches, or a split that does not divide its questions is
+    # refused here, before any run, as the analysis would refuse it after.
+    tasks_path = tasks_flag(flags)
+    if tasks_path is not None:
+        try:
+            resolve_protocol(protocol_path, config, json.loads(tasks_path.read_text()))
+        except SystemExit as fault:
+            problems.append(f"the protocol's sets do not fit {tasks_path.name}: {fault}")
     if (planned["arm"], planned["reading"]) != (arm["arm"], arm["reading"]):
         problems.append(f"the flags make arm {planned['arm']} with reading {planned['reading']}, where "
                         f"{arm_name} is arm {arm['arm']} with reading {arm['reading']}")
@@ -2678,7 +3066,10 @@ def protocol_model(model: str | None, population: dict, conditions: dict, protoc
                         design["never_run"].append(f"{arm}, {task} repeat {repeat}")
     design["outside"] = sorted({f"{s['arm']}, {s['task']} repeat {s['repeat']}" for s in every + every_void
                                 if not asked(s)})
-    templates = [q for q in protocol.sets["control"] + protocol.sets["gated"] + protocol.sets["decline"]]
+    # Every template question of the task file, in its order (v8): until then the control, the
+    # gated and the decline sets, which left out a template in none of them, as the lookup
+    # tee-promo-check is.
+    templates = list(protocol.templates)
     tables_ = {}
     for arm, runs in arms.items():
         rows = {q: summary([run for run in runs if run["task"] == q], answered_correct)
@@ -2733,7 +3124,7 @@ def protocol_model(model: str | None, population: dict, conditions: dict, protoc
                                               "covered", "missed", "cost", "tokens_total", "calls", "actions",
                                               "asked", "refused", "agent_asks", "leaks", "outside", "toolbar",
                                               "taken", "key_where", "providers", "routing", "parse_provider",
-                                              "answer")}
+                                              "ask_reason", "trap", "answer")}
                  for s in kept],
     }
 
@@ -2828,6 +3219,8 @@ def analyse_protocol(lines: list[Line], manifest: Manifest | None, path: pathlib
                           # What its key says the sheet left off, and why (v7).
                           "left_off": {field: hand["key"].get(field) for field in LEFT_OFF.values()}}
            if hand else None,
+           # The hand reading's rule for the second reader's sample (v8), for `--sheet`.
+           "hand_reading_spec": config.get("hand_reading"),
            "void_batches": void_batches}
     for model in models:
         why = list(refused.get(model, []))
@@ -2972,16 +3365,35 @@ def hand_reading_sheet(result: dict) -> tuple[list[dict], dict]:
     return rows, mapping
 
 
-def sheet_paths(path: pathlib.Path) -> tuple[pathlib.Path, pathlib.Path]:
-    """The hand-reading sheet's path and its key's beside it, `<name>.key.json`."""
-    return path, path.with_name(path.stem + ".key.json")
+def sheet_paths(path: pathlib.Path) -> tuple[pathlib.Path, pathlib.Path, pathlib.Path]:
+    """The hand-reading sheet's path, its key's beside it, `<name>.key.json`, and the second
+    reader's sample beside both, `<name>.second-reader.json` (v8)."""
+    return path, path.with_name(path.stem + ".key.json"), path.with_name(path.stem + ".second-reader.json")
 
 
-def write_sheet(path: pathlib.Path, rows: list[dict], mapping: dict) -> pathlib.Path:
-    """The sheet as CSV at `path`, and its key beside it (`sheet_paths`), whose path is
-    returned. A sheet or key already there may hold a reading, so it is never written over."""
-    _, key_path = sheet_paths(path)
-    there = [str(p) for p in (path, key_path) if p.exists()]
+def second_reader_sample(codes, spec: dict | None) -> dict | None:
+    """The rows a second reader reads blind, drawn by the protocol file's rule (v8,
+    `hand_reading.second_reader`): `rows` of the sheet's codes, sampled without replacement
+    from the codes in sorted order with `random.Random(seed)`, or every code where the sheet
+    has fewer. None where the file gives no rule. Drawn by code and written beside the sheet, so
+    the sample is the rule's and never a hand's (LESSONS 22)."""
+    rule = (spec or {}).get("second_reader")
+    if not rule:
+        return None
+    ordered = sorted(codes)
+    rows = min(int(rule["rows"]), len(ordered))
+    drawn = random.Random(int(rule["seed"])).sample(ordered, rows)
+    return {"rule": f"random.Random({rule['seed']}).sample(the sheet's codes in sorted order, {rule['rows']})",
+            "rows": rows, "seed": rule["seed"], "of": len(ordered), "codes": sorted(drawn)}
+
+
+def write_sheet(path: pathlib.Path, rows: list[dict], mapping: dict,
+                sample: dict | None = None) -> tuple[pathlib.Path, pathlib.Path | None]:
+    """The sheet as CSV at `path`, its key beside it and, when drawn, the second reader's sample
+    (`sheet_paths`), the paths of the last two returned. A sheet, key or sample already there may
+    hold a reading, so none is ever written over."""
+    _, key_path, sample_path = sheet_paths(path)
+    there = [str(p) for p in (path, key_path, sample_path) if p.exists()]
     if there:
         raise SystemExit(f"refused: {', '.join(there)} already there, and may hold a reading. Move it away first")
     with path.open("w", newline="") as handle:
@@ -2989,7 +3401,11 @@ def write_sheet(path: pathlib.Path, rows: list[dict], mapping: dict) -> pathlib.
         writer.writeheader()
         writer.writerows(rows)
     key_path.write_text(json.dumps(mapping, indent=2) + "\n")
-    return key_path
+    if sample is not None:
+        sample_path.write_text(json.dumps({
+            "_about": "The rows of the hand-reading sheet the second reader reads blind, drawn by the protocol's "
+                      "rule over the sheet's codes. It names no arm, model or verdict.", **sample}, indent=2) + "\n")
+    return key_path, sample_path if sample is not None else None
 
 
 def read_hand_sheet(path: pathlib.Path) -> dict:
@@ -2998,7 +3414,7 @@ def read_hand_sheet(path: pathlib.Path) -> dict:
     any batch is read on a row with no hand verdict, or one that is not correct, not correct
     or unscorable; on a code the key does not hold, or one on the sheet twice; and on a code of
     the key with no row. A reading with a gap in it is no reading."""
-    sheet_path, key_path = sheet_paths(path)
+    sheet_path, key_path, _ = sheet_paths(path)
     absent = [str(p) for p in (sheet_path, key_path) if not p.exists()]
     if absent:
         raise SystemExit(f"refused: the hand reading needs the sheet and its key, and {', '.join(absent)} "
@@ -3327,7 +3743,8 @@ def render_protocol_model(m: dict, say) -> None:
     for name, splits in (m.get("splits") or {}).items():
         say(f"  {name} on the pre-specified splits, secondary and unadjusted, each part on its own:")
         for split in splits:
-            say(f"     {split['split']}")
+            say(f"     {split['split']}" + (f" (within {split['within']}, parts of {split['kind']})"
+                                            if split.get("within") else ""))
             for part in split["parts"]:
                 if not part["per_question"]:
                     say(f"       {part['set']:24} not computed: an arm has no runs on these strata")
@@ -3341,7 +3758,7 @@ def render_protocol_model(m: dict, say) -> None:
                 say(f"       {part['set']:24} {shown}; p = {p_text(part['p'])}")
 
     o = m["against_open_everything"]
-    if o and o.get("not_run_by_design"):
+    if o and o.get("not_run_by_design") is True:
         say(f"\n3. Correct, {o['a']} against {o['b']}, on {o['on']}: not run by design under this model")
     elif o:
         say(f"\n3. Correct, {o['a']} against {o['b']}, on {o['on']}: counts and Newcombe's 95% hybrid "
@@ -3350,6 +3767,8 @@ def render_protocol_model(m: dict, say) -> None:
             say(f"     {row['task']:22} {row['a'][0]}/{row['a'][1]} against {row['b'][0]}/{row['b'][1]}"
                 + (f", difference {row['difference']:+.2f}, interval {row['interval'][0]:+.3f} to "
                    f"{row['interval'][1]:+.3f}" if row["interval"] else ", no interval: an arm has no runs"))
+        for q in o.get("not_run_by_design") or []:
+            say(f"     {q:22} not run by design: an arm's design does not ask it")
 
     say("\n4. The held-out rewordings, by template: correct of the runs a key judged, asked, refused, opened median")
     if m["held_out"] is None:
@@ -3454,6 +3873,35 @@ def render_protocol_model(m: dict, say) -> None:
                 f"rules' form used {row['parse_fallback']}")
             for reason, n in row["reasons"].items():
                 say(f"       {n} {reason}")
+    clashes = s.get("clash_asks")
+    if clashes:
+        say("  j. Asks caused by the word-list clash (decision 11): of the box's asks, those its record gives the "
+            "reason \"clash\", the word list and the model reading a word differently, by the sidecar's label")
+        for arm, row in clashes.items():
+            if not row["asks"]:
+                continue
+            say(f"     {arm:30} asks {row['asks']} of {row['runs']} runs, clashes {row['clash']} (on clear questions "
+                f"{row['clash_by_label']['clear']}, on two-reading questions {row['clash_by_label']['ambiguous']}); "
+                "reasons: " + ", ".join(f"{reason} {n}" for reason, n in row["reasons"].items()))
+            for named in row["named"]:
+                say(f"       {named['run']}" + (", the ask closed the slot" if named["closed"] else ", answered"))
+    traps = s.get("promo_traps")
+    if traps:
+        say("  k. Promo traps fallen for, by arm and question: the runs that gave a label's promo figure as the "
+            "price, or affirmed the label, of the runs that answered, with Wilson's 95% interval")
+        for arm, rows in traps.items():
+            for q, row in rows.items():
+                if not row["runs"]:
+                    continue
+                say(f"     {arm:30} {q:18} {row['fell_for']} of {row['runs']} ({row['share']:.2f}, "
+                    f"{row['interval'][0]:.2f} to {row['interval'][1]:.2f})"
+                    + (": " + ", ".join(row["named"]) if row["named"] else ""))
+    leaked = s.get("leaks")
+    if leaked:
+        say("  l. Hidden-price leaks by arm: the runs whose log holds a sign of the prices the gated theme hides")
+        for arm, row in leaked.items():
+            say(f"     {arm:30} {row['leaked']} of {row['runs']} runs"
+                + "".join(f"\n       {named['run']}: {named['found'][:100]}" for named in row["named"]))
 
     names = list(m["primary"])
     say("\n6. Sensitivity: the primary tests again, p (Holm p)")
@@ -3568,7 +4016,8 @@ def main(argv: list[str] | None = None) -> int:
         print(render_protocol(result))
         if args.sheet:
             rows, mapping = hand_reading_sheet(result)
-            key_path = write_sheet(args.sheet, rows, mapping)
+            sample = second_reader_sample([row["code"] for row in rows], result.get("hand_reading_spec"))
+            key_path, sample_path = write_sheet(args.sheet, rows, mapping, sample)
             print(f"\nthe hand-reading sheet, {len(rows)} answers under random codes: {args.sheet}; "
                   f"its key, to be kept apart until every row is read: {key_path}. Left off it: closed "
                   f"slots {mapping['closed_slots_left_out']}, answers to a question with no key "
@@ -3576,6 +4025,9 @@ def main(argv: list[str] | None = None) -> int:
                   f"{mapping['unscored_left_out']}. Write correct or not "
                   f"correct in hand_verdict for every answer that can be read, and unscorable only for "
                   f"one that cannot: empty, garbled, or about another question")
+            if sample is not None:
+                print(f"the second reader's {sample['rows']} rows of the {sample['of']}, drawn by "
+                      f"{sample['rule']}: {sample_path}")
     else:
         result = analyse(lines, manifest)
         print(render(result))
