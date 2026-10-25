@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update, 28 October</title>
+<style>
+  body { margin: 0; background: #f6f7f9; color: #1d2229; font: 16px/1.55 Georgia, "Times New Roman", serif; }
+  .page { max-width: 860px; margin: 0 auto; padding: 32px 16px 80px; }
+  h1 { font: 600 28px/1.2 system-ui, sans-serif; margin: 0 0 4px; }
+  h2 { font: 600 19px/1.3 system-ui, sans-serif; margin: 34px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #d5d9e0; }
+  h3 { font: 600 16px/1.3 system-ui, sans-serif; margin: 22px 0 6px; }
+  .eyebrow { font: 600 12px system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; color: #6b7280; }
+  ol, ul { margin: 6px 0 6px 22px; padding: 0; } li { margin: 6px 0; }
+  .box { background: #fff; border: 1px solid #d5d9e0; border-radius: 8px; padding: 14px 18px; margin: 12px 0; }
+  .todo { background: #fff8e6; border-left: 4px solid #b7791f; }
+  .warn { background: #fdecec; border-left: 4px solid #b42318; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font: 14.5px/1.4 system-ui, sans-serif; }
+  th, td { text-align: left; padding: 7px 9px; border-bottom: 1px solid #e3e6eb; vertical-align: top; }
+  th { font-weight: 600; color: #4b5563; font-size: 12.5px; text-transform: uppercase; }
+  code, pre { font: 13px ui-monospace, Menlo, monospace; background: #eef0f3; border-radius: 4px; }
+  code { padding: 1px 5px; }
+  pre { padding: 10px 12px; overflow-x: auto; white-space: pre-wrap; }
+  .muted { color: #6b7280; font-size: 14px; }
+  .table-wrap { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="eyebrow">For Prof. Kirchberg &middot; update for Wednesday 28 October 2026</div>
+<h1>Update, 28 October: the second claim run is finished, its result is not yet read</h1>
+<p class="muted">The second run of the retrieval block has been run and checked for faults. By the protocol, the student's blind hand reading comes before any result is looked at, so this page reports what was done and what the run can claim, and gives no accuracy figure.</p>
+
+<h2>1. What was done since 24 October</h2>
+<div class="table-wrap"><table>
+<tr><th>When</th><th>What</th></tr>
+<tr><td>24 Oct, 17:56</td><td>Protocol for the second run frozen (commit 55665b4), after the verifier's logic audit and before the claim market was drawn.</td></tr>
+<tr><td>24 Oct, 19:32 to 20:28</td><td>Pilot on the development market (Thurlby): 12 runs, no void run, all four pilot checks passed (no harness error, no run near its step or clock limit, every answer keyable, projected cost within the cap). Cost $0.93; stage 1 projected at $15.08.</td></tr>
+<tr><td>24 Oct, 22:01</td><td>The student lowered the stage-1 cap from $69 to $60 to keep credit in reserve (Amendment 1). Design, questions and limits unchanged.</td></tr>
+<tr><td>24 Oct, 22:08</td><td>Stage 1 started on the held-out claim market (Wexcombe, seed 1000, the first seed that passed the market's rules, drawn after the freeze).</td></tr>
+<tr><td>25 Oct, 13:50</td><td>The chain stopped before its 66th of 87 invocations ($18.59 spent). The cap gate halts whenever the account balance cannot be read, and one read failed (a network fault, not the cap). No run was affected.</td></tr>
+<tr><td>25 Oct, 14:06 to 17:18</td><td>Resumed with a separate resume command, checked by the verifier, that runs only the 22 invocations not yet started, then the re-runs and the reading tests, into the same record; the balance read is now tried three times, ten seconds apart (Amendment 2). Stage 1 ended at 17:18.</td></tr>
+</table></div>
+<p><b>Output.</b> 87 batches and 198 run records. Four runs were void, decided from their logs before any answer was read: two browser-worker JSON errors, one silent log, one provider connection error. Each was re-run once, cleanly. All 10,630 agent calls were served by one provider (GMICloud) under the pinned fp8 routing, as the protocol required.</p>
+<p><b>Cost.</b> $22.27 by the account for stage 1: $21.90 in run records and $0.37 for routing probes and reading tests. With the pilot, $23.20 of the $66 total cap.</p>
+
+<h2>2. What the run can and cannot claim</h2>
+<p>One held-out market (a single product, a tee, with misleading size labels), one model (DeepSeek V4 Flash), four arms (the shipped agent, the shipped agent told to open everything, the block with rules, the block with a model reading the question), three rounds. It tests four hypotheses, corrected together by Holm's method:</p>
+<div class="table-wrap"><table>
+<tr><th></th><th>Hypothesis</th></tr>
+<tr><td>H1</td><td>The block (model) is correct more often than the shipped agent, on seven questions whose answer has one reading.</td></tr>
+<tr><td>H2</td><td>The block opens fewer listings than open everything, on eight gated questions.</td></tr>
+<tr><td>H3</td><td>The block costs less per run than open everything, on the same questions.</td></tr>
+<tr><td>H4</td><td>On reworded questions the block was not built on, the model reading the question is correct more often than the rules.</td></tr>
+</table></div>
+<p>It cannot show that the block works on other markets, other products, other models or another agent scaffold, or on live sites. It does not test search relevance, shipping cost or discounts after combination, which are out of scope as you asked.</p>
+
+<h2>3. Results</h2>
+<p>Pending the blind hand reading, which comes first by protocol. The student reads a coded sheet that hides arm, model and the scorer's verdict, and sees no result until it is finished. The verifier then reads 40 rows of the same sheet as second reader. Expected: sheet finished by Friday 30 October (proposed), then the four tests and the agreement of the two readers, in time for the report's first draft.</p>
+
+<h2>4. Limitations and recorded conditions</h2>
+<ul>
+  <li>One market, one product, one model; three rounds, so intervals will be wide.</li>
+  <li>The block's plan text was told the label kinds (promotional and stock text in a size menu); the other arms were not. Part of the gain on the label questions measures that sentence.</li>
+  <li>H3 compares the block's plan, briefing and page reading with an agent told only to open everything; it does not isolate the stop rule.</li>
+  <li>The second reader is an LLM verifier, not an independent person.</li>
+  <li>The shop's &ldquo;Related search terms&rdquo; block grew with each search, and the chain recorded it for every run. One search (&ldquo;Wexcombe Midweight Jersey Tee&rdquo;, 25 Oct 12:16) is in no agent log and was probably a human click. The last 22 batches ran after the 16-minute stop.</li>
+  <li>Two amendments were made during execution (the cap, the resume), both logged with their times; neither changes the design.</li>
+</ul>
+
+<h2>5. Plan to the first draft on 6 November</h2>
+<ol>
+  <li>29 to 30 Oct: hand reading and second reader.</li>
+  <li>31 Oct to 1 Nov: the four tests, sensitivities, figures from <code>make facts</code>.</li>
+  <li>2 to 5 Nov: results section, discussion and limitations rewritten around the verdict of record.</li>
+  <li>6 Nov: full first draft. The report already carries the design, the literature review, the implementation and the pre-stated reading of each hypothesis; only the results of this run are missing.</li>
+</ol>
+
+<h2>6. Decisions for you</h2>
+<h3>A. Spend the remaining credit on a second market or a second model, or state it as a limitation?</h3>
+<p>About $74 remains on the key by arithmetic (to be confirmed on the account); one more market on this model would cost about $22.</p>
+<ul>
+  <li><b>Pro (run more):</b> tests that the result is not one draw; a second model would cover the model axis of the original design.</li>
+  <li><b>Con:</b> a new market needs a new frozen protocol, a verifier stamp and another hand reading, which does not fit before 6 November; a rushed run would weaken the care of the first. A stated limitation costs nothing and is honest.</li>
+  <li><b>Lean:</b> state it as a limitation for the first draft; revisit before the final report if time allows.</li>
+</ul>
+<h3>B. May the second reader be an LLM verifier, or must it be a person?</h3>
+<ul>
+  <li><b>LLM (the protocol as frozen):</b> available now, blind by construction, free. But it shares tooling and habits with the project, so agreement is weaker evidence of correct scoring.</li>
+  <li><b>Person:</b> independent. But it needs a volunteer who learns the reading rules, about an hour for 40 rows.</li>
+  <li><b>Lean:</b> keep the verifier, and add a person on the same 40 rows if one can be found; report both.</li>
+</ul>
+<h3>C. Is the scope statement acceptable?</h3>
+<p>Shipping cost, discount after combination and search relevance are out of scope and stated as limits. <b>Pro:</b> the claim stays about retrieval of gated price and stock. <b>Con:</b> a shopper&rsquo;s real price includes shipping. Please confirm or ask for more.</p>
+
+</div>
+</body>
+</html>
