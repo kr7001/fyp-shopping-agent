@@ -1,0 +1,1039 @@
+{
+  "ran_at": "2026-10-24T20:18:00",
+  "repeats": 1,
+  "repeat_start": 1,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": false,
+  "exhaustive_wording": null,
+  "exhaustive_wording_version": null,
+  "targeting": false,
+  "targeting_version": 9,
+  "planner_version": 2,
+  "box": true,
+  "box_exhaust": false,
+  "arm": "box-model",
+  "box_version": 20,
+  "form_version": 15,
+  "primitives_version": 13,
+  "parser": "model",
+  "parser_model": "deepseek/deepseek-v4-flash",
+  "parser_temperature": 0,
+  "prompt_version": 4,
+  "normalise_version": 5,
+  "parse_charged_usd": 0.000218,
+  "parse_charges_unknown": 0,
+  "parse_tokens": {
+    "prompt": 5189,
+    "completion": 409,
+    "total": 5598,
+    "calls": 1
+  },
+  "parse_tokens_unknown": 0,
+  "reading": "own",
+  "page_reader": "rendered",
+  "rate_plan": "bound",
+  "provider_routing": {
+    "agent": {
+      "order": [
+        "gmicloud",
+        "deepinfra",
+        "streamlake"
+      ],
+      "allow_fallbacks": false,
+      "quantizations": [
+        "fp8"
+      ]
+    },
+    "parser": {
+      "order": [
+        "gmicloud",
+        "deepinfra",
+        "streamlake"
+      ],
+      "allow_fallbacks": false,
+      "quantizations": [
+        "fp8"
+      ]
+    }
+  },
+  "browser_tool": "0.0.83",
+  "browser_origins": "http://localhost:7770",
+  "browser_flags": "--block-service-workers --isolated",
+  "scorer_version": 10,
+  "rules_version": null,
+  "model": "deepseek/deepseek-v4-flash",
+  "scaffold": "openjiuwen",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "agent_core_commit": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
+  "agent_core_patch": "e455d3eba23bc37528505e59e4d13ed265fff67e",
+  "tasks_file": "tasks_tee_dev.json",
+  "draw": "Thurlby:0bd27a8a24",
+  "instance": {
+    "market": "tee",
+    "design": "B",
+    "listings": 45,
+    "page_size": 36,
+    "pages": 2,
+    "first_screen": 4,
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tee": {
+      "target_option": "M",
+      "listings": 45,
+      "winner_index": 26,
+      "cheapest_card_index": 39,
+      "listings_with_target": 38,
+      "listings_without_target": 7,
+      "listings_target_buyable": 23,
+      "listings_target_sold_out": 15,
+      "cheapest_listed": {
+        "sku": "IGR-TDV-25",
+        "seller": "Everleigh Garment Works",
+        "price": 12.41
+      },
+      "cheapest_sold_out": {
+        "sku": "IGR-TDV-25",
+        "seller": "Everleigh Garment Works",
+        "price": 12.41
+      },
+      "sold_out_trap": true,
+      "winner": {
+        "sku": "IGR-TDV-26",
+        "seller": "Thirsk Textile Company",
+        "price": 14.87
+      },
+      "runner_up_price": 16.77,
+      "winning_margin": 1.9,
+      "cheapest_card": {
+        "sku": "IGR-TDV-39",
+        "seller": "Quarles Garment Works",
+        "from_price": 11.41
+      },
+      "card_probe_wrong": true,
+      "cheapest_without_target": {
+        "sku": "IGR-TDV-39",
+        "seller": "Quarles Garment Works",
+        "from_price": 11.41
+      },
+      "absent_trap": true,
+      "largest_size": "XXL",
+      "largest_size_winner": {
+        "sku": "IGR-TDV-11",
+        "seller": "Crowhurst Garments",
+        "price": 11.62
+      },
+      "crossover": true,
+      "oracle_min_opens": 8,
+      "prunable_by_bound": 37,
+      "exhaustive_opens": 45,
+      "bound_strength": 0.822,
+      "from_price_range": [
+        11.41,
+        41.26
+      ],
+      "target_price_range": [
+        14.87,
+        42.87
+      ]
+    },
+    "xs": {
+      "target_option": "XS",
+      "listings": 45,
+      "listings_with_target": 35,
+      "listings_without_target": 10,
+      "listings_target_buyable": 23,
+      "listings_target_sold_out": 12,
+      "winner": {
+        "sku": "IGR-TDV-41",
+        "seller": "Oakhurst Textile Company",
+        "price": 14.34
+      },
+      "runner_up_price": 16.49,
+      "winning_margin": 2.15,
+      "cheapest_sold_out": {
+        "sku": "IGR-TDV-39",
+        "seller": "Quarles Garment Works",
+        "price": 10.11
+      },
+      "sold_out_trap": true,
+      "answer_on_a_card": false,
+      "oracle_min_opens": 7,
+      "prunable_by_bound": 38,
+      "target_price_range": [
+        14.34,
+        42.37
+      ]
+    },
+    "labels": {
+      "promo": [
+        {
+          "sku": "IGR-TDV-17",
+          "seller": "Marlow Uniform Supply",
+          "label": "XS - Promo $12.00",
+          "label_price": 12.0,
+          "price": 16.49,
+          "buyable": true
+        },
+        {
+          "sku": "IGR-TDV-45",
+          "seller": "Brockwell Textile Company",
+          "label": "XS - Promo $13.26",
+          "label_price": 13.26,
+          "price": 17.75,
+          "buyable": false
+        },
+        {
+          "sku": "IGR-TDV-29",
+          "seller": "Rookwood Clothing Co",
+          "label": "XS - Promo $16.01",
+          "label_price": 16.01,
+          "price": 21.27,
+          "buyable": false
+        },
+        {
+          "sku": "IGR-TDV-23",
+          "seller": "Dunmore Threads",
+          "label": "XS - Promo $16.50",
+          "label_price": 16.5,
+          "price": 19.04,
+          "buyable": true
+        }
+      ],
+      "scarcity": [
+        {
+          "sku": "IGR-TDV-06",
+          "seller": "Westmere Clothing Co",
+          "label": "M - Only 3 left!",
+          "qty": 18
+        },
+        {
+          "sku": "IGR-TDV-17",
+          "seller": "Marlow Uniform Supply",
+          "label": "M - Only 3 left!",
+          "qty": 51
+        },
+        {
+          "sku": "IGR-TDV-33",
+          "seller": "Whitlock Garment Works",
+          "label": "M - Only 2 left!",
+          "qty": 78
+        },
+        {
+          "sku": "IGR-TDV-40",
+          "seller": "Dalston Garment Works",
+          "label": "M - Only 1 left!",
+          "qty": 101
+        }
+      ],
+      "lowest_promo": {
+        "sku": "IGR-TDV-17",
+        "seller": "Marlow Uniform Supply",
+        "label": "XS - Promo $12.00",
+        "label_price": 12.0,
+        "price": 16.49,
+        "buyable": true
+      }
+    },
+    "promo_check": {
+      "sku": "IGR-TDV-23",
+      "seller": "Dunmore Threads",
+      "promo": 16.5,
+      "price": 19.04,
+      "card": 15.23
+    },
+    "exists_limit": 15,
+    "predicted_order": [
+      "IGR-TDV-14",
+      "IGR-TDV-43",
+      "IGR-TDV-11",
+      "IGR-TDV-02",
+      "IGR-TDV-25",
+      "IGR-TDV-38",
+      "IGR-TDV-41",
+      "IGR-TDV-31",
+      "IGR-TDV-35",
+      "IGR-TDV-24",
+      "IGR-TDV-26",
+      "IGR-TDV-05",
+      "IGR-TDV-09",
+      "IGR-TDV-15",
+      "IGR-TDV-21",
+      "IGR-TDV-37",
+      "IGR-TDV-04",
+      "IGR-TDV-07",
+      "IGR-TDV-12",
+      "IGR-TDV-16",
+      "IGR-TDV-36",
+      "IGR-TDV-44",
+      "IGR-TDV-01",
+      "IGR-TDV-18",
+      "IGR-TDV-23",
+      "IGR-TDV-20",
+      "IGR-TDV-22",
+      "IGR-TDV-27",
+      "IGR-TDV-39",
+      "IGR-TDV-33",
+      "IGR-TDV-32",
+      "IGR-TDV-10",
+      "IGR-TDV-42",
+      "IGR-TDV-40",
+      "IGR-TDV-08",
+      "IGR-TDV-13",
+      "IGR-TDV-19",
+      "IGR-TDV-17",
+      "IGR-TDV-45",
+      "IGR-TDV-30",
+      "IGR-TDV-29",
+      "IGR-TDV-34",
+      "IGR-TDV-03",
+      "IGR-TDV-28",
+      "IGR-TDV-06"
+    ],
+    "predicted_cards": {
+      "tee-target-price": [
+        11
+      ],
+      "tee-cheapest-target": [
+        11
+      ],
+      "tee-exists-under": [
+        11
+      ],
+      "tee-top-3": [
+        11,
+        7,
+        38
+      ],
+      "tee-xs-price": [
+        7
+      ]
+    }
+  },
+  "summary": {
+    "by_task": {
+      "tee-count-buyable": {
+        "gated": true,
+        "verdicts": {
+          "wrong": 1
+        },
+        "actions": [
+          46
+        ],
+        "tool_calls": [
+          94
+        ],
+        "cost": [
+          0.124238
+        ],
+        "mean_actions": 46.0,
+        "mean_tool_calls": 94.0,
+        "total_cost": 0.1242
+      }
+    },
+    "overall": {
+      "wrong": 1
+    },
+    "total_cost": 0.1242,
+    "cost_unknown_runs": 0,
+    "box": {
+      "asked": 0,
+      "refused": 0,
+      "bypassed": 0,
+      "fallback": 0
+    }
+  },
+  "rows": [
+    {
+      "task": "tee-count-buyable",
+      "family": "aplus",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "wrong",
+      "why": "counted 45, expected 23",
+      "answer": "I opened all 45 listings from the search results (2 pages, 45 items) and checked the Size option menu on each product page. Determined availability by whether the M option can actually be chosen (enabled in the option menu) \u2014 labels like 'Only 3 left!' or 'Only 2 left!' are stock/promo text on the o",
+      "tool_calls": 94,
+      "actions": 46,
+      "observations": 48,
+      "cost_usd": 0.124238,
+      "elapsed_s": 400.3,
+      "error": null,
+      "log": "tee-count-buyable-1.log",
+      "strategy": "survey",
+      "box": {
+        "box_version": 20,
+        "form_version": 15,
+        "primitives_version": 13,
+        "kind": "survey",
+        "page": {
+          "url": "http://localhost:7770/catalogsearch/result/?q=Thurlby",
+          "count": 45,
+          "total": 45,
+          "next_page": false,
+          "pages": [
+            "http://localhost:7770/catalogsearch/result/?q=Thurlby",
+            "http://localhost:7770/catalogsearch/result/index/?p=2&q=Thurlby"
+          ],
+          "reader": "rendered",
+          "listings": [
+            {
+              "seller": "Garrick Apparel",
+              "advertised": 23.71,
+              "url": "http://localhost:7770/igr-tdv-14.html",
+              "title": "Thurlby Heavyweight Cotton Tee - Garrick Apparel"
+            },
+            {
+              "seller": "Redhill Outfitters",
+              "advertised": 13.85,
+              "url": "http://localhost:7770/igr-tdv-43.html",
+              "title": "Thurlby Heavyweight Cotton Tee - Redhill Outfitters"
+            },
+            {
+              "seller": "Crowhurst Garments",
+              "advertised": 11.62,
+              "url": "http://localhost:7770/igr-tdv-11.html",
+              "title": "Thurlby Heavyweight Cotton Tee - Crowhurst Garments"
+            },
+            {
+              "seller": "Bexhill Garments",
+              "advertised": 32.88,
+              "url": "http://localhost:7770/igr-tdv-02.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Bexhill Garments"
+            },
+            {
+              "seller": "Everleigh Garment Works",
+              "advertised": 12.93,
+              "url": "http://localhost:7770/igr-tdv-25.html",
+              "title": "Thurlby Heavyweight Cotton Tee - Everleigh Garment Works"
+            },
+            {
+              "seller": "Pentland Garments",
+              "advertised": 24.44,
+              "url": "http://localhost:7770/igr-tdv-38.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Pentland Garments"
+            },
+            {
+              "seller": "Oakhurst Textile Company",
+              "advertised": 14.11,
+              "url": "http://localhost:7770/igr-tdv-41.html",
+              "title": "Thurlby Heavyweight Cotton Tee - Oakhurst Textile Company"
+            },
+            {
+              "seller": "Dovercourt Outfitters",
+              "advertised": 19.5,
+              "url": "http://localhost:7770/igr-tdv-31.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Dovercourt Outfitters"
+            },
+            {
+              "seller": "Fairhaven Outfitters",
+              "advertised": 32.93,
+              "url": "http://localhost:7770/igr-tdv-35.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Fairhaven Outfitters"
+            },
+            {
+              "seller": "Kettering Clothing Co",
+              "advertised": 30.39,
+              "url": "http://localhost:7770/igr-tdv-24.html",
+              "title": "Thurlby Heavyweight Cotton Tee - Kettering Clothing Co"
+            },
+            {
+              "seller": "Thirsk Textile Company",
+              "advertised": 11.73,
+              "url": "http://localhost:7770/igr-tdv-26.html",
+              "title": "Thurlby Heavyweight Cotton Tee - Thirsk Textile Company"
+            },
+            {
+              "seller": "Ingleton Threads",
+              "advertised": 20.03,
+              "url": "http://localhost:7770/igr-tdv-05.html",
+              "title": "Thurlby Heavyweight Cotton Crew Neck Tee - Ingleton Threads"
+            },
+            {
+              "seller": "Pembroke Apparel",
+              "advertised": 22.47,
+              "url": "http://localhost:7770/igr-tdv-09.html",
+              "title": "Thurlby Heavyweight Cotton Crew Neck Tee - Pembroke Apparel"
+            },
+            {
+              "seller": "Copperfield Textile Company",
+              "advertised": 30.19,
+              "url": "http://localhost:7770/igr-tdv-15.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Copperfield Textile Company"
+            },
+            {
+              "seller": "Yarrow Threads",
+              "advertised": 21.9,
+              "url": "http://localhost:7770/igr-tdv-21.html",
+              "title": "Thurlby Heavyweight Cotton Crew Neck Tee - Yarrow Threads"
+            },
+            {
+              "seller": "Larkspur Textile Company",
+              "advertised": 35.45,
+              "url": "http://localhost:7770/igr-tdv-37.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Larkspur Textile Company"
+            },
+            {
+              "seller": "Stonebridge Textiles Official Store",
+              "advertised": 28.45,
+              "url": "http://localhost:7770/igr-tdv-04.html",
+              "title": "Thurlby Heavyweight Cotton Tee - Stonebridge Textiles Official Store"
+            },
+            {
+              "seller": "Verity Textiles Official Store",
+              "advertised": 26.12,
+              "url": "http://localhost:7770/igr-tdv-07.html",
+              "title": "Thurlby Heavyweight Cotton Tee - Verity Textiles Official Store"
+            },
+            {
+              "seller": "Fordwich Textile Company",
+              "advertised": 21.29,
+              "url": "http://localhost:7770/igr-tdv-12.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Fordwich Textile Company"
+            },
+            {
+              "seller": "Abbotsley Clothing Co",
+              "advertised": 20.32,
+              "url": "http://localhost:7770/igr-tdv-16.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Abbotsley Clothing Co"
+            },
+            {
+              "seller": "Ambleside Uniform Supply",
+              "advertised": 31.24,
+              "url": "http://localhost:7770/igr-tdv-36.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Ambleside Uniform Supply"
+            },
+            {
+              "seller": "Kelsall Clothing Co",
+              "advertised": 39.34,
+              "url": "http://localhost:7770/igr-tdv-44.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Kelsall Clothing Co"
+            },
+            {
+              "seller": "Bramley Outfitters",
+              "advertised": 17.95,
+              "url": "http://localhost:7770/igr-tdv-01.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Bramley Outfitters"
+            },
+            {
+              "seller": "Gisburn Apparel",
+              "advertised": 27.42,
+              "url": "http://localhost:7770/igr-tdv-18.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Gisburn Apparel"
+            },
+            {
+              "seller": "Dunmore Threads",
+              "advertised": 15.23,
+              "url": "http://localhost:7770/igr-tdv-23.html",
+              "title": "Thurlby Heavyweight Cotton Crew Neck Tee - Dunmore Threads"
+            },
+            {
+              "seller": "Jarrow Threads",
+              "advertised": 13.27,
+              "url": "http://localhost:7770/igr-tdv-20.html",
+              "title": "Thurlby Heavyweight Cotton Crew Neck Tee - Jarrow Threads"
+            },
+            {
+              "seller": "Alderney Uniform Supply",
+              "advertised": 36.55,
+              "url": "http://localhost:7770/igr-tdv-22.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Alderney Uniform Supply"
+            },
+            {
+              "seller": "Chandler Apparel",
+              "advertised": 15.66,
+              "url": "http://localhost:7770/igr-tdv-27.html",
+              "title": "Thurlby Heavyweight Cotton Crew Neck Tee - Chandler Apparel"
+            },
+            {
+              "seller": "Quarles Garment Works",
+              "advertised": 11.41,
+              "url": "http://localhost:7770/igr-tdv-39.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Quarles Garment Works"
+            },
+            {
+              "seller": "Whitlock Garment Works",
+              "advertised": 32.06,
+              "url": "http://localhost:7770/igr-tdv-33.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Whitlock Garment Works"
+            },
+            {
+              "seller": "Northwick Textile Company",
+              "advertised": 28.07,
+              "url": "http://localhost:7770/igr-tdv-32.html",
+              "title": "Thurlby Heavyweight Cotton Crew Neck Tee - Northwick Textile Company"
+            },
+            {
+              "seller": "Elstead Textiles Official Store",
+              "advertised": 32.53,
+              "url": "http://localhost:7770/igr-tdv-10.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Elstead Textiles Official Store"
+            },
+            {
+              "seller": "Haldane Garment Works",
+              "advertised": 37.54,
+              "url": "http://localhost:7770/igr-tdv-42.html",
+              "title": "Thurlby Heavyweight Cotton Crew Neck Tee - Haldane Garment Works"
+            },
+            {
+              "seller": "Dalston Garment Works",
+              "advertised": 31.12,
+              "url": "http://localhost:7770/igr-tdv-40.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Dalston Garment Works"
+            },
+            {
+              "seller": "Foxcombe Garment Works",
+              "advertised": 41.26,
+              "url": "http://localhost:7770/igr-tdv-08.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Foxcombe Garment Works"
+            },
+            {
+              "seller": "Lymington Uniform Supply",
+              "advertised": 16.7,
+              "url": "http://localhost:7770/igr-tdv-13.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Lymington Uniform Supply"
+            },
+            {
+              "seller": "Ashgrove Outfitters",
+              "advertised": 14.4,
+              "url": "http://localhost:7770/igr-tdv-19.html",
+              "title": "Thurlby Heavyweight Cotton Crew Neck Tee - Ashgrove Outfitters"
+            },
+            {
+              "seller": "Marlow Uniform Supply",
+              "advertised": 16.49,
+              "url": "http://localhost:7770/igr-tdv-17.html",
+              "title": "Thurlby Heavyweight Cotton Crew Neck Tee - Marlow Uniform Supply"
+            },
+            {
+              "seller": "Brockwell Textile Company",
+              "advertised": 16.65,
+              "url": "http://localhost:7770/igr-tdv-45.html",
+              "title": "Thurlby Heavyweight Cotton Crew Neck Tee - Brockwell Textile Company"
+            },
+            {
+              "seller": "Oakfield Workwear Supply Co",
+              "advertised": 28.78,
+              "url": "http://localhost:7770/igr-tdv-30.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Oakfield Workwear Supply Co"
+            },
+            {
+              "seller": "Rookwood Clothing Co",
+              "advertised": 23.05,
+              "url": "http://localhost:7770/igr-tdv-29.html",
+              "title": "Thurlby Heavyweight Cotton Crew Neck Tee - Rookwood Clothing Co"
+            },
+            {
+              "seller": "Marchmont Workwear Supply Co",
+              "advertised": 28.92,
+              "url": "http://localhost:7770/igr-tdv-34.html",
+              "title": "Thurlby Heavyweight Cotton Crew Neck Tee - Marchmont Workwear Supply Co"
+            },
+            {
+              "seller": "Carnforth Apparel Official Store",
+              "advertised": 26.87,
+              "url": "http://localhost:7770/igr-tdv-03.html",
+              "title": "Thurlby Heavyweight Cotton Tee, Unisex - Carnforth Apparel Official Store"
+            },
+            {
+              "seller": "Hillside Clothing Company Ltd",
+              "advertised": 34.28,
+              "url": "http://localhost:7770/igr-tdv-28.html",
+              "title": "Thurlby Heavyweight Cotton Crew Neck Tee - Hillside Clothing Company Ltd"
+            },
+            {
+              "seller": "Westmere Clothing Co",
+              "advertised": 20.69,
+              "url": "http://localhost:7770/igr-tdv-06.html",
+              "title": "Thurlby Heavyweight Cotton Crew Neck Tee - Westmere Clothing Co"
+            }
+          ]
+        },
+        "asked": false,
+        "ask": null,
+        "reading": null,
+        "reading_by": null,
+        "query": "Go to http://localhost:7770/catalogsearch/result/?q=Thurlby . How many of the Thurlby tee listings have size M in stock and available to buy right now?\n\nThe search results list 45 listings on 2 pages; there is no further page.\nListings by advertised price, read from the results pages:\n1. Quarles Garment Works, advertised $11.41, http://localhost:7770/igr-tdv-39.html\n2. Crowhurst Garments, advertised $11.62, http://localhost:7770/igr-tdv-11.html\n3. Thirsk Textile Company, advertised $11.73, http://localhost:7770/igr-tdv-26.html\n4. Everleigh Garment Works, advertised $12.93, http://localhost:7770/igr-tdv-25.html\n5. Jarrow Threads, advertised $13.27, http://localhost:7770/igr-tdv-20.html\n6. Redhill Outfitters, advertised $13.85, http://localhost:7770/igr-tdv-43.html\n7. Oakhurst Textile Company, advertised $14.11, http://localhost:7770/igr-tdv-41.html\n8. Ashgrove Outfitters, advertised $14.40, http://localhost:7770/igr-tdv-19.html\n9. Dunmore Threads, advertised $15.23, http://localhost:7770/igr-tdv-23.html\n10. Chandler Apparel, advertised $15.66, http://localhost:7770/igr-tdv-27.html\n11. Marlow Uniform Supply, advertised $16.49, http://localhost:7770/igr-tdv-17.html\n12. Brockwell Textile Company, advertised $16.65, http://localhost:7770/igr-tdv-45.html\n13. Lymington Uniform Supply, advertised $16.70, http://localhost:7770/igr-tdv-13.html\n14. Bramley Outfitters, advertised $17.95, http://localhost:7770/igr-tdv-01.html\n15. Dovercourt Outfitters, advertised $19.50, http://localhost:7770/igr-tdv-31.html\n16. Ingleton Threads, advertised $20.03, http://localhost:7770/igr-tdv-05.html\n17. Abbotsley Clothing Co, advertised $20.32, http://localhost:7770/igr-tdv-16.html\n18. Westmere Clothing Co, advertised $20.69, http://localhost:7770/igr-tdv-06.html\n19. Fordwich Textile Company, advertised $21.29, http://localhost:7770/igr-tdv-12.html\n20. Yarrow Threads, advertised $21.90, http://localhost:7770/igr-tdv-21.html\n21. Pembroke Apparel, advertised $22.47, http://localhost:7770/igr-tdv-09.html\n22. Rookwood Clothing Co, advertised $23.05, http://localhost:7770/igr-tdv-29.html\n23. Garrick Apparel, advertised $23.71, http://localhost:7770/igr-tdv-14.html\n24. Pentland Garments, advertised $24.44, http://localhost:7770/igr-tdv-38.html\n25. Verity Textiles Official Store, advertised $26.12, http://localhost:7770/igr-tdv-07.html\n26. Carnforth Apparel Official Store, advertised $26.87, http://localhost:7770/igr-tdv-03.html\n27. Gisburn Apparel, advertised $27.42, http://localhost:7770/igr-tdv-18.html\n28. Northwick Textile Company, advertised $28.07, http://localhost:7770/igr-tdv-32.html\n29. Stonebridge Textiles Official Store, advertised $28.45, http://localhost:7770/igr-tdv-04.html\n30. Oakfield Workwear Supply Co, advertised $28.78, http://localhost:7770/igr-tdv-30.html\n31. Marchmont Workwear Supply Co, advertised $28.92, http://localhost:7770/igr-tdv-34.html\n32. Copperfield Textile Company, advertised $30.19, http://localhost:7770/igr-tdv-15.html\n33. Kettering Clothing Co, advertised $30.39, http://localhost:7770/igr-tdv-24.html\n34. Dalston Garment Works, advertised $31.12, http://localhost:7770/igr-tdv-40.html\n35. Ambleside Uniform Supply, advertised $31.24, http://localhost:7770/igr-tdv-36.html\n36. Whitlock Garment Works, advertised $32.06, http://localhost:7770/igr-tdv-33.html\n37. Elstead Textiles Official Store, advertised $32.53, http://localhost:7770/igr-tdv-10.html\n38. Bexhill Garments, advertised $32.88, http://localhost:7770/igr-tdv-02.html\n39. Fairhaven Outfitters, advertised $32.93, http://localhost:7770/igr-tdv-35.html\n40. Hillside Clothing Company Ltd, advertised $34.28, http://localhost:7770/igr-tdv-28.html\n41. Larkspur Textile Company, advertised $35.45, http://localhost:7770/igr-tdv-37.html\n42. Alderney Uniform Supply, advertised $36.55, http://localhost:7770/igr-tdv-22.html\n43. Haldane Garment Works, advertised $37.54, http://localhost:7770/igr-tdv-42.html\n44. Kelsall Clothing Co, advertised $39.34, http://localhost:7770/igr-tdv-44.html\n45. Foxcombe Garment Works, advertised $41.26, http://localhost:7770/igr-tdv-08.html\n\nOpen every listing in the search results and check the relevant option on each before answering. Whether an option can be chosen is shown in the option menu itself, so there is no need to choose it to find that out. Say how many you opened.\nA size's label in the menu can carry promotional or stock text; the price is the one shown after the size is chosen, and a label's claim is not a checked fact.",
+        "form": {
+          "form_version": 15,
+          "kind": "survey",
+          "quantifier": "count",
+          "objective": "availability",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "M"
+            },
+            {
+              "attribute": "availability",
+              "op": "=",
+              "value": "buyable"
+            }
+          ],
+          "population": "results",
+          "k": null,
+          "reading": null,
+          "unknowns": [],
+          "source": "model",
+          "evidence": {
+            "quantifier": "How many",
+            "objective": "have size M in stock and available to buy right now",
+            "filters": "size M in stock and available to buy right now",
+            "population": "the results page URL"
+          },
+          "negated": false,
+          "ambiguities": [],
+          "prompt_version": 4
+        },
+        "refuse": null,
+        "bypassed": false,
+        "bypass_reason": null,
+        "fallback": false,
+        "plan": {
+          "primitives_version": 13,
+          "primitive": "exhaust",
+          "kind": "survey",
+          "stop_rule": "when every enumerated listing has been opened",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "M"
+            },
+            {
+              "attribute": "availability",
+              "op": "=",
+              "value": "buyable"
+            }
+          ],
+          "candidates": [
+            {
+              "seller": "Garrick Apparel",
+              "url": "http://localhost:7770/igr-tdv-14.html"
+            },
+            {
+              "seller": "Redhill Outfitters",
+              "url": "http://localhost:7770/igr-tdv-43.html"
+            },
+            {
+              "seller": "Crowhurst Garments",
+              "url": "http://localhost:7770/igr-tdv-11.html"
+            },
+            {
+              "seller": "Bexhill Garments",
+              "url": "http://localhost:7770/igr-tdv-02.html"
+            },
+            {
+              "seller": "Everleigh Garment Works",
+              "url": "http://localhost:7770/igr-tdv-25.html"
+            },
+            {
+              "seller": "Pentland Garments",
+              "url": "http://localhost:7770/igr-tdv-38.html"
+            },
+            {
+              "seller": "Oakhurst Textile Company",
+              "url": "http://localhost:7770/igr-tdv-41.html"
+            },
+            {
+              "seller": "Dovercourt Outfitters",
+              "url": "http://localhost:7770/igr-tdv-31.html"
+            },
+            {
+              "seller": "Fairhaven Outfitters",
+              "url": "http://localhost:7770/igr-tdv-35.html"
+            },
+            {
+              "seller": "Kettering Clothing Co",
+              "url": "http://localhost:7770/igr-tdv-24.html"
+            },
+            {
+              "seller": "Thirsk Textile Company",
+              "url": "http://localhost:7770/igr-tdv-26.html"
+            },
+            {
+              "seller": "Ingleton Threads",
+              "url": "http://localhost:7770/igr-tdv-05.html"
+            },
+            {
+              "seller": "Pembroke Apparel",
+              "url": "http://localhost:7770/igr-tdv-09.html"
+            },
+            {
+              "seller": "Copperfield Textile Company",
+              "url": "http://localhost:7770/igr-tdv-15.html"
+            },
+            {
+              "seller": "Yarrow Threads",
+              "url": "http://localhost:7770/igr-tdv-21.html"
+            },
+            {
+              "seller": "Larkspur Textile Company",
+              "url": "http://localhost:7770/igr-tdv-37.html"
+            },
+            {
+              "seller": "Stonebridge Textiles Official Store",
+              "url": "http://localhost:7770/igr-tdv-04.html"
+            },
+            {
+              "seller": "Verity Textiles Official Store",
+              "url": "http://localhost:7770/igr-tdv-07.html"
+            },
+            {
+              "seller": "Fordwich Textile Company",
+              "url": "http://localhost:7770/igr-tdv-12.html"
+            },
+            {
+              "seller": "Abbotsley Clothing Co",
+              "url": "http://localhost:7770/igr-tdv-16.html"
+            },
+            {
+              "seller": "Ambleside Uniform Supply",
+              "url": "http://localhost:7770/igr-tdv-36.html"
+            },
+            {
+              "seller": "Kelsall Clothing Co",
+              "url": "http://localhost:7770/igr-tdv-44.html"
+            },
+            {
+              "seller": "Bramley Outfitters",
+              "url": "http://localhost:7770/igr-tdv-01.html"
+            },
+            {
+              "seller": "Gisburn Apparel",
+              "url": "http://localhost:7770/igr-tdv-18.html"
+            },
+            {
+              "seller": "Dunmore Threads",
+              "url": "http://localhost:7770/igr-tdv-23.html"
+            },
+            {
+              "seller": "Jarrow Threads",
+              "url": "http://localhost:7770/igr-tdv-20.html"
+            },
+            {
+              "seller": "Alderney Uniform Supply",
+              "url": "http://localhost:7770/igr-tdv-22.html"
+            },
+            {
+              "seller": "Chandler Apparel",
+              "url": "http://localhost:7770/igr-tdv-27.html"
+            },
+            {
+              "seller": "Quarles Garment Works",
+              "url": "http://localhost:7770/igr-tdv-39.html"
+            },
+            {
+              "seller": "Whitlock Garment Works",
+              "url": "http://localhost:7770/igr-tdv-33.html"
+            },
+            {
+              "seller": "Northwick Textile Company",
+              "url": "http://localhost:7770/igr-tdv-32.html"
+            },
+            {
+              "seller": "Elstead Textiles Official Store",
+              "url": "http://localhost:7770/igr-tdv-10.html"
+            },
+            {
+              "seller": "Haldane Garment Works",
+              "url": "http://localhost:7770/igr-tdv-42.html"
+            },
+            {
+              "seller": "Dalston Garment Works",
+              "url": "http://localhost:7770/igr-tdv-40.html"
+            },
+            {
+              "seller": "Foxcombe Garment Works",
+              "url": "http://localhost:7770/igr-tdv-08.html"
+            },
+            {
+              "seller": "Lymington Uniform Supply",
+              "url": "http://localhost:7770/igr-tdv-13.html"
+            },
+            {
+              "seller": "Ashgrove Outfitters",
+              "url": "http://localhost:7770/igr-tdv-19.html"
+            },
+            {
+              "seller": "Marlow Uniform Supply",
+              "url": "http://localhost:7770/igr-tdv-17.html"
+            },
+            {
+              "seller": "Brockwell Textile Company",
+              "url": "http://localhost:7770/igr-tdv-45.html"
+            },
+            {
+              "seller": "Oakfield Workwear Supply Co",
+              "url": "http://localhost:7770/igr-tdv-30.html"
+            },
+            {
+              "seller": "Rookwood Clothing Co",
+              "url": "http://localhost:7770/igr-tdv-29.html"
+            },
+            {
+              "seller": "Marchmont Workwear Supply Co",
+              "url": "http://localhost:7770/igr-tdv-34.html"
+            },
+            {
+              "seller": "Carnforth Apparel Official Store",
+              "url": "http://localhost:7770/igr-tdv-03.html"
+            },
+            {
+              "seller": "Hillside Clothing Company Ltd",
+              "url": "http://localhost:7770/igr-tdv-28.html"
+            },
+            {
+              "seller": "Westmere Clothing Co",
+              "url": "http://localhost:7770/igr-tdv-06.html"
+            }
+          ],
+          "exhaust": false,
+          "rate_plan": "bound"
+        },
+        "exhaust": false,
+        "parse": {
+          "parser": "model",
+          "used": "model",
+          "fallback_reason": null,
+          "declined": false,
+          "prompt_version": 4,
+          "normalise_version": 5,
+          "rules_form": {
+            "form_version": 15,
+            "kind": "survey",
+            "quantifier": "count",
+            "objective": "availability",
+            "filters": [
+              {
+                "attribute": "size",
+                "op": "=",
+                "value": "M"
+              },
+              {
+                "attribute": "availability",
+                "op": "=",
+                "value": "buyable"
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [],
+            "source": "rules",
+            "evidence": {
+              "population": "the results URL",
+              "filter:size": "size M",
+              "filter:availability": "in stock",
+              "objective": "a variant or buying is asked about",
+              "quantifier": "How many"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": null
+          },
+          "model_form": {
+            "form_version": 15,
+            "kind": "survey",
+            "quantifier": "count",
+            "objective": "availability",
+            "filters": [
+              {
+                "attribute": "size",
+                "op": "=",
+                "value": "M"
+              },
+              {
+                "attribute": "availability",
+                "op": "=",
+                "value": "buyable"
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [],
+            "source": "model",
+            "evidence": {
+              "quantifier": "How many",
+              "objective": "have size M in stock and available to buy right now",
+              "filters": "size M in stock and available to buy right now",
+              "population": "the results page URL"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": 4
+          },
+          "model_raw": {
+            "form_version": 15,
+            "kind": "survey",
+            "quantifier": "count",
+            "objective": "availability",
+            "filters": [
+              {
+                "attribute": "size",
+                "op": "=",
+                "value": "M"
+              },
+              {
+                "attribute": "availability",
+                "op": "=",
+                "value": "buyable"
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [],
+            "source": "model",
+            "evidence": {
+              "quantifier": "How many",
+              "objective": "have size M in stock and available to buy right now",
+              "filters": "size M in stock and available to buy right now",
+              "population": "the results page URL"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": 4
+          },
+          "changes": [],
+          "reply": "{\"quantifier\": \"count\", \"objective\": \"availability\", \"filters\": [{\"attribute\": \"size\", \"op\": \"=\", \"value\": \"M\"}, {\"attribute\": \"availability\", \"op\": \"=\", \"value\": \"buyable\"}], \"population\": \"results\", \"k\": null, \"negated\": false, \"reading\": null, \"unknowns\": [], \"ambiguities\": [], \"evidence\": {\"quantifier\": \"How many\", \"objective\": \"have size M in stock and available to buy right now\", \"filters\": \"size M in stock and available to buy right now\", \"population\": \"the results page URL\"}}"
+        },
+        "scope": {
+          "product": null,
+          "products": [
+            "tee"
+          ],
+          "applied": false,
+          "kept": null,
+          "urls": [],
+          "reason": "every listing's title names the same product, the tee"
+        },
+        "rate_plan": "bound",
+        "ask_reason": null,
+        "clash": null,
+        "clash_settled": false
+      },
+      "reading": null,
+      "reading_by": null,
+      "parse_cost_usd": 0.000218,
+      "parse_tokens": {
+        "prompt": 5189,
+        "completion": 409,
+        "total": 5598,
+        "calls": 1
+      },
+      "parse_provider": "GMICloud",
+      "providers": {
+        "GMICloud": 95
+      }
+    }
+  ]
+}

@@ -1,0 +1,204 @@
+{
+  "ran_at": "2026-10-24T23:20:14",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "provider_routing": {
+    "order": [
+      "gmicloud",
+      "deepinfra",
+      "streamlake"
+    ],
+    "allow_fallbacks": false,
+    "quantizations": [
+      "fp8"
+    ]
+  },
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . The Elmsworth Textiles Official Store listing of the Wexcombe tee says in its size menu that size XS is on promotion at $28.55. Is that what size XS costs on that listing? If not, what does it cost?",
+  "elapsed_s": 375.3,
+  "cost_usd": 0.023564,
+  "cost_note": null,
+  "spend_before_usd": 104.062619205,
+  "spend_after_usd": 104.088709747,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "c49117f59b1a45cc8d2543c9ea7d0b94",
+    "final": "No. The size menu on the Elmsworth Textiles Official Store listing (Wexcombe Midweight Jersey Tee, Short Sleeve, SKU IGR-TCL-19) shows the option label 'XS - Promo $28.55', but when XS is actually selected, the listing displays a price of $32.95 (price box reads 'As low as $32.95', final price element shows '$32.95'). There is no special/old price element, so size XS on this listing costs $32.95, not $28.55.",
+    "page": {
+      "url": "http://localhost:7770/igr-tcl-19.html",
+      "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Elmsworth Textiles Official Store"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 2,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 23,
+    "actions": 10,
+    "observations": 13,
+    "unclassified_tools": [],
+    "assistant_turns": 23,
+    "by_tool": {
+      "browser_select_option": 7,
+      "browser_evaluate": 7,
+      "browser_find": 4,
+      "browser_navigate": 3,
+      "browser_probe_cards": 1,
+      "browser_snapshot": 1
+    },
+    "selections": [
+      "XS",
+      "32",
+      "26",
+      "18",
+      "19",
+      "20",
+      "32"
+    ],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+      "http://localhost:7770/catalogsearch/result/index/?p=2&q=Wexcombe",
+      "http://localhost:7770/igr-tcl-19.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/index/?p=2&q=Wexcombe"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Elmsworth"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-19.html"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Size"
+      },
+      {
+        "tool": "browser_find",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "XS"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "32"
+      },
+      {
+        "tool": "browser_find",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "26"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "18"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "19"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "20"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "32"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_find",
+      "browser_navigate",
+      "browser_find",
+      "browser_find",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_find",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_evaluate"
+    ],
+    "tokens": {
+      "prompt": 748198,
+      "completion": 8003,
+      "total": 756201,
+      "calls": 32
+    },
+    "cost_reported_usd": 0.023564,
+    "providers": {
+      "GMICloud": 32
+    }
+  },
+  "spend_delta_usd": 0.026091,
+  "log": "tee-promo-check-1.log",
+  "shop": "gated",
+  "probe": "viewport",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "scaffold": "openjiuwen"
+}

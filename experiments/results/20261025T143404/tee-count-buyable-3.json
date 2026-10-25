@@ -1,0 +1,215 @@
+{
+  "ran_at": "2026-10-25T14:37:36",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "provider_routing": {
+    "order": [
+      "gmicloud",
+      "deepinfra",
+      "streamlake"
+    ],
+    "allow_fallbacks": false,
+    "quantizations": [
+      "fp8"
+    ]
+  },
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . How many of the Wexcombe tee listings have size M in stock and available to buy right now?",
+  "elapsed_s": 209.4,
+  "cost_usd": 0.040856,
+  "cost_note": null,
+  "spend_before_usd": 121.769876928,
+  "spend_after_usd": 121.809856641,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "1168cc1196e8457caa6aeaddc30e2156",
+    "final": "26 of the 45 Wexcombe tee listings have size M in stock and available to buy right now. (Total search results: 45 Wexcombe tee products across 2 pages. Verified per-product via each page's configurable spConfig 'salable' map, cross-checked against live rendered size dropdowns: 26 listings have size M selectable/in-stock \u2014 including 4 low-stock variants marked 'M - Only N left!' (Fenwick Threads, Haldane Apparel, Oakhurst Textile, Elmsworth Textiles) \u2014 while 11 listings have M present but out of stock (M option disabled) and 8 listings do not offer size M at all.)",
+    "page": {
+      "url": "http://localhost:7770/igr-tcl-36.html",
+      "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ambleside Garment Works"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 26,
+    "actions": 5,
+    "observations": 18,
+    "unclassified_tools": [
+      "mcp_playwright-official-browser_evaluate",
+      "mcp_playwright-official-browser_probe_cards"
+    ],
+    "assistant_turns": 26,
+    "by_tool": {
+      "browser_evaluate": 17,
+      "browser_navigate": 5,
+      "mcp_playwright-official-browser_evaluate": 2,
+      "mcp_playwright-official-browser_probe_cards": 1,
+      "browser_probe_cards": 1
+    },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+      "http://localhost:7770/igr-tcl-23.html",
+      "http://localhost:7770/igr-tcl-34.html",
+      "http://localhost:7770/igr-tcl-40.html",
+      "http://localhost:7770/igr-tcl-36.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+      },
+      {
+        "tool": "mcp_playwright-official-browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-23.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "mcp_playwright-official-browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "mcp_playwright-official-browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-34.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-40.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-36.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "mcp_playwright-official-browser_probe_cards",
+      "browser_probe_cards",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "mcp_playwright-official-browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "mcp_playwright-official-browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_evaluate"
+    ],
+    "tokens": {
+      "prompt": 1275162,
+      "completion": 20919,
+      "total": 1296081,
+      "calls": 27
+    },
+    "cost_reported_usd": 0.040856,
+    "providers": {
+      "GMICloud": 27
+    }
+  },
+  "spend_delta_usd": 0.03998,
+  "log": "tee-count-buyable-3.log",
+  "shop": "gated",
+  "probe": "viewport",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "scaffold": "openjiuwen"
+}

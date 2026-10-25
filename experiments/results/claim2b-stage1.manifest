@@ -1,0 +1,286 @@
+start 2026-10-24T22:08:22 usage 102.9550 cap 60.00
+conditions commit 574090834e2c98aa42de67bd0715a7001452911e browser Google Chrome 155.0.8059.85 
+probe|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/parse-probe-paraphrases_v1-20261024T221905.json|model=deepseek/deepseek-v4-flash routing check
+routing-check|ok
+search-terms|before|Wexcombe|Wexcombe,45,16,2026-10-24 14:08:31;|shipped round 1 --only tee-headline
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T221907|model=deepseek/deepseek-v4-flash arm=shipped round=1 --repeats 1 --repeat-start 1 --max-steps 300 --clock 1800 --only tee-headline
+search-terms|after|Wexcombe|Wexcombe,45,17,2026-10-24 14:19:23;|shipped round 1 --only tee-headline
+search-terms|before|Wexcombe|Wexcombe,45,17,2026-10-24 14:19:23;|shipped round 1 --only tee-target-price
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T221942|model=deepseek/deepseek-v4-flash arm=shipped round=1 --repeats 1 --repeat-start 1 --max-steps 300 --clock 1800 --only tee-target-price
+search-terms|after|Wexcombe|Wexcombe,45,18,2026-10-24 14:19:50;|shipped round 1 --only tee-target-price
+search-terms|before|Wexcombe|Wexcombe,45,18,2026-10-24 14:19:50;|shipped round 1 --only tee-cheapest-target
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T222144|model=deepseek/deepseek-v4-flash arm=shipped round=1 --repeats 1 --repeat-start 1 --max-steps 300 --clock 1800 --only tee-cheapest-target
+search-terms|after|Wexcombe|Wexcombe,45,19,2026-10-24 14:21:56;|shipped round 1 --only tee-cheapest-target
+search-terms|before|Wexcombe|Wexcombe,45,19,2026-10-24 14:21:56;|shipped round 1 --only tee-all-stocked
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T222328|model=deepseek/deepseek-v4-flash arm=shipped round=1 --repeats 1 --repeat-start 1 --max-steps 300 --clock 1800 --only tee-all-stocked
+search-terms|after|Wexcombe|Wexcombe,45,22,2026-10-24 14:24:50;|shipped round 1 --only tee-all-stocked
+search-terms|before|Wexcombe|Wexcombe,45,22,2026-10-24 14:24:50;|shipped round 1 --only tee-count-stocked
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T222532|model=deepseek/deepseek-v4-flash arm=shipped round=1 --repeats 1 --repeat-start 1 --max-steps 300 --clock 1800 --only tee-count-stocked
+search-terms|after|Wexcombe|Wexcombe,45,26,2026-10-24 14:29:03;|shipped round 1 --only tee-count-stocked
+search-terms|before|Wexcombe|Wexcombe,45,26,2026-10-24 14:29:03;|shipped round 1 --only tee-count-buyable
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T222917|model=deepseek/deepseek-v4-flash arm=shipped round=1 --repeats 1 --repeat-start 1 --max-steps 300 --clock 1800 --only tee-count-buyable
+search-terms|after|Wexcombe|Wexcombe,45,30,2026-10-24 14:41:19;|shipped round 1 --only tee-count-buyable
+search-terms|before|Wexcombe|Wexcombe,45,30,2026-10-24 14:41:19;|shipped round 1 --only tee-exists-under
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T224132|model=deepseek/deepseek-v4-flash arm=shipped round=1 --repeats 1 --repeat-start 1 --max-steps 300 --clock 1800 --only tee-exists-under
+search-terms|after|Wexcombe|Wexcombe,45,33,2026-10-24 14:42:56;|shipped round 1 --only tee-exists-under
+search-terms|before|Wexcombe|Wexcombe,45,33,2026-10-24 14:42:56;|shipped round 1 --only tee-top-3
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T224451|model=deepseek/deepseek-v4-flash arm=shipped round=1 --repeats 1 --repeat-start 1 --max-steps 300 --clock 1800 --only tee-top-3
+search-terms|after|Wexcombe|Wexcombe,45,37,2026-10-24 14:56:47;|shipped round 1 --only tee-top-3
+search-terms|before|Wexcombe|Wexcombe,45,37,2026-10-24 14:56:47;|shipped round 1 --only tee-xs-price
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T225752|model=deepseek/deepseek-v4-flash arm=shipped round=1 --repeats 1 --repeat-start 1 --max-steps 300 --clock 1800 --only tee-xs-price
+search-terms|after|Wexcombe|Wexcombe,45,39,2026-10-24 14:58:24;|shipped round 1 --only tee-xs-price
+search-terms|before|Wexcombe|Wexcombe,45,39,2026-10-24 14:58:24;|shipped round 1 --only tee-promo-check
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T231354|model=deepseek/deepseek-v4-flash arm=shipped round=1 --repeats 1 --repeat-start 1 --max-steps 300 --clock 1800 --only tee-promo-check
+search-terms|after|Wexcombe|Wexcombe,45,43,2026-10-24 15:17:28;|shipped round 1 --only tee-promo-check
+search-terms|before|Wexcombe|Wexcombe,45,43,2026-10-24 15:17:28;|shipped round 1 --only decline-delivery
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T232020|model=deepseek/deepseek-v4-flash arm=shipped round=1 --repeats 1 --repeat-start 1 --max-steps 300 --clock 1800 --only decline-delivery
+search-terms|after|Wexcombe|Wexcombe,45,58,2026-10-24 15:43:45;|shipped round 1 --only decline-delivery
+search-terms|before|Wexcombe|Wexcombe,45,58,2026-10-24 15:43:45;|shipped round 1 --only decline-fit
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T235035|model=deepseek/deepseek-v4-flash arm=shipped round=1 --repeats 1 --repeat-start 1 --max-steps 300 --clock 1800 --only decline-fit
+search-terms|after|Wexcombe|Wexcombe,45,67,2026-10-24 15:57:36;|shipped round 1 --only decline-fit
+search-terms|before|Wexcombe|Wexcombe,45,67,2026-10-24 15:57:36;|shipped round 1 --only decline-scarcity
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T235908|model=deepseek/deepseek-v4-flash arm=shipped round=1 --repeats 1 --repeat-start 1 --max-steps 300 --clock 1800 --only decline-scarcity
+search-terms|after|Wexcombe|Wexcombe,45,72,2026-10-24 16:10:23;|shipped round 1 --only decline-scarcity
+search-terms|before|Wexcombe|Wexcombe,45,72,2026-10-24 16:10:23;|open everything (product) round 1 --only tee-target-price
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T001345|model=deepseek/deepseek-v4-flash arm=open everything (product) round=1 --repeats 1 --repeat-start 1 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-target-price
+search-terms|after|Wexcombe|Wexcombe,45,74,2026-10-24 16:14:12;|open everything (product) round 1 --only tee-target-price
+search-terms|before|Wexcombe|Wexcombe,45,74,2026-10-24 16:14:12;|open everything (product) round 1 --only tee-cheapest-target
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T002719|model=deepseek/deepseek-v4-flash arm=open everything (product) round=1 --repeats 1 --repeat-start 1 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-cheapest-target
+search-terms|after|Wexcombe|Wexcombe,45,76,2026-10-24 16:27:47;|open everything (product) round 1 --only tee-cheapest-target
+search-terms|before|Wexcombe|Wexcombe,45,76,2026-10-24 16:27:47;|open everything (product) round 1 --only tee-all-stocked
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T003923|model=deepseek/deepseek-v4-flash arm=open everything (product) round=1 --repeats 1 --repeat-start 1 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-all-stocked
+search-terms|after|Wexcombe|Wexcombe,45,78,2026-10-24 16:39:51;|open everything (product) round 1 --only tee-all-stocked
+search-terms|before|Wexcombe|Wexcombe,45,78,2026-10-24 16:39:51;|open everything (product) round 1 --only tee-count-stocked
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T004908|model=deepseek/deepseek-v4-flash arm=open everything (product) round=1 --repeats 1 --repeat-start 1 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-count-stocked
+search-terms|after|Wexcombe|Wexcombe,45,80,2026-10-24 16:57:28;|open everything (product) round 1 --only tee-count-stocked
+search-terms|before|Wexcombe|Wexcombe,45,80,2026-10-24 16:57:28;|open everything (product) round 1 --only tee-count-buyable
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T010029|model=deepseek/deepseek-v4-flash arm=open everything (product) round=1 --repeats 1 --repeat-start 1 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-count-buyable
+search-terms|after|Wexcombe|Wexcombe,45,82,2026-10-24 17:00:59;|open everything (product) round 1 --only tee-count-buyable
+search-terms|before|Wexcombe|Wexcombe,45,82,2026-10-24 17:00:59;|open everything (product) round 1 --only tee-exists-under
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T011914|model=deepseek/deepseek-v4-flash arm=open everything (product) round=1 --repeats 1 --repeat-start 1 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-exists-under
+search-terms|after|Wexcombe|Wexcombe,45,84,2026-10-24 17:19:41;|open everything (product) round 1 --only tee-exists-under
+search-terms|before|Wexcombe|Wexcombe,45,84,2026-10-24 17:19:41;|open everything (product) round 1 --only tee-top-3
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T013520|model=deepseek/deepseek-v4-flash arm=open everything (product) round=1 --repeats 1 --repeat-start 1 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-top-3
+search-terms|after|Wexcombe|Wexcombe,45,86,2026-10-24 17:35:48;|open everything (product) round 1 --only tee-top-3
+search-terms|before|Wexcombe|Wexcombe,45,86,2026-10-24 17:35:48;|open everything (product) round 1 --only tee-xs-price
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T014805|model=deepseek/deepseek-v4-flash arm=open everything (product) round=1 --repeats 1 --repeat-start 1 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-xs-price
+search-terms|after|Wexcombe|Wexcombe,45,88,2026-10-24 17:49:55;|open everything (product) round 1 --only tee-xs-price
+search-terms|before|Wexcombe|Wexcombe,45,88,2026-10-24 17:49:55;|the block (rules) round 1 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T021029|model=deepseek/deepseek-v4-flash arm=the block (rules) round=1 --repeats 1 --repeat-start 1 --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+search-terms|after|Wexcombe|Wexcombe,45,101,2026-10-24 18:40:22;|the block (rules) round 1 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+search-terms|before|Wexcombe|Wexcombe,45,101,2026-10-24 18:40:22;|the block (rules) round 1 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T024102|model=deepseek/deepseek-v4-flash arm=the block (rules) round=1 --repeats 1 --repeat-start 1 --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+search-terms|after|Wexcombe|Wexcombe,45,105,2026-10-24 18:41:33;|the block (rules) round 1 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+search-terms|before|Wexcombe|Wexcombe,45,105,2026-10-24 18:41:33;|the block (rules) round 1 --only rw-01 rw-03 rw-04 rw-05 rw-07 rw-09 rw-10 rw-11
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T024337|model=deepseek/deepseek-v4-flash arm=the block (rules) round=1 --repeats 1 --repeat-start 1 --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800 --only rw-01 rw-03 rw-04 rw-05 rw-07 rw-09 rw-10 rw-11
+search-terms|after|Wexcombe|Wexcombe,45,120,2026-10-24 19:14:47;|the block (rules) round 1 --only rw-01 rw-03 rw-04 rw-05 rw-07 rw-09 rw-10 rw-11
+search-terms|before|Wexcombe|Wexcombe,45,120,2026-10-24 19:14:47;|the block (rules) round 1 --only rw-12 rw-13 rw-15 rw-16 rw-27 rw-28 rw-31 rw-32
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T032123|model=deepseek/deepseek-v4-flash arm=the block (rules) round=1 --repeats 1 --repeat-start 1 --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800 --only rw-12 rw-13 rw-15 rw-16 rw-27 rw-28 rw-31 rw-32
+search-terms|after|Wexcombe|Wexcombe,45,133,2026-10-24 20:08:25;|the block (rules) round 1 --only rw-12 rw-13 rw-15 rw-16 rw-27 rw-28 rw-31 rw-32
+search-terms|before|Wexcombe|Wexcombe,45,133,2026-10-24 20:08:25;|the block (rules) round 1 --only rw-33 rw-34 rw3-01 rw3-02 rw3-03 rw3-04 rw3-05 rw3-06
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T042352|model=deepseek/deepseek-v4-flash arm=the block (rules) round=1 --repeats 1 --repeat-start 1 --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800 --only rw-33 rw-34 rw3-01 rw3-02 rw3-03 rw3-04 rw3-05 rw3-06
+search-terms|after|Wexcombe|Wexcombe,45,147,2026-10-24 20:49:06;|the block (rules) round 1 --only rw-33 rw-34 rw3-01 rw3-02 rw3-03 rw3-04 rw3-05 rw3-06
+search-terms|before|Wexcombe|Wexcombe,45,147,2026-10-24 20:49:06;|the block (rules) round 1 --only rw3-07 rw3-08 rw3-09 rw3-10 rw3-11 rw3-12 rw3-13 rw3-14
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T045055|model=deepseek/deepseek-v4-flash arm=the block (rules) round=1 --repeats 1 --repeat-start 1 --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800 --only rw3-07 rw3-08 rw3-09 rw3-10 rw3-11 rw3-12 rw3-13 rw3-14
+search-terms|after|Wexcombe|Wexcombe,45,157,2026-10-24 21:41:17;|the block (rules) round 1 --only rw3-07 rw3-08 rw3-09 rw3-10 rw3-11 rw3-12 rw3-13 rw3-14
+search-terms|before|Wexcombe|Wexcombe,45,157,2026-10-24 21:41:17;|the block (rules) round 1 --only rw3-15 rw3-16 rw3-17 rw3-18 rw3-19 rw3-20 rw3-21 rw3-22
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T054933|model=deepseek/deepseek-v4-flash arm=the block (rules) round=1 --repeats 1 --repeat-start 1 --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800 --only rw3-15 rw3-16 rw3-17 rw3-18 rw3-19 rw3-20 rw3-21 rw3-22
+search-terms|after|Wexcombe|Wexcombe,45,163,2026-10-24 22:08:41;|the block (rules) round 1 --only rw3-15 rw3-16 rw3-17 rw3-18 rw3-19 rw3-20 rw3-21 rw3-22
+search-terms|before|Wexcombe|Wexcombe,45,163,2026-10-24 22:08:41;|the block (rules) round 1 --only rw3-23 rw3-24 rw3-25
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T061218|model=deepseek/deepseek-v4-flash arm=the block (rules) round=1 --repeats 1 --repeat-start 1 --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800 --only rw3-23 rw3-24 rw3-25
+search-terms|after|Wexcombe|Wexcombe,45,166,2026-10-24 22:12:26;|the block (rules) round 1 --only rw3-23 rw3-24 rw3-25
+search-terms|before|Wexcombe|Wexcombe,45,166,2026-10-24 22:12:26;|the block (model) round 1 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T062225|model=deepseek/deepseek-v4-flash arm=the block (model) round=1 --repeats 1 --repeat-start 1 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+search-terms|after|Wexcombe|Wexcombe,45,179,2026-10-24 22:45:33;|the block (model) round 1 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+search-terms|before|Wexcombe|Wexcombe,45,179,2026-10-24 22:45:33;|the block (model) round 1 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T064546|model=deepseek/deepseek-v4-flash arm=the block (model) round=1 --repeats 1 --repeat-start 1 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+search-terms|after|Wexcombe|Wexcombe,45,183,2026-10-24 22:46:17;|the block (model) round 1 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+search-terms|before|Wexcombe|Wexcombe,45,183,2026-10-24 22:46:17;|the block (model) round 1 --only rw-01 rw-03 rw-04 rw-05 rw-07 rw-09 rw-10 rw-11
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T064913|model=deepseek/deepseek-v4-flash arm=the block (model) round=1 --repeats 1 --repeat-start 1 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only rw-01 rw-03 rw-04 rw-05 rw-07 rw-09 rw-10 rw-11
+search-terms|after|Wexcombe|Wexcombe,45,197,2026-10-24 23:12:48;|the block (model) round 1 --only rw-01 rw-03 rw-04 rw-05 rw-07 rw-09 rw-10 rw-11
+search-terms|before|Wexcombe|Wexcombe,45,197,2026-10-24 23:12:48;|the block (model) round 1 --only rw-12 rw-13 rw-15 rw-16 rw-27 rw-28 rw-31 rw-32
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T072035|model=deepseek/deepseek-v4-flash arm=the block (model) round=1 --repeats 1 --repeat-start 1 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only rw-12 rw-13 rw-15 rw-16 rw-27 rw-28 rw-31 rw-32
+search-terms|after|Wexcombe|Wexcombe,45,208,2026-10-24 23:38:23;|the block (model) round 1 --only rw-12 rw-13 rw-15 rw-16 rw-27 rw-28 rw-31 rw-32
+search-terms|before|Wexcombe|Wexcombe,45,208,2026-10-24 23:38:23;|the block (model) round 1 --only rw-33 rw-34 rw3-01 rw3-02 rw3-03 rw3-04 rw3-05 rw3-06
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T073847|model=deepseek/deepseek-v4-flash arm=the block (model) round=1 --repeats 1 --repeat-start 1 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only rw-33 rw-34 rw3-01 rw3-02 rw3-03 rw3-04 rw3-05 rw3-06
+search-terms|after|Wexcombe|Wexcombe,45,220,2026-10-24 23:55:41;|the block (model) round 1 --only rw-33 rw-34 rw3-01 rw3-02 rw3-03 rw3-04 rw3-05 rw3-06
+search-terms|before|Wexcombe|Wexcombe,45,220,2026-10-24 23:55:41;|the block (model) round 1 --only rw3-07 rw3-08 rw3-09 rw3-10 rw3-11 rw3-12 rw3-13 rw3-14
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T075654|model=deepseek/deepseek-v4-flash arm=the block (model) round=1 --repeats 1 --repeat-start 1 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only rw3-07 rw3-08 rw3-09 rw3-10 rw3-11 rw3-12 rw3-13 rw3-14
+search-terms|after|Wexcombe|Wexcombe,45,231,2026-10-25 00:30:07;|the block (model) round 1 --only rw3-07 rw3-08 rw3-09 rw3-10 rw3-11 rw3-12 rw3-13 rw3-14
+search-terms|before|Wexcombe|Wexcombe,45,231,2026-10-25 00:30:07;|the block (model) round 1 --only rw3-15 rw3-16 rw3-17 rw3-18 rw3-19 rw3-20 rw3-21 rw3-22
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T083134|model=deepseek/deepseek-v4-flash arm=the block (model) round=1 --repeats 1 --repeat-start 1 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only rw3-15 rw3-16 rw3-17 rw3-18 rw3-19 rw3-20 rw3-21 rw3-22
+search-terms|after|Wexcombe|Wexcombe,45,242,2026-10-25 00:44:36;|the block (model) round 1 --only rw3-15 rw3-16 rw3-17 rw3-18 rw3-19 rw3-20 rw3-21 rw3-22
+search-terms|before|Wexcombe|Wexcombe,45,242,2026-10-25 00:44:36;|the block (model) round 1 --only rw3-23 rw3-24 rw3-25
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T084647|model=deepseek/deepseek-v4-flash arm=the block (model) round=1 --repeats 1 --repeat-start 1 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only rw3-23 rw3-24 rw3-25
+search-terms|after|Wexcombe|Wexcombe,45,244,2026-10-25 00:46:46;|the block (model) round 1 --only rw3-23 rw3-24 rw3-25
+search-terms|before|Wexcombe|Wexcombe,45,244,2026-10-25 00:46:46;|open everything (product) round 2 --only tee-target-price
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T084732|model=deepseek/deepseek-v4-flash arm=open everything (product) round=2 --repeats 1 --repeat-start 2 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-target-price
+search-terms|after|Wexcombe|Wexcombe,45,246,2026-10-25 00:48:13;|open everything (product) round 2 --only tee-target-price
+search-terms|before|Wexcombe|Wexcombe,45,246,2026-10-25 00:48:13;|open everything (product) round 2 --only tee-cheapest-target
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T085748|model=deepseek/deepseek-v4-flash arm=open everything (product) round=2 --repeats 1 --repeat-start 2 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-cheapest-target
+search-terms|after|Wexcombe|Wexcombe,45,248,2026-10-25 00:58:13;|open everything (product) round 2 --only tee-cheapest-target
+search-terms|before|Wexcombe|Wexcombe,45,248,2026-10-25 00:58:13;|open everything (product) round 2 --only tee-all-stocked
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T090857|model=deepseek/deepseek-v4-flash arm=open everything (product) round=2 --repeats 1 --repeat-start 2 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-all-stocked
+search-terms|after|Wexcombe|Wexcombe,45,250,2026-10-25 01:09:40;|open everything (product) round 2 --only tee-all-stocked
+search-terms|before|Wexcombe|Wexcombe,45,250,2026-10-25 01:09:40;|open everything (product) round 2 --only tee-count-stocked
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T091640|model=deepseek/deepseek-v4-flash arm=open everything (product) round=2 --repeats 1 --repeat-start 2 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-count-stocked
+search-terms|after|Wexcombe|Wexcombe,45,252,2026-10-25 01:17:02;|open everything (product) round 2 --only tee-count-stocked
+search-terms|before|Wexcombe|Wexcombe,45,252,2026-10-25 01:17:02;|open everything (product) round 2 --only tee-count-buyable
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T092432|model=deepseek/deepseek-v4-flash arm=open everything (product) round=2 --repeats 1 --repeat-start 2 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-count-buyable
+search-terms|after|Wexcombe|Wexcombe,45,254,2026-10-25 01:25:13;|open everything (product) round 2 --only tee-count-buyable
+search-terms|before|Wexcombe|Wexcombe,45,254,2026-10-25 01:25:13;|open everything (product) round 2 --only tee-exists-under
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T093756|model=deepseek/deepseek-v4-flash arm=open everything (product) round=2 --repeats 1 --repeat-start 2 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-exists-under
+search-terms|after|Wexcombe|Wexcombe,45,256,2026-10-25 01:46:22;|open everything (product) round 2 --only tee-exists-under
+search-terms|before|Wexcombe|Wexcombe,45,256,2026-10-25 01:46:22;|open everything (product) round 2 --only tee-top-3
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T094908|model=deepseek/deepseek-v4-flash arm=open everything (product) round=2 --repeats 1 --repeat-start 2 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-top-3
+search-terms|after|Wexcombe|Wexcombe,45,258,2026-10-25 01:49:42;|open everything (product) round 2 --only tee-top-3
+search-terms|before|Wexcombe|Wexcombe,45,258,2026-10-25 01:49:42;|open everything (product) round 2 --only tee-xs-price
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T100150|model=deepseek/deepseek-v4-flash arm=open everything (product) round=2 --repeats 1 --repeat-start 2 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-xs-price
+search-terms|after|Wexcombe|Wexcombe,45,260,2026-10-25 02:02:16;|open everything (product) round 2 --only tee-xs-price
+search-terms|before|Wexcombe|Wexcombe,45,260,2026-10-25 02:02:16;|the block (rules) round 2 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T101305|model=deepseek/deepseek-v4-flash arm=the block (rules) round=2 --repeats 1 --repeat-start 2 --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+search-terms|after|Wexcombe|Wexcombe,45,275,2026-10-25 02:38:51;|the block (rules) round 2 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+search-terms|before|Wexcombe|Wexcombe,45,275,2026-10-25 02:38:51;|the block (rules) round 2 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T103907|model=deepseek/deepseek-v4-flash arm=the block (rules) round=2 --repeats 1 --repeat-start 2 --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+search-terms|after|Wexcombe|Wexcombe,45,279,2026-10-25 02:39:30;|the block (rules) round 2 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+search-terms|before|Wexcombe|Wexcombe,45,279,2026-10-25 02:39:30;|the block (model) round 2 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T104211|model=deepseek/deepseek-v4-flash arm=the block (model) round=2 --repeats 1 --repeat-start 2 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+search-terms|after|Wexcombe|Wexcombe,45,292,2026-10-25 03:06:12;|the block (model) round 2 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+search-terms|before|Wexcombe|Wexcombe,45,292,2026-10-25 03:06:12;|the block (model) round 2 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T110835|model=deepseek/deepseek-v4-flash arm=the block (model) round=2 --repeats 1 --repeat-start 2 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+search-terms|after|Wexcombe|Wexcombe,45,297,2026-10-25 03:11:38;|the block (model) round 2 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+search-terms|before|Wexcombe|Wexcombe,45,297,2026-10-25 03:11:38;|shipped round 2 --only tee-headline
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T111306|model=deepseek/deepseek-v4-flash arm=shipped round=2 --repeats 1 --repeat-start 2 --max-steps 300 --clock 1800 --only tee-headline
+search-terms|after|Wexcombe|Wexcombe,45,299,2026-10-25 03:13:25;|shipped round 2 --only tee-headline
+search-terms|before|Wexcombe|Wexcombe,45,299,2026-10-25 03:13:25;|shipped round 2 --only tee-target-price
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T111340|model=deepseek/deepseek-v4-flash arm=shipped round=2 --repeats 1 --repeat-start 2 --max-steps 300 --clock 1800 --only tee-target-price
+search-terms|after|Wexcombe|Wexcombe,45,301,2026-10-25 03:32:15;|shipped round 2 --only tee-target-price
+search-terms|before|Wexcombe|Wexcombe,45,301,2026-10-25 03:32:15;|shipped round 2 --only tee-cheapest-target
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T113509|model=deepseek/deepseek-v4-flash arm=shipped round=2 --repeats 1 --repeat-start 2 --max-steps 300 --clock 1800 --only tee-cheapest-target
+search-terms|after|Wexcombe|Wexcombe,45,303,2026-10-25 03:35:43;|shipped round 2 --only tee-cheapest-target
+search-terms|before|Wexcombe|Wexcombe,45,303,2026-10-25 03:35:43;|shipped round 2 --only tee-all-stocked
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T114531|model=deepseek/deepseek-v4-flash arm=shipped round=2 --repeats 1 --repeat-start 2 --max-steps 300 --clock 1800 --only tee-all-stocked
+search-terms|after|Wexcombe|Wexcombe,45,309,2026-10-25 03:48:52;|shipped round 2 --only tee-all-stocked
+search-terms|before|Wexcombe|Wexcombe,45,309,2026-10-25 03:48:52;|shipped round 2 --only tee-count-stocked
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T114905|model=deepseek/deepseek-v4-flash arm=shipped round=2 --repeats 1 --repeat-start 2 --max-steps 300 --clock 1800 --only tee-count-stocked
+search-terms|after|Wexcombe|Wexcombe,45,310,2026-10-25 03:49:11;|shipped round 2 --only tee-count-stocked
+search-terms|before|Wexcombe|Wexcombe,45,310,2026-10-25 03:49:11;|shipped round 2 --only tee-count-buyable
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T115037|model=deepseek/deepseek-v4-flash arm=shipped round=2 --repeats 1 --repeat-start 2 --max-steps 300 --clock 1800 --only tee-count-buyable
+search-terms|after|Wexcombe|Wexcombe,45,312,2026-10-25 03:51:56;|shipped round 2 --only tee-count-buyable
+search-terms|before|Wexcombe|Wexcombe,45,312,2026-10-25 03:51:56;|shipped round 2 --only tee-exists-under
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T115257|model=deepseek/deepseek-v4-flash arm=shipped round=2 --repeats 1 --repeat-start 2 --max-steps 300 --clock 1800 --only tee-exists-under
+search-terms|after|Wexcombe|Wexcombe,45,313,2026-10-25 03:53:03;|shipped round 2 --only tee-exists-under
+search-terms|before|Wexcombe|Wexcombe,45,313,2026-10-25 03:53:03;|shipped round 2 --only tee-top-3
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T115344|model=deepseek/deepseek-v4-flash arm=shipped round=2 --repeats 1 --repeat-start 2 --max-steps 300 --clock 1800 --only tee-top-3
+search-terms|after|Wexcombe|Wexcombe,45,318,2026-10-25 03:57:14;|shipped round 2 --only tee-top-3
+search-terms|before|Wexcombe|Wexcombe,45,318,2026-10-25 03:57:14;|shipped round 2 --only tee-xs-price
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T115910|model=deepseek/deepseek-v4-flash arm=shipped round=2 --repeats 1 --repeat-start 2 --max-steps 300 --clock 1800 --only tee-xs-price
+search-terms|after|Wexcombe|Wexcombe,45,321,2026-10-25 04:06:02;|shipped round 2 --only tee-xs-price
+search-terms|before|Wexcombe|Wexcombe,45,321,2026-10-25 04:06:02;|shipped round 2 --only tee-promo-check
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T120619|model=deepseek/deepseek-v4-flash arm=shipped round=2 --repeats 1 --repeat-start 2 --max-steps 300 --clock 1800 --only tee-promo-check
+search-terms|after|Wexcombe|Wexcombe,45,323,2026-10-25 04:06:37;|shipped round 2 --only tee-promo-check
+search-terms|before|Wexcombe|Wexcombe,45,323,2026-10-25 04:06:37;|shipped round 2 --only decline-delivery
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T120706|model=deepseek/deepseek-v4-flash arm=shipped round=2 --repeats 1 --repeat-start 2 --max-steps 300 --clock 1800 --only decline-delivery
+search-terms|after|Wexcombe|Wexcombe,45,339,2026-10-25 04:22:54;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 2 --only decline-delivery
+search-terms|before|Wexcombe|Wexcombe,45,339,2026-10-25 04:22:54;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 2 --only decline-fit
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T122311|model=deepseek/deepseek-v4-flash arm=shipped round=2 --repeats 1 --repeat-start 2 --max-steps 300 --clock 1800 --only decline-fit
+search-terms|after|Wexcombe|Wexcombe,45,348,2026-10-25 04:27:22;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 2 --only decline-fit
+search-terms|before|Wexcombe|Wexcombe,45,348,2026-10-25 04:27:22;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 2 --only decline-scarcity
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T122736|model=deepseek/deepseek-v4-flash arm=shipped round=2 --repeats 1 --repeat-start 2 --max-steps 300 --clock 1800 --only decline-scarcity
+search-terms|after|Wexcombe|Wexcombe,45,353,2026-10-25 04:44:21;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 2 --only decline-scarcity
+search-terms|before|Wexcombe|Wexcombe,45,353,2026-10-25 04:44:21;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|the block (rules) round 3 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T124503|model=deepseek/deepseek-v4-flash arm=the block (rules) round=3 --repeats 1 --repeat-start 3 --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+search-terms|after|Wexcombe|Wexcombe,45,367,2026-10-25 05:06:38;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|the block (rules) round 3 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+search-terms|before|Wexcombe|Wexcombe,45,367,2026-10-25 05:06:38;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|the block (rules) round 3 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T130934|model=deepseek/deepseek-v4-flash arm=the block (rules) round=3 --repeats 1 --repeat-start 3 --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+search-terms|after|Wexcombe|Wexcombe,45,373,2026-10-25 05:12:11;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|the block (rules) round 3 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+search-terms|before|Wexcombe|Wexcombe,45,373,2026-10-25 05:12:11;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|the block (model) round 3 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T131248|model=deepseek/deepseek-v4-flash arm=the block (model) round=3 --repeats 1 --repeat-start 3 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+search-terms|after|Wexcombe|Wexcombe,45,386,2026-10-25 05:36:42;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|the block (model) round 3 --only tee-headline tee-target-price tee-cheapest-target tee-all-stocked tee-count-stocked tee-count-buyable tee-exists-under tee-top-3
+STOP spent + high $0.58 would reach $60.00 2026-10-25T13:50:58: the block (model) round 3 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+conditions resume 2026-10-25T14:06:31 usage 121.5403 start-usage 102.9550 cap 60.00 commit 574090834e2c98aa42de67bd0715a7001452911e browser Google Chrome 155.0.8059.85 
+probe|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/parse-probe-paraphrases_v1-20261025T141556.json|model=deepseek/deepseek-v4-flash routing check
+routing-check|ok
+search-terms|before|Wexcombe|Wexcombe,45,390,2026-10-25 06:06:34;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|the block (model) round 3 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T141600|model=deepseek/deepseek-v4-flash arm=the block (model) round=3 --repeats 1 --repeat-start 3 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+search-terms|after|Wexcombe|Wexcombe,45,394,2026-10-25 06:18:43;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|the block (model) round 3 --only tee-xs-price tee-promo-check decline-delivery decline-fit decline-scarcity
+search-terms|before|Wexcombe|Wexcombe,45,394,2026-10-25 06:18:43;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-headline
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T141929|model=deepseek/deepseek-v4-flash arm=shipped round=3 --repeats 1 --repeat-start 3 --max-steps 300 --clock 1800 --only tee-headline
+search-terms|after|Wexcombe|Wexcombe,45,397,2026-10-25 06:20:05;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-headline
+search-terms|before|Wexcombe|Wexcombe,45,397,2026-10-25 06:20:05;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-target-price
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T142021|model=deepseek/deepseek-v4-flash arm=shipped round=3 --repeats 1 --repeat-start 3 --max-steps 300 --clock 1800 --only tee-target-price
+search-terms|after|Wexcombe|Wexcombe,45,398,2026-10-25 06:20:28;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-target-price
+search-terms|before|Wexcombe|Wexcombe,45,398,2026-10-25 06:20:28;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-cheapest-target
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T142436|model=deepseek/deepseek-v4-flash arm=shipped round=3 --repeats 1 --repeat-start 3 --max-steps 300 --clock 1800 --only tee-cheapest-target
+search-terms|after|Wexcombe|Wexcombe,45,400,2026-10-25 06:26:12;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-cheapest-target
+search-terms|before|Wexcombe|Wexcombe,45,400,2026-10-25 06:26:12;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-all-stocked
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T142756|model=deepseek/deepseek-v4-flash arm=shipped round=3 --repeats 1 --repeat-start 3 --max-steps 300 --clock 1800 --only tee-all-stocked
+search-terms|after|Wexcombe|Wexcombe,45,404,2026-10-25 06:29:49;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-all-stocked
+search-terms|before|Wexcombe|Wexcombe,45,404,2026-10-25 06:29:49;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-count-stocked
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T142956|model=deepseek/deepseek-v4-flash arm=shipped round=3 --repeats 1 --repeat-start 3 --max-steps 300 --clock 1800 --only tee-count-stocked
+search-terms|after|Wexcombe|Wexcombe,45,410,2026-10-25 06:33:54;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-count-stocked
+search-terms|before|Wexcombe|Wexcombe,45,410,2026-10-25 06:33:54;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-count-buyable
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T143404|model=deepseek/deepseek-v4-flash arm=shipped round=3 --repeats 1 --repeat-start 3 --max-steps 300 --clock 1800 --only tee-count-buyable
+search-terms|after|Wexcombe|Wexcombe,45,412,2026-10-25 06:34:54;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-count-buyable
+search-terms|before|Wexcombe|Wexcombe,45,412,2026-10-25 06:34:54;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-exists-under
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T143738|model=deepseek/deepseek-v4-flash arm=shipped round=3 --repeats 1 --repeat-start 3 --max-steps 300 --clock 1800 --only tee-exists-under
+search-terms|after|Wexcombe|Wexcombe,45,413,2026-10-25 06:37:44;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-exists-under
+search-terms|before|Wexcombe|Wexcombe,45,413,2026-10-25 06:37:44;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-top-3
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T143939|model=deepseek/deepseek-v4-flash arm=shipped round=3 --repeats 1 --repeat-start 3 --max-steps 300 --clock 1800 --only tee-top-3
+search-terms|after|Wexcombe|Wexcombe,45,415,2026-10-25 06:40:00;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-top-3
+search-terms|before|Wexcombe|Wexcombe,45,415,2026-10-25 06:40:00;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-xs-price
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T145052|model=deepseek/deepseek-v4-flash arm=shipped round=3 --repeats 1 --repeat-start 3 --max-steps 300 --clock 1800 --only tee-xs-price
+search-terms|after|Wexcombe|Wexcombe,45,418,2026-10-25 06:53:42;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-xs-price
+search-terms|before|Wexcombe|Wexcombe,45,418,2026-10-25 06:53:42;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-promo-check
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T145850|model=deepseek/deepseek-v4-flash arm=shipped round=3 --repeats 1 --repeat-start 3 --max-steps 300 --clock 1800 --only tee-promo-check
+search-terms|after|Wexcombe|Wexcombe,45,420,2026-10-25 06:59:06;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only tee-promo-check
+search-terms|before|Wexcombe|Wexcombe,45,420,2026-10-25 06:59:06;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only decline-delivery
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T150009|model=deepseek/deepseek-v4-flash arm=shipped round=3 --repeats 1 --repeat-start 3 --max-steps 300 --clock 1800 --only decline-delivery
+search-terms|after|Wexcombe|Wexcombe,45,428,2026-10-25 07:12:02;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only decline-delivery
+search-terms|before|Wexcombe|Wexcombe,45,428,2026-10-25 07:12:02;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only decline-fit
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T151223|model=deepseek/deepseek-v4-flash arm=shipped round=3 --repeats 1 --repeat-start 3 --max-steps 300 --clock 1800 --only decline-fit
+search-terms|after|Wexcombe|Wexcombe,45,437,2026-10-25 07:18:21;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only decline-fit
+search-terms|before|Wexcombe|Wexcombe,45,437,2026-10-25 07:18:21;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only decline-scarcity
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T151840|model=deepseek/deepseek-v4-flash arm=shipped round=3 --repeats 1 --repeat-start 3 --max-steps 300 --clock 1800 --only decline-scarcity
+search-terms|after|Wexcombe|Wexcombe,45,442,2026-10-25 07:29:31;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|shipped round 3 --only decline-scarcity
+search-terms|before|Wexcombe|Wexcombe,45,442,2026-10-25 07:29:31;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|open everything (product) round 3 --only tee-target-price
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T153234|model=deepseek/deepseek-v4-flash arm=open everything (product) round=3 --repeats 1 --repeat-start 3 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-target-price
+search-terms|after|Wexcombe|Wexcombe,45,443,2026-10-25 07:32:43;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|open everything (product) round 3 --only tee-target-price
+search-terms|before|Wexcombe|Wexcombe,45,443,2026-10-25 07:32:43;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|open everything (product) round 3 --only tee-cheapest-target
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T153253|model=deepseek/deepseek-v4-flash arm=open everything (product) round=3 --repeats 1 --repeat-start 3 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-cheapest-target
+search-terms|after|Wexcombe|Wexcombe,45,445,2026-10-25 07:33:19;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|open everything (product) round 3 --only tee-cheapest-target
+search-terms|before|Wexcombe|Wexcombe,45,445,2026-10-25 07:33:19;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|open everything (product) round 3 --only tee-all-stocked
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T154556|model=deepseek/deepseek-v4-flash arm=open everything (product) round=3 --repeats 1 --repeat-start 3 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-all-stocked
+search-terms|after|Wexcombe|Wexcombe,45,447,2026-10-25 07:46:31;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|open everything (product) round 3 --only tee-all-stocked
+search-terms|before|Wexcombe|Wexcombe,45,447,2026-10-25 07:46:31;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|open everything (product) round 3 --only tee-count-stocked
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T155326|model=deepseek/deepseek-v4-flash arm=open everything (product) round=3 --repeats 1 --repeat-start 3 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-count-stocked
+search-terms|after|Wexcombe|Wexcombe,45,449,2026-10-25 07:53:50;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|open everything (product) round 3 --only tee-count-stocked
+search-terms|before|Wexcombe|Wexcombe,45,449,2026-10-25 07:53:50;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|open everything (product) round 3 --only tee-count-buyable
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T160011|model=deepseek/deepseek-v4-flash arm=open everything (product) round=3 --repeats 1 --repeat-start 3 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-count-buyable
+search-terms|after|Wexcombe|Wexcombe,45,451,2026-10-25 08:00:32;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|open everything (product) round 3 --only tee-count-buyable
+search-terms|before|Wexcombe|Wexcombe,45,451,2026-10-25 08:00:32;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|open everything (product) round 3 --only tee-exists-under
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T161006|model=deepseek/deepseek-v4-flash arm=open everything (product) round=3 --repeats 1 --repeat-start 3 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-exists-under
+search-terms|after|Wexcombe|Wexcombe,45,453,2026-10-25 08:10:29;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|open everything (product) round 3 --only tee-exists-under
+search-terms|before|Wexcombe|Wexcombe,45,453,2026-10-25 08:10:29;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|open everything (product) round 3 --only tee-top-3
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T161939|model=deepseek/deepseek-v4-flash arm=open everything (product) round=3 --repeats 1 --repeat-start 3 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-top-3
+search-terms|after|Wexcombe|Wexcombe,45,455,2026-10-25 08:19:55;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|open everything (product) round 3 --only tee-top-3
+search-terms|before|Wexcombe|Wexcombe,45,455,2026-10-25 08:19:55;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|open everything (product) round 3 --only tee-xs-price
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T162915|model=deepseek/deepseek-v4-flash arm=open everything (product) round=3 --repeats 1 --repeat-start 3 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-xs-price
+search-terms|after|Wexcombe|Wexcombe,45,457,2026-10-25 08:29:39;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|open everything (product) round 3 --only tee-xs-price
+search-terms|before|Wexcombe|Wexcombe,45,457,2026-10-25 08:29:39;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|re-run the block (model) --only rw3-06 --repeat-start 1
+rerun|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T164237|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T073847 --only rw3-06 --repeat-start 1
+search-terms|after|Wexcombe|Wexcombe,45,461,2026-10-25 08:43:16;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|re-run the block (model) --only rw3-06 --repeat-start 1
+search-terms|before|Wexcombe|Wexcombe,45,461,2026-10-25 08:43:16;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|re-run shipped --only tee-target-price --repeat-start 2
+rerun|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T164453|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T111340 --only tee-target-price --repeat-start 2
+search-terms|after|Wexcombe|Wexcombe,45,462,2026-10-25 08:44:59;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|re-run shipped --only tee-target-price --repeat-start 2
+search-terms|before|Wexcombe|Wexcombe,45,462,2026-10-25 08:44:59;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|re-run the block (model) --only tee-top-3 --repeat-start 3
+rerun|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T164710|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T131248 --only tee-top-3 --repeat-start 3
+search-terms|after|Wexcombe|Wexcombe,45,466,2026-10-25 08:47:39;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|re-run the block (model) --only tee-top-3 --repeat-start 3
+search-terms|before|Wexcombe|Wexcombe,45,466,2026-10-25 08:47:39;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|re-run open everything (product) --only tee-target-price --repeat-start 3
+rerun|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T165207|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T153234 --only tee-target-price --repeat-start 3
+search-terms|after|Wexcombe|Wexcombe,45,468,2026-10-25 08:52:36;Wexcombe Midweight Jersey Tee,4949,1,2026-10-25 04:16:29;|re-run open everything (product) --only tee-target-price --repeat-start 3
+reading-test|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/parse-probe-paraphrases_v2-20261025T170825.json|model=deepseek/deepseek-v4-flash questions=experiments/tasks/paraphrases_v2.json page-from /Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T021029
+reading-test|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/parse-probe-paraphrases_v3-20261025T171648.json|model=deepseek/deepseek-v4-flash questions=experiments/tasks/paraphrases_v3.json page-from /Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T021029
+reading-test|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/parse-probe-paraphrases_v2-20261025T171743.json|model=anthropic/claude-haiku-4.5 questions=experiments/tasks/paraphrases_v2.json page-from /Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T021029
+reading-test|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/parse-probe-paraphrases_v3-20261025T171854.json|model=anthropic/claude-haiku-4.5 questions=experiments/tasks/paraphrases_v3.json page-from /Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261025T021029
+end 2026-10-25T17:18:54 usage 125.2249

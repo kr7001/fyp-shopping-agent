@@ -1,0 +1,63 @@
+tee_dev.json: Thurlby, 45 listings, prefix IGR-TDV
+  [pass] results pages, gated user agent: 2 pages of 36, 9 cards, toolbars 1-36 of 45, 37-45 of 45; every card one of the market's listings, at its title, seller and cheapest buyable price
+  [pass] results pages, plain user agent: 2 pages of 36, 9 cards, toolbars 1-36 of 45, 37-45 of 45; every card one of the market's listings, at its title, seller and cheapest buyable price
+  [pass] the two user agents list the listings in the same order
+  [pass] the live order is the one search_order.py predicted (two forms, average lengths x1.0)
+  [pass] the live order is the order the fixture records
+  [pass] the live order is the one claim.py reads where a key's listings render, the live order its seed search recorded when it accepted the market
+  [pass] the page rules hold on the live order: first_screen_misleads, answer_on_page_2, counts_need_page_2, headline_on_page_1, promo_check_choice
+  [pass] the named listing of tee-promo-check, the first in the live order that passes rules 11 to 13, is the fixture's IGR-TDV-23
+  [pass] results page 1 in the gated browser: 36 cards in the grid, next link present
+  [pass] results page 2 in the gated browser: 9 cards in the grid, next link absent
+  [pass] igr-tdv-01 Bramley Outfitters: XS 20.54, XL 17.95, XXL 20.18; gated shows 17.95 until chosen, then XS 20.54, XL 17.95, XXL 20.18
+  [pass] igr-tdv-02 Bexhill Garments: XS 32.88, S 37.55, M 34.80, L 33.83, XL 35.93, XXL 40.81; gated shows 32.88 until chosen, then XS 32.88, S 37.55, M 34.80, L 33.83, XL 35.93, XXL 40.81
+  [pass] igr-tdv-03 Carnforth Apparel Official Store: S 28.38, M 26.87, L 28.76 sold out; gated shows 26.87 until chosen, then S 28.38, M 26.87
+  [pass] igr-tdv-04 Stonebridge Textiles Official Store: XS 31.03, M 31.87, L 32.08, XL 28.45, XXL 34.69; gated shows 28.45 until chosen, then XS 31.03, M 31.87, L 32.08, XL 28.45, XXL 34.69
+  [pass] igr-tdv-05 Ingleton Threads: XS 27.62 sold out, S 26.31, M 26.06 sold out, L 24.48, XL 20.03, XXL 24.94; gated shows 20.03 until chosen, then S 26.31, L 24.48, XL 20.03, XXL 24.94
+  [pass] igr-tdv-06 Westmere Clothing Co: M - Only 3 left! 22.36, L 20.69, XL 24.13 sold out; gated shows 20.69 until chosen, then M - Only 3 left! 22.36, L 20.69
+  [pass] igr-tdv-07 Verity Textiles Official Store: XS 33.07, S 29.91, M 28.43 sold out, L 34.96, XXL 26.12; gated shows 26.12 until chosen, then XS 33.07, S 29.91, L 34.96, XXL 26.12
+  [pass] igr-tdv-08 Foxcombe Garment Works: M 42.15, XL 41.26, XXL 32.78 sold out; gated shows 41.26 until chosen, then M 42.15, XL 41.26
+  [pass] igr-tdv-09 Pembroke Apparel: XS 22.47, S 22.93, M 24.86, L 29.45, XL 28.51 sold out, XXL 28.17 sold out; gated shows 22.47 until chosen, then XS 22.47, S 22.93, M 24.86, L 29.45
+  [pass] igr-tdv-10 Elstead Textiles Official Store: XS 38.49 sold out, S 37.55, M 32.53, L 37.04, XL 31.46 sold out, XXL 41.64 sold out; gated shows 32.53 until chosen, then S 37.55, M 32.53, L 37.04
+  [pass] igr-tdv-11 Crowhurst Garments: S 15.52, M 12.47 sold out, L 14.41, XL 14.54, XXL 11.62; gated shows 11.62 until chosen, then S 15.52, L 14.41, XL 14.54, XXL 11.62
+  [pass] igr-tdv-12 Fordwich Textile Company: XS 24.40, M 25.01 sold out, L 23.14, XL 19.83 sold out, XXL 21.29; gated shows 21.29 until chosen, then XS 24.40, L 23.14, XXL 21.29
+  [pass] igr-tdv-13 Lymington Uniform Supply: S 16.70, M 14.88 sold out, L 18.54; gated shows 16.70 until chosen, then S 16.70, L 18.54
+  [pass] igr-tdv-14 Garrick Apparel: XS 23.71, S 26.94, M 22.37 sold out, L 27.36, XL 26.00, XXL 24.40; gated shows 23.71 until chosen, then XS 23.71, S 26.94, L 27.36, XL 26.00, XXL 24.40
+  [pass] igr-tdv-15 Copperfield Textile Company: XS 36.58 sold out, S 30.19, M 37.37, L 40.91 sold out, XL 33.45, XXL 38.72; gated shows 30.19 until chosen, then S 30.19, M 37.37, XL 33.45, XXL 38.72
+  [pass] igr-tdv-16 Abbotsley Clothing Co: XS 27.36, M 23.42, L 20.74, XL 21.06, XXL 20.32; gated shows 20.32 until chosen, then XS 27.36, M 23.42, L 20.74, XL 21.06, XXL 20.32
+  [pass] igr-tdv-17 Marlow Uniform Supply: XS - Promo $12.00 16.49, S 17.23, M - Only 3 left! 19.29, L 20.73, XL 19.16, XXL 18.49; gated shows 16.49 until chosen, then XS - Promo $12.00 16.49, S 17.23, M - Only 3 left! 19.29, L 20.73, XL 19.16, XXL 18.49
+  [pass] igr-tdv-18 Gisburn Apparel: M 32.88 sold out, L 27.42, XXL 34.61; gated shows 27.42 until chosen, then L 27.42, XXL 34.61
+  [pass] igr-tdv-19 Ashgrove Outfitters: S 16.73, L 14.40, XL 16.81; gated shows 14.40 until chosen, then S 16.73, L 14.40, XL 16.81
+  [pass] igr-tdv-20 Jarrow Threads: XS 13.71 sold out, L 11.42 sold out, XL 13.59, XXL 13.27; gated shows 13.27 until chosen, then XL 13.59, XXL 13.27
+  [pass] igr-tdv-21 Yarrow Threads: XS 28.39 sold out, S 26.26, M 27.86, L 21.90, XL 23.46, XXL 25.34 sold out; gated shows 21.90 until chosen, then S 26.26, M 27.86, L 21.90, XL 23.46
+  [pass] igr-tdv-22 Alderney Uniform Supply: XS 36.55, L 36.82, XL 37.80 sold out, XXL 33.08 sold out; gated shows 36.55 until chosen, then XS 36.55, L 36.82
+  [pass] igr-tdv-23 Dunmore Threads: XS - Promo $16.50 19.04, S 15.23, M 21.32, L 19.05 sold out, XXL 15.83 sold out; gated shows 15.23 until chosen, then XS - Promo $16.50 19.04, S 15.23, M 21.32
+  [pass] igr-tdv-24 Kettering Clothing Co: XS 36.36, S 39.54, L 30.39, XXL 28.72 sold out; gated shows 30.39 until chosen, then XS 36.36, S 39.54, L 30.39
+  [pass] igr-tdv-25 Everleigh Garment Works: XS 11.90 sold out, S 14.06, M 12.41 sold out, L 13.48, XL 15.53 sold out, XXL 12.93; gated shows 12.93 until chosen, then S 14.06, L 13.48, XXL 12.93
+  [pass] igr-tdv-26 Thirsk Textile Company: S 11.73, M 14.87, L 14.38 sold out, XXL 14.63; gated shows 11.73 until chosen, then S 11.73, M 14.87, XXL 14.63
+  [pass] igr-tdv-27 Chandler Apparel: S 15.66, L 16.33, XL 17.48 sold out, XXL 19.82; gated shows 15.66 until chosen, then S 15.66, L 16.33, XXL 19.82
+  [pass] igr-tdv-28 Hillside Clothing Company Ltd: XS 30.17 sold out, S 32.26 sold out, M 32.14 sold out, XXL 34.28; gated shows 34.28 until chosen, then XXL 34.28
+  [pass] igr-tdv-29 Rookwood Clothing Co: XS - Promo $16.01 21.27 sold out, S 22.63 sold out, M 24.86, L 23.05; gated shows 23.05 until chosen, then M 24.86, L 23.05
+  [pass] igr-tdv-30 Oakfield Workwear Supply Co: XS 31.96 sold out, S 28.78, M 24.15 sold out, L 28.59 sold out; gated shows 28.78 until chosen, then S 28.78
+  [pass] igr-tdv-31 Dovercourt Outfitters: S 19.91, M 22.13, L 23.31, XL 25.86, XXL 19.50; gated shows 19.50 until chosen, then S 19.91, M 22.13, L 23.31, XL 25.86, XXL 19.50
+  [pass] igr-tdv-32 Northwick Textile Company: XS 29.39 sold out, S 28.07, M 30.42, L 31.62, XXL 31.51; gated shows 28.07 until chosen, then S 28.07, M 30.42, L 31.62, XXL 31.51
+  [pass] igr-tdv-33 Whitlock Garment Works: XS 40.07, S 36.85, M - Only 2 left! 32.07, L 39.21 sold out, XL 32.06; gated shows 32.06 until chosen, then XS 40.07, S 36.85, M - Only 2 left! 32.07, XL 32.06
+  [pass] igr-tdv-34 Marchmont Workwear Supply Co: XS 28.92, S 36.33, M 30.81, L 32.50, XL 31.30; gated shows 28.92 until chosen, then XS 28.92, S 36.33, M 30.81, L 32.50, XL 31.30
+  [pass] igr-tdv-35 Fairhaven Outfitters: XS 32.93, S 41.84, M 42.87, XL 35.05, XXL 43.43; gated shows 32.93 until chosen, then XS 32.93, S 41.84, M 42.87, XL 35.05, XXL 43.43
+  [pass] igr-tdv-36 Ambleside Uniform Supply: XS 36.21, S 31.46, M 32.50 sold out, L 29.38 sold out, XXL 31.24; gated shows 31.24 until chosen, then XS 36.21, S 31.46, XXL 31.24
+  [pass] igr-tdv-37 Larkspur Textile Company: XS 42.37, S 44.91, M 38.00, L 38.38, XL 36.83, XXL 35.45; gated shows 35.45 until chosen, then XS 42.37, S 44.91, M 38.00, L 38.38, XL 36.83, XXL 35.45
+  [pass] igr-tdv-38 Pentland Garments: XS 26.75, S 25.45, M 31.58 sold out, L 31.63, XL 29.89, XXL 24.44; gated shows 24.44 until chosen, then XS 26.75, S 25.45, L 31.63, XL 29.89, XXL 24.44
+  [pass] igr-tdv-39 Quarles Garment Works: XS 10.11 sold out, L 10.92 sold out, XL 11.41, XXL 12.45 sold out; gated shows 11.41 until chosen, then XL 11.41
+  [pass] igr-tdv-40 Dalston Garment Works: XS 31.12, M - Only 1 left! 32.58, L 31.04 sold out, XXL 26.02 sold out; gated shows 31.12 until chosen, then XS 31.12, M - Only 1 left! 32.58
+  [pass] igr-tdv-41 Oakhurst Textile Company: XS 14.34, S 12.22 sold out, M 16.77, L 16.88, XL 14.58, XXL 14.11; gated shows 14.11 until chosen, then XS 14.34, M 16.77, L 16.88, XL 14.58, XXL 14.11
+  [pass] igr-tdv-42 Haldane Garment Works: XS 41.12, S 37.09 sold out, M 42.01, L 41.80, XL 40.78, XXL 37.54; gated shows 37.54 until chosen, then XS 41.12, M 42.01, L 41.80, XL 40.78, XXL 37.54
+  [pass] igr-tdv-43 Redhill Outfitters: XS 17.35, S 18.42, M 14.11 sold out, L 18.94, XL 14.70 sold out, XXL 13.85; gated shows 13.85 until chosen, then XS 17.35, S 18.42, L 18.94, XXL 13.85
+  [pass] igr-tdv-44 Kelsall Clothing Co: XS 40.84, S 39.34, M 46.23 sold out, L 44.35, XXL 41.38 sold out; gated shows 39.34 until chosen, then XS 40.84, S 39.34, L 44.35
+  [pass] igr-tdv-45 Brockwell Textile Company: XS - Promo $13.26 17.75 sold out, S 16.65, M 15.32 sold out, L 16.76, XL 17.56; gated shows 16.65 until chosen, then S 16.65, L 16.76, XL 17.56
+  [pass] the gated size menus show every label as seeded, 4 promo and 4 scarcity, and no label holds a price of any listing or card of the market
+  [pass] every menu lists sizes of XS, S, M, L, XL, XXL in that order, 45 listings
+  [pass] Magento's stock-threshold text renders no count on any listing page under either theme beyond the seeded scarcity labels
+  [pass] the Reviews tab reads 'Be the first to review this product' on every listing page under both themes
+  [pass] the leak test fires on the ordinary theme for 45 of 45 listings with a price besides the advertised one
+
+60 checks, 0 failed

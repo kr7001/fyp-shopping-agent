@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "records": [
+    {
+      "domain": "localhost",
+      "route_signature": "/igr-tcl-*.html",
+      "kind": "card_probe",
+      "selectors": {
+        "card_container_selectors": [
+          "div.product-info-price",
+          "div.panel.wrapper",
+          "div.product-social-links",
+          "div.product-add-form",
+          "div.product.media",
+          "div.nested",
+          "div.control > div.nested",
+          "div.field.search > div.control > div.nested",
+          "#search_mini_form > div.field.search > div.control > div.nested"
+        ],
+        "title_selectors": [
+          "a.action.add",
+          "a.action.compare",
+          "li.item.link > a.action.compare",
+          "a.action.towishlist",
+          "a.action.skip.gallery-next-area",
+          "a.action.advanced"
+        ],
+        "price_selectors": [
+          "div.price-box.price-final_price"
+        ],
+        "author_selectors": [
+          "li.link.authorization-link"
+        ],
+        "summary_selectors": [
+          "div.product-reviews-summary.empty",
+          "a.action.skip.contentarea"
+        ],
+        "primary_link_selectors": [
+          "a.action.add",
+          "#idxqy2NJAo",
+          "a.action.towishlist",
+          "a.action.skip.gallery-next-area",
+          "a.action.advanced"
+        ],
+        "button_selectors": [
+          "a.action.add",
+          "#idxqy2NJAo",
+          "li.link.wishlist > a",
+          "li.link.authorization-link > a",
+          "#idWg0HOC9U",
+          "a.action.towishlist",
+          "a.action.tocompare",
+          "#product-addtocart-button",
+          "a.action.advanced"
+        ]
+      },
+      "success_count": 1,
+      "failure_count": 1,
+      "last_success_at": 1792889085.682328,
+      "quality_score": 0.6766666666666667,
+      "sample_card_count": 6,
+      "last_failure_at": 1792889115.7487948,
+      "last_failure_reason": "cache_validation_failed"
+    }
+  ]
+}

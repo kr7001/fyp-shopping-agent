@@ -491,3 +491,19 @@ Each is the student's, taken between 00:30 and 01:10 unless timed otherwise.
     verification; the model that did each piece of work is recorded.
 15. **Score v10 beside the hand reading** (01:58, taken on the student's behalf, pending the
     generator coder's confirmation).
+
+## Amendments
+
+1. **Stage-1 cap $60** (24 October, 22:01, the student's decision after the pilot): the pilot passed
+   its four checks (12 runs, 0 void, $0.93 by the account) and projected stage 1 at $15.08; the
+   student lowered the stage-1 cap from $69 to $60 to keep credit in reserve. Only the chain's
+   `CAP` and its comment change (claim2b-stage1.command.sh sha1 534001ad to 2caf84be); the
+   design, questions, limits and declared estimate do not. The total cap becomes $66.
+2. **Stage 1 resumed after a failed account read** (25 October, 13:54): at 13:50 the cap gate stopped
+   the chain before its 66th of 87 invocations, $18.59 spent, with $0.58 asked against $60: the
+   gate stops whenever the account cannot be read, and one read failed (a network fault, not the
+   cap). No run was affected. claim2b-stage1-resume.command.sh (sha1 5ae4bf97), made from the stage-1
+   command, runs the 22 invocations that had not started, then the voids of every batch and the
+   reading tests, appending to the same manifest with no second start line. The cap stays $60
+   for the whole stage, counted from the first start's usage (102.9550), and the account read is
+   tried three times, 10 seconds apart, before the gate stops. The declared estimate is $5.

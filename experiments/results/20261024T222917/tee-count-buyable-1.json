@@ -1,0 +1,701 @@
+{
+  "ran_at": "2026-10-24T22:41:28",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "provider_routing": {
+    "order": [
+      "gmicloud",
+      "deepinfra",
+      "streamlake"
+    ],
+    "allow_fallbacks": false,
+    "quantizations": [
+      "fp8"
+    ]
+  },
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . How many of the Wexcombe tee listings have size M in stock and available to buy right now?",
+  "elapsed_s": 727.5,
+  "cost_usd": 0.428144,
+  "cost_note": null,
+  "spend_before_usd": 103.091743105,
+  "spend_after_usd": 103.514210669,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "c0b9d03a1ea941938cfbdd8ea8d2f5c8",
+    "final": "26 of 45 Wexcombe tee listings have size M in stock and available to buy. Verified across both search pages (36 listings on page 1, 9 on page 2). Size M was counted only when the M option existed and was enabled (selectable) in the Size dropdown; listings where M was disabled (out of stock) or absent were excluded. Listings with M available: Alderney Threads, Dunmore Outfitters, Marlow Garments, Brockwell Garments, Chandler Workwear, Verity Clothing, Yarrow Uniform, Bramley Garment Works, Larkspur Outfitters, Carnforth Textile, Thornbury Apparel, Jarrow Textiles, Lymington Clothing, Fenwick Threads (2 left), Haldane Apparel (1 left), Fordwich Apparel, Ivybridge Clothing, Thirsk Textiles, Grantley Workwear, Garrick Apparel, Oakhurst Textile (3 left), Dalston Textiles, Quarles Apparel, Northwick Apparel, Crowhurst Clothing, Elmsworth Textiles (2 left).",
+    "page": {
+      "url": "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+      "title": "Search results for: 'Wexcombe'"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 111,
+    "actions": 50,
+    "observations": 61,
+    "unclassified_tools": [],
+    "assistant_turns": 111,
+    "by_tool": {
+      "browser_evaluate": 57,
+      "browser_navigate": 49,
+      "browser_probe_cards": 2,
+      "browser_probe_interactives": 2,
+      "browser_batch_interact": 1
+    },
+    "selections": [
+      "16"
+    ],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+      "http://localhost:7770/igr-tcl-23.html",
+      "http://localhost:7770/igr-tcl-38.html",
+      "http://localhost:7770/igr-tcl-41.html",
+      "http://localhost:7770/igr-tcl-11.html",
+      "http://localhost:7770/igr-tcl-17.html",
+      "http://localhost:7770/igr-tcl-25.html",
+      "http://localhost:7770/igr-tcl-26.html",
+      "http://localhost:7770/igr-tcl-27.html",
+      "http://localhost:7770/igr-tcl-12.html",
+      "http://localhost:7770/igr-tcl-13.html",
+      "http://localhost:7770/igr-tcl-30.html",
+      "http://localhost:7770/igr-tcl-08.html",
+      "http://localhost:7770/igr-tcl-21.html",
+      "http://localhost:7770/igr-tcl-28.html",
+      "http://localhost:7770/igr-tcl-44.html",
+      "http://localhost:7770/igr-tcl-03.html",
+      "http://localhost:7770/igr-tcl-07.html",
+      "http://localhost:7770/igr-tcl-09.html",
+      "http://localhost:7770/igr-tcl-24.html",
+      "http://localhost:7770/igr-tcl-32.html",
+      "http://localhost:7770/igr-tcl-42.html",
+      "http://localhost:7770/igr-tcl-43.html",
+      "http://localhost:7770/igr-tcl-34.html",
+      "http://localhost:7770/igr-tcl-40.html",
+      "http://localhost:7770/igr-tcl-31.html",
+      "http://localhost:7770/igr-tcl-45.html",
+      "http://localhost:7770/igr-tcl-01.html",
+      "http://localhost:7770/igr-tcl-14.html",
+      "http://localhost:7770/igr-tcl-16.html",
+      "http://localhost:7770/igr-tcl-22.html",
+      "http://localhost:7770/igr-tcl-33.html",
+      "http://localhost:7770/igr-tcl-39.html",
+      "http://localhost:7770/igr-tcl-05.html",
+      "http://localhost:7770/igr-tcl-20.html",
+      "http://localhost:7770/igr-tcl-15.html",
+      "http://localhost:7770/igr-tcl-29.html",
+      "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+      "http://localhost:7770/catalogsearch/result/index/?p=2&q=Wexcombe",
+      "http://localhost:7770/igr-tcl-06.html",
+      "http://localhost:7770/igr-tcl-02.html",
+      "http://localhost:7770/igr-tcl-04.html",
+      "http://localhost:7770/igr-tcl-10.html",
+      "http://localhost:7770/igr-tcl-37.html",
+      "http://localhost:7770/igr-tcl-36.html",
+      "http://localhost:7770/igr-tcl-18.html",
+      "http://localhost:7770/igr-tcl-35.html",
+      "http://localhost:7770/igr-tcl-19.html",
+      "http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-23.html"
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": "",
+        "batch": [
+          {
+            "op": "select_option",
+            "target": "16"
+          },
+          {
+            "op": "sleep",
+            "target": ""
+          },
+          {
+            "op": "extract_text",
+            "target": ".stock"
+          },
+          {
+            "op": "extract_value",
+            "target": ""
+          }
+        ]
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-38.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-41.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-11.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-17.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-25.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-26.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-27.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-12.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-13.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-30.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-08.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-21.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-28.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-44.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-03.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-07.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-09.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-24.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-32.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-42.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-43.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-34.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-40.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-31.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-45.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-01.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-14.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-16.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-22.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-33.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-39.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-05.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-20.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-15.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-29.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/index/?p=2&q=Wexcombe"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-06.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-02.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-04.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-10.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-37.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-36.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-18.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-35.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-19.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_probe_cards",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_probe_interactives",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_batch_interact",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_probe_interactives",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate"
+    ],
+    "tokens": {
+      "prompt": 14519621,
+      "completion": 33557,
+      "total": 14553178,
+      "calls": 112
+    },
+    "cost_reported_usd": 0.428144,
+    "providers": {
+      "GMICloud": 112
+    }
+  },
+  "spend_delta_usd": 0.422468,
+  "log": "tee-count-buyable-1.log",
+  "shop": "gated",
+  "probe": "viewport",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "scaffold": "openjiuwen"
+}

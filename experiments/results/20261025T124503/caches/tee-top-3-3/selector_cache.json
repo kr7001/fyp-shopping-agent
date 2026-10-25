@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "records": [
+    {
+      "domain": "localhost",
+      "route_signature": "/catalogsearch/result",
+      "kind": "card_probe",
+      "selectors": {
+        "card_container_selectors": [
+          "#product-item-info_107394",
+          "#product-item-info_107485",
+          "#product-item-info_107502",
+          "#product-item-info_107319",
+          "div.panel.wrapper",
+          "div.nested",
+          "#product-item-info_107286",
+          "#product-item-info_107264",
+          "#product-item-info_107277",
+          "#product-item-info_107312",
+          "dd.item",
+          "dl.block > dd.item",
+          "div.search.results > dl.block > dd.item",
+          "main > div.columns > div.column.main > div.search.results > dl.block > dd.item"
+        ],
+        "title_selectors": [
+          "a.action.towishlist",
+          "div.actions-secondary > a.action.towishlist",
+          "div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_107394 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_107485 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_107502 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_107319 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "a.action.compare",
+          "li.item.link > a.action.compare",
+          "a.action.advanced",
+          "#product-item-info_107286 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_107264 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_107277 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_107312 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "dd.item > a",
+          "dl.block > dd.item > a",
+          "main > div.columns > div.column.main > div.search.results > dl.block > dd.item > a"
+        ],
+        "price_selectors": [
+          "div.price-box.price-final_price",
+          "div.product.details > div.price-box.price-final_price",
+          "#product-item-info_107394 > div.product.details > div.price-box.price-final_price",
+          "#product-item-info_107485 > div.product.details > div.price-box.price-final_price",
+          "#product-item-info_107502 > div.product.details > div.price-box.price-final_price",
+          "#product-item-info_107319 > div.product.details > div.price-box.price-final_price",
+          "#product-item-info_107286 > div.product.details > div.price-box.price-final_price",
+          "#product-item-info_107264 > div.product.details > div.price-box.price-final_price",
+          "#product-item-info_107277 > div.product.details > div.price-box.price-final_price",
+          "#product-item-info_107312 > div.product.details > div.price-box.price-final_price"
+        ],
+        "author_selectors": [
+          "li.link.authorization-link"
+        ],
+        "summary_selectors": [
+          "a.action.skip.contentarea"
+        ],
+        "primary_link_selectors": [
+          "a.action.towishlist",
+          "div.actions-secondary > a.action.towishlist",
+          "div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_107394 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_107485 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_107502 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_107319 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#id9XQHg8ED",
+          "a.action.advanced",
+          "#product-item-info_107286 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_107264 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_107277 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#product-item-info_107312 > div.product.details > div.product-item-inner > div.product.actions > div.actions-secondary > a.action.towishlist",
+          "#idDnVNrSa4",
+          "dd.item > a",
+          "dl.block > dd.item > a",
+          "main > div.columns > div.column.main > div.search.results > dl.block > dd.item > a"
+        ],
+        "button_selectors": [
+          "#id9XQHg8ED",
+          "li.link.wishlist > a",
+          "li.link.authorization-link > a",
+          "#id4AFfEza6",
+          "a.action.advanced",
+          "#idDnVNrSa4",
+          "#idK3CShBvp",
+          "dd.item > a",
+          "dl.block > dd.item > a",
+          "main > div.columns > div.column.main > div.search.results > dl.block > dd.item > a"
+        ]
+      },
+      "success_count": 2,
+      "failure_count": 1,
+      "last_success_at": 1792904802.659928,
+      "quality_score": 0.895,
+      "sample_card_count": 7,
+      "last_failure_at": 1792904802.659157,
+      "last_failure_reason": "cache_validation_failed"
+    }
+  ]
+}

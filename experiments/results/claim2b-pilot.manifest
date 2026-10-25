@@ -1,0 +1,42 @@
+start 2026-10-24T19:32:09 usage 102.0154 cap 6.00
+conditions commit 574090834e2c98aa42de67bd0715a7001452911e browser Google Chrome 155.0.8059.85 
+probe|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/parse-probe-paraphrases_v1-20261024T194229.json|model=deepseek/deepseek-v4-flash routing check
+routing-check|ok
+search-terms|before|Thurlby|Thurlby,45,27,2026-10-24 11:32:12;|shipped round 1 --only tee-xs-price
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T194231|model=deepseek/deepseek-v4-flash arm=shipped round=1 --repeats 1 --repeat-start 1 --max-steps 300 --clock 1800 --only tee-xs-price
+search-terms|after|Thurlby|Thurlby,45,28,2026-10-24 11:42:41;|shipped round 1 --only tee-xs-price
+search-terms|before|Thurlby|Thurlby,45,28,2026-10-24 11:42:41;|shipped round 1 --only tee-promo-check
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T194604|model=deepseek/deepseek-v4-flash arm=shipped round=1 --repeats 1 --repeat-start 1 --max-steps 300 --clock 1800 --only tee-promo-check
+search-terms|after|Thurlby|Thurlby,45,29,2026-10-24 11:46:12;|shipped round 1 --only tee-promo-check
+search-terms|before|Thurlby|Thurlby,45,29,2026-10-24 11:46:12;|open everything (product) round 1 --only tee-count-buyable
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T194642|model=deepseek/deepseek-v4-flash arm=open everything (product) round=1 --repeats 1 --repeat-start 1 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-count-buyable
+search-terms|after|Thurlby|Thurlby,45,30,2026-10-24 11:46:50;|open everything (product) round 1 --only tee-count-buyable
+search-terms|before|Thurlby|Thurlby,45,30,2026-10-24 11:46:50;|open everything (product) round 1 --only tee-xs-price
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T195447|model=deepseek/deepseek-v4-flash arm=open everything (product) round=1 --repeats 1 --repeat-start 1 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-xs-price
+search-terms|after|Thurlby|Thurlby,45,32,2026-10-24 11:55:07;|open everything (product) round 1 --only tee-xs-price
+search-terms|before|Thurlby|Thurlby,45,32,2026-10-24 11:55:07;|the block (rules) round 1 --only tee-xs-price
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T200600|model=deepseek/deepseek-v4-flash arm=the block (rules) round=1 --repeats 1 --repeat-start 1 --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-xs-price
+search-terms|after|Thurlby|Thurlby,45,35,2026-10-24 12:06:11;|the block (rules) round 1 --only tee-xs-price
+search-terms|before|Thurlby|Thurlby,45,35,2026-10-24 12:06:11;|the block (rules) round 1 --only tee-promo-check
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T200759|model=deepseek/deepseek-v4-flash arm=the block (rules) round=1 --repeats 1 --repeat-start 1 --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-promo-check
+search-terms|after|Thurlby|Thurlby,45,37,2026-10-24 12:07:59;|the block (rules) round 1 --only tee-promo-check
+search-terms|before|Thurlby|Thurlby,45,37,2026-10-24 12:07:59;|the block (model) round 1 --only tee-xs-price
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T200837|model=deepseek/deepseek-v4-flash arm=the block (model) round=1 --repeats 1 --repeat-start 1 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-xs-price
+search-terms|after|Thurlby|Thurlby,45,40,2026-10-24 12:08:50;|the block (model) round 1 --only tee-xs-price
+search-terms|before|Thurlby|Thurlby,45,40,2026-10-24 12:08:50;|the block (model) round 1 --only tee-promo-check
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T201029|model=deepseek/deepseek-v4-flash arm=the block (model) round=1 --repeats 1 --repeat-start 1 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-promo-check
+search-terms|after|Thurlby|Thurlby,45,42,2026-10-24 12:10:29;|the block (model) round 1 --only tee-promo-check
+search-terms|before|Thurlby|Thurlby,45,42,2026-10-24 12:10:29;|the block (model) round 1 --only tee-count-buyable
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T201112|model=deepseek/deepseek-v4-flash arm=the block (model) round=1 --repeats 1 --repeat-start 1 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-count-buyable
+search-terms|after|Thurlby|Thurlby,45,45,2026-10-24 12:11:24;|the block (model) round 1 --only tee-count-buyable
+search-terms|before|Thurlby|Thurlby,45,45,2026-10-24 12:11:24;|the block (model) round 1 --only tee-cheapest-target
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T201804|model=deepseek/deepseek-v4-flash arm=the block (model) round=1 --repeats 1 --repeat-start 1 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-cheapest-target
+search-terms|after|Thurlby|Thurlby,45,49,2026-10-24 12:18:36;|the block (model) round 1 --only tee-cheapest-target
+search-terms|before|Thurlby|Thurlby,45,49,2026-10-24 12:18:36;|the block (model) round 1 --only tee-count-stocked
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T202043|model=deepseek/deepseek-v4-flash arm=the block (model) round=1 --repeats 1 --repeat-start 1 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only tee-count-stocked
+search-terms|after|Thurlby|Thurlby,45,52,2026-10-24 12:20:55;|the block (model) round 1 --only tee-count-stocked
+search-terms|before|Thurlby|Thurlby,45,52,2026-10-24 12:20:55;|the block (model) round 1 --only decline-fit
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261024T202736|model=deepseek/deepseek-v4-flash arm=the block (model) round=1 --repeats 1 --repeat-start 1 --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800 --only decline-fit
+search-terms|after|Thurlby|Thurlby,45,54,2026-10-24 12:27:36;|the block (model) round 1 --only decline-fit
+end 2026-10-24T20:27:51 usage 102.9502
+pilot-check|PASS|experiments/results/claim2b-pilot.summary

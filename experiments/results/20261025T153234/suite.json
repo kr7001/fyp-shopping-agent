@@ -1,0 +1,362 @@
+{
+  "ran_at": "2026-10-25T15:32:51",
+  "repeats": 1,
+  "repeat_start": 3,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": true,
+  "exhaustive_wording": "product",
+  "exhaustive_wording_version": 2,
+  "targeting": false,
+  "targeting_version": null,
+  "planner_version": null,
+  "box": false,
+  "box_exhaust": false,
+  "arm": "exhaustive-product",
+  "box_version": null,
+  "form_version": null,
+  "primitives_version": null,
+  "parser": null,
+  "parser_model": null,
+  "parser_temperature": null,
+  "prompt_version": null,
+  "normalise_version": null,
+  "parse_charged_usd": null,
+  "parse_charges_unknown": null,
+  "parse_tokens": null,
+  "parse_tokens_unknown": null,
+  "reading": null,
+  "page_reader": null,
+  "rate_plan": null,
+  "provider_routing": {
+    "agent": {
+      "order": [
+        "gmicloud",
+        "deepinfra",
+        "streamlake"
+      ],
+      "allow_fallbacks": false,
+      "quantizations": [
+        "fp8"
+      ]
+    },
+    "parser": null
+  },
+  "browser_tool": "0.0.83",
+  "browser_origins": "http://localhost:7770",
+  "browser_flags": "--block-service-workers --isolated",
+  "scorer_version": 10,
+  "rules_version": null,
+  "model": "deepseek/deepseek-v4-flash",
+  "scaffold": "openjiuwen",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "agent_core_commit": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
+  "agent_core_patch": "e455d3eba23bc37528505e59e4d13ed265fff67e",
+  "tasks_file": "tasks_tee_claim.json",
+  "draw": "Wexcombe:f59ae5dfcd",
+  "instance": {
+    "market": "tee",
+    "design": "B",
+    "listings": 45,
+    "page_size": 36,
+    "pages": 2,
+    "first_screen": 4,
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tee": {
+      "target_option": "M",
+      "listings": 45,
+      "winner_index": 40,
+      "cheapest_card_index": 9,
+      "listings_with_target": 37,
+      "listings_without_target": 8,
+      "listings_target_buyable": 26,
+      "listings_target_sold_out": 11,
+      "cheapest_listed": {
+        "sku": "IGR-TCL-39",
+        "seller": "Kettering Apparel",
+        "price": 11.61
+      },
+      "cheapest_sold_out": {
+        "sku": "IGR-TCL-39",
+        "seller": "Kettering Apparel",
+        "price": 11.61
+      },
+      "sold_out_trap": true,
+      "winner": {
+        "sku": "IGR-TCL-40",
+        "seller": "Haldane Apparel",
+        "price": 11.92
+      },
+      "runner_up_price": 13.02,
+      "winning_margin": 1.1,
+      "cheapest_card": {
+        "sku": "IGR-TCL-09",
+        "seller": "Dovercourt Apparel",
+        "from_price": 10.13
+      },
+      "card_probe_wrong": true,
+      "cheapest_without_target": {
+        "sku": "IGR-TCL-09",
+        "seller": "Dovercourt Apparel",
+        "from_price": 10.13
+      },
+      "absent_trap": true,
+      "largest_size": "XXL",
+      "largest_size_winner": {
+        "sku": "IGR-TCL-11",
+        "seller": "Whitlock Outfitters",
+        "price": 11.64
+      },
+      "crossover": true,
+      "oracle_min_opens": 5,
+      "prunable_by_bound": 40,
+      "exhaustive_opens": 45,
+      "bound_strength": 0.889,
+      "from_price_range": [
+        10.13,
+        39.23
+      ],
+      "target_price_range": [
+        11.92,
+        40.92
+      ]
+    },
+    "xs": {
+      "target_option": "XS",
+      "listings": 45,
+      "listings_with_target": 36,
+      "listings_without_target": 9,
+      "listings_target_buyable": 28,
+      "listings_target_sold_out": 8,
+      "winner": {
+        "sku": "IGR-TCL-09",
+        "seller": "Dovercourt Apparel",
+        "price": 12.61
+      },
+      "runner_up_price": 14.11,
+      "winning_margin": 1.5,
+      "cheapest_sold_out": {
+        "sku": "IGR-TCL-11",
+        "seller": "Whitlock Outfitters",
+        "price": 11.51
+      },
+      "sold_out_trap": true,
+      "answer_on_a_card": false,
+      "oracle_min_opens": 5,
+      "prunable_by_bound": 40,
+      "target_price_range": [
+        12.61,
+        43.39
+      ]
+    },
+    "labels": {
+      "promo": [
+        {
+          "sku": "IGR-TCL-15",
+          "seller": "Marchmont Textiles Official Store",
+          "label": "XS - Promo $10.91",
+          "label_price": 10.91,
+          "price": 14.54,
+          "buyable": true
+        },
+        {
+          "sku": "IGR-TCL-39",
+          "seller": "Kettering Apparel",
+          "label": "XS - Promo $11.34",
+          "label_price": 11.34,
+          "price": 14.25,
+          "buyable": true
+        },
+        {
+          "sku": "IGR-TCL-10",
+          "seller": "Northwick Apparel Official Store",
+          "label": "XS - Promo $14.23",
+          "label_price": 14.23,
+          "price": 15.86,
+          "buyable": true
+        },
+        {
+          "sku": "IGR-TCL-33",
+          "seller": "Grantley Workwear Supply Co",
+          "label": "XS - Promo $25.74",
+          "label_price": 25.74,
+          "price": 29.61,
+          "buyable": true
+        },
+        {
+          "sku": "IGR-TCL-19",
+          "seller": "Elmsworth Textiles Official Store",
+          "label": "XS - Promo $28.55",
+          "label_price": 28.55,
+          "price": 32.95,
+          "buyable": true
+        }
+      ],
+      "scarcity": [
+        {
+          "sku": "IGR-TCL-19",
+          "seller": "Elmsworth Textiles Official Store",
+          "label": "M - Only 2 left!",
+          "qty": 138
+        },
+        {
+          "sku": "IGR-TCL-29",
+          "seller": "Oakhurst Textile Company",
+          "label": "M - Only 3 left!",
+          "qty": 128
+        },
+        {
+          "sku": "IGR-TCL-34",
+          "seller": "Fenwick Threads",
+          "label": "M - Only 2 left!",
+          "qty": 52
+        },
+        {
+          "sku": "IGR-TCL-40",
+          "seller": "Haldane Apparel",
+          "label": "M - Only 1 left!",
+          "qty": 94
+        }
+      ],
+      "lowest_promo": {
+        "sku": "IGR-TCL-15",
+        "seller": "Marchmont Textiles Official Store",
+        "label": "XS - Promo $10.91",
+        "label_price": 10.91,
+        "price": 14.54,
+        "buyable": true
+      }
+    },
+    "promo_check": {
+      "sku": "IGR-TCL-19",
+      "seller": "Elmsworth Textiles Official Store",
+      "promo": 28.55,
+      "price": 32.95,
+      "card": 26.99
+    },
+    "exists_limit": 12,
+    "predicted_order": [
+      "IGR-TCL-23",
+      "IGR-TCL-38",
+      "IGR-TCL-41",
+      "IGR-TCL-11",
+      "IGR-TCL-17",
+      "IGR-TCL-25",
+      "IGR-TCL-26",
+      "IGR-TCL-27",
+      "IGR-TCL-12",
+      "IGR-TCL-13",
+      "IGR-TCL-30",
+      "IGR-TCL-08",
+      "IGR-TCL-21",
+      "IGR-TCL-28",
+      "IGR-TCL-44",
+      "IGR-TCL-03",
+      "IGR-TCL-07",
+      "IGR-TCL-09",
+      "IGR-TCL-24",
+      "IGR-TCL-32",
+      "IGR-TCL-42",
+      "IGR-TCL-43",
+      "IGR-TCL-34",
+      "IGR-TCL-40",
+      "IGR-TCL-31",
+      "IGR-TCL-45",
+      "IGR-TCL-01",
+      "IGR-TCL-14",
+      "IGR-TCL-16",
+      "IGR-TCL-22",
+      "IGR-TCL-33",
+      "IGR-TCL-39",
+      "IGR-TCL-05",
+      "IGR-TCL-20",
+      "IGR-TCL-15",
+      "IGR-TCL-29",
+      "IGR-TCL-06",
+      "IGR-TCL-02",
+      "IGR-TCL-04",
+      "IGR-TCL-10",
+      "IGR-TCL-37",
+      "IGR-TCL-36",
+      "IGR-TCL-18",
+      "IGR-TCL-35",
+      "IGR-TCL-19"
+    ],
+    "predicted_cards": {
+      "tee-target-price": [
+        24
+      ],
+      "tee-cheapest-target": [
+        24
+      ],
+      "tee-exists-under": [
+        24
+      ],
+      "tee-top-3": [
+        24,
+        19,
+        38
+      ],
+      "tee-xs-price": [
+        18
+      ]
+    }
+  },
+  "summary": {
+    "by_task": {
+      "tee-target-price": {
+        "gated": true,
+        "verdicts": {
+          "failed": 1
+        },
+        "actions": [
+          1
+        ],
+        "tool_calls": [
+          1
+        ],
+        "cost": [
+          0.000497
+        ],
+        "mean_actions": 1.0,
+        "mean_tool_calls": 1.0,
+        "total_cost": 0.0005
+      }
+    },
+    "overall": {
+      "failed": 1
+    },
+    "total_cost": 0.0005,
+    "cost_unknown_runs": 0,
+    "box": null
+  },
+  "rows": [
+    {
+      "task": "tee-target-price",
+      "family": "aplus",
+      "gated": true,
+      "repeat": 3,
+      "verdict": "failed",
+      "why": "run did not produce an answer",
+      "answer": "",
+      "tool_calls": 1,
+      "actions": 1,
+      "observations": 0,
+      "cost_usd": 0.000497,
+      "elapsed_s": 8.9,
+      "error": "Browser worker did not return valid JSON output",
+      "log": "tee-target-price-3.log",
+      "providers": {
+        "GMICloud": 2
+      }
+    }
+  ]
+}

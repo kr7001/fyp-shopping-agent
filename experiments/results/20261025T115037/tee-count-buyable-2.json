@@ -1,0 +1,177 @@
+{
+  "ran_at": "2026-10-25T11:52:54",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "provider_routing": {
+    "order": [
+      "gmicloud",
+      "deepinfra",
+      "streamlake"
+    ],
+    "allow_fallbacks": false,
+    "quantizations": [
+      "fp8"
+    ]
+  },
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . How many of the Wexcombe tee listings have size M in stock and available to buy right now?",
+  "elapsed_s": 134.9,
+  "cost_usd": 0.021656,
+  "cost_note": null,
+  "spend_before_usd": 119.442360563,
+  "spend_after_usd": 119.461311525,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "7e19936fc72b47cf96cd32e56ad24152",
+    "final": "26 of the 45 Wexcombe tee listings have size M in stock and available to buy right now. (45 total listings found for 'Wexcombe'; M was selectable/salable on 26 products, while M was out-of-stock/disabled on 11 and not offered on 8.)",
+    "page": {
+      "url": "http://localhost:7770/igr-tcl-28.html",
+      "title": "Wexcombe Midweight Jersey Tee - Holbeck Clothing Company Ltd"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 19,
+    "actions": 5,
+    "observations": 14,
+    "unclassified_tools": [],
+    "assistant_turns": 18,
+    "by_tool": {
+      "browser_evaluate": 9,
+      "browser_navigate": 5,
+      "browser_snapshot": 2,
+      "browser_find": 2,
+      "browser_probe_cards": 1
+    },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+      "http://localhost:7770/igr-tcl-23.html",
+      "http://localhost:7770/igr-tcl-38.html",
+      "http://localhost:7770/igr-tcl-40.html",
+      "http://localhost:7770/igr-tcl-28.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-23.html"
+      },
+      {
+        "tool": "browser_find",
+        "target": "Size"
+      },
+      {
+        "tool": "browser_find",
+        "target": "stock"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-38.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-40.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-28.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_find",
+      "browser_find",
+      "browser_snapshot",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate"
+    ],
+    "tokens": {
+      "prompt": 660560,
+      "completion": 14562,
+      "total": 675122,
+      "calls": 19
+    },
+    "cost_reported_usd": 0.021656,
+    "providers": {
+      "GMICloud": 19
+    }
+  },
+  "spend_delta_usd": 0.018951,
+  "log": "tee-count-buyable-2.log",
+  "shop": "gated",
+  "probe": "viewport",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "scaffold": "openjiuwen"
+}

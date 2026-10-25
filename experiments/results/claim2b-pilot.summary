@@ -1,0 +1,39 @@
+pilot check v1 of experiments/results/claim2b-pilot.manifest: 12 batches, 12 runs; the pilot cost $0.9283 by its records, $0.9348 by the account
+1 PASS no harness error and no void: 12 runs, 0 void, 0 with a harness error
+2 PASS no run at or within 80% of its step or clock limit: the most steps 120 of 300, the longest 665 s of 1800; 0 runs at or within 80%
+3 PASS every answer to a keyed question keyable: 0 unscored rows among 11 on keyed questions; keyless declines excepted
+4 PASS the projected stage-1 cost within the stage-1 cap: projected $15.08 against the cap $69.00; runs $14.78 over 227 questions, extras $0.30
+the pilot's mean cost per run by arm and kind, which priced stage 1:
+     box                  bound     $0.0216
+     box                  lookup    $0.0030
+     box-model            bound     $0.0364
+     box-model            count     $0.1276
+     box-model            decline   $0.0005
+     box-model            lookup    $0.0029
+     exhaustive-product   bound     $0.2213
+     exhaustive-product   count     $0.2895
+     none                 bound     $0.0556
+     none                 lookup    $0.0058
+stage 1 priced by arm and kind (runs, each, total; how):
+     open everything (product)    bound      15 x $0.2213 = $   3.32; measured
+     open everything (product)    count       9 x $0.2895 = $   2.61; measured
+     shipped                      bound      15 x $0.0556 = $   0.83; measured
+     shipped                      count       9 x $0.0307 = $   0.28; d: shipped's mean
+     shipped                      decline     9 x $0.0307 = $   0.28; d: shipped's mean
+     shipped                      headline    3 x $0.0307 = $   0.09; d: shipped's mean
+     shipped                      lookup      3 x $0.0058 = $   0.02; measured
+     the block (model)            bound      33 x $0.0364 = $   1.20; measured
+     the block (model)            count      21 x $0.1276 = $   2.68; measured
+     the block (model)            decline    16 x $0.0005 = $   0.01; measured
+     the block (model)            headline    7 x $0.0029 = $   0.02; a: headline as lookup
+     the block (model)            lookup      5 x $0.0029 = $   0.01; measured
+     the block (rules)            bound      33 x $0.0216 = $   0.71; measured
+     the block (rules)            count      21 x $0.1276 = $   2.68; b: the block (model)'s (measured)
+     the block (rules)            decline    16 x $0.0005 = $   0.01; b: the block (model)'s (measured)
+     the block (rules)            headline    7 x $0.0030 = $   0.02; a: headline as lookup
+     the block (rules)            lookup      5 x $0.0030 = $   0.01; measured
+     routing gate: $0.0114
+     reading tests, deepseek/deepseek-v4-flash (51 entries at $0.00038 a call, from parse-probe-paraphrases_v1-20261024T194229.json): $0.0194
+     reading tests, anthropic/claude-haiku-4.5 (51 entries at $0.00527 a call, from parse-probe-paraphrases_v1-20261023T112838.json): $0.2689
+projected stage 1: $15.08
+verdict: PASS

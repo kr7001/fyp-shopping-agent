@@ -1,0 +1,354 @@
+{
+  "ran_at": "2026-10-24T20:05:56",
+  "repeats": 1,
+  "repeat_start": 1,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": true,
+  "exhaustive_wording": "product",
+  "exhaustive_wording_version": 2,
+  "targeting": false,
+  "targeting_version": null,
+  "planner_version": null,
+  "box": false,
+  "box_exhaust": false,
+  "arm": "exhaustive-product",
+  "box_version": null,
+  "form_version": null,
+  "primitives_version": null,
+  "parser": null,
+  "parser_model": null,
+  "parser_temperature": null,
+  "prompt_version": null,
+  "normalise_version": null,
+  "parse_charged_usd": null,
+  "parse_charges_unknown": null,
+  "parse_tokens": null,
+  "parse_tokens_unknown": null,
+  "reading": null,
+  "page_reader": null,
+  "rate_plan": null,
+  "provider_routing": {
+    "agent": {
+      "order": [
+        "gmicloud",
+        "deepinfra",
+        "streamlake"
+      ],
+      "allow_fallbacks": false,
+      "quantizations": [
+        "fp8"
+      ]
+    },
+    "parser": null
+  },
+  "browser_tool": "0.0.83",
+  "browser_origins": "http://localhost:7770",
+  "browser_flags": "--block-service-workers --isolated",
+  "scorer_version": 10,
+  "rules_version": null,
+  "model": "deepseek/deepseek-v4-flash",
+  "scaffold": "openjiuwen",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "agent_core_commit": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
+  "agent_core_patch": "e455d3eba23bc37528505e59e4d13ed265fff67e",
+  "tasks_file": "tasks_tee_dev.json",
+  "draw": "Thurlby:0bd27a8a24",
+  "instance": {
+    "market": "tee",
+    "design": "B",
+    "listings": 45,
+    "page_size": 36,
+    "pages": 2,
+    "first_screen": 4,
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tee": {
+      "target_option": "M",
+      "listings": 45,
+      "winner_index": 26,
+      "cheapest_card_index": 39,
+      "listings_with_target": 38,
+      "listings_without_target": 7,
+      "listings_target_buyable": 23,
+      "listings_target_sold_out": 15,
+      "cheapest_listed": {
+        "sku": "IGR-TDV-25",
+        "seller": "Everleigh Garment Works",
+        "price": 12.41
+      },
+      "cheapest_sold_out": {
+        "sku": "IGR-TDV-25",
+        "seller": "Everleigh Garment Works",
+        "price": 12.41
+      },
+      "sold_out_trap": true,
+      "winner": {
+        "sku": "IGR-TDV-26",
+        "seller": "Thirsk Textile Company",
+        "price": 14.87
+      },
+      "runner_up_price": 16.77,
+      "winning_margin": 1.9,
+      "cheapest_card": {
+        "sku": "IGR-TDV-39",
+        "seller": "Quarles Garment Works",
+        "from_price": 11.41
+      },
+      "card_probe_wrong": true,
+      "cheapest_without_target": {
+        "sku": "IGR-TDV-39",
+        "seller": "Quarles Garment Works",
+        "from_price": 11.41
+      },
+      "absent_trap": true,
+      "largest_size": "XXL",
+      "largest_size_winner": {
+        "sku": "IGR-TDV-11",
+        "seller": "Crowhurst Garments",
+        "price": 11.62
+      },
+      "crossover": true,
+      "oracle_min_opens": 8,
+      "prunable_by_bound": 37,
+      "exhaustive_opens": 45,
+      "bound_strength": 0.822,
+      "from_price_range": [
+        11.41,
+        41.26
+      ],
+      "target_price_range": [
+        14.87,
+        42.87
+      ]
+    },
+    "xs": {
+      "target_option": "XS",
+      "listings": 45,
+      "listings_with_target": 35,
+      "listings_without_target": 10,
+      "listings_target_buyable": 23,
+      "listings_target_sold_out": 12,
+      "winner": {
+        "sku": "IGR-TDV-41",
+        "seller": "Oakhurst Textile Company",
+        "price": 14.34
+      },
+      "runner_up_price": 16.49,
+      "winning_margin": 2.15,
+      "cheapest_sold_out": {
+        "sku": "IGR-TDV-39",
+        "seller": "Quarles Garment Works",
+        "price": 10.11
+      },
+      "sold_out_trap": true,
+      "answer_on_a_card": false,
+      "oracle_min_opens": 7,
+      "prunable_by_bound": 38,
+      "target_price_range": [
+        14.34,
+        42.37
+      ]
+    },
+    "labels": {
+      "promo": [
+        {
+          "sku": "IGR-TDV-17",
+          "seller": "Marlow Uniform Supply",
+          "label": "XS - Promo $12.00",
+          "label_price": 12.0,
+          "price": 16.49,
+          "buyable": true
+        },
+        {
+          "sku": "IGR-TDV-45",
+          "seller": "Brockwell Textile Company",
+          "label": "XS - Promo $13.26",
+          "label_price": 13.26,
+          "price": 17.75,
+          "buyable": false
+        },
+        {
+          "sku": "IGR-TDV-29",
+          "seller": "Rookwood Clothing Co",
+          "label": "XS - Promo $16.01",
+          "label_price": 16.01,
+          "price": 21.27,
+          "buyable": false
+        },
+        {
+          "sku": "IGR-TDV-23",
+          "seller": "Dunmore Threads",
+          "label": "XS - Promo $16.50",
+          "label_price": 16.5,
+          "price": 19.04,
+          "buyable": true
+        }
+      ],
+      "scarcity": [
+        {
+          "sku": "IGR-TDV-06",
+          "seller": "Westmere Clothing Co",
+          "label": "M - Only 3 left!",
+          "qty": 18
+        },
+        {
+          "sku": "IGR-TDV-17",
+          "seller": "Marlow Uniform Supply",
+          "label": "M - Only 3 left!",
+          "qty": 51
+        },
+        {
+          "sku": "IGR-TDV-33",
+          "seller": "Whitlock Garment Works",
+          "label": "M - Only 2 left!",
+          "qty": 78
+        },
+        {
+          "sku": "IGR-TDV-40",
+          "seller": "Dalston Garment Works",
+          "label": "M - Only 1 left!",
+          "qty": 101
+        }
+      ],
+      "lowest_promo": {
+        "sku": "IGR-TDV-17",
+        "seller": "Marlow Uniform Supply",
+        "label": "XS - Promo $12.00",
+        "label_price": 12.0,
+        "price": 16.49,
+        "buyable": true
+      }
+    },
+    "promo_check": {
+      "sku": "IGR-TDV-23",
+      "seller": "Dunmore Threads",
+      "promo": 16.5,
+      "price": 19.04,
+      "card": 15.23
+    },
+    "exists_limit": 15,
+    "predicted_order": [
+      "IGR-TDV-14",
+      "IGR-TDV-43",
+      "IGR-TDV-11",
+      "IGR-TDV-02",
+      "IGR-TDV-25",
+      "IGR-TDV-38",
+      "IGR-TDV-41",
+      "IGR-TDV-31",
+      "IGR-TDV-35",
+      "IGR-TDV-24",
+      "IGR-TDV-26",
+      "IGR-TDV-05",
+      "IGR-TDV-09",
+      "IGR-TDV-15",
+      "IGR-TDV-21",
+      "IGR-TDV-37",
+      "IGR-TDV-04",
+      "IGR-TDV-07",
+      "IGR-TDV-12",
+      "IGR-TDV-16",
+      "IGR-TDV-36",
+      "IGR-TDV-44",
+      "IGR-TDV-01",
+      "IGR-TDV-18",
+      "IGR-TDV-23",
+      "IGR-TDV-20",
+      "IGR-TDV-22",
+      "IGR-TDV-27",
+      "IGR-TDV-39",
+      "IGR-TDV-33",
+      "IGR-TDV-32",
+      "IGR-TDV-10",
+      "IGR-TDV-42",
+      "IGR-TDV-40",
+      "IGR-TDV-08",
+      "IGR-TDV-13",
+      "IGR-TDV-19",
+      "IGR-TDV-17",
+      "IGR-TDV-45",
+      "IGR-TDV-30",
+      "IGR-TDV-29",
+      "IGR-TDV-34",
+      "IGR-TDV-03",
+      "IGR-TDV-28",
+      "IGR-TDV-06"
+    ],
+    "predicted_cards": {
+      "tee-target-price": [
+        11
+      ],
+      "tee-cheapest-target": [
+        11
+      ],
+      "tee-exists-under": [
+        11
+      ],
+      "tee-top-3": [
+        11,
+        7,
+        38
+      ],
+      "tee-xs-price": [
+        7
+      ]
+    }
+  },
+  "summary": {
+    "by_task": {
+      "tee-xs-price": {
+        "gated": true,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          59
+        ],
+        "tool_calls": [
+          120
+        ],
+        "cost": [
+          0.221281
+        ],
+        "mean_actions": 59.0,
+        "mean_tool_calls": 120.0,
+        "total_cost": 0.2213
+      }
+    },
+    "overall": {
+      "correct": 1
+    },
+    "total_cost": 0.2213,
+    "cost_unknown_runs": 0,
+    "box": null
+  },
+  "rows": [
+    {
+      "task": "tee-xs-price",
+      "family": "aplus",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "gave 14.34 as its answer",
+      "answer": "The lowest price anyone charges for size XS of the Thurlby tee, among listings that can actually be bought, is $14.34 at Oakhurst Textile Company (Thurlby Heavyweight Cotton Tee - Oakhurst Textile Company, http://localhost:7770/igr-tdv-41.html). I opened all 45 tee listings from the search results (",
+      "tool_calls": 120,
+      "actions": 59,
+      "observations": 61,
+      "cost_usd": 0.221281,
+      "elapsed_s": 665.1,
+      "error": null,
+      "log": "tee-xs-price-1.log",
+      "providers": {
+        "GMICloud": 121
+      }
+    }
+  ]
+}

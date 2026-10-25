@@ -1,0 +1,205 @@
+{
+  "ran_at": "2026-10-24T22:29:12",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "provider_routing": {
+    "order": [
+      "gmicloud",
+      "deepinfra",
+      "streamlake"
+    ],
+    "allow_fallbacks": false,
+    "quantizations": [
+      "fp8"
+    ]
+  },
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . How many of the Wexcombe tee listings offer size M?",
+  "elapsed_s": 215.2,
+  "cost_usd": 0.0727,
+  "cost_note": null,
+  "spend_before_usd": 103.021769246,
+  "spend_after_usd": 103.083552359,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "b0c33b9536d94c5bb47ad68e0fab638b",
+    "final": "26 of the 45 Wexcombe tee listings offer size M (i.e., an in-stock, selectable size-M option on the product page). Listings: IGR-TCL-01, 02, 03, 04, 07, 08, 10, 13, 16, 19, 20, 21, 22, 24, 25, 29, 30, 32, 33, 34, 37, 38, 40, 42, 43, 44. The other 19 listings either lack a size-M variant entirely (e.g., only L/XL/XXL or XS/S/L/XXL) or list M but with it out of stock (M not in the configurable product's 'salable' size map, matching a disabled/unsold option in the rendered size dropdown).",
+    "page": {
+      "url": "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+      "title": "Search results for: 'Wexcombe'"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 24,
+    "actions": 4,
+    "observations": 19,
+    "unclassified_tools": [
+      "mcp_playwright-official-browser_evaluate"
+    ],
+    "assistant_turns": 22,
+    "by_tool": {
+      "browser_evaluate": 14,
+      "browser_navigate": 4,
+      "browser_find": 2,
+      "browser_snapshot": 1,
+      "browser_probe_cards": 1,
+      "browser_probe_interactives": 1,
+      "mcp_playwright-official-browser_evaluate": 1
+    },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+      "http://localhost:7770/igr-tcl-01.html",
+      "http://localhost:7770/igr-tcl-19.html",
+      "http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-01.html"
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": "Size"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_find",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "mcp_playwright-official-browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-19.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_probe_cards",
+      "browser_navigate",
+      "browser_probe_interactives",
+      "browser_find",
+      "browser_evaluate",
+      "browser_find",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "mcp_playwright-official-browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate"
+    ],
+    "tokens": {
+      "prompt": 2417934,
+      "completion": 17837,
+      "total": 2435771,
+      "calls": 23
+    },
+    "cost_reported_usd": 0.0727,
+    "providers": {
+      "GMICloud": 23
+    }
+  },
+  "spend_delta_usd": 0.061783,
+  "log": "tee-count-stocked-1.log",
+  "shop": "gated",
+  "probe": "viewport",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "scaffold": "openjiuwen"
+}

@@ -1,0 +1,287 @@
+{
+  "ran_at": "2026-10-25T11:35:06",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "provider_routing": {
+    "order": [
+      "gmicloud",
+      "deepinfra",
+      "streamlake"
+    ],
+    "allow_fallbacks": false,
+    "quantizations": [
+      "fp8"
+    ]
+  },
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . What is the lowest price anyone charges for size M of the Wexcombe tee, among those that can actually be bought?",
+  "elapsed_s": 1284.2,
+  "cost_usd": 0.057164,
+  "cost_note": null,
+  "spend_before_usd": 119.116996233,
+  "spend_after_usd": 119.174580814,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "87c12905d85946beb97af01744920fe8",
+    "final": "Lowest buyable price for size M of the Wexcombe tee: $11.92, charged by Haldane Apparel for the 'Wexcombe Midweight Jersey Tee, Short Sleeve' (size M, 'Only 1 left!', http://localhost:7770/igr-tcl-40.html). Verified end-to-end: selecting M shows $11.92, option is enabled, and 'You added ... to your shopping cart.' succeeded. All 45 search results were analyzed (36 on page 1 + 9 on page 2): 26 sellers offer a buyable size M (via spConfig 'salable' + enabled dropdown option), and the cheapest of those is Haldane at $11.92 (next: Carnforth Textile Company at $13.02, Dalston Textiles at $14.48). Sellers with lower M prices were excluded because their size M is not actually buyable: Kettering Apparel $11.61, Whitlock Outfitters $12.85, Oakfield Textile Company $14.06, and Fairhaven Apparel $14.49 all have size M non-salable/disabled.",
+    "page": {
+      "url": "http://localhost:7770/igr-tcl-40.html",
+      "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Haldane Apparel"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 35,
+    "actions": 5,
+    "observations": 29,
+    "unclassified_tools": [
+      "mcp_playwright-official-browser_evaluate"
+    ],
+    "assistant_turns": 34,
+    "by_tool": {
+      "browser_evaluate": 27,
+      "browser_navigate": 3,
+      "browser_probe_cards": 2,
+      "browser_batch_interact": 1,
+      "browser_select_option": 1,
+      "mcp_playwright-official-browser_evaluate": 1
+    },
+    "selections": [
+      ".super-attribute-select",
+      "17"
+    ],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+      "http://localhost:7770/igr-tcl-23.html",
+      "http://localhost:7770/igr-tcl-40.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-23.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": "",
+        "batch": [
+          {
+            "op": "wait_for_selector",
+            "target": ".super-attribute-select"
+          },
+          {
+            "op": "select_option",
+            "target": ".super-attribute-select"
+          },
+          {
+            "op": "wait_for_stable",
+            "target": ""
+          },
+          {
+            "op": "extract_text",
+            "target": ".price-box .price"
+          },
+          {
+            "op": "extract_text",
+            "target": ".stock"
+          },
+          {
+            "op": "extract_text",
+            "target": ".configurable-variation-qty"
+          }
+        ]
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "17"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "mcp_playwright-official-browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-tcl-40.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_probe_cards",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_batch_interact",
+      "browser_select_option",
+      "browser_evaluate",
+      "mcp_playwright-official-browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate"
+    ],
+    "tokens": {
+      "prompt": 1761261,
+      "completion": 30256,
+      "total": 1791517,
+      "calls": 35
+    },
+    "cost_reported_usd": 0.057164,
+    "providers": {
+      "GMICloud": 35
+    }
+  },
+  "spend_delta_usd": 0.057585,
+  "log": "tee-target-price-2.log",
+  "shop": "gated",
+  "probe": "viewport",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "scaffold": "openjiuwen"
+}

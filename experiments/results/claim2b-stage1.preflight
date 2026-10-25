@@ -1,0 +1,3102 @@
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'the block (rules)' under experiments/tasks/claim2_analysis.json, flags: --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader rendered
+  parser rules
+  parser_model None
+  parser_temperature None
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (rules)' under experiments/tasks/claim2_analysis.json, flags: --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader rendered
+  parser rules
+  parser_model None
+  parser_temperature None
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (rules)' under experiments/tasks/claim2_analysis.json, flags: --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader rendered
+  parser rules
+  parser_model None
+  parser_temperature None
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (rules)' under experiments/tasks/claim2_analysis.json, flags: --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader rendered
+  parser rules
+  parser_model None
+  parser_temperature None
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (rules)' under experiments/tasks/claim2_analysis.json, flags: --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader rendered
+  parser rules
+  parser_model None
+  parser_temperature None
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (rules)' under experiments/tasks/claim2_analysis.json, flags: --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader rendered
+  parser rules
+  parser_model None
+  parser_temperature None
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (rules)' under experiments/tasks/claim2_analysis.json, flags: --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader rendered
+  parser rules
+  parser_model None
+  parser_temperature None
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (rules)' under experiments/tasks/claim2_analysis.json, flags: --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader rendered
+  parser rules
+  parser_model None
+  parser_temperature None
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (model)' under experiments/tasks/claim2_analysis.json, flags: --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box-model
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version 5
+  page_reader rendered
+  parser model
+  parser_model deepseek/deepseek-v4-flash
+  parser_temperature 0
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version 4
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (model)' under experiments/tasks/claim2_analysis.json, flags: --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box-model
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version 5
+  page_reader rendered
+  parser model
+  parser_model deepseek/deepseek-v4-flash
+  parser_temperature 0
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version 4
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (model)' under experiments/tasks/claim2_analysis.json, flags: --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box-model
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version 5
+  page_reader rendered
+  parser model
+  parser_model deepseek/deepseek-v4-flash
+  parser_temperature 0
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version 4
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (model)' under experiments/tasks/claim2_analysis.json, flags: --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box-model
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version 5
+  page_reader rendered
+  parser model
+  parser_model deepseek/deepseek-v4-flash
+  parser_temperature 0
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version 4
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (model)' under experiments/tasks/claim2_analysis.json, flags: --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box-model
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version 5
+  page_reader rendered
+  parser model
+  parser_model deepseek/deepseek-v4-flash
+  parser_temperature 0
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version 4
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (model)' under experiments/tasks/claim2_analysis.json, flags: --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box-model
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version 5
+  page_reader rendered
+  parser model
+  parser_model deepseek/deepseek-v4-flash
+  parser_temperature 0
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version 4
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (model)' under experiments/tasks/claim2_analysis.json, flags: --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box-model
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version 5
+  page_reader rendered
+  parser model
+  parser_model deepseek/deepseek-v4-flash
+  parser_temperature 0
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version 4
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (model)' under experiments/tasks/claim2_analysis.json, flags: --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box-model
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version 5
+  page_reader rendered
+  parser model
+  parser_model deepseek/deepseek-v4-flash
+  parser_temperature 0
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version 4
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'the block (rules)' under experiments/tasks/claim2_analysis.json, flags: --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader rendered
+  parser rules
+  parser_model None
+  parser_temperature None
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (rules)' under experiments/tasks/claim2_analysis.json, flags: --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader rendered
+  parser rules
+  parser_model None
+  parser_temperature None
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (model)' under experiments/tasks/claim2_analysis.json, flags: --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box-model
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version 5
+  page_reader rendered
+  parser model
+  parser_model deepseek/deepseek-v4-flash
+  parser_temperature 0
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version 4
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (model)' under experiments/tasks/claim2_analysis.json, flags: --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box-model
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version 5
+  page_reader rendered
+  parser model
+  parser_model deepseek/deepseek-v4-flash
+  parser_temperature 0
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version 4
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'the block (rules)' under experiments/tasks/claim2_analysis.json, flags: --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader rendered
+  parser rules
+  parser_model None
+  parser_temperature None
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (rules)' under experiments/tasks/claim2_analysis.json, flags: --box --parser rules --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader rendered
+  parser rules
+  parser_model None
+  parser_temperature None
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (model)' under experiments/tasks/claim2_analysis.json, flags: --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box-model
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version 5
+  page_reader rendered
+  parser model
+  parser_model deepseek/deepseek-v4-flash
+  parser_temperature 0
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version 4
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'the block (model)' under experiments/tasks/claim2_analysis.json, flags: --box --parser model --reading own --page-reader rendered --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box-model
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version 5
+  page_reader rendered
+  parser model
+  parser_model deepseek/deepseek-v4-flash
+  parser_temperature 0
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version 4
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+within what the protocol requires: the batch may run
+preflight of 'the block (model)' under experiments/tasks/claim2_analysis.json, flags: --tasks experiments/tasks/tasks_tee_claim.json --repeats 1 --box --reading own --parser model --parser-model deepseek/deepseek-v4-flash --max-steps 300 --clock 1800 --only rw3-06 --repeat-start 1
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box-model
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  draw Wexcombe:f59ae5dfcd
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version 5
+  page_reader rendered
+  parser model
+  parser_model deepseek/deepseek-v4-flash
+  parser_temperature 0
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version 4
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+  tasks_file tasks_tee_claim.json
+within what the protocol requires: the batch may run
+preflight of 'shipped' under experiments/tasks/claim2_analysis.json, flags: --tasks experiments/tasks/tasks_tee_claim.json --repeats 1 --max-steps 300 --clock 1800 --only tee-target-price --repeat-start 2
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm none
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  draw Wexcombe:f59ae5dfcd
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+  tasks_file tasks_tee_claim.json
+within what the protocol requires: the batch may run
+preflight of 'the block (model)' under experiments/tasks/claim2_analysis.json, flags: --tasks experiments/tasks/tasks_tee_claim.json --repeats 1 --box --reading own --parser model --parser-model deepseek/deepseek-v4-flash --max-steps 300 --clock 1800 --only tee-top-3 --repeat-start 3
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm box-model
+  box_version 20
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  draw Wexcombe:f59ae5dfcd
+  exhaustive_wording None
+  exhaustive_wording_version None
+  form_version 15
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version 5
+  page_reader rendered
+  parser model
+  parser_model deepseek/deepseek-v4-flash
+  parser_temperature 0
+  planner_version 2
+  policy off
+  primitives_version 13
+  probe viewport
+  prompt_version 4
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  rate_plan bound
+  reading own
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version 9
+  tasks_file tasks_tee_claim.json
+within what the protocol requires: the batch may run
+preflight of 'open everything (product)' under experiments/tasks/claim2_analysis.json, flags: --tasks experiments/tasks/tasks_tee_claim.json --repeats 1 --exhaustive --exhaustive-wording product --max-steps 300 --clock 1800 --only tee-target-price --repeat-start 3
+  agent_core_commit 18d45d6e90d3735ef72c1ee9ad2467821212f7db
+  agent_core_patch e455d3eba23bc37528505e59e4d13ed265fff67e
+  arm exhaustive-product
+  box_version None
+  browser_flags --block-service-workers --isolated
+  browser_origins http://localhost:7770
+  browser_tool 0.0.83
+  clock_s 1800
+  confidence off
+  draw Wexcombe:f59ae5dfcd
+  exhaustive_wording product
+  exhaustive_wording_version 2
+  form_version None
+  max_steps 300
+  model deepseek/deepseek-v4-flash
+  normalise_version None
+  page_reader None
+  parser None
+  parser_model None
+  parser_temperature None
+  planner_version None
+  policy off
+  primitives_version None
+  probe viewport
+  prompt_version None
+  provider_routing_agent {'order': ['gmicloud', 'deepinfra', 'streamlake'], 'allow_fallbacks': False, 'quantizations': ['fp8']}
+  provider_routing_parser None
+  rate_plan None
+  reading None
+  scaffold openjiuwen
+  shop gated
+  targeting False
+  targeting_version None
+  tasks_file tasks_tee_claim.json
+within what the protocol requires: the batch may run

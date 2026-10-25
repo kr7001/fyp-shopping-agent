@@ -1,0 +1,3058 @@
+{
+  "ran_at": "2026-10-25T11:13:04",
+  "repeats": 1,
+  "repeat_start": 2,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": false,
+  "exhaustive_wording": null,
+  "exhaustive_wording_version": null,
+  "targeting": false,
+  "targeting_version": 9,
+  "planner_version": 2,
+  "box": true,
+  "box_exhaust": false,
+  "arm": "box-model",
+  "box_version": 20,
+  "form_version": 15,
+  "primitives_version": 13,
+  "parser": "model",
+  "parser_model": "deepseek/deepseek-v4-flash",
+  "parser_temperature": 0,
+  "prompt_version": 4,
+  "normalise_version": 5,
+  "parse_charged_usd": 0.001945,
+  "parse_charges_unknown": 0,
+  "parse_tokens": {
+    "prompt": 25983,
+    "completion": 4843,
+    "total": 30826,
+    "calls": 5
+  },
+  "parse_tokens_unknown": 0,
+  "reading": "own",
+  "page_reader": "rendered",
+  "rate_plan": "bound",
+  "provider_routing": {
+    "agent": {
+      "order": [
+        "gmicloud",
+        "deepinfra",
+        "streamlake"
+      ],
+      "allow_fallbacks": false,
+      "quantizations": [
+        "fp8"
+      ]
+    },
+    "parser": {
+      "order": [
+        "gmicloud",
+        "deepinfra",
+        "streamlake"
+      ],
+      "allow_fallbacks": false,
+      "quantizations": [
+        "fp8"
+      ]
+    }
+  },
+  "browser_tool": "0.0.83",
+  "browser_origins": "http://localhost:7770",
+  "browser_flags": "--block-service-workers --isolated",
+  "scorer_version": 10,
+  "rules_version": null,
+  "model": "deepseek/deepseek-v4-flash",
+  "scaffold": "openjiuwen",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "agent_core_commit": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
+  "agent_core_patch": "e455d3eba23bc37528505e59e4d13ed265fff67e",
+  "tasks_file": "tasks_tee_claim.json",
+  "draw": "Wexcombe:f59ae5dfcd",
+  "instance": {
+    "market": "tee",
+    "design": "B",
+    "listings": 45,
+    "page_size": 36,
+    "pages": 2,
+    "first_screen": 4,
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tee": {
+      "target_option": "M",
+      "listings": 45,
+      "winner_index": 40,
+      "cheapest_card_index": 9,
+      "listings_with_target": 37,
+      "listings_without_target": 8,
+      "listings_target_buyable": 26,
+      "listings_target_sold_out": 11,
+      "cheapest_listed": {
+        "sku": "IGR-TCL-39",
+        "seller": "Kettering Apparel",
+        "price": 11.61
+      },
+      "cheapest_sold_out": {
+        "sku": "IGR-TCL-39",
+        "seller": "Kettering Apparel",
+        "price": 11.61
+      },
+      "sold_out_trap": true,
+      "winner": {
+        "sku": "IGR-TCL-40",
+        "seller": "Haldane Apparel",
+        "price": 11.92
+      },
+      "runner_up_price": 13.02,
+      "winning_margin": 1.1,
+      "cheapest_card": {
+        "sku": "IGR-TCL-09",
+        "seller": "Dovercourt Apparel",
+        "from_price": 10.13
+      },
+      "card_probe_wrong": true,
+      "cheapest_without_target": {
+        "sku": "IGR-TCL-09",
+        "seller": "Dovercourt Apparel",
+        "from_price": 10.13
+      },
+      "absent_trap": true,
+      "largest_size": "XXL",
+      "largest_size_winner": {
+        "sku": "IGR-TCL-11",
+        "seller": "Whitlock Outfitters",
+        "price": 11.64
+      },
+      "crossover": true,
+      "oracle_min_opens": 5,
+      "prunable_by_bound": 40,
+      "exhaustive_opens": 45,
+      "bound_strength": 0.889,
+      "from_price_range": [
+        10.13,
+        39.23
+      ],
+      "target_price_range": [
+        11.92,
+        40.92
+      ]
+    },
+    "xs": {
+      "target_option": "XS",
+      "listings": 45,
+      "listings_with_target": 36,
+      "listings_without_target": 9,
+      "listings_target_buyable": 28,
+      "listings_target_sold_out": 8,
+      "winner": {
+        "sku": "IGR-TCL-09",
+        "seller": "Dovercourt Apparel",
+        "price": 12.61
+      },
+      "runner_up_price": 14.11,
+      "winning_margin": 1.5,
+      "cheapest_sold_out": {
+        "sku": "IGR-TCL-11",
+        "seller": "Whitlock Outfitters",
+        "price": 11.51
+      },
+      "sold_out_trap": true,
+      "answer_on_a_card": false,
+      "oracle_min_opens": 5,
+      "prunable_by_bound": 40,
+      "target_price_range": [
+        12.61,
+        43.39
+      ]
+    },
+    "labels": {
+      "promo": [
+        {
+          "sku": "IGR-TCL-15",
+          "seller": "Marchmont Textiles Official Store",
+          "label": "XS - Promo $10.91",
+          "label_price": 10.91,
+          "price": 14.54,
+          "buyable": true
+        },
+        {
+          "sku": "IGR-TCL-39",
+          "seller": "Kettering Apparel",
+          "label": "XS - Promo $11.34",
+          "label_price": 11.34,
+          "price": 14.25,
+          "buyable": true
+        },
+        {
+          "sku": "IGR-TCL-10",
+          "seller": "Northwick Apparel Official Store",
+          "label": "XS - Promo $14.23",
+          "label_price": 14.23,
+          "price": 15.86,
+          "buyable": true
+        },
+        {
+          "sku": "IGR-TCL-33",
+          "seller": "Grantley Workwear Supply Co",
+          "label": "XS - Promo $25.74",
+          "label_price": 25.74,
+          "price": 29.61,
+          "buyable": true
+        },
+        {
+          "sku": "IGR-TCL-19",
+          "seller": "Elmsworth Textiles Official Store",
+          "label": "XS - Promo $28.55",
+          "label_price": 28.55,
+          "price": 32.95,
+          "buyable": true
+        }
+      ],
+      "scarcity": [
+        {
+          "sku": "IGR-TCL-19",
+          "seller": "Elmsworth Textiles Official Store",
+          "label": "M - Only 2 left!",
+          "qty": 138
+        },
+        {
+          "sku": "IGR-TCL-29",
+          "seller": "Oakhurst Textile Company",
+          "label": "M - Only 3 left!",
+          "qty": 128
+        },
+        {
+          "sku": "IGR-TCL-34",
+          "seller": "Fenwick Threads",
+          "label": "M - Only 2 left!",
+          "qty": 52
+        },
+        {
+          "sku": "IGR-TCL-40",
+          "seller": "Haldane Apparel",
+          "label": "M - Only 1 left!",
+          "qty": 94
+        }
+      ],
+      "lowest_promo": {
+        "sku": "IGR-TCL-15",
+        "seller": "Marchmont Textiles Official Store",
+        "label": "XS - Promo $10.91",
+        "label_price": 10.91,
+        "price": 14.54,
+        "buyable": true
+      }
+    },
+    "promo_check": {
+      "sku": "IGR-TCL-19",
+      "seller": "Elmsworth Textiles Official Store",
+      "promo": 28.55,
+      "price": 32.95,
+      "card": 26.99
+    },
+    "exists_limit": 12,
+    "predicted_order": [
+      "IGR-TCL-23",
+      "IGR-TCL-38",
+      "IGR-TCL-41",
+      "IGR-TCL-11",
+      "IGR-TCL-17",
+      "IGR-TCL-25",
+      "IGR-TCL-26",
+      "IGR-TCL-27",
+      "IGR-TCL-12",
+      "IGR-TCL-13",
+      "IGR-TCL-30",
+      "IGR-TCL-08",
+      "IGR-TCL-21",
+      "IGR-TCL-28",
+      "IGR-TCL-44",
+      "IGR-TCL-03",
+      "IGR-TCL-07",
+      "IGR-TCL-09",
+      "IGR-TCL-24",
+      "IGR-TCL-32",
+      "IGR-TCL-42",
+      "IGR-TCL-43",
+      "IGR-TCL-34",
+      "IGR-TCL-40",
+      "IGR-TCL-31",
+      "IGR-TCL-45",
+      "IGR-TCL-01",
+      "IGR-TCL-14",
+      "IGR-TCL-16",
+      "IGR-TCL-22",
+      "IGR-TCL-33",
+      "IGR-TCL-39",
+      "IGR-TCL-05",
+      "IGR-TCL-20",
+      "IGR-TCL-15",
+      "IGR-TCL-29",
+      "IGR-TCL-06",
+      "IGR-TCL-02",
+      "IGR-TCL-04",
+      "IGR-TCL-10",
+      "IGR-TCL-37",
+      "IGR-TCL-36",
+      "IGR-TCL-18",
+      "IGR-TCL-35",
+      "IGR-TCL-19"
+    ],
+    "predicted_cards": {
+      "tee-target-price": [
+        24
+      ],
+      "tee-cheapest-target": [
+        24
+      ],
+      "tee-exists-under": [
+        24
+      ],
+      "tee-top-3": [
+        24,
+        19,
+        38
+      ],
+      "tee-xs-price": [
+        18
+      ]
+    }
+  },
+  "summary": {
+    "by_task": {
+      "tee-xs-price": {
+        "gated": true,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          11
+        ],
+        "tool_calls": [
+          27
+        ],
+        "cost": [
+          0.031885
+        ],
+        "mean_actions": 11.0,
+        "mean_tool_calls": 27.0,
+        "total_cost": 0.0319
+      },
+      "tee-promo-check": {
+        "gated": true,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          5
+        ],
+        "tool_calls": [
+          12
+        ],
+        "cost": [
+          0.007706
+        ],
+        "mean_actions": 5.0,
+        "mean_tool_calls": 12.0,
+        "total_cost": 0.0077
+      },
+      "decline-delivery": {
+        "gated": false,
+        "verdicts": {
+          "refused": 1
+        },
+        "actions": [],
+        "tool_calls": [],
+        "cost": [
+          0.000222
+        ],
+        "mean_actions": null,
+        "mean_tool_calls": null,
+        "total_cost": 0.0002
+      },
+      "decline-fit": {
+        "gated": false,
+        "verdicts": {
+          "refused": 1
+        },
+        "actions": [],
+        "tool_calls": [],
+        "cost": [
+          0.000523
+        ],
+        "mean_actions": null,
+        "mean_tool_calls": null,
+        "total_cost": 0.0005
+      },
+      "decline-scarcity": {
+        "gated": false,
+        "verdicts": {
+          "refused": 1
+        },
+        "actions": [],
+        "tool_calls": [],
+        "cost": [
+          0.000278
+        ],
+        "mean_actions": null,
+        "mean_tool_calls": null,
+        "total_cost": 0.0003
+      }
+    },
+    "overall": {
+      "correct": 2,
+      "refused": 3
+    },
+    "total_cost": 0.0406,
+    "cost_unknown_runs": 0,
+    "box": {
+      "asked": 0,
+      "refused": 3,
+      "bypassed": 0,
+      "fallback": 0
+    }
+  },
+  "rows": [
+    {
+      "task": "tee-xs-price",
+      "family": "aplus",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "gave 12.61 as its answer",
+      "answer": "The lowest price anyone charges for a buyable size XS of the Wexcombe tee is $12.61, sold by Dovercourt Apparel (http://localhost:7770/igr-tcl-09.html). I verified availability rather than relying on the menu label: on the Dovercourt listing the XS option was selectable (not disabled/greyed out), th",
+      "tool_calls": 27,
+      "actions": 11,
+      "observations": 15,
+      "cost_usd": 0.031885,
+      "elapsed_s": 155.7,
+      "error": null,
+      "log": "tee-xs-price-2.log",
+      "strategy": "availability_bound",
+      "box": {
+        "box_version": 20,
+        "form_version": 15,
+        "primitives_version": 13,
+        "kind": "availability_bound",
+        "page": {
+          "url": "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+          "count": 45,
+          "total": 45,
+          "next_page": false,
+          "pages": [
+            "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+            "http://localhost:7770/catalogsearch/result/index/?p=2&q=Wexcombe"
+          ],
+          "reader": "rendered",
+          "listings": [
+            {
+              "seller": "Fairhaven Apparel",
+              "advertised": 17.51,
+              "url": "http://localhost:7770/igr-tcl-23.html",
+              "title": "Wexcombe Midweight Jersey Tee - Fairhaven Apparel"
+            },
+            {
+              "seller": "Alderney Threads",
+              "advertised": 17.15,
+              "url": "http://localhost:7770/igr-tcl-38.html",
+              "title": "Wexcombe Midweight Jersey Tee - Alderney Threads"
+            },
+            {
+              "seller": "Foxcombe Threads",
+              "advertised": 31.65,
+              "url": "http://localhost:7770/igr-tcl-41.html",
+              "title": "Wexcombe Midweight Jersey Tee - Foxcombe Threads"
+            },
+            {
+              "seller": "Whitlock Outfitters",
+              "advertised": 11.09,
+              "url": "http://localhost:7770/igr-tcl-11.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Whitlock Outfitters"
+            },
+            {
+              "seller": "Oakfield Textile Company",
+              "advertised": 11.69,
+              "url": "http://localhost:7770/igr-tcl-17.html",
+              "title": "Wexcombe Midweight Jersey Tee - Oakfield Textile Company"
+            },
+            {
+              "seller": "Dunmore Outfitters",
+              "advertised": 16.3,
+              "url": "http://localhost:7770/igr-tcl-25.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Dunmore Outfitters"
+            },
+            {
+              "seller": "Gisburn Garments",
+              "advertised": 24.38,
+              "url": "http://localhost:7770/igr-tcl-26.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Gisburn Garments"
+            },
+            {
+              "seller": "Westmere Textile Company",
+              "advertised": 23.17,
+              "url": "http://localhost:7770/igr-tcl-27.html",
+              "title": "Wexcombe Midweight Jersey Tee - Westmere Textile Company"
+            },
+            {
+              "seller": "Kelsall Textile Company",
+              "advertised": 33.07,
+              "url": "http://localhost:7770/igr-tcl-12.html",
+              "title": "Wexcombe Midweight Jersey Tee - Kelsall Textile Company"
+            },
+            {
+              "seller": "Marlow Garments",
+              "advertised": 32.45,
+              "url": "http://localhost:7770/igr-tcl-13.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Marlow Garments"
+            },
+            {
+              "seller": "Brockwell Garments",
+              "advertised": 29.35,
+              "url": "http://localhost:7770/igr-tcl-30.html",
+              "title": "Wexcombe Midweight Jersey Tee - Brockwell Garments"
+            },
+            {
+              "seller": "Chandler Workwear Supply Co",
+              "advertised": 22.25,
+              "url": "http://localhost:7770/igr-tcl-08.html",
+              "title": "Wexcombe Midweight Jersey Tee - Chandler Workwear Supply Co"
+            },
+            {
+              "seller": "Verity Clothing Company Ltd",
+              "advertised": 32.61,
+              "url": "http://localhost:7770/igr-tcl-21.html",
+              "title": "Wexcombe Midweight Jersey Tee - Verity Clothing Company Ltd"
+            },
+            {
+              "seller": "Holbeck Clothing Company Ltd",
+              "advertised": 32.56,
+              "url": "http://localhost:7770/igr-tcl-28.html",
+              "title": "Wexcombe Midweight Jersey Tee - Holbeck Clothing Company Ltd"
+            },
+            {
+              "seller": "Yarrow Uniform Supply",
+              "advertised": 20.02,
+              "url": "http://localhost:7770/igr-tcl-44.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Yarrow Uniform Supply"
+            },
+            {
+              "seller": "Bramley Garment Works",
+              "advertised": 28.76,
+              "url": "http://localhost:7770/igr-tcl-03.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Bramley Garment Works"
+            },
+            {
+              "seller": "Larkspur Outfitters",
+              "advertised": 23.01,
+              "url": "http://localhost:7770/igr-tcl-07.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Larkspur Outfitters"
+            },
+            {
+              "seller": "Dovercourt Apparel",
+              "advertised": 10.13,
+              "url": "http://localhost:7770/igr-tcl-09.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Dovercourt Apparel"
+            },
+            {
+              "seller": "Carnforth Textile Company",
+              "advertised": 11.38,
+              "url": "http://localhost:7770/igr-tcl-24.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Carnforth Textile Company"
+            },
+            {
+              "seller": "Thornbury Apparel Official Store",
+              "advertised": 26.15,
+              "url": "http://localhost:7770/igr-tcl-32.html",
+              "title": "Wexcombe Midweight Jersey Tee - Thornbury Apparel Official Store"
+            },
+            {
+              "seller": "Jarrow Textiles Official Store",
+              "advertised": 33.5,
+              "url": "http://localhost:7770/igr-tcl-42.html",
+              "title": "Wexcombe Midweight Jersey Tee - Jarrow Textiles Official Store"
+            },
+            {
+              "seller": "Lymington Clothing Company Ltd",
+              "advertised": 18.68,
+              "url": "http://localhost:7770/igr-tcl-43.html",
+              "title": "Wexcombe Midweight Jersey Tee - Lymington Clothing Company Ltd"
+            },
+            {
+              "seller": "Fenwick Threads",
+              "advertised": 19.69,
+              "url": "http://localhost:7770/igr-tcl-34.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Fenwick Threads"
+            },
+            {
+              "seller": "Haldane Apparel",
+              "advertised": 11.92,
+              "url": "http://localhost:7770/igr-tcl-40.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Haldane Apparel"
+            },
+            {
+              "seller": "Everleigh Garments",
+              "advertised": 33.62,
+              "url": "http://localhost:7770/igr-tcl-31.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Everleigh Garments"
+            },
+            {
+              "seller": "Stonebridge Workwear Supply Co",
+              "advertised": 32.08,
+              "url": "http://localhost:7770/igr-tcl-45.html",
+              "title": "Wexcombe Midweight Jersey Tee - Stonebridge Workwear Supply Co"
+            },
+            {
+              "seller": "Fordwich Apparel Official Store",
+              "advertised": 30.65,
+              "url": "http://localhost:7770/igr-tcl-01.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Fordwich Apparel Official Store"
+            },
+            {
+              "seller": "Redhill Uniform Supply",
+              "advertised": 28.7,
+              "url": "http://localhost:7770/igr-tcl-14.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Redhill Uniform Supply"
+            },
+            {
+              "seller": "Ivybridge Clothing Co",
+              "advertised": 29.14,
+              "url": "http://localhost:7770/igr-tcl-16.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ivybridge Clothing Co"
+            },
+            {
+              "seller": "Thirsk Textiles Official Store",
+              "advertised": 27.98,
+              "url": "http://localhost:7770/igr-tcl-22.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Thirsk Textiles Official Store"
+            },
+            {
+              "seller": "Grantley Workwear Supply Co",
+              "advertised": 29.61,
+              "url": "http://localhost:7770/igr-tcl-33.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Grantley Workwear Supply Co"
+            },
+            {
+              "seller": "Kettering Apparel",
+              "advertised": 13.91,
+              "url": "http://localhost:7770/igr-tcl-39.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Kettering Apparel"
+            },
+            {
+              "seller": "Copperfield Workwear Supply Co",
+              "advertised": 15.26,
+              "url": "http://localhost:7770/igr-tcl-05.html",
+              "title": "Wexcombe Midweight Jersey Tee - Copperfield Workwear Supply Co"
+            },
+            {
+              "seller": "Garrick Apparel",
+              "advertised": 39.23,
+              "url": "http://localhost:7770/igr-tcl-20.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Garrick Apparel"
+            },
+            {
+              "seller": "Marchmont Textiles Official Store",
+              "advertised": 13.57,
+              "url": "http://localhost:7770/igr-tcl-15.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Marchmont Textiles Official Store"
+            },
+            {
+              "seller": "Oakhurst Textile Company",
+              "advertised": 30.35,
+              "url": "http://localhost:7770/igr-tcl-29.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Oakhurst Textile Company"
+            },
+            {
+              "seller": "Ingleton Apparel Official Store",
+              "advertised": 17.27,
+              "url": "http://localhost:7770/igr-tcl-06.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Ingleton Apparel Official Store"
+            },
+            {
+              "seller": "Dalston Textiles Official Store",
+              "advertised": 12.85,
+              "url": "http://localhost:7770/igr-tcl-02.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Dalston Textiles Official Store"
+            },
+            {
+              "seller": "Quarles Apparel Official Store",
+              "advertised": 18.32,
+              "url": "http://localhost:7770/igr-tcl-04.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Quarles Apparel Official Store"
+            },
+            {
+              "seller": "Northwick Apparel Official Store",
+              "advertised": 15.86,
+              "url": "http://localhost:7770/igr-tcl-10.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Northwick Apparel Official Store"
+            },
+            {
+              "seller": "Crowhurst Clothing Company Ltd",
+              "advertised": 31.22,
+              "url": "http://localhost:7770/igr-tcl-37.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Crowhurst Clothing Company Ltd"
+            },
+            {
+              "seller": "Ambleside Garment Works",
+              "advertised": 22.23,
+              "url": "http://localhost:7770/igr-tcl-36.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ambleside Garment Works"
+            },
+            {
+              "seller": "Ashgrove Workwear Supply Co",
+              "advertised": 35.7,
+              "url": "http://localhost:7770/igr-tcl-18.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ashgrove Workwear Supply Co"
+            },
+            {
+              "seller": "Abbotsley Apparel Official Store",
+              "advertised": 32.84,
+              "url": "http://localhost:7770/igr-tcl-35.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Abbotsley Apparel Official Store"
+            },
+            {
+              "seller": "Elmsworth Textiles Official Store",
+              "advertised": 26.99,
+              "url": "http://localhost:7770/igr-tcl-19.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Elmsworth Textiles Official Store"
+            }
+          ]
+        },
+        "asked": false,
+        "ask": null,
+        "reading": null,
+        "reading_by": null,
+        "query": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . What is the lowest price anyone charges for size XS of the Wexcombe tee, among those that can actually be bought?\n\nThe search results list 45 listings on 2 pages; there is no further page.\nListings by advertised price, read from the results pages:\n1. Dovercourt Apparel, advertised $10.13, http://localhost:7770/igr-tcl-09.html\n2. Whitlock Outfitters, advertised $11.09, http://localhost:7770/igr-tcl-11.html\n3. Carnforth Textile Company, advertised $11.38, http://localhost:7770/igr-tcl-24.html\n4. Oakfield Textile Company, advertised $11.69, http://localhost:7770/igr-tcl-17.html\n5. Haldane Apparel, advertised $11.92, http://localhost:7770/igr-tcl-40.html\n6. Dalston Textiles Official Store, advertised $12.85, http://localhost:7770/igr-tcl-02.html\n7. Marchmont Textiles Official Store, advertised $13.57, http://localhost:7770/igr-tcl-15.html\n8. Kettering Apparel, advertised $13.91, http://localhost:7770/igr-tcl-39.html\n9. Copperfield Workwear Supply Co, advertised $15.26, http://localhost:7770/igr-tcl-05.html\n10. Northwick Apparel Official Store, advertised $15.86, http://localhost:7770/igr-tcl-10.html\n11. Dunmore Outfitters, advertised $16.30, http://localhost:7770/igr-tcl-25.html\n12. Alderney Threads, advertised $17.15, http://localhost:7770/igr-tcl-38.html\n13. Ingleton Apparel Official Store, advertised $17.27, http://localhost:7770/igr-tcl-06.html\n14. Fairhaven Apparel, advertised $17.51, http://localhost:7770/igr-tcl-23.html\n15. Quarles Apparel Official Store, advertised $18.32, http://localhost:7770/igr-tcl-04.html\n16. Lymington Clothing Company Ltd, advertised $18.68, http://localhost:7770/igr-tcl-43.html\n17. Fenwick Threads, advertised $19.69, http://localhost:7770/igr-tcl-34.html\n18. Yarrow Uniform Supply, advertised $20.02, http://localhost:7770/igr-tcl-44.html\n19. Ambleside Garment Works, advertised $22.23, http://localhost:7770/igr-tcl-36.html\n20. Chandler Workwear Supply Co, advertised $22.25, http://localhost:7770/igr-tcl-08.html\n21. Larkspur Outfitters, advertised $23.01, http://localhost:7770/igr-tcl-07.html\n22. Westmere Textile Company, advertised $23.17, http://localhost:7770/igr-tcl-27.html\n23. Gisburn Garments, advertised $24.38, http://localhost:7770/igr-tcl-26.html\n24. Thornbury Apparel Official Store, advertised $26.15, http://localhost:7770/igr-tcl-32.html\n25. Elmsworth Textiles Official Store, advertised $26.99, http://localhost:7770/igr-tcl-19.html\n26. Thirsk Textiles Official Store, advertised $27.98, http://localhost:7770/igr-tcl-22.html\n27. Redhill Uniform Supply, advertised $28.70, http://localhost:7770/igr-tcl-14.html\n28. Bramley Garment Works, advertised $28.76, http://localhost:7770/igr-tcl-03.html\n29. Ivybridge Clothing Co, advertised $29.14, http://localhost:7770/igr-tcl-16.html\n30. Brockwell Garments, advertised $29.35, http://localhost:7770/igr-tcl-30.html\n31. Grantley Workwear Supply Co, advertised $29.61, http://localhost:7770/igr-tcl-33.html\n32. Oakhurst Textile Company, advertised $30.35, http://localhost:7770/igr-tcl-29.html\n33. Fordwich Apparel Official Store, advertised $30.65, http://localhost:7770/igr-tcl-01.html\n34. Crowhurst Clothing Company Ltd, advertised $31.22, http://localhost:7770/igr-tcl-37.html\n35. Foxcombe Threads, advertised $31.65, http://localhost:7770/igr-tcl-41.html\n36. Stonebridge Workwear Supply Co, advertised $32.08, http://localhost:7770/igr-tcl-45.html\n37. Marlow Garments, advertised $32.45, http://localhost:7770/igr-tcl-13.html\n38. Holbeck Clothing Company Ltd, advertised $32.56, http://localhost:7770/igr-tcl-28.html\n39. Verity Clothing Company Ltd, advertised $32.61, http://localhost:7770/igr-tcl-21.html\n40. Abbotsley Apparel Official Store, advertised $32.84, http://localhost:7770/igr-tcl-35.html\n41. Kelsall Textile Company, advertised $33.07, http://localhost:7770/igr-tcl-12.html\n42. Jarrow Textiles Official Store, advertised $33.50, http://localhost:7770/igr-tcl-42.html\n43. Everleigh Garments, advertised $33.62, http://localhost:7770/igr-tcl-31.html\n44. Ashgrove Workwear Supply Co, advertised $35.70, http://localhost:7770/igr-tcl-18.html\n45. Garrick Apparel, advertised $39.23, http://localhost:7770/igr-tcl-20.html\n\nUse this retrieval strategy, and follow it rather than opening listings in the order they appear.\n1. Read the advertised price of every listing from the search results first. That price is the cheapest option in that listing that can be bought, so nothing in it that can be bought costs less.\n2. Open listings in ascending order of advertised price. For each one, do two separate things. First, choose the option asked about, then look at the page again and read the price it now shows. The price a listing shows before you choose is its cheapest option that can be bought, not necessarily the one asked about, and the reply to choosing an option does not show the new price. Second, check whether that option can actually be bought. An option can be listed and still be unavailable, in which case it is shown as disabled or greyed out and cannot be chosen from the menu, so it has no price you can use.\n3. A listing only becomes your best candidate if the option is both cheaper and available. A cheaper unavailable one changes nothing.\n4. Skip every unopened listing whose advertised price is at or above your best available total. Such a listing cannot win whatever its stock.\n5. Stop when no unopened listing has an advertised price below your best available total.\nIn your answer, name the seller, give the price, and say explicitly that you checked the option was available rather than only listed. Say how many listings you opened, how many you skipped, and how many you rejected for being unavailable.\nImportant: the figure this bound produces is a limit used only to decide what to skip. It is not a price read for the option asked about, and must never appear in your answer as one. Only report a price you read from a listing you opened, for the exact option asked about, read after that option was chosen. Never pair an advertised price with an option unless you saw that price shown while that option was chosen.\nA size's label in the menu can carry promotional or stock text; the price is the one shown after the size is chosen, and a label's claim is not a checked fact.",
+        "form": {
+          "form_version": 15,
+          "kind": "availability_bound",
+          "quantifier": "argmin",
+          "objective": "price",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "XS"
+            },
+            {
+              "attribute": "availability",
+              "op": "=",
+              "value": "buyable"
+            }
+          ],
+          "population": "results",
+          "k": null,
+          "reading": null,
+          "unknowns": [],
+          "source": "model",
+          "evidence": {
+            "quantifier": "lowest price",
+            "objective": "price anyone charges for size XS",
+            "filters": "size XS; can actually be bought",
+            "population": "the results page URL",
+            "k": "None",
+            "negated": "False",
+            "reading": "None",
+            "unknowns": "[]",
+            "ambiguities": "[]"
+          },
+          "negated": false,
+          "ambiguities": [],
+          "prompt_version": 4
+        },
+        "refuse": null,
+        "bypassed": false,
+        "bypass_reason": null,
+        "fallback": false,
+        "plan": {
+          "primitives_version": 13,
+          "primitive": "bound_prune",
+          "kind": "availability_bound",
+          "stop_rule": "when no unopened listing advertises below the best total found that can actually be supplied",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "XS"
+            },
+            {
+              "attribute": "availability",
+              "op": "=",
+              "value": "buyable"
+            }
+          ],
+          "candidates": [
+            {
+              "seller": "Dovercourt Apparel",
+              "url": "http://localhost:7770/igr-tcl-09.html"
+            },
+            {
+              "seller": "Whitlock Outfitters",
+              "url": "http://localhost:7770/igr-tcl-11.html"
+            },
+            {
+              "seller": "Carnforth Textile Company",
+              "url": "http://localhost:7770/igr-tcl-24.html"
+            },
+            {
+              "seller": "Oakfield Textile Company",
+              "url": "http://localhost:7770/igr-tcl-17.html"
+            },
+            {
+              "seller": "Haldane Apparel",
+              "url": "http://localhost:7770/igr-tcl-40.html"
+            },
+            {
+              "seller": "Dalston Textiles Official Store",
+              "url": "http://localhost:7770/igr-tcl-02.html"
+            },
+            {
+              "seller": "Marchmont Textiles Official Store",
+              "url": "http://localhost:7770/igr-tcl-15.html"
+            },
+            {
+              "seller": "Kettering Apparel",
+              "url": "http://localhost:7770/igr-tcl-39.html"
+            },
+            {
+              "seller": "Copperfield Workwear Supply Co",
+              "url": "http://localhost:7770/igr-tcl-05.html"
+            },
+            {
+              "seller": "Northwick Apparel Official Store",
+              "url": "http://localhost:7770/igr-tcl-10.html"
+            },
+            {
+              "seller": "Dunmore Outfitters",
+              "url": "http://localhost:7770/igr-tcl-25.html"
+            },
+            {
+              "seller": "Alderney Threads",
+              "url": "http://localhost:7770/igr-tcl-38.html"
+            },
+            {
+              "seller": "Ingleton Apparel Official Store",
+              "url": "http://localhost:7770/igr-tcl-06.html"
+            },
+            {
+              "seller": "Fairhaven Apparel",
+              "url": "http://localhost:7770/igr-tcl-23.html"
+            },
+            {
+              "seller": "Quarles Apparel Official Store",
+              "url": "http://localhost:7770/igr-tcl-04.html"
+            },
+            {
+              "seller": "Lymington Clothing Company Ltd",
+              "url": "http://localhost:7770/igr-tcl-43.html"
+            },
+            {
+              "seller": "Fenwick Threads",
+              "url": "http://localhost:7770/igr-tcl-34.html"
+            },
+            {
+              "seller": "Yarrow Uniform Supply",
+              "url": "http://localhost:7770/igr-tcl-44.html"
+            },
+            {
+              "seller": "Ambleside Garment Works",
+              "url": "http://localhost:7770/igr-tcl-36.html"
+            },
+            {
+              "seller": "Chandler Workwear Supply Co",
+              "url": "http://localhost:7770/igr-tcl-08.html"
+            },
+            {
+              "seller": "Larkspur Outfitters",
+              "url": "http://localhost:7770/igr-tcl-07.html"
+            },
+            {
+              "seller": "Westmere Textile Company",
+              "url": "http://localhost:7770/igr-tcl-27.html"
+            },
+            {
+              "seller": "Gisburn Garments",
+              "url": "http://localhost:7770/igr-tcl-26.html"
+            },
+            {
+              "seller": "Thornbury Apparel Official Store",
+              "url": "http://localhost:7770/igr-tcl-32.html"
+            },
+            {
+              "seller": "Elmsworth Textiles Official Store",
+              "url": "http://localhost:7770/igr-tcl-19.html"
+            },
+            {
+              "seller": "Thirsk Textiles Official Store",
+              "url": "http://localhost:7770/igr-tcl-22.html"
+            },
+            {
+              "seller": "Redhill Uniform Supply",
+              "url": "http://localhost:7770/igr-tcl-14.html"
+            },
+            {
+              "seller": "Bramley Garment Works",
+              "url": "http://localhost:7770/igr-tcl-03.html"
+            },
+            {
+              "seller": "Ivybridge Clothing Co",
+              "url": "http://localhost:7770/igr-tcl-16.html"
+            },
+            {
+              "seller": "Brockwell Garments",
+              "url": "http://localhost:7770/igr-tcl-30.html"
+            },
+            {
+              "seller": "Grantley Workwear Supply Co",
+              "url": "http://localhost:7770/igr-tcl-33.html"
+            },
+            {
+              "seller": "Oakhurst Textile Company",
+              "url": "http://localhost:7770/igr-tcl-29.html"
+            },
+            {
+              "seller": "Fordwich Apparel Official Store",
+              "url": "http://localhost:7770/igr-tcl-01.html"
+            },
+            {
+              "seller": "Crowhurst Clothing Company Ltd",
+              "url": "http://localhost:7770/igr-tcl-37.html"
+            },
+            {
+              "seller": "Foxcombe Threads",
+              "url": "http://localhost:7770/igr-tcl-41.html"
+            },
+            {
+              "seller": "Stonebridge Workwear Supply Co",
+              "url": "http://localhost:7770/igr-tcl-45.html"
+            },
+            {
+              "seller": "Marlow Garments",
+              "url": "http://localhost:7770/igr-tcl-13.html"
+            },
+            {
+              "seller": "Holbeck Clothing Company Ltd",
+              "url": "http://localhost:7770/igr-tcl-28.html"
+            },
+            {
+              "seller": "Verity Clothing Company Ltd",
+              "url": "http://localhost:7770/igr-tcl-21.html"
+            },
+            {
+              "seller": "Abbotsley Apparel Official Store",
+              "url": "http://localhost:7770/igr-tcl-35.html"
+            },
+            {
+              "seller": "Kelsall Textile Company",
+              "url": "http://localhost:7770/igr-tcl-12.html"
+            },
+            {
+              "seller": "Jarrow Textiles Official Store",
+              "url": "http://localhost:7770/igr-tcl-42.html"
+            },
+            {
+              "seller": "Everleigh Garments",
+              "url": "http://localhost:7770/igr-tcl-31.html"
+            },
+            {
+              "seller": "Ashgrove Workwear Supply Co",
+              "url": "http://localhost:7770/igr-tcl-18.html"
+            },
+            {
+              "seller": "Garrick Apparel",
+              "url": "http://localhost:7770/igr-tcl-20.html"
+            }
+          ],
+          "exhaust": false,
+          "rate_plan": "bound"
+        },
+        "exhaust": false,
+        "parse": {
+          "parser": "model",
+          "used": "model",
+          "fallback_reason": null,
+          "declined": false,
+          "prompt_version": 4,
+          "normalise_version": 5,
+          "rules_form": {
+            "form_version": 15,
+            "kind": "availability_bound",
+            "quantifier": "argmin",
+            "objective": "price",
+            "filters": [
+              {
+                "attribute": "size",
+                "op": "=",
+                "value": "XS"
+              },
+              {
+                "attribute": "availability",
+                "op": "=",
+                "value": "buyable"
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [],
+            "source": "rules",
+            "evidence": {
+              "population": "the results URL",
+              "filter:size": "size XS",
+              "filter:availability": "bought",
+              "quantifier": "lowest price",
+              "objective": "lowest price"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": null
+          },
+          "model_form": {
+            "form_version": 15,
+            "kind": "availability_bound",
+            "quantifier": "argmin",
+            "objective": "price",
+            "filters": [
+              {
+                "attribute": "size",
+                "op": "=",
+                "value": "XS"
+              },
+              {
+                "attribute": "availability",
+                "op": "=",
+                "value": "buyable"
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [],
+            "source": "model",
+            "evidence": {
+              "quantifier": "lowest price",
+              "objective": "price anyone charges for size XS",
+              "filters": "size XS; can actually be bought",
+              "population": "the results page URL",
+              "k": "None",
+              "negated": "False",
+              "reading": "None",
+              "unknowns": "[]",
+              "ambiguities": "[]"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": 4
+          },
+          "model_raw": {
+            "form_version": 15,
+            "kind": "availability_bound",
+            "quantifier": "argmin",
+            "objective": "price",
+            "filters": [
+              {
+                "attribute": "size",
+                "op": "=",
+                "value": "XS"
+              },
+              {
+                "attribute": "availability",
+                "op": "=",
+                "value": "buyable"
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [],
+            "source": "model",
+            "evidence": {
+              "quantifier": "lowest price",
+              "objective": "price anyone charges for size XS",
+              "filters": "size XS; can actually be bought",
+              "population": "the results page URL",
+              "k": "None",
+              "negated": "False",
+              "reading": "None",
+              "unknowns": "[]",
+              "ambiguities": "[]"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": 4
+          },
+          "changes": [],
+          "reply": "{\n  \"quantifier\": \"argmin\",\n  \"objective\": \"price\",\n  \"filters\": [\n    {\"attribute\": \"size\", \"op\": \"=\", \"value\": \"XS\"},\n    {\"attribute\": \"availability\", \"op\": \"=\", \"value\": \"buyable\"}\n  ],\n  \"population\": \"results\",\n  \"k\": null,\n  \"negated\": false,\n  \"reading\": null,\n  \"unknowns\": [],\n  \"ambiguities\": [],\n  \"evidence\": {\n    \"quantifier\": \"lowest price\",\n    \"objective\": \"price anyone charges for size XS\",\n    \"filters\": \"size XS; can actually be bought\",\n    \"population\": \"the results page URL\",\n    \"k\": null,\n    \"negated\": false,\n    \"reading\": null,\n    \"unknowns\": [],\n    \"ambiguities\": []\n  }\n}"
+        },
+        "scope": {
+          "product": null,
+          "products": [
+            "tee"
+          ],
+          "applied": false,
+          "kept": null,
+          "urls": [],
+          "reason": "every listing's title names the same product, the tee"
+        },
+        "rate_plan": "bound",
+        "ask_reason": null,
+        "clash": null,
+        "clash_settled": false
+      },
+      "reading": null,
+      "reading_by": null,
+      "parse_cost_usd": 0.000606,
+      "parse_tokens": {
+        "prompt": 5194,
+        "completion": 732,
+        "total": 5926,
+        "calls": 1
+      },
+      "parse_provider": "GMICloud",
+      "providers": {
+        "GMICloud": 28
+      }
+    },
+    {
+      "task": "tee-promo-check",
+      "family": "aplus",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "gave the real price 32.95",
+      "answer": "No. The Elmsworth Textiles Official Store listing's size menu labels XS as 'XS - Promo $28.55', but after choosing size XS on that listing (opened at http://localhost:7770/igr-tcl-19.html), the price the page shows for XS is $32.95. The $28.55 figure appears only inside the menu option label as a pr",
+      "tool_calls": 12,
+      "actions": 5,
+      "observations": 7,
+      "cost_usd": 0.007706,
+      "elapsed_s": 63.2,
+      "error": null,
+      "log": "tee-promo-check-2.log",
+      "strategy": "named_lookup",
+      "box": {
+        "box_version": 20,
+        "form_version": 15,
+        "primitives_version": 13,
+        "kind": "named_lookup",
+        "page": {
+          "url": "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+          "count": 45,
+          "total": 45,
+          "next_page": false,
+          "pages": [
+            "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+            "http://localhost:7770/catalogsearch/result/index/?p=2&q=Wexcombe"
+          ],
+          "reader": "rendered",
+          "listings": [
+            {
+              "seller": "Fairhaven Apparel",
+              "advertised": 17.51,
+              "url": "http://localhost:7770/igr-tcl-23.html",
+              "title": "Wexcombe Midweight Jersey Tee - Fairhaven Apparel"
+            },
+            {
+              "seller": "Alderney Threads",
+              "advertised": 17.15,
+              "url": "http://localhost:7770/igr-tcl-38.html",
+              "title": "Wexcombe Midweight Jersey Tee - Alderney Threads"
+            },
+            {
+              "seller": "Foxcombe Threads",
+              "advertised": 31.65,
+              "url": "http://localhost:7770/igr-tcl-41.html",
+              "title": "Wexcombe Midweight Jersey Tee - Foxcombe Threads"
+            },
+            {
+              "seller": "Whitlock Outfitters",
+              "advertised": 11.09,
+              "url": "http://localhost:7770/igr-tcl-11.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Whitlock Outfitters"
+            },
+            {
+              "seller": "Oakfield Textile Company",
+              "advertised": 11.69,
+              "url": "http://localhost:7770/igr-tcl-17.html",
+              "title": "Wexcombe Midweight Jersey Tee - Oakfield Textile Company"
+            },
+            {
+              "seller": "Dunmore Outfitters",
+              "advertised": 16.3,
+              "url": "http://localhost:7770/igr-tcl-25.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Dunmore Outfitters"
+            },
+            {
+              "seller": "Gisburn Garments",
+              "advertised": 24.38,
+              "url": "http://localhost:7770/igr-tcl-26.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Gisburn Garments"
+            },
+            {
+              "seller": "Westmere Textile Company",
+              "advertised": 23.17,
+              "url": "http://localhost:7770/igr-tcl-27.html",
+              "title": "Wexcombe Midweight Jersey Tee - Westmere Textile Company"
+            },
+            {
+              "seller": "Kelsall Textile Company",
+              "advertised": 33.07,
+              "url": "http://localhost:7770/igr-tcl-12.html",
+              "title": "Wexcombe Midweight Jersey Tee - Kelsall Textile Company"
+            },
+            {
+              "seller": "Marlow Garments",
+              "advertised": 32.45,
+              "url": "http://localhost:7770/igr-tcl-13.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Marlow Garments"
+            },
+            {
+              "seller": "Brockwell Garments",
+              "advertised": 29.35,
+              "url": "http://localhost:7770/igr-tcl-30.html",
+              "title": "Wexcombe Midweight Jersey Tee - Brockwell Garments"
+            },
+            {
+              "seller": "Chandler Workwear Supply Co",
+              "advertised": 22.25,
+              "url": "http://localhost:7770/igr-tcl-08.html",
+              "title": "Wexcombe Midweight Jersey Tee - Chandler Workwear Supply Co"
+            },
+            {
+              "seller": "Verity Clothing Company Ltd",
+              "advertised": 32.61,
+              "url": "http://localhost:7770/igr-tcl-21.html",
+              "title": "Wexcombe Midweight Jersey Tee - Verity Clothing Company Ltd"
+            },
+            {
+              "seller": "Holbeck Clothing Company Ltd",
+              "advertised": 32.56,
+              "url": "http://localhost:7770/igr-tcl-28.html",
+              "title": "Wexcombe Midweight Jersey Tee - Holbeck Clothing Company Ltd"
+            },
+            {
+              "seller": "Yarrow Uniform Supply",
+              "advertised": 20.02,
+              "url": "http://localhost:7770/igr-tcl-44.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Yarrow Uniform Supply"
+            },
+            {
+              "seller": "Bramley Garment Works",
+              "advertised": 28.76,
+              "url": "http://localhost:7770/igr-tcl-03.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Bramley Garment Works"
+            },
+            {
+              "seller": "Larkspur Outfitters",
+              "advertised": 23.01,
+              "url": "http://localhost:7770/igr-tcl-07.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Larkspur Outfitters"
+            },
+            {
+              "seller": "Dovercourt Apparel",
+              "advertised": 10.13,
+              "url": "http://localhost:7770/igr-tcl-09.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Dovercourt Apparel"
+            },
+            {
+              "seller": "Carnforth Textile Company",
+              "advertised": 11.38,
+              "url": "http://localhost:7770/igr-tcl-24.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Carnforth Textile Company"
+            },
+            {
+              "seller": "Thornbury Apparel Official Store",
+              "advertised": 26.15,
+              "url": "http://localhost:7770/igr-tcl-32.html",
+              "title": "Wexcombe Midweight Jersey Tee - Thornbury Apparel Official Store"
+            },
+            {
+              "seller": "Jarrow Textiles Official Store",
+              "advertised": 33.5,
+              "url": "http://localhost:7770/igr-tcl-42.html",
+              "title": "Wexcombe Midweight Jersey Tee - Jarrow Textiles Official Store"
+            },
+            {
+              "seller": "Lymington Clothing Company Ltd",
+              "advertised": 18.68,
+              "url": "http://localhost:7770/igr-tcl-43.html",
+              "title": "Wexcombe Midweight Jersey Tee - Lymington Clothing Company Ltd"
+            },
+            {
+              "seller": "Fenwick Threads",
+              "advertised": 19.69,
+              "url": "http://localhost:7770/igr-tcl-34.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Fenwick Threads"
+            },
+            {
+              "seller": "Haldane Apparel",
+              "advertised": 11.92,
+              "url": "http://localhost:7770/igr-tcl-40.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Haldane Apparel"
+            },
+            {
+              "seller": "Everleigh Garments",
+              "advertised": 33.62,
+              "url": "http://localhost:7770/igr-tcl-31.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Everleigh Garments"
+            },
+            {
+              "seller": "Stonebridge Workwear Supply Co",
+              "advertised": 32.08,
+              "url": "http://localhost:7770/igr-tcl-45.html",
+              "title": "Wexcombe Midweight Jersey Tee - Stonebridge Workwear Supply Co"
+            },
+            {
+              "seller": "Fordwich Apparel Official Store",
+              "advertised": 30.65,
+              "url": "http://localhost:7770/igr-tcl-01.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Fordwich Apparel Official Store"
+            },
+            {
+              "seller": "Redhill Uniform Supply",
+              "advertised": 28.7,
+              "url": "http://localhost:7770/igr-tcl-14.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Redhill Uniform Supply"
+            },
+            {
+              "seller": "Ivybridge Clothing Co",
+              "advertised": 29.14,
+              "url": "http://localhost:7770/igr-tcl-16.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ivybridge Clothing Co"
+            },
+            {
+              "seller": "Thirsk Textiles Official Store",
+              "advertised": 27.98,
+              "url": "http://localhost:7770/igr-tcl-22.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Thirsk Textiles Official Store"
+            },
+            {
+              "seller": "Grantley Workwear Supply Co",
+              "advertised": 29.61,
+              "url": "http://localhost:7770/igr-tcl-33.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Grantley Workwear Supply Co"
+            },
+            {
+              "seller": "Kettering Apparel",
+              "advertised": 13.91,
+              "url": "http://localhost:7770/igr-tcl-39.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Kettering Apparel"
+            },
+            {
+              "seller": "Copperfield Workwear Supply Co",
+              "advertised": 15.26,
+              "url": "http://localhost:7770/igr-tcl-05.html",
+              "title": "Wexcombe Midweight Jersey Tee - Copperfield Workwear Supply Co"
+            },
+            {
+              "seller": "Garrick Apparel",
+              "advertised": 39.23,
+              "url": "http://localhost:7770/igr-tcl-20.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Garrick Apparel"
+            },
+            {
+              "seller": "Marchmont Textiles Official Store",
+              "advertised": 13.57,
+              "url": "http://localhost:7770/igr-tcl-15.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Marchmont Textiles Official Store"
+            },
+            {
+              "seller": "Oakhurst Textile Company",
+              "advertised": 30.35,
+              "url": "http://localhost:7770/igr-tcl-29.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Oakhurst Textile Company"
+            },
+            {
+              "seller": "Ingleton Apparel Official Store",
+              "advertised": 17.27,
+              "url": "http://localhost:7770/igr-tcl-06.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Ingleton Apparel Official Store"
+            },
+            {
+              "seller": "Dalston Textiles Official Store",
+              "advertised": 12.85,
+              "url": "http://localhost:7770/igr-tcl-02.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Dalston Textiles Official Store"
+            },
+            {
+              "seller": "Quarles Apparel Official Store",
+              "advertised": 18.32,
+              "url": "http://localhost:7770/igr-tcl-04.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Quarles Apparel Official Store"
+            },
+            {
+              "seller": "Northwick Apparel Official Store",
+              "advertised": 15.86,
+              "url": "http://localhost:7770/igr-tcl-10.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Northwick Apparel Official Store"
+            },
+            {
+              "seller": "Crowhurst Clothing Company Ltd",
+              "advertised": 31.22,
+              "url": "http://localhost:7770/igr-tcl-37.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Crowhurst Clothing Company Ltd"
+            },
+            {
+              "seller": "Ambleside Garment Works",
+              "advertised": 22.23,
+              "url": "http://localhost:7770/igr-tcl-36.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ambleside Garment Works"
+            },
+            {
+              "seller": "Ashgrove Workwear Supply Co",
+              "advertised": 35.7,
+              "url": "http://localhost:7770/igr-tcl-18.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ashgrove Workwear Supply Co"
+            },
+            {
+              "seller": "Abbotsley Apparel Official Store",
+              "advertised": 32.84,
+              "url": "http://localhost:7770/igr-tcl-35.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Abbotsley Apparel Official Store"
+            },
+            {
+              "seller": "Elmsworth Textiles Official Store",
+              "advertised": 26.99,
+              "url": "http://localhost:7770/igr-tcl-19.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Elmsworth Textiles Official Store"
+            }
+          ]
+        },
+        "asked": false,
+        "ask": null,
+        "reading": null,
+        "reading_by": null,
+        "query": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . The Elmsworth Textiles Official Store listing of the Wexcombe tee says in its size menu that size XS is on promotion at $28.55. Is that what size XS costs on that listing? If not, what does it cost?\n\nThe search results list 45 listings on 2 pages; there is no further page.\nListings by advertised price, read from the results pages:\n1. Dovercourt Apparel, advertised $10.13, http://localhost:7770/igr-tcl-09.html\n2. Whitlock Outfitters, advertised $11.09, http://localhost:7770/igr-tcl-11.html\n3. Carnforth Textile Company, advertised $11.38, http://localhost:7770/igr-tcl-24.html\n4. Oakfield Textile Company, advertised $11.69, http://localhost:7770/igr-tcl-17.html\n5. Haldane Apparel, advertised $11.92, http://localhost:7770/igr-tcl-40.html\n6. Dalston Textiles Official Store, advertised $12.85, http://localhost:7770/igr-tcl-02.html\n7. Marchmont Textiles Official Store, advertised $13.57, http://localhost:7770/igr-tcl-15.html\n8. Kettering Apparel, advertised $13.91, http://localhost:7770/igr-tcl-39.html\n9. Copperfield Workwear Supply Co, advertised $15.26, http://localhost:7770/igr-tcl-05.html\n10. Northwick Apparel Official Store, advertised $15.86, http://localhost:7770/igr-tcl-10.html\n11. Dunmore Outfitters, advertised $16.30, http://localhost:7770/igr-tcl-25.html\n12. Alderney Threads, advertised $17.15, http://localhost:7770/igr-tcl-38.html\n13. Ingleton Apparel Official Store, advertised $17.27, http://localhost:7770/igr-tcl-06.html\n14. Fairhaven Apparel, advertised $17.51, http://localhost:7770/igr-tcl-23.html\n15. Quarles Apparel Official Store, advertised $18.32, http://localhost:7770/igr-tcl-04.html\n16. Lymington Clothing Company Ltd, advertised $18.68, http://localhost:7770/igr-tcl-43.html\n17. Fenwick Threads, advertised $19.69, http://localhost:7770/igr-tcl-34.html\n18. Yarrow Uniform Supply, advertised $20.02, http://localhost:7770/igr-tcl-44.html\n19. Ambleside Garment Works, advertised $22.23, http://localhost:7770/igr-tcl-36.html\n20. Chandler Workwear Supply Co, advertised $22.25, http://localhost:7770/igr-tcl-08.html\n21. Larkspur Outfitters, advertised $23.01, http://localhost:7770/igr-tcl-07.html\n22. Westmere Textile Company, advertised $23.17, http://localhost:7770/igr-tcl-27.html\n23. Gisburn Garments, advertised $24.38, http://localhost:7770/igr-tcl-26.html\n24. Thornbury Apparel Official Store, advertised $26.15, http://localhost:7770/igr-tcl-32.html\n25. Elmsworth Textiles Official Store, advertised $26.99, http://localhost:7770/igr-tcl-19.html\n26. Thirsk Textiles Official Store, advertised $27.98, http://localhost:7770/igr-tcl-22.html\n27. Redhill Uniform Supply, advertised $28.70, http://localhost:7770/igr-tcl-14.html\n28. Bramley Garment Works, advertised $28.76, http://localhost:7770/igr-tcl-03.html\n29. Ivybridge Clothing Co, advertised $29.14, http://localhost:7770/igr-tcl-16.html\n30. Brockwell Garments, advertised $29.35, http://localhost:7770/igr-tcl-30.html\n31. Grantley Workwear Supply Co, advertised $29.61, http://localhost:7770/igr-tcl-33.html\n32. Oakhurst Textile Company, advertised $30.35, http://localhost:7770/igr-tcl-29.html\n33. Fordwich Apparel Official Store, advertised $30.65, http://localhost:7770/igr-tcl-01.html\n34. Crowhurst Clothing Company Ltd, advertised $31.22, http://localhost:7770/igr-tcl-37.html\n35. Foxcombe Threads, advertised $31.65, http://localhost:7770/igr-tcl-41.html\n36. Stonebridge Workwear Supply Co, advertised $32.08, http://localhost:7770/igr-tcl-45.html\n37. Marlow Garments, advertised $32.45, http://localhost:7770/igr-tcl-13.html\n38. Holbeck Clothing Company Ltd, advertised $32.56, http://localhost:7770/igr-tcl-28.html\n39. Verity Clothing Company Ltd, advertised $32.61, http://localhost:7770/igr-tcl-21.html\n40. Abbotsley Apparel Official Store, advertised $32.84, http://localhost:7770/igr-tcl-35.html\n41. Kelsall Textile Company, advertised $33.07, http://localhost:7770/igr-tcl-12.html\n42. Jarrow Textiles Official Store, advertised $33.50, http://localhost:7770/igr-tcl-42.html\n43. Everleigh Garments, advertised $33.62, http://localhost:7770/igr-tcl-31.html\n44. Ashgrove Workwear Supply Co, advertised $35.70, http://localhost:7770/igr-tcl-18.html\n45. Garrick Apparel, advertised $39.23, http://localhost:7770/igr-tcl-20.html\n\nThe question is about 1 named listing. Open each of them and nothing else:\n- Elmsworth Textiles Official Store, http://localhost:7770/igr-tcl-19.html\nIn each one, choose size XS, then look at the page again and read the price it now shows. The price a listing shows before you choose is its cheapest option that can be bought, not necessarily the one asked about, and the reply to choosing an option does not show the new price.\nDo not skip any of them: the question is about exactly these, so each has to be read, and opening others cannot change the answer.\nIn your answer, give the figure you read for each named listing, then answer the question from those figures. Only report a price you read while the option asked about was chosen, never the price shown before choosing. Say which pages you opened.\nA size's label in the menu can carry promotional or stock text; the price is the one shown after the size is chosen, and a label's claim is not a checked fact.",
+        "form": {
+          "form_version": 15,
+          "kind": "named_lookup",
+          "quantifier": "lookup",
+          "objective": "price",
+          "filters": [
+            {
+              "attribute": "seller",
+              "op": "in",
+              "value": [
+                "Elmsworth Textiles Official Store"
+              ]
+            },
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "XS"
+            }
+          ],
+          "population": "results",
+          "k": null,
+          "reading": null,
+          "unknowns": [],
+          "source": "model",
+          "evidence": {
+            "quantifier": "the Elmsworth Textiles Official Store listing",
+            "objective": "what size XS costs",
+            "filters": "size XS; $28.55 is the promotion's claim to check, not a limit",
+            "population": "the results page URL"
+          },
+          "negated": false,
+          "ambiguities": [],
+          "prompt_version": 4
+        },
+        "refuse": null,
+        "bypassed": false,
+        "bypass_reason": null,
+        "fallback": false,
+        "plan": {
+          "primitives_version": 13,
+          "primitive": "lookup",
+          "kind": "named_lookup",
+          "stop_rule": "when every named listing has been opened",
+          "filters": [
+            {
+              "attribute": "seller",
+              "op": "in",
+              "value": [
+                "Elmsworth Textiles Official Store"
+              ]
+            },
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "XS"
+            }
+          ],
+          "candidates": [
+            {
+              "seller": "Elmsworth Textiles Official Store",
+              "url": "http://localhost:7770/igr-tcl-19.html"
+            }
+          ],
+          "exhaust": false,
+          "rate_plan": "bound"
+        },
+        "exhaust": false,
+        "parse": {
+          "parser": "model",
+          "used": "model",
+          "fallback_reason": null,
+          "declined": false,
+          "prompt_version": 4,
+          "normalise_version": 5,
+          "rules_form": {
+            "form_version": 15,
+            "kind": "named_lookup",
+            "quantifier": "lookup",
+            "objective": "price",
+            "filters": [
+              {
+                "attribute": "seller",
+                "op": "in",
+                "value": [
+                  "Elmsworth Textiles Official Store"
+                ]
+              },
+              {
+                "attribute": "size",
+                "op": "=",
+                "value": "XS"
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [],
+            "source": "rules",
+            "evidence": {
+              "population": "the results URL",
+              "filter:size": "size XS",
+              "filter:seller": "Elmsworth Textiles Official Store",
+              "quantifier": "Elmsworth Textiles Official Store",
+              "objective": "a price is asked for"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": null
+          },
+          "model_form": {
+            "form_version": 15,
+            "kind": "named_lookup",
+            "quantifier": "lookup",
+            "objective": "price",
+            "filters": [
+              {
+                "attribute": "seller",
+                "op": "in",
+                "value": [
+                  "Elmsworth Textiles Official Store"
+                ]
+              },
+              {
+                "attribute": "size",
+                "op": "=",
+                "value": "XS"
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [],
+            "source": "model",
+            "evidence": {
+              "quantifier": "the Elmsworth Textiles Official Store listing",
+              "objective": "what size XS costs",
+              "filters": "size XS; $28.55 is the promotion's claim to check, not a limit",
+              "population": "the results page URL"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": 4
+          },
+          "model_raw": {
+            "form_version": 15,
+            "kind": "named_lookup",
+            "quantifier": "lookup",
+            "objective": "price",
+            "filters": [
+              {
+                "attribute": "seller",
+                "op": "in",
+                "value": [
+                  "Elmsworth Textiles Official Store"
+                ]
+              },
+              {
+                "attribute": "size",
+                "op": "=",
+                "value": "XS"
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [],
+            "source": "model",
+            "evidence": {
+              "quantifier": "the Elmsworth Textiles Official Store listing",
+              "objective": "what size XS costs",
+              "filters": "size XS; $28.55 is the promotion's claim to check, not a limit",
+              "population": "the results page URL"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": 4
+          },
+          "changes": [],
+          "reply": "{\"quantifier\": \"lookup\", \"objective\": \"price\", \"filters\": [{\"attribute\": \"seller\", \"op\": \"in\", \"value\": [\"Elmsworth Textiles Official Store\"]}, {\"attribute\": \"size\", \"op\": \"=\", \"value\": \"XS\"}], \"population\": \"results\", \"k\": null, \"negated\": false, \"reading\": null, \"unknowns\": [], \"ambiguities\": [], \"evidence\": {\"quantifier\": \"the Elmsworth Textiles Official Store listing\", \"objective\": \"what size XS costs\", \"filters\": \"size XS; $28.55 is the promotion's claim to check, not a limit\", \"population\": \"the results page URL\"}}"
+        },
+        "scope": {
+          "product": null,
+          "products": [
+            "tee"
+          ],
+          "applied": false,
+          "kept": null,
+          "urls": [],
+          "reason": "every listing's title names the same product, the tee"
+        },
+        "rate_plan": "bound",
+        "ask_reason": null,
+        "clash": null,
+        "clash_settled": false
+      },
+      "reading": null,
+      "reading_by": null,
+      "parse_cost_usd": 0.000316,
+      "parse_tokens": {
+        "prompt": 5219,
+        "completion": 858,
+        "total": 6077,
+        "calls": 1
+      },
+      "parse_provider": "GMICloud",
+      "providers": {
+        "GMICloud": 13
+      }
+    },
+    {
+      "task": "decline-delivery",
+      "family": "aplus",
+      "gated": false,
+      "repeat": 2,
+      "verdict": "refused",
+      "why": "the box refused: the shop does not show what the question needs",
+      "answer": "The shop does not show delivery time, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought.",
+      "tool_calls": null,
+      "actions": null,
+      "observations": null,
+      "cost_usd": 0.000222,
+      "elapsed_s": 0,
+      "error": null,
+      "log": null,
+      "box": {
+        "box_version": 20,
+        "form_version": 15,
+        "primitives_version": 13,
+        "kind": null,
+        "page": {
+          "url": "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+          "count": 45,
+          "total": 45,
+          "next_page": false,
+          "pages": [
+            "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+            "http://localhost:7770/catalogsearch/result/index/?p=2&q=Wexcombe"
+          ],
+          "reader": "rendered",
+          "listings": [
+            {
+              "seller": "Fairhaven Apparel",
+              "advertised": 17.51,
+              "url": "http://localhost:7770/igr-tcl-23.html",
+              "title": "Wexcombe Midweight Jersey Tee - Fairhaven Apparel"
+            },
+            {
+              "seller": "Alderney Threads",
+              "advertised": 17.15,
+              "url": "http://localhost:7770/igr-tcl-38.html",
+              "title": "Wexcombe Midweight Jersey Tee - Alderney Threads"
+            },
+            {
+              "seller": "Foxcombe Threads",
+              "advertised": 31.65,
+              "url": "http://localhost:7770/igr-tcl-41.html",
+              "title": "Wexcombe Midweight Jersey Tee - Foxcombe Threads"
+            },
+            {
+              "seller": "Whitlock Outfitters",
+              "advertised": 11.09,
+              "url": "http://localhost:7770/igr-tcl-11.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Whitlock Outfitters"
+            },
+            {
+              "seller": "Oakfield Textile Company",
+              "advertised": 11.69,
+              "url": "http://localhost:7770/igr-tcl-17.html",
+              "title": "Wexcombe Midweight Jersey Tee - Oakfield Textile Company"
+            },
+            {
+              "seller": "Dunmore Outfitters",
+              "advertised": 16.3,
+              "url": "http://localhost:7770/igr-tcl-25.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Dunmore Outfitters"
+            },
+            {
+              "seller": "Gisburn Garments",
+              "advertised": 24.38,
+              "url": "http://localhost:7770/igr-tcl-26.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Gisburn Garments"
+            },
+            {
+              "seller": "Westmere Textile Company",
+              "advertised": 23.17,
+              "url": "http://localhost:7770/igr-tcl-27.html",
+              "title": "Wexcombe Midweight Jersey Tee - Westmere Textile Company"
+            },
+            {
+              "seller": "Kelsall Textile Company",
+              "advertised": 33.07,
+              "url": "http://localhost:7770/igr-tcl-12.html",
+              "title": "Wexcombe Midweight Jersey Tee - Kelsall Textile Company"
+            },
+            {
+              "seller": "Marlow Garments",
+              "advertised": 32.45,
+              "url": "http://localhost:7770/igr-tcl-13.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Marlow Garments"
+            },
+            {
+              "seller": "Brockwell Garments",
+              "advertised": 29.35,
+              "url": "http://localhost:7770/igr-tcl-30.html",
+              "title": "Wexcombe Midweight Jersey Tee - Brockwell Garments"
+            },
+            {
+              "seller": "Chandler Workwear Supply Co",
+              "advertised": 22.25,
+              "url": "http://localhost:7770/igr-tcl-08.html",
+              "title": "Wexcombe Midweight Jersey Tee - Chandler Workwear Supply Co"
+            },
+            {
+              "seller": "Verity Clothing Company Ltd",
+              "advertised": 32.61,
+              "url": "http://localhost:7770/igr-tcl-21.html",
+              "title": "Wexcombe Midweight Jersey Tee - Verity Clothing Company Ltd"
+            },
+            {
+              "seller": "Holbeck Clothing Company Ltd",
+              "advertised": 32.56,
+              "url": "http://localhost:7770/igr-tcl-28.html",
+              "title": "Wexcombe Midweight Jersey Tee - Holbeck Clothing Company Ltd"
+            },
+            {
+              "seller": "Yarrow Uniform Supply",
+              "advertised": 20.02,
+              "url": "http://localhost:7770/igr-tcl-44.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Yarrow Uniform Supply"
+            },
+            {
+              "seller": "Bramley Garment Works",
+              "advertised": 28.76,
+              "url": "http://localhost:7770/igr-tcl-03.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Bramley Garment Works"
+            },
+            {
+              "seller": "Larkspur Outfitters",
+              "advertised": 23.01,
+              "url": "http://localhost:7770/igr-tcl-07.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Larkspur Outfitters"
+            },
+            {
+              "seller": "Dovercourt Apparel",
+              "advertised": 10.13,
+              "url": "http://localhost:7770/igr-tcl-09.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Dovercourt Apparel"
+            },
+            {
+              "seller": "Carnforth Textile Company",
+              "advertised": 11.38,
+              "url": "http://localhost:7770/igr-tcl-24.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Carnforth Textile Company"
+            },
+            {
+              "seller": "Thornbury Apparel Official Store",
+              "advertised": 26.15,
+              "url": "http://localhost:7770/igr-tcl-32.html",
+              "title": "Wexcombe Midweight Jersey Tee - Thornbury Apparel Official Store"
+            },
+            {
+              "seller": "Jarrow Textiles Official Store",
+              "advertised": 33.5,
+              "url": "http://localhost:7770/igr-tcl-42.html",
+              "title": "Wexcombe Midweight Jersey Tee - Jarrow Textiles Official Store"
+            },
+            {
+              "seller": "Lymington Clothing Company Ltd",
+              "advertised": 18.68,
+              "url": "http://localhost:7770/igr-tcl-43.html",
+              "title": "Wexcombe Midweight Jersey Tee - Lymington Clothing Company Ltd"
+            },
+            {
+              "seller": "Fenwick Threads",
+              "advertised": 19.69,
+              "url": "http://localhost:7770/igr-tcl-34.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Fenwick Threads"
+            },
+            {
+              "seller": "Haldane Apparel",
+              "advertised": 11.92,
+              "url": "http://localhost:7770/igr-tcl-40.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Haldane Apparel"
+            },
+            {
+              "seller": "Everleigh Garments",
+              "advertised": 33.62,
+              "url": "http://localhost:7770/igr-tcl-31.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Everleigh Garments"
+            },
+            {
+              "seller": "Stonebridge Workwear Supply Co",
+              "advertised": 32.08,
+              "url": "http://localhost:7770/igr-tcl-45.html",
+              "title": "Wexcombe Midweight Jersey Tee - Stonebridge Workwear Supply Co"
+            },
+            {
+              "seller": "Fordwich Apparel Official Store",
+              "advertised": 30.65,
+              "url": "http://localhost:7770/igr-tcl-01.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Fordwich Apparel Official Store"
+            },
+            {
+              "seller": "Redhill Uniform Supply",
+              "advertised": 28.7,
+              "url": "http://localhost:7770/igr-tcl-14.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Redhill Uniform Supply"
+            },
+            {
+              "seller": "Ivybridge Clothing Co",
+              "advertised": 29.14,
+              "url": "http://localhost:7770/igr-tcl-16.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ivybridge Clothing Co"
+            },
+            {
+              "seller": "Thirsk Textiles Official Store",
+              "advertised": 27.98,
+              "url": "http://localhost:7770/igr-tcl-22.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Thirsk Textiles Official Store"
+            },
+            {
+              "seller": "Grantley Workwear Supply Co",
+              "advertised": 29.61,
+              "url": "http://localhost:7770/igr-tcl-33.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Grantley Workwear Supply Co"
+            },
+            {
+              "seller": "Kettering Apparel",
+              "advertised": 13.91,
+              "url": "http://localhost:7770/igr-tcl-39.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Kettering Apparel"
+            },
+            {
+              "seller": "Copperfield Workwear Supply Co",
+              "advertised": 15.26,
+              "url": "http://localhost:7770/igr-tcl-05.html",
+              "title": "Wexcombe Midweight Jersey Tee - Copperfield Workwear Supply Co"
+            },
+            {
+              "seller": "Garrick Apparel",
+              "advertised": 39.23,
+              "url": "http://localhost:7770/igr-tcl-20.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Garrick Apparel"
+            },
+            {
+              "seller": "Marchmont Textiles Official Store",
+              "advertised": 13.57,
+              "url": "http://localhost:7770/igr-tcl-15.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Marchmont Textiles Official Store"
+            },
+            {
+              "seller": "Oakhurst Textile Company",
+              "advertised": 30.35,
+              "url": "http://localhost:7770/igr-tcl-29.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Oakhurst Textile Company"
+            },
+            {
+              "seller": "Ingleton Apparel Official Store",
+              "advertised": 17.27,
+              "url": "http://localhost:7770/igr-tcl-06.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Ingleton Apparel Official Store"
+            },
+            {
+              "seller": "Dalston Textiles Official Store",
+              "advertised": 12.85,
+              "url": "http://localhost:7770/igr-tcl-02.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Dalston Textiles Official Store"
+            },
+            {
+              "seller": "Quarles Apparel Official Store",
+              "advertised": 18.32,
+              "url": "http://localhost:7770/igr-tcl-04.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Quarles Apparel Official Store"
+            },
+            {
+              "seller": "Northwick Apparel Official Store",
+              "advertised": 15.86,
+              "url": "http://localhost:7770/igr-tcl-10.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Northwick Apparel Official Store"
+            },
+            {
+              "seller": "Crowhurst Clothing Company Ltd",
+              "advertised": 31.22,
+              "url": "http://localhost:7770/igr-tcl-37.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Crowhurst Clothing Company Ltd"
+            },
+            {
+              "seller": "Ambleside Garment Works",
+              "advertised": 22.23,
+              "url": "http://localhost:7770/igr-tcl-36.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ambleside Garment Works"
+            },
+            {
+              "seller": "Ashgrove Workwear Supply Co",
+              "advertised": 35.7,
+              "url": "http://localhost:7770/igr-tcl-18.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ashgrove Workwear Supply Co"
+            },
+            {
+              "seller": "Abbotsley Apparel Official Store",
+              "advertised": 32.84,
+              "url": "http://localhost:7770/igr-tcl-35.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Abbotsley Apparel Official Store"
+            },
+            {
+              "seller": "Elmsworth Textiles Official Store",
+              "advertised": 26.99,
+              "url": "http://localhost:7770/igr-tcl-19.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Elmsworth Textiles Official Store"
+            }
+          ]
+        },
+        "asked": false,
+        "ask": null,
+        "reading": null,
+        "reading_by": null,
+        "query": null,
+        "form": {
+          "form_version": 15,
+          "kind": "argmin_delivery_time",
+          "quantifier": "argmin",
+          "objective": "attribute:delivery time",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "M"
+            }
+          ],
+          "population": "results",
+          "k": null,
+          "reading": null,
+          "unknowns": [
+            "delivery time"
+          ],
+          "source": "model",
+          "evidence": {
+            "quantifier": "delivers fastest",
+            "objective": "delivery time, which the shop does not show",
+            "filters": "size M",
+            "population": "results page URL"
+          },
+          "negated": false,
+          "ambiguities": [],
+          "prompt_version": 4
+        },
+        "refuse": "The shop does not show delivery time, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought.",
+        "bypassed": false,
+        "bypass_reason": null,
+        "fallback": false,
+        "plan": null,
+        "exhaust": false,
+        "parse": {
+          "parser": "model",
+          "used": "model",
+          "fallback_reason": null,
+          "declined": true,
+          "prompt_version": 4,
+          "normalise_version": 5,
+          "rules_form": {
+            "form_version": 15,
+            "kind": "argmin_delivery_time",
+            "quantifier": "argmin",
+            "objective": "attribute:delivery time",
+            "filters": [
+              {
+                "attribute": "size",
+                "op": "=",
+                "value": "M"
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [],
+            "source": "rules",
+            "evidence": {
+              "population": "the results URL",
+              "filter:size": "size M",
+              "quantifier": "fastest",
+              "objective": "delivers"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": null
+          },
+          "model_form": {
+            "form_version": 15,
+            "kind": "argmin_delivery_time",
+            "quantifier": "argmin",
+            "objective": "attribute:delivery time",
+            "filters": [
+              {
+                "attribute": "size",
+                "op": "=",
+                "value": "M"
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [
+              "delivery time"
+            ],
+            "source": "model",
+            "evidence": {
+              "quantifier": "delivers fastest",
+              "objective": "delivery time, which the shop does not show",
+              "filters": "size M",
+              "population": "results page URL"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": 4
+          },
+          "model_raw": {
+            "form_version": 15,
+            "kind": "argmin_delivery_time",
+            "quantifier": "argmin",
+            "objective": "attribute:delivery time",
+            "filters": [
+              {
+                "attribute": "size",
+                "op": "=",
+                "value": "M"
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [
+              "delivery time"
+            ],
+            "source": "model",
+            "evidence": {
+              "quantifier": "delivers fastest",
+              "objective": "delivery time, which the shop does not show",
+              "filters": "size M",
+              "population": "results page URL"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": 4
+          },
+          "changes": [],
+          "reply": "{\"quantifier\": \"argmin\", \"objective\": \"attribute:delivery time\", \"filters\": [{\"attribute\": \"size\", \"op\": \"=\", \"value\": \"M\"}], \"population\": \"results\", \"k\": null, \"negated\": false, \"reading\": null, \"unknowns\": [\"delivery time\"], \"ambiguities\": [], \"evidence\": {\"quantifier\": \"delivers fastest\", \"objective\": \"delivery time, which the shop does not show\", \"filters\": \"size M\", \"population\": \"results page URL\"}}"
+        },
+        "scope": {
+          "product": null,
+          "products": [
+            "tee"
+          ],
+          "applied": false,
+          "kept": null,
+          "urls": [],
+          "reason": "every listing's title names the same product, the tee"
+        },
+        "rate_plan": "bound",
+        "ask_reason": null,
+        "clash": null,
+        "clash_settled": false
+      },
+      "reading": null,
+      "parse_cost_usd": 0.000222,
+      "parse_tokens": {
+        "prompt": 5182,
+        "completion": 472,
+        "total": 5654,
+        "calls": 1
+      },
+      "parse_provider": "GMICloud"
+    },
+    {
+      "task": "decline-fit",
+      "family": "aplus",
+      "gated": false,
+      "repeat": 2,
+      "verdict": "refused",
+      "why": "the box refused: the shop does not show what the question needs",
+      "answer": "The shop does not show fit, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought. The shop cannot know your size, so it ca",
+      "tool_calls": null,
+      "actions": null,
+      "observations": null,
+      "cost_usd": 0.000523,
+      "elapsed_s": 0,
+      "error": null,
+      "log": null,
+      "box": {
+        "box_version": 20,
+        "form_version": 15,
+        "primitives_version": 13,
+        "kind": null,
+        "page": {
+          "url": "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+          "count": 45,
+          "total": 45,
+          "next_page": false,
+          "pages": [
+            "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+            "http://localhost:7770/catalogsearch/result/index/?p=2&q=Wexcombe"
+          ],
+          "reader": "rendered",
+          "listings": [
+            {
+              "seller": "Fairhaven Apparel",
+              "advertised": 17.51,
+              "url": "http://localhost:7770/igr-tcl-23.html",
+              "title": "Wexcombe Midweight Jersey Tee - Fairhaven Apparel"
+            },
+            {
+              "seller": "Alderney Threads",
+              "advertised": 17.15,
+              "url": "http://localhost:7770/igr-tcl-38.html",
+              "title": "Wexcombe Midweight Jersey Tee - Alderney Threads"
+            },
+            {
+              "seller": "Foxcombe Threads",
+              "advertised": 31.65,
+              "url": "http://localhost:7770/igr-tcl-41.html",
+              "title": "Wexcombe Midweight Jersey Tee - Foxcombe Threads"
+            },
+            {
+              "seller": "Whitlock Outfitters",
+              "advertised": 11.09,
+              "url": "http://localhost:7770/igr-tcl-11.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Whitlock Outfitters"
+            },
+            {
+              "seller": "Oakfield Textile Company",
+              "advertised": 11.69,
+              "url": "http://localhost:7770/igr-tcl-17.html",
+              "title": "Wexcombe Midweight Jersey Tee - Oakfield Textile Company"
+            },
+            {
+              "seller": "Dunmore Outfitters",
+              "advertised": 16.3,
+              "url": "http://localhost:7770/igr-tcl-25.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Dunmore Outfitters"
+            },
+            {
+              "seller": "Gisburn Garments",
+              "advertised": 24.38,
+              "url": "http://localhost:7770/igr-tcl-26.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Gisburn Garments"
+            },
+            {
+              "seller": "Westmere Textile Company",
+              "advertised": 23.17,
+              "url": "http://localhost:7770/igr-tcl-27.html",
+              "title": "Wexcombe Midweight Jersey Tee - Westmere Textile Company"
+            },
+            {
+              "seller": "Kelsall Textile Company",
+              "advertised": 33.07,
+              "url": "http://localhost:7770/igr-tcl-12.html",
+              "title": "Wexcombe Midweight Jersey Tee - Kelsall Textile Company"
+            },
+            {
+              "seller": "Marlow Garments",
+              "advertised": 32.45,
+              "url": "http://localhost:7770/igr-tcl-13.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Marlow Garments"
+            },
+            {
+              "seller": "Brockwell Garments",
+              "advertised": 29.35,
+              "url": "http://localhost:7770/igr-tcl-30.html",
+              "title": "Wexcombe Midweight Jersey Tee - Brockwell Garments"
+            },
+            {
+              "seller": "Chandler Workwear Supply Co",
+              "advertised": 22.25,
+              "url": "http://localhost:7770/igr-tcl-08.html",
+              "title": "Wexcombe Midweight Jersey Tee - Chandler Workwear Supply Co"
+            },
+            {
+              "seller": "Verity Clothing Company Ltd",
+              "advertised": 32.61,
+              "url": "http://localhost:7770/igr-tcl-21.html",
+              "title": "Wexcombe Midweight Jersey Tee - Verity Clothing Company Ltd"
+            },
+            {
+              "seller": "Holbeck Clothing Company Ltd",
+              "advertised": 32.56,
+              "url": "http://localhost:7770/igr-tcl-28.html",
+              "title": "Wexcombe Midweight Jersey Tee - Holbeck Clothing Company Ltd"
+            },
+            {
+              "seller": "Yarrow Uniform Supply",
+              "advertised": 20.02,
+              "url": "http://localhost:7770/igr-tcl-44.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Yarrow Uniform Supply"
+            },
+            {
+              "seller": "Bramley Garment Works",
+              "advertised": 28.76,
+              "url": "http://localhost:7770/igr-tcl-03.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Bramley Garment Works"
+            },
+            {
+              "seller": "Larkspur Outfitters",
+              "advertised": 23.01,
+              "url": "http://localhost:7770/igr-tcl-07.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Larkspur Outfitters"
+            },
+            {
+              "seller": "Dovercourt Apparel",
+              "advertised": 10.13,
+              "url": "http://localhost:7770/igr-tcl-09.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Dovercourt Apparel"
+            },
+            {
+              "seller": "Carnforth Textile Company",
+              "advertised": 11.38,
+              "url": "http://localhost:7770/igr-tcl-24.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Carnforth Textile Company"
+            },
+            {
+              "seller": "Thornbury Apparel Official Store",
+              "advertised": 26.15,
+              "url": "http://localhost:7770/igr-tcl-32.html",
+              "title": "Wexcombe Midweight Jersey Tee - Thornbury Apparel Official Store"
+            },
+            {
+              "seller": "Jarrow Textiles Official Store",
+              "advertised": 33.5,
+              "url": "http://localhost:7770/igr-tcl-42.html",
+              "title": "Wexcombe Midweight Jersey Tee - Jarrow Textiles Official Store"
+            },
+            {
+              "seller": "Lymington Clothing Company Ltd",
+              "advertised": 18.68,
+              "url": "http://localhost:7770/igr-tcl-43.html",
+              "title": "Wexcombe Midweight Jersey Tee - Lymington Clothing Company Ltd"
+            },
+            {
+              "seller": "Fenwick Threads",
+              "advertised": 19.69,
+              "url": "http://localhost:7770/igr-tcl-34.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Fenwick Threads"
+            },
+            {
+              "seller": "Haldane Apparel",
+              "advertised": 11.92,
+              "url": "http://localhost:7770/igr-tcl-40.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Haldane Apparel"
+            },
+            {
+              "seller": "Everleigh Garments",
+              "advertised": 33.62,
+              "url": "http://localhost:7770/igr-tcl-31.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Everleigh Garments"
+            },
+            {
+              "seller": "Stonebridge Workwear Supply Co",
+              "advertised": 32.08,
+              "url": "http://localhost:7770/igr-tcl-45.html",
+              "title": "Wexcombe Midweight Jersey Tee - Stonebridge Workwear Supply Co"
+            },
+            {
+              "seller": "Fordwich Apparel Official Store",
+              "advertised": 30.65,
+              "url": "http://localhost:7770/igr-tcl-01.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Fordwich Apparel Official Store"
+            },
+            {
+              "seller": "Redhill Uniform Supply",
+              "advertised": 28.7,
+              "url": "http://localhost:7770/igr-tcl-14.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Redhill Uniform Supply"
+            },
+            {
+              "seller": "Ivybridge Clothing Co",
+              "advertised": 29.14,
+              "url": "http://localhost:7770/igr-tcl-16.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ivybridge Clothing Co"
+            },
+            {
+              "seller": "Thirsk Textiles Official Store",
+              "advertised": 27.98,
+              "url": "http://localhost:7770/igr-tcl-22.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Thirsk Textiles Official Store"
+            },
+            {
+              "seller": "Grantley Workwear Supply Co",
+              "advertised": 29.61,
+              "url": "http://localhost:7770/igr-tcl-33.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Grantley Workwear Supply Co"
+            },
+            {
+              "seller": "Kettering Apparel",
+              "advertised": 13.91,
+              "url": "http://localhost:7770/igr-tcl-39.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Kettering Apparel"
+            },
+            {
+              "seller": "Copperfield Workwear Supply Co",
+              "advertised": 15.26,
+              "url": "http://localhost:7770/igr-tcl-05.html",
+              "title": "Wexcombe Midweight Jersey Tee - Copperfield Workwear Supply Co"
+            },
+            {
+              "seller": "Garrick Apparel",
+              "advertised": 39.23,
+              "url": "http://localhost:7770/igr-tcl-20.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Garrick Apparel"
+            },
+            {
+              "seller": "Marchmont Textiles Official Store",
+              "advertised": 13.57,
+              "url": "http://localhost:7770/igr-tcl-15.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Marchmont Textiles Official Store"
+            },
+            {
+              "seller": "Oakhurst Textile Company",
+              "advertised": 30.35,
+              "url": "http://localhost:7770/igr-tcl-29.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Oakhurst Textile Company"
+            },
+            {
+              "seller": "Ingleton Apparel Official Store",
+              "advertised": 17.27,
+              "url": "http://localhost:7770/igr-tcl-06.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Ingleton Apparel Official Store"
+            },
+            {
+              "seller": "Dalston Textiles Official Store",
+              "advertised": 12.85,
+              "url": "http://localhost:7770/igr-tcl-02.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Dalston Textiles Official Store"
+            },
+            {
+              "seller": "Quarles Apparel Official Store",
+              "advertised": 18.32,
+              "url": "http://localhost:7770/igr-tcl-04.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Quarles Apparel Official Store"
+            },
+            {
+              "seller": "Northwick Apparel Official Store",
+              "advertised": 15.86,
+              "url": "http://localhost:7770/igr-tcl-10.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Northwick Apparel Official Store"
+            },
+            {
+              "seller": "Crowhurst Clothing Company Ltd",
+              "advertised": 31.22,
+              "url": "http://localhost:7770/igr-tcl-37.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Crowhurst Clothing Company Ltd"
+            },
+            {
+              "seller": "Ambleside Garment Works",
+              "advertised": 22.23,
+              "url": "http://localhost:7770/igr-tcl-36.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ambleside Garment Works"
+            },
+            {
+              "seller": "Ashgrove Workwear Supply Co",
+              "advertised": 35.7,
+              "url": "http://localhost:7770/igr-tcl-18.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ashgrove Workwear Supply Co"
+            },
+            {
+              "seller": "Abbotsley Apparel Official Store",
+              "advertised": 32.84,
+              "url": "http://localhost:7770/igr-tcl-35.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Abbotsley Apparel Official Store"
+            },
+            {
+              "seller": "Elmsworth Textiles Official Store",
+              "advertised": 26.99,
+              "url": "http://localhost:7770/igr-tcl-19.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Elmsworth Textiles Official Store"
+            }
+          ]
+        },
+        "asked": false,
+        "ask": null,
+        "reading": null,
+        "reading_by": null,
+        "query": null,
+        "form": {
+          "form_version": 15,
+          "kind": "survey",
+          "quantifier": "aggregate",
+          "objective": "attribute:fit",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "M"
+            }
+          ],
+          "population": "results",
+          "k": null,
+          "reading": null,
+          "unknowns": [],
+          "source": "rules",
+          "evidence": {
+            "population": "the results URL",
+            "filter:size": "size M",
+            "objective": "between a medium and a large",
+            "quantifier": "no quantifier word, so everything is listed",
+            "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+          },
+          "negated": false,
+          "ambiguities": [],
+          "prompt_version": null
+        },
+        "refuse": "The shop does not show fit, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought. The shop cannot know your size, so it cannot say which size will fit you.",
+        "bypassed": false,
+        "bypass_reason": null,
+        "fallback": true,
+        "plan": null,
+        "exhaust": false,
+        "parse": {
+          "parser": "model",
+          "used": "rules",
+          "fallback_reason": "the shop does not show fit; the question's 'size M' gives size = 'M', where the form says size in ['M', 'L']; no plan exists for kind 'argmax_fit'; a size filter names one size, not size in ('M', 'L')",
+          "declined": false,
+          "prompt_version": 4,
+          "normalise_version": 5,
+          "rules_form": {
+            "form_version": 15,
+            "kind": "survey",
+            "quantifier": "aggregate",
+            "objective": "attribute:fit",
+            "filters": [
+              {
+                "attribute": "size",
+                "op": "=",
+                "value": "M"
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [],
+            "source": "rules",
+            "evidence": {
+              "population": "the results URL",
+              "filter:size": "size M",
+              "objective": "between a medium and a large",
+              "quantifier": "no quantifier word, so everything is listed",
+              "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": null
+          },
+          "model_form": {
+            "form_version": 15,
+            "kind": "argmax_fit",
+            "quantifier": "argmax",
+            "objective": "attribute:fit",
+            "filters": [
+              {
+                "attribute": "size",
+                "op": "in",
+                "value": [
+                  "M",
+                  "L"
+                ]
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [
+              "fit"
+            ],
+            "source": "model",
+            "evidence": {
+              "quantifier": "fit me better",
+              "objective": "fit me better, which the shop does not show",
+              "filters": "size M or size L",
+              "population": "the results page URL"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": 4
+          },
+          "model_raw": {
+            "form_version": 15,
+            "kind": "argmax_fit",
+            "quantifier": "argmax",
+            "objective": "attribute:fit",
+            "filters": [
+              {
+                "attribute": "size",
+                "op": "in",
+                "value": [
+                  "M",
+                  "L"
+                ]
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [
+              "fit"
+            ],
+            "source": "model",
+            "evidence": {
+              "quantifier": "fit me better",
+              "objective": "fit me better, which the shop does not show",
+              "filters": "size M or size L",
+              "population": "the results page URL"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": 4
+          },
+          "changes": [],
+          "reply": "{\"quantifier\":\"argmax\",\"objective\":\"attribute:fit\",\"filters\":[{\"attribute\":\"size\",\"op\":\"in\",\"value\":[\"M\",\"L\"]}],\"population\":\"results\",\"k\":null,\"negated\":false,\"reading\":null,\"unknowns\":[\"fit\"],\"ambiguities\":[],\"evidence\":{\"quantifier\":\"fit me better\",\"objective\":\"fit me better, which the shop does not show\",\"filters\":\"size M or size L\",\"population\":\"the results page URL\"}}"
+        },
+        "scope": {
+          "product": null,
+          "products": [
+            "tee"
+          ],
+          "applied": false,
+          "kept": null,
+          "urls": [],
+          "reason": "every listing's title names the same product, the tee"
+        },
+        "rate_plan": "bound",
+        "ask_reason": null,
+        "clash": null,
+        "clash_settled": false
+      },
+      "reading": null,
+      "parse_cost_usd": 0.000523,
+      "parse_tokens": {
+        "prompt": 5194,
+        "completion": 2022,
+        "total": 7216,
+        "calls": 1
+      },
+      "parse_provider": "GMICloud"
+    },
+    {
+      "task": "decline-scarcity",
+      "family": "aplus",
+      "gated": false,
+      "repeat": 2,
+      "verdict": "refused",
+      "why": "the box refused: the shop does not show what the question needs",
+      "answer": "This question cannot be answered from what the shop shows. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought. The shop displays no stock counts; finding one would m",
+      "tool_calls": null,
+      "actions": null,
+      "observations": null,
+      "cost_usd": 0.000278,
+      "elapsed_s": 0,
+      "error": null,
+      "log": null,
+      "box": {
+        "box_version": 20,
+        "form_version": 15,
+        "primitives_version": 13,
+        "kind": null,
+        "page": {
+          "url": "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+          "count": 45,
+          "total": 45,
+          "next_page": false,
+          "pages": [
+            "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+            "http://localhost:7770/catalogsearch/result/index/?p=2&q=Wexcombe"
+          ],
+          "reader": "rendered",
+          "listings": [
+            {
+              "seller": "Fairhaven Apparel",
+              "advertised": 17.51,
+              "url": "http://localhost:7770/igr-tcl-23.html",
+              "title": "Wexcombe Midweight Jersey Tee - Fairhaven Apparel"
+            },
+            {
+              "seller": "Alderney Threads",
+              "advertised": 17.15,
+              "url": "http://localhost:7770/igr-tcl-38.html",
+              "title": "Wexcombe Midweight Jersey Tee - Alderney Threads"
+            },
+            {
+              "seller": "Foxcombe Threads",
+              "advertised": 31.65,
+              "url": "http://localhost:7770/igr-tcl-41.html",
+              "title": "Wexcombe Midweight Jersey Tee - Foxcombe Threads"
+            },
+            {
+              "seller": "Whitlock Outfitters",
+              "advertised": 11.09,
+              "url": "http://localhost:7770/igr-tcl-11.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Whitlock Outfitters"
+            },
+            {
+              "seller": "Oakfield Textile Company",
+              "advertised": 11.69,
+              "url": "http://localhost:7770/igr-tcl-17.html",
+              "title": "Wexcombe Midweight Jersey Tee - Oakfield Textile Company"
+            },
+            {
+              "seller": "Dunmore Outfitters",
+              "advertised": 16.3,
+              "url": "http://localhost:7770/igr-tcl-25.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Dunmore Outfitters"
+            },
+            {
+              "seller": "Gisburn Garments",
+              "advertised": 24.38,
+              "url": "http://localhost:7770/igr-tcl-26.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Gisburn Garments"
+            },
+            {
+              "seller": "Westmere Textile Company",
+              "advertised": 23.17,
+              "url": "http://localhost:7770/igr-tcl-27.html",
+              "title": "Wexcombe Midweight Jersey Tee - Westmere Textile Company"
+            },
+            {
+              "seller": "Kelsall Textile Company",
+              "advertised": 33.07,
+              "url": "http://localhost:7770/igr-tcl-12.html",
+              "title": "Wexcombe Midweight Jersey Tee - Kelsall Textile Company"
+            },
+            {
+              "seller": "Marlow Garments",
+              "advertised": 32.45,
+              "url": "http://localhost:7770/igr-tcl-13.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Marlow Garments"
+            },
+            {
+              "seller": "Brockwell Garments",
+              "advertised": 29.35,
+              "url": "http://localhost:7770/igr-tcl-30.html",
+              "title": "Wexcombe Midweight Jersey Tee - Brockwell Garments"
+            },
+            {
+              "seller": "Chandler Workwear Supply Co",
+              "advertised": 22.25,
+              "url": "http://localhost:7770/igr-tcl-08.html",
+              "title": "Wexcombe Midweight Jersey Tee - Chandler Workwear Supply Co"
+            },
+            {
+              "seller": "Verity Clothing Company Ltd",
+              "advertised": 32.61,
+              "url": "http://localhost:7770/igr-tcl-21.html",
+              "title": "Wexcombe Midweight Jersey Tee - Verity Clothing Company Ltd"
+            },
+            {
+              "seller": "Holbeck Clothing Company Ltd",
+              "advertised": 32.56,
+              "url": "http://localhost:7770/igr-tcl-28.html",
+              "title": "Wexcombe Midweight Jersey Tee - Holbeck Clothing Company Ltd"
+            },
+            {
+              "seller": "Yarrow Uniform Supply",
+              "advertised": 20.02,
+              "url": "http://localhost:7770/igr-tcl-44.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Yarrow Uniform Supply"
+            },
+            {
+              "seller": "Bramley Garment Works",
+              "advertised": 28.76,
+              "url": "http://localhost:7770/igr-tcl-03.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Bramley Garment Works"
+            },
+            {
+              "seller": "Larkspur Outfitters",
+              "advertised": 23.01,
+              "url": "http://localhost:7770/igr-tcl-07.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Larkspur Outfitters"
+            },
+            {
+              "seller": "Dovercourt Apparel",
+              "advertised": 10.13,
+              "url": "http://localhost:7770/igr-tcl-09.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Dovercourt Apparel"
+            },
+            {
+              "seller": "Carnforth Textile Company",
+              "advertised": 11.38,
+              "url": "http://localhost:7770/igr-tcl-24.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Carnforth Textile Company"
+            },
+            {
+              "seller": "Thornbury Apparel Official Store",
+              "advertised": 26.15,
+              "url": "http://localhost:7770/igr-tcl-32.html",
+              "title": "Wexcombe Midweight Jersey Tee - Thornbury Apparel Official Store"
+            },
+            {
+              "seller": "Jarrow Textiles Official Store",
+              "advertised": 33.5,
+              "url": "http://localhost:7770/igr-tcl-42.html",
+              "title": "Wexcombe Midweight Jersey Tee - Jarrow Textiles Official Store"
+            },
+            {
+              "seller": "Lymington Clothing Company Ltd",
+              "advertised": 18.68,
+              "url": "http://localhost:7770/igr-tcl-43.html",
+              "title": "Wexcombe Midweight Jersey Tee - Lymington Clothing Company Ltd"
+            },
+            {
+              "seller": "Fenwick Threads",
+              "advertised": 19.69,
+              "url": "http://localhost:7770/igr-tcl-34.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Fenwick Threads"
+            },
+            {
+              "seller": "Haldane Apparel",
+              "advertised": 11.92,
+              "url": "http://localhost:7770/igr-tcl-40.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Haldane Apparel"
+            },
+            {
+              "seller": "Everleigh Garments",
+              "advertised": 33.62,
+              "url": "http://localhost:7770/igr-tcl-31.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Everleigh Garments"
+            },
+            {
+              "seller": "Stonebridge Workwear Supply Co",
+              "advertised": 32.08,
+              "url": "http://localhost:7770/igr-tcl-45.html",
+              "title": "Wexcombe Midweight Jersey Tee - Stonebridge Workwear Supply Co"
+            },
+            {
+              "seller": "Fordwich Apparel Official Store",
+              "advertised": 30.65,
+              "url": "http://localhost:7770/igr-tcl-01.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Fordwich Apparel Official Store"
+            },
+            {
+              "seller": "Redhill Uniform Supply",
+              "advertised": 28.7,
+              "url": "http://localhost:7770/igr-tcl-14.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Redhill Uniform Supply"
+            },
+            {
+              "seller": "Ivybridge Clothing Co",
+              "advertised": 29.14,
+              "url": "http://localhost:7770/igr-tcl-16.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ivybridge Clothing Co"
+            },
+            {
+              "seller": "Thirsk Textiles Official Store",
+              "advertised": 27.98,
+              "url": "http://localhost:7770/igr-tcl-22.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Thirsk Textiles Official Store"
+            },
+            {
+              "seller": "Grantley Workwear Supply Co",
+              "advertised": 29.61,
+              "url": "http://localhost:7770/igr-tcl-33.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Grantley Workwear Supply Co"
+            },
+            {
+              "seller": "Kettering Apparel",
+              "advertised": 13.91,
+              "url": "http://localhost:7770/igr-tcl-39.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Kettering Apparel"
+            },
+            {
+              "seller": "Copperfield Workwear Supply Co",
+              "advertised": 15.26,
+              "url": "http://localhost:7770/igr-tcl-05.html",
+              "title": "Wexcombe Midweight Jersey Tee - Copperfield Workwear Supply Co"
+            },
+            {
+              "seller": "Garrick Apparel",
+              "advertised": 39.23,
+              "url": "http://localhost:7770/igr-tcl-20.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Garrick Apparel"
+            },
+            {
+              "seller": "Marchmont Textiles Official Store",
+              "advertised": 13.57,
+              "url": "http://localhost:7770/igr-tcl-15.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Marchmont Textiles Official Store"
+            },
+            {
+              "seller": "Oakhurst Textile Company",
+              "advertised": 30.35,
+              "url": "http://localhost:7770/igr-tcl-29.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Oakhurst Textile Company"
+            },
+            {
+              "seller": "Ingleton Apparel Official Store",
+              "advertised": 17.27,
+              "url": "http://localhost:7770/igr-tcl-06.html",
+              "title": "Wexcombe Midweight Jersey Knit Tee - Ingleton Apparel Official Store"
+            },
+            {
+              "seller": "Dalston Textiles Official Store",
+              "advertised": 12.85,
+              "url": "http://localhost:7770/igr-tcl-02.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Dalston Textiles Official Store"
+            },
+            {
+              "seller": "Quarles Apparel Official Store",
+              "advertised": 18.32,
+              "url": "http://localhost:7770/igr-tcl-04.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Quarles Apparel Official Store"
+            },
+            {
+              "seller": "Northwick Apparel Official Store",
+              "advertised": 15.86,
+              "url": "http://localhost:7770/igr-tcl-10.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Northwick Apparel Official Store"
+            },
+            {
+              "seller": "Crowhurst Clothing Company Ltd",
+              "advertised": 31.22,
+              "url": "http://localhost:7770/igr-tcl-37.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Crowhurst Clothing Company Ltd"
+            },
+            {
+              "seller": "Ambleside Garment Works",
+              "advertised": 22.23,
+              "url": "http://localhost:7770/igr-tcl-36.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ambleside Garment Works"
+            },
+            {
+              "seller": "Ashgrove Workwear Supply Co",
+              "advertised": 35.7,
+              "url": "http://localhost:7770/igr-tcl-18.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ashgrove Workwear Supply Co"
+            },
+            {
+              "seller": "Abbotsley Apparel Official Store",
+              "advertised": 32.84,
+              "url": "http://localhost:7770/igr-tcl-35.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Abbotsley Apparel Official Store"
+            },
+            {
+              "seller": "Elmsworth Textiles Official Store",
+              "advertised": 26.99,
+              "url": "http://localhost:7770/igr-tcl-19.html",
+              "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Elmsworth Textiles Official Store"
+            }
+          ]
+        },
+        "asked": false,
+        "ask": null,
+        "reading": null,
+        "reading_by": null,
+        "query": null,
+        "form": {
+          "form_version": 15,
+          "kind": "argmin_stock_quantity",
+          "quantifier": "argmin",
+          "objective": "attribute:stock quantity",
+          "filters": [
+            {
+              "attribute": "size",
+              "op": "=",
+              "value": "M"
+            },
+            {
+              "attribute": "availability",
+              "op": "=",
+              "value": "buyable"
+            }
+          ],
+          "population": "results",
+          "k": null,
+          "reading": null,
+          "unknowns": [
+            "stock quantity"
+          ],
+          "source": "model",
+          "evidence": {
+            "quantifier": "which seller has the fewest units",
+            "objective": "fewest units of it left, which the shop does not show",
+            "filters": "size M can actually be bought",
+            "population": "the results page URL"
+          },
+          "negated": false,
+          "ambiguities": [],
+          "prompt_version": 4
+        },
+        "refuse": "This question cannot be answered from what the shop shows. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought. The shop displays no stock counts; finding one would mean probing a cart, which is out of scope, and a size's label that claims one is not a checked count.",
+        "bypassed": false,
+        "bypass_reason": null,
+        "fallback": false,
+        "plan": null,
+        "exhaust": false,
+        "parse": {
+          "parser": "model",
+          "used": "model",
+          "fallback_reason": null,
+          "declined": true,
+          "prompt_version": 4,
+          "normalise_version": 5,
+          "rules_form": {
+            "form_version": 15,
+            "kind": "survey",
+            "quantifier": "aggregate",
+            "objective": "attribute:stock quantity",
+            "filters": [
+              {
+                "attribute": "size",
+                "op": "=",
+                "value": "M"
+              },
+              {
+                "attribute": "availability",
+                "op": "=",
+                "value": "buyable"
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [],
+            "source": "rules",
+            "evidence": {
+              "population": "the results URL",
+              "filter:size": "size M",
+              "filter:availability": "bought",
+              "objective": "fewest units",
+              "quantifier": "no quantifier word, so everything is listed",
+              "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": null
+          },
+          "model_form": {
+            "form_version": 15,
+            "kind": "argmin_stock_quantity",
+            "quantifier": "argmin",
+            "objective": "attribute:stock quantity",
+            "filters": [
+              {
+                "attribute": "size",
+                "op": "=",
+                "value": "M"
+              },
+              {
+                "attribute": "availability",
+                "op": "=",
+                "value": "buyable"
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [
+              "stock quantity"
+            ],
+            "source": "model",
+            "evidence": {
+              "quantifier": "which seller has the fewest units",
+              "objective": "fewest units of it left, which the shop does not show",
+              "filters": "size M can actually be bought",
+              "population": "the results page URL"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": 4
+          },
+          "model_raw": {
+            "form_version": 15,
+            "kind": "argmin_stock_quantity",
+            "quantifier": "argmin",
+            "objective": "attribute:stock quantity",
+            "filters": [
+              {
+                "attribute": "size",
+                "op": "=",
+                "value": "M"
+              },
+              {
+                "attribute": "availability",
+                "op": "=",
+                "value": "buyable"
+              }
+            ],
+            "population": "results",
+            "k": null,
+            "reading": null,
+            "unknowns": [
+              "stock quantity"
+            ],
+            "source": "model",
+            "evidence": {
+              "quantifier": "which seller has the fewest units",
+              "objective": "fewest units of it left, which the shop does not show",
+              "filters": "size M can actually be bought",
+              "population": "the results page URL"
+            },
+            "negated": false,
+            "ambiguities": [],
+            "prompt_version": 4
+          },
+          "changes": [],
+          "reply": "{\n  \"quantifier\": \"argmin\",\n  \"objective\": \"attribute:stock quantity\",\n  \"filters\": [\n    {\"attribute\": \"size\", \"op\": \"=\", \"value\": \"M\"},\n    {\"attribute\": \"availability\", \"op\": \"=\", \"value\": \"buyable\"}\n  ],\n  \"population\": \"results\",\n  \"k\": null,\n  \"negated\": false,\n  \"reading\": null,\n  \"unknowns\": [\"stock quantity\"],\n  \"ambiguities\": [],\n  \"evidence\": {\n    \"quantifier\": \"which seller has the fewest units\",\n    \"objective\": \"fewest units of it left, which the shop does not show\",\n    \"filters\": \"size M can actually be bought\",\n    \"population\": \"the results page URL\"\n  }\n}"
+        },
+        "scope": {
+          "product": null,
+          "products": [
+            "tee"
+          ],
+          "applied": false,
+          "kept": null,
+          "urls": [],
+          "reason": "every listing's title names the same product, the tee"
+        },
+        "rate_plan": "bound",
+        "ask_reason": null,
+        "clash": null,
+        "clash_settled": false
+      },
+      "reading": null,
+      "parse_cost_usd": 0.000278,
+      "parse_tokens": {
+        "prompt": 5194,
+        "completion": 759,
+        "total": 5953,
+        "calls": 1
+      },
+      "parse_provider": "GMICloud"
+    }
+  ]
+}

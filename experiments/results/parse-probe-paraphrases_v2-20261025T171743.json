@@ -1,0 +1,4346 @@
+{
+  "ran_at": "20261025T171743",
+  "questions": "paraphrases_v2.json",
+  "comparison_version": 3,
+  "model": "anthropic/claude-haiku-4.5",
+  "temperature": 0,
+  "only_templates": [
+    "tee-headline",
+    "tee-target-price",
+    "tee-cheapest-target",
+    "tee-all-stocked",
+    "tee-count-stocked",
+    "tee-count-buyable",
+    "tee-exists-under",
+    "tee-top-3",
+    "tee-xs-price",
+    "tee-promo-check",
+    "decline-delivery",
+    "decline-fit",
+    "decline-scarcity"
+  ],
+  "left_out": [
+    {
+      "id": 17,
+      "template": "water-target-price"
+    },
+    {
+      "id": 18,
+      "template": "water-target-price"
+    },
+    {
+      "id": 19,
+      "template": "water-cheapest-target"
+    },
+    {
+      "id": 20,
+      "template": "water-cheapest-target"
+    },
+    {
+      "id": 21,
+      "template": "water-all-stocked"
+    },
+    {
+      "id": 22,
+      "template": "water-all-stocked"
+    },
+    {
+      "id": 23,
+      "template": "water-count-buyable"
+    },
+    {
+      "id": 24,
+      "template": "water-count-buyable"
+    },
+    {
+      "id": 25,
+      "template": "water-best-per-litre"
+    },
+    {
+      "id": 26,
+      "template": "water-best-per-litre"
+    },
+    {
+      "id": 29,
+      "template": "decline-taste"
+    },
+    {
+      "id": 30,
+      "template": "decline-taste"
+    },
+    {
+      "id": 35,
+      "template": "water-target-price"
+    },
+    {
+      "id": 36,
+      "template": "water-all-stocked"
+    }
+  ],
+  "placeholders": {
+    "brand": "Wexcombe",
+    "limit": "12"
+  },
+  "provider_routing": null,
+  "form_version": 15,
+  "prompt_version": 4,
+  "normalise_version": 5,
+  "box_version": 20,
+  "primitives_version": 13,
+  "planner_version": 2,
+  "strategy_version": 9,
+  "commit": "574090834e2c98aa42de67bd0715a7001452911e",
+  "page_from": "20261025T021029",
+  "spec_from": "tasks_tee_claim.json",
+  "draw": "Wexcombe:f59ae5dfcd",
+  "page": {
+    "url": "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+    "count": 45,
+    "total": 45,
+    "next_page": false,
+    "pages": [
+      "http://localhost:7770/catalogsearch/result/?q=Wexcombe",
+      "http://localhost:7770/catalogsearch/result/index/?p=2&q=Wexcombe"
+    ],
+    "reader": "rendered",
+    "listings": [
+      {
+        "seller": "Fairhaven Apparel",
+        "advertised": 17.51,
+        "url": "http://localhost:7770/igr-tcl-23.html",
+        "title": "Wexcombe Midweight Jersey Tee - Fairhaven Apparel"
+      },
+      {
+        "seller": "Alderney Threads",
+        "advertised": 17.15,
+        "url": "http://localhost:7770/igr-tcl-38.html",
+        "title": "Wexcombe Midweight Jersey Tee - Alderney Threads"
+      },
+      {
+        "seller": "Foxcombe Threads",
+        "advertised": 31.65,
+        "url": "http://localhost:7770/igr-tcl-41.html",
+        "title": "Wexcombe Midweight Jersey Tee - Foxcombe Threads"
+      },
+      {
+        "seller": "Whitlock Outfitters",
+        "advertised": 11.09,
+        "url": "http://localhost:7770/igr-tcl-11.html",
+        "title": "Wexcombe Midweight Jersey Knit Tee - Whitlock Outfitters"
+      },
+      {
+        "seller": "Oakfield Textile Company",
+        "advertised": 11.69,
+        "url": "http://localhost:7770/igr-tcl-17.html",
+        "title": "Wexcombe Midweight Jersey Tee - Oakfield Textile Company"
+      },
+      {
+        "seller": "Dunmore Outfitters",
+        "advertised": 16.3,
+        "url": "http://localhost:7770/igr-tcl-25.html",
+        "title": "Wexcombe Midweight Jersey Knit Tee - Dunmore Outfitters"
+      },
+      {
+        "seller": "Gisburn Garments",
+        "advertised": 24.38,
+        "url": "http://localhost:7770/igr-tcl-26.html",
+        "title": "Wexcombe Midweight Jersey Knit Tee - Gisburn Garments"
+      },
+      {
+        "seller": "Westmere Textile Company",
+        "advertised": 23.17,
+        "url": "http://localhost:7770/igr-tcl-27.html",
+        "title": "Wexcombe Midweight Jersey Tee - Westmere Textile Company"
+      },
+      {
+        "seller": "Kelsall Textile Company",
+        "advertised": 33.07,
+        "url": "http://localhost:7770/igr-tcl-12.html",
+        "title": "Wexcombe Midweight Jersey Tee - Kelsall Textile Company"
+      },
+      {
+        "seller": "Marlow Garments",
+        "advertised": 32.45,
+        "url": "http://localhost:7770/igr-tcl-13.html",
+        "title": "Wexcombe Midweight Jersey Knit Tee - Marlow Garments"
+      },
+      {
+        "seller": "Brockwell Garments",
+        "advertised": 29.35,
+        "url": "http://localhost:7770/igr-tcl-30.html",
+        "title": "Wexcombe Midweight Jersey Tee - Brockwell Garments"
+      },
+      {
+        "seller": "Chandler Workwear Supply Co",
+        "advertised": 22.25,
+        "url": "http://localhost:7770/igr-tcl-08.html",
+        "title": "Wexcombe Midweight Jersey Tee - Chandler Workwear Supply Co"
+      },
+      {
+        "seller": "Verity Clothing Company Ltd",
+        "advertised": 32.61,
+        "url": "http://localhost:7770/igr-tcl-21.html",
+        "title": "Wexcombe Midweight Jersey Tee - Verity Clothing Company Ltd"
+      },
+      {
+        "seller": "Holbeck Clothing Company Ltd",
+        "advertised": 32.56,
+        "url": "http://localhost:7770/igr-tcl-28.html",
+        "title": "Wexcombe Midweight Jersey Tee - Holbeck Clothing Company Ltd"
+      },
+      {
+        "seller": "Yarrow Uniform Supply",
+        "advertised": 20.02,
+        "url": "http://localhost:7770/igr-tcl-44.html",
+        "title": "Wexcombe Midweight Jersey Knit Tee - Yarrow Uniform Supply"
+      },
+      {
+        "seller": "Bramley Garment Works",
+        "advertised": 28.76,
+        "url": "http://localhost:7770/igr-tcl-03.html",
+        "title": "Wexcombe Midweight Jersey Knit Tee - Bramley Garment Works"
+      },
+      {
+        "seller": "Larkspur Outfitters",
+        "advertised": 23.01,
+        "url": "http://localhost:7770/igr-tcl-07.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Larkspur Outfitters"
+      },
+      {
+        "seller": "Dovercourt Apparel",
+        "advertised": 10.13,
+        "url": "http://localhost:7770/igr-tcl-09.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Dovercourt Apparel"
+      },
+      {
+        "seller": "Carnforth Textile Company",
+        "advertised": 11.38,
+        "url": "http://localhost:7770/igr-tcl-24.html",
+        "title": "Wexcombe Midweight Jersey Knit Tee - Carnforth Textile Company"
+      },
+      {
+        "seller": "Thornbury Apparel Official Store",
+        "advertised": 26.15,
+        "url": "http://localhost:7770/igr-tcl-32.html",
+        "title": "Wexcombe Midweight Jersey Tee - Thornbury Apparel Official Store"
+      },
+      {
+        "seller": "Jarrow Textiles Official Store",
+        "advertised": 33.5,
+        "url": "http://localhost:7770/igr-tcl-42.html",
+        "title": "Wexcombe Midweight Jersey Tee - Jarrow Textiles Official Store"
+      },
+      {
+        "seller": "Lymington Clothing Company Ltd",
+        "advertised": 18.68,
+        "url": "http://localhost:7770/igr-tcl-43.html",
+        "title": "Wexcombe Midweight Jersey Tee - Lymington Clothing Company Ltd"
+      },
+      {
+        "seller": "Fenwick Threads",
+        "advertised": 19.69,
+        "url": "http://localhost:7770/igr-tcl-34.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Fenwick Threads"
+      },
+      {
+        "seller": "Haldane Apparel",
+        "advertised": 11.92,
+        "url": "http://localhost:7770/igr-tcl-40.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Haldane Apparel"
+      },
+      {
+        "seller": "Everleigh Garments",
+        "advertised": 33.62,
+        "url": "http://localhost:7770/igr-tcl-31.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Everleigh Garments"
+      },
+      {
+        "seller": "Stonebridge Workwear Supply Co",
+        "advertised": 32.08,
+        "url": "http://localhost:7770/igr-tcl-45.html",
+        "title": "Wexcombe Midweight Jersey Tee - Stonebridge Workwear Supply Co"
+      },
+      {
+        "seller": "Fordwich Apparel Official Store",
+        "advertised": 30.65,
+        "url": "http://localhost:7770/igr-tcl-01.html",
+        "title": "Wexcombe Midweight Jersey Knit Tee - Fordwich Apparel Official Store"
+      },
+      {
+        "seller": "Redhill Uniform Supply",
+        "advertised": 28.7,
+        "url": "http://localhost:7770/igr-tcl-14.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Redhill Uniform Supply"
+      },
+      {
+        "seller": "Ivybridge Clothing Co",
+        "advertised": 29.14,
+        "url": "http://localhost:7770/igr-tcl-16.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ivybridge Clothing Co"
+      },
+      {
+        "seller": "Thirsk Textiles Official Store",
+        "advertised": 27.98,
+        "url": "http://localhost:7770/igr-tcl-22.html",
+        "title": "Wexcombe Midweight Jersey Knit Tee - Thirsk Textiles Official Store"
+      },
+      {
+        "seller": "Grantley Workwear Supply Co",
+        "advertised": 29.61,
+        "url": "http://localhost:7770/igr-tcl-33.html",
+        "title": "Wexcombe Midweight Jersey Knit Tee - Grantley Workwear Supply Co"
+      },
+      {
+        "seller": "Kettering Apparel",
+        "advertised": 13.91,
+        "url": "http://localhost:7770/igr-tcl-39.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Kettering Apparel"
+      },
+      {
+        "seller": "Copperfield Workwear Supply Co",
+        "advertised": 15.26,
+        "url": "http://localhost:7770/igr-tcl-05.html",
+        "title": "Wexcombe Midweight Jersey Tee - Copperfield Workwear Supply Co"
+      },
+      {
+        "seller": "Garrick Apparel",
+        "advertised": 39.23,
+        "url": "http://localhost:7770/igr-tcl-20.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Garrick Apparel"
+      },
+      {
+        "seller": "Marchmont Textiles Official Store",
+        "advertised": 13.57,
+        "url": "http://localhost:7770/igr-tcl-15.html",
+        "title": "Wexcombe Midweight Jersey Knit Tee - Marchmont Textiles Official Store"
+      },
+      {
+        "seller": "Oakhurst Textile Company",
+        "advertised": 30.35,
+        "url": "http://localhost:7770/igr-tcl-29.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Oakhurst Textile Company"
+      },
+      {
+        "seller": "Ingleton Apparel Official Store",
+        "advertised": 17.27,
+        "url": "http://localhost:7770/igr-tcl-06.html",
+        "title": "Wexcombe Midweight Jersey Knit Tee - Ingleton Apparel Official Store"
+      },
+      {
+        "seller": "Dalston Textiles Official Store",
+        "advertised": 12.85,
+        "url": "http://localhost:7770/igr-tcl-02.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Dalston Textiles Official Store"
+      },
+      {
+        "seller": "Quarles Apparel Official Store",
+        "advertised": 18.32,
+        "url": "http://localhost:7770/igr-tcl-04.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Quarles Apparel Official Store"
+      },
+      {
+        "seller": "Northwick Apparel Official Store",
+        "advertised": 15.86,
+        "url": "http://localhost:7770/igr-tcl-10.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Northwick Apparel Official Store"
+      },
+      {
+        "seller": "Crowhurst Clothing Company Ltd",
+        "advertised": 31.22,
+        "url": "http://localhost:7770/igr-tcl-37.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Crowhurst Clothing Company Ltd"
+      },
+      {
+        "seller": "Ambleside Garment Works",
+        "advertised": 22.23,
+        "url": "http://localhost:7770/igr-tcl-36.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ambleside Garment Works"
+      },
+      {
+        "seller": "Ashgrove Workwear Supply Co",
+        "advertised": 35.7,
+        "url": "http://localhost:7770/igr-tcl-18.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Ashgrove Workwear Supply Co"
+      },
+      {
+        "seller": "Abbotsley Apparel Official Store",
+        "advertised": 32.84,
+        "url": "http://localhost:7770/igr-tcl-35.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Abbotsley Apparel Official Store"
+      },
+      {
+        "seller": "Elmsworth Textiles Official Store",
+        "advertised": 26.99,
+        "url": "http://localhost:7770/igr-tcl-19.html",
+        "title": "Wexcombe Midweight Jersey Tee, Short Sleeve - Elmsworth Textiles Official Store"
+      }
+    ]
+  },
+  "limits": [],
+  "in_sample": false,
+  "spend_usd": 0.1156,
+  "charged_usd": 0.137368,
+  "calls_failed": 0,
+  "totals": {
+    "paraphrases": 22,
+    "with_template": 22,
+    "without_template": 0,
+    "rules": {
+      "quantifier": 14,
+      "objective": 11,
+      "population": 11,
+      "every field": 0
+    },
+    "model": {
+      "quantifier": 21,
+      "objective": 21,
+      "population": 21,
+      "every field": 18
+    },
+    "model_only": {
+      "quantifier": 7,
+      "objective": 10,
+      "population": 10,
+      "every field": 18
+    },
+    "rules_only": {
+      "quantifier": 0,
+      "objective": 0,
+      "population": 0,
+      "every field": 0
+    },
+    "box": {
+      "plan": 13,
+      "fallback": 6,
+      "ask": 1,
+      "refuse": 2,
+      "bypass": 0,
+      "error": 0
+    },
+    "model_box": {
+      "plan": 15,
+      "fallback": 1,
+      "ask": 4,
+      "refuse": 2,
+      "bypass": 0,
+      "error": 0
+    },
+    "model_box_by_rules": 1,
+    "model_box_as_audit_expected": 18,
+    "box_as_template": 8,
+    "box_as_audit_expected": 15,
+    "labelled_ambiguous": {
+      "paraphrases": 6,
+      "asked": 0
+    },
+    "labelled_clear": {
+      "paraphrases": 16,
+      "asked": 1
+    }
+  },
+  "rows": [
+    {
+      "id": 1,
+      "template": "tee-headline",
+      "label": "clear",
+      "audit_expected": "PLAN",
+      "ask_kind": null,
+      "text": "Just going by the prices on the search results, which {brand} tee listing is the cheapest, and what price does it show?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . Just going by the prices on the search results, which Wexcombe tee listing is the cheapest, and what price does it show?",
+      "expected": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "advertises",
+          "objective": "advertises"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "total_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "total_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "results_page",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which Wexcombe tee listing is the cheapest",
+          "objective": "Just going by the prices on the search results",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which Wexcombe tee listing is the cheapest",
+          "objective": "Just going by the prices on the search results",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.005998,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "results_page",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 2,
+      "template": "tee-headline",
+      "label": "ambiguous",
+      "audit_expected": "ASK",
+      "ask_kind": null,
+      "text": "Which of these {brand} tees is the cheapest, and how much is it?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . Which of these Wexcombe tees is the cheapest, and how much is it?",
+      "expected": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "advertises",
+          "objective": "advertises"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "total_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "total_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "results_page",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Which ... is the cheapest",
+          "objective": "advertised price on the results page",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Which ... is the cheapest",
+          "objective": "advertised price on the results page",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.005943,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "results_page",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 3,
+      "template": "tee-target-price",
+      "label": "clear",
+      "audit_expected": "PLAN",
+      "ask_kind": null,
+      "text": "What's the cheapest a medium {brand} tee goes for, counting only sellers who actually have mediums in stock?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . What's the cheapest a medium Wexcombe tee goes for, counting only sellers who actually have mediums in stock?",
+      "expected": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "bought",
+          "quantifier": "lowest price",
+          "objective": "lowest price"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:availability": "in stock",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "cheapest",
+          "objective": "price",
+          "filters": "a medium, which is size M; sellers who actually have mediums in stock",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "cheapest",
+          "objective": "price",
+          "filters": "a medium, which is size M; sellers who actually have mediums in stock",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006225,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 4,
+      "template": "tee-target-price",
+      "label": "clear",
+      "audit_expected": "PLAN",
+      "ask_kind": null,
+      "text": "hey, could you find me the lowest price on the {brand} t-shirt in size M? only from places where M isn't sold out, thanks",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . hey, could you find me the lowest price on the Wexcombe t-shirt in size M? only from places where M isn't sold out, thanks",
+      "expected": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "bought",
+          "quantifier": "lowest price",
+          "objective": "lowest price"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "total_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "quantifier": "lowest price",
+          "objective": "lowest price"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "total_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "the lowest price",
+          "objective": "price on the Wexcombe t-shirt in size M",
+          "filters": "size M, only from places where M isn't sold out",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "the lowest price",
+          "objective": "price on the Wexcombe t-shirt in size M",
+          "filters": "size M, only from places where M isn't sold out",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006281,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 5,
+      "template": "tee-cheapest-target",
+      "label": "clear",
+      "audit_expected": "PLAN",
+      "ask_kind": null,
+      "text": "i need a medium in the {brand} tee and want to go with whoever's cheapest for it, but only sellers that can actually send me one, so who is it and what do they charge",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . i need a medium in the Wexcombe tee and want to go with whoever's cheapest for it, but only sellers that can actually send me one, so who is it and what do they charge",
+      "expected": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "supply",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "total_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "total_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "who is it and what do they charge",
+          "objective": "cheapest",
+          "filters": "a medium, which is size M; can actually send me one, meaning in stock and buyable now",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "who is it and what do they charge",
+          "objective": "cheapest",
+          "filters": "a medium, which is size M; can actually send me one, meaning in stock and buyable now",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006301,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 6,
+      "template": "tee-cheapest-target",
+      "label": "clear",
+      "audit_expected": "PLAN",
+      "ask_kind": null,
+      "text": "Which seller has the cheapest {brand} tee in extra large, and how much? Only ones that actually have extra large in stock.",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . Which seller has the cheapest Wexcombe tee in extra large, and how much? Only ones that actually have extra large in stock.",
+      "expected": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "supply",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:availability": "in stock",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "XL"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Which seller has the cheapest",
+          "objective": "price",
+          "filters": "extra large, which is size XL; actually have in stock",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "XL"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Which seller has the cheapest",
+          "objective": "price",
+          "filters": "extra large, which is size XL; actually have in stock",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006238,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 7,
+      "template": "tee-all-stocked",
+      "label": "ambiguous",
+      "audit_expected": "ASK",
+      "ask_kind": null,
+      "text": "Do all of the {brand} tee listings have a medium? Just a yes or no, please.",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . Do all of the Wexcombe tee listings have a medium? Just a yes or no, please.",
+      "expected": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "quantifier": "every Wexcombe tee listing offer",
+          "objective": "offer"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "all of the Wexcombe tee listings have",
+          "objective": "have"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "refutation",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "ask",
+        "kind": "refutation",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "all of the Wexcombe tee listings",
+          "objective": "have a medium",
+          "population": "the results page URL",
+          "ambiguities": "have: in the size menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "have",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "all of the Wexcombe tee listings",
+          "objective": "have a medium",
+          "population": "the results page URL",
+          "ambiguities": "have: in the size menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "have",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006176,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "ask",
+        "kind": "refutation",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'have'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 8,
+      "template": "tee-all-stocked",
+      "label": "ambiguous",
+      "audit_expected": "ASK",
+      "ask_kind": null,
+      "text": "Do any of the {brand} tee listings not have a medium?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . Do any of the Wexcombe tee listings not have a medium?",
+      "expected": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "quantifier": "every Wexcombe tee listing offer",
+          "objective": "offer"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "objective": "nothing but a price is asked about",
+          "quantifier": "no quantifier word, so everything is listed",
+          "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "fallback",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "ask",
+        "kind": "refutation",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "negated_refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "listed"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Do any of the Wexcombe tee listings not have",
+          "objective": "a medium, which is size M",
+          "negated": "asks whether some listing lacks M",
+          "filters": "M in the size menu",
+          "population": "the results page URL"
+        },
+        "negated": true,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "negated_refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "listed"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Do any of the Wexcombe tee listings not have",
+          "objective": "a medium, which is size M",
+          "negated": "asks whether some listing lacks M",
+          "filters": "M in the size menu",
+          "population": "the results page URL"
+        },
+        "negated": true,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006414,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "model_raw_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "negated_refutation",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 9,
+      "template": "tee-count-stocked",
+      "label": "ambiguous",
+      "audit_expected": "ASK",
+      "ask_kind": null,
+      "text": "Could you count for me how many of the {brand} tee listings have it in medium?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . Could you count for me how many of the Wexcombe tee listings have it in medium?",
+      "expected": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "How many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "objective": "nothing but a price is asked about",
+          "quantifier": "how many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "count for me how many",
+          "objective": "have it in medium",
+          "filters": "medium, which is size M",
+          "population": "the results page URL",
+          "ambiguities": "have it in medium: in the size menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "have it in medium",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "count for me how many",
+          "objective": "have it in medium",
+          "filters": "medium, which is size M",
+          "population": "the results page URL",
+          "ambiguities": "have it in medium: in the size menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "have it in medium",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006299,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'have it in medium'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 10,
+      "template": "tee-count-stocked",
+      "label": "ambiguous",
+      "audit_expected": "ASK",
+      "ask_kind": null,
+      "text": "Size medium in the {brand} tee, how many of the listings carry that?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . Size medium in the Wexcombe tee, how many of the listings carry that?",
+      "expected": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "How many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "how many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "how many of the listings",
+          "objective": "carry that",
+          "filters": "Size medium, which is size M",
+          "population": "the results page URL",
+          "ambiguities": "carry: in the size menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "carry",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "how many of the listings",
+          "objective": "carry that",
+          "filters": "Size medium, which is size M",
+          "population": "the results page URL",
+          "ambiguities": "carry: in the size menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "carry",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006262,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'carry'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 11,
+      "template": "tee-count-buyable",
+      "label": "clear",
+      "audit_expected": "PLAN",
+      "ask_kind": null,
+      "text": "Right now, how many of the {brand} tee listings could I actually buy a medium from?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . Right now, how many of the Wexcombe tee listings could I actually buy a medium from?",
+      "expected": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "in stock",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "How many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:availability": "buy",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "how many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "how many",
+          "objective": "could I actually buy",
+          "filters": "a medium, which is size M; right now means buyable",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "how many",
+          "objective": "could I actually buy",
+          "filters": "a medium, which is size M; right now means buyable",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006215,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 12,
+      "template": "tee-count-buyable",
+      "label": "clear",
+      "audit_expected": "PLAN",
+      "ask_kind": null,
+      "text": "How many {brand} tee listings have a size M that isn't sold out at the moment?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . How many Wexcombe tee listings have a size M that isn't sold out at the moment?",
+      "expected": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "in stock",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "How many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "How many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'have'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "How many",
+          "objective": "listings",
+          "filters": "a size M that isn't sold out at the moment",
+          "population": "the results page URL for Wexcombe"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "How many",
+          "objective": "listings",
+          "filters": "a size M that isn't sold out at the moment",
+          "population": "the results page URL for Wexcombe"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.00632,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'have'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 13,
+      "template": "tee-exists-under",
+      "label": "clear",
+      "audit_expected": "PLAN",
+      "ask_kind": null,
+      "text": "I've only got ${limit} to spend. Is there a {brand} tee in medium that I can actually buy for less than that? Yes or no, and if yes, which seller?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . I've only got $12 to spend. Is there a Wexcombe tee in medium that I can actually buy for less than that? Yes or no, and if yes, which seller?",
+      "expected": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          },
+          {
+            "attribute": "price",
+            "op": "<",
+            "value": 12.0
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "available",
+          "filter:price": "under $12",
+          "quantifier": "Is there any",
+          "objective": "under $12"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:availability": "buy",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "no quantifier word, so everything is listed",
+          "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "fallback",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "exists_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "price",
+            "op": "<",
+            "value": 12
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Is there",
+          "objective": "can actually buy",
+          "filters": "medium, which is size M; less than $12; can be bought now",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "price",
+            "op": "<",
+            "value": 12
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Is there",
+          "objective": "can actually buy",
+          "filters": "medium, which is size M; less than $12; can be bought now",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.00634,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "exists_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 14,
+      "template": "tee-exists-under",
+      "label": "clear",
+      "audit_expected": "PLAN",
+      "ask_kind": null,
+      "text": "can I get a medium {brand} tee for ${limit} or less from anyone who has it in stock? if so who",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . can I get a medium Wexcombe tee for $12 or less from anyone who has it in stock? if so who",
+      "expected": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          },
+          {
+            "attribute": "price",
+            "op": "<",
+            "value": 12.0
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "available",
+          "filter:price": "under $12",
+          "quantifier": "Is there any",
+          "objective": "under $12"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          },
+          {
+            "attribute": "price",
+            "op": "<=",
+            "value": 12.0
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:availability": "in stock",
+          "filter:price": "$12 or less",
+          "quantifier": "anyone",
+          "objective": "$12 or less"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "exists_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "exists_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "price",
+            "op": "<=",
+            "value": 12
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "can I get",
+          "objective": "price",
+          "filters": "a medium, which is size M; $12 or less; has it in stock",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "price",
+            "op": "<=",
+            "value": 12
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "can I get",
+          "objective": "price",
+          "filters": "a medium, which is size M; $12 or less; has it in stock",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006336,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "exists_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 15,
+      "template": "tee-top-3",
+      "label": "clear",
+      "audit_expected": "PLAN",
+      "ask_kind": null,
+      "text": "Give me the three cheapest sellers for a medium {brand} tee, only ones with mediums in stock, and what each one charges.",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . Give me the three cheapest sellers for a medium Wexcombe tee, only ones with mediums in stock, and what each one charges.",
+      "expected": {
+        "form_version": 15,
+        "kind": "topk_price",
+        "quantifier": "topk",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": 3,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "supply",
+          "quantifier": "three sellers",
+          "objective": "three sellers",
+          "k": "three sellers"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "topk_price",
+        "quantifier": "topk",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": 3,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:availability": "in stock",
+          "quantifier": "three cheapest",
+          "objective": "three cheapest",
+          "k": "three cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "topk_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "topk_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "topk_price",
+        "quantifier": "topk",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": 3,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "the three cheapest",
+          "objective": "what each one charges",
+          "k": "three",
+          "filters": "a medium Wexcombe tee, which is size M; only ones with mediums in stock",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "topk_price",
+        "quantifier": "topk",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": 3,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "the three cheapest",
+          "objective": "what each one charges",
+          "k": "three",
+          "filters": "a medium Wexcombe tee, which is size M; only ones with mediums in stock",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006329,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "topk_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 16,
+      "template": "tee-top-3",
+      "label": "clear",
+      "audit_expected": "PLAN",
+      "ask_kind": null,
+      "text": "For a {brand} tee in size M, which 3 sellers have the lowest prices, not counting any that can't actually supply an M, and what are those prices?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . For a Wexcombe tee in size M, which 3 sellers have the lowest prices, not counting any that can't actually supply an M, and what are those prices?",
+      "expected": {
+        "form_version": 15,
+        "kind": "topk_price",
+        "quantifier": "topk",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": 3,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "supply",
+          "quantifier": "three sellers",
+          "objective": "three sellers",
+          "k": "three sellers"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "supply",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "no quantifier word, so everything is listed",
+          "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "fallback",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "topk_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "topk_price",
+        "quantifier": "topk",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": 3,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which 3 sellers have the lowest prices",
+          "objective": "prices",
+          "filters": "size M, can't actually supply an M means availability = buyable",
+          "k": "3"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "topk_price",
+        "quantifier": "topk",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": 3,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which 3 sellers have the lowest prices",
+          "objective": "prices",
+          "filters": "size M, can't actually supply an M means availability = buyable",
+          "k": "3"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006252,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "topk_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 27,
+      "template": "decline-delivery",
+      "label": "clear",
+      "audit_expected": "REFUSE",
+      "ask_kind": null,
+      "text": "If I order a medium {brand} tee, which seller will get it to me the quickest?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . If I order a medium Wexcombe tee, which seller will get it to me the quickest?",
+      "expected": {
+        "form_version": 15,
+        "kind": "argmin_delivery_time",
+        "quantifier": "argmin",
+        "objective": "attribute:delivery time",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "quantifier": "fastest",
+          "objective": "delivers"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "argmax_what_'quickest'_ranks_by",
+        "quantifier": "argmax",
+        "objective": "attribute:what 'quickest' ranks by",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "what 'quickest' ranks by"
+        ],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "objective": "quickest",
+          "quantifier": "quickest",
+          "unknowns:attribute": "quickest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [
+        "no plan exists for kind \"argmax_what_'quickest'_ranks_by\"",
+        "the shop does not show what 'quickest' ranks by"
+      ],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "refuse",
+        "kind": null,
+        "ask": null,
+        "reading_by": null,
+        "detail": "The shop does not show what 'quickest' ranks by, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought."
+      },
+      "template_box": {
+        "outcome": "refuse",
+        "kind": null,
+        "ask": null,
+        "reading_by": null,
+        "detail": "The shop does not show delivery time, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought."
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "argmin_delivery_time",
+        "quantifier": "argmin",
+        "objective": "attribute:delivery time",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "delivery time"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which seller will get it to me the quickest",
+          "objective": "delivery time, which the shop does not show",
+          "filters": "a medium, which is size M",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "argmin_delivery_time",
+        "quantifier": "argmin",
+        "objective": "attribute:delivery time",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "delivery time"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which seller will get it to me the quickest",
+          "objective": "delivery time, which the shop does not show",
+          "filters": "a medium, which is size M",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [
+        "the shop does not show delivery time",
+        "no plan exists for kind 'argmin_delivery_time'"
+      ],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006261,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "refuse",
+        "kind": null,
+        "ask": null,
+        "reading_by": null,
+        "detail": "The shop does not show delivery time, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought.",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": true
+      }
+    },
+    {
+      "id": 28,
+      "template": "decline-delivery",
+      "label": "clear",
+      "audit_expected": "REFUSE",
+      "ask_kind": null,
+      "text": "i need the {brand} tee in size M by this weekend, which seller ships fastest?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . i need the Wexcombe tee in size M by this weekend, which seller ships fastest?",
+      "expected": {
+        "form_version": 15,
+        "kind": "argmin_delivery_time",
+        "quantifier": "argmin",
+        "objective": "attribute:delivery time",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "quantifier": "fastest",
+          "objective": "delivers"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "argmax_what_'fastest'_ranks_by",
+        "quantifier": "argmax",
+        "objective": "attribute:what 'fastest' ranks by",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "what 'fastest' ranks by"
+        ],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "ships",
+          "objective": "fastest",
+          "quantifier": "fastest",
+          "unknowns:attribute": "fastest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [
+        "no plan exists for kind \"argmax_what_'fastest'_ranks_by\"",
+        "the shop does not show what 'fastest' ranks by"
+      ],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "refuse",
+        "kind": null,
+        "ask": null,
+        "reading_by": null,
+        "detail": "The shop does not show what 'fastest' ranks by, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought."
+      },
+      "template_box": {
+        "outcome": "refuse",
+        "kind": null,
+        "ask": null,
+        "reading_by": null,
+        "detail": "The shop does not show delivery time, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought."
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "argmin_delivery_time",
+        "quantifier": "argmin",
+        "objective": "attribute:delivery time",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "delivery time"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which seller ships fastest",
+          "objective": "ships fastest, which the shop does not show",
+          "filters": "size M, by this weekend implies the item must be buyable now",
+          "unknowns": "delivery time is not shown by the shop"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "argmin_delivery_time",
+        "quantifier": "argmin",
+        "objective": "attribute:delivery time",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "delivery time"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which seller ships fastest",
+          "objective": "ships fastest, which the shop does not show",
+          "filters": "size M, by this weekend implies the item must be buyable now",
+          "unknowns": "delivery time is not shown by the shop"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [
+        "the shop does not show delivery time",
+        "no plan exists for kind 'argmin_delivery_time'"
+      ],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006449,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "model_box": {
+        "outcome": "refuse",
+        "kind": null,
+        "ask": null,
+        "reading_by": null,
+        "detail": "The shop does not show delivery time, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought.",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": true
+      }
+    },
+    {
+      "id": 31,
+      "template": "tee-headline",
+      "label": "clear",
+      "audit_expected": "PLAN",
+      "ask_kind": null,
+      "text": "Which {brand} tee on the search page has the smallest price tag before you click in, and what is it?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . Which Wexcombe tee on the search page has the smallest price tag before you click in, and what is it?",
+      "expected": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "advertises",
+          "objective": "advertises"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "objective": "nothing but a price is asked about",
+          "quantifier": "no quantifier word, so everything is listed",
+          "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "fallback",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "results_page",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "has the smallest price tag",
+          "objective": "before you click in, which is the advertised price on the results page",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "has the smallest price tag",
+          "objective": "before you click in, which is the advertised price on the results page",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.005984,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "results_page",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 32,
+      "template": "tee-cheapest-target",
+      "label": "clear",
+      "audit_expected": "PLAN",
+      "ask_kind": null,
+      "text": "Which shop sells the {brand} tee in medium for the least? Name the shop and the price, and leave out any shop that's out of stock in medium.",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . Which shop sells the Wexcombe tee in medium for the least? Name the shop and the price, and leave out any shop that's out of stock in medium.",
+      "expected": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "supply",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "objective": "nothing but a price is asked about",
+          "quantifier": "no quantifier word, so everything is listed",
+          "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "fallback",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "sells ... for the least",
+          "objective": "price",
+          "filters": "medium, which is size M; out of stock in medium means leave out shops that cannot sell it",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "sells ... for the least",
+          "objective": "price",
+          "filters": "medium, which is size M; out of stock in medium means leave out shops that cannot sell it",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006269,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 33,
+      "template": "tee-all-stocked",
+      "label": "ambiguous",
+      "audit_expected": "ASK",
+      "ask_kind": null,
+      "text": "There's a medium on every {brand} tee listing, isn't there? Yes or no is all I need.",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . There's a medium on every Wexcombe tee listing, isn't there? Yes or no is all I need.",
+      "expected": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "quantifier": "every Wexcombe tee listing offer",
+          "objective": "offer"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "objective": "nothing but a price is asked about",
+          "quantifier": "no quantifier word, so everything is listed",
+          "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Wexcombe"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "fallback",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "ask",
+        "kind": "refutation",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "every",
+          "filters": "a medium, which is size M",
+          "ambiguities": "on: in the size menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "on",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "every",
+          "filters": "a medium, which is size M",
+          "ambiguities": "on: in the size menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "on",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [
+        "the question's \"n't\" is a negation, which the form's universal drops"
+      ],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006104,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "fallback",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "rules",
+        "fallback_reason": "the question's \"n't\" is a negation, which the form's universal drops",
+        "declined": false
+      }
+    },
+    {
+      "id": 34,
+      "template": "tee-exists-under",
+      "label": "clear",
+      "audit_expected": "PLAN",
+      "ask_kind": null,
+      "text": "Could I order a medium {brand} tee for below ${limit} from anyone right now? I need a yes or no, plus the seller's name if it's a yes.",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Wexcombe . Could I order a medium Wexcombe tee for below $12 from anyone right now? I need a yes or no, plus the seller's name if it's a yes.",
+      "expected": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          },
+          {
+            "attribute": "price",
+            "op": "<",
+            "value": 12.0
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "available",
+          "filter:price": "under $12",
+          "quantifier": "Is there any",
+          "objective": "under $12"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          },
+          {
+            "attribute": "price",
+            "op": "<",
+            "value": 12.0
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:availability": "right now",
+          "filter:price": "below $12",
+          "quantifier": "anyone",
+          "objective": "below $12"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "exists_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "exists_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "price",
+            "op": "<",
+            "value": 12
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Could I order ... from anyone right now",
+          "objective": "below $12",
+          "filters": "a medium, which is size M; below $12; right now means buyable",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "price",
+            "op": "<",
+            "value": 12
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Could I order ... from anyone right now",
+          "objective": "below $12",
+          "filters": "a medium, which is size M; below $12; right now means buyable",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.006372,
+      "provider": "Amazon Bedrock",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "exists_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    }
+  ]
+}

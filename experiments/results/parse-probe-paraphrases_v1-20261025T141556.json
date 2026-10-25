@@ -1,0 +1,5643 @@
+{
+  "ran_at": "20261025T141556",
+  "questions": "paraphrases_v1.json",
+  "comparison_version": 3,
+  "model": "deepseek/deepseek-v4-flash",
+  "temperature": 0,
+  "only_templates": null,
+  "left_out": [],
+  "provider_routing": {
+    "order": [
+      "gmicloud",
+      "deepinfra",
+      "streamlake"
+    ],
+    "allow_fallbacks": false,
+    "quantizations": [
+      "fp8"
+    ]
+  },
+  "form_version": 15,
+  "prompt_version": 4,
+  "normalise_version": 5,
+  "box_version": 20,
+  "primitives_version": 13,
+  "planner_version": 2,
+  "strategy_version": 9,
+  "commit": "574090834e2c98aa42de67bd0715a7001452911e",
+  "page_from": "20261014T213118",
+  "page": {
+    "url": "http://localhost:7770/catalogsearch/result/?q=Thornwood",
+    "count": 15,
+    "total": 15,
+    "next_page": false,
+    "pages": [
+      "http://localhost:7770/catalogsearch/result/?q=Thornwood"
+    ],
+    "reader": null,
+    "listings": [
+      {
+        "seller": "Copperfield Apparel",
+        "advertised": 23.4,
+        "url": "http://localhost:7770/igr-app-02.html",
+        "title": null
+      },
+      {
+        "seller": "Dunmore Apparel",
+        "advertised": 20.05,
+        "url": "http://localhost:7770/igr-app-05.html",
+        "title": null
+      },
+      {
+        "seller": "Marchmont Textiles",
+        "advertised": 30.92,
+        "url": "http://localhost:7770/igr-app-06.html",
+        "title": null
+      },
+      {
+        "seller": "Fairhaven Workwear",
+        "advertised": 18.33,
+        "url": "http://localhost:7770/igr-app-07.html",
+        "title": null
+      },
+      {
+        "seller": "Ivybridge Collective",
+        "advertised": 17.12,
+        "url": "http://localhost:7770/igr-app-08.html",
+        "title": null
+      },
+      {
+        "seller": "Haldane Supply",
+        "advertised": 27.13,
+        "url": "http://localhost:7770/igr-app-10.html",
+        "title": null
+      },
+      {
+        "seller": "Northwick Outfitters",
+        "advertised": 25.96,
+        "url": "http://localhost:7770/igr-app-11.html",
+        "title": null
+      },
+      {
+        "seller": "Brindle Textiles",
+        "advertised": 30.61,
+        "url": "http://localhost:7770/igr-app-09.html",
+        "title": null
+      },
+      {
+        "seller": "Pentland Workwear",
+        "advertised": 36.59,
+        "url": "http://localhost:7770/igr-app-12.html",
+        "title": null
+      },
+      {
+        "seller": "Lymington Textiles",
+        "advertised": 28.09,
+        "url": "http://localhost:7770/igr-app-15.html",
+        "title": null
+      },
+      {
+        "seller": "Elmsworth Clothing Co",
+        "advertised": 24.83,
+        "url": "http://localhost:7770/igr-app-01.html",
+        "title": null
+      },
+      {
+        "seller": "Alderney Clothing Co",
+        "advertised": 25.77,
+        "url": "http://localhost:7770/igr-app-14.html",
+        "title": null
+      },
+      {
+        "seller": "Rookwood Uniforms",
+        "advertised": 11.87,
+        "url": "http://localhost:7770/igr-app-03.html",
+        "title": null
+      },
+      {
+        "seller": "Oakhurst Threads",
+        "advertised": 27.75,
+        "url": "http://localhost:7770/igr-app-04.html",
+        "title": null
+      },
+      {
+        "seller": "Jarrow Garments",
+        "advertised": 14.9,
+        "url": "http://localhost:7770/igr-app-13.html",
+        "title": null
+      }
+    ]
+  },
+  "limits": [
+    "in sample: prompt version 2 and normalisation versions 1 and 2 were written from this file's model failures, on 22 October 2026, so these figures are development evidence only, never a claim (LESSONS 19)",
+    "the stored page record keeps no listing titles, so a title filter is dropped as restating the page only when it restates the search word, where the box on a live page would also drop the product's own words"
+  ],
+  "in_sample": true,
+  "spend_usd": 0.0093,
+  "charged_usd": 0.009849476,
+  "calls_failed": 0,
+  "totals": {
+    "paraphrases": 30,
+    "with_template": 30,
+    "without_template": 0,
+    "rules": {
+      "quantifier": 20,
+      "objective": 17,
+      "population": 17,
+      "every field": 10
+    },
+    "model": {
+      "quantifier": 27,
+      "objective": 26,
+      "population": 26,
+      "every field": 23
+    },
+    "model_only": {
+      "quantifier": 8,
+      "objective": 9,
+      "population": 9,
+      "every field": 13
+    },
+    "rules_only": {
+      "quantifier": 1,
+      "objective": 0,
+      "population": 0,
+      "every field": 0
+    },
+    "box": {
+      "plan": 17,
+      "fallback": 3,
+      "ask": 7,
+      "refuse": 3,
+      "bypass": 0,
+      "error": 0
+    },
+    "model_box": {
+      "plan": 18,
+      "fallback": 0,
+      "ask": 10,
+      "refuse": 2,
+      "bypass": 0,
+      "error": 0
+    },
+    "model_box_by_rules": 0,
+    "model_box_as_audit_expected": 28,
+    "box_as_template": 15,
+    "box_as_audit_expected": 17,
+    "labelled_ambiguous": {
+      "paraphrases": 6,
+      "asked": 3
+    },
+    "labelled_clear": {
+      "paraphrases": 7,
+      "asked": 0
+    }
+  },
+  "rows": [
+    {
+      "id": 1,
+      "template": "apparel-headline",
+      "label": null,
+      "audit_expected": "results_page",
+      "ask_kind": null,
+      "text": "Looking only at the search results, which Thornwood tee has the lowest listed price and how much is it?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Looking only at the search results, which Thornwood tee has the lowest listed price and how much is it?",
+      "expected": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "advertises",
+          "objective": "advertises"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "listed"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:availability": "listed",
+          "objective": "nothing but a price is asked about",
+          "quantifier": "no quantifier word, so everything is listed",
+          "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Thornwood"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [
+        "the shop does not show the price of a sold-out size"
+      ],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "refuse",
+        "kind": null,
+        "ask": null,
+        "reading_by": null,
+        "detail": "The shop does not show the price of a sold-out size, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought."
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "results_page",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "the lowest",
+          "objective": "lowest listed price on the search results",
+          "filters": "none; the question names no size or seller, and the search is already for Thornwood",
+          "population": "the results page URL and 'looking only at the search results'",
+          "k": "no k",
+          "negated": "not negated",
+          "reading": "None",
+          "unknowns": "none",
+          "ambiguities": "none"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "the lowest",
+          "objective": "lowest listed price on the search results",
+          "filters": "none; the question names no size or seller, and the search is already for Thornwood",
+          "population": "the results page URL and 'looking only at the search results'",
+          "k": "no k",
+          "negated": "not negated",
+          "reading": "None",
+          "unknowns": "none",
+          "ambiguities": "none"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [
+        "the question's 'listed' gives availability = 'listed', and the form has no availability filter"
+      ],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.000643552,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "results_page",
+        "ask": null,
+        "reading_by": "box",
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 2,
+      "template": "apparel-headline",
+      "label": null,
+      "audit_expected": "results_page",
+      "ask_kind": null,
+      "text": "Without clicking into any listing, which Thornwood tee shows the cheapest price in the search results?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Without clicking into any listing, which Thornwood tee shows the cheapest price in the search results?",
+      "expected": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "advertises",
+          "objective": "advertises"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "total_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "total_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "results_page",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which ... shows the cheapest price",
+          "objective": "cheapest price in the search results",
+          "population": "the results page URL; without clicking into any listing"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "which ... shows the cheapest price",
+          "objective": "cheapest price in the search results",
+          "population": "the results page URL; without clicking into any listing"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0002401854,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "results_page",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 3,
+      "template": "apparel-target-price",
+      "label": "clear",
+      "audit_expected": "availability_bound",
+      "ask_kind": null,
+      "text": "What's the least I'd have to pay for a medium Thornwood tee that's actually in stock?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . What's the least I'd have to pay for a medium Thornwood tee that's actually in stock?",
+      "expected": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "bought",
+          "quantifier": "lowest price",
+          "objective": "lowest price"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "argmax_what_'least_i'_ranks_by",
+        "quantifier": "argmax",
+        "objective": "attribute:what 'least i' ranks by",
+        "filters": [
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "what 'least i' ranks by"
+        ],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:availability": "in stock",
+          "objective": "least I",
+          "quantifier": "least I",
+          "unknowns:attribute": "least I"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [
+        "no plan exists for kind \"argmax_what_'least_i'_ranks_by\"",
+        "the shop does not show what 'least i' ranks by"
+      ],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "refuse",
+        "kind": null,
+        "ask": null,
+        "reading_by": null,
+        "detail": "The shop does not show what 'least i' ranks by, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought."
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "the least I'd have to pay",
+          "objective": "pay for a medium ... in stock",
+          "filters": "a medium, which is size M; actually in stock",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "the least I'd have to pay",
+          "objective": "pay for a medium ... in stock",
+          "filters": "a medium, which is size M; actually in stock",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0003130218,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 4,
+      "template": "apparel-target-price",
+      "label": null,
+      "audit_expected": "availability_bound",
+      "ask_kind": null,
+      "text": "I need a size M Thornwood tee. What is the best price I can get from a seller that has it in stock?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . I need a size M Thornwood tee. What is the best price I can get from a seller that has it in stock?",
+      "expected": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "bought",
+          "quantifier": "lowest price",
+          "objective": "lowest price"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "in stock",
+          "quantifier": "best price",
+          "objective": "best price"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "best price I can get",
+          "objective": "best price",
+          "filters": "size M, has it in stock",
+          "population": "results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "best price I can get",
+          "objective": "best price",
+          "filters": "size M, has it in stock",
+          "population": "results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0002963324,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 5,
+      "template": "apparel-target-price",
+      "label": "clear",
+      "audit_expected": "availability_bound",
+      "ask_kind": null,
+      "text": "Find me the cheapest medium Thornwood tee I can order today. How much is it?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Find me the cheapest medium Thornwood tee I can order today. How much is it?",
+      "expected": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "bought",
+          "quantifier": "lowest price",
+          "objective": "lowest price"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "total_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "total_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "cheapest",
+          "objective": "How much is it?",
+          "filters": "medium, which is size M; can order today",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "cheapest",
+          "objective": "How much is it?",
+          "filters": "medium, which is size M; can order today",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.000270816,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 6,
+      "template": "apparel-cheapest-target",
+      "label": null,
+      "audit_expected": "availability_bound",
+      "ask_kind": null,
+      "text": "Which seller should I buy a size M Thornwood tee from if I want to pay as little as possible? It has to be in stock.",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Which seller should I buy a size M Thornwood tee from if I want to pay as little as possible? It has to be in stock.",
+      "expected": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "supply",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "buy",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "no quantifier word, so everything is listed",
+          "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Thornwood"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "fallback",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "pay as little as possible",
+          "objective": "pay as little as possible",
+          "filters": "size M, in stock",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "pay as little as possible",
+          "objective": "pay as little as possible",
+          "filters": "size M, in stock",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.000226863,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 7,
+      "template": "apparel-cheapest-target",
+      "label": "clear",
+      "audit_expected": "availability_bound",
+      "ask_kind": null,
+      "text": "Who has the lowest price on an in-stock Thornwood tee in M, and what do they charge?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Who has the lowest price on an in-stock Thornwood tee in M, and what do they charge?",
+      "expected": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "supply",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "total_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "in M",
+          "quantifier": "lowest price",
+          "objective": "lowest price"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "total_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Who has the lowest price",
+          "objective": "lowest price",
+          "filters": "in-stock, M",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Who has the lowest price",
+          "objective": "lowest price",
+          "filters": "in-stock, M",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0002140684,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 8,
+      "template": "apparel-cheapest-target",
+      "label": null,
+      "audit_expected": "availability_bound",
+      "ask_kind": null,
+      "text": "Which Thornwood listing gives the best deal on size M right now?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Which Thornwood listing gives the best deal on size M right now?",
+      "expected": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "supply",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "right now",
+          "quantifier": "best deal",
+          "objective": "best deal"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "best deal",
+          "objective": "best deal on size M",
+          "filters": "size M, right now",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "best deal",
+          "objective": "best deal on size M",
+          "filters": "size M, right now",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0003045952,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 9,
+      "template": "apparel-all-stocked",
+      "label": "ambiguous",
+      "audit_expected": "ASK",
+      "ask_kind": null,
+      "text": "Do all the Thornwood sellers carry the tee in size M?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Do all the Thornwood sellers carry the tee in size M?",
+      "expected": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "quantifier": "every Thornwood listing offer",
+          "objective": "offer"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "quantifier": "all the Thornwood sellers carry",
+          "objective": "carry"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "box": {
+        "outcome": "ask",
+        "kind": "refutation",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'carry'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "template_box": {
+        "outcome": "ask",
+        "kind": "refutation",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Do all",
+          "filters": "size M",
+          "ambiguities": "carry: in the menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "carry",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Do all",
+          "filters": "size M",
+          "ambiguities": "carry: in the menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "carry",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0002294474,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "ask",
+        "kind": "refutation",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'carry'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 10,
+      "template": "apparel-all-stocked",
+      "label": null,
+      "audit_expected": "refutation",
+      "ask_kind": null,
+      "text": "Is size M available from every Thornwood seller?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Is size M available from every Thornwood seller?",
+      "expected": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "quantifier": "every Thornwood listing offer",
+          "objective": "offer"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "available",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "no quantifier word, so everything is listed",
+          "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Thornwood"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "fallback",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "ask",
+        "kind": "refutation",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "every",
+          "objective": "available",
+          "filters": "size M",
+          "population": "the results page URL",
+          "ambiguities": "available: in the menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "available",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "every",
+          "objective": "available",
+          "filters": "size M",
+          "population": "the results page URL",
+          "ambiguities": "available: in the menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "available",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [
+        "the question's 'available' gives availability = 'buyable', and the form has no availability filter"
+      ],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0002963688,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "ask",
+        "kind": "refutation",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'available'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 11,
+      "template": "apparel-all-stocked",
+      "label": "ambiguous",
+      "audit_expected": "ASK",
+      "ask_kind": null,
+      "text": "Is there a Thornwood seller that doesn't have size M?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Is there a Thornwood seller that doesn't have size M?",
+      "expected": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "quantifier": "every Thornwood listing offer",
+          "objective": "offer"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "no quantifier word, so everything is listed",
+          "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Thornwood"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'have'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "template_box": {
+        "outcome": "ask",
+        "kind": "refutation",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "negated_refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Is there a Thornwood seller that doesn't have",
+          "objective": "doesn't have size M",
+          "filters": "size M",
+          "population": "the results page URL",
+          "negated": "doesn't have",
+          "ambiguities": "have: in the menu, or able to sell it now"
+        },
+        "negated": true,
+        "ambiguities": [
+          {
+            "word": "have",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "negated_refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Is there a Thornwood seller that doesn't have",
+          "objective": "doesn't have size M",
+          "filters": "size M",
+          "population": "the results page URL",
+          "negated": "doesn't have",
+          "ambiguities": "have: in the menu, or able to sell it now"
+        },
+        "negated": true,
+        "ambiguities": [
+          {
+            "word": "have",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0003981614,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "model_raw_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "model_box": {
+        "outcome": "ask",
+        "kind": "negated_refutation",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'have'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 12,
+      "template": "apparel-count-stocked",
+      "label": "ambiguous",
+      "audit_expected": "ASK",
+      "ask_kind": null,
+      "text": "How many Thornwood sellers stock a medium?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . How many Thornwood sellers stock a medium?",
+      "expected": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "How many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "objective": "nothing but a price is asked about",
+          "quantifier": "How many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "How many",
+          "objective": "stock",
+          "filters": "a medium, which is size M",
+          "population": "the results page URL",
+          "ambiguities": "stock: in the menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "stock",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "How many",
+          "objective": "stock",
+          "filters": "a medium, which is size M",
+          "population": "the results page URL",
+          "ambiguities": "stock: in the menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "stock",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.000207935,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'stock'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 13,
+      "template": "apparel-count-stocked",
+      "label": "ambiguous",
+      "audit_expected": "ASK",
+      "ask_kind": null,
+      "text": "In how many of the Thornwood listings can you find size M?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . In how many of the Thornwood listings can you find size M?",
+      "expected": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "How many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "how many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "In how many",
+          "objective": "find size M",
+          "filters": "size M",
+          "population": "the results page URL",
+          "ambiguities": "can you find: size M can be in the menu but sold out"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "can you find",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "In how many",
+          "objective": "find size M",
+          "filters": "size M",
+          "population": "the results page URL",
+          "ambiguities": "can you find: size M can be in the menu but sold out"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "can you find",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0007847476,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'can you find'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 14,
+      "template": "apparel-count-stocked",
+      "label": null,
+      "audit_expected": "ASK",
+      "ask_kind": null,
+      "text": "Count the Thornwood listings that have size M.",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Count the Thornwood listings that have size M.",
+      "expected": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "How many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "no quantifier word, so everything is listed",
+          "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Thornwood"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'have'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "template_box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Count",
+          "objective": "have size M",
+          "filters": "size M",
+          "ambiguities": "have: in the menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "have",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Count",
+          "objective": "have size M",
+          "filters": "size M",
+          "ambiguities": "have: in the menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "have",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0002172716,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'have'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 15,
+      "template": "apparel-count-buyable",
+      "label": null,
+      "audit_expected": "survey",
+      "ask_kind": null,
+      "text": "How many Thornwood listings can sell me a size M today?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . How many Thornwood listings can sell me a size M today?",
+      "expected": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "in stock",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "How many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "How many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'sell'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "How many",
+          "filters": "size M, can sell me ... today",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "How many",
+          "filters": "size M, can sell me ... today",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0002081534,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'sell'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 16,
+      "template": "apparel-count-buyable",
+      "label": "clear",
+      "audit_expected": "survey",
+      "ask_kind": null,
+      "text": "How many of the Thornwood tees are in stock in size M?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . How many of the Thornwood tees are in stock in size M?",
+      "expected": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "in stock",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "How many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "in stock",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "How many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "How many",
+          "filters": "in stock in size M",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "How many",
+          "filters": "in stock in size M",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0002172534,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 17,
+      "template": "apparel-exists-under-27",
+      "label": null,
+      "audit_expected": "exists_price",
+      "ask_kind": null,
+      "text": "Can I get a Thornwood tee in M for less than $27 from anyone?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Can I get a Thornwood tee in M for less than $27 from anyone?",
+      "expected": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          },
+          {
+            "attribute": "price",
+            "op": "<",
+            "value": 27.0
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "available",
+          "filter:price": "under $27",
+          "quantifier": "Is there any",
+          "objective": "under $27"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "price",
+            "op": "<",
+            "value": 27.0
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": "buyable",
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "in M",
+          "filter:price": "less than $27",
+          "quantifier": "anyone",
+          "objective": "less than $27",
+          "reading": "no availability word, read as buyable by the v2 design"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "exists_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "exists_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "price",
+            "op": "<",
+            "value": 27
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "from anyone",
+          "filters": "size M, less than $27, get"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "price",
+            "op": "<",
+            "value": 27
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "from anyone",
+          "filters": "size M, less than $27, get"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0002242786,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "exists_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 18,
+      "template": "apparel-exists-under-25",
+      "label": null,
+      "audit_expected": "exists_price",
+      "ask_kind": null,
+      "text": "Is any Thornwood seller selling size M below $25?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Is any Thornwood seller selling size M below $25?",
+      "expected": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          },
+          {
+            "attribute": "price",
+            "op": "<",
+            "value": 25.0
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "available",
+          "filter:price": "under $25",
+          "quantifier": "Is there any",
+          "objective": "under $25"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "price",
+            "op": "<",
+            "value": 25.0
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": "buyable",
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:price": "below $25",
+          "quantifier": "Is any",
+          "objective": "below $25",
+          "reading": "no availability word, read as buyable by the v2 design"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "exists_price",
+        "ask": null,
+        "reading_by": "box",
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "exists_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "price",
+            "op": "<",
+            "value": 25
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Is any",
+          "objective": "below $25",
+          "filters": "size M, below $25, selling",
+          "population": "http://localhost:7770/catalogsearch/result/?q=Thornwood"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "price",
+            "op": "<",
+            "value": 25
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Is any",
+          "objective": "below $25",
+          "filters": "size M, below $25, selling",
+          "population": "http://localhost:7770/catalogsearch/result/?q=Thornwood"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.000883246,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "exists_price",
+        "ask": null,
+        "reading_by": "box",
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 19,
+      "template": "apparel-top-3",
+      "label": null,
+      "audit_expected": "topk_price",
+      "ask_kind": null,
+      "text": "List the three lowest prices for an in-stock size M Thornwood tee, with the sellers.",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . List the three lowest prices for an in-stock size M Thornwood tee, with the sellers.",
+      "expected": {
+        "form_version": 15,
+        "kind": "topk_price",
+        "quantifier": "topk",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": 3,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "supply",
+          "quantifier": "three sellers",
+          "objective": "three sellers",
+          "k": "three sellers"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "no quantifier word, so everything is listed",
+          "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Thornwood"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'stock'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "topk_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "topk_price",
+        "quantifier": "topk",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": 3,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "List the three lowest prices",
+          "objective": "prices",
+          "k": "three",
+          "filters": "in-stock size M",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "topk_price",
+        "quantifier": "topk",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": 3,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "List the three lowest prices",
+          "objective": "prices",
+          "k": "three",
+          "filters": "in-stock size M",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.00021203,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "topk_price",
+        "ask": null,
+        "reading_by": "box",
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 20,
+      "template": "apparel-top-3",
+      "label": "clear",
+      "audit_expected": "topk_price",
+      "ask_kind": null,
+      "text": "Give me the 3 cheapest sellers of the Thornwood tee in size M that can actually ship it.",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Give me the 3 cheapest sellers of the Thornwood tee in size M that can actually ship it.",
+      "expected": {
+        "form_version": 15,
+        "kind": "topk_price",
+        "quantifier": "topk",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": 3,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "supply",
+          "quantifier": "three sellers",
+          "objective": "three sellers",
+          "k": "three sellers"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "topk_price",
+        "quantifier": "topk",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": 3,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "ship",
+          "quantifier": "3 cheapest",
+          "objective": "3 cheapest",
+          "k": "3 cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "topk_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "topk_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "topk_price",
+        "quantifier": "topk",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": 3,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "3 cheapest",
+          "objective": "cheapest",
+          "k": "3",
+          "filters": "size M, can actually ship it",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "topk_price",
+        "quantifier": "topk",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": 3,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "3 cheapest",
+          "objective": "cheapest",
+          "k": "3",
+          "filters": "size M, can actually ship it",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0002540538,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "topk_price",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 21,
+      "template": "apparel-named-pair",
+      "label": null,
+      "audit_expected": "named_lookup",
+      "ask_kind": null,
+      "text": "Is Copperfield Apparel or Elmsworth Clothing Co cheaper for a size M Thornwood tee?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Is Copperfield Apparel or Elmsworth Clothing Co cheaper for a size M Thornwood tee?",
+      "expected": {
+        "form_version": 15,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "seller",
+            "op": "in",
+            "value": [
+              "Copperfield Apparel",
+              "Elmsworth Clothing Co"
+            ]
+          },
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:seller": "Copperfield Apparel, Elmsworth Clothing Co",
+          "quantifier": "Copperfield Apparel, Elmsworth Clothing Co",
+          "objective": "a price is asked for"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "seller",
+            "op": "in",
+            "value": [
+              "Copperfield Apparel",
+              "Elmsworth Clothing Co"
+            ]
+          },
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:seller": "Copperfield Apparel, Elmsworth Clothing Co",
+          "quantifier": "Copperfield Apparel, Elmsworth Clothing Co",
+          "objective": "a price is asked for"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "named_lookup",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "named_lookup",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "seller",
+            "op": "in",
+            "value": [
+              "Copperfield Apparel",
+              "Elmsworth Clothing Co"
+            ]
+          },
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Is Copperfield Apparel or Elmsworth Clothing Co cheaper",
+          "filters": "size M"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "seller",
+            "op": "in",
+            "value": [
+              "Copperfield Apparel",
+              "Elmsworth Clothing Co"
+            ]
+          },
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Is Copperfield Apparel or Elmsworth Clothing Co cheaper",
+          "filters": "size M"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0002216214,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "named_lookup",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 22,
+      "template": "apparel-named-pair",
+      "label": null,
+      "audit_expected": "named_lookup",
+      "ask_kind": null,
+      "text": "How much does Alderney Clothing Co charge for size M?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . How much does Alderney Clothing Co charge for size M?",
+      "expected": {
+        "form_version": 15,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "seller",
+            "op": "in",
+            "value": [
+              "Copperfield Apparel",
+              "Elmsworth Clothing Co"
+            ]
+          },
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:seller": "Copperfield Apparel, Elmsworth Clothing Co",
+          "quantifier": "Copperfield Apparel, Elmsworth Clothing Co",
+          "objective": "a price is asked for"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "seller",
+            "op": "in",
+            "value": [
+              "Alderney Clothing Co"
+            ]
+          },
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:seller": "Alderney Clothing Co",
+          "quantifier": "Alderney Clothing Co",
+          "objective": "a price is asked for"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "named_lookup",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "named_lookup",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "seller",
+            "op": "in",
+            "value": [
+              "Alderney Clothing Co"
+            ]
+          },
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "How much does Alderney Clothing Co charge",
+          "objective": "charge for size M",
+          "filters": "Alderney Clothing Co; size M",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "named_lookup",
+        "quantifier": "lookup",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "seller",
+            "op": "in",
+            "value": [
+              "Alderney Clothing Co"
+            ]
+          },
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "How much does Alderney Clothing Co charge",
+          "objective": "charge for size M",
+          "filters": "Alderney Clothing Co; size M",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0003116386,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "named_lookup",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 23,
+      "template": "apparel-cheapest-xl",
+      "label": null,
+      "audit_expected": "availability_bound",
+      "ask_kind": null,
+      "text": "Who is cheapest for an extra large Thornwood tee that is in stock?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Who is cheapest for an extra large Thornwood tee that is in stock?",
+      "expected": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "XL"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size XL",
+          "filter:availability": "supply",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:availability": "in stock",
+          "quantifier": "cheapest",
+          "objective": "cheapest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "XL"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "cheapest",
+          "objective": "price",
+          "filters": "extra large, which is size XL; in stock",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "availability_bound",
+        "quantifier": "argmin",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "XL"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "cheapest",
+          "objective": "price",
+          "filters": "extra large, which is size XL; in stock",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0002317042,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "availability_bound",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 24,
+      "template": "apparel-delivery",
+      "label": null,
+      "audit_expected": "REFUSE",
+      "ask_kind": null,
+      "text": "Which Thornwood seller will get a size M tee to me soonest?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Which Thornwood seller will get a size M tee to me soonest?",
+      "expected": {
+        "form_version": 15,
+        "kind": "argmin_delivery_time",
+        "quantifier": "argmin",
+        "objective": "attribute:delivery time",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "quantifier": "fastest",
+          "objective": "delivers"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "argmax_what_'soonest'_ranks_by",
+        "quantifier": "argmax",
+        "objective": "attribute:what 'soonest' ranks by",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "what 'soonest' ranks by"
+        ],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "objective": "soonest",
+          "quantifier": "soonest",
+          "unknowns:attribute": "soonest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [
+        "no plan exists for kind \"argmax_what_'soonest'_ranks_by\"",
+        "the shop does not show what 'soonest' ranks by"
+      ],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "refuse",
+        "kind": null,
+        "ask": null,
+        "reading_by": null,
+        "detail": "The shop does not show what 'soonest' ranks by, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought."
+      },
+      "template_box": {
+        "outcome": "refuse",
+        "kind": null,
+        "ask": null,
+        "reading_by": null,
+        "detail": "The shop does not show delivery time, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought."
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "argmin_delivery_time",
+        "quantifier": "argmin",
+        "objective": "attribute:delivery time",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "delivery time"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "soonest",
+          "objective": "get a size M tee to me soonest, which the shop does not show",
+          "filters": "size M",
+          "population": "the results page URL",
+          "unknowns": "delivery time"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "argmin_delivery_time",
+        "quantifier": "argmin",
+        "objective": "attribute:delivery time",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "delivery time"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "soonest",
+          "objective": "get a size M tee to me soonest, which the shop does not show",
+          "filters": "size M",
+          "population": "the results page URL",
+          "unknowns": "delivery time"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [
+        "the shop does not show delivery time",
+        "no plan exists for kind 'argmin_delivery_time'"
+      ],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0002935842,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "refuse",
+        "kind": null,
+        "ask": null,
+        "reading_by": null,
+        "detail": "The shop does not show delivery time, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought.",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": true
+      }
+    },
+    {
+      "id": 25,
+      "template": "apparel-softest",
+      "label": null,
+      "audit_expected": "REFUSE",
+      "ask_kind": null,
+      "text": "Which Thornwood seller has the best reviews?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Which Thornwood seller has the best reviews?",
+      "expected": {
+        "form_version": 15,
+        "kind": "argmax_what_'softest'_ranks_by",
+        "quantifier": "argmax",
+        "objective": "attribute:what 'softest' ranks by",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "what 'softest' ranks by"
+        ],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "objective": "softest",
+          "quantifier": "softest",
+          "unknowns:attribute": "softest"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "depth_search",
+        "quantifier": "exists",
+        "objective": "mention",
+        "filters": [
+          {
+            "attribute": "review text",
+            "op": "contains",
+            "value": "Go to http://localhost:7770/catalogsearch/result/"
+          }
+        ],
+        "population": "reviews",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "reviews",
+          "quantifier": "reviews",
+          "objective": "reviews",
+          "filter:review text": "the question's clause"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "depth_search",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "refuse",
+        "kind": null,
+        "ask": null,
+        "reading_by": null,
+        "detail": "The shop does not show what 'softest' ranks by, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought."
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "argmax_seller_rating",
+        "quantifier": "argmax",
+        "objective": "attribute:seller rating",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "seller rating"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "best",
+          "objective": "best reviews, which is a seller rating the shop does not show",
+          "population": "the results page URL",
+          "unknowns": "seller rating"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "argmax_seller_rating",
+        "quantifier": "argmax",
+        "objective": "attribute:seller rating",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "seller rating"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "best",
+          "objective": "best reviews, which is a seller rating the shop does not show",
+          "population": "the results page URL",
+          "unknowns": "seller rating"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [
+        "the shop does not show seller rating",
+        "no plan exists for kind 'argmax_seller_rating'"
+      ],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.000498043,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "model_box": {
+        "outcome": "refuse",
+        "kind": null,
+        "ask": null,
+        "reading_by": null,
+        "detail": "The shop does not show seller rating, so this question cannot be answered from it. What it shows: on the results page, each listing's seller, title, URL and advertised price. On a listing, its size menu, the price of a size once chosen and whether a size can be bought.",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": true
+      }
+    },
+    {
+      "id": 26,
+      "template": "apparel-cheap-no-figure",
+      "label": null,
+      "audit_expected": "ASK",
+      "ask_kind": null,
+      "text": "Is there an affordable Thornwood tee in medium?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Is there an affordable Thornwood tee in medium?",
+      "expected": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "price limit"
+        ],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "no quantifier word, so everything is listed",
+          "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Thornwood",
+          "unknowns": "cheap"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "price limit"
+        ],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "objective": "nothing but a price is asked about",
+          "quantifier": "no quantifier word, so everything is listed",
+          "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Thornwood",
+          "unknowns": "affordable"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "ask",
+        "kind": null,
+        "ask": "price limit",
+        "reading_by": null,
+        "detail": "Your question says 'affordable' and gives no figure. What is the most you would pay? Give a limit, such as under $20, and only listings below it will count."
+      },
+      "template_box": {
+        "outcome": "ask",
+        "kind": null,
+        "ask": "price limit",
+        "reading_by": null,
+        "detail": "Your question says 'cheap' and gives no figure. What is the most you would pay? Give a limit, such as under $20, and only listings below it will count."
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "price limit"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Is there",
+          "objective": "affordable",
+          "filters": "in medium; a price exists only for a size that can be bought",
+          "population": "the results page URL",
+          "unknowns": "affordable"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "exists_price",
+        "quantifier": "exists",
+        "objective": "price",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [
+          "price limit"
+        ],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Is there",
+          "objective": "affordable",
+          "filters": "in medium; a price exists only for a size that can be bought",
+          "population": "the results page URL",
+          "unknowns": "affordable"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.000592956,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "model_raw_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "model_box": {
+        "outcome": "ask",
+        "kind": null,
+        "ask": "price limit",
+        "reading_by": null,
+        "detail": "Your question says 'affordable' and gives no figure. What is the most you would pay? Give a limit, such as under $20, and only listings below it will count.",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 27,
+      "template": "apparel-count-stocked",
+      "label": "ambiguous",
+      "audit_expected": "ASK",
+      "ask_kind": null,
+      "text": "Which Thornwood listings offer an L?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Which Thornwood listings offer an L?",
+      "expected": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "count",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "objective": "a variant or buying is asked about",
+          "quantifier": "How many"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "objective": "nothing but a price is asked about",
+          "quantifier": "no quantifier word, so everything is listed",
+          "fallback": "no recognised quantifier, kept in the shop by a URL: http://localhost:7770/catalogsearch/result/?q=Thornwood"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "box": {
+        "outcome": "fallback",
+        "kind": "survey",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "L"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Which",
+          "objective": "offer an L",
+          "filters": "an L, which is size L",
+          "population": "the results page URL",
+          "ambiguities": "offer: in the menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "offer",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "survey",
+        "quantifier": "aggregate",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "L"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "Which",
+          "objective": "offer an L",
+          "filters": "an L, which is size L",
+          "population": "the results page URL",
+          "ambiguities": "offer: in the menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "offer",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0003165344,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "model_raw_tiers": {
+        "quantifier": false,
+        "objective": false,
+        "population": false,
+        "every field": false
+      },
+      "model_box": {
+        "outcome": "ask",
+        "kind": "survey",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 28,
+      "template": "apparel-all-stocked",
+      "label": "ambiguous",
+      "audit_expected": "ASK",
+      "ask_kind": null,
+      "text": "Does every Thornwood listing have an XL option?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Does every Thornwood listing have an XL option?",
+      "expected": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "quantifier": "every Thornwood listing offer",
+          "objective": "offer"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "every Thornwood listing have",
+          "objective": "have"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "ask",
+        "kind": "refutation",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'have'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "template_box": {
+        "outcome": "ask",
+        "kind": "refutation",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "XL"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "every",
+          "objective": "have an XL option",
+          "filters": "XL",
+          "population": "the results page URL",
+          "ambiguities": "have: in the menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "have",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "XL"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "every",
+          "objective": "have an XL option",
+          "filters": "XL",
+          "population": "the results page URL",
+          "ambiguities": "have: in the menu, or able to sell it now"
+        },
+        "negated": false,
+        "ambiguities": [
+          {
+            "word": "have",
+            "readings": [
+              "listed",
+              "buyable"
+            ]
+          }
+        ],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0002381652,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "model_box": {
+        "outcome": "ask",
+        "kind": "refutation",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'have'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?",
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 29,
+      "template": "apparel-all-stocked",
+      "label": "clear",
+      "audit_expected": "refutation",
+      "ask_kind": null,
+      "text": "Does every Thornwood listing have size M in stock? Answer yes or no.",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Does every Thornwood listing have size M in stock? Answer yes or no.",
+      "expected": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "quantifier": "every Thornwood listing offer",
+          "objective": "offer"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "filter:size": "size M",
+          "filter:availability": "in stock",
+          "quantifier": "every Thornwood listing have size M in stock",
+          "objective": "stock"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "refutation",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "ask",
+        "kind": "refutation",
+        "ask": "reading",
+        "reading_by": null,
+        "detail": "Your question says 'offer'. On this shop a size can be in a listing's menu but sold out. Do you mean listings whose menu lists the size, sold out or not, or listings that can sell it now?"
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "every",
+          "objective": "in stock",
+          "filters": "size M, in stock",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "refutation",
+        "quantifier": "forall",
+        "objective": "availability",
+        "filters": [
+          {
+            "attribute": "size",
+            "op": "=",
+            "value": "M"
+          },
+          {
+            "attribute": "availability",
+            "op": "=",
+            "value": "buyable"
+          }
+        ],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "every",
+          "objective": "in stock",
+          "filters": "size M, in stock",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0002829736,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": false
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "refutation",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    },
+    {
+      "id": 30,
+      "template": "apparel-headline",
+      "label": "clear",
+      "audit_expected": "results_page",
+      "ask_kind": null,
+      "text": "What does the cheapest Thornwood tee on the results page cost?",
+      "question": "Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . What does the cheapest Thornwood tee on the results page cost?",
+      "expected": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "advertises",
+          "objective": "advertises"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "rules",
+        "evidence": {
+          "population": "the results URL",
+          "quantifier": "on the results page",
+          "objective": "on the results page"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": null
+      },
+      "rules_problems": [],
+      "rules_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "box": {
+        "outcome": "plan",
+        "kind": "results_page",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "template_box": {
+        "outcome": "plan",
+        "kind": "results_page",
+        "ask": null,
+        "reading_by": null,
+        "detail": null
+      },
+      "model": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "cheapest",
+          "objective": "cost on the results page",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "model_raw": {
+        "form_version": 15,
+        "kind": "results_page",
+        "quantifier": "argmin",
+        "objective": "advertised price",
+        "filters": [],
+        "population": "results",
+        "k": null,
+        "reading": null,
+        "unknowns": [],
+        "source": "model",
+        "evidence": {
+          "quantifier": "cheapest",
+          "objective": "cost on the results page",
+          "population": "the results page URL"
+        },
+        "negated": false,
+        "ambiguities": [],
+        "prompt_version": 4
+      },
+      "normalised": [],
+      "model_problems": [],
+      "error": null,
+      "call_failed": false,
+      "cost_usd": 0.0002198742,
+      "provider": "GMICloud",
+      "model_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_raw_tiers": {
+        "quantifier": true,
+        "objective": true,
+        "population": true,
+        "every field": true
+      },
+      "model_box": {
+        "outcome": "plan",
+        "kind": "results_page",
+        "ask": null,
+        "reading_by": null,
+        "detail": null,
+        "parsed_by": "model",
+        "fallback_reason": null,
+        "declined": false
+      }
+    }
+  ]
+}
