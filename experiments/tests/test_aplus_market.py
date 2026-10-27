@@ -946,6 +946,117 @@ class Guards(unittest.TestCase):
         self.assertEqual(command[command.index("--brand-forms") + 1], "1")
 
 
+class FreshClaimSelection(unittest.TestCase):
+    """Separate frozen streams, tested with synthetic records and no market draw or shop."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.folder = pathlib.Path(self.tmp.name)
+        self.protocol = self.folder / "replication.md"
+        self.protocol.write_text("# Replication, frozen before drawing\nStart at 1001.\n")
+        self.log = self.folder / "replication-search.json"
+        self.market = picker.Market(
+            fixture=paths.FIXTURES / "synthetic_replication_never_drawn.json",
+            brand="Testbrand", sku_prefix="IGR-TST", claim=True, design="B",
+            claim_start_seed=1001, claim_protocol=self.protocol)
+
+    def test_a_new_stream_requires_its_own_final_protocol(self):
+        self.assertIn("separate --claim-protocol", aplus.refused(
+            1001, True, None, "IGR-TST", design="B", claim_start_seed=1001))
+        self.assertIsNone(aplus.refused(1001, True, None, "IGR-TST", self.protocol, "B", 1001))
+        self.assertIn("below 1001", aplus.refused(1000, True, None, "IGR-TST", self.protocol, "B", 1001))
+        self.assertIn("at least 1000", aplus.refused(999, True, None, "IGR-TST", self.protocol, "B", 999))
+        self.protocol.write_text("# DRAFT replication\n")
+        self.assertIn("still says DRAFT", aplus.refused(1001, True, None, "IGR-TST", self.protocol, "B", 1001))
+
+    def test_resume_cannot_skip_reorder_or_continue_after_acceptance(self):
+        problem = aplus.claim_record_problem
+        self.assertIsNone(problem([], 1001, False, 1001))
+        self.assertIn("1000 is", problem([], 1001, False))
+        stopped = [{"seed": 1001, "outcome": "stopped"}]
+        self.assertIsNone(problem(stopped, 1001, False, 1001))
+        self.assertIn("1001 is", problem(stopped, 1002, False, 1001))
+        rejected = stopped + [{"seed": 1001, "outcome": "no instance"}]
+        self.assertIsNone(problem(rejected, 1002, False, 1001))
+        self.assertIn("1002 is", problem(rejected, 1003, False, 1001))
+        accepted = rejected + [{"seed": 1002, "outcome": "accepted"}]
+        self.assertIsNone(problem(accepted, 1002, True, 1001))
+        self.assertIn("already ends", problem(accepted, 1003, False, 1001))
+        self.assertIn("accepts seed 1002 and then", problem(
+            accepted + [{"seed": 1003, "outcome": "rejected"}], 1004, False, 1001))
+        self.assertIn("where seed 1001", problem([{"seed": 1000, "outcome": "rejected"}], 1001, False, 1001))
+
+    def test_record_binds_the_start_and_protocol_path_and_contents(self):
+        tried = [{"seed": 1001, "outcome": "rejected"}]
+        picker.write_log(self.market, tried, self.log)
+        self.assertEqual(picker.earlier_tries(self.market, self.log), tried)
+        self.assertEqual(aplus.claim_gate(1002, self.log, None, False, 1001, self.protocol), (None, False))
+        for changes in ({"claim_start_seed": 1002}, {"claim_protocol": aplus.PROTOCOL}):
+            with self.subTest(changes=changes), self.assertRaisesRegex(SystemExit, "claim selection differs"):
+                picker.earlier_tries(picker.dataclasses.replace(self.market, **changes), self.log)
+        self.protocol.write_text(self.protocol.read_text() + "Changed design.\n")
+        with self.assertRaisesRegex(SystemExit, "claim selection differs"):
+            picker.earlier_tries(self.market, self.log)
+        self.assertIn("claim selection differs", aplus.claim_gate(
+            1002, self.log, None, False, 1001, self.protocol)[0])
+
+    def test_no_fabricated_history_or_legacy_record_reuse(self):
+        self.assertEqual(aplus.claim_gate(1001, self.log, None, False, 1001, self.protocol), (None, False))
+        self.log.write_text(json.dumps({"brand": "Testbrand", "sku_prefix": "IGR-TST",
+                                       "tried": [{"seed": 1000, "outcome": "rejected"}]}))
+        with self.assertRaisesRegex(SystemExit, "claim selection differs"):
+            picker.earlier_tries(self.market, self.log)
+        default = picker.dataclasses.replace(self.market, claim_start_seed=1000,
+                                             claim_protocol=aplus.PROTOCOL)
+        picker.write_log(default, [], self.log)
+        self.assertNotIn("claim_selection", load(self.log))
+        self.assertEqual(picker.generate_command(1000, default, self.log)[-3:],
+                         ["--claim", "--search-log", str(self.log)])
+
+    def test_generator_cli_passes_only_selection_changes_to_the_existing_draw(self):
+        class DrawReached(Exception):
+            pass
+        for seed, options in [(1000, []), (1001, ["--claim-start-seed", "1001",
+                                               "--claim-protocol", str(self.protocol)])]:
+            argv = ["generate_aplus.py", "--seed", str(seed), "--brand", "Testbrand",
+                    "--brand-forms", "1", "--sku-prefix", "IGR-TST", "--design", "B",
+                    "--claim", "--search-log", str(self.log), "--out", str(self.folder / "fixture.json"),
+                    *options]
+            with self.subTest(seed=seed), mock.patch.object(sys, "argv", argv), \
+                    mock.patch.object(aplus, "generate_b", side_effect=DrawReached) as draw:
+                with self.assertRaises(DrawReached):
+                    aplus.main()
+                draw.assert_called_once_with(seed, "Testbrand", "IGR-TST", False, 45,
+                                             claim=True, version=aplus.VERSION, from_attempt=0)
+
+    def test_picker_cli_uses_first_accepted_seed_and_records_real_attempts_only(self):
+        observed = []
+
+        def attempt(seed, market, log):
+            observed.append((seed, load(log)["tried"] if log.exists() else []))
+            command = picker.generate_command(seed, market, log)
+            self.assertEqual(command[command.index("--claim-start-seed") + 1], "1001")
+            self.assertEqual(command[command.index("--claim-protocol") + 1], str(self.protocol))
+            return {"seed": seed, "outcome": "rejected" if seed == 1001 else "accepted",
+                    "summary": "synthetic attempt; no market drawn"}
+
+        argv = ["pick_aplus_market.py", "--brand", "Testbrand", "--sku-prefix", "IGR-TST",
+                "--fixture", str(self.market.fixture), "--design", "B", "--claim",
+                "--claim-start-seed", "1001", "--claim-protocol", str(self.protocol),
+                "--search-log", str(self.log), "--seeds", "1001", "1002", "1003"]
+        with mock.patch.object(sys, "argv", argv), mock.patch.object(picker, "analyzer_forms", return_value=1), \
+                mock.patch.object(picker, "attempt", side_effect=attempt), \
+                mock.patch.object(picker, "accept") as accept, mock.patch("builtins.print"):
+            self.assertEqual(picker.main(), 0)
+        self.assertEqual([seed for seed, _ in observed], [1001, 1002])
+        self.assertEqual(observed[0][1], [])
+        self.assertEqual([r["seed"] for r in observed[1][1]], [1001])
+        self.assertEqual([r["seed"] for r in load(self.log)["tried"]], [1001, 1002])
+        self.assertEqual(load(self.log)["claim_selection"]["start_seed"], 1001)
+        accept.assert_called_once()
+
+
 class Files(unittest.TestCase):
     """The committed fixture, task file and sidecar are what the generators write, byte for
     byte, from the seed, the brand, the prefix and the seed search's record."""

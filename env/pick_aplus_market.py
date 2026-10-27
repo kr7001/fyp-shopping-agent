@@ -72,6 +72,8 @@ class Market:
     two_forms: bool = False         # how the shop's analyzer reads the brand, measured live
     design: str = aplus.DESIGN_A    # A, tees and water; B, the tee-only market (24 October 2026)
     listings: int = aplus.B_LISTINGS  # design B's count
+    claim_start_seed: int = aplus.CLAIM_FIRST_SEED
+    claim_protocol: pathlib.Path = aplus.PROTOCOL
 
 
 def versions() -> dict:
@@ -131,6 +133,9 @@ def generate_command(seed: int, market: Market, log: pathlib.Path | None = None)
     command += ["--out", str(market.fixture)]
     if market.claim:
         command += ["--claim", "--search-log", str(log)]
+        if aplus.claim_selection(market.claim_start_seed, market.claim_protocol) is not None:
+            command += ["--claim-start-seed", str(market.claim_start_seed),
+                        "--claim-protocol", str(market.claim_protocol)]
     return command
 
 
@@ -240,6 +245,10 @@ def earlier_tries(market: Market, log: pathlib.Path | None) -> list[dict]:
     if log is None or not log.exists():
         return []
     search = json.loads(log.read_text())
+    if market.claim:
+        problem = aplus.claim_selection_problem(search, market.claim_start_seed, market.claim_protocol)
+        if problem:
+            raise SystemExit(f"{log.name}: {problem}")
     if (search.get("brand"), search.get("sku_prefix")) != (market.brand, market.sku_prefix):
         raise SystemExit(f"{log.name} is the search for {search.get('brand')} "
                          f"{search.get('sku_prefix')}, not {market.brand} {market.sku_prefix}")
@@ -256,6 +265,10 @@ def write_log(market: Market, tried: list[dict], log: pathlib.Path) -> None:
     today = dt.date.today()
     search = {"brand": market.brand, "sku_prefix": market.sku_prefix,
               "seeded": f"{today.day} {today:%B %Y}", "tried": tried}
+    if market.claim:
+        selection = aplus.claim_selection(market.claim_start_seed, market.claim_protocol)
+        if selection is not None:
+            search["claim_selection"] = selection
     log.parent.mkdir(parents=True, exist_ok=True)
     log.write_text(json.dumps(search, indent=2) + "\n")
 
@@ -343,6 +356,10 @@ def main() -> int:
     parser.add_argument("--search-log", type=pathlib.Path)
     parser.add_argument("--claim", action="store_true",
                         help="the claim market's search, from seed 1000, only after the protocol is final")
+    parser.add_argument("--claim-start-seed", type=int, default=aplus.CLAIM_FIRST_SEED,
+                        help="first seed of a separately frozen claim stream (default: 1000)")
+    parser.add_argument("--claim-protocol", type=pathlib.Path, default=aplus.PROTOCOL,
+                        help="frozen protocol for this claim stream; required separately for a new start seed")
     args = parser.parse_args()
 
     if args.check_brands:
@@ -368,7 +385,9 @@ def main() -> int:
     if refused:
         parser.error(refused)
     for seed in args.seeds:
-        why = aplus.refused(seed, args.claim, fixture_path, args.sku_prefix, design=args.design)
+        why = aplus.refused(seed, args.claim, fixture_path, args.sku_prefix,
+                            protocol=args.claim_protocol, design=args.design,
+                            claim_start_seed=args.claim_start_seed)
         if why:
             parser.error(why)
     if args.claim and args.search_log is None:
@@ -380,14 +399,15 @@ def main() -> int:
         parser.error(f"the shop's analyzer gave {args.brand} {forms} forms; it is checked as 1 or 2")
     market = Market(fixture=fixture_path, brand=args.brand, sku_prefix=args.sku_prefix,
                     tees=args.tees, waters=args.waters, claim=args.claim, two_forms=forms == 2,
-                    design=args.design, listings=args.listings)
+                    design=args.design, listings=args.listings,
+                    claim_start_seed=args.claim_start_seed, claim_protocol=args.claim_protocol)
     log = args.search_log.resolve() if args.search_log else None
     tried = earlier_tries(market, log)
     seed = None
     try:
         for seed in args.seeds:
             # The claim tries seeds only in the record's order: the first from 1000 that passes.
-            problem = aplus.claim_record_problem(tried, seed, False) if market.claim else None
+            problem = aplus.claim_record_problem(tried, seed, False, market.claim_start_seed) if market.claim else None
             if problem:
                 raise SystemExit(f"refusing: {problem}")
             entry = attempt(seed, market, log)

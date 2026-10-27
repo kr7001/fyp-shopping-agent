@@ -83,10 +83,12 @@ and the index holds them in the children's names, which `search_order.py` counts
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import pathlib
 import random
 import re
+import shlex
 import sys
 import textwrap
 
@@ -1778,9 +1780,10 @@ def protocol_final(protocol: pathlib.Path = PROTOCOL) -> bool:
 
 
 def refused(seed: int, claim: bool, out: pathlib.Path | None, sku_prefix: str = DEV_PREFIX,
-            protocol: pathlib.Path = PROTOCOL, design: str = "A") -> str | None:
+            protocol: pathlib.Path = PROTOCOL, design: str = "A",
+            claim_start_seed: int = CLAIM_FIRST_SEED) -> str | None:
     """Why this draw may not be made or written, or None. Development draws seeds 900 to 999
-    only. The claim (`--claim`) draws seeds from 1000 only, only once the protocol is final,
+    only. The claim (`--claim`) draws from its declared start (1000 by default), once its protocol is final,
     and never under development's prefix or over development's fixture. A design-B draw never
     uses Larchmere's prefix or fixture, which the A+ development market keeps, and its claim
     never design B's development prefix or fixture. Kept apart from `main` so a test can ask
@@ -1793,12 +1796,18 @@ def refused(seed: int, claim: bool, out: pathlib.Path | None, sku_prefix: str = 
         if out is not None and out.name == DEV_FIXTURE:
             return f"{DEV_FIXTURE} is the A+ development market's fixture, which stays seeded"
     if not claim:
+        if claim_start_seed != CLAIM_FIRST_SEED or protocol.resolve() != PROTOCOL.resolve():
+            return "--claim-start-seed and --claim-protocol require --claim"
         if seed not in DEV_SEEDS:
             return (f"seed {seed} is outside development's 900 to 999; the claim market is drawn "
                     f"with --claim, only after the protocol is final")
         return None
-    if seed < CLAIM_FIRST_SEED:
-        return f"seed {seed} is below {CLAIM_FIRST_SEED}, and --claim draws the claim market from it"
+    if claim_start_seed < CLAIM_FIRST_SEED:
+        return f"--claim-start-seed must be at least {CLAIM_FIRST_SEED}"
+    if claim_start_seed != CLAIM_FIRST_SEED and protocol.resolve() == PROTOCOL.resolve():
+        return "a new claim start seed needs a separate --claim-protocol"
+    if seed < claim_start_seed:
+        return f"seed {seed} is below {claim_start_seed}, and --claim draws the claim market from it"
     if not protocol_final(protocol):
         return f"{protocol.name} still says DRAFT, and the claim market is drawn only once it is final"
     dev_prefix, dev_fixture = (B_DEV_PREFIX, B_DEV_FIXTURE) if design == DESIGN_B else (DEV_PREFIX, DEV_FIXTURE)
@@ -1809,15 +1818,36 @@ def refused(seed: int, claim: bool, out: pathlib.Path | None, sku_prefix: str = 
     return None
 
 
-def claim_record_problem(tried: list[dict], seed: int, final: bool) -> str | None:
+def claim_selection(start_seed: int = CLAIM_FIRST_SEED,
+                    protocol: pathlib.Path = PROTOCOL) -> dict | None:
+    """Bind a separate stream to its frozen design without altering legacy records."""
+    protocol = protocol.resolve()
+    if start_seed == CLAIM_FIRST_SEED and protocol == PROTOCOL.resolve():
+        return None
+    name = protocol.relative_to(REPO) if protocol.is_relative_to(REPO) else protocol
+    return {"start_seed": start_seed, "protocol": str(name),
+            "protocol_sha256": hashlib.sha256(protocol.read_bytes()).hexdigest()}
+
+
+def claim_selection_problem(search: dict, start_seed: int = CLAIM_FIRST_SEED,
+                            protocol: pathlib.Path = PROTOCOL) -> str | None:
+    if search.get("claim_selection") != claim_selection(start_seed, protocol):
+        return "the record's claim selection differs from the start seed or protocol (path/content)"
+    return None
+
+
+def claim_record_problem(tried: list[dict], seed: int, final: bool,
+                         start_seed: int = CLAIM_FIRST_SEED) -> str | None:
     """Why the claim search's record does not allow this seed, or None. The claim market is the
-    first seed from 1000 that passes every rule, so the record holds every seed tried from
-    1000 in order, each the one after the seed before unless that one stopped (the shop or the
+    first seed from its declared start that passes every rule, so the record holds every seed
+    in order, each the one after the seed before unless that one stopped (the shop or the
     model was at fault, not the seed, so the same seed is tried again), and accepts none but
     its last. `final` asks whether the market may be written as the one accepted: the record
     must end with this seed accepted. Otherwise it asks whether this seed may be drawn as the
     next candidate: it must be the next the record allows."""
-    expected = CLAIM_FIRST_SEED
+    if start_seed < CLAIM_FIRST_SEED:
+        return f"the claim start seed must be at least {CLAIM_FIRST_SEED}"
+    expected = start_seed
     for n, entry in enumerate(tried):
         if entry.get("seed") != expected:
             return f"the record tries seed {entry.get('seed')} where seed {expected} comes next"
@@ -1837,7 +1867,8 @@ def claim_record_problem(tried: list[dict], seed: int, final: bool) -> str | Non
 
 
 def claim_gate(seed: int, search_log: pathlib.Path | None, out: pathlib.Path | None,
-               report: bool) -> tuple[str | None, bool]:
+               report: bool, start_seed: int = CLAIM_FIRST_SEED,
+               protocol: pathlib.Path = PROTOCOL) -> tuple[str | None, bool]:
     """Under --claim, after `refused`: why this seed may not be drawn, written or printed, or
     None, and whether the record has accepted it (`final`). Which claim seed may be drawn is
     the record's to say, never the caller's (`claim_record_problem`), and a claim market is
@@ -1845,10 +1876,15 @@ def claim_gate(seed: int, search_log: pathlib.Path | None, out: pathlib.Path | N
     at before the search reaches it."""
     if search_log is None:
         return "--claim needs --search-log, the claim search's record", False
-    tried = json.loads(search_log.read_text()).get("tried", []) if search_log.exists() else []
+    search = json.loads(search_log.read_text()) if search_log.exists() else None
+    if search is not None:
+        problem = claim_selection_problem(search, start_seed, protocol)
+        if problem:
+            return problem, False
+    tried = search.get("tried", []) if search is not None else []
     last = tried[-1] if tried else {}
     final = (last.get("seed"), last.get("outcome")) == (seed, "accepted")
-    problem = claim_record_problem(tried, seed, final)
+    problem = claim_record_problem(tried, seed, final, start_seed)
     if problem:
         return problem, final
     if report and not (final and out is not None and out.exists()):
@@ -1918,10 +1954,16 @@ def main() -> int:
     parser.add_argument("--claim", action="store_true",
                         help="draw the claim market: the first seed from 1000 that passes, once "
                              "the protocol is final")
+    parser.add_argument("--claim-start-seed", type=int, default=CLAIM_FIRST_SEED,
+                        help="first seed of a separately frozen claim stream (default: 1000)")
+    parser.add_argument("--claim-protocol", type=pathlib.Path, default=PROTOCOL,
+                        help="frozen protocol for this claim stream; required separately for a new start seed")
     parser.add_argument("--report", action="store_true", help="print the market and write nothing")
     args = parser.parse_args()
     design_b = args.design == DESIGN_B
-    why = refused(args.seed, args.claim, args.out, args.sku_prefix, design=args.design)
+    why = refused(args.seed, args.claim, args.out, args.sku_prefix,
+                  protocol=args.claim_protocol, design=args.design,
+                  claim_start_seed=args.claim_start_seed)
     if why:
         raise SystemExit(f"refusing: {why}")
     if not args.report and args.out is None:
@@ -1930,7 +1972,8 @@ def main() -> int:
 
     final = False
     if args.claim:
-        problem, final = claim_gate(args.seed, args.search_log, args.out, args.report)
+        problem, final = claim_gate(args.seed, args.search_log, args.out, args.report,
+                                    args.claim_start_seed, args.claim_protocol)
         if problem:
             raise SystemExit(f"refusing: {problem}")
 
@@ -1955,6 +1998,10 @@ def main() -> int:
                    f"--brand-forms {args.brand_forms} --sku-prefix {args.sku_prefix} "
                    f"{shape} --out env/fixtures/{args.out.name} "
                    f"--search-log {log}" + (" --claim" if args.claim else ""))
+        selection = claim_selection(args.claim_start_seed, args.claim_protocol) if args.claim else None
+        if selection is not None:
+            command += (f" --claim-start-seed {args.claim_start_seed} "
+                        f"--claim-protocol {shlex.quote(selection['protocol'])}")
     build, show = (to_fixture_b, report_b) if design_b else (to_fixture, report)
     fixture = build(families, facts, args.seed, attempts, args.brand, args.sku_prefix,
                     two_forms, args.claim, search, command, version)
