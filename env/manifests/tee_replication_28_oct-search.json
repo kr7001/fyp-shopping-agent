@@ -1,0 +1,93 @@
+{
+  "brand": "Quenby",
+  "sku_prefix": "IGR-RP28",
+  "seeded": "28 October 2026",
+  "tried": [
+    {
+      "seed": 1001,
+      "generator_version": 4,
+      "search_order_version": 1,
+      "brand_forms": 2,
+      "design": "B",
+      "attempts": {
+        "tee": 1509076
+      },
+      "outcome": "accepted",
+      "seeding_manifest": "20261028T004943-gated-pricing.json",
+      "live_order": [
+        "IGR-RP28-21",
+        "IGR-RP28-05",
+        "IGR-RP28-22",
+        "IGR-RP28-12",
+        "IGR-RP28-19",
+        "IGR-RP28-41",
+        "IGR-RP28-08",
+        "IGR-RP28-09",
+        "IGR-RP28-24",
+        "IGR-RP28-28",
+        "IGR-RP28-43",
+        "IGR-RP28-44",
+        "IGR-RP28-39",
+        "IGR-RP28-40",
+        "IGR-RP28-04",
+        "IGR-RP28-35",
+        "IGR-RP28-23",
+        "IGR-RP28-31",
+        "IGR-RP28-27",
+        "IGR-RP28-29",
+        "IGR-RP28-34",
+        "IGR-RP28-36",
+        "IGR-RP28-14",
+        "IGR-RP28-33",
+        "IGR-RP28-38",
+        "IGR-RP28-07",
+        "IGR-RP28-45",
+        "IGR-RP28-37",
+        "IGR-RP28-10",
+        "IGR-RP28-18",
+        "IGR-RP28-26",
+        "IGR-RP28-01",
+        "IGR-RP28-15",
+        "IGR-RP28-17",
+        "IGR-RP28-32",
+        "IGR-RP28-42",
+        "IGR-RP28-13",
+        "IGR-RP28-30",
+        "IGR-RP28-02",
+        "IGR-RP28-06",
+        "IGR-RP28-16",
+        "IGR-RP28-11",
+        "IGR-RP28-20",
+        "IGR-RP28-03",
+        "IGR-RP28-25"
+      ],
+      "live_order_is": "two forms, average lengths x1.0",
+      "broken": [],
+      "answer_cards": {
+        "tee-target-price": [
+          39
+        ],
+        "tee-cheapest-target": [
+          39
+        ],
+        "tee-exists-under": [
+          39
+        ],
+        "tee-top-3": [
+          39,
+          27,
+          34
+        ],
+        "tee-xs-price": [
+          10
+        ]
+      },
+      "summary": "seed 1001 (generator v4, design B), draw 1509076 by every rule on the predicted pages: accepted on the live pages, whose order is the predicted one (two forms, average lengths x1.0)"
+    }
+  ],
+  "claim_selection": {
+    "start_seed": 1001,
+    "protocol": "docs/content/replication-28-oct-protocol.md",
+    "protocol_sha256": "ae9614310c0e642e0ee488290ba684c74b860b40f2b6175dd5becd8ae3329447"
+  }
+}

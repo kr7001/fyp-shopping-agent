@@ -1,0 +1,2157 @@
+{
+  "seeded_at": "2026-10-28T00:49:43",
+  "base_url": "http://localhost:7770",
+  "fixture": "tee_replication_28_oct.json",
+  "parent_skus": [
+    "IGR-RP28-01",
+    "IGR-RP28-02",
+    "IGR-RP28-03",
+    "IGR-RP28-04",
+    "IGR-RP28-05",
+    "IGR-RP28-06",
+    "IGR-RP28-07",
+    "IGR-RP28-08",
+    "IGR-RP28-09",
+    "IGR-RP28-10",
+    "IGR-RP28-11",
+    "IGR-RP28-12",
+    "IGR-RP28-13",
+    "IGR-RP28-14",
+    "IGR-RP28-15",
+    "IGR-RP28-16",
+    "IGR-RP28-17",
+    "IGR-RP28-18",
+    "IGR-RP28-19",
+    "IGR-RP28-20",
+    "IGR-RP28-21",
+    "IGR-RP28-22",
+    "IGR-RP28-23",
+    "IGR-RP28-24",
+    "IGR-RP28-25",
+    "IGR-RP28-26",
+    "IGR-RP28-27",
+    "IGR-RP28-28",
+    "IGR-RP28-29",
+    "IGR-RP28-30",
+    "IGR-RP28-31",
+    "IGR-RP28-32",
+    "IGR-RP28-33",
+    "IGR-RP28-34",
+    "IGR-RP28-35",
+    "IGR-RP28-36",
+    "IGR-RP28-37",
+    "IGR-RP28-38",
+    "IGR-RP28-39",
+    "IGR-RP28-40",
+    "IGR-RP28-41",
+    "IGR-RP28-42",
+    "IGR-RP28-43",
+    "IGR-RP28-44",
+    "IGR-RP28-45"
+  ],
+  "child_skus": [
+    "IGR-RP28-01-XS",
+    "IGR-RP28-01-S",
+    "IGR-RP28-01-M",
+    "IGR-RP28-01-L",
+    "IGR-RP28-01-XXL",
+    "IGR-RP28-02-S",
+    "IGR-RP28-02-M",
+    "IGR-RP28-02-XL",
+    "IGR-RP28-02-XXL",
+    "IGR-RP28-03-XS",
+    "IGR-RP28-03-S",
+    "IGR-RP28-03-L",
+    "IGR-RP28-03-XL",
+    "IGR-RP28-03-XXL",
+    "IGR-RP28-04-XS",
+    "IGR-RP28-04-S",
+    "IGR-RP28-04-L",
+    "IGR-RP28-05-XS",
+    "IGR-RP28-05-S",
+    "IGR-RP28-05-M",
+    "IGR-RP28-05-L",
+    "IGR-RP28-05-XXL",
+    "IGR-RP28-06-XS",
+    "IGR-RP28-06-L",
+    "IGR-RP28-06-XL",
+    "IGR-RP28-06-XXL",
+    "IGR-RP28-07-XS",
+    "IGR-RP28-07-S",
+    "IGR-RP28-07-M",
+    "IGR-RP28-07-L",
+    "IGR-RP28-07-XL",
+    "IGR-RP28-07-XXL",
+    "IGR-RP28-08-XS",
+    "IGR-RP28-08-S",
+    "IGR-RP28-08-M",
+    "IGR-RP28-08-L",
+    "IGR-RP28-08-XXL",
+    "IGR-RP28-09-S",
+    "IGR-RP28-09-M",
+    "IGR-RP28-09-L",
+    "IGR-RP28-09-XL",
+    "IGR-RP28-09-XXL",
+    "IGR-RP28-10-S",
+    "IGR-RP28-10-M",
+    "IGR-RP28-10-XL",
+    "IGR-RP28-10-XXL",
+    "IGR-RP28-11-XS",
+    "IGR-RP28-11-S",
+    "IGR-RP28-11-M",
+    "IGR-RP28-11-L",
+    "IGR-RP28-11-XL",
+    "IGR-RP28-11-XXL",
+    "IGR-RP28-12-XS",
+    "IGR-RP28-12-S",
+    "IGR-RP28-12-M",
+    "IGR-RP28-12-L",
+    "IGR-RP28-12-XL",
+    "IGR-RP28-12-XXL",
+    "IGR-RP28-13-XS",
+    "IGR-RP28-13-S",
+    "IGR-RP28-13-L",
+    "IGR-RP28-13-XXL",
+    "IGR-RP28-14-S",
+    "IGR-RP28-14-M",
+    "IGR-RP28-14-L",
+    "IGR-RP28-14-XL",
+    "IGR-RP28-14-XXL",
+    "IGR-RP28-15-XS",
+    "IGR-RP28-15-M",
+    "IGR-RP28-15-L",
+    "IGR-RP28-15-XL",
+    "IGR-RP28-15-XXL",
+    "IGR-RP28-16-XS",
+    "IGR-RP28-16-S",
+    "IGR-RP28-16-M",
+    "IGR-RP28-16-L",
+    "IGR-RP28-17-XS",
+    "IGR-RP28-17-S",
+    "IGR-RP28-17-M",
+    "IGR-RP28-17-L",
+    "IGR-RP28-17-XL",
+    "IGR-RP28-17-XXL",
+    "IGR-RP28-18-XS",
+    "IGR-RP28-18-M",
+    "IGR-RP28-18-XL",
+    "IGR-RP28-18-XXL",
+    "IGR-RP28-19-XS",
+    "IGR-RP28-19-S",
+    "IGR-RP28-19-M",
+    "IGR-RP28-19-L",
+    "IGR-RP28-19-XL",
+    "IGR-RP28-19-XXL",
+    "IGR-RP28-20-XS",
+    "IGR-RP28-20-S",
+    "IGR-RP28-20-M",
+    "IGR-RP28-20-L",
+    "IGR-RP28-20-XL",
+    "IGR-RP28-20-XXL",
+    "IGR-RP28-21-XS",
+    "IGR-RP28-21-S",
+    "IGR-RP28-21-M",
+    "IGR-RP28-21-L",
+    "IGR-RP28-21-XL",
+    "IGR-RP28-21-XXL",
+    "IGR-RP28-22-XS",
+    "IGR-RP28-22-S",
+    "IGR-RP28-22-M",
+    "IGR-RP28-22-L",
+    "IGR-RP28-23-XS",
+    "IGR-RP28-23-M",
+    "IGR-RP28-23-XL",
+    "IGR-RP28-23-XXL",
+    "IGR-RP28-24-XS",
+    "IGR-RP28-24-S",
+    "IGR-RP28-24-M",
+    "IGR-RP28-24-L",
+    "IGR-RP28-24-XL",
+    "IGR-RP28-25-XS",
+    "IGR-RP28-25-M",
+    "IGR-RP28-25-L",
+    "IGR-RP28-25-XL",
+    "IGR-RP28-25-XXL",
+    "IGR-RP28-26-XS",
+    "IGR-RP28-26-S",
+    "IGR-RP28-26-L",
+    "IGR-RP28-26-XL",
+    "IGR-RP28-27-XS",
+    "IGR-RP28-27-S",
+    "IGR-RP28-27-M",
+    "IGR-RP28-27-L",
+    "IGR-RP28-27-XL",
+    "IGR-RP28-27-XXL",
+    "IGR-RP28-28-XS",
+    "IGR-RP28-28-S",
+    "IGR-RP28-28-L",
+    "IGR-RP28-28-XL",
+    "IGR-RP28-28-XXL",
+    "IGR-RP28-29-XS",
+    "IGR-RP28-29-S",
+    "IGR-RP28-29-M",
+    "IGR-RP28-29-L",
+    "IGR-RP28-29-XL",
+    "IGR-RP28-29-XXL",
+    "IGR-RP28-30-S",
+    "IGR-RP28-30-L",
+    "IGR-RP28-30-XXL",
+    "IGR-RP28-31-XS",
+    "IGR-RP28-31-S",
+    "IGR-RP28-31-XL",
+    "IGR-RP28-31-XXL",
+    "IGR-RP28-32-XS",
+    "IGR-RP28-32-S",
+    "IGR-RP28-32-M",
+    "IGR-RP28-32-L",
+    "IGR-RP28-32-XL",
+    "IGR-RP28-32-XXL",
+    "IGR-RP28-33-XS",
+    "IGR-RP28-33-S",
+    "IGR-RP28-33-M",
+    "IGR-RP28-33-L",
+    "IGR-RP28-33-XXL",
+    "IGR-RP28-34-XS",
+    "IGR-RP28-34-S",
+    "IGR-RP28-34-M",
+    "IGR-RP28-34-L",
+    "IGR-RP28-34-XL",
+    "IGR-RP28-34-XXL",
+    "IGR-RP28-35-M",
+    "IGR-RP28-35-L",
+    "IGR-RP28-35-XL",
+    "IGR-RP28-35-XXL",
+    "IGR-RP28-36-XS",
+    "IGR-RP28-36-S",
+    "IGR-RP28-36-M",
+    "IGR-RP28-36-L",
+    "IGR-RP28-36-XL",
+    "IGR-RP28-36-XXL",
+    "IGR-RP28-37-XS",
+    "IGR-RP28-37-S",
+    "IGR-RP28-37-L",
+    "IGR-RP28-37-XL",
+    "IGR-RP28-37-XXL",
+    "IGR-RP28-38-S",
+    "IGR-RP28-38-M",
+    "IGR-RP28-38-L",
+    "IGR-RP28-38-XL",
+    "IGR-RP28-38-XXL",
+    "IGR-RP28-39-XS",
+    "IGR-RP28-39-S",
+    "IGR-RP28-39-M",
+    "IGR-RP28-39-L",
+    "IGR-RP28-39-XL",
+    "IGR-RP28-39-XXL",
+    "IGR-RP28-40-XS",
+    "IGR-RP28-40-S",
+    "IGR-RP28-40-M",
+    "IGR-RP28-40-L",
+    "IGR-RP28-40-XL",
+    "IGR-RP28-40-XXL",
+    "IGR-RP28-41-XS",
+    "IGR-RP28-41-S",
+    "IGR-RP28-41-M",
+    "IGR-RP28-41-L",
+    "IGR-RP28-41-XL",
+    "IGR-RP28-41-XXL",
+    "IGR-RP28-42-XS",
+    "IGR-RP28-42-S",
+    "IGR-RP28-42-M",
+    "IGR-RP28-42-L",
+    "IGR-RP28-42-XL",
+    "IGR-RP28-42-XXL",
+    "IGR-RP28-43-XS",
+    "IGR-RP28-43-S",
+    "IGR-RP28-43-L",
+    "IGR-RP28-43-XL",
+    "IGR-RP28-43-XXL",
+    "IGR-RP28-44-XS",
+    "IGR-RP28-44-S",
+    "IGR-RP28-44-M",
+    "IGR-RP28-44-L",
+    "IGR-RP28-44-XL",
+    "IGR-RP28-45-XS",
+    "IGR-RP28-45-S",
+    "IGR-RP28-45-M",
+    "IGR-RP28-45-L",
+    "IGR-RP28-45-XL",
+    "IGR-RP28-45-XXL"
+  ],
+  "ground_truth": {
+    "families": {
+      "tee-01": {
+        "parent_sku": "IGR-RP28-01",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 34.78,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-01-XS",
+            "price": 39.29,
+            "qty": 53,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-01-S",
+            "price": 39.41,
+            "qty": 65,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-01-M",
+            "price": 34.78,
+            "qty": 140,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-01-L",
+            "price": 35.01,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-01-XXL",
+            "price": 41.09,
+            "qty": 112,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "tee-02": {
+        "parent_sku": "IGR-RP28-02",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 12.58,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-RP28-02-S",
+            "price": 14.14,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-02-M",
+            "price": 12.58,
+            "qty": 130,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-02-XL",
+            "price": 16.09,
+            "qty": 115,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-02-XXL",
+            "price": 15.23,
+            "qty": 19,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      },
+      "tee-03": {
+        "parent_sku": "IGR-RP28-03",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 22.73,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-03-XS",
+            "price": 27.11,
+            "qty": 123,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-03-S",
+            "price": 22.73,
+            "qty": 65,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-03-L",
+            "price": 24.31,
+            "qty": 21,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-03-XL",
+            "price": 23.7,
+            "qty": 103,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-03-XXL",
+            "price": 24.64,
+            "qty": 35,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-04": {
+        "parent_sku": "IGR-RP28-04",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 27.48,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-04-XS",
+            "price": 27.48,
+            "qty": 103,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-04-S",
+            "price": 31.68,
+            "qty": 23,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-04-L",
+            "price": 28.74,
+            "qty": 107,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-05": {
+        "parent_sku": "IGR-RP28-05",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 10.72,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-05-XS",
+            "price": 12.58,
+            "qty": 23,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-05-S",
+            "price": 10.72,
+            "qty": 130,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-05-M",
+            "price": 12.46,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-05-L",
+            "price": 14.03,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-05-XXL",
+            "price": 14.6,
+            "qty": 48,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "L"
+        ]
+      },
+      "tee-06": {
+        "parent_sku": "IGR-RP28-06",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 35.46,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-06-XS",
+            "price": 35.8,
+            "qty": 79,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-06-L",
+            "price": 35.46,
+            "qty": 33,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-06-XL",
+            "price": 40.35,
+            "qty": 20,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-06-XXL",
+            "price": 40.53,
+            "qty": 129,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-07": {
+        "parent_sku": "IGR-RP28-07",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 31.98,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-07-XS",
+            "price": 31.98,
+            "qty": 75,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-07-S",
+            "price": 38.8,
+            "qty": 116,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-07-M",
+            "price": 42.96,
+            "qty": 58,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-07-L",
+            "price": 33.34,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-07-XL",
+            "price": 43.8,
+            "qty": 41,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-07-XXL",
+            "price": 41.53,
+            "qty": 88,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "tee-08": {
+        "parent_sku": "IGR-RP28-08",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 29.23,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-08-XS",
+            "price": 33.21,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-08-S",
+            "price": 29.23,
+            "qty": 78,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-08-M",
+            "price": 35.59,
+            "qty": 136,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-08-L",
+            "price": 32.47,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-08-XXL",
+            "price": 37.63,
+            "qty": 39,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "L"
+        ]
+      },
+      "tee-09": {
+        "parent_sku": "IGR-RP28-09",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 19.78,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-RP28-09-S",
+            "price": 23.47,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-09-M",
+            "price": 19.78,
+            "qty": 14,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-09-L",
+            "price": 23.5,
+            "qty": 21,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-09-XL",
+            "price": 19.8,
+            "qty": 30,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-09-XXL",
+            "price": 21.7,
+            "qty": 59,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      },
+      "tee-10": {
+        "parent_sku": "IGR-RP28-10",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 18.71,
+        "from_price_option": "XL",
+        "variants": {
+          "S": {
+            "sku": "IGR-RP28-10-S",
+            "price": 18.83,
+            "qty": 124,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-10-M",
+            "price": 23.91,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-10-XL",
+            "price": 18.71,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-10-XXL",
+            "price": 22.48,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "XL",
+          "XXL"
+        ]
+      },
+      "tee-11": {
+        "parent_sku": "IGR-RP28-11",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 17.23,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-11-XS",
+            "price": 17.23,
+            "qty": 59,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-11-S",
+            "price": 23.07,
+            "qty": 137,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-11-M",
+            "price": 19.92,
+            "qty": 18,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-11-L",
+            "price": 22.21,
+            "qty": 103,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-11-XL",
+            "price": 18.6,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-11-XXL",
+            "price": 23.95,
+            "qty": 57,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XL"
+        ]
+      },
+      "tee-12": {
+        "parent_sku": "IGR-RP28-12",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 33.32,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-12-XS",
+            "price": 41.0,
+            "qty": 25,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-12-S",
+            "price": 44.79,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-12-M",
+            "price": 42.37,
+            "qty": 58,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-12-L",
+            "price": 33.32,
+            "qty": 94,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-12-XL",
+            "price": 37.93,
+            "qty": 59,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-12-XXL",
+            "price": 34.34,
+            "qty": 139,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      },
+      "tee-13": {
+        "parent_sku": "IGR-RP28-13",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 22.08,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-13-XS",
+            "price": 22.7,
+            "qty": 14,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-13-S",
+            "price": 22.08,
+            "qty": 40,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-13-L",
+            "price": 25.32,
+            "qty": 110,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-13-XXL",
+            "price": 27.14,
+            "qty": 105,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-14": {
+        "parent_sku": "IGR-RP28-14",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 12.66,
+        "from_price_option": "XL",
+        "variants": {
+          "S": {
+            "sku": "IGR-RP28-14-S",
+            "price": 12.77,
+            "qty": 115,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-14-M",
+            "price": 13.42,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-14-L",
+            "price": 15.12,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-14-XL",
+            "price": 12.66,
+            "qty": 135,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-14-XXL",
+            "price": 15.52,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "L",
+          "XXL"
+        ]
+      },
+      "tee-15": {
+        "parent_sku": "IGR-RP28-15",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 27.55,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-15-XS",
+            "price": 32.3,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-15-M",
+            "price": 35.56,
+            "qty": 33,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-15-L",
+            "price": 38.39,
+            "qty": 70,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-15-XL",
+            "price": 27.89,
+            "qty": 13,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-15-XXL",
+            "price": 27.55,
+            "qty": 46,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS"
+        ]
+      },
+      "tee-16": {
+        "parent_sku": "IGR-RP28-16",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 25.86,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-16-XS",
+            "price": 26.8,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-16-S",
+            "price": 30.18,
+            "qty": 108,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-16-M",
+            "price": 25.86,
+            "qty": 105,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-16-L",
+            "price": 28.73,
+            "qty": 32,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS"
+        ]
+      },
+      "tee-17": {
+        "parent_sku": "IGR-RP28-17",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 11.96,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-17-XS",
+            "price": 13.1,
+            "qty": 129,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-17-S",
+            "price": 14.53,
+            "qty": 67,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-17-M",
+            "price": 15.33,
+            "qty": 20,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-17-L",
+            "price": 13.67,
+            "qty": 64,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-17-XL",
+            "price": 11.96,
+            "qty": 91,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-17-XXL",
+            "price": 12.41,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XXL"
+        ]
+      },
+      "tee-18": {
+        "parent_sku": "IGR-RP28-18",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 14.45,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-18-XS",
+            "price": 16.55,
+            "qty": 97,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-18-M",
+            "price": 19.53,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-18-XL",
+            "price": 14.45,
+            "qty": 115,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-18-XXL",
+            "price": 19.23,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "XXL"
+        ]
+      },
+      "tee-19": {
+        "parent_sku": "IGR-RP28-19",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 24.43,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-19-XS",
+            "price": 31.68,
+            "qty": 71,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-19-S",
+            "price": 30.89,
+            "qty": 96,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-19-M",
+            "price": 24.98,
+            "qty": 25,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-19-L",
+            "price": 28.71,
+            "qty": 73,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-19-XL",
+            "price": 30.98,
+            "qty": 127,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-19-XXL",
+            "price": 24.43,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XXL"
+        ]
+      },
+      "tee-20": {
+        "parent_sku": "IGR-RP28-20",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 30.34,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-20-XS",
+            "price": 30.34,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-20-S",
+            "price": 37.97,
+            "qty": 36,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-20-M",
+            "price": 34.93,
+            "qty": 96,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-20-L",
+            "price": 39.28,
+            "qty": 54,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-20-XL",
+            "price": 32.3,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-20-XXL",
+            "price": 32.6,
+            "qty": 63,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "XL"
+        ]
+      },
+      "tee-21": {
+        "parent_sku": "IGR-RP28-21",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 23.59,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-21-XS",
+            "price": 31.31,
+            "qty": 33,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-21-S",
+            "price": 25.78,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-21-M",
+            "price": 23.59,
+            "qty": 15,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-21-L",
+            "price": 30.82,
+            "qty": 104,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-21-XL",
+            "price": 24.48,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-21-XXL",
+            "price": 31.0,
+            "qty": 43,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S",
+          "XL"
+        ]
+      },
+      "tee-22": {
+        "parent_sku": "IGR-RP28-22",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 35.09,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-22-XS",
+            "price": 35.09,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-22-S",
+            "price": 38.0,
+            "qty": 25,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-22-M",
+            "price": 41.0,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-22-L",
+            "price": 37.82,
+            "qty": 107,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "M"
+        ]
+      },
+      "tee-23": {
+        "parent_sku": "IGR-RP28-23",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 17.96,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-23-XS",
+            "price": 22.47,
+            "qty": 27,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-23-M",
+            "price": 19.09,
+            "qty": 74,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-23-XL",
+            "price": 19.8,
+            "qty": 12,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-23-XXL",
+            "price": 17.96,
+            "qty": 18,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-24": {
+        "parent_sku": "IGR-RP28-24",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 28.46,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-24-XS",
+            "price": 31.21,
+            "qty": 24,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-24-S",
+            "price": 35.5,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-24-M",
+            "price": 36.01,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-24-L",
+            "price": 28.46,
+            "qty": 83,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-24-XL",
+            "price": 39.41,
+            "qty": 104,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S",
+          "M"
+        ]
+      },
+      "tee-25": {
+        "parent_sku": "IGR-RP28-25",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 29.27,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-25-XS",
+            "price": 35.99,
+            "qty": 46,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-25-M",
+            "price": 29.27,
+            "qty": 84,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-25-L",
+            "price": 29.28,
+            "qty": 120,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-25-XL",
+            "price": 30.92,
+            "qty": 128,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-25-XXL",
+            "price": 35.08,
+            "qty": 24,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-26": {
+        "parent_sku": "IGR-RP28-26",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 32.82,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-26-XS",
+            "price": 34.59,
+            "qty": 20,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-26-S",
+            "price": 36.68,
+            "qty": 57,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-26-L",
+            "price": 45.46,
+            "qty": 76,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-26-XL",
+            "price": 32.82,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XL"
+        ]
+      },
+      "tee-27": {
+        "parent_sku": "IGR-RP28-27",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 16.52,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-27-XS",
+            "price": 19.54,
+            "qty": 40,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-27-S",
+            "price": 16.52,
+            "qty": 42,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-27-M",
+            "price": 21.45,
+            "qty": 134,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-27-L",
+            "price": 22.19,
+            "qty": 103,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-27-XL",
+            "price": 22.29,
+            "qty": 108,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-27-XXL",
+            "price": 19.6,
+            "qty": 108,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-28": {
+        "parent_sku": "IGR-RP28-28",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 10.2,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-28-XS",
+            "price": 11.35,
+            "qty": 140,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-28-S",
+            "price": 10.38,
+            "qty": 70,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-28-L",
+            "price": 10.2,
+            "qty": 74,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-28-XL",
+            "price": 13.73,
+            "qty": 41,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-28-XXL",
+            "price": 11.52,
+            "qty": 134,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-29": {
+        "parent_sku": "IGR-RP28-29",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 15.81,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-29-XS",
+            "price": 20.38,
+            "qty": 104,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-29-S",
+            "price": 19.66,
+            "qty": 102,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-29-M",
+            "price": 17.39,
+            "qty": 65,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-29-L",
+            "price": 20.34,
+            "qty": 53,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-29-XL",
+            "price": 19.22,
+            "qty": 24,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-29-XXL",
+            "price": 15.81,
+            "qty": 20,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-30": {
+        "parent_sku": "IGR-RP28-30",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 33.74,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-RP28-30-S",
+            "price": 33.74,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-30-L",
+            "price": 35.96,
+            "qty": 21,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-30-XXL",
+            "price": 39.84,
+            "qty": 139,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      },
+      "tee-31": {
+        "parent_sku": "IGR-RP28-31",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 21.66,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-31-XS",
+            "price": 27.16,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-31-S",
+            "price": 21.66,
+            "qty": 27,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-31-XL",
+            "price": 26.86,
+            "qty": 20,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-31-XXL",
+            "price": 28.75,
+            "qty": 92,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS"
+        ]
+      },
+      "tee-32": {
+        "parent_sku": "IGR-RP28-32",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 18.66,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-32-XS",
+            "price": 18.66,
+            "qty": 133,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-32-S",
+            "price": 22.57,
+            "qty": 68,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-32-M",
+            "price": 22.34,
+            "qty": 123,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-32-L",
+            "price": 18.78,
+            "qty": 14,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-32-XL",
+            "price": 19.73,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-32-XXL",
+            "price": 18.72,
+            "qty": 79,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XL"
+        ]
+      },
+      "tee-33": {
+        "parent_sku": "IGR-RP28-33",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 18.49,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-33-XS",
+            "price": 22.12,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-33-S",
+            "price": 22.58,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-33-M",
+            "price": 23.42,
+            "qty": 46,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-33-L",
+            "price": 18.49,
+            "qty": 99,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-33-XXL",
+            "price": 20.48,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "S",
+          "XXL"
+        ]
+      },
+      "tee-34": {
+        "parent_sku": "IGR-RP28-34",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 13.6,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-34-XS",
+            "price": 17.07,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-34-S",
+            "price": 14.45,
+            "qty": 124,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-34-M",
+            "price": 18.03,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-34-L",
+            "price": 16.01,
+            "qty": 63,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-34-XL",
+            "price": 15.94,
+            "qty": 85,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-34-XXL",
+            "price": 13.6,
+            "qty": 84,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "M"
+        ]
+      },
+      "tee-35": {
+        "parent_sku": "IGR-RP28-35",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 25.5,
+        "from_price_option": "M",
+        "variants": {
+          "M": {
+            "sku": "IGR-RP28-35-M",
+            "price": 25.5,
+            "qty": 129,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-35-L",
+            "price": 27.5,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-35-XL",
+            "price": 26.08,
+            "qty": 27,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-35-XXL",
+            "price": 28.55,
+            "qty": 25,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "tee-36": {
+        "parent_sku": "IGR-RP28-36",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 30.88,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-36-XS",
+            "price": 30.88,
+            "qty": 140,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-36-S",
+            "price": 32.06,
+            "qty": 129,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-36-M",
+            "price": 41.11,
+            "qty": 75,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-36-L",
+            "price": 36.08,
+            "qty": 55,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-36-XL",
+            "price": 36.24,
+            "qty": 105,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-36-XXL",
+            "price": 38.47,
+            "qty": 88,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-37": {
+        "parent_sku": "IGR-RP28-37",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 11.23,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-37-XS",
+            "price": 12.7,
+            "qty": 119,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-37-S",
+            "price": 13.39,
+            "qty": 112,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-37-L",
+            "price": 13.39,
+            "qty": 120,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-37-XL",
+            "price": 13.46,
+            "qty": 108,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-37-XXL",
+            "price": 11.23,
+            "qty": 138,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-38": {
+        "parent_sku": "IGR-RP28-38",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 33.18,
+        "from_price_option": "XXL",
+        "variants": {
+          "S": {
+            "sku": "IGR-RP28-38-S",
+            "price": 33.61,
+            "qty": 38,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-38-M",
+            "price": 34.35,
+            "qty": 37,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-38-L",
+            "price": 35.22,
+            "qty": 52,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-38-XL",
+            "price": 35.7,
+            "qty": 57,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-38-XXL",
+            "price": 33.18,
+            "qty": 140,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-39": {
+        "parent_sku": "IGR-RP28-39",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 24.59,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-39-XS",
+            "price": 29.1,
+            "qty": 117,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-39-S",
+            "price": 28.52,
+            "qty": 100,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-39-M",
+            "price": 26.43,
+            "qty": 93,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-39-L",
+            "price": 24.59,
+            "qty": 38,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-39-XL",
+            "price": 28.74,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-39-XXL",
+            "price": 30.83,
+            "qty": 74,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XL"
+        ]
+      },
+      "tee-40": {
+        "parent_sku": "IGR-RP28-40",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 16.04,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-40-XS",
+            "price": 19.12,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-40-S",
+            "price": 17.9,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-40-M",
+            "price": 19.43,
+            "qty": 111,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-40-L",
+            "price": 19.76,
+            "qty": 82,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-40-XL",
+            "price": 17.89,
+            "qty": 112,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-40-XXL",
+            "price": 16.04,
+            "qty": 36,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "S"
+        ]
+      },
+      "tee-41": {
+        "parent_sku": "IGR-RP28-41",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 19.17,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-41-XS",
+            "price": 22.04,
+            "qty": 138,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-41-S",
+            "price": 24.86,
+            "qty": 43,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-41-M",
+            "price": 19.85,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-41-L",
+            "price": 20.19,
+            "qty": 133,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-41-XL",
+            "price": 25.42,
+            "qty": 43,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-41-XXL",
+            "price": 19.17,
+            "qty": 109,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "tee-42": {
+        "parent_sku": "IGR-RP28-42",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 18.87,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-42-XS",
+            "price": 24.17,
+            "qty": 136,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-42-S",
+            "price": 18.87,
+            "qty": 96,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-42-M",
+            "price": 21.26,
+            "qty": 87,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-42-L",
+            "price": 23.64,
+            "qty": 127,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-42-XL",
+            "price": 23.22,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-42-XXL",
+            "price": 22.59,
+            "qty": 21,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XL"
+        ]
+      },
+      "tee-43": {
+        "parent_sku": "IGR-RP28-43",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 31.65,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-43-XS",
+            "price": 31.65,
+            "qty": 114,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-43-S",
+            "price": 34.17,
+            "qty": 81,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-43-L",
+            "price": 34.97,
+            "qty": 42,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-43-XL",
+            "price": 32.31,
+            "qty": 107,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-43-XXL",
+            "price": 40.26,
+            "qty": 64,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-44": {
+        "parent_sku": "IGR-RP28-44",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 27.15,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-44-XS",
+            "price": 36.55,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-44-S",
+            "price": 31.22,
+            "qty": 133,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-44-M",
+            "price": 27.15,
+            "qty": 39,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-44-L",
+            "price": 34.2,
+            "qty": 114,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-44-XL",
+            "price": 34.33,
+            "qty": 60,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS"
+        ]
+      },
+      "tee-45": {
+        "parent_sku": "IGR-RP28-45",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 11.08,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-RP28-45-XS",
+            "price": 11.08,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-RP28-45-S",
+            "price": 13.2,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-RP28-45-M",
+            "price": 13.95,
+            "qty": 94,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-RP28-45-L",
+            "price": 11.13,
+            "qty": 125,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-RP28-45-XL",
+            "price": 14.92,
+            "qty": 104,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-RP28-45-XXL",
+            "price": 12.92,
+            "qty": 31,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "S"
+        ]
+      }
+    },
+    "cross_listing": {
+      "XS": {
+        "cheapest_listing": "tee-45",
+        "cheapest_price": 11.08,
+        "listing_a_card_probe_would_pick": "tee-28",
+        "card_probe_wrong": true
+      },
+      "S": {
+        "cheapest_listing": "tee-28",
+        "cheapest_price": 10.38,
+        "listing_a_card_probe_would_pick": "tee-28",
+        "card_probe_wrong": false
+      },
+      "M": {
+        "cheapest_listing": "tee-05",
+        "cheapest_price": 12.46,
+        "listing_a_card_probe_would_pick": "tee-05",
+        "card_probe_wrong": false
+      },
+      "L": {
+        "cheapest_listing": "tee-28",
+        "cheapest_price": 10.2,
+        "listing_a_card_probe_would_pick": "tee-28",
+        "card_probe_wrong": false
+      },
+      "XXL": {
+        "cheapest_listing": "tee-37",
+        "cheapest_price": 11.23,
+        "listing_a_card_probe_would_pick": "tee-28",
+        "card_probe_wrong": true
+      },
+      "XL": {
+        "cheapest_listing": "tee-17",
+        "cheapest_price": 11.96,
+        "listing_a_card_probe_would_pick": "tee-28",
+        "card_probe_wrong": true
+      }
+    }
+  }
+}

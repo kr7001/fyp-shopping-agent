@@ -25,6 +25,7 @@ import signal
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.request
 
 AUTHORIZED_DEADLINE = dt.datetime.fromisoformat("2026-10-28T08:00:00+08:00")
@@ -58,7 +59,7 @@ def number(value):
 
 
 def account_probe(env_file):
-    """Bounded read-only account request. Print only usage and remaining balance."""
+    """Three short transient-read attempts; print only usage and remaining balance."""
     try:
         key = os.environ.get("OPENROUTER_API_KEY")
         if not key:
@@ -71,17 +72,38 @@ def account_probe(env_file):
             return 2
         request = urllib.request.Request("https://openrouter.ai/api/v1/key",
                                          headers={"Authorization": f"Bearer {key}"})
-        with urllib.request.urlopen(request, timeout=5) as response:
-            data = json.load(response)["data"]
-        usage = number(data["usage"])
-        remaining = data.get("limit_remaining")
-        if remaining is None and data.get("limit") is not None:
-            remaining = max(0, number(data["limit"]) - usage)
-        print(json.dumps({"usage": usage, "remaining": None if remaining is None else number(remaining)}))
-        return 0
     except Exception:
-        # Neither exception text nor HTTP response bodies may disclose a secret.
         return 2
+    expires = time.monotonic() + 6
+    for _ in range(3):
+        remaining_time = expires - time.monotonic()
+        if remaining_time <= 0:
+            return 2
+        try:
+            with urllib.request.urlopen(request, timeout=min(2, remaining_time)) as response:
+                data = json.load(response)["data"]
+        except urllib.error.HTTPError as error:
+            if error.code not in (408, 429, 500, 502, 503, 504):
+                return 2
+            continue
+        except (urllib.error.URLError, TimeoutError, OSError):
+            continue
+        except Exception:
+            return 2
+        try:
+            usage = number(data["usage"])
+            remaining = data.get("limit_remaining")
+            if remaining is None and data.get("limit") is not None:
+                remaining = max(0, number(data["limit"]) - usage)
+            if remaining is None or time.monotonic() >= expires:
+                return 2
+            remaining = number(remaining)
+        except Exception:
+            return 2
+        print(json.dumps({"usage": usage, "remaining": remaining}))
+        return 0
+    # Neither exception text nor HTTP response bodies may disclose a secret.
+    return 2
 
 
 class Guard:

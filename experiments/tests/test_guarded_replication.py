@@ -2,6 +2,7 @@
 import datetime as dt
 import hashlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 
 MODULE = Path(__file__).resolve().parents[2] / "tools/guarded_replication.py"
 spec = importlib.util.spec_from_file_location("guarded_replication", MODULE)
@@ -205,6 +207,37 @@ class GuardTests(unittest.TestCase):
             except subprocess.CalledProcessError:
                 status = ""
             self.assertTrue(not status or status.startswith("Z"), (pid, status))
+
+
+class AccountProbeTests(unittest.TestCase):
+    def test_transient_read_then_success_is_retried_without_secret_output(self):
+        response = io.BytesIO(b'{"data":{"usage":100,"limit_remaining":74}}')
+        failures = [guarded.urllib.error.URLError("synthetic transient failure"), response]
+        with mock.patch.dict(os.environ, {"OPENROUTER_API_KEY": "synthetic-test-key"}), \
+             mock.patch.object(guarded.urllib.request, "urlopen", side_effect=failures) as opened, \
+             mock.patch("sys.stdout", new_callable=io.StringIO) as stdout:
+            self.assertEqual(guarded.account_probe("unused"), 0)
+            self.assertEqual(json.loads(stdout.getvalue()), {"usage": 100, "remaining": 74})
+            self.assertEqual(opened.call_count, 2)
+            self.assertTrue(all(0 < call.kwargs["timeout"] <= 2 for call in opened.call_args_list))
+
+    def test_three_transient_failures_return_no_output(self):
+        with mock.patch.dict(os.environ, {"OPENROUTER_API_KEY": "synthetic-test-key"}), \
+             mock.patch.object(guarded.urllib.request, "urlopen",
+                               side_effect=guarded.urllib.error.URLError("synthetic failure")) as opened, \
+             mock.patch("sys.stdout", new_callable=io.StringIO) as stdout:
+            self.assertEqual(guarded.account_probe("unused"), 2)
+            self.assertEqual(opened.call_count, 3)
+            self.assertEqual(stdout.getvalue(), "")
+
+    def test_invalid_balance_fails_without_retry(self):
+        response = io.BytesIO(b'{"data":{"usage":100,"limit_remaining":-1}}')
+        with mock.patch.dict(os.environ, {"OPENROUTER_API_KEY": "synthetic-test-key"}), \
+             mock.patch.object(guarded.urllib.request, "urlopen", return_value=response) as opened, \
+             mock.patch("sys.stdout", new_callable=io.StringIO) as stdout:
+            self.assertEqual(guarded.account_probe("unused"), 2)
+            self.assertEqual(opened.call_count, 1)
+            self.assertEqual(stdout.getvalue(), "")
 
 
 if __name__ == "__main__":
