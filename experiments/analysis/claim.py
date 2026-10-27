@@ -3447,7 +3447,7 @@ def read_hand_sheet(path: pathlib.Path) -> dict:
         raise SystemExit(f"refused: the hand reading needs the sheet and its key, and {', '.join(absent)} "
                          f"is not there")
     key = json.loads(key_path.read_text())
-    with sheet_path.open(newline="") as handle:
+    with sheet_path.open(newline="", encoding="utf-8-sig") as handle:
         rows = list(csv.DictReader(handle))
     problems, read = [], {}
     for line, row in enumerate(rows, 2):        # the CSV's own line numbers, the header the first

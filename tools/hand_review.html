@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Blind answer review</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f4ef;color:#202b32;font:17px/1.65 system-ui,sans-serif}main{max-width:1050px;margin:32px auto;padding:0 24px 60px}h1{font-size:32px;margin:0}h2{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:#45616a}p{margin:8px 0}button{font:inherit;cursor:pointer;border:1px solid #9eafb0;border-radius:8px;background:white;padding:9px 16px;color:#20383d}button:hover{background:#edf5f2}button:focus-visible,textarea:focus-visible{outline:3px solid #4277b2}button:disabled{opacity:.4;cursor:default}button[aria-pressed=true]{background:#194d44;color:white;border-color:#194d44}.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:20px 0}.card{background:white;border:1px solid #d6deda;border-radius:12px;padding:24px;margin:18px 0}.columns{display:grid;grid-template-columns:1fr 1fr;gap:20px}.answer{white-space:pre-wrap;overflow-wrap:anywhere;font-size:18px}.muted{color:#50676d;font-size:14px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.6 ui-monospace,monospace;margin:0}textarea{width:100%;min-height:80px;font:inherit;border:1px solid #9eafb0;border-radius:8px;padding:12px}progress{width:100%;height:10px;accent-color:#28735c}#notice{color:#8b3f1a}#rules{font:15px/1.7 system-ui,sans-serif}#saved{font-size:14px}.verdicts{display:flex;gap:10px;flex-wrap:wrap}summary{cursor:pointer}label{display:block}.primary{background:#194d44;color:#fff}#counter{font-weight:600}@media(max-width:700px){.columns{grid-template-columns:1fr}main{padding:0 14px}.card{padding:18px}}
+</style>
+<main>
+  <p class="muted">FYP · Stage 1 · your independent judgement</p>
+  <h1>One answer at a time</h1>
+  <p>Compare the final answer with the key. You are checking answers, not running the shopping agent.</p>
+  <p class="muted">Arm labels and automatic verdicts are absent. This page makes no network requests and suggests no scores.</p>
+  <div class="bar"><span id="progress"></span><button id="export" class="primary">Download reviewed CSV</button></div>
+  <progress id="meter" value="0" max="1"></progress>
+  <p id="saved" aria-live="polite"></p><p id="notice" role="alert"></p>
+  <details class="card"><summary>Read this before starting</summary>
+    <p><b>Correct:</b> the answer finally commits to everything required by the frozen rules and key.</p>
+    <p><b>Not correct:</b> wrong, incomplete, unresolved alternatives, or no committed answer. Ignore discarded working; use the final correction if there is one.</p>
+    <p><b>Unscorable:</b> only empty, unreadable, garbled, or answering another question. Difficulty deciding is not enough.</p>
+    <p>A plain <code>key</code> on each card is the expected answer. It is safe to read. The separate <code>.key.json</code> file reveals experiment arms: leave that closed.</p>
+    <p>Read the frozen per-question rules below. Save a CSV at each break. Browser storage is only a convenience; the download is your portable copy.</p>
+    <details><summary>Full frozen reading rules (unchanged)</summary><pre id="rules"></pre></details>
+  </details>
+  <div class="bar"><span id="counter"></span><button id="pending">Jump to first unfinished</button></div>
+  <div class="columns">
+    <section class="card"><h2>Question</h2><p id="question"></p></section>
+    <section class="card"><h2>Expected answer key</h2><pre id="key"></pre><p class="muted">any = acceptable seller; not_any = excluded seller; value/price = required number; items = required sellers with prices; trap = wrong label figure. The per-question rules decide which fields must be stated.</p></section>
+  </div>
+  <section class="card"><h2>Agent's answer</h2><div id="answer" class="answer"></div></section>
+  <section class="card"><h2>Your verdict</h2><div class="verdicts">
+    <button data-verdict="correct" aria-pressed="false">Correct</button>
+    <button data-verdict="not correct" aria-pressed="false">Not correct</button>
+    <button data-verdict="unscorable" aria-pressed="false">Unscorable</button>
+    <button id="clear">Clear</button>
+  </div><label for="note">Optional note — explain a doubtful case</label><textarea id="note"></textarea></section>
+  <div class="bar"><button id="prev">← Previous</button><button id="next" class="primary">Next →</button></div>
+  <p class="muted">You can stop and return. Keep this same HTML file and browser, and download your progress before closing. When all rows are done, download once more and ask Codex to validate and import that CSV before scoring.</p>
+</main>
+<script>
+const payload = /* REVIEW_PAYLOAD */;
+const columns=['code','question','key','answer','hand_verdict','note'];
+const rows=payload.rows;
+const storageKey='fyp-blind-review-v1-'+payload.identity;
+const $=id=>document.getElementById(id);
+let index=0, dirty=false, storageAvailable=true;
+try {
+  const stored=JSON.parse(localStorage.getItem(storageKey)||'null');
+  if(stored && stored.rows && rows.every(r=>Object.hasOwn(stored.rows,r.code))){
+    for(const row of rows){const saved=stored.rows[row.code];if(['','correct','not correct','unscorable'].includes(saved.hand_verdict)&&typeof saved.note==='string'){row.hand_verdict=saved.hand_verdict;row.note=saved.note;}}
+    index=Math.max(0,Math.min(rows.length-1,Number(stored.index)||0));
+  }
+} catch(e){storageAvailable=false;}
+function persist(){
+  dirty=true;
+  try{localStorage.setItem(storageKey,JSON.stringify({index,rows:Object.fromEntries(rows.map(r=>[r.code,{hand_verdict:r.hand_verdict,note:r.note}]))}));}
+  catch(e){storageAvailable=false;}
+  $('saved').textContent=storageAvailable?'Progress saved in this browser. Download a CSV before each break.':'Browser saving is unavailable. Download a CSV before leaving this page.';
+}
+function render(){
+  const row=rows[index],done=rows.filter(r=>r.hand_verdict).length;
+  $('counter').textContent=`Answer ${index+1} of ${rows.length} · code ${row.code}`;
+  $('progress').textContent=`${done} reviewed · ${rows.length-done} remaining`;
+  $('meter').max=rows.length;$('meter').value=done;
+  $('question').textContent=row.question;
+  try{$('key').textContent=JSON.stringify(JSON.parse(row.key),null,2);}catch(e){$('key').textContent=row.key;}
+  $('answer').textContent=row.answer||'(Empty reply)';$('note').value=row.note;
+  document.querySelectorAll('[data-verdict]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.verdict===row.hand_verdict)));
+  $('prev').disabled=index===0;$('next').disabled=index===rows.length-1;
+  $('notice').textContent=done===rows.length?'All rows reviewed. Download the completed CSV; scoring is a separate step.':'';
+}
+document.querySelectorAll('[data-verdict]').forEach(b=>b.onclick=()=>{rows[index].hand_verdict=b.dataset.verdict;persist();render();});
+$('clear').onclick=()=>{rows[index].hand_verdict='';persist();render();};
+$('note').oninput=()=>{rows[index].note=$('note').value;persist();};
+function move(i){index=i;persist();render();$('counter').scrollIntoView({block:'start'});}
+$('prev').onclick=()=>move(Math.max(0,index-1));$('next').onclick=()=>move(Math.min(rows.length-1,index+1));
+$('pending').onclick=()=>{const i=rows.findIndex(r=>!r.hand_verdict);if(i>=0)move(i);};
+function csvCell(s){return '"'+String(s).replaceAll('"','""')+'"';}
+$('export').onclick=()=>{
+ const csv=[columns,...rows.map(r=>columns.map(k=>r[k]))].map(row=>row.map(csvCell).join(',')).join('\r\n')+'\r\n';
+ const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+ const a=document.createElement('a');a.href=url;a.download=payload.filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ dirty=false;$('saved').textContent='CSV download requested. Check that the file appeared in Downloads.';
+};
+window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});
+$('rules').textContent=payload.rules;
+$('saved').textContent=storageAvailable?'Your progress stays in this browser. Download a CSV at each break.':'Browser saving is unavailable. Download a CSV before leaving.';
+render();
+</script>
+</html>

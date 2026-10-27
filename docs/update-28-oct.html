@@ -32,7 +32,20 @@
 <h1>Update, 28 October: the second claim run is finished, its result is not yet read</h1>
 <p class="muted">The second run of the retrieval block has been run and checked for faults. By the protocol, the student's blind hand reading comes before any result is looked at, so this page reports what was done and what the run can claim, and gives no accuracy figure.</p>
 
-<h2>1. What was done since 24 October</h2>
+<div class="box">
+<p><b>The contribution in two sentences.</b> A shopping agent can answer from the advertised price even when the requested size has a different price hidden behind a menu. The block reads the question, gives the agent a retrieval plan with a conditional stopping rule, asks for clarification where needed, and declines questions the shop cannot answer.</p>
+<p><b>For this meeting:</b> show the report's literature positioning table, architecture figure and Algorithm 1 first. The second experiment is complete, but its outcome remains pending until the blind reading is locked.</p>
+</div>
+<h2>1. What changed since our 21 October meeting</h2>
+<div class="table-wrap"><table>
+<tr><th>When</th><th>Change and reason</th></tr>
+<tr><td>21 Oct baseline</td><td>The earlier update reported the Ashcombe claim run, the exploratory parser test and a plan for a larger mixed-product market. Those results remain a separate experiment.</td></tr>
+<tr><td>22 Oct</td><td>Built the model parser into the block, with normalisation, checks and fallback to rules. Added rendered reading of every results page and a larger development market, Larchmere, with tees and water. Drafted the next protocol before the claim market existed.</td></tr>
+<tr><td>23 Oct</td><td>The development pilot exposed provider-dependent costs, scorer errors and a case where the rules overruled a correct model parse. It stopped under its cost gate before running the two baselines. These are development findings, not evidence that the block beats those baselines. The audits added per-arm preflight checks, provider routing, blind scoring and explicit treatment of closed and keyless slots.</td></tr>
+<tr><td>24 Oct redesign</td><td>Narrowed to a post-search, tee-only market with two results pages, six sizes, misleading promotional and scarcity labels, and held-out rewordings. Added ask-on-clash behaviour and clearer declines. DeepSeek alone runs the browser arms; Haiku appears only in the text-only parser check. Mixed-product search and a second browser model were not retained.</td></tr>
+<tr><td>27 Oct preparation</td><td>Reviewed the handover, history and report with Codex. Preparing the blind reading and a WebArena-Verified issue proposal. Correcting report wording without changing the frozen experiment or filling unscored results.</td></tr>
+</table></div>
+<h3>Execution record, 24 to 25 October</h3>
 <div class="table-wrap"><table>
 <tr><th>When</th><th>What</th></tr>
 <tr><td>24 Oct, 17:56</td><td>Protocol for the second run frozen (commit 55665b4), after the verifier's logic audit and before the claim market was drawn.</td></tr>
@@ -42,7 +55,7 @@
 <tr><td>25 Oct, 13:50</td><td>The chain stopped before its 66th of 87 invocations ($18.59 spent). The cap gate halts whenever the account balance cannot be read, and one read failed (a network fault, not the cap). No run was affected.</td></tr>
 <tr><td>25 Oct, 14:06 to 17:18</td><td>Resumed with a separate resume command, checked by the verifier, that runs only the 22 invocations not yet started, then the re-runs and the reading tests, into the same record; the balance read is now tried three times, ten seconds apart (Amendment 2). Stage 1 ended at 17:18.</td></tr>
 </table></div>
-<p><b>Output.</b> 87 batches and 198 run records. Four runs were void, decided from their logs before any answer was read: two browser-worker JSON errors, one silent log, one provider connection error. Each was re-run once, cleanly. All 10,630 agent calls were served by one provider (GMICloud) under the pinned fp8 routing, as the protocol required.</p>
+<p><b>Output.</b> The design schedules 227 slots across 87 invocations; the execution record reports 198 browser-run records. Planned slots and executed browser runs are different denominators because the block can close a slot without starting an agent. Four runs were void, decided from their logs before any answer was read: two browser-worker JSON errors, one silent log, one provider connection error. Each was re-run once, cleanly. All 10,630 agent calls were served by one provider (GMICloud) under the pinned fp8 routing, as the protocol required.</p>
 <p><b>Cost.</b> $22.27 by the account for stage 1: $21.90 in run records and $0.37 for routing probes and reading tests. With the pilot, $23.20 of the $66 total cap.</p>
 
 <h2>2. What the run can and cannot claim</h2>
@@ -57,33 +70,40 @@
 <p>It cannot show that the block works on other markets, other products, other models or another agent scaffold, or on live sites. It does not test search relevance, shipping cost or discounts after combination, which are out of scope as you asked.</p>
 
 <h2>3. Results</h2>
-<p>Pending the blind hand reading, which comes first by protocol. The student reads a coded sheet that hides arm, model and the scorer's verdict, and sees no result until it is finished. The verifier then reads 40 rows of the same sheet as second reader. Expected: sheet finished by Friday 30 October (proposed), then the four tests and the agreement of the two readers, in time for the report's first draft.</p>
+<p>Pending the student's blind hand reading on 27 October. The coded sheet hides arm, model and the scorer's verdict. The second reader has already supplied a separate coded reading of 40 rows; its verdicts remain hidden until the student finishes. After all rows are filled, lock a copy, compute the hand-scored analysis and reader agreement, then insert the results here. If the review is unfinished at the meeting, present the completed experiment and pending scoring honestly; do not substitute automatic scores.</p>
 
 <h2>4. Limitations and recorded conditions</h2>
 <ul>
-  <li>One market, one product, one model; three rounds, so intervals will be wide.</li>
-  <li>The block's plan text was told the label kinds (promotional and stock text in a size menu); the other arms were not. Part of the gain on the label questions measures that sentence.</li>
+  <li>One market in this experiment, one product, one model; three rounds, so intervals will be wide. The market is selected to contain gating and useful bounds, so the result does not estimate how often such failures occur in general shopping.</li>
+  <li>The false promotional and scarcity labels are a deliberately misleading-data stress test. The motivating example needs no adversary, but this experiment does not isolate benign omission. No prompt-injection defence was evaluated.</li>
+  <li>The block's plan text was told the label kinds (promotional and stock text in a size menu); the other arms were not. Any measured gain on the label questions would partly reflect that sentence.</li>
   <li>H3 compares the block's plan, briefing and page reading with an agent told only to open everything; it does not isolate the stop rule.</li>
   <li>The second reader is an LLM verifier, not an independent person.</li>
   <li>The shop's &ldquo;Related search terms&rdquo; block grew with each search, and the chain recorded it for every run. One search (&ldquo;Wexcombe Midweight Jersey Tee&rdquo;, 25 Oct 12:16) is in no agent log and was probably a human click. The last 22 batches ran after the 16-minute stop.</li>
-  <li>Two amendments were made during execution (the cap, the resume), both logged with their times; neither changes the design.</li>
+  <li>Two protocol amendments were recorded: the cap reduction after the pilot and before stage 1, then the resume during stage 1. Both are dated; neither changes the design.</li>
 </ul>
 
-<h2>5. Plan to the first draft on 6 November</h2>
+<h2>5. Literature, implementation and the path to 6 November</h2>
+<p>The report's eleven literature strands lead to a narrow gap: question-conditioned retrieval of hidden variant facts, with a stopping rule based on observed bounds, clarification and declines, evaluated against the shipped and exhaustive baselines. The implementation chapter shows the rendered page reader, rules/model parser, checks, plan primitives, agent and recorded evidence. The guarantee is conditional on a correct interpretation, valid bounds and the agent following the plan.</p>
+<div class="box todo"><b>Deadline to confirm:</b> the 21 October update says <b>abstract due 6 November</b>; the handover says <b>full report/first draft due 6 November</b>. Prepare both for 5 November and confirm the required deliverable, word/page limits and submission time in this meeting.</div>
 <ol>
-  <li>29 to 30 Oct: hand reading and second reader.</li>
-  <li>31 Oct to 1 Nov: the four tests, sensitivities, figures from <code>make facts</code>.</li>
-  <li>2 to 5 Nov: results section, discussion and limitations rewritten around the verdict of record.</li>
-  <li>6 Nov: full first draft. The report already carries the design, the literature review, the implementation and the pre-stated reading of each hypothesis; only the results of this run are missing.</li>
+  <li>27 Oct: finish the blind reading in manageable blocks, lock the sheet, then compute and explain the results and reader agreement. Rehearse the five-minute update.</li>
+  <li>28 Oct: confirm scope, assessment criteria, deadline and whether another market is worth the remaining budget.</li>
+  <li>29 to 30 Oct: if agreed and ready, one frozen-code replication on a fresh market, with its own protocol, cost cap and reading. Otherwise finish the current results.</li>
+  <li>31 Oct to 1 Nov: fill Results, Discussion, Abstract and Conclusion from the hand-scored claim outputs. <code>make facts</code> covers earlier clothing cells; the claim manifest analysis and agreement script are separate.</li>
+  <li>2 to 4 Nov: check citations against primary sources, audit every number and qualify claims. Seek the supervisor's final feedback.</li>
+  <li>5 Nov: compile, inspect and export the final required files; keep 6 November for submission.</li>
 </ol>
+<h3>WebArena-Verified proposal</h3>
+<p>Prepare an issue offering reproducible configurable products, per-variant price and stock, task keys and live checks. Current wording: <b>proposal prepared</b>. Change this to <b>issue submitted</b> only once an issue URL exists. A merged upstream contribution is not claimed.</p>
 
 <h2>6. Decisions for you</h2>
 <h3>A. Spend the remaining credit on a second market or a second model, or state it as a limitation?</h3>
-<p>About $74 remains on the key by arithmetic (to be confirmed on the account); one more market on this model would cost about $22.</p>
+<p>The last reported balance is $74.75 (27 October; account check needed before spending). The prepared candidate uses the same frozen block, DeepSeek, three arms and two rounds. The development-pilot estimator gives $16.53 before probes and reruns, but its steeper scaling scenario gives $30.80; a $20 budget cannot guarantee completion. Retain at least $20 in reserve. This is a draft, not a running experiment. The existing shop has been restarted and its cards and result order checked; fresh-market selection, full live checks and the execution guard still need verification.</p>
 <ul>
   <li><b>Pro (run more):</b> tests that the result is not one draw; a second model would cover the model axis of the original design.</li>
-  <li><b>Con:</b> a new market needs a new frozen protocol, a verifier stamp and another hand reading, which does not fit before 6 November; a rushed run would weaken the care of the first. A stated limitation costs nothing and is honest.</li>
-  <li><b>Lean:</b> state it as a limitation for the first draft; revisit before the final report if time allows.</li>
+  <li><b>Con:</b> it needs a frozen replication protocol, a fresh market, live checks, a verifier stamp, a safe spending guard and another hand reading. It must not displace finishing the current results and report.</li>
+  <li><b>Decision:</b> prepare the replication, then choose after the current hand reading and this meeting. A second draw tests another draw from the same constrained generator; it does not establish general marketplace validity.</li>
 </ul>
 <h3>B. May the second reader be an LLM verifier, or must it be a person?</h3>
 <ul>
