@@ -12,5 +12,9 @@ or activate the plugin; `IGR_ESTIMATE_USD` alone does not enforce an approval ga
 includes those tests; `make check` runs the Python suite and planner regression only.
 
 The hook intercepts Claude's `Bash` tool, not Codex or arbitrary shell execution. Before
-paid runs, follow [WORKFLOW.md](../../WORKFLOW.md) and independently verify the exact launch
+paid runs, follow [the user guide](../../docs/user-guide.md#paid-runs-and-verification) and independently verify the exact launch
 command, spending checks and execution context. No paid command is part of the default checks.
+
+Personal `OBJECTIVE.md` and `PARKED.md` files are also local-only. A fresh clone has no
+project-specific objective/drift context until those optional files are supplied. Plugin tests
+use mock files and do not require the original research notebook.

@@ -58,3 +58,20 @@ CLAUDE.md.bak-*
 .pytest_cache/
 .ruff_cache/
 .vscode/
+
+# Public documentation is deliberately small. Keep the research notebook on this machine.
+/AGENTS.md
+/OBJECTIVE.md
+/LESSONS.md
+/PARKED.md
+/WORKFLOW.md
+/Makefile.local
+/notes/
+/docs/*
+!/docs/index.html
+!/docs/user-guide.md
+!/docs/content/
+/docs/content/*
+!/docs/content/claim-protocol.md
+!/docs/content/claim2-protocol.md
+!/docs/content/claim2-reading-rules.md

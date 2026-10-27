@@ -41,7 +41,7 @@ python3 experiments/runners/suite.py --tasks experiments/tasks/tasks_apparel.jso
 
 A paid run is typed in full. The legacy Claude plugin can check that command line when
 configured locally; it does not protect Codex or arbitrary shell execution. See
-[`WORKFLOW.md`](../WORKFLOW.md) before any paid invocation:
+[the user guide](../docs/user-guide.md#paid-runs-and-verification) before any paid invocation:
 
 ```bash
 IGR_ESTIMATE_USD=<dollars> caffeinate -i python3 experiments/runners/suite.py \

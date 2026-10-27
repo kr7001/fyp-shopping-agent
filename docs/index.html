@@ -20,7 +20,7 @@ question-aware retrieval block for openJiuwen on a self-hosted WebArena-Verified
 <a class="card" href="https://github.com/kr7001/fyp-shopping-agent/blob/main/README.md"><b>Project and quick start</b><span>Purpose, implementation, free checks and repository map.</span></a>
 <a class="card" href="https://github.com/kr7001/fyp-shopping-agent/blob/main/docs/content/claim2-protocol.md"><b>Experimental design</b><span>Frozen hypotheses, conditions, exclusions and limitations.</span></a>
 <a class="card" href="https://github.com/kr7001/fyp-shopping-agent/blob/main/experiments/README.md"><b>Implementation</b><span>Question parsing, retrieval plans, browser execution and analysis.</span></a>
-<a class="card" href="https://github.com/kr7001/fyp-shopping-agent/blob/main/docs/guides/environment-setup.md"><b>Reproduce the environment</b><span>Local Magento setup, generated variants and the pinned agent.</span></a>
+<a class="card" href="https://github.com/kr7001/fyp-shopping-agent/blob/main/docs/user-guide.md"><b>Reproduce the environment</b><span>Local Magento setup, generated variants and the pinned agent.</span></a>
 </div>
 <h2>The method</h2>
 <p>The block reads the question and result pages, chooses whether to clarify, decline or plan,
@@ -36,13 +36,20 @@ blind human scoring is in progress. Final accuracy conclusions remain pending.</
 <p>The second experiment includes deliberately misleading labels and selects markets with useful
 bounds. Only the block receives a warning about those labels. Results therefore concern a constrained
 stress test and the whole intervention; prompt-injection defences were not evaluated.</p>
+<h2>Implementation boundaries</h2>
+<ul>
+<li><code>experiments/box/</code> reads observations, interprets the question and composes a retrieval plan.</li>
+<li><code>experiments/runners/</code> executes browser tasks and records model usage, actions and completion.</li>
+<li><code>experiments/analysis/</code> scores and compares recorded runs separately from the agent.</li>
+<li><code>env/</code> generates fixtures, seeds Magento and checks the rendered shop against known facts.</li>
+</ul>
+<p>The retrieval block uses the question and observable pages. Evaluation keys belong to the
+experiment and analysis layer, not the agent's evidence.</p>
 <h2>Documentation and provenance</h2>
 <ul>
 <li><a href="https://github.com/kr7001/fyp-shopping-agent/blob/main/docs/content/claim-protocol.md">First claim protocol</a> and <a href="https://github.com/kr7001/fyp-shopping-agent/blob/main/docs/content/claim2-reading-rules.md">blind scoring rules</a></li>
-<li><a href="https://github.com/kr7001/fyp-shopping-agent/blob/main/notes/README.md">Research notes</a> and <a href="https://github.com/kr7001/fyp-shopping-agent/blob/main/docs/archive/README.md">historical checkpoints and decision log</a></li>
-<li><a href="update-28-oct.html">28 October supervisor update</a> — active meeting material</li>
 <li><a href="https://github.com/ServiceNow/webarena-verified/issues/60">WebArena-Verified proposal #60</a> — issue submitted; no upstream PR merged</li>
 </ul>
 <footer class="muted">Registered title: <i>Ambiguity Without Adversary, Why Injection Defences Miss a Common Agent Failure in Commerce.</i>
-The private submission report is maintained separately from this repository.</footer>
+The final report will be added when complete. Working drafts and meeting notes remain local.</footer>
 </main></body></html>

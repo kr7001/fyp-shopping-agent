@@ -11,8 +11,8 @@ This project investigates that gap between the first observation and the informa
 shopping question actually needs. It extends the openJiuwen browser agent with a retrieval
 block and evaluates it on a self-hosted WebArena-Verified shop with reproducible variant prices.
 
-[Project overview](docs/index.html) · [Implementation guide](experiments/README.md) ·
-[Experimental protocols](docs/content/claim2-protocol.md) · [Research record](docs/archive/README.md)
+[Technical overview](docs/index.html) · [User guide](docs/user-guide.md) ·
+[Experimental protocol](docs/content/claim2-protocol.md)
 
 ## Quick start: free checks
 
@@ -26,10 +26,10 @@ python3 -m venv .venv
 make check-offline PY=.venv/bin/python
 ```
 
-For browser experiments, follow the [environment setup](docs/guides/environment-setup.md)
+For browser experiments, follow the [environment setup](docs/user-guide.md)
 and [pinned agent setup](agent/README.md). They additionally require Docker, Node.js/npm,
 `uv`, Playwright and the local agent patch. The storefront runs at `http://localhost:7770`.
-The private report PDF is not distributed in this repository.
+The final report PDF will be added when complete; the unfinished draft remains local.
 
 ## Research question
 
@@ -67,8 +67,7 @@ reproduction; ambiguous questions are scored under the reading actually used.
   scores and a separate reader-agreement analysis alongside it.
 
 **Status, 27 October 2026:** the second claim run has finished execution; its human scoring
-is still in progress. Its accuracy conclusions are not yet final. Historical checkpoint
-figures are retained with their original context in the archive.
+is still in progress. Its accuracy conclusions are not yet final.
 
 The second experiment is a constrained stress test: it combines hidden variant prices with
 deliberately false promotional/stock labels, and only the block receives a label warning.
@@ -87,10 +86,9 @@ experiments/tasks/      Versioned task definitions and answer keys
 experiments/tests/      Unit, synthetic and historical regression checks
 experiments/results/   Recorded experiment artifacts used for reproduction
 env/                   Magento fixtures, generators, seeding and live checks
-docs/content/          Protocols and research specifications
-docs/guides/           Setup and contribution guides
-docs/archive/          Dated checkpoints and the research decision log
-notes/                 Supporting research notes and current review materials
+docs/index.html        Technical overview
+docs/user-guide.md     Setup, execution and reproduction guide
+docs/content/          Frozen protocols and scoring rules
 tools/                 Blind-review helper and experiment tooling
 ```
 
@@ -111,13 +109,12 @@ frozen experiment code are retained so this cleanup does not break their provena
 
 Paid runs use OpenRouter and require a declared estimate, budget stop, verified command and
 explicit approval. The optional Claude workbench hook is specific to Claude; it does not
-protect other clients automatically. See [WORKFLOW.md](WORKFLOW.md).
+protect other clients automatically. See the [user guide](docs/user-guide.md#paid-runs-and-verification).
 
 ## Research provenance and acknowledgements
 
-The [decision log](docs/archive/research-log.md), [lessons](LESSONS.md),
-[market ledger](docs/content/market-ledger.md) and [research notes](notes/README.md) explain the
-choices and corrections behind the work. They are supporting evidence, separate from this overview.
+The frozen protocols, task definitions and recorded experiment artifacts support the research
+claims. Personal planning notes, meeting updates and intermediate drafts are kept locally.
 
 The student directs the research and is responsible for the submitted work. Claude Code assisted
 with much of the implementation, experiments and documentation. Codex assisted with review,

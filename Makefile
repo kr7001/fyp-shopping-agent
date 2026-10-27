@@ -8,7 +8,7 @@ PY ?= python3
 BATCH ?= experiments/results/20261007T112057
 TASKS ?= tasks_apparel.json
 
-.PHONY: help check check-all check-offline test regression mod facts compare verify dry site site-check
+.PHONY: help check check-all check-offline test regression mod facts compare verify dry
 
 help:
 	@echo "make check        unit tests and planner regression (no Claude dependency)"
@@ -21,8 +21,6 @@ help:
 	@echo "make compare      the cell comparisons, with both readings of 'offer'"
 	@echo "make verify BATCH=experiments/results/<stamp>   re-derive one batch, every answer in full"
 	@echo "make dry TASKS=tasks_apparel.json                the exact text each task would send, sending nothing"
-	@echo "make site         rebuild docs/site-data.js from the run files"
-	@echo "make site-check   fail if docs/site-data.js is stale"
 
 check: test regression
 
@@ -54,8 +52,5 @@ verify:
 dry:
 	$(PY) experiments/runners/suite.py --tasks experiments/tasks/$(TASKS) --repeats 3 --dry-run
 
-site:
-	$(PY) docs/build_site.py
-
-site-check:
-	$(PY) docs/build_site.py --check
+# Optional commands for private working material; absent in a clean clone.
+-include Makefile.local
