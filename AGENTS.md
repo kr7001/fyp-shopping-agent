@@ -25,7 +25,11 @@ in Codex without claiming that Claude-specific hooks protect Codex tools.
   a label warning. Its generator selects useful lower bounds and difficult cases. State
   those limits; no prompt-injection defence was evaluated.
 - A drafted proposal, posted issue, submitted PR and merged contribution are different
-  statuses. Use the verified current status.
+  statuses. Use the verified current status. On 27 October 2026 at 22:36 Singapore time,
+  the user's approved proposal was posted and verified as
+  [WebArena-Verified issue #60](https://github.com/ServiceNow/webarena-verified/issues/60).
+  It is an open proposal issue,
+  not a submitted PR or merged contribution.
 
 ## Spending and environment
 
@@ -49,8 +53,9 @@ in Codex without claiming that Claude-specific hooks protect Codex tools.
   unblinds only a completed sheet. Do not regenerate the sheet's random codes.
 - Replication: `notes/replication-prep/protocol-draft-27-oct.md` and its draft JSON. These
   are preparation artifacts, not a frozen or launch-ready experiment.
-- Audit: `notes/codex-experiment-audit-27-oct.md`. The 6 November deliverable needs confirmation:
-  historical notes conflict between abstract and full report.
+- Audit: `notes/codex-experiment-audit-27-oct.md`. The user confirmed on 27 October that
+  **6 November is the first report/full-draft deadline**, not an abstract-only deadline.
+  Prepare the full draft by 5 November; confirm the submission time, format and limits.
 
 ## Verification and file hygiene
 

@@ -1,6 +1,6 @@
 # Your next steps before the 28 October meeting
 
-Prepared 27 October 2026. Stage-1 results remain blinded. No new paid run or public issue was started by this preparation.
+Prepared 27 October 2026. Stage-1 results remain blinded. No new paid run was started. With your explicit approval, the prepared WebArena proposal was posted as [issue #60](https://github.com/ServiceNow/webarena-verified/issues/60) at 22:36 Singapore time; it is not a PR or merged contribution.
 
 ## What you are checking
 
@@ -72,10 +72,10 @@ The 184 review rows are not the whole experimental denominator. Keyless decline 
 1. **Rest first if needed.** A rested review is more valuable than another overnight run whose results cannot be read in time.
 2. **Finish your review**, download it, then let me calculate the results. If you cannot finish tonight, keep results explicitly pending for the meeting; do not substitute automatic scores for the planned human verdict of record.
 3. **Read and rehearse [the meeting brief](meeting-28-oct-brief.md)** for 20–30 minutes. Focus on the literature gap, the block's input → decision → plan pipeline, and what changed since 21 October. Use [the updated meeting page](../docs/update-28-oct.html).
-4. **Review [the WebArena issue draft](webarena-variant-proposal-27-oct.md).** It is ready for a posting decision. Until an issue URL exists, say “proposal drafted,” not “proposed to the maintainers,” “submitted,” or “contributed.”
+4. **Read [the submitted WebArena proposal, issue #60](https://github.com/ServiceNow/webarena-verified/issues/60).** The exact approved draft was posted and verified on 27 October. Tomorrow, say “I submitted a proposal issue to WebArena-Verified and am awaiting maintainer feedback.” No PR has been submitted or merged.
 5. **Bring [the replication plan](replication-prep/protocol-draft-27-oct.md)** to the supervisor. It is a draft for a second market, not an overnight run already in progress. Its estimated $16.53 cost is uncertain, and a $20 stop budget may not complete it.
 
-The 6 November deadline is inconsistent in the old notes: the 21 October update says abstract; the handover says report. Prepare both by 5 November unless the actual assessment instructions confirm otherwise. Ask about the exact deliverable, time and submission channel tomorrow. Do not let an upstream PR or a new experiment delay the required submission.
+**Confirmed on 27 October: the first report/full draft is due on 6 November, not just the abstract.** Have the complete draft, including its abstract, ready by 5 November and submit on 6 November. Confirm the submission time, channel, format and page/word limits tomorrow. Do not let an upstream PR or a new experiment delay the report.
 
 ## What is ready, and what is deliberately still pending
 

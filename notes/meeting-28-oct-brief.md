@@ -27,7 +27,7 @@ The project in two sentences: “A shopping agent can answer from the price it f
 | 24 Oct, 17:56 | Froze the protocol at code commit `55665b4`; then drew Wexcombe as the first accepted seed from 1000. | The tested market was not used to tune the block. The protocol's FINAL commit is `a0360f0`, followed by market commit `f323e24`. |
 | 24–25 Oct | Development pilot passed; Wexcombe stage 1 ran, paused on a failed balance read, resumed, and completed. Technical failures were rerun once under the protocol. | Operational facts are recorded in the README and protocol amendments. They are not accuracy results. See execution ledger below. |
 | 25 Oct | Added the agreement script with synthetic tests. Expanded the local report's literature, architecture, algorithm and research-infrastructure descriptions. | Commit `58b9423`; local report dated 25 Oct. The report remains unfinished until blind scoring. |
-| 27 Oct | Codex reviewed the history, methodology and report; prepared the review workflow, replication audit and WebArena proposal; corrected claim wording. | No new experiment outcome is asserted. The review notes and source/PDF backups preserve what changed. |
+| 27 Oct | Codex reviewed the history, methodology and report; prepared the review workflow and replication audit; corrected claim wording. At 22:36 Singapore time, the approved WebArena proposal was submitted as issue #60. | [Verified public proposal](https://github.com/ServiceNow/webarena-verified/issues/60); no PR or merge. No new experiment outcome is asserted. The review notes and source/PDF backups preserve what changed. |
 
 Recorded execution ledger from the README and frozen protocol: pilot 12 runs, $0.93; the stage-1 design schedules 227 slots across 87 invocations, while the execution record reports 198 browser-run records and four technical voids each rerun once; three rounds; DeepSeek V4 Flash; account cost $22.27. Do not equate run records, unique scored answers and independent question templates. The hand sheet has a different denominator by design. These operational figures have not been used to infer or expose the stage-1 outcomes during this preparation.
 
@@ -59,18 +59,18 @@ If complete, insert only verified results in this order: H1 correctness versus s
 
 **4:20–5:00 — limitations and decision.**
 
-“The main limits are one constrained market in this experiment, one browser model, three rounds, and a label warning supplied only to the block. The cost comparison includes the briefing and page reading, so it is not an isolated stop-rule effect. I have [prepared a proposal / submitted issue URL] for WebArena-Verified; no upstream change is merged. I would like your advice on whether a fresh-market replication is worth doing before submission, or whether to focus on completing the current evidence and report.”
+“The main limits are one constrained market in this experiment, one browser model, three rounds, and a label warning supplied only to the block. The cost comparison includes the briefing and page reading, so it is not an isolated stop-rule effect. I submitted proposal issue #60 to WebArena-Verified, offering the configurable-product extension and asking whether the maintainers want a pull request. No PR has been submitted or merged. I would like your advice on whether a fresh-market replication is worth doing before submission, or whether to focus on completing the current evidence and report.”
 
 ## Questions to ask the professor
 
-1. **What exactly is due on 6 November?** The 21 Oct page says abstract; the handover says report/first draft. Confirm the submission time, page/word limit and required format. Until confirmed, prepare both by 5 Nov.
+1. **What are the submission requirements for the first report?** The student confirmed on 27 Oct that the full first report/draft is due on 6 November. Plan to finish it by 5 Nov. Confirm the submission time, channel, page/word limit and required format.
 2. **Which assessment criteria matter most?** Is the literature positioning argument and implementation depth appropriate for this applied project? Which section should be cut if it is too long?
-3. **Should the remaining budget fund one replication?** Candidate: same frozen block, a fresh accepted market draw, DeepSeek, shipped/model-block/open-everything, two rounds. The prepared 68-slot / 46-invocation draft estimates $16.53 before probes and reruns, but its steeper scaling scenario estimates $30.80. A $20 budget cannot guarantee completion. Readiness checks, working Docker and a safe execution guard are still required; retain at least $20. No new result is necessary for tomorrow.
+3. **Should the remaining budget fund one replication?** Candidate: same frozen block, a fresh accepted market draw, DeepSeek, shipped/model-block/open-everything, two rounds. The prepared 68-slot / 46-invocation draft estimates $16.53 before probes and reruns, but its steeper scaling scenario estimates $30.80. A $20 budget cannot guarantee completion. Docker and the existing shop have been restored; the fresh-market preflight, exact-command verification and safe execution guard are still required. Retain at least $20. No new result is necessary for tomorrow.
 4. **Is the current second reader acceptable?** It is an AI reader involved in verification, not an independent human. Agreement measures scoring consistency, not truth. Would one classmate reading the same 40 coded rows be preferable?
 5. **Is the scope clear enough?** Post-search variant prices and availability; no shipping, combined discounts, purchase or live-site automation. RQ1 gives a benchmark audit and qualitative examples, not live-market prevalence.
 6. **What is the presentation format?** Confirm duration, Q&A, audience and whether a live demo is required. Thirty minutes plus thirty minutes is an assumption, not a confirmed instruction.
-7. **Can he review one more draft before 6 November?** Confirm when to send it and whether abstract or full report feedback is the priority.
-8. **How should AI assistance and upstream work be described?** Keep the assistance declaration explicit. A prepared proposal is not a submitted issue; an issue is not a merged contribution.
+7. **Can he review one more full draft before 6 November?** Confirm when to send it and which sections most need his feedback.
+8. **How should AI assistance and upstream work be described?** Keep the assistance declaration explicit. [WebArena-Verified issue #60](https://github.com/ServiceNow/webarena-verified/issues/60) is submitted; it is a proposal awaiting feedback, not a PR or merged contribution.
 
 ## Likely questions and short answers
 
@@ -87,19 +87,19 @@ If complete, insert only verified results in this order: H1 correctness versus s
 | Is the cost saving all the stop rule? | No. Design B measures the whole package, including enumeration and briefing. Only the earlier exploratory ablation tried to isolate the stop. |
 | How do you prevent scoring bias? | Written rules, coded answers without arm identities, a locked hand review before unblinding, comparison against the automatic scorer, and a separately reported second reader. The author still knows the design. |
 | What if a hypothesis is not significant? | Report the estimate and interval. Three rounds provide limited precision; a null test does not prove equal performance. Do not change questions or scoring after seeing it. |
-| Have you contributed to WebArena? | State the current status precisely: proposal prepared, issue submitted with URL, PR submitted, or merged. Only the last supports “merged upstream contribution.” |
+| Have you contributed to WebArena? | I submitted [proposal issue #60](https://github.com/ServiceNow/webarena-verified/issues/60) on 27 Oct, offering the environment extension and asking whether maintainers want a PR. No PR has been submitted or merged. |
 
 ## Work plan to submission
 
 | Date | Deliverable | Cut line |
 | --- | --- | --- |
-| Tue 27 Oct | Blind hand review, scored outputs if complete, rehearsal, proposal ready | Do not reveal results early to make the meeting page look complete. |
-| Wed 28 Oct | Supervisor decisions on scope, assessment, deadline, reader and replication | Confirm the exact 6 Nov deliverable before adding work. |
+| Tue 27 Oct | Blind hand review, scored outputs if complete, rehearsal; proposal issue #60 submitted | Do not reveal results early to make the meeting page look complete. |
+| Wed 28 Oct | Supervisor decisions on scope, assessment, reader and replication; confirm submission requirements | The full first report is due 6 Nov; protect time to finish it by 5 Nov. |
 | Thu 29–Fri 30 Oct | Optional replication only after frozen plan, independent verification and explicit budget approval; otherwise current results | If not safely ready, omit it from this draft and state the limitation. Do not promise overnight completion. |
 | Sat 31 Oct–Sun 1 Nov | Results, Discussion, Abstract, Conclusion and figures | No new features or new hypotheses. |
 | Mon 2–Wed 4 Nov | Number/citation audit, shorten literature, supervisor feedback, slide outline | Verify each claimed source supports its sentence; metadata checks alone are insufficient. |
-| Thu 5 Nov | Final build, visual inspection, submission files and backup | Remove every unresolved TODO or explicitly omit unfinished analyses with honest status. |
-| Fri 6 Nov | Submit the confirmed deliverables by the confirmed time | Leave this day as buffer. |
+| Thu 5 Nov | Complete full first report/draft, final build, visual inspection, submission files and backup | Remove every unresolved TODO or explicitly omit unfinished analyses with honest status. |
+| Fri 6 Nov | Submit the first report/full draft by the required time | Deadline confirmed by the student on 27 Oct; keep the day as submission buffer. |
 
 ## Report review record
 

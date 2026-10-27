@@ -1,6 +1,6 @@
 # WebArena proposal: submission notes, 27 October 2026
 
-Status: **draft prepared; no issue or PR submitted by this review**. The issue body is `notes/webarena-variant-proposal-27-oct.md`. Do not publish this audit file as the issue body.
+Status: **issue submitted and verified**: [WebArena-Verified #60](https://github.com/ServiceNow/webarena-verified/issues/60), posted by `kr7001` on 27 October 2026 at 22:36 Singapore time after the student's explicit approval. No PR has been submitted or merged by this review. The exact submitted body remains in `notes/webarena-variant-proposal-27-oct.md`; this audit file was not published.
 
 Title: **Proposal: optional shopping tasks with interaction-gated variant prices and availability**
 
@@ -8,7 +8,7 @@ Destination: [ServiceNow/webarena-verified](https://github.com/ServiceNow/webare
 
 ## Corrections to the handover and old proposal
 
-The handover says no submission plan was recorded. A substantial plan already exists in `docs/guides/webarena-contribution.md`, first committed on 21 October (`416cf74`, with a later history-link update at `28beb4f`). A plan is not a submitted contribution. No proposal matching the extension was found in the current upstream issue/PR title-and-body search.
+The handover says no submission plan was recorded. A substantial plan already exists in `docs/guides/webarena-contribution.md`, first committed on 21 October (`416cf74`, with a later history-link update at `28beb4f`). A plan is not a submitted contribution. No proposal matching the extension was found in the upstream issue/PR title-and-body search before posting issue #60.
 
 The old issue draft claims a ready Apache-2.0 extension, example tasks in upstream's format, and a universal catalogue limitation. Those claims are premature. This draft describes the prototype, limits the measurement to the audited instance, and treats task conversion, evaluator integration, clean-container reproduction and licence packaging as work remaining. It does not make claims about maintainer inactivity or promise a response/merge date.
 
@@ -25,7 +25,7 @@ The user-agent theme selection does not isolate all environment changes: new cat
 
 ## Submission and meeting wording
 
-After the final draft is approved for posting, an authenticated GitHub CLI can submit exactly the prepared body:
+The student explicitly approved posting the prepared body on 27 October. The following command was executed once successfully; do not rerun it to create a duplicate:
 
 ```bash
 gh issue create --repo ServiceNow/webarena-verified \
@@ -33,13 +33,11 @@ gh issue create --repo ServiceNow/webarena-verified \
   --body-file notes/webarena-variant-proposal-27-oct.md
 ```
 
-Record the returned URL and verify the created title/body before changing any status. This command has not been run here.
+The returned URL was `https://github.com/ServiceNow/webarena-verified/issues/60`. A subsequent `gh issue view 60 --repo ServiceNow/webarena-verified --json number,title,body,url,author,state,createdAt` verified the exact title, author `kr7001`, state `OPEN` and creation timestamp `2026-10-27T14:36:38Z`. Python verified that the returned body equals the approved file byte for byte as UTF-8 text; its SHA256 is `c51229c7abcffb4a5f5d514e58f2f773d918357171249acdf025093430d35af4`.
 
-Until submission: “I have built an environment extension and prepared a proposal to WebArena-Verified.”
+Meeting wording: “I proposed the extension to the WebArena-Verified maintainers in issue #60. This is a submitted proposal; no upstream PR has been merged.”
 
-After a verified issue submission: “I proposed the extension to the WebArena-Verified maintainers in issue #N; it has not been accepted or merged.”
-
-A later submitted PR is “under review.” Use “merged upstream” only after verifying a merge. The report deadline must not depend on a maintainer reply.
+A later submitted PR is “under review.” Use “merged upstream” only after verifying a merge. The student confirmed on 27 October that the **first report/full draft is due 6 November**; the report deadline must not depend on a maintainer reply.
 
 ## Before a first PR
 
