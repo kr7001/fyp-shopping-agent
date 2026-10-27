@@ -8,10 +8,12 @@ PY ?= python3
 BATCH ?= experiments/results/20261007T112057
 TASKS ?= tasks_apparel.json
 
-.PHONY: help check test regression mod facts compare verify dry site site-check
+.PHONY: help check check-all check-offline test regression mod facts compare verify dry site site-check
 
 help:
-	@echo "make check        everything below that checks code: test, regression, mod"
+	@echo "make check        unit tests and planner regression (no Claude dependency)"
+	@echo "make check-all    make check plus the optional legacy Claude plugin tests"
+	@echo "make check-offline synthetic protocol/review checks; no private logs or model calls"
 	@echo "make test         unit tests, about a minute. The figure tests need the local logs"
 	@echo "make regression   the planner renders every question the same as targeting.py"
 	@echo "make mod          the workbench mod's own tests (needs the claude CLI)"
@@ -22,7 +24,14 @@ help:
 	@echo "make site         rebuild docs/site-data.js from the run files"
 	@echo "make site-check   fail if docs/site-data.js is stale"
 
-check: test regression mod
+check: test regression
+
+check-all: check mod
+
+check-offline:
+	$(PY) -m unittest discover -s experiments/tests -p test_hand_review_tools.py
+	$(PY) -m unittest discover -s experiments/tests -p test_reader_agreement.py
+	$(PY) -m unittest discover -s experiments/tests -p test_claim2_analysis.py
 
 test:
 	$(PY) -m unittest discover -s experiments/tests -t experiments/tests

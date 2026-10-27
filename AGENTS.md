@@ -46,6 +46,12 @@ in Codex without claiming that Claude-specific hooks protect Codex tools.
 
 ## Current entry points
 
+- Public overview: `README.md` and `docs/index.html`. The former progress README is preserved
+  in `docs/archive/research-log.md`; the dashboard's ledger source is
+  `docs/content/market-ledger.md`. Do not put the running decision log back into the README.
+- Older supervisor pages are in `docs/archive/checkpoints/`. Keep the active 28 October page
+  and the user's review HTML/CSV paths unchanged while the review is in progress.
+
 - Student workflow: `notes/start-here-27-oct.md`.
 - Meeting: `notes/meeting-28-oct-brief.md`, `docs/update-28-oct.html`.
 - Review tooling: `tools/hand_review.py`; generated local reader in
@@ -61,8 +67,9 @@ in Codex without claiming that Claude-specific hooks protect Codex tools.
 
 - Preserve existing user changes and the modified `agent/agent-core` submodule. Stage files
   by explicit name; never broadly add the submodule, private report or raw results.
-- `make check` is the historical full suite; some tests read historical result files and
-  `make mod` depends on Claude. During blinding, inspect test inputs and prefer the relevant
+- `make check` runs Python tests and the planner; some tests read historical result files.
+  `make check-all` also runs the optional Claude plugin tests. During blinding, use
+  `make check-offline` or inspect test inputs and prefer the relevant
   synthetic suites. Do not use a broad analysis/site rebuild to expose pending outcomes.
 - `make facts` covers original clothing cells, not every report figure. Claim outputs and
   reader agreement have their own commands documented in the student guide.

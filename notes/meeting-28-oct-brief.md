@@ -16,7 +16,7 @@ The project in two sentences: “A shopping agent can answer from the price it f
 
 | Date | What happened | Why it matters / evidence |
 | --- | --- | --- |
-| 21 Oct | The earlier meeting page presented the Ashcombe claim run, exploratory parser results, and a plan for a larger mixed-product market. | This is the baseline for tomorrow's update, not a new result. `docs/update-21-oct.html` and the first claim protocol. |
+| 21 Oct | The earlier meeting page presented the Ashcombe claim run, exploratory parser results, and a plan for a larger mixed-product market. | This is the baseline for tomorrow's update, not a new result. `docs/archive/checkpoints/update-21-oct.html` and the first claim protocol. |
 | 21 Oct | Git commit messages were rewritten to remove co-author trailers; attribution moved to the README. Commit mappings were retained. | Be transparent about provenance. The recorded protocol text and old result records were preserved; this is not an external preregistration registry. README's 21 Oct entry. |
 | 22 Oct | Integrated the model parser with normalisation, validation and fallback to rules; added rendered reading of every search-results page. | The old parser could recognise too few wordings; the larger environment requires seeing beyond one page. Commits `e9e644d`, `9d7587b`, `5d5e27c`. |
 | 22 Oct | Built Larchmere, a development market with tees and water over two pages; drafted the second protocol before the claim market existed. | Development and held-out evidence are separated. Commits `e0959ff`, `7a6091d`, `d357c72`. |

@@ -1,5 +1,12 @@
 # How the work is done
 
+The Claude-specific modules below describe the historical research workflow. Local `.claude/`
+configuration is now untracked; the optional plugin is documented in
+[`tools/workbench/README.md`](tools/workbench/README.md). Its hook does not protect Codex or
+arbitrary shell commands. The verification, spending and research-integrity requirements still
+apply. The public overview is `README.md`; the dated record is
+[`docs/archive/research-log.md`](docs/archive/research-log.md).
+
 Five modules in Claude Code, one job each, set up on 8 October 2026 after weeks of work that
 drifted from the objective and spent credit without warning. Each module hands to the next,
 and nothing reaches a paid model, a document or the site without passing the one before it.
@@ -30,7 +37,9 @@ and nothing reaches a paid model, a document or the site without passing the one
 ## Commands every module uses
 
 ```bash
-make check                     # unit tests, planner regression, the mod's tests. Free
+make check                     # unit tests and planner regression. Free
+make check-offline             # synthetic checks without private logs or model calls
+make check-all                 # make check plus optional Claude plugin tests
 make facts                     # every clothing-cell figure on the results page, from the raw runs. Free
 make verify BATCH=experiments/results/<stamp>   # one batch re-derived, every answer printed
 make dry TASKS=tasks_apparel.json               # the exact text each task would send, sending nothing
@@ -46,23 +55,25 @@ IGR_ESTIMATE_USD=<dollars> caffeinate -i python3 experiments/runners/suite.py \
     --tasks experiments/tasks/<file>.json --repeats 3
 ```
 
-## Keeping the site current
+## Public overview and historical dashboard
 
-The site is `docs/index.html`. Its numbers, tables and code excerpts come from
-`docs/site-data.js`, which `docs/build_site.py` writes. Nobody types a computed figure into the
-page. The few historical figures it quotes from the decision log carry their date.
+The public overview is the static `docs/index.html`; keep it aligned with the project README.
+The historical interactive dashboard is `docs/archive/dashboard/index.html`. Its numbers,
+tables and code excerpts come from `docs/site-data.js`, which `docs/build_site.py` writes.
+`make site` rebuilds that dashboard's data, not the public overview. Nobody types a computed
+figure into the dashboard. The historical figures it quotes from the decision log carry their date.
 
 | To change | Edit | Then |
 | --- | --- | --- |
 | A result | the run files, through a verified batch. A new cell goes into `compare_cells.CELLS` (coder) | `make site` |
 | The weekly record, the plan, the open problems | `docs/content/weeks.md`, `plan.md`, `open-problems.md` (insights) | `make site` |
 | The objective, the lessons, parked ideas | `OBJECTIVE.md`, `LESSONS.md`, `PARKED.md` | `make site` |
-| The market ledger | its table in `README.md` | `make site` |
+| The market ledger | `docs/content/market-ledger.md` | `make site` |
 | A new kind of figure or table | `cell_facts.facts()` or `docs/build_site.py` (coder), then the page (insights) | `make site` |
 
 The verifier runs `make site-check` and checks any new claim against the command that
 reproduces it. The source and `docs/site-data.js` are committed together, with a dated
-entry in the README decision log.
+entry in `docs/archive/research-log.md`.
 
 ## Rules every module follows
 

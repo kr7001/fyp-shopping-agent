@@ -1,4 +1,6 @@
 .env
+.env.*
+!.env.example
 *.har
 __pycache__/
 .venv/
@@ -32,3 +34,27 @@ openjiuwen.pdf
 
 # openJiuwen writes its own logs to ./logs whenever it is imported, wherever that happens.
 /logs/
+
+# Local assistant state, linked worktrees and private submission files.
+# Keep worktrees on disk; remove them only through Git after inspecting their changes.
+/.claude/
+/.codex/
+/report/
+CLAUDE.history.md
+CLAUDE.md.bak-*
+
+# Locally generated review artifacts. These are deliberately separate from raw runs.
+/experiments/results/*.sheet.csv
+/experiments/results/*.sheet.*.json
+/experiments/results/*.second-reader.verdicts.csv
+/experiments/results/*.analysis.json
+/experiments/results/*.hand.txt
+/experiments/results/*.agreement.txt
+/experiments/results/*.csv.backup-*
+/notes/handover-chatgpt-27-oct.md
+
+# Browser tooling output and editor caches.
+/output/playwright/
+.pytest_cache/
+.ruff_cache/
+.vscode/

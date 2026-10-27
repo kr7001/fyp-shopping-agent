@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Build docs/site-data.js, everything on the project site that can change.
+"""Build docs/site-data.js for the historical docs/archive/dashboard/index.html.
+
+The public docs/index.html is a separate static project overview.
 
 Nothing on the site is typed by hand (LESSONS.md, 22). Figures come from the same functions
 the command line scripts print from. Tables come from the run, task and fixture files. The
@@ -305,8 +307,8 @@ def parked() -> list[dict]:
 
 
 def ledger() -> list[dict]:
-    """The market ledger table in README.md, the one record of what each market may test."""
-    text = (REPO / "README.md").read_text()
+    """Read the historical market ledger independently of the project overview."""
+    text = (CONTENT / "market-ledger.md").read_text()
     part = text.split("## Market ledger", 1)[1].split("\n## ", 1)[0].split("\n### ", 1)[0]
     rows = []
     for line in part.splitlines():
