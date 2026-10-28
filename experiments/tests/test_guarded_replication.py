@@ -233,6 +233,46 @@ class GuardTests(unittest.TestCase):
         self.assertIn("budget", self.status()["reason"])
         self.assertFalse((self.root / "bad").exists())
 
+    def test_account_corrections_preserve_usage_high_water_and_credit_low_water(self):
+        account = ('import pathlib,json;p=pathlib.Path("reads");n=int(p.read_text()) if p.exists() else 0;'
+                   'p.write_text(str(n+1));'
+                   'v=[(100,74),(101,73),(100.9,73.1),(101.2,72.8)][n];'
+                   'print(json.dumps({"usage":v[0],"remaining":v[1]}))')
+        guard = self.instance(account)
+        guard.start_usage = 100
+        for usage, remaining in [(100,74),(101,73),(101,73),(101.2,72.8)]:
+            guard.poll_account(required=True)
+            self.assertAlmostEqual(guard.usage, usage)
+            self.assertAlmostEqual(guard.remaining, remaining)
+            self.assertAlmostEqual(guard.spent(), usage - 100)
+        self.assertEqual(guard.usage_decrease_count, 1)
+        self.assertEqual(guard.observed_usage, 101.2)
+        self.assertEqual(guard.observed_remaining, 72.8)
+
+    def test_account_correction_cannot_restore_budget_or_credit_headroom(self):
+        account = ('import pathlib,json;p=pathlib.Path("reads");n=int(p.read_text()) if p.exists() else 0;'
+                   'p.write_text(str(n+1));v=[(119.1,20.9),(118,74)][n];'
+                   'print(json.dumps({"usage":v[0],"remaining":v[1]}))')
+        guard = self.instance(account)
+        guard.start_usage = 100
+        guard.poll_account(required=True)
+        guard.poll_account(required=True)
+        self.assertEqual(guard.observed_usage, 118)
+        self.assertEqual(guard.observed_remaining, 74)
+        self.assertEqual(guard.usage_decrease_count, 1)
+        with self.assertRaisesRegex(guarded.Stop, "budget"):
+            guard.budget_check()
+        # Isolate the credit check: the higher new balance must not restore headroom.
+        guard.start_usage = 119
+        with self.assertRaisesRegex(guarded.Stop, "account reserve"):
+            guard.budget_check()
+        guard.manifest_created = True
+        guard.status("stopped", "synthetic correction")
+        self.assertEqual(self.status()["last_usage"], 119.1)
+        self.assertEqual(self.status()["last_observed_usage"], 118)
+        self.assertEqual(self.status()["remaining_credit_low_water"], 20.9)
+        self.assertEqual(self.status()["usage_decrease_count"], 1)
+
     def test_existing_manifest_and_bad_receipt_refused(self):
         guard = self.instance()
         (self.root / "run.manifest").write_text("original")

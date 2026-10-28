@@ -146,6 +146,9 @@ class Guard:
         self.round_start_usage = None
         self.usage = None
         self.remaining = None
+        self.observed_usage = None
+        self.observed_remaining = None
+        self.usage_decrease_count = 0
         self.recorded = 0.0
         self.prior_recorded = 0.0
         self.prior_last_usage = None
@@ -214,6 +217,10 @@ class Guard:
                     "updated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
                     "deadline": self.config["deadline"], "config_sha256": self.config_hash,
                     "start_usage": self.start_usage, "last_usage": self.usage,
+                    "last_observed_usage": self.observed_usage,
+                    "last_observed_remaining": self.observed_remaining,
+                    "remaining_credit_low_water": self.remaining,
+                    "usage_decrease_count": self.usage_decrease_count,
                     "recorded_usd": self.recorded, "spent_usd": self.spent(),
                     "round": self.round, "round_start_usage": self.round_start_usage,
                     "round_spent_usd": self.round_spent(),
@@ -315,9 +322,13 @@ class Guard:
                     remaining = number(remaining)
                 except Exception:
                     raise Stop("account visibility lost") from None
-                if self.usage is not None and usage + 1e-6 < self.usage:
-                    raise Stop("account usage moved backwards")
-                self.usage, self.remaining = usage, remaining
+                if self.observed_usage is not None and usage + 1e-6 < self.observed_usage:
+                    self.usage_decrease_count += 1
+                self.observed_usage, self.observed_remaining = usage, remaining
+                # Provider snapshots can be corrected downward. Never let a correction
+                # restore budget or credit headroom under the verified account key.
+                self.usage = usage if self.usage is None else max(self.usage, usage)
+                self.remaining = remaining if self.remaining is None else min(self.remaining, remaining)
                 self.last_probe_time = time.monotonic()
                 self.next_probe = self.last_probe_time + self.poll_interval
                 return
