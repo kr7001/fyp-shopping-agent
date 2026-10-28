@@ -31,7 +31,7 @@ import urllib.error
 import urllib.request
 
 AUTHORIZED_DEADLINE = dt.datetime.fromisoformat("2026-10-28T08:00:00+08:00")
-ROUND2_DEADLINE = dt.datetime.fromisoformat("2026-10-28T21:00:00+08:00")
+ROUND2_DEADLINE = dt.datetime.fromisoformat("2026-10-29T03:00:00+08:00")
 
 
 class Stop(RuntimeError):

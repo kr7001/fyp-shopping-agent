@@ -88,8 +88,11 @@ class GuardTests(unittest.TestCase):
             self.instance()
         self.config.pop("round")
         self.prior_round()
-        self.instance()
-        self.config["deadline"] = "2026-10-28T21:00:01+08:00"
+        self.assertEqual(self.instance().deadline,
+                         dt.datetime.fromisoformat("2026-10-28T21:00:00+08:00"))
+        self.config["deadline"] = "2026-10-29T03:00:00+08:00"
+        self.assertEqual(self.instance().deadline, guarded.ROUND2_DEADLINE)
+        self.config["deadline"] = "2026-10-29T03:00:01+08:00"
         with self.assertRaises(guarded.Stop):
             self.instance()
 
@@ -109,6 +112,25 @@ class GuardTests(unittest.TestCase):
         guard = self.instance('print(\'{"usage":118.9,"remaining":60}\')')
         self.assertEqual(guard.run(), 2)
         self.assertAlmostEqual(self.status()["spent_usd"], 18.9)
+        self.assertFalse((self.root / "bad").exists())
+
+    def test_round_two_extra_reserve_covers_unrecorded_prior_charges_when_account_lags(self):
+        self.prior_round()
+        unrecorded_prior_charge = 2.190728057
+        self.config["reserve_usd"] = 3.20
+        code = ('import pathlib,json,time;p=pathlib.Path("results/batch");p.mkdir();'
+                '(p/"q-2.json").write_text(json.dumps({"cost_usd":13.3}));'
+                'time.sleep(4);open("bad","w").write("bad")')
+        self.config["steps"] = [self.step(code, kind="paid", estimate_usd=.2)]
+        guard = self.instance('print(\'{"usage":103.5,"remaining":70}\')')
+        self.assertEqual(guard.run(), 2)
+        result = self.status()
+        self.assertAlmostEqual(result["aggregate_recorded_usd"], 16.8)
+        self.assertAlmostEqual(result["spent_usd"], 16.8)
+        # The account is stale and the prior interrupted charge has no result row.
+        # The configured extra reserve still leaves the original $1 safety buffer.
+        self.assertLessEqual(result["spent_usd"] + unrecorded_prior_charge, 20 - 1)
+        self.assertIn("budget", result["reason"])
         self.assertFalse((self.root / "bad").exists())
 
     def test_round_two_status_separates_current_and_aggregate_charges(self):
