@@ -149,6 +149,7 @@ class Guard:
         self.observed_usage = None
         self.observed_remaining = None
         self.usage_decrease_count = 0
+        self.last_usage_decrease = None
         self.recorded = 0.0
         self.prior_recorded = 0.0
         self.prior_last_usage = None
@@ -221,6 +222,7 @@ class Guard:
                     "last_observed_remaining": self.observed_remaining,
                     "remaining_credit_low_water": self.remaining,
                     "usage_decrease_count": self.usage_decrease_count,
+                    "last_usage_decrease": self.last_usage_decrease,
                     "recorded_usd": self.recorded, "spent_usd": self.spent(),
                     "round": self.round, "round_start_usage": self.round_start_usage,
                     "round_spent_usd": self.round_spent(),
@@ -324,6 +326,7 @@ class Guard:
                     raise Stop("account visibility lost") from None
                 if self.observed_usage is not None and usage + 1e-6 < self.observed_usage:
                     self.usage_decrease_count += 1
+                    self.last_usage_decrease = {"from": self.observed_usage, "to": usage}
                 self.observed_usage, self.observed_remaining = usage, remaining
                 # Provider snapshots can be corrected downward. Never let a correction
                 # restore budget or credit headroom under the verified account key.

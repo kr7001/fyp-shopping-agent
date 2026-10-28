@@ -248,6 +248,10 @@ class GuardTests(unittest.TestCase):
         self.assertEqual(guard.usage_decrease_count, 1)
         self.assertEqual(guard.observed_usage, 101.2)
         self.assertEqual(guard.observed_remaining, 72.8)
+        self.assertEqual(guard.last_usage_decrease, {"from": 101, "to": 100.9})
+        guard.manifest_created = True
+        guard.status("running")
+        self.assertEqual(self.status()["last_usage_decrease"], {"from": 101, "to": 100.9})
 
     def test_account_correction_cannot_restore_budget_or_credit_headroom(self):
         account = ('import pathlib,json;p=pathlib.Path("reads");n=int(p.read_text()) if p.exists() else 0;'
