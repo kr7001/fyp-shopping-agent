@@ -47,6 +47,10 @@ class GuardTests(unittest.TestCase):
         self.write_config()
         command = [sys.executable, "-c", account or 'print(\'{"usage":100,"remaining":74}\')']
         guard = guarded.Guard(self.config_path, account_command=command)
+        # Synthetic process tests must remain valid after the real dated deadline.
+        # Dedicated authorization tests below still check the configured date limits.
+        guard.shutdown_epoch = time.time() + 120
+        guard.shutdown_monotonic = time.monotonic() + 120
         guard.launch_window = 0
         guard.poll_interval = .05
         guard.account_timeout = .25
@@ -59,6 +63,100 @@ class GuardTests(unittest.TestCase):
 
     def status(self):
         return json.loads((self.root / "status.json").read_text())
+
+    def prior_round(self, recorded=3.5, usage=103.5):
+        config = {**self.config, "status": "prior.status.json", "steps": [{"id": "done"}]}
+        config_path = self.root / "prior.config.json"
+        config_path.write_text(json.dumps(config))
+        status = {"status": "complete", "reason": None, "current_step": None,
+                  "config_sha256": guarded.sha(config_path), "start_usage": 100,
+                  "last_usage": usage, "recorded_usd": recorded,
+                  "spent_usd": max(usage - 100, recorded), "completed_steps": ["done"]}
+        status_path = self.root / "prior.status.json"
+        status_path.write_text(json.dumps(status))
+        self.config.update(round=2, deadline="2026-10-28T21:00:00+08:00", prior_round={
+            "status": str(status_path), "status_sha256": guarded.sha(status_path),
+            "config": str(config_path), "config_sha256": guarded.sha(config_path)})
+        return status_path
+
+    def test_round_two_deadline_needs_completed_prior_evidence(self):
+        self.config["deadline"] = "2026-10-28T21:00:00+08:00"
+        with self.assertRaises(guarded.Stop):
+            self.instance()
+        self.config["round"] = 2
+        with self.assertRaises(guarded.Stop):
+            self.instance()
+        self.config.pop("round")
+        self.prior_round()
+        self.instance()
+        self.config["deadline"] = "2026-10-28T21:00:01+08:00"
+        with self.assertRaises(guarded.Stop):
+            self.instance()
+
+    def test_round_two_carries_recorded_spend_when_account_lags(self):
+        self.prior_round(recorded=18.8, usage=103.5)
+        self.config["steps"] = [self.step('open("bad","w").write("bad")', kind="paid", estimate_usd=.2)]
+        guard = self.instance('print(\'{"usage":103.5,"remaining":70}\')')
+        self.assertEqual(guard.run(), 2)
+        self.assertEqual(self.status()["start_usage"], 100)
+        self.assertEqual(self.status()["prior_recorded_usd"], 18.8)
+        self.assertIn("budget", self.status()["reason"])
+        self.assertFalse((self.root / "bad").exists())
+
+    def test_round_two_counts_account_movement_between_rounds(self):
+        self.prior_round()
+        self.config["steps"] = [self.step('open("bad","w").write("bad")', kind="paid", estimate_usd=.1)]
+        guard = self.instance('print(\'{"usage":118.9,"remaining":60}\')')
+        self.assertEqual(guard.run(), 2)
+        self.assertAlmostEqual(self.status()["spent_usd"], 18.9)
+        self.assertFalse((self.root / "bad").exists())
+
+    def test_round_two_status_separates_current_and_aggregate_charges(self):
+        self.prior_round()
+        code = ('import pathlib,json;p=pathlib.Path("results/batch");p.mkdir();'
+                'r={"task":"q","repeat":2,"log":"run.log","cost_usd":0.2};'
+                '(p/"q-2.json").write_text(json.dumps(r));'
+                '(p/"suite.json").write_text(json.dumps({"rows":[r]}));'
+                'print("full results: "+str(p.resolve()))')
+        self.config["steps"] = [self.step(code, kind="paid", estimate_usd=.2,
+                                          output_kind="suite", expected_tasks=["q"], repeat=2)]
+        guard = self.instance('print(\'{"usage":103.5,"remaining":70}\')')
+        self.assertEqual(guard.run(), 0)
+        result = self.status()
+        self.assertEqual(result["start_usage"], 100)
+        self.assertEqual(result["round_start_usage"], 103.5)
+        self.assertAlmostEqual(result["recorded_usd"], .2)
+        self.assertAlmostEqual(result["round_spent_usd"], .2)
+        self.assertAlmostEqual(result["aggregate_recorded_usd"], 3.7)
+        self.assertAlmostEqual(result["spent_usd"], 3.7)
+        self.assertIn("usage 103.5000000000", (self.root / "run.manifest").read_text().splitlines()[0])
+
+    def test_round_two_rejects_account_below_prior_usage(self):
+        self.prior_round()
+        guard = self.instance('print(\'{"usage":103,"remaining":70}\')')
+        self.assertEqual(guard.run(), 2)
+        self.assertIn("below the completed prior round", self.status()["reason"])
+
+    def test_round_two_rechecks_prior_bytes_before_launch(self):
+        status_path = self.prior_round()
+        guard = self.instance()
+        status_path.write_text(status_path.read_text() + " ")
+        self.assertEqual(guard.run(), 2)
+        self.assertFalse((self.root / "run.manifest").exists())
+        with self.assertRaisesRegex(guarded.Stop, "hash mismatch"):
+            self.instance()
+
+    def test_round_two_rejects_incomplete_or_inconsistent_prior_status(self):
+        status_path = self.prior_round()
+        original = json.loads(status_path.read_text())
+        for change in [{"status": "stopped"}, {"completed_steps": []},
+                       {"spent_usd": 0}, {"config_sha256": "wrong"},
+                       {"last_usage": 99}]:
+            with self.subTest(change=change):
+                status_path.write_text(json.dumps({**original, **change}))
+                self.config["prior_round"]["status_sha256"] = guarded.sha(status_path)
+                with self.assertRaises(guarded.Stop):
+                    self.instance()
 
     def test_completion_records_batch_and_only_metadata(self):
         code = ('import pathlib,json; p=pathlib.Path("results/batch");p.mkdir();'

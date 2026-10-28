@@ -9,6 +9,8 @@ log_dir, results_dir, steps. Paid steps require estimate_usd and output_kind
 has argv, optional cwd/env (null removes an inherited variable), max_seconds,
 and optional manifest_line_template using {batch} or {output}. No shell is used.
 All logs/status/manifests are local private files. No automatic resume or round 2.
+An explicitly verified round=2 command carries the first round's immutable status
+and configuration under prior_round; its USD20 cap remains aggregate, not renewed.
 """
 from __future__ import annotations
 
@@ -29,6 +31,7 @@ import urllib.error
 import urllib.request
 
 AUTHORIZED_DEADLINE = dt.datetime.fromisoformat("2026-10-28T08:00:00+08:00")
+ROUND2_DEADLINE = dt.datetime.fromisoformat("2026-10-28T21:00:00+08:00")
 
 
 class Stop(RuntimeError):
@@ -112,8 +115,12 @@ class Guard:
         self.config_hash = sha(self.config_path)
         self.config = json.loads(self.config_path.read_text())
         self.repo = Path(self.config["repo"]).resolve()
+        self.round = self.config.get("round", 1)
+        if type(self.round) is not int or self.round not in (1, 2):
+            raise Stop("only the two authorized replication rounds are supported")
         self.deadline = dt.datetime.fromisoformat(self.config["deadline"])
-        if self.deadline.tzinfo is None or self.deadline > AUTHORIZED_DEADLINE:
+        authorized_deadline = ROUND2_DEADLINE if self.round == 2 else AUTHORIZED_DEADLINE
+        if self.deadline.tzinfo is None or self.deadline > authorized_deadline:
             raise Stop("deadline exceeds the authorized limit or lacks timezone")
         self.shutdown_epoch = self.deadline.timestamp() - 15
         self.shutdown_monotonic = time.monotonic() + self.shutdown_epoch - time.time()
@@ -136,9 +143,17 @@ class Guard:
         self.lock = None
         self.manifest_created = False
         self.start_usage = None
+        self.round_start_usage = None
         self.usage = None
         self.remaining = None
         self.recorded = 0.0
+        self.prior_recorded = 0.0
+        self.prior_last_usage = None
+        self.prior_hashes = {}
+        if self.round == 2:
+            self.read_prior_round()
+        elif "prior_round" in self.config:
+            raise Stop("prior-round carry is only valid for round two")
         self.completed = []
         self.current = None
         self.initial_dirs = set()
@@ -150,6 +165,43 @@ class Guard:
     def path(self, value):
         p = Path(value)
         return p.resolve() if p.is_absolute() else (self.repo / p).resolve()
+
+    def read_prior_round(self):
+        """Bind completed round-one evidence and carry its original spending baseline."""
+        try:
+            spec = self.config["prior_round"]
+            status_path, config_path = self.path(spec["status"]), self.path(spec["config"])
+            for path, expected in [(status_path, spec["status_sha256"]),
+                                   (config_path, spec["config_sha256"])]:
+                if sha(path) != expected:
+                    raise Stop("prior-round evidence hash mismatch")
+                self.prior_hashes[path] = expected
+            status = json.loads(status_path.read_text())
+            config = json.loads(config_path.read_text())
+            if (status.get("status") != "complete" or status.get("reason") is not None
+                    or status.get("current_step") is not None
+                    or status.get("config_sha256") != spec["config_sha256"]
+                    or config.get("round", 1) != 1 or "prior_round" in config
+                    or Path(config["repo"]).resolve() != self.repo
+                    or self.path(config["status"]) != status_path
+                    or self.cap > number(config.get("cap_usd", 20))):
+                raise Stop("prior-round identity, completion or cap is invalid")
+            expected_steps = [step["id"] for step in config["steps"]]
+            if status.get("completed_steps") != expected_steps:
+                raise Stop("prior round did not complete its declared steps")
+            baseline = number(status["start_usage"])
+            last_usage = number(status["last_usage"])
+            recorded = number(status["recorded_usd"])
+            spent = number(status["spent_usd"])
+            if (last_usage < baseline or
+                    abs(spent - max(last_usage - baseline, recorded)) > 1e-6):
+                raise Stop("prior-round spending evidence is inconsistent")
+            self.start_usage, self.prior_last_usage = baseline, last_usage
+            self.prior_recorded = recorded
+        except Stop:
+            raise
+        except (KeyError, TypeError, ValueError, OSError):
+            raise Stop("prior-round evidence is missing or invalid") from None
 
     def deadline_check(self):
         if time.monotonic() >= self.shutdown_monotonic or time.time() >= self.shutdown_epoch:
@@ -163,6 +215,10 @@ class Guard:
                     "deadline": self.config["deadline"], "config_sha256": self.config_hash,
                     "start_usage": self.start_usage, "last_usage": self.usage,
                     "recorded_usd": self.recorded, "spent_usd": self.spent(),
+                    "round": self.round, "round_start_usage": self.round_start_usage,
+                    "round_spent_usd": self.round_spent(),
+                    "prior_recorded_usd": self.prior_recorded,
+                    "aggregate_recorded_usd": self.prior_recorded + self.recorded,
                     "current_step": self.current, "completed_steps": self.completed})
 
     def append(self, line):
@@ -177,6 +233,9 @@ class Guard:
         self.deadline_check()
         if sha(self.config_path) != self.config_hash:
             raise Stop("configuration changed")
+        for path, expected in self.prior_hashes.items():
+            if sha(path) != expected:
+                raise Stop("prior-round evidence changed")
         receipt = json.loads(self.path(self.config["verification_receipt"]).read_text())
         head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=self.repo,
                                        stderr=subprocess.DEVNULL, timeout=3).decode().strip()
@@ -270,6 +329,11 @@ class Guard:
 
     def spent(self):
         delta = 0 if self.start_usage is None or self.usage is None else self.usage - self.start_usage
+        return max(delta, self.prior_recorded + self.recorded)
+
+    def round_spent(self):
+        delta = (0 if self.round_start_usage is None or self.usage is None
+                 else self.usage - self.round_start_usage)
         return max(delta, self.recorded)
 
     def budget_check(self, estimate=0):
@@ -432,10 +496,14 @@ class Guard:
             for signum in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
                 previous[signum] = signal.signal(signum, interrupted)
             self.poll_account(required=True)
-            self.start_usage = self.usage
+            if self.prior_last_usage is not None and self.usage + 1e-6 < self.prior_last_usage:
+                raise Stop("account usage is below the completed prior round")
+            self.round_start_usage = self.usage
+            if self.start_usage is None:
+                self.start_usage = self.usage
             self.budget_check()
             self.status("running")  # Persist baseline before the first paid child.
-            self.append(f"start {dt.datetime.now().isoformat()} usage {self.start_usage:.10f} cap {self.cap:.2f}")
+            self.append(f"start {dt.datetime.now().isoformat()} usage {self.round_start_usage:.10f} cap {self.cap:.2f}")
             for line in self.config.get("manifest_header", []):
                 self.append(line)
             ids = [s["id"] for s in self.config["steps"]]
