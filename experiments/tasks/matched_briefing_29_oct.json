@@ -1,0 +1,232 @@
+{
+  "study_id": "matched-briefing-2026-10-29",
+  "version": 1,
+  "status": "frozen",
+  "protocol": "docs/content/matched-briefing-29-oct-protocol.md",
+  "tasks_file": "tasks_tee_replication_28_oct.json",
+  "model": "deepseek/deepseek-v4-flash",
+  "arms": {
+    "full-block": {
+      "payload_arm": "box-model"
+    },
+    "matched-briefing": {
+      "payload_arm": "matched-briefing"
+    }
+  },
+  "tasks": [
+    "tee-cheapest-target",
+    "tee-xs-price",
+    "tee-top-3",
+    "tee-count-buyable"
+  ],
+  "repeats": [
+    1,
+    2
+  ],
+  "schedule": [
+    {
+      "slot": 1,
+      "arm": "full-block",
+      "task": "tee-cheapest-target",
+      "repeat": 1
+    },
+    {
+      "slot": 2,
+      "arm": "matched-briefing",
+      "task": "tee-cheapest-target",
+      "repeat": 1
+    },
+    {
+      "slot": 3,
+      "arm": "matched-briefing",
+      "task": "tee-xs-price",
+      "repeat": 1
+    },
+    {
+      "slot": 4,
+      "arm": "full-block",
+      "task": "tee-xs-price",
+      "repeat": 1
+    },
+    {
+      "slot": 5,
+      "arm": "full-block",
+      "task": "tee-top-3",
+      "repeat": 1
+    },
+    {
+      "slot": 6,
+      "arm": "matched-briefing",
+      "task": "tee-top-3",
+      "repeat": 1
+    },
+    {
+      "slot": 7,
+      "arm": "matched-briefing",
+      "task": "tee-count-buyable",
+      "repeat": 1
+    },
+    {
+      "slot": 8,
+      "arm": "full-block",
+      "task": "tee-count-buyable",
+      "repeat": 1
+    },
+    {
+      "slot": 9,
+      "arm": "matched-briefing",
+      "task": "tee-cheapest-target",
+      "repeat": 2
+    },
+    {
+      "slot": 10,
+      "arm": "full-block",
+      "task": "tee-cheapest-target",
+      "repeat": 2
+    },
+    {
+      "slot": 11,
+      "arm": "full-block",
+      "task": "tee-xs-price",
+      "repeat": 2
+    },
+    {
+      "slot": 12,
+      "arm": "matched-briefing",
+      "task": "tee-xs-price",
+      "repeat": 2
+    },
+    {
+      "slot": 13,
+      "arm": "matched-briefing",
+      "task": "tee-top-3",
+      "repeat": 2
+    },
+    {
+      "slot": 14,
+      "arm": "full-block",
+      "task": "tee-top-3",
+      "repeat": 2
+    },
+    {
+      "slot": 15,
+      "arm": "full-block",
+      "task": "tee-count-buyable",
+      "repeat": 2
+    },
+    {
+      "slot": 16,
+      "arm": "matched-briefing",
+      "task": "tee-count-buyable",
+      "repeat": 2
+    }
+  ],
+  "require": {
+    "max_steps": 300,
+    "clock_s": 1800,
+    "browser_tool": "0.0.83",
+    "browser_origins": "http://localhost:7770",
+    "browser_flags": "--block-service-workers --isolated",
+    "agent_core_commit": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
+    "agent_core_patch": "e455d3eba23bc37528505e59e4d13ed265fff67e",
+    "model": "deepseek/deepseek-v4-flash",
+    "scaffold": "openjiuwen",
+    "shop": "gated",
+    "probe": "viewport",
+    "policy": "off",
+    "confidence": "off"
+  },
+  "arm_require": {
+    "full-block": {
+      "box_version": 20,
+      "page_reader": "rendered",
+      "rate_plan": "bound",
+      "targeting_version": 9,
+      "planner_version": 2,
+      "form_version": 15,
+      "primitives_version": 13,
+      "prompt_version": 4,
+      "parser_temperature": 0,
+      "normalise_version": 5,
+      "parser_model": "deepseek/deepseek-v4-flash",
+      "parser": "model",
+      "box": true,
+      "box_exhaust": false
+    },
+    "matched-briefing": {
+      "box": false,
+      "box_exhaust": false,
+      "parser": null,
+      "parser_model": null,
+      "page_reader": null,
+      "rate_plan": null
+    }
+  },
+  "provider_routing": {
+    "deepseek/deepseek-v4-flash": {
+      "order": [
+        "gmicloud",
+        "deepinfra",
+        "streamlake"
+      ],
+      "allow_fallbacks": false,
+      "quantizations": [
+        "fp8"
+      ]
+    }
+  },
+  "input_sha256": {
+    "experiments/tasks/tasks_tee_replication_28_oct.json": "f4f048b7ae95b58add97a07538d185721c09cacb62c1324574fc692b8acb7ba8",
+    "experiments/tasks/readings_tee_replication_28_oct.json": "2a6d2dcb0929aa1c015d209fc0c01ff01a4942ad3051a60fa4bcbbaab2c369ab",
+    "env/fixtures/tee_replication_28_oct.json": "fddbfeb7d81d5aefc26cc631f15e90f943c17a5dd130cea4c1d696f55c6e8c49",
+    "docs/content/claim2-reading-rules.md": "9433423f14f4de200da4b0376e84839c57751af93b98c9f8e599b35a6d274bb4"
+  },
+  "analysis": {
+    "scope": "exploratory mechanism audit on an already observed market",
+    "primary": "per-task paired listing openings for two repetitions; descriptive only",
+    "report": [
+      "all scheduled slot outcomes",
+      "blind human correctness",
+      "separate automatic correctness and disagreement",
+      "per-task paired provider charges including parser",
+      "pre-read and browser elapsed time separately",
+      "observed execution compliance"
+    ],
+    "inferential_tests": false,
+    "unscorable": "preserve student grade and report missing assessable denominator; also list all scheduled outcomes",
+    "pooling": "no pooling with original Wexcombe or Quenby primary study"
+  },
+  "technical_failures": {
+    "rule_source": "experiments/analysis/voids.py frozen original rules",
+    "automatic_retries": 0,
+    "one_time_retry": "only after independent operational audit and separately approved exact recovery command",
+    "ordinary_wrong_or_noncommittal_answer": "retain, do not replay",
+    "report_incomplete_design": true
+  },
+  "budget": {
+    "cap_usd": 10,
+    "minimum_key_credit_usd": 20,
+    "inflight_reserve_usd": 1.25,
+    "deadline": "2026-10-30T12:00:00+08:00"
+  },
+  "historical_reference": {
+    "full_block_eight_usd": 0.763878,
+    "exhaustive_eight_usd": 2.987186,
+    "combined_browser_hours": 2.02,
+    "planning_estimate_usd": [
+      4,
+      8
+    ],
+    "planning_hours": [
+      3,
+      6
+    ],
+    "new_baseline_unmeasured": true
+  },
+  "integrity_notes": [
+    "Old outcome-informed hypothesis; study frozen before new outcomes; no out-of-sample generalisation claim.",
+    "Only factual briefing matched; full block also supplies task-specific plan and output instructions, so this is not a stopping-only ablation.",
+    "No bound on real-world prices is established by this generated market.",
+    "Report provider charges separately from local browser/page-reading compute."
+  ]
+}
