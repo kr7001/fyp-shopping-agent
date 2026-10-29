@@ -44,7 +44,11 @@ class MatchedBriefingAnalysis(unittest.TestCase):
                        "schedule": schedule, "require": {"max_steps": 300, "clock_s": 1800},
                        "provider_routing": {"synthetic/model": {"order": ["fake"], "allow_fallbacks": False}}}
         self.protocol.write_text(json.dumps(self.config))
-        lines = ["start 2026-10-29T22:00:00 usage 0 cap 10"]
+        # The guarded launcher's real header lines (manifest_header in the command config).
+        lines = ["start 2026-10-29T22:00:00 usage 0 cap 10",
+                 "study matched-briefing-2026-10-29 exploratory already-observed Quenby mechanism audit; no pooling with primary tests",
+                 "conditions commit 0000000 browser synthetic; frozen executor and model parser; separate matched factual briefing",
+                 "WATCHDOG USD10 new study cap; USD1.25 inflight reserve; preserve USD20 key credit; no automatic retries"]
         self.folders = []
         for slot in schedule:
             folder = self.root / f"batch-{slot['slot']}"
@@ -173,14 +177,30 @@ class MatchedBriefingAnalysis(unittest.TestCase):
         with self.assertRaisesRegex(analysis.Invalid, "all 16"):
             self.load()
         self.assertEqual(len(self.load(partial=True)["runs"]), 15)
-        lines[1], lines[2] = lines[2], lines[1]
+        first = next(i for i, line in enumerate(lines) if line.startswith("batch|"))
+        lines[first], lines[first + 1] = lines[first + 1], lines[first]
         self.manifest.write_text("\n".join(lines))
         with self.assertRaisesRegex(analysis.Invalid, "schedule"):
             self.load()
         lines = original.splitlines()
-        lines[2] = lines[1]
+        lines[first + 1] = lines[first]
         self.manifest.write_text("\n".join(lines))
         with self.assertRaisesRegex(analysis.Invalid, "duplicate"):
+            self.load()
+
+    def test_launcher_study_header_required_once_and_for_this_study(self):
+        original = self.manifest.read_text().splitlines()
+        study = next(i for i, line in enumerate(original) if line.startswith("study "))
+        for label, lines in (
+                ("missing", original[:study] + original[study + 1:]),
+                ("duplicate", original[:study + 1] + original[study:]),
+                ("foreign", original[:study] + ["study another-study-2026-10-29 synthetic"] + original[study + 1:])):
+            with self.subTest(label):
+                self.manifest.write_text("\n".join(lines) + "\n")
+                with self.assertRaisesRegex(analysis.Invalid, "study header"):
+                    self.load()
+        self.manifest.write_text("\n".join(original + ["study matched-briefing-2026-10-29 again"]) + "\n")
+        with self.assertRaisesRegex(analysis.Invalid, "study header"):
             self.load()
 
     def test_foreign_identity_arm_and_missing_cost_metrics_refused(self):

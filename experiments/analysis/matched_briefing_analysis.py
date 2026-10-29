@@ -153,11 +153,21 @@ def charges(row, record, log, condition, no_executor):
     return {"cost_usd": total, "agent_cost_usd": agent, "parse_cost_usd": parser}
 
 
+def without_study_header(manifest, config):
+    """The launcher writes one dated `study <id> ...` header, which is not a claim-chain line.
+    Require exactly one, for this study, and give the frozen reader every other line unchanged."""
+    lines = manifest.read_text().splitlines()
+    header = [i for i, line in enumerate(lines) if line.startswith("study ")]
+    require(len(header) == 1 and lines[header[0]].startswith(f"study {config['study_id']} "),
+            "manifest needs exactly one study header for this study")
+    return "\n".join(line for i, line in enumerate(lines) if i != header[0]) + "\n"
+
+
 def load_study(protocol, manifest, allow_incomplete=False):
     """Validate only identity, operational exclusions and money; never call a scorer."""
     protocol, manifest = pathlib.Path(protocol).resolve(), pathlib.Path(manifest).resolve()
     config = protocol_at(protocol)
-    parsed = claim.parse_manifest(manifest.read_text())
+    parsed = claim.parse_manifest(without_study_header(manifest, config))
     require(not parsed.problems, "; ".join(parsed.problems))
     require(len(parsed.starts) == 1 and len(parsed.ends) <= 1, "manifest start/end markers invalid")
     require(allow_incomplete or len(parsed.ends) == 1, "completed manifest needs one end marker")
