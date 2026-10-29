@@ -21,14 +21,22 @@ DEFAULT = ROOT / "experiments/results/claim2b-stage1.sheet.csv"
 COLUMNS = ["code", "question", "key", "answer", "hand_verdict", "note"]
 IMMUTABLE = COLUMNS[:4]
 VERDICTS = {"correct", "not correct", "unscorable"}
+MAX_FIELD_CHARS = 16 * 1024 * 1024
 
 
 def read_sheet(path):
-    with pathlib.Path(path).open(encoding="utf-8-sig", newline="") as handle:
-        reader = csv.DictReader(handle)
-        if reader.fieldnames != COLUMNS:
-            raise ValueError("Expected the six original columns in their original order.")
-        rows = list(reader)
+    # Long agent replies can exceed csv's 128 KiB default. Preserve the full
+    # evidence, and restore the process-wide limit for other CSV consumers.
+    old_limit = csv.field_size_limit()
+    try:
+        csv.field_size_limit(max(old_limit, MAX_FIELD_CHARS))
+        with pathlib.Path(path).open(encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            if reader.fieldnames != COLUMNS:
+                raise ValueError("Expected the six original columns in their original order.")
+            rows = list(reader)
+    finally:
+        csv.field_size_limit(old_limit)
     seen = set()
     for index, row in enumerate(rows, 1):
         if None in row or any(value is None for value in row.values()):
@@ -138,7 +146,7 @@ def main():
             score(args.sheet, rows)
         if not args.score:
             print(summary(rows))
-    except (ValueError, OSError) as error:
+    except (ValueError, OSError, csv.Error) as error:
         parser.exit(1, f"{error}\n")
 
 

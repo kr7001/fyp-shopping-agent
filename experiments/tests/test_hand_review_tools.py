@@ -1,5 +1,6 @@
 """Synthetic-only checks for blind review persistence and CSV interoperability."""
 import copy
+import csv
 import json
 import pathlib
 import sys
@@ -29,6 +30,31 @@ class ReviewTools(unittest.TestCase):
         file = self.folder / "sheet.csv"
         file.write_text(review.csv_text(self.rows), encoding="utf-8-sig", newline="")
         self.assertEqual(review.read_sheet(file), self.rows)
+
+    def test_long_answer_survives_read_html_and_verdict_import(self):
+        rows = [{**self.rows[0], "answer": self.rows[0]["answer"] * 4000}]
+        self.assertGreater(len(rows[0]["answer"]), 131072)
+        file = self.folder / "long.csv"
+        file.write_text(review.csv_text(rows), encoding="utf-8", newline="")
+        old_limit = csv.field_size_limit(131072)
+        self.addCleanup(csv.field_size_limit, old_limit)
+        loaded = review.read_sheet(file)
+        self.assertEqual(csv.field_size_limit(), 131072)
+        self.assertEqual(loaded, rows)
+        html = review.make_html(loaded, file)
+        payload = html.split("const payload = ", 1)[1].split(";\nconst columns", 1)[0]
+        self.assertEqual(json.loads(payload)["rows"], rows)
+        reviewed = [{**rows[0], "hand_verdict": "correct", "note": "Checked."}]
+        file.write_text(review.csv_text(reviewed), encoding="utf-8", newline="")
+        self.assertEqual(review.merge_verdicts(loaded, review.read_sheet(file)), reviewed)
+
+    def test_csv_limit_restored_after_invalid_header(self):
+        file = self.folder / "invalid.csv"
+        file.write_text("wrong,header\n", encoding="utf-8")
+        old_limit = csv.field_size_limit()
+        with self.assertRaises(ValueError):
+            review.read_sheet(file)
+        self.assertEqual(csv.field_size_limit(), old_limit)
 
     def test_import_preserves_evidence_and_allows_only_verdict_note(self):
         incoming = copy.deepcopy(self.rows)
