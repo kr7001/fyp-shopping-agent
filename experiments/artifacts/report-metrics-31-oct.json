@@ -1,0 +1,1985 @@
+{
+  "schema_version": 2,
+  "description": "Derived measurements and original human verdicts for the primary Wexcombe and Quenby comparisons; not raw browser evidence.",
+  "created_from_commit": "504421a",
+  "model": "deepseek/deepseek-v4-flash",
+  "scaffold": "openJiuwen",
+  "scaffold_commit": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
+  "interpretation": [
+    "Primary correctness uses the original human grades, with unscorable answers excluded. Automatic verdicts remain separate.",
+    "Closed-by-box slots have no human answer grade and count as not correct under the frozen protocol. They are excluded from resource comparisons.",
+    "Cost includes parsing where used and excludes local browser/infrastructure costs; no interrupted-attempt charge is assigned to completed trials.",
+    "Wexcombe has three template rounds and one held-out-wording round. Quenby has both completed rounds. Markets are never pooled.",
+    "Holm correction is over the four Wexcombe primary tests and the three Quenby primary tests separately.",
+    "This release reproduces primary counts, medians and tests from derived measurements, not trace extraction, grading, all sensitivity analyses or the full report.",
+    "Design B uses selected generated markets, one browser model/scaffold, and a label warning supplied only to the block."
+  ],
+  "datasets": [
+    {
+      "market": "Wexcombe",
+      "rounds": [
+        1,
+        2,
+        3
+      ],
+      "status": "completed human review",
+      "source_hashes": {
+        "analysis_json": "af786bb181e62da44a866e6815ab26bb84d6762c7a4295329fdfaffe49a20b23",
+        "completed_human_sheet": "c62cc6d1a8e2c42b861d723d1d37483a230a905b3d1efd694fde8b645248385b",
+        "blind_code_mapping": "dd46e98f500efe6f9e04a9396558f001d05064d1a7657c7abb7adb76302c80ee"
+      },
+      "protocol_path": "experiments/tasks/claim2_analysis.json",
+      "protocol_sha256": "391609b2b6c32729a071650022cc968ffd426865f56a8ac7de4884fa413d00f2",
+      "fixture_path": "env/fixtures/tee_claim.json",
+      "fixture_sha256": "408223c8c1ff4096360e5412334a17e5beb106212c92ca10151e20d07e562363",
+      "tasks_path": "experiments/tasks/tasks_tee_claim.json",
+      "tasks_sha256": "ca4a96411c177a1a874b0175b8d7ae11fa3c077ecbdf64983df621859dd64fa0",
+      "runs": [
+        {
+          "arm": "block_model",
+          "task": "tee-all-stocked",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.002613
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-all-stocked",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.002297
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-all-stocked",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.003753
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-cheapest-target",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "abstained",
+          "outcome": "reported, not correct",
+          "opened": 5,
+          "cost_usd": 0.018536
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-cheapest-target",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.071453
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-cheapest-target",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.057338
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-count-buyable",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.146985
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-count-buyable",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.117497
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-count-buyable",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.144515
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-count-stocked",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.136517
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-count-stocked",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.139317
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-count-stocked",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.119435
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-exists-under",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.020206
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-exists-under",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.040791
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-exists-under",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.024563
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-promo-check",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.004422
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-promo-check",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.007706
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-promo-check",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.00609
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-target-price",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.054591
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-target-price",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.07062
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-target-price",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.044775
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-top-3",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 8,
+          "cost_usd": 0.032927
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-top-3",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 8,
+          "cost_usd": 0.071295
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-top-3",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 11,
+          "cost_usd": 0.164744
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-xs-price",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.028422
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-xs-price",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.031885
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-xs-price",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.044687
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-all-stocked",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.148228
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-all-stocked",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.150771
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-all-stocked",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.141732
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-cheapest-target",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.250074
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-cheapest-target",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.232821
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-cheapest-target",
+          "repeat": 3,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "failed",
+          "outcome": "reported, not correct",
+          "opened": 38,
+          "cost_usd": 0.598836
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-count-buyable",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.235782
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-count-buyable",
+          "repeat": 2,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.53978
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-count-buyable",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.210734
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-count-stocked",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.13115
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-count-stocked",
+          "repeat": 2,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.147003
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-count-stocked",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.115763
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-exists-under",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.210175
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-exists-under",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.469745
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-exists-under",
+          "repeat": 3,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.198974
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-target-price",
+          "repeat": 1,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.211294
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-target-price",
+          "repeat": 2,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.222402
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-target-price",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.219602
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-top-3",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.230528
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-top-3",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.447669
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-top-3",
+          "repeat": 3,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.208028
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-xs-price",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.526962
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-xs-price",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.261054
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-xs-price",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.268536
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-cheapest-target",
+          "repeat": 1,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 4,
+          "cost_usd": 0.01825
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-cheapest-target",
+          "repeat": 2,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.196061
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-cheapest-target",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 4,
+          "cost_usd": 0.037293
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-count-buyable",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.428144
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-count-buyable",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 4,
+          "cost_usd": 0.021656
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-count-buyable",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 4,
+          "cost_usd": 0.040856
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-exists-under",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.042987
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-exists-under",
+          "repeat": 2,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.006492
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-exists-under",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.023924
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-promo-check",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.023564
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-promo-check",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.007019
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-promo-check",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.011645
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-target-price",
+          "repeat": 1,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 4,
+          "cost_usd": 0.02369
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-target-price",
+          "repeat": 2,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 4,
+          "cost_usd": 0.031371
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-target-price",
+          "repeat": 3,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 2,
+          "cost_usd": 0.074971
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-top-3",
+          "repeat": 1,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 4,
+          "cost_usd": 0.067804
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-top-3",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 7,
+          "cost_usd": 0.090314
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-top-3",
+          "repeat": 3,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.234406
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-xs-price",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 29,
+          "cost_usd": 0.433371
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-xs-price",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 3,
+          "cost_usd": 0.106577
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-xs-price",
+          "repeat": 3,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 7,
+          "cost_usd": 0.133155
+        }
+      ],
+      "parser_runs": [
+        {
+          "arm": "block_model",
+          "task": "rw-01",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 0,
+          "cost_usd": 0.009564
+        },
+        {
+          "arm": "block_model",
+          "task": "rw-03",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.022
+        },
+        {
+          "arm": "block_model",
+          "task": "rw-04",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.074076
+        },
+        {
+          "arm": "block_model",
+          "task": "rw-05",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.041772
+        },
+        {
+          "arm": "block_model",
+          "task": "rw-07",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.002815
+        },
+        {
+          "arm": "block_model",
+          "task": "rw-09",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.154968
+        },
+        {
+          "arm": "block_model",
+          "task": "rw-10",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.232365
+        },
+        {
+          "arm": "block_model",
+          "task": "rw-11",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.185428
+        },
+        {
+          "arm": "block_model",
+          "task": "rw-12",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.14435
+        },
+        {
+          "arm": "block_model",
+          "task": "rw-13",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.018032
+        },
+        {
+          "arm": "block_model",
+          "task": "rw-15",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 8,
+          "cost_usd": 0.039983
+        },
+        {
+          "arm": "block_model",
+          "task": "rw-16",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 8,
+          "cost_usd": 0.071577
+        },
+        {
+          "arm": "block_model",
+          "task": "rw-31",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 0,
+          "cost_usd": 0.008373
+        },
+        {
+          "arm": "block_model",
+          "task": "rw-32",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.022083
+        },
+        {
+          "arm": "block_model",
+          "task": "rw-33",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.125378
+        },
+        {
+          "arm": "block_model",
+          "task": "rw-34",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.019854
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-01",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 0,
+          "cost_usd": 0.008
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-02",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 0,
+          "cost_usd": 0.003485
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-03",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.048883
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-04",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.018182
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-05",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.045573
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-06",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.023135
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-07",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.002328
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-08",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.001777
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-09",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.131657
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-10",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.155733
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-11",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.087523
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-12",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.186249
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-13",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.036326
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-14",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.038443
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-15",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 8,
+          "cost_usd": 0.044623
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-16",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 8,
+          "cost_usd": 0.107153
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-17",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.079249
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-18",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.065619
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-19",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.005883
+        },
+        {
+          "arm": "block_model",
+          "task": "rw3-20",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.010307
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw-01",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 2,
+          "cost_usd": 0.018765
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw-03",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.079716
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw-04",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.022691
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw-05",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.029258
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw-07",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.001419
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw-09",
+          "repeat": 1,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.242196
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw-10",
+          "repeat": 1,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.104369
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw-11",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "failed",
+          "outcome": "reported, not correct",
+          "opened": 45,
+          "cost_usd": 0.125555
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw-12",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.126004
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw-13",
+          "repeat": 1,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.330096
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw-15",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 8,
+          "cost_usd": 0.121193
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw-16",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.402843
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw-31",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.379373
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw-32",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.454233
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw-33",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.109102
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw-34",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.033633
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-01",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.144323
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-02",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 0,
+          "cost_usd": 0.009323
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-03",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.079973
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-04",
+          "repeat": 1,
+          "hand_verdict": null,
+          "automatic_verdict": "closed by the box",
+          "outcome": "closed by the box",
+          "opened": 0,
+          "cost_usd": 0.0
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-05",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.073138
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-06",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.044772
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-07",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.001713
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-08",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.101071
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-09",
+          "repeat": 1,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.152735
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-10",
+          "repeat": 1,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.300636
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-11",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.104043
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-12",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.165724
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-13",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.262126
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-14",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.154179
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-15",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 8,
+          "cost_usd": 0.035756
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-16",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.587066
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-17",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.079346
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-18",
+          "repeat": 1,
+          "hand_verdict": null,
+          "automatic_verdict": "closed by the box",
+          "outcome": "closed by the box",
+          "opened": 0,
+          "cost_usd": 0.0
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-19",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.005892
+        },
+        {
+          "arm": "block_rules",
+          "task": "rw3-20",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.004134
+        }
+      ]
+    },
+    {
+      "market": "Quenby",
+      "rounds": [
+        1,
+        2
+      ],
+      "status": "completed human review",
+      "source_hashes": {
+        "analysis_json": "230f936151974c6b59591e50bae1db773080a6f76382b52e8f0271d4da9a7454",
+        "completed_human_sheet": "b0a978176cdfa2c4731541ee1ef96e754561e75a6c1297f70ef6c8d0f1e035ac",
+        "blind_code_mapping": "cea36c74e26afedad812ce4ad8169f6d69acce0aa84cff3a791ce7bd91dd16d8"
+      },
+      "protocol_path": "experiments/tasks/claim2_replication_28_oct.json",
+      "protocol_sha256": "4fc319d13c1d644fb44c91f5f464c5360f5ad7f16069edeffda6c17a9f90614e",
+      "fixture_path": "env/fixtures/tee_replication_28_oct.json",
+      "fixture_sha256": "fddbfeb7d81d5aefc26cc631f15e90f943c17a5dd130cea4c1d696f55c6e8c49",
+      "tasks_path": "experiments/tasks/tasks_tee_replication_28_oct.json",
+      "tasks_sha256": "f4f048b7ae95b58add97a07538d185721c09cacb62c1324574fc692b8acb7ba8",
+      "runs": [
+        {
+          "arm": "block_model",
+          "task": "tee-all-stocked",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.001782
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-all-stocked",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.005082
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-cheapest-target",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "abstained",
+          "outcome": "reported, not correct",
+          "opened": 6,
+          "cost_usd": 0.035047
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-cheapest-target",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 6,
+          "cost_usd": 0.06512
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-count-buyable",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.163838
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-count-buyable",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.305253
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-count-stocked",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.110017
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-count-stocked",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.158513
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-exists-under",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 6,
+          "cost_usd": 0.030099
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-exists-under",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 6,
+          "cost_usd": 0.028877
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-promo-check",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.004982
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-promo-check",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.005324
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-target-price",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 6,
+          "cost_usd": 0.034437
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-target-price",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 6,
+          "cost_usd": 0.099229
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-top-3",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 9,
+          "cost_usd": 0.082258
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-top-3",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "abstained",
+          "outcome": "reported, not correct",
+          "opened": 9,
+          "cost_usd": 0.046939
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-xs-price",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 4,
+          "cost_usd": 0.018596
+        },
+        {
+          "arm": "block_model",
+          "task": "tee-xs-price",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 4,
+          "cost_usd": 0.046827
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-all-stocked",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 4,
+          "cost_usd": 0.022966
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-all-stocked",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "failed",
+          "outcome": "reported, not correct",
+          "opened": 45,
+          "cost_usd": 0.181907
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-cheapest-target",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.533284
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-cheapest-target",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.347451
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-count-buyable",
+          "repeat": 1,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.14388
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-count-buyable",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.192821
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-count-stocked",
+          "repeat": 1,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.152774
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-count-stocked",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.186609
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-exists-under",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.215025
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-exists-under",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.215947
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-target-price",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.376208
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-target-price",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.661541
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-top-3",
+          "repeat": 1,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 8,
+          "cost_usd": 0.084105
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-top-3",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.248552
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-xs-price",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.731195
+        },
+        {
+          "arm": "exhaustive",
+          "task": "tee-xs-price",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.705898
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-cheapest-target",
+          "repeat": 1,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 4,
+          "cost_usd": 0.025494
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-cheapest-target",
+          "repeat": 2,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 4,
+          "cost_usd": 0.028253
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-count-buyable",
+          "repeat": 1,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.364776
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-count-buyable",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 3,
+          "cost_usd": 0.023806
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-exists-under",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 7,
+          "cost_usd": 0.075004
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-exists-under",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "failed",
+          "outcome": "reported, not correct",
+          "opened": 7,
+          "cost_usd": 0.052054
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-promo-check",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.025069
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-promo-check",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 1,
+          "cost_usd": 0.00826
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-target-price",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 5,
+          "cost_usd": 0.097645
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-target-price",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 3,
+          "cost_usd": 0.094776
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-top-3",
+          "repeat": 1,
+          "hand_verdict": "not correct",
+          "automatic_verdict": "wrong",
+          "outcome": "answered",
+          "opened": 7,
+          "cost_usd": 0.135992
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-top-3",
+          "repeat": 2,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 45,
+          "cost_usd": 0.299692
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-xs-price",
+          "repeat": 1,
+          "hand_verdict": "correct",
+          "automatic_verdict": "correct",
+          "outcome": "answered",
+          "opened": 3,
+          "cost_usd": 0.120608
+        },
+        {
+          "arm": "shipped",
+          "task": "tee-xs-price",
+          "repeat": 2,
+          "hand_verdict": "unscorable",
+          "automatic_verdict": "failed",
+          "outcome": "reported, not correct",
+          "opened": 4,
+          "cost_usd": 0.045685
+        }
+      ],
+      "parser_runs": []
+    }
+  ]
+}
