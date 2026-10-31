@@ -77,3 +77,7 @@ CLAUDE.md.bak-*
 !/docs/content/claim2-reading-rules.md
 !/docs/content/replication-28-oct-protocol.md
 !/docs/content/matched-briefing-29-oct-protocol.md
+
+# Separate Browser Use transfer development environment.
+/.venv-browser-use/
+!/docs/content/browser-use-transfer-31-oct-protocol.md

@@ -1,0 +1,358 @@
+#!/usr/bin/env python3
+"""Verified, single-process Browser Use pilot launcher and per-request spending gate.
+
+Validation is free. --execute additionally requires hash-bound independent verification
+and recorded user approval. No implicit resume: a spent/uncertain pilot needs a new
+reviewed recovery command. The $20 account reserve differs from request reservations.
+"""
+from __future__ import annotations
+import argparse
+import datetime as dt
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import secrets
+import signal
+import subprocess
+import sys
+import threading
+import time
+import urllib.request
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+class Stop(RuntimeError):
+    pass
+
+
+def number(value):
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
+        raise Stop("invalid financial value")
+    return float(value)
+
+
+def sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def atomic_json(path, value):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + f".{os.getpid()}.tmp")
+    with os.fdopen(os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "w") as f:
+        json.dump(value, f, indent=2)
+        f.write("\n")
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
+
+
+def deadline_epoch(value):
+    deadline = dt.datetime.fromisoformat(value)
+    if deadline.tzinfo is None:
+        raise Stop("deadline must include a timezone")
+    return deadline.timestamp()
+
+
+def read_key(path):
+    """Read one explicitly configured key; never expose it or an exception body."""
+    key = os.environ.get("OPENROUTER_API_KEY")
+    if not key:
+        for line in Path(path).read_text().splitlines():
+            name, separator, value = line.removeprefix("export ").partition("=")
+            if separator and name.strip() == "OPENROUTER_API_KEY":
+                key = value.strip().strip("\"'")
+                break
+    if not key:
+        raise Stop("OpenRouter credential unavailable")
+    return key
+
+
+def account_snapshot(key):
+    try:
+        data = {}
+        for endpoint in ("key", "credits"):
+            request = urllib.request.Request(f"https://openrouter.ai/api/v1/{endpoint}",
+                                             headers={"Authorization": f"Bearer {key}"})
+            with urllib.request.urlopen(request, timeout=6) as response:
+                data[endpoint] = json.load(response)["data"]
+        credits = number(data["credits"]["total_credits"]) - number(data["credits"]["total_usage"])
+        data = data["key"]
+        usage = number(data["usage"])
+        remaining = data.get("limit_remaining")
+        if remaining is None:
+            remaining = number(data["limit"]) - usage
+        # A key's allowance is not purchased account credit. Both must cover the
+        # untouched reserve; never expose the larger account total as our budget.
+        return {"usage": usage, "remaining": min(number(remaining), number(credits))}
+    except Exception:
+        raise Stop("account check failed; no further model call permitted") from None
+
+
+def request_bound(config, metadata):
+    """Upper bound at price ceilings and the verified maximum provider context window.
+
+    The adapter must include messages, tool definitions and schema in prompt_bytes.
+    Positive provider ceilings and explicit nonstreaming max_tokens are verified before
+    each outbound request. No retry, helper or parser request may bypass this gate.
+    """
+    if metadata.get("model") != config["model"] or metadata.get("provider") != config["provider"]:
+        raise Stop("request model/provider differs from the verified configuration")
+    size, output = metadata.get("prompt_bytes"), metadata.get("max_output_tokens")
+    if type(size) is not int or not 0 <= size <= config["max_input_bytes"]:
+        raise Stop("request input exceeds the verified bound")
+    if type(output) is not int or not 0 < output <= config["max_output_tokens"]:
+        raise Stop("request output exceeds the verified bound")
+    prices = config["provider"].get("max_price", {})
+    inp, out = number(prices.get("prompt")), number(prices.get("completion"))
+    if inp <= 0 or out <= 0 or prices.get("request") != 0 or set(prices) != {"prompt", "completion", "request"}:
+        raise Stop("positive prompt/completion price ceilings required")
+    if metadata.get("nontext_or_plugins") is not False:
+        raise Stop("only text requests without plugins or non-token fees are permitted")
+    context = config.get("maximum_input_tokens")
+    if type(context) is not int or context <= 0:
+        raise Stop("verified provider context-window bound is required")
+    return (context * inp + output * out) / 1_000_000
+
+
+class CallBudget:
+    def __init__(self, config, ledger_path, account_reader, *, clock=time.time):
+        self.config = config
+        self.path = Path(ledger_path)
+        if self.path.exists():
+            raise Stop("ledger already exists; implicit resume is forbidden")
+        self.account_reader, self.clock = account_reader, clock
+        self.deadline = deadline_epoch(config["deadline"])
+        self.cap = number(config["cap_usd"])
+        self.reserve = number(config["minimum_balance_usd"])
+        if self.cap <= 0 or self.reserve < 20:
+            raise Stop("positive cap and at least $20 account reserve required")
+        self.lock = threading.RLock()
+        self.state = {"schema": 1, "charged_usd": 0.0, "inflight": {}, "calls": [],
+                      "blocked_reason": None, "start_usage": None, "highwater_usage": None,
+                      "start_remaining": None, "minimum_remaining": None,
+                      "account_decreases": 0, "deadline": config["deadline"], "cap_usd": self.cap}
+        self._account()
+        self._save()
+
+    def _save(self):
+        self.state["updated_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
+        atomic_json(self.path, self.state)
+
+    def _account(self):
+        snapshot = self.account_reader()
+        usage, remaining = number(snapshot["usage"]), number(snapshot["remaining"])
+        if self.state["start_usage"] is None:
+            self.state.update(start_usage=usage, highwater_usage=usage,
+                              start_remaining=remaining, minimum_remaining=remaining)
+        else:
+            if usage < self.state["highwater_usage"]:
+                self.state["account_decreases"] += 1
+            self.state["highwater_usage"] = max(self.state["highwater_usage"], usage)
+            self.state["minimum_remaining"] = min(self.state["minimum_remaining"], remaining)
+        return snapshot
+
+    def _block(self, reason):
+        self.state["blocked_reason"] = reason
+        self._save()
+        raise Stop(reason)
+
+    def before_call(self, metadata):
+        with self.lock:
+            if self.state["blocked_reason"]:
+                raise Stop(self.state["blocked_reason"])
+            if self.clock() >= self.deadline - 15:
+                self._block("absolute deadline reached")
+            try:
+                verify_identity(self.config)
+                bound = request_bound(self.config, metadata)
+                self._account()
+            except Exception as error:
+                self._block(str(error) if isinstance(error, Stop) else "account or request validation failed")
+            charged = self.state["charged_usd"]
+            spent = max(charged, self.state["highwater_usage"] - self.state["start_usage"])
+            inflight = sum(row["reserved_usd"] for row in self.state["inflight"].values())
+            remaining = min(self.state["minimum_remaining"], self.state["start_remaining"] - charged)
+            if spent + inflight + bound > self.cap + 1e-12:
+                self._block("pilot spending cap would be exceeded")
+            if remaining - inflight - bound < self.reserve - 1e-12:
+                self._block("account reserve would be breached")
+            reservation = f"call-{len(self.state['calls']) + len(self.state['inflight']) + 1:05d}"
+            self.state["inflight"][reservation] = {"reserved_usd": bound, "role": metadata.get("role", "agent"),
+                                                   "requested_at": self.clock()}
+            self._save()
+            return reservation
+
+    def after_call(self, reservation, response_json=None, error=None):
+        with self.lock:
+            if reservation not in self.state["inflight"]:
+                raise Stop("unknown or already settled request")
+            item = self.state["inflight"].pop(reservation)
+            usage = response_json.get("usage") if isinstance(response_json, dict) else None
+            try:
+                charge = number(usage.get("cost")) if isinstance(usage, dict) else None
+            except Stop:
+                charge = None
+            item.update(reservation=reservation, cost_usd=charge,
+                        generation_id=response_json.get("id") if isinstance(response_json, dict) else None,
+                        provider=response_json.get("provider") if isinstance(response_json, dict) else None,
+                        usage=usage, completed_at=self.clock(), error=bool(error))
+            self.state["calls"].append(item)
+            if charge is None:
+                self._block("a request has an unknown charge; reconciliation required")
+            self.state["charged_usd"] += charge
+            allowed = self.config.get("allowed_served_providers", [])
+            if response_json.get("provider") not in allowed:
+                self._block("missing or unexpected serving provider; reconciliation required")
+            if charge > item["reserved_usd"] + 1e-9:
+                self._block("provider charge exceeded the verified request bound")
+            self._save()
+            if error:
+                self._block("request failed; no automatic paid recovery")
+
+
+def verify_identity(config):
+    # Direct unit tests can use pure financial settings. Executable configurations
+    # must contain these identity fields, as validate_config enforces before launch.
+    if "expected_head" not in config:
+        return
+    repo = Path(config["repo"]).resolve()
+    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True, check=True).stdout.strip()
+    if head != config["expected_head"]:
+        raise Stop("checkout HEAD differs from verified command")
+    for relative, digest in config["hashes"].items():
+        source = (repo / relative).resolve()
+        if not source.is_relative_to(repo) or sha(source) != digest:
+            raise Stop("source hash mismatch or path outside checkout")
+    return head
+
+
+def validate_config(path, *, require_approval=False):
+    path = Path(path).resolve()
+    config = json.loads(path.read_text())
+    repo = Path(config["repo"]).resolve()
+    if repo != ROOT:
+        raise Stop("configuration belongs to another checkout")
+    if config.get("stage") != "pilot" or config.get("version") != 1:
+        raise Stop("only the first separately approved pilot is supported")
+    if not 0 < number(config["cap_usd"]) <= 2 or number(config["minimum_balance_usd"]) < 20:
+        raise Stop("pilot cap must be at most $2 and account reserve at least $20")
+    if number(config["estimate_usd"]) > config["cap_usd"]:
+        raise Stop("estimate exceeds pilot cap")
+    if deadline_epoch(config["deadline"]) <= time.time() + 30:
+        raise Stop("deadline leaves no launch window")
+    if config.get("max_input_bytes", 0) <= 0 or config.get("max_output_tokens", 0) <= 0:
+        raise Stop("request limits must be explicit")
+    request_bound(config, {"model": config["model"], "provider": config["provider"],
+                           "prompt_bytes": config["max_input_bytes"],
+                           "max_output_tokens": config["max_output_tokens"], "nontext_or_plugins": False})
+    if not config.get("allowed_served_providers"):
+        raise Stop("allowed serving-provider response names must be explicit")
+    required = {"tools/guarded_browser_use.py", "experiments/runners/browser_use_transfer.py",
+                "experiments/runners/browser_use_runner.py", config["protocol_file"], config["dependencies_lock"]}
+    required.update(str(p.relative_to(repo)) for p in (repo / "experiments/box").glob("*.py"))
+    required.update(config["runtime_input_files"])
+    questions_path = Path(config["questions_file"]).resolve()
+    if not questions_path.is_relative_to(repo):
+        raise Stop("runtime questions must be inside this checkout")
+    required.add(str(questions_path.relative_to(repo)))
+    if not required <= set(config["hashes"]):
+        raise Stop("launcher, adapter, protocol, dependency lock, block/parser and inputs must be hash-bound")
+    head = verify_identity(config)
+    if require_approval:
+        digest = sha(path)
+        receipt = json.loads(Path(config["verification_receipt"]).read_text())
+        approval = json.loads(Path(config["approval_record"]).read_text())
+        command = [config["python"], str(repo / "tools/guarded_browser_use.py"), "--config", str(path), "--execute"]
+        if (receipt.get("verdict") != "PASS" or receipt.get("config_sha256") != digest
+                or receipt.get("head") != head or receipt.get("request_bound_verified") is not True):
+            raise Stop("independent verification does not bind this command and request bound")
+        if (approval.get("approved") is not True or approval.get("config_sha256") != digest
+                or approval.get("command") != command or not approval.get("user_message")):
+            raise Stop("concrete user approval is missing")
+    return config
+
+
+def terminate_owned(child):
+    if child is None or child.poll() is not None:
+        return
+    os.killpg(child.pid, signal.SIGTERM)
+    try:
+        child.wait(timeout=3)
+    except subprocess.TimeoutExpired:
+        os.killpg(child.pid, signal.SIGKILL)
+        child.wait(timeout=3)
+
+
+def execute(path):
+    config = validate_config(path, require_approval=True)
+    status_path, ledger = Path(config["status_path"]), Path(config["ledger_path"])
+    if status_path.exists() or ledger.exists():
+        raise Stop("pilot artifacts already exist; no implicit resume")
+    key = read_key(config["environment_file"])
+    before = account_snapshot(key)
+    if before["remaining"] < config["minimum_balance_usd"] + config["cap_usd"]:
+        raise Stop("insufficient balance for pilot cap and reserved credit")
+    token = secrets.token_hex(24)
+    env = dict(os.environ, OPENROUTER_API_KEY=key, IGR_BROWSER_USE_GUARD=token,
+               IGR_BROWSER_USE_CONFIG_SHA256=sha(path), ANONYMIZED_TELEMETRY="false")
+    argv = [config["python"], str(ROOT / "experiments/runners/browser_use_transfer.py"),
+            "--config", str(Path(path).resolve()), "--execute"]
+    child = caffeinate = None
+    stop_at = deadline_epoch(config["deadline"]) - 15
+    try:
+        atomic_json(status_path, {"status": "running", "config_sha256": sha(path), "started_at": time.time()})
+        log_path = Path(config["log_path"])
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        with log_path.open("x") as log:
+            child = subprocess.Popen(argv, cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+            if sys.platform == "darwin":
+                caffeinate = subprocess.Popen(["/usr/bin/caffeinate", "-i", "-w", str(child.pid)], start_new_session=True)
+            while child.poll() is None:
+                if time.time() >= stop_at:
+                    raise Stop("absolute deadline reached")
+                if sha(path) != env["IGR_BROWSER_USE_CONFIG_SHA256"]:
+                    raise Stop("configuration changed during pilot")
+                time.sleep(1)
+            if child.returncode:
+                raise Stop("pilot worker did not complete")
+        ledger_data = json.loads(ledger.read_text())
+        if ledger_data["blocked_reason"] or ledger_data["inflight"]:
+            raise Stop("pilot charges or pending requests need reconciliation")
+        after = account_snapshot(key)
+        atomic_json(status_path, {"status": "complete", "config_sha256": sha(path),
+                                 "charged_usd": ledger_data["charged_usd"], "account_before": before,
+                                 "account_after": after, "completed_at": time.time()})
+    except BaseException as error:
+        terminate_owned(child)
+        atomic_json(status_path, {"status": "stopped", "config_sha256": sha(path),
+                                 "reason": str(error) if isinstance(error, Stop) else type(error).__name__,
+                                 "stopped_at": time.time()})
+        raise
+    finally:
+        terminate_owned(child)
+        terminate_owned(caffeinate)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--config", required=True)
+    parser.add_argument("--execute", action="store_true")
+    args = parser.parse_args()
+    try:
+        if args.execute:
+            execute(args.config)
+        else:
+            validate_config(args.config)
+            print("Offline configuration checks passed; no paid call made. Independent verification and user approval still required.")
+    except (Stop, KeyError, ValueError, OSError) as error:
+        print(f"STOP: {str(error) if isinstance(error, Stop) else type(error).__name__}", file=sys.stderr)
+        return 2
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
