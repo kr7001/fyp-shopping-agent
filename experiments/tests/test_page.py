@@ -8,6 +8,7 @@ use made-up sellers and prices, and a test checks they belong to no market the p
 generated, so a pass can never come from matching a real market by accident.
 """
 import json
+import os
 import pathlib
 import re
 import subprocess
@@ -163,6 +164,8 @@ class Parser(unittest.TestCase):
 
 
 def shop_answers() -> bool:
+    if os.environ.get("IGR_OFFLINE_TESTS") == "1":
+        return False
     try:
         urllib.request.urlopen(BASE, timeout=2).close()
         return True
@@ -372,6 +375,8 @@ class NeverTheStore(unittest.TestCase):
 def shop_and_browser() -> str | None:
     """Why the live readers cannot be compared here, or None when they can: the shop's
     results page answers, and the Playwright venv the rendered reader runs in is there."""
+    if os.environ.get("IGR_OFFLINE_TESTS") == "1":
+        return "live readers disabled by IGR_OFFLINE_TESTS=1"
     if not paths.NAIVE_PYTHON.exists():
         return f"the Playwright venv is not at {paths.NAIVE_PYTHON}"
     try:
