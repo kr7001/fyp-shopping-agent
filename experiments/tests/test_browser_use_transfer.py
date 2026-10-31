@@ -120,6 +120,18 @@ class Transfer(unittest.TestCase):
             with self.subTest(change=change), self.assertRaisesRegex(ValueError, "recovery"):
                 study.preview({**config, **change})
 
+    def test_technical_gate_does_not_score_answers_and_rejects_operational_failures(self):
+        record = {"answer": "Deliberately wrong synthetic answer", "outcome": "answered", "trace": {"measurement_valid": True}}
+        clear = {"blocked_reason": None, "inflight": {}}
+        self.assertTrue(study.technical_gate([record] * 4, clear)["passed"])
+        for bad in ({**record, "answer": ""}, {**record, "error_type": "Failure"},
+                    {**record, "trace": {"measurement_valid": False}}):
+            self.assertFalse(study.technical_gate([record] * 3 + [bad], clear)["passed"])
+        recovered = {**record, "agent_errors": [None, "Cannot select disabled option", None]}
+        self.assertTrue(study.technical_gate([record] * 3 + [recovered], clear)["passed"])
+        self.assertFalse(study.technical_gate([record] * 4, {**clear, "inflight": {"pending": {}}})["passed"])
+        self.assertFalse(study.technical_gate([record] * 3, clear)["passed"])
+
     def test_no_duplicate_repeat_or_task(self):
         with self.assertRaises(ValueError):
             study.schedule([question()], [1, 1])
@@ -137,11 +149,63 @@ class Transfer(unittest.TestCase):
 
 
 class PilotIntegration(unittest.IsolatedAsyncioTestCase):
+    async def run_overnight(self, empty_pilot_answer=False):
+        with tempfile.TemporaryDirectory() as folder:
+            output = Path(folder) / "output"
+            transfer = [question(name) for name in study.TASK_IDS]
+            questions_path = Path(folder) / "questions.json"
+            questions_path.write_text(json.dumps({"questions": transfer}))
+            config = {"stage": "overnight-transfer", "questions": [question("tee-cheapest-target"), question("tee-count-buyable")],
+                      "repeats": [1], "clock_s": 2700, "transfer_clock_s": 2700, "transfer_questions": transfer,
+                      "transfer_questions_file": str(questions_path), "environment_file": "unused",
+                      "ledger_path": "unused", "output_dir": str(output)}
+            plan = study.preview(config)
+            self.assertEqual(len(plan["slots"]), 20)
+            self.assertEqual(len({r["id"] for r in plan["slots"]}), 20)
+            budgets = []
+            def make_budget(*args):
+                budget = types.SimpleNamespace(state={"calls": [], "inflight": {}, "blocked_reason": None})
+                budgets.append(budget)
+                return budget
+            trials = []
+            async def run_trial(trial, budget, **kwargs):
+                trials.append(trial)
+                return {"outcome": "answered", "cost_usd": 0, "trace": {"measurement_valid": True},
+                        "answer": "" if empty_pilot_answer and len(trials) == 2 else "Synthetic unscored answer"}
+            adapter = types.SimpleNamespace(create_llm=mock.Mock(), close_llm=mock.AsyncMock(),
+                                            run_trial=run_trial, configure_private_runtime=mock.Mock())
+            with mock.patch.dict(sys.modules, {"browser_use_runner": adapter, "browser_use.llm.messages": types.SimpleNamespace(UserMessage=mock.Mock())}), \
+                 mock.patch.dict(study.os.environ, {"IGR_BROWSER_USE_GUARD": "test", "IGR_BROWSER_USE_CONFIG_SHA256": "hash"}), \
+                 mock.patch.object(study, "validate_config", return_value=config), \
+                 mock.patch.object(study, "sha", return_value="hash"), \
+                 mock.patch.object(study, "read_key", return_value="SYNTHETIC"), \
+                 mock.patch.object(study, "CallBudget", side_effect=make_budget), \
+                 mock.patch.object(study, "read_observation", return_value=observation()), \
+                 mock.patch.object(study, "build_query", return_value=("Synthetic query", None)):
+                if empty_pilot_answer:
+                    with self.assertRaisesRegex(study.Stop, "technical gate"):
+                        await study.execute_study("unused")
+                else:
+                    await study.execute_study("unused")
+            self.assertEqual(len(budgets), 1)
+            gate = json.loads((output / "development-gate.json").read_text())
+            self.assertEqual(gate["passed"], not empty_pilot_answer)
+            self.assertEqual(gate["kind"], "technical_only")
+            self.assertEqual(len(trials), 4 if empty_pilot_answer else 20)
+            self.assertEqual([t["clock_s"] for t in trials[:4]], [2700] * 4)
+            self.assertEqual([t["clock_s"] for t in trials[4:]], [2700] * (len(trials) - 4))
+
+    async def test_overnight_runs20_slots_with_one_shared_budget_after_technical_gate(self):
+        await self.run_overnight()
+
+    async def test_failed_technical_gate_never_starts_transfer(self):
+        await self.run_overnight(empty_pilot_answer=True)
+
     async def test_failed_slot_is_saved_and_stops_before_next_trial(self):
         with tempfile.TemporaryDirectory() as folder:
             output = Path(folder) / "output"
             config = {"stage": "pilot", "questions": [question("a"), question("b")], "repeats": [1],
-                      "environment_file": "unused", "ledger_path": "unused", "output_dir": str(output)}
+                      "clock_s": 900, "environment_file": "unused", "ledger_path": "unused", "output_dir": str(output)}
             budget = types.SimpleNamespace(state={"calls": [], "inflight": {}, "blocked_reason": None})
             run = mock.AsyncMock(return_value={"outcome": "timeout", "cost_usd": 0, "answer": None})
             adapter = types.SimpleNamespace(create_llm=mock.Mock(), close_llm=mock.AsyncMock(),

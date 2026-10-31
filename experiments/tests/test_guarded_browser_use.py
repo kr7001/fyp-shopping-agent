@@ -199,6 +199,19 @@ class Recovery(unittest.TestCase):
         self.assertAlmostEqual(reserve, .2117632)
         self.assertIsNone(json.loads((self.repo / "prior.json").read_text())["calls"][1]["cost_usd"])
 
+    def test_overnight_uses_same_prior_cost_not_a_new_budget(self):
+        self.assertEqual(guard.recovery_limits({**self.config, "stage": "overnight-transfer"}),
+                         guard.recovery_limits(self.config))
+
+    def test_deadline_marks_running_and_unstarted_slots_without_changing_completed(self):
+        output = self.repo / "output"
+        guard.atomic_json(output / "slot-status.json", {"slots": {
+            "done": {"status": "answered"}, "active": {"status": "running"}, "later": {"status": "scheduled"}}})
+        guard.mark_unfinished({"output_dir": str(output)}, "absolute deadline reached")
+        rows = json.loads((output / "slot-status.json").read_text())["slots"]
+        self.assertEqual([rows[name]["status"] for name in ("done", "active", "later")],
+                         ["answered", "time_censored", "not_started"])
+
     def test_shared_cap_cannot_be_reset(self):
         with self.assertRaisesRegex(guard.Stop, "shared"):
             guard.recovery_limits({**self.config, "cap_usd": 2})

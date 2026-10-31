@@ -120,7 +120,7 @@ def request_bound(config, metadata):
 
 def recovery_limits(config):
     """Carry every unsettled prior request at its full bound into a new pilot."""
-    if config.get("stage") != "pilot-recovery":
+    if config.get("stage") not in {"pilot-recovery", "overnight-transfer"}:
         return 0.0, 0.0
     repo = Path(config["repo"]).resolve()
     paths = [(repo / config[field]).resolve() for field in ("prior_ledger_file", "reconciliation_file")]
@@ -265,7 +265,7 @@ def validate_config(path, *, require_approval=False):
     repo = Path(config["repo"]).resolve()
     if repo != ROOT:
         raise Stop("configuration belongs to another checkout")
-    if config.get("stage") not in {"pilot", "pilot-recovery"} or config.get("version") != 1:
+    if config.get("stage") not in {"pilot", "pilot-recovery", "overnight-transfer"} or config.get("version") != 1:
         raise Stop("only a separately approved development pilot is supported")
     recovery_limits(config)
     if not 0 < number(config["cap_usd"]) <= 2 or number(config["minimum_balance_usd"]) < 20:
@@ -285,8 +285,13 @@ def validate_config(path, *, require_approval=False):
                 "experiments/runners/browser_use_runner.py", config["protocol_file"], config["dependencies_lock"]}
     required.update(str(p.relative_to(repo)) for p in (repo / "experiments/box").glob("*.py"))
     required.update(config["runtime_input_files"])
-    if config["stage"] == "pilot-recovery":
+    if config["stage"] in {"pilot-recovery", "overnight-transfer"}:
         required.update((config["prior_ledger_file"], config["reconciliation_file"]))
+    if config["stage"] == "overnight-transfer":
+        transfer_path = Path(config["transfer_questions_file"]).resolve()
+        if not transfer_path.is_relative_to(repo):
+            raise Stop("transfer questions must be inside the verified checkout")
+        required.add(str(transfer_path.relative_to(repo)))
     questions_path = Path(config["questions_file"]).resolve()
     if not questions_path.is_relative_to(repo):
         raise Stop("runtime questions must be inside this checkout")
@@ -317,6 +322,19 @@ def terminate_owned(child):
     except subprocess.TimeoutExpired:
         os.killpg(child.pid, signal.SIGKILL)
         child.wait(timeout=3)
+
+
+def mark_unfinished(config, reason):
+    path = Path(config["output_dir"]) / "slot-status.json"
+    if not path.exists():
+        return
+    manifest = json.loads(path.read_text())
+    for row in manifest["slots"].values():
+        if row["status"] == "running":
+            row.update(status="time_censored" if "deadline" in reason else "interrupted", reason=reason)
+        elif row["status"] == "scheduled":
+            row.update(status="not_started", reason=reason)
+    atomic_json(path, manifest)
 
 
 def execute(path):
@@ -351,7 +369,10 @@ def execute(path):
                     raise Stop("configuration changed during pilot")
                 time.sleep(1)
             if child.returncode:
-                raise Stop("pilot worker did not complete")
+                reason = "pilot worker did not complete"
+                if ledger.exists() and json.loads(ledger.read_text()).get("blocked_reason") == "absolute deadline reached":
+                    reason = "absolute deadline reached"
+                raise Stop(reason)
         ledger_data = json.loads(ledger.read_text())
         if ledger_data["blocked_reason"] or ledger_data["inflight"]:
             raise Stop("pilot charges or pending requests need reconciliation")
@@ -362,8 +383,10 @@ def execute(path):
                                  "account_after": after, "completed_at": time.time()})
     except BaseException as error:
         terminate_owned(child)
+        reason = str(error) if isinstance(error, Stop) else type(error).__name__
+        mark_unfinished(config, reason)
         atomic_json(status_path, {"status": "stopped", "config_sha256": sha(path),
-                                 "reason": str(error) if isinstance(error, Stop) else type(error).__name__,
+                                 "reason": reason,
                                  "stopped_at": time.time()})
         raise
     finally:

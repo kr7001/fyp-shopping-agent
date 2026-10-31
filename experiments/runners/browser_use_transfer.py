@@ -110,14 +110,26 @@ def preview(config):
     if config.get("stage") == "pilot":
         if len(questions) != 2 or config.get("repeats") != [1]:
             raise ValueError("pilot is two questions, two arms, one repeat")
-    elif config.get("stage") == "pilot-recovery":
+    elif config.get("stage") in {"pilot-recovery", "overnight-transfer"}:
+        pilot_clock = 2700 if config["stage"] == "overnight-transfer" else 1800
         if ([q["id"] for q in questions] != ["tee-cheapest-target", "tee-count-buyable"] or config.get("repeats") != [1]
-                or config.get("clock_s") != 1800):
-            raise ValueError("recovery is the original cheapest and count questions, both arms, one repeat, with 1800 seconds per arm")
+                or config.get("clock_s") != pilot_clock):
+            raise ValueError(f"recovery is the original cheapest and count questions, both arms, one repeat, with {pilot_clock} seconds per arm")
     else:
         if tuple(q["id"] for q in questions) != TASK_IDS or config.get("repeats") != [1, 2]:
             raise ValueError("formal transfer grid differs from the declared 32 slots")
     slots = schedule(questions, config["repeats"])
+    if config["stage"] == "overnight-transfer":
+        transfer = config["transfer_questions"]
+        saved = json.loads(Path(config["transfer_questions_file"]).read_text())["questions"]
+        if (transfer != saved or tuple(q["id"] for q in transfer) != TASK_IDS
+                or config.get("transfer_clock_s") != 2700):
+            raise ValueError("overnight transfer requires the fixed eight questions and 2700-second limit")
+        for slot in slots:
+            slot.update(id="pilot-" + slot["id"], phase="pilot", clock_s=config["clock_s"])
+        for slot in schedule(transfer, (1,)):
+            slot.update(id="transfer-" + slot["id"], phase="transfer", clock_s=2700)
+            slots.append(slot)
     return {"study_id": STUDY_ID, "stage": config["stage"], "paid_calls": 0,
             "warning_sha256": digest(COMMON_BRIEFING), "warning": COMMON_BRIEFING,
             "slots": slots,
@@ -130,6 +142,17 @@ def validate_pilot_record(record):
         raise Stop("pilot slot failed; inspect it before any paid continuation")
     if record.get("trace", {}).get("measurement_valid") is False:
         raise Stop("pilot response measurement failed; inspect it before any paid continuation")
+
+
+def technical_gate(records, budget_state):
+    """Check operability, without reading answer keys or selecting correct answers."""
+    passed = (len(records) == 4 and not budget_state["blocked_reason"] and not budget_state["inflight"]
+              and all(r.get("outcome") == "answered" and isinstance(r.get("answer"), str) and r["answer"].strip()
+                      and r.get("trace", {}).get("measurement_valid") is True
+                      and not r.get("error") and not r.get("error_type")
+                      for r in records))
+    return {"passed": bool(passed), "kind": "technical_only", "answers": "unscored; await human review",
+            "records_checked": len(records)}
 
 
 async def execute_study(config_path):
@@ -146,9 +169,21 @@ async def execute_study(config_path):
     output_dir = Path(config["output_dir"])
     output_dir.mkdir(parents=True, exist_ok=False)
     atomic_json(output_dir / "schedule.json", plan)
+    statuses = {slot["id"]: {"phase": slot.get("phase", "pilot"), "status": "scheduled"} for slot in plan["slots"]}
+    atomic_json(output_dir / "slot-status.json", {"slots": statuses})
     loop = asyncio.get_running_loop()
     completed = []
+    pilot_records = []
+    pilot_passed = False
     for slot in plan["slots"]:
+        if slot.get("phase") == "transfer" and not pilot_passed:
+            gate = technical_gate(pilot_records, budget.state)
+            atomic_json(output_dir / "development-gate.json", gate)
+            if gate.get("passed") is not True:
+                raise Stop("development technical gate failed; no transfer trial permitted")
+            pilot_passed = True
+        statuses[slot["id"]]["status"] = "running"
+        atomic_json(output_dir / "slot-status.json", {"slots": statuses})
         observed = await asyncio.to_thread(read_observation, config, slot["question"])
         parser_llm = None
         pending_parser_tasks = set()
@@ -190,6 +225,7 @@ async def execute_study(config_path):
                           "cost_usd": 0, "trace": {"opened": 0}, "elapsed_s": 0}
             else:
                 trial = {**config, "query": query, "start_url": slot["question"]["start_url"],
+                         "clock_s": slot.get("clock_s", config["clock_s"]),
                          "candidate_urls": [item.url for item in observed.listings],
                          "out_dir": str(output_dir / slot["id"])}
                 record = await run_trial(trial, budget, api_key=key)
@@ -198,7 +234,7 @@ async def execute_study(config_path):
                 raise Stop(budget.state["blocked_reason"] or "request remains in flight")
             new_calls = budget.state["calls"][before_calls:]
             parser_calls = budget.state["calls"][before_calls:call_start]
-            record.update(study_id=STUDY_ID, stage=config["stage"], slot=slot["id"], condition=slot["condition"],
+            record.update(study_id=STUDY_ID, stage=config["stage"], phase=slot.get("phase", "pilot"), slot=slot["id"], condition=slot["condition"],
                           repeat=slot["repeat"], task=slot["question"]["id"], question=slot["question"]["query"],
                           sent_query=query, briefing_sha256=digest(COMMON_BRIEFING), page=observed.record(),
                           box=decision.record() if decision else None, calls=new_calls,
@@ -206,6 +242,10 @@ async def execute_study(config_path):
                           total_cost_usd=sum(c["cost_usd"] for c in new_calls),
                           elapsed_with_parser_s=time.perf_counter() - started)
             atomic_json(output_dir / f"{slot['id']}.json", record)
+            statuses[slot["id"]]["status"] = record["outcome"]
+            atomic_json(output_dir / "slot-status.json", {"slots": statuses})
+            if slot.get("phase") == "pilot":
+                pilot_records.append(record)
             completed.append(slot["id"])
             atomic_json(output_dir / "completed.json", {"completed": completed, "expected": len(plan["slots"])})
             validate_pilot_record(record)
