@@ -13,6 +13,7 @@ import pathlib
 import re
 import subprocess
 import sys
+import tempfile
 import unittest
 import urllib.request
 from unittest import mock
@@ -289,18 +290,24 @@ class EveryPage(unittest.TestCase):
             ran.append(command)
             return subprocess.CompletedProcess(command, 0, stdout=json.dumps(got.record()), stderr="")
 
-        with mock.patch.object(page.subprocess, "run", child):
-            self.assertEqual(page.read(FIRST_URL, "rendered"), got)
-        self.assertEqual(ran[0][:3], [str(paths.NAIVE_PYTHON), str(pathlib.Path(page.__file__).resolve()), FIRST_URL])
-        self.assertEqual(ran[0][3:5], ["--reader", "rendered"])
-        self.assertIn(page.GATED_UA, ran[0])
-
         def failing(command, capture_output, text, timeout):
             return subprocess.CompletedProcess(command, 1, stdout="", stderr="Traceback\nValueError: no product cards on x")
 
-        with mock.patch.object(page.subprocess, "run", failing), \
-                self.assertRaisesRegex(ValueError, "the rendered reader failed on .*: ValueError: no product cards on x"):
-            page.read(FIRST_URL, "rendered")
+        # Model an installed reader interpreter without depending on the author's
+        # local .venv-naive. The child process is stubbed, so this file is never run.
+        with tempfile.TemporaryDirectory() as directory:
+            interpreter = pathlib.Path(directory) / "reader-python"
+            interpreter.touch()
+            with mock.patch.object(page.paths, "NAIVE_PYTHON", interpreter):
+                with mock.patch.object(page.subprocess, "run", child):
+                    self.assertEqual(page.read(FIRST_URL, "rendered"), got)
+                self.assertEqual(ran[0][:3], [str(interpreter), str(pathlib.Path(page.__file__).resolve()), FIRST_URL])
+                self.assertEqual(ran[0][3:5], ["--reader", "rendered"])
+                self.assertIn(page.GATED_UA, ran[0])
+
+                with mock.patch.object(page.subprocess, "run", failing), \
+                        self.assertRaisesRegex(ValueError, "the rendered reader failed on .*: ValueError: no product cards on x"):
+                    page.read(FIRST_URL, "rendered")
 
 
 class FakeTab:

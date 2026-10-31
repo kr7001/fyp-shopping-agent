@@ -16,15 +16,23 @@ block and evaluates it on a self-hosted WebArena-Verified shop with reproducible
 
 ## Quick start: free checks
 
-Use Python 3.11 or later. These checks use synthetic data and need neither an API key nor a shop.
+Use Python 3.11 or later. These checks use synthetic inputs and released records; they need neither an API key nor a shop.
 
 ```bash
 git clone https://github.com/kr7001/fyp-shopping-agent.git
 cd fyp-shopping-agent
 python3 -m venv .venv
 .venv/bin/python -m pip install -r experiments/requirements.txt
-make check-offline PY=.venv/bin/python
+make check-reproduction PY=.venv/bin/python
 ```
+
+To recompute the primary Wexcombe and two-round Quenby results without installing dependencies:
+
+```bash
+python3 tools/reproduce_report.py
+```
+
+This reproduces counts, medians and exact tests from [192 released measurements](experiments/artifacts/README.md). It does not independently audit raw traces or human grading.
 
 For browser experiments, follow the [environment setup](docs/user-guide.md)
 and [pinned agent setup](agent/README.md). They additionally require Docker, Node.js/npm,
@@ -53,7 +61,7 @@ For minimum-price questions, an advertised lower bound can rule out listings tha
 an observed candidate. This guarantee requires valid bounds, the correct interpretation and
 faithful execution. The agent can still misread a page or fail to follow the plan.
 
-## Evaluation and current evidence
+## Evaluation
 
 The comparison conditions are shipped openJiuwen, an open-everything instruction, and the block
 with rules or model parsing. They share a pinned agent version and the documented local
@@ -66,8 +74,7 @@ reproduction; ambiguous questions are scored under the reading actually used.
 - [Blind scoring rules](docs/content/claim2-reading-rules.md): human scoring with automatic
   scores and a separate reader-agreement analysis alongside it.
 
-**Status, 27 October 2026:** the second claim run has finished execution; its human scoring
-is still in progress. Its accuracy conclusions are not yet final.
+The [Quenby replication protocol](docs/content/replication-28-oct-protocol.md) extends the test to a second held-out market. The [released primary analyses](experiments/artifacts/README.md) retain the original human verdicts and automatic scores separately, and analyse the markets separately.
 
 The second experiment is a constrained stress test: it combines hidden variant prices with
 deliberately false promotional/stock labels, and only the block receives a label warning.
@@ -84,7 +91,8 @@ experiments/runners/    Browser execution and experiment orchestration
 experiments/analysis/   Scoring, costs, statistical comparisons and audits
 experiments/tasks/      Versioned task definitions and answer keys
 experiments/tests/      Unit, synthetic and historical regression checks
-experiments/results/   Recorded experiment artifacts used for reproduction
+experiments/results/   Historical experiment records
+experiments/artifacts/ Sanitized measurements for reproducing primary results
 env/                   Magento fixtures, generators, seeding and live checks
 docs/index.html        Technical overview
 docs/user-guide.md     Setup, execution and reproduction guide
@@ -96,6 +104,8 @@ tools/                 Blind-review helper and experiment tooling
 
 | Command | Purpose |
 | --- | --- |
+| `python3 tools/reproduce_report.py` | Recompute primary counts, medians and exact tests without dependencies |
+| `make check-reproduction` | Curated implementation, protocol, review-tool and released-artifact checks |
 | `make check-offline` | Synthetic protocol, blind-review and reader-agreement checks |
 | `make check` | Full unit suite and planner regression; some tests require local historical logs |
 | `make check-all` | Full checks plus the optional legacy Claude plugin tests |
