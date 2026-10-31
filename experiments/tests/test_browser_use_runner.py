@@ -66,6 +66,14 @@ class Metrics(unittest.TestCase):
             self.assertIsNone(runner.charge_metadata(payload, 200)['cost_usd'])
         self.assertEqual(runner.charge_metadata({'usage': {'cost': 0}}, 200)['cost_usd'], 0)
 
+    def test_failure_limit_defaults_to_two_and_accepts_only_one_to_five(self):
+        runner.validate_config(config())
+        for value in [1, 2, 5]:
+            runner.validate_config(dict(config(), max_failures=value))
+        for value in [0, 6, True, 2.5, '5']:
+            with self.assertRaises(ValueError):
+                runner.validate_config(dict(config(), max_failures=value))
+
     def test_runtime_disables_dotenv_and_telemetry(self):
         runner.configure_private_runtime()
         self.assertEqual(os.environ['PYTHON_DOTENV_DISABLED'], '1')
@@ -257,6 +265,9 @@ def local_shop():
             if self.path == '/redirect':
                 self.send_response(302); self.send_header('Location', self.server.redirect_target); self.end_headers(); return
             body = PRODUCT if self.path == '/product' else VARIANT_PRODUCT if self.path == '/variant' else DISABLED_PRODUCT if self.path == '/disabled' else SOFT404 if self.path == '/missing' else '<html><body><a href="/product">Test tee</a></body></html>'
+            if self.path.startswith('/count/'):
+                disabled = ' disabled' if int(self.path.rsplit('/', 1)[-1]) % 2 else ''
+                body = '<html><body class="catalog-product-view"><div class="product-info-main"><select id="attribute140"><option>S</option><option' + disabled + '>M</option></select></div></body></html>'
             self.send_response(200); self.send_header('Content-Type', 'text/html'); self.end_headers(); self.wfile.write(body.encode())
         def log_message(self, *args):
             pass
@@ -297,6 +308,57 @@ class BrowserBoundary(unittest.IsolatedAsyncioTestCase):
             self.assertTrue(all(ua == runner.GATED_UA for _, ua in calls))
             self.assertFalse(recorder.observation_errors)
             self.assertGreaterEqual(len(recorder.blocked), 2)
+
+    async def test_scoped_evaluate_recovers_actual_scripts_and_completes_stock_loop(self):
+        runner.configure_private_runtime()
+        from browser_use.llm.views import ChatInvokeCompletion
+        good = "const select = document.querySelector('#attribute140'); if (!select) { 'no select found'; } else { const opts = Array.from(select.options).map(o => ({text: o.text, value: o.value, disabled: o.disabled, selected: o.selected})); JSON.stringify({disabled: select.disabled, options: opts}); }"
+        bad = "const select = document.querySelector('#attribute140'); if (!select) return JSON.stringify({error: 'select not found'}); const opts = Array.from(select.options).map(o => ({text: o.text, value: o.value, disabled: o.disabled, selected: o.selected})); return JSON.stringify({disabled: select.disabled, options: opts});"
+        with local_shop() as (base, _, _), tempfile.TemporaryDirectory() as directory:
+            cfg = config(base, directory)
+            cfg.update(start_url=base + '/count/0', candidate_urls=[base + '/count/' + str(i) for i in range(6)], max_steps=25)
+            # Establish the original two distinct errors, without any model calls.
+            async with runner.research_browser(cfg, runner.NavigationRecorder(cfg['candidate_urls'])) as (context, _):
+                page = context.pages[0]; await page.goto(cfg['start_url'])
+                cdp = await context.new_cdp_session(page)
+                first = await cdp.send('Runtime.evaluate', {'expression': good, 'returnByValue': True})
+                invalid = await cdp.send('Runtime.evaluate', {'expression': bad, 'returnByValue': True})
+                repeated = await cdp.send('Runtime.evaluate', {'expression': good, 'returnByValue': True})
+                self.assertNotIn('exceptionDetails', first)
+                self.assertIn('Illegal return statement', invalid['exceptionDetails']['exception']['description'])
+                self.assertIn('already been declared', repeated['exceptionDetails']['exception']['description'])
+            actions = [{'evaluate': {'code': good}}, {'evaluate': {'code': bad}}, {'evaluate': {'code': good}}]
+            for i in range(1, 6):
+                actions.extend([{'navigate': {'url': base + '/count/' + str(i)}}, {'evaluate': {'code': good}}])
+            actions.extend([
+                {'evaluate': {'code': 'Promise.resolve({ok:true})'}},
+                {'evaluate': {'code': '(() => { const select = 7; return select; })()'}},
+                {'evaluate': {'code': 'window.sideEffects = (window.sideEffects || 0) + 1; throw new SyntaxError("deliberate runtime error")'}},
+                {'evaluate': {'code': 'window.sideEffects'}},
+                {'evaluate': {'code': 'typeof select'}},
+                {'done': {'text': 'Completed six-product stock inspection', 'success': True}}])
+            class Scripted:
+                model = 'offline-scripted'; provider = 'offline'; name = 'offline-scripted'; _verified_api_keys = True
+                def __init__(self): self.n = 0
+                async def ainvoke(self, messages, output_format=None, **kwargs):
+                    action = actions[self.n]; self.n += 1
+                    payload = {'evaluation_previous_goal': 'Offline test', 'memory': 'Scripted only',
+                               'next_goal': 'Check script scope and stock inspection', 'action': [action]}
+                    return ChatInvokeCompletion(completion=output_format.model_validate(payload), usage=None)
+            result = await runner.run_trial(cfg, scripted_llm=Scripted())
+            self.assertEqual(result['outcome'], 'answered', result)
+            self.assertEqual(result['trace']['opened'], 6)
+            history = json.loads(Path(directory, 'history.json').read_text())['history'][1:]
+            self.assertTrue(history[1]['result'][0]['error'])  # Invalid return remains an action error.
+            self.assertFalse(history[2]['result'][0].get('error'))  # Repaired script can redeclare const.
+            inspected = [json.loads(history[index]['result'][0]['extracted_content']) for index in [2,4,6,8,10,12]]
+            self.assertEqual(sum(any(o['text'] == 'M' and not o['disabled'] for o in row['options']) for row in inspected), 3)
+            self.assertEqual(json.loads(history[13]['result'][0]['extracted_content']), {'ok': True})
+            self.assertEqual(history[14]['result'][0]['extracted_content'], '7')
+            self.assertTrue(history[15]['result'][0]['error'])
+            self.assertEqual(history[16]['result'][0]['extracted_content'], '1')  # No retry after side effects.
+            self.assertEqual(history[17]['result'][0]['extracted_content'], 'undefined')
+            self.assertEqual(result['calls'], [])
 
     async def test_native_tools_preserve_disabled_option_select_and_optgroup(self):
         runner.configure_private_runtime()
@@ -375,12 +437,13 @@ class BrowserBoundary(unittest.IsolatedAsyncioTestCase):
                 return ChatInvokeCompletion(completion=output_format.model_validate(payload), usage=None)
         with local_shop() as (base, _, calls), tempfile.TemporaryDirectory() as directory:
             cfg = config(base, directory)
-            cfg.update(candidate_urls=[base + '/variant'], max_steps=4,
+            cfg.update(candidate_urls=[base + '/variant'], max_steps=4, max_failures=5,
                        query='Select size M and report its updated price.')
             model = Scripted(base + '/variant')
             result = await runner.run_trial(cfg, scripted_llm=model)
             self.assertEqual(result['outcome'], 'answered', result)
             self.assertEqual(result['answer'], '17.90', result)
+            self.assertEqual(result['settings']['max_failures'], 5)
             self.assertEqual(result['trace']['opened'], 1)
             self.assertEqual(result['calls'], [])
             self.assertEqual(result['cost_usd'], 0)
@@ -416,6 +479,7 @@ class BrowserBoundary(unittest.IsolatedAsyncioTestCase):
             result = await runner.run_trial(cfg, scripted_llm=Scripted(base, other))
             self.assertEqual(result['outcome'], 'answered', result)
             self.assertEqual(result['answer'], '12.00')
+            self.assertEqual(result['settings']['max_failures'], 2)
             self.assertEqual(result['trace']['opened'], 1)
             self.assertEqual(forbidden, [])
             self.assertGreaterEqual(len(result['trace']['blocked_requests']), 2)

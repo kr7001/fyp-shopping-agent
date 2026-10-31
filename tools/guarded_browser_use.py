@@ -22,6 +22,7 @@ import time
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
+RECOVERY_STAGES = {"pilot-recovery", "overnight-transfer", "monitored-transfer"}
 
 
 class Stop(RuntimeError):
@@ -118,31 +119,55 @@ def request_bound(config, metadata):
     return (context * inp + output * out) / 1_000_000
 
 
+def prior_ledger_names(config):
+    names = config.get("prior_ledger_files", [config["prior_ledger_file"]] if "prior_ledger_file" in config else [])
+    if (not isinstance(names, list) or not names or any(not isinstance(name, str) for name in names)
+            or len(set(names)) != len(names)):
+        raise Stop("recovery requires a nonempty, unique prior-ledger chain")
+    if config.get("prior_ledger_file") and config["prior_ledger_file"] not in names:
+        raise Stop("recovery ledger chain omits the original ledger")
+    return names
+
+
 def recovery_limits(config):
     """Carry every unsettled prior request at its full bound into a new pilot."""
-    if config.get("stage") not in {"pilot-recovery", "overnight-transfer"}:
+    if config.get("stage") not in RECOVERY_STAGES:
         return 0.0, 0.0
     repo = Path(config["repo"]).resolve()
-    paths = [(repo / config[field]).resolve() for field in ("prior_ledger_file", "reconciliation_file")]
+    names = prior_ledger_names(config)
+    paths = [(repo / name).resolve() for name in names + [config["reconciliation_file"]]]
     if any(not path.is_relative_to(repo) for path in paths):
         raise Stop("recovery evidence must be inside the verified checkout")
-    prior_path, reconciliation_path = paths
-    prior = json.loads(prior_path.read_text())
+    prior_paths, reconciliation_path = paths[:-1], paths[-1]
     reconciliation = json.loads(reconciliation_path.read_text())
     carryover = number(config["carryover_usd"])
     shared = number(config["shared_cap_usd"])
     if shared != 2 or carryover + number(config["cap_usd"]) > shared + 1e-12:
         raise Stop("recovery would exceed the original shared $2 cap")
-    unsettled = sum(number(c["reserved_usd"]) for c in prior["calls"] if c.get("cost_usd") is None)
-    unsettled += sum(number(c["reserved_usd"]) for c in prior["inflight"].values())
-    known = max(number(prior["charged_usd"]), sum(number(c["cost_usd"]) for c in prior["calls"] if c.get("cost_usd") is not None))
-    account_spend = max(0, number(prior["highwater_usage"]) - number(prior["start_usage"]))
-    if carryover + 1e-12 < max(known + unsettled, account_spend):
+    unsettled = minimum_carry = inherited_minimum = inherited_unsettled = 0.0
+    for prior_path in prior_paths:
+        prior = json.loads(prior_path.read_text())
+        if not set(prior.get("prior_ledger_files", [])) <= set(names):
+            raise Stop("recovery ledger chain omits an earlier attempt")
+        pending = sum(number(c["reserved_usd"]) for c in prior["calls"] if c.get("cost_usd") is None)
+        pending += sum(number(c["reserved_usd"]) for c in prior["inflight"].values())
+        known = max(number(prior["charged_usd"]), sum(number(c["cost_usd"]) for c in prior["calls"] if c.get("cost_usd") is not None))
+        account_spend = max(0, number(prior["highwater_usage"]) - number(prior["start_usage"]))
+        attempt_bound = max(known + pending, account_spend)
+        minimum_carry += attempt_bound
+        unsettled += pending
+        inherited_minimum = max(inherited_minimum, number(prior.get("carryover_usd", 0)) + attempt_bound)
+        inherited_unsettled = max(inherited_unsettled, number(prior.get("prior_unsettled_reserve_usd", 0)))
+    if carryover + 1e-12 < max(minimum_carry, inherited_minimum):
         raise Stop("recovery carryover omits prior charges or unsettled reservations")
-    if (reconciliation.get("prior_ledger_sha256") != sha(prior_path)
+    expected_hashes = {name: sha(path) for name, path in zip(names, prior_paths)}
+    recorded_hashes = reconciliation.get("prior_ledger_sha256")
+    if len(names) == 1 and isinstance(recorded_hashes, str):
+        recorded_hashes = {names[0]: recorded_hashes}
+    if (recorded_hashes != expected_hashes
             or number(reconciliation.get("carryover_usd")) != carryover):
         raise Stop("recovery reconciliation does not bind the prior ledger and carryover")
-    return carryover, unsettled
+    return carryover, max(unsettled, inherited_unsettled)
 
 
 class CallBudget:
@@ -164,6 +189,7 @@ class CallBudget:
                       "start_remaining": None, "minimum_remaining": None,
                       "account_decreases": 0, "deadline": config["deadline"], "cap_usd": self.cap,
                       "carryover_usd": self.carryover, "prior_unsettled_reserve_usd": self.prior_unsettled}
+        self.state["prior_ledger_files"] = prior_ledger_names(config) if config.get("stage") in RECOVERY_STAGES else []
         self._account()
         self._save()
 
@@ -265,7 +291,7 @@ def validate_config(path, *, require_approval=False):
     repo = Path(config["repo"]).resolve()
     if repo != ROOT:
         raise Stop("configuration belongs to another checkout")
-    if config.get("stage") not in {"pilot", "pilot-recovery", "overnight-transfer"} or config.get("version") != 1:
+    if config.get("stage") not in ({"pilot"} | RECOVERY_STAGES) or config.get("version") != 1:
         raise Stop("only a separately approved development pilot is supported")
     recovery_limits(config)
     if not 0 < number(config["cap_usd"]) <= 2 or number(config["minimum_balance_usd"]) < 20:
@@ -285,9 +311,10 @@ def validate_config(path, *, require_approval=False):
                 "experiments/runners/browser_use_runner.py", config["protocol_file"], config["dependencies_lock"]}
     required.update(str(p.relative_to(repo)) for p in (repo / "experiments/box").glob("*.py"))
     required.update(config["runtime_input_files"])
-    if config["stage"] in {"pilot-recovery", "overnight-transfer"}:
-        required.update((config["prior_ledger_file"], config["reconciliation_file"]))
-    if config["stage"] == "overnight-transfer":
+    if config["stage"] in RECOVERY_STAGES:
+        required.update(prior_ledger_names(config))
+        required.add(config["reconciliation_file"])
+    if config["stage"] in {"overnight-transfer", "monitored-transfer"}:
         transfer_path = Path(config["transfer_questions_file"]).resolve()
         if not transfer_path.is_relative_to(repo):
             raise Stop("transfer questions must be inside the verified checkout")

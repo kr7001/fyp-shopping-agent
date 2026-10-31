@@ -203,6 +203,43 @@ class Recovery(unittest.TestCase):
         self.assertEqual(guard.recovery_limits({**self.config, "stage": "overnight-transfer"}),
                          guard.recovery_limits(self.config))
 
+    def chain_config(self):
+        second = {"charged_usd": .0579932904, "start_usage": 101, "highwater_usage": 101.05,
+                  "inflight": {}, "calls": [{"cost_usd": .0579932904, "reserved_usd": .2117632}],
+                  "carryover_usd": .27440840106, "prior_unsettled_reserve_usd": .2117632,
+                  "prior_ledger_files": ["prior.json"]}
+        guard.atomic_json(self.repo / "second.json", second)
+        names = ["prior.json", "second.json"]
+        carry = .33240169146
+        guard.atomic_json(self.repo / "reconciliation.json", {
+            "prior_ledger_sha256": {name: guard.sha(self.repo / name) for name in names}, "carryover_usd": carry})
+        return {**self.config, "prior_ledger_files": names, "carryover_usd": carry, "cap_usd": 1.60}
+
+    def test_multiple_prior_ledgers_carry_all_costs_without_double_counting_inherited_carry(self):
+        config = self.chain_config()
+        carry, pending = guard.recovery_limits(config)
+        self.assertAlmostEqual(carry, .33240169146)
+        self.assertAlmostEqual(pending, .2117632)
+        budget = guard.CallBudget(config, self.repo / "new.json", lambda: {"usage": 102, "remaining": 50})
+        self.assertEqual(budget.state["charged_usd"], 0)
+        self.assertEqual(budget.state["prior_ledger_files"], ["prior.json", "second.json"])
+
+    def test_missing_earlier_attempt_and_duplicate_ledgers_are_rejected(self):
+        config = self.chain_config()
+        del config["prior_ledger_file"]
+        with self.assertRaisesRegex(guard.Stop, "earlier attempt"):
+            guard.recovery_limits({**config, "prior_ledger_files": ["second.json"]})
+        with self.assertRaisesRegex(guard.Stop, "unique"):
+            guard.recovery_limits({**config, "prior_ledger_files": ["prior.json", "prior.json"]})
+
+    def test_multiledger_reconciliation_binds_every_hash(self):
+        config = self.chain_config()
+        data = json.loads((self.repo / "reconciliation.json").read_text())
+        del data["prior_ledger_sha256"]["second.json"]
+        guard.atomic_json(self.repo / "reconciliation.json", data)
+        with self.assertRaisesRegex(guard.Stop, "reconciliation"):
+            guard.recovery_limits(config)
+
     def test_deadline_marks_running_and_unstarted_slots_without_changing_completed(self):
         output = self.repo / "output"
         guard.atomic_json(output / "slot-status.json", {"slots": {

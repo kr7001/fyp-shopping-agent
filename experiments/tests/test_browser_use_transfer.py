@@ -147,9 +147,45 @@ class Transfer(unittest.TestCase):
         study.validate_pilot_record({"outcome": "answered", "trace": {"measurement_valid": True}})
         study.validate_pilot_record({"outcome": "closed by the block"})
 
+    def test_formal_failure_continues_only_with_valid_measurements(self):
+        for outcome in ("failed", "timeout"):
+            study.validate_pilot_record({"outcome": outcome, "timeout_kind": "trial_clock",
+                                         "trace": {"measurement_valid": True}}, "transfer")
+        with self.assertRaisesRegex(study.Stop, "measurement"):
+            study.validate_pilot_record({"outcome": "failed", "trace": {"measurement_valid": False}}, "transfer")
+
+    def test_unknown_infrastructure_and_unmarked_timeouts_stop(self):
+        base = {"outcome": "failed", "trace": {"measurement_valid": True}}
+        for error in ("CDP connection closed", "APITimeoutError", "WebSocket disconnected", "unexpected unexplained error"):
+            with self.subTest(error=error), self.assertRaisesRegex(study.Stop, "infrastructure or unknown"):
+                study.validate_pilot_record({**base, "agent_errors": [error]}, "transfer")
+        with self.assertRaisesRegex(study.Stop, "unclassified"):
+            study.validate_pilot_record({**base, "outcome": "timeout"}, "transfer")
+        for error in ("SyntaxError: Unexpected token (", "Cannot select disabled option", "StaleElementReferenceException", "Maximum steps reached"):
+            study.validate_pilot_record({**base, "agent_errors": [error]}, "transfer")
+        native = "JavaScript Execution Failed:\nJavaScript execution error: Uncaught\n\nValidated Code:\nfetch('http://localhost/test')"
+        study.validate_pilot_record({**base, "agent_errors": [native]}, "transfer")
+        with self.assertRaisesRegex(study.Stop, "infrastructure or unknown"):
+            study.validate_pilot_record({**base, "agent_errors": [native.replace("Uncaught", "CDP disconnected")]}, "transfer")
+
+    def test_completed_answer_retains_recovered_unknown_action_error_without_filtering(self):
+        record = {"outcome": "answered", "answer": "Synthetic answer", "trace": {"measurement_valid": True},
+                  "agent_errors": ["An unfamiliar tool mistake that was recovered"]}
+        study.validate_pilot_record(record, "transfer")
+        self.assertEqual(len(record["agent_errors"]), 1)
+        with self.assertRaisesRegex(study.Stop, "infrastructure or unknown"):
+            study.validate_pilot_record({**record, "error_type": "ConnectionError"}, "transfer")
+
+    def test_monitored_diagnostic_gate_accepts_ordinary_failures_but_not_infrastructure(self):
+        failed = {"outcome": "failed", "answer": None, "trace": {"measurement_valid": True}, "agent_errors": ["SyntaxError"]}
+        clear = {"blocked_reason": None, "inflight": {}}
+        self.assertTrue(study.technical_gate([failed, failed], clear, expected=2, allow_agent_failures=True)["passed"])
+        bad = {**failed, "agent_errors": ["CDP disconnected"]}
+        self.assertFalse(study.technical_gate([failed, bad], clear, expected=2, allow_agent_failures=True)["passed"])
+
 
 class PilotIntegration(unittest.IsolatedAsyncioTestCase):
-    async def run_overnight(self, empty_pilot_answer=False):
+    async def run_overnight(self, empty_pilot_answer=False, formal_failures=False, unknown_formal_charge=False, monitored=False, pilot_failures=False):
         with tempfile.TemporaryDirectory() as folder:
             output = Path(folder) / "output"
             transfer = [question(name) for name in study.TASK_IDS]
@@ -159,9 +195,14 @@ class PilotIntegration(unittest.IsolatedAsyncioTestCase):
                       "repeats": [1], "clock_s": 2700, "transfer_clock_s": 2700, "transfer_questions": transfer,
                       "transfer_questions_file": str(questions_path), "environment_file": "unused",
                       "ledger_path": "unused", "output_dir": str(output)}
+            pilot_count = 2 if monitored else 4
+            if monitored:
+                config.update(stage="monitored-transfer", questions=[question("tee-count-buyable")])
             plan = study.preview(config)
-            self.assertEqual(len(plan["slots"]), 20)
-            self.assertEqual(len({r["id"] for r in plan["slots"]}), 20)
+            self.assertEqual(len(plan["slots"]), pilot_count + 16)
+            self.assertEqual(len({r["id"] for r in plan["slots"]}), pilot_count + 16)
+            if monitored:
+                self.assertEqual([r["condition"] for r in plan["slots"][:2]], ["block", "baseline"])
             budgets = []
             def make_budget(*args):
                 budget = types.SimpleNamespace(state={"calls": [], "inflight": {}, "blocked_reason": None})
@@ -170,7 +211,12 @@ class PilotIntegration(unittest.IsolatedAsyncioTestCase):
             trials = []
             async def run_trial(trial, budget, **kwargs):
                 trials.append(trial)
-                return {"outcome": "answered", "cost_usd": 0, "trace": {"measurement_valid": True},
+                outcome = ("failed" if len(trials) == 5 else "timeout") if formal_failures and len(trials) in (5, 6) else "answered"
+                if pilot_failures and len(trials) <= pilot_count:
+                    outcome = "failed"
+                if unknown_formal_charge and len(trials) == 5:
+                    budget.state["blocked_reason"] = "unknown charge"
+                return {"outcome": outcome, "timeout_kind": "trial_clock", "cost_usd": 0, "trace": {"measurement_valid": True},
                         "answer": "" if empty_pilot_answer and len(trials) == 2 else "Synthetic unscored answer"}
             adapter = types.SimpleNamespace(create_llm=mock.Mock(), close_llm=mock.AsyncMock(),
                                             run_trial=run_trial, configure_private_runtime=mock.Mock())
@@ -185,21 +231,36 @@ class PilotIntegration(unittest.IsolatedAsyncioTestCase):
                 if empty_pilot_answer:
                     with self.assertRaisesRegex(study.Stop, "technical gate"):
                         await study.execute_study("unused")
+                elif unknown_formal_charge:
+                    with self.assertRaisesRegex(study.Stop, "unknown charge"):
+                        await study.execute_study("unused")
                 else:
                     await study.execute_study("unused")
             self.assertEqual(len(budgets), 1)
             gate = json.loads((output / "development-gate.json").read_text())
             self.assertEqual(gate["passed"], not empty_pilot_answer)
             self.assertEqual(gate["kind"], "technical_only")
-            self.assertEqual(len(trials), 4 if empty_pilot_answer else 20)
-            self.assertEqual([t["clock_s"] for t in trials[:4]], [2700] * 4)
-            self.assertEqual([t["clock_s"] for t in trials[4:]], [2700] * (len(trials) - 4))
+            self.assertEqual(len(trials), pilot_count if empty_pilot_answer else 5 if unknown_formal_charge else pilot_count + 16)
+            self.assertEqual([t["clock_s"] for t in trials], [2700] * len(trials))
+            if formal_failures:
+                rows = json.loads((output / "slot-status.json").read_text())["slots"]
+                self.assertEqual(rows[plan["slots"][4]["id"]]["status"], "failed")
+                self.assertEqual(rows[plan["slots"][5]["id"]]["status"], "timeout")
 
     async def test_overnight_runs20_slots_with_one_shared_budget_after_technical_gate(self):
         await self.run_overnight()
 
     async def test_failed_technical_gate_never_starts_transfer(self):
         await self.run_overnight(empty_pilot_answer=True)
+
+    async def test_formal_failures_are_retained_and_schedule_continues_without_replay(self):
+        await self.run_overnight(formal_failures=True)
+
+    async def test_unknown_formal_charge_still_stops_immediately(self):
+        await self.run_overnight(unknown_formal_charge=True)
+
+    async def test_monitored_runs18_slots_after_two_valid_failed_diagnostics_without_replay(self):
+        await self.run_overnight(monitored=True, pilot_failures=True)
 
     async def test_failed_slot_is_saved_and_stops_before_next_trial(self):
         with tempfile.TemporaryDirectory() as folder:

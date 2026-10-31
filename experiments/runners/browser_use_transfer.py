@@ -10,6 +10,7 @@ import asyncio
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -110,21 +111,24 @@ def preview(config):
     if config.get("stage") == "pilot":
         if len(questions) != 2 or config.get("repeats") != [1]:
             raise ValueError("pilot is two questions, two arms, one repeat")
-    elif config.get("stage") in {"pilot-recovery", "overnight-transfer"}:
-        pilot_clock = 2700 if config["stage"] == "overnight-transfer" else 1800
-        if ([q["id"] for q in questions] != ["tee-cheapest-target", "tee-count-buyable"] or config.get("repeats") != [1]
+    elif config.get("stage") in {"pilot-recovery", "overnight-transfer", "monitored-transfer"}:
+        pilot_clock = 1800 if config["stage"] == "pilot-recovery" else 2700
+        expected_ids = ["tee-count-buyable"] if config["stage"] == "monitored-transfer" else ["tee-cheapest-target", "tee-count-buyable"]
+        if ([q["id"] for q in questions] != expected_ids or config.get("repeats") != [1]
                 or config.get("clock_s") != pilot_clock):
-            raise ValueError(f"recovery is the original cheapest and count questions, both arms, one repeat, with {pilot_clock} seconds per arm")
+            raise ValueError(f"recovery requires {expected_ids}, both arms, one repeat, with {pilot_clock} seconds per arm")
     else:
         if tuple(q["id"] for q in questions) != TASK_IDS or config.get("repeats") != [1, 2]:
             raise ValueError("formal transfer grid differs from the declared 32 slots")
     slots = schedule(questions, config["repeats"])
-    if config["stage"] == "overnight-transfer":
+    if config["stage"] in {"overnight-transfer", "monitored-transfer"}:
         transfer = config["transfer_questions"]
         saved = json.loads(Path(config["transfer_questions_file"]).read_text())["questions"]
         if (transfer != saved or tuple(q["id"] for q in transfer) != TASK_IDS
                 or config.get("transfer_clock_s") != 2700):
             raise ValueError("overnight transfer requires the fixed eight questions and 2700-second limit")
+        if config["stage"] == "monitored-transfer":
+            slots.reverse()  # Count retains the original pilot's block/baseline order.
         for slot in slots:
             slot.update(id="pilot-" + slot["id"], phase="pilot", clock_s=config["clock_s"])
         for slot in schedule(transfer, (1,)):
@@ -136,21 +140,49 @@ def preview(config):
             "block_preview": "The model parser is not called in preview. Its prompt and frozen logic are inspected separately."}
 
 
-def validate_pilot_record(record):
+def validate_pilot_record(record, phase="pilot"):
     """Called only after the original record has been saved, including failures."""
+    if phase == "transfer":
+        if record.get("trace", {}).get("measurement_valid") is not True:
+            raise Stop("transfer response measurement failed; no further paid trial permitted")
+        if record.get("outcome") not in {"answered", "closed by the block", "failed", "timeout"}:
+            raise Stop("unknown transfer outcome; inspect it before continuing")
+        if (record.get("outcome") == "answered" and isinstance(record.get("answer"), str) and record["answer"].strip()
+                and not record.get("error") and not record.get("error_type")):
+            return  # Recovered tool mistakes remain in history but do not filter completed answers.
+        if record.get("outcome") == "timeout" and record.get("timeout_kind") != "trial_clock":
+            raise Stop("unclassified or infrastructure timeout; inspect it before continuing")
+        errors = [record.get("error"), record.get("error_type"), *(record.get("agent_errors") or [])]
+        infrastructure = re.compile(r"cdp|websocket|connect|disconnect|network|socket|provider|http|openrouter|rate.limit|timed?\s*out|timeout|(?:browser|target|session).{0,12}closed|apierror", re.I)
+        ordinary = re.compile(r"syntaxerror|javascript (?:syntax|execution failed|execution error)|unexpected token|(?:option.{0,30}disabled|disabled.{0,30}option)|stale.?element|stale.{0,20}node|max(?:imum)?[ _-]?steps?|no (?:final )?(?:answer|result)", re.I)
+        for error in filter(None, errors):
+            # Native evaluate errors append source code, which can contain URLs.
+            # Classify the error header, not the explicitly labelled code echo.
+            text = re.split(r"\n\s*Validated Code\b", str(error), maxsplit=1)[0]
+            if infrastructure.search(text) or not ordinary.search(text):
+                raise Stop("infrastructure or unknown agent error; inspect it before continuing")
+        return  # Ordinary failures are observations, not grounds for selective replay.
     if record.get("error") or record.get("error_type") or record.get("outcome") not in {"answered", "closed by the block"}:
         raise Stop("pilot slot failed; inspect it before any paid continuation")
     if record.get("trace", {}).get("measurement_valid") is False:
         raise Stop("pilot response measurement failed; inspect it before any paid continuation")
 
 
-def technical_gate(records, budget_state):
+def technical_gate(records, budget_state, expected=4, allow_agent_failures=False):
     """Check operability, without reading answer keys or selecting correct answers."""
-    passed = (len(records) == 4 and not budget_state["blocked_reason"] and not budget_state["inflight"]
+    clear = len(records) == expected and not budget_state["blocked_reason"] and not budget_state["inflight"]
+    passed = (clear
               and all(r.get("outcome") == "answered" and isinstance(r.get("answer"), str) and r["answer"].strip()
                       and r.get("trace", {}).get("measurement_valid") is True
                       and not r.get("error") and not r.get("error_type")
                       for r in records))
+    if allow_agent_failures and clear:
+        try:
+            for record in records:
+                validate_pilot_record(record, "transfer")
+            passed = True
+        except Stop:
+            passed = False
     return {"passed": bool(passed), "kind": "technical_only", "answers": "unscored; await human review",
             "records_checked": len(records)}
 
@@ -177,7 +209,8 @@ async def execute_study(config_path):
     pilot_passed = False
     for slot in plan["slots"]:
         if slot.get("phase") == "transfer" and not pilot_passed:
-            gate = technical_gate(pilot_records, budget.state)
+            gate = technical_gate(pilot_records, budget.state, expected=2 if config["stage"] == "monitored-transfer" else 4,
+                                  allow_agent_failures=config["stage"] == "monitored-transfer")
             atomic_json(output_dir / "development-gate.json", gate)
             if gate.get("passed") is not True:
                 raise Stop("development technical gate failed; no transfer trial permitted")
@@ -222,7 +255,7 @@ async def execute_study(config_path):
             call_start = len(budget.state["calls"])
             if query is None:
                 record = {"answer": decision.refuse or decision.ask, "outcome": "closed by the block",
-                          "cost_usd": 0, "trace": {"opened": 0}, "elapsed_s": 0}
+                          "cost_usd": 0, "trace": {"opened": 0, "measurement_valid": True}, "elapsed_s": 0}
             else:
                 trial = {**config, "query": query, "start_url": slot["question"]["start_url"],
                          "clock_s": slot.get("clock_s", config["clock_s"]),
@@ -248,7 +281,7 @@ async def execute_study(config_path):
                 pilot_records.append(record)
             completed.append(slot["id"])
             atomic_json(output_dir / "completed.json", {"completed": completed, "expected": len(plan["slots"])})
-            validate_pilot_record(record)
+            validate_pilot_record(record, "transfer" if config["stage"] == "monitored-transfer" else slot.get("phase", "pilot"))
         finally:
             pending = list(pending_parser_tasks)
             for task in pending:

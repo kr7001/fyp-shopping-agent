@@ -140,6 +140,9 @@ def validate_config(config: dict):
     for name in ("max_input_bytes", "max_output_tokens", "max_steps", "clock_s"):
         if type(config[name]) is not int or config[name] <= 0:
             raise ValueError(f"{name} must be a positive integer")
+    failures = config.get("max_failures", 2)
+    if type(failures) is not int or not 1 <= failures <= 5:
+        raise ValueError("max_failures must be an integer from 1 to 5")
     if not isinstance(config["provider"], dict) or not config["provider"]:
         raise ValueError("explicit provider routing is required")
     if config.get("use_vision", False) is not False:
@@ -475,6 +478,25 @@ def enforce_native_dropdown_state(tools):
     return tools
 
 
+def scope_evaluate_calls(tools):
+    """Keep native script results/errors, but make local declarations per-call.
+
+    Native CDP Runtime.evaluate keeps top-level lexical bindings between calls.
+    A corrected script can therefore fail after an earlier `const` declaration.
+    Direct eval in a fresh function preserves script completion values, IIFEs and
+    promises without retrying code or repairing invalid top-level return syntax.
+    This is a declared adapter compatibility change, not a JavaScript sandbox.
+    """
+    validate = tools._validate_and_fix_javascript
+    def scoped(code):
+        return "(function () { return eval(" + json.dumps(validate(code)) + "); }).call(window)"
+    tools._validate_and_fix_javascript = scoped
+    tools.registry.registry.actions["evaluate"].description += (
+        " Each call has fresh local variables. Use an IIFE for return statements. "
+        "Global-object properties and page state can persist between calls.")
+    return tools
+
+
 def research_tools():
     """Keep native browser tools while denying host-file upload and vision input.
 
@@ -485,7 +507,7 @@ def research_tools():
     """
     configure_private_runtime()
     from browser_use import Tools
-    return enforce_native_dropdown_state(Tools(exclude_actions=["upload_file", "screenshot"]))
+    return scope_evaluate_calls(enforce_native_dropdown_state(Tools(exclude_actions=["upload_file", "screenshot"])))
 
 
 async def run_trial(config: dict, guard=None, api_key: str | None = None, *, scripted_llm=None):
@@ -507,9 +529,11 @@ async def run_trial(config: dict, guard=None, api_key: str | None = None, *, scr
               "model": config["model"], "provider_routing": config["provider"],
               "offline_scripted": scripted_llm is not None,
               "dropdown_semantics": "native-disabled-state-v1",
+              "evaluate_semantics": "fresh-local-script-scope-v1",
               "settings": {k: config[k] for k in ("start_url", "model", "provider", "temperature",
                            "frequency_penalty", "top_p", "max_input_bytes", "max_output_tokens",
-                           "max_steps", "clock_s", "llm_timeout", "browser_executable") if k in config}}
+                           "max_steps", "max_failures", "clock_s", "llm_timeout", "browser_executable") if k in config}}
+    record["settings"]["max_failures"] = config.get("max_failures", 2)
     agent = browser = None
     try:
         async with research_browser(config, recorder) as (context, cdp_url):
@@ -523,7 +547,7 @@ async def run_trial(config: dict, guard=None, api_key: str | None = None, *, scr
                           page_extraction_llm=llm, fallback_llm=None, judge_llm=llm,
                           use_judge=False, use_vision=False, calculate_cost=False,
                           use_thinking=True, enable_planning=True, message_compaction=True,
-                          max_actions_per_step=5, max_failures=2,
+                          max_actions_per_step=5, max_failures=config.get("max_failures", 2),
                           llm_timeout=config.get("llm_timeout", 120), step_timeout=180,
                           final_response_after_failure=False, generate_gif=False,
                           available_file_paths=[], file_system_path=str(out_dir / "agent-files"),
