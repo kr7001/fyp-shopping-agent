@@ -17,6 +17,7 @@ from html.parser import HTMLParser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import http.client
 import hashlib
+from functools import wraps
 import importlib.metadata
 import json
 import math
@@ -395,6 +396,85 @@ async def research_browser(config: dict, recorder: NavigationRecorder):
                 await context.close()
 
 
+async def native_select_state(browser_session, index: int, *, descendants: bool = True):
+    """Read ordinary DOM option state without fixture data or hidden price tables."""
+    node = await browser_session.get_element_by_index(index)
+    if node is None:
+        return None
+    session = await browser_session.get_or_create_cdp_session()
+    resolved = await session.cdp_client.send.DOM.resolveNode(
+        params={"backendNodeId": node.backend_node_id}, session_id=session.session_id)
+    object_id = resolved.get("object", {}).get("objectId")
+    if not object_id:
+        raise RuntimeError("could not inspect dropdown DOM state")
+    response = await session.cdp_client.send.Runtime.callFunctionOn(
+        params={"objectId": object_id, "returnByValue": True,
+                "arguments": [{"value": descendants}],
+                "functionDeclaration": """function(descendants) {
+                    const select = this.tagName.toLowerCase() === 'select' ? this :
+                        (descendants ? this.querySelector('select') : null);
+                    if (!select) return null;
+                    const disabled = select.matches(':disabled');
+                    return {disabled, options: Array.from(select.options).map(option => ({
+                        text: option.text.trim(), value: option.value,
+                        selected: option.selected,
+                        disabled: disabled || option.matches(':disabled')
+                    }))};
+                }"""}, session_id=session.session_id)
+    if response.get("exceptionDetails"):
+        raise RuntimeError("dropdown DOM inspection failed")
+    return response.get("result", {}).get("value")
+
+
+def enforce_native_dropdown_state(tools):
+    """Repair 0.13.14 built-in dropdown tools symmetrically for both study arms.
+
+    Upstream omits disabled flags and can programmatically select disabled options.
+    These wrappers expose DOM disabled state and reject those selections, including
+    disabled select/optgroup ancestors. They do not sandbox arbitrary evaluate().
+    """
+    from browser_use.agent.views import ActionResult
+
+    def describe(state):
+        text = "Native dropdown DOM state (disabled options cannot be chosen):\n" + json.dumps(state, ensure_ascii=False)
+        return ActionResult(extracted_content=text, long_term_memory=text,
+                            include_extracted_content_only_once=True)
+
+    for name in ("dropdown_options", "select_dropdown"):
+        action = tools.registry.registry.actions[name]
+        original = action.function
+        def wrap(original, name):
+            @wraps(original)
+            async def checked(*args, **kwargs):
+                params, browser = kwargs["params"], kwargs["browser_session"]
+                state = await native_select_state(browser, params.index)
+                if state is not None:
+                    if name == "dropdown_options":
+                        return describe(state)
+                    target = params.text.lower()
+                    match = next((option for option in state["options"]
+                                  if option["text"].lower() == target or option["value"].lower() == target), None)
+                    if match is None:
+                        return ActionResult(error="Option was not found in the inspected native dropdown.")
+                    if state["disabled"] or match["disabled"]:
+                        return ActionResult(error="Cannot select a disabled option or disabled dropdown.")
+                return await original(*args, **kwargs)
+            return checked
+        action.function = wrap(original, name)
+
+    # Native click(select) invokes a closure directly, bypassing the registry.
+    # Wrap its stored index handler so action re-registration cannot undo the fix.
+    original_click = tools._click_by_index
+    @wraps(original_click)
+    async def checked_click(params, browser_session):
+        state = await native_select_state(browser_session, params.index, descendants=False)
+        if state is not None:
+            return describe(state)
+        return await original_click(params, browser_session)
+    tools._click_by_index = checked_click
+    return tools
+
+
 def research_tools():
     """Keep native browser tools while denying host-file upload and vision input.
 
@@ -405,7 +485,7 @@ def research_tools():
     """
     configure_private_runtime()
     from browser_use import Tools
-    return Tools(exclude_actions=["upload_file", "screenshot"])
+    return enforce_native_dropdown_state(Tools(exclude_actions=["upload_file", "screenshot"]))
 
 
 async def run_trial(config: dict, guard=None, api_key: str | None = None, *, scripted_llm=None):
@@ -426,6 +506,7 @@ async def run_trial(config: dict, guard=None, api_key: str | None = None, *, scr
               "query": config["query"], "answer": None, "outcome": "failed",
               "model": config["model"], "provider_routing": config["provider"],
               "offline_scripted": scripted_llm is not None,
+              "dropdown_semantics": "native-disabled-state-v1",
               "settings": {k: config[k] for k in ("start_url", "model", "provider", "temperature",
                            "frequency_penalty", "top_p", "max_input_bytes", "max_output_tokens",
                            "max_steps", "clock_s", "llm_timeout", "browser_executable") if k in config}}

@@ -110,12 +110,17 @@ def preview(config):
     if config.get("stage") == "pilot":
         if len(questions) != 2 or config.get("repeats") != [1]:
             raise ValueError("pilot is two questions, two arms, one repeat")
+    elif config.get("stage") == "pilot-recovery":
+        if ([q["id"] for q in questions] != ["tee-cheapest-target", "tee-count-buyable"] or config.get("repeats") != [1]
+                or config.get("clock_s") != 1800):
+            raise ValueError("recovery is the original cheapest and count questions, both arms, one repeat, with 1800 seconds per arm")
     else:
         if tuple(q["id"] for q in questions) != TASK_IDS or config.get("repeats") != [1, 2]:
             raise ValueError("formal transfer grid differs from the declared 32 slots")
+    slots = schedule(questions, config["repeats"])
     return {"study_id": STUDY_ID, "stage": config["stage"], "paid_calls": 0,
             "warning_sha256": digest(COMMON_BRIEFING), "warning": COMMON_BRIEFING,
-            "slots": schedule(questions, config["repeats"]),
+            "slots": slots,
             "block_preview": "The model parser is not called in preview. Its prompt and frozen logic are inspected separately."}
 
 

@@ -81,3 +81,5 @@ CLAUDE.md.bak-*
 # Separate Browser Use transfer development environment.
 /.venv-browser-use/
 !/docs/content/browser-use-transfer-31-oct-protocol.md
+
+!/docs/content/browser-use-pilot-recovery-1-nov-protocol.md

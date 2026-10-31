@@ -23,6 +23,7 @@ import browser_use_runner as runner
 
 PRODUCT = '<html><body class="catalog-product-view"><div class="product-info-main"><h1>Test tee</h1><select id="size"><option>M</option></select><span id="price">12.00</span></div></body></html>'
 VARIANT_PRODUCT = '''<html><body class="catalog-product-view"><div class="product-info-main"><h1>Variant test tee</h1><label for="size">Size</label><select id="size" onchange="setTimeout(() => document.querySelector('#price').textContent = this.value === 'M' ? '17.90' : '12.00', 1000)"><option value="S">S</option><option value="M">M</option></select><p>Variant price: <span id="price">12.00</span></p></div></body></html>'''
+DISABLED_PRODUCT = '''<html><body class="catalog-product-view"><div class="product-info-main"><h1>Disabled option test</h1><select id="size" onchange="document.querySelector('#price').textContent = this.value === 'M' ? '9.00' : '17.90'"><option value="S">S</option><option value="M" disabled>M - Only 3 left!</option><optgroup label="Sold out" disabled><option value="XL">XL</option></optgroup><option value="L">L</option></select><select id="unavailable" disabled><option value="">Choose</option><option value="Z">Z</option></select><p>Variant price: <span id="price">12.00</span></p></div></body></html>'''
 SOFT404 = '<html><body class="cms-noroute-index"><h1>Not found</h1></body></html>'
 
 
@@ -113,6 +114,26 @@ class Transport(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn('screenshot', actions)
         for needed in ['select_dropdown', 'dropdown_options', 'read_file', 'write_file', 'evaluate']:
             self.assertIn(needed, actions)
+
+    async def test_disabled_select_refused_before_original_selection(self):
+        from types import SimpleNamespace
+        from unittest.mock import AsyncMock, patch
+        tools = runner.research_tools()
+        state = {'disabled': True, 'options': [{'text': 'Z', 'value': 'Z', 'disabled': True}]}
+        with patch.object(runner, 'native_select_state', new=AsyncMock(return_value=state)):
+            result = await tools.registry.registry.actions['select_dropdown'].function(
+                params=SimpleNamespace(index=1, text='Z'), browser_session=object())
+        self.assertEqual(result.error, 'Cannot select a disabled option or disabled dropdown.')
+
+    async def test_unknown_native_option_does_not_fall_back_to_another_select(self):
+        from types import SimpleNamespace
+        from unittest.mock import AsyncMock, patch
+        tools = runner.research_tools()
+        state = {'disabled': False, 'options': [{'text': 'Z', 'value': 'Z', 'disabled': False}]}
+        with patch.object(runner, 'native_select_state', new=AsyncMock(return_value=state)):
+            result = await tools.registry.registry.actions['select_dropdown'].function(
+                params=SimpleNamespace(index=1, text='missing'), browser_session=object())
+        self.assertEqual(result.error, 'Option was not found in the inspected native dropdown.')
 
     async def test_native_model_captures_raw_charge_and_pins_every_request(self):
         import httpx
@@ -235,7 +256,7 @@ def local_shop():
             requests.append((self.path, self.headers.get('User-Agent')))
             if self.path == '/redirect':
                 self.send_response(302); self.send_header('Location', self.server.redirect_target); self.end_headers(); return
-            body = PRODUCT if self.path == '/product' else VARIANT_PRODUCT if self.path == '/variant' else SOFT404 if self.path == '/missing' else '<html><body><a href="/product">Test tee</a></body></html>'
+            body = PRODUCT if self.path == '/product' else VARIANT_PRODUCT if self.path == '/variant' else DISABLED_PRODUCT if self.path == '/disabled' else SOFT404 if self.path == '/missing' else '<html><body><a href="/product">Test tee</a></body></html>'
             self.send_response(200); self.send_header('Content-Type', 'text/html'); self.end_headers(); self.wfile.write(body.encode())
         def log_message(self, *args):
             pass
@@ -276,6 +297,50 @@ class BrowserBoundary(unittest.IsolatedAsyncioTestCase):
             self.assertTrue(all(ua == runner.GATED_UA for _, ua in calls))
             self.assertFalse(recorder.observation_errors)
             self.assertGreaterEqual(len(recorder.blocked), 2)
+
+    async def test_native_tools_preserve_disabled_option_select_and_optgroup(self):
+        runner.configure_private_runtime()
+        from browser_use.llm.views import ChatInvokeCompletion
+        class Scripted:
+            model = 'offline-scripted'; provider = 'offline'; name = 'offline-scripted'; _verified_api_keys = True
+            def __init__(self): self.n = 0; self.indices = {}
+            async def ainvoke(self, messages, output_format=None, **kwargs):
+                self.n += 1
+                current = '\n'.join(str(message.content) for message in messages)
+                for name in ['size', 'unavailable']:
+                    matches = re.findall(r'\[(\d+)\]<select[^\n]*?id=' + name + r'(?:\s|/|>)', current)
+                    if matches: self.indices[name] = int(matches[-1])
+                primary = self.indices['size']
+                unchanged = {'evaluate': {'code': 'JSON.stringify({size:document.querySelector("#size").value,unavailable:document.querySelector("#unavailable").value,price:document.querySelector("#price").textContent})'}}
+                actions = [
+                    {'click': {'index': primary}},
+                    {'dropdown_options': {'index': primary}},
+                    {'select_dropdown': {'index': primary, 'text': 'M - Only 3 left!'}}, unchanged,
+                    {'select_dropdown': {'index': primary, 'text': 'XL'}}, unchanged,
+                    {'select_dropdown': {'index': primary, 'text': 'L'}},
+                    {'evaluate': {'code': 'JSON.stringify({size:document.querySelector("#size").value,price:document.querySelector("#price").textContent})'}},
+                    {'done': {'text': 'Checked disabled state', 'success': True}}]
+                payload = {'evaluation_previous_goal': 'Offline test', 'memory': 'Scripted only',
+                           'next_goal': 'Check disabled options', 'action': [actions[self.n - 1]]}
+                return ChatInvokeCompletion(completion=output_format.model_validate(payload), usage=None)
+        with local_shop() as (base, _, _), tempfile.TemporaryDirectory() as directory:
+            cfg = config(base, directory)
+            cfg.update(start_url=base + '/disabled', candidate_urls=[base + '/disabled'], max_steps=10)
+            result = await runner.run_trial(cfg, scripted_llm=Scripted())
+            self.assertEqual(result['outcome'], 'answered', result)
+            history = json.loads(Path(directory, 'history.json').read_text())['history']
+            for index in [1, 2]:
+                observation = history[index]['result'][0]['extracted_content']
+                self.assertIn('"text": "M - Only 3 left!", "value": "M", "selected": false, "disabled": true', observation)
+                self.assertIn('"text": "XL", "value": "XL", "selected": false, "disabled": true', observation)
+            for index in [3, 5]:
+                self.assertEqual(history[index]['result'][0]['error'], 'Cannot select a disabled option or disabled dropdown.')
+            for index in [4, 6]:
+                self.assertEqual(json.loads(history[index]['result'][0]['extracted_content']),
+                                 {'size': 'S', 'unavailable': '', 'price': '12.00'})
+            self.assertEqual(json.loads(history[8]['result'][0]['extracted_content']),
+                             {'size': 'L', 'price': '17.90'})
+            self.assertEqual(result['calls'], [])
 
     async def test_native_variant_selection_waits_and_reads_updated_price(self):
         runner.configure_private_runtime()

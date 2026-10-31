@@ -104,6 +104,22 @@ class Transfer(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "32"):
             study.preview({"stage": "formal", "questions": [question("a")], "repeats": [1, 2]})
 
+    def test_recovery_repeats_original_paired_questions_in_original_order(self):
+        result = study.preview({"stage": "pilot-recovery", "questions": [question("tee-cheapest-target"), question("tee-count-buyable")],
+                                "repeats": [1], "clock_s": 1800})
+        self.assertEqual([r["condition"] for r in result["slots"]], ["baseline", "block", "block", "baseline"])
+        self.assertEqual([r["question"]["id"] for r in result["slots"]],
+                         ["tee-cheapest-target", "tee-cheapest-target", "tee-count-buyable", "tee-count-buyable"])
+        self.assertEqual(result["paid_calls"], 0)
+
+    def test_recovery_rejects_other_task_repeat_or_time_limit(self):
+        config = {"stage": "pilot-recovery", "questions": [question("tee-cheapest-target"), question("tee-count-buyable")],
+                  "repeats": [1], "clock_s": 1800}
+        for change in ({"questions": [question("tee-count-buyable")]}, {"questions": list(reversed(config["questions"]))},
+                       {"repeats": [1, 2]}, {"clock_s": 900}):
+            with self.subTest(change=change), self.assertRaisesRegex(ValueError, "recovery"):
+                study.preview({**config, **change})
+
     def test_no_duplicate_repeat_or_task(self):
         with self.assertRaises(ValueError):
             study.schedule([question()], [1, 1])

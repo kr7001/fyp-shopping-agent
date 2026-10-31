@@ -118,6 +118,33 @@ def request_bound(config, metadata):
     return (context * inp + output * out) / 1_000_000
 
 
+def recovery_limits(config):
+    """Carry every unsettled prior request at its full bound into a new pilot."""
+    if config.get("stage") != "pilot-recovery":
+        return 0.0, 0.0
+    repo = Path(config["repo"]).resolve()
+    paths = [(repo / config[field]).resolve() for field in ("prior_ledger_file", "reconciliation_file")]
+    if any(not path.is_relative_to(repo) for path in paths):
+        raise Stop("recovery evidence must be inside the verified checkout")
+    prior_path, reconciliation_path = paths
+    prior = json.loads(prior_path.read_text())
+    reconciliation = json.loads(reconciliation_path.read_text())
+    carryover = number(config["carryover_usd"])
+    shared = number(config["shared_cap_usd"])
+    if shared != 2 or carryover + number(config["cap_usd"]) > shared + 1e-12:
+        raise Stop("recovery would exceed the original shared $2 cap")
+    unsettled = sum(number(c["reserved_usd"]) for c in prior["calls"] if c.get("cost_usd") is None)
+    unsettled += sum(number(c["reserved_usd"]) for c in prior["inflight"].values())
+    known = max(number(prior["charged_usd"]), sum(number(c["cost_usd"]) for c in prior["calls"] if c.get("cost_usd") is not None))
+    account_spend = max(0, number(prior["highwater_usage"]) - number(prior["start_usage"]))
+    if carryover + 1e-12 < max(known + unsettled, account_spend):
+        raise Stop("recovery carryover omits prior charges or unsettled reservations")
+    if (reconciliation.get("prior_ledger_sha256") != sha(prior_path)
+            or number(reconciliation.get("carryover_usd")) != carryover):
+        raise Stop("recovery reconciliation does not bind the prior ledger and carryover")
+    return carryover, unsettled
+
+
 class CallBudget:
     def __init__(self, config, ledger_path, account_reader, *, clock=time.time):
         self.config = config
@@ -128,13 +155,15 @@ class CallBudget:
         self.deadline = deadline_epoch(config["deadline"])
         self.cap = number(config["cap_usd"])
         self.reserve = number(config["minimum_balance_usd"])
+        self.carryover, self.prior_unsettled = recovery_limits(config)
         if self.cap <= 0 or self.reserve < 20:
             raise Stop("positive cap and at least $20 account reserve required")
         self.lock = threading.RLock()
         self.state = {"schema": 1, "charged_usd": 0.0, "inflight": {}, "calls": [],
                       "blocked_reason": None, "start_usage": None, "highwater_usage": None,
                       "start_remaining": None, "minimum_remaining": None,
-                      "account_decreases": 0, "deadline": config["deadline"], "cap_usd": self.cap}
+                      "account_decreases": 0, "deadline": config["deadline"], "cap_usd": self.cap,
+                      "carryover_usd": self.carryover, "prior_unsettled_reserve_usd": self.prior_unsettled}
         self._account()
         self._save()
 
@@ -175,7 +204,7 @@ class CallBudget:
             charged = self.state["charged_usd"]
             spent = max(charged, self.state["highwater_usage"] - self.state["start_usage"])
             inflight = sum(row["reserved_usd"] for row in self.state["inflight"].values())
-            remaining = min(self.state["minimum_remaining"], self.state["start_remaining"] - charged)
+            remaining = min(self.state["minimum_remaining"], self.state["start_remaining"] - charged) - self.prior_unsettled
             if spent + inflight + bound > self.cap + 1e-12:
                 self._block("pilot spending cap would be exceeded")
             if remaining - inflight - bound < self.reserve - 1e-12:
@@ -236,8 +265,9 @@ def validate_config(path, *, require_approval=False):
     repo = Path(config["repo"]).resolve()
     if repo != ROOT:
         raise Stop("configuration belongs to another checkout")
-    if config.get("stage") != "pilot" or config.get("version") != 1:
-        raise Stop("only the first separately approved pilot is supported")
+    if config.get("stage") not in {"pilot", "pilot-recovery"} or config.get("version") != 1:
+        raise Stop("only a separately approved development pilot is supported")
+    recovery_limits(config)
     if not 0 < number(config["cap_usd"]) <= 2 or number(config["minimum_balance_usd"]) < 20:
         raise Stop("pilot cap must be at most $2 and account reserve at least $20")
     if number(config["estimate_usd"]) > config["cap_usd"]:
@@ -255,6 +285,8 @@ def validate_config(path, *, require_approval=False):
                 "experiments/runners/browser_use_runner.py", config["protocol_file"], config["dependencies_lock"]}
     required.update(str(p.relative_to(repo)) for p in (repo / "experiments/box").glob("*.py"))
     required.update(config["runtime_input_files"])
+    if config["stage"] == "pilot-recovery":
+        required.update((config["prior_ledger_file"], config["reconciliation_file"]))
     questions_path = Path(config["questions_file"]).resolve()
     if not questions_path.is_relative_to(repo):
         raise Stop("runtime questions must be inside this checkout")
@@ -294,7 +326,8 @@ def execute(path):
         raise Stop("pilot artifacts already exist; no implicit resume")
     key = read_key(config["environment_file"])
     before = account_snapshot(key)
-    if before["remaining"] < config["minimum_balance_usd"] + config["cap_usd"]:
+    carryover, prior_unsettled = recovery_limits(config)
+    if before["remaining"] < config["minimum_balance_usd"] + config["cap_usd"] + prior_unsettled:
         raise Stop("insufficient balance for pilot cap and reserved credit")
     token = secrets.token_hex(24)
     env = dict(os.environ, OPENROUTER_API_KEY=key, IGR_BROWSER_USE_GUARD=token,
@@ -325,6 +358,7 @@ def execute(path):
         after = account_snapshot(key)
         atomic_json(status_path, {"status": "complete", "config_sha256": sha(path),
                                  "charged_usd": ledger_data["charged_usd"], "account_before": before,
+                                 "carryover_usd": carryover, "shared_cost_upper_usd": carryover + ledger_data["charged_usd"],
                                  "account_after": after, "completed_at": time.time()})
     except BaseException as error:
         terminate_owned(child)

@@ -173,5 +173,61 @@ class Account(unittest.TestCase):
                 guard.account_snapshot("SYNTHETIC")
 
 
+class Recovery(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.repo = Path(self.tmp.name)
+        self.prior = {"charged_usd": .06264520106, "start_usage": 100, "highwater_usage": 100.07,
+                      "inflight": {}, "calls": [{"cost_usd": .06264520106, "reserved_usd": .2117632},
+                                                  {"cost_usd": None, "reserved_usd": .2117632}]}
+        guard.atomic_json(self.repo / "prior.json", self.prior)
+        guard.atomic_json(self.repo / "reconciliation.json", {
+            "prior_ledger_sha256": guard.sha(self.repo / "prior.json"), "carryover_usd": .27440840106})
+        self.config = {"stage": "pilot-recovery", "repo": str(self.repo), "prior_ledger_file": "prior.json",
+                       "reconciliation_file": "reconciliation.json", "carryover_usd": .27440840106,
+                       "shared_cap_usd": 2, "cap_usd": 1.70, "minimum_balance_usd": 20,
+                       "deadline": "2099-01-01T00:00:00+08:00", "model": "test/model",
+                       "provider": {"max_price": {"prompt": .2, "completion": .5, "request": 0}},
+                       "maximum_input_tokens": 1048576, "max_input_bytes": 200000, "max_output_tokens": 4096}
+        self.metadata = {"model": "test/model", "provider": self.config["provider"],
+                         "prompt_bytes": 1000, "max_output_tokens": 4096, "nontext_or_plugins": False}
+
+    def test_carryover_keeps_unknown_cost_as_reservation_not_charge(self):
+        carry, reserve = guard.recovery_limits(self.config)
+        self.assertAlmostEqual(carry, .27440840106)
+        self.assertAlmostEqual(reserve, .2117632)
+        self.assertIsNone(json.loads((self.repo / "prior.json").read_text())["calls"][1]["cost_usd"])
+
+    def test_shared_cap_cannot_be_reset(self):
+        with self.assertRaisesRegex(guard.Stop, "shared"):
+            guard.recovery_limits({**self.config, "cap_usd": 2})
+
+    def test_understated_prior_cost_is_rejected(self):
+        with self.assertRaisesRegex(guard.Stop, "omits"):
+            guard.recovery_limits({**self.config, "carryover_usd": .07})
+
+    def test_changed_prior_ledger_requires_new_reconciliation(self):
+        self.prior["highwater_usage"] = 100.08
+        guard.atomic_json(self.repo / "prior.json", self.prior)
+        with self.assertRaisesRegex(guard.Stop, "reconciliation"):
+            guard.recovery_limits(self.config)
+
+    def test_late_prior_charge_is_reserved_against_account_balance(self):
+        budget = guard.CallBudget(self.config, self.repo / "new.json", lambda: {"usage": 100.07, "remaining": 20.3})
+        self.assertEqual(budget.state["charged_usd"], 0)
+        with self.assertRaisesRegex(guard.Stop, "account reserve"):
+            budget.before_call(self.metadata)
+
+    def test_new_account_movement_cannot_hide_behind_carryover(self):
+        snapshot = {"usage": 100.07, "remaining": 50}
+        budget = guard.CallBudget(self.config, self.repo / "new.json", lambda: snapshot.copy())
+        snapshot["usage"] += 1.5
+        with self.assertRaisesRegex(guard.Stop, "spending cap"):
+            budget.before_call(self.metadata)
+        self.assertEqual(budget.state["charged_usd"], 0)
+        self.assertAlmostEqual(budget.state["carryover_usd"], .27440840106)
+
+
 if __name__ == "__main__":
     unittest.main()
