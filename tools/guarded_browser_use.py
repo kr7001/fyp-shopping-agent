@@ -23,10 +23,14 @@ import time
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-RECOVERY_STAGES = {"pilot-recovery", "overnight-transfer", "monitored-transfer"}
 REPEAT_STAGE = "plain-repeat-transfer"
+REPEAT_RECOVERY_STAGE = "plain-repeat-recovery"
+REPEAT_STAGES = {REPEAT_STAGE, REPEAT_RECOVERY_STAGE}
+RECOVERY_STAGES = {"pilot-recovery", "overnight-transfer", "monitored-transfer", REPEAT_RECOVERY_STAGE}
 REPEAT_BUDGET = "browser-use-plain-repeat-2026-11-01"
 LEGACY_UNSETTLED_USD = 0.2117632
+REPEAT_ATTEMPT1_SHA256 = "2a1b0ec9f9a58e047fed80680b03252a30a2c8d2f9594381f9c32257e762d700"
+REPEAT_CARRYOVER_USD = 0.28053916066
 REFERENCE_CONFIG_SHA256 = "404e45a0f7e029047a5a35394fbcbe79354bb53a9a13b2972a83478bc970e4ed"
 
 
@@ -196,9 +200,9 @@ class CallBudget:
                       "account_decreases": 0, "deadline": config["deadline"], "cap_usd": self.cap,
                       "carryover_usd": self.carryover, "prior_unsettled_reserve_usd": self.prior_unsettled}
         self.state["prior_ledger_files"] = prior_ledger_names(config) if config.get("stage") in RECOVERY_STAGES else []
-        if config.get("stage") == REPEAT_STAGE:
+        if config.get("stage") in REPEAT_STAGES:
             validate_repeat_budget(config)
-            self.state.update(study_budget_id=REPEAT_BUDGET, attempt=1, shared_cap_usd=2,
+            self.state.update(study_budget_id=REPEAT_BUDGET, attempt=config["attempt"], shared_cap_usd=2,
                               legacy_unsettled_reserve_usd=LEGACY_UNSETTLED_USD,
                               minimum_balance_usd=self.reserve)
         self._account()
@@ -231,7 +235,7 @@ class CallBudget:
             if self.state["blocked_reason"]:
                 raise Stop(self.state["blocked_reason"])
             if (self.clock() >= self.deadline - 15 or
-                    (self.config.get("stage") == REPEAT_STAGE and
+                    (self.config.get("stage") in REPEAT_STAGES and
                      time.monotonic() >= self.monotonic_deadline - 15)):
                 self._block("absolute deadline reached")
             try:
@@ -299,7 +303,7 @@ def verify_identity(config):
 
 
 def verify_browser_version(config):
-    if config.get("stage") != REPEAT_STAGE:
+    if config.get("stage") not in REPEAT_STAGES:
         return
     try:
         result = subprocess.run([config["browser_executable"], "--version"],
@@ -312,22 +316,98 @@ def verify_browser_version(config):
 
 
 def validate_repeat_budget(config):
-    """A separate fixed allowance, with no implicit recovery or budget reset."""
+    """One original attempt and one verified continuation under the same $2 cap."""
+    recovery = config.get("stage") == REPEAT_RECOVERY_STAGE
+    attempt, carryover, estimate = (2, REPEAT_CARRYOVER_USD, 1.3) if recovery else (1, 0, 1.6)
     if (config.get("study_budget_id") != REPEAT_BUDGET
-            or config.get("attempt") != 1 or config.get("carryover_usd") != 0
-            or config.get("shared_cap_usd") != 2 or config.get("cap_usd") != 2
-            or config.get("estimate_usd") != 1.6
+            or config.get("attempt") != attempt or number(config.get("carryover_usd")) != carryover
+            or config.get("shared_cap_usd") != 2 or abs(number(config.get("cap_usd")) - (2-carryover)) > 1e-12
+            or config.get("estimate_usd") != estimate
             or config.get("legacy_unsettled_reserve_usd") != LEGACY_UNSETTLED_USD
             or number(config.get("minimum_balance_usd")) < 20 + LEGACY_UNSETTLED_USD
-            or any(config.get(k) for k in ("prior_ledger_file", "prior_ledger_files", "reconciliation_file"))):
-        raise Stop("plain repeats require the fixed first-attempt $2 budget and legacy reserve")
+            or (not recovery and any(config.get(k) for k in ("prior_ledger_file", "prior_ledger_files", "reconciliation_file")))):
+        raise Stop("plain repeats require the fixed attempt budget, cumulative cap and legacy reserve")
     base = Path(config["repo"]).resolve() / "notes/browser-use-repeat-1-nov"
-    for field, name in {"ledger_path": "attempt1.ledger.json", "status_path": "attempt1.status.json",
-                        "output_dir": "attempt1.results", "log_path": "attempt1.log"}.items():
-        if Path(config[field]).resolve() != base / name:
+    for field, suffix in {"ledger_path": "ledger.json", "status_path": "status.json",
+                          "output_dir": "results", "log_path": "log"}.items():
+        if Path(config[field]).resolve() != base / f"attempt{attempt}.{suffix}":
             raise Stop("plain-repeat paths cannot reset the shared budget")
     if deadline_epoch(config["deadline"]) > deadline_epoch("2026-11-03T00:00:00+08:00"):
         raise Stop("no paid repeat calls are authorized from Tuesday onward")
+
+
+def validate_repeat_recovery(config, expected_slots=None):
+    """Select only the unstarted suffix; do not consult answer contents or grades."""
+    repo = Path(config["repo"]).resolve()
+    fields = ("prior_config_file", "prior_status_file", "prior_slot_status_file", "prior_schedule_file")
+    files = {field: (repo / config[field]).resolve() for field in fields}
+    if any(not path.is_relative_to(repo) for path in files.values()):
+        raise Stop("repeat recovery evidence must remain inside the checkout")
+    if sha(files["prior_config_file"]) != REPEAT_ATTEMPT1_SHA256:
+        raise Stop("repeat recovery must bind the exact original repeat command")
+    prior = json.loads(files["prior_config_file"].read_text())
+    if (prior.get("stage") != REPEAT_STAGE or prior.get("attempt") != 1
+            or prior.get("study_budget_id") != REPEAT_BUDGET or prior.get("shared_cap_usd") != 2
+            or prior.get("cap_usd") != 2 or prior.get("carryover_usd") != 0
+            or prior.get("questions") != config["questions"] or prior.get("repeats") != [2, 3]):
+        raise Stop("repeat recovery is limited to the first attempt of this unchanged batch")
+    status = json.loads(files["prior_status_file"].read_text())
+    if status.get("status") != "stopped" or status.get("config_sha256") != REPEAT_ATTEMPT1_SHA256:
+        raise Stop("repeat recovery requires the terminal stopped first attempt")
+    names = prior_ledger_names(config)
+    if len(names) != 1:
+        raise Stop("only one prior repeat attempt is permitted")
+    ledger = json.loads((repo / names[0]).read_text())
+    if (ledger.get("study_budget_id") != REPEAT_BUDGET or ledger.get("attempt") != 1
+            or ledger.get("shared_cap_usd") != 2 or ledger.get("carryover_usd") != 0
+            or ledger.get("inflight") or ledger.get("blocked_reason")
+            or len(ledger.get("calls", [])) != 424
+            or any(call.get("cost_usd") is None for call in ledger["calls"])):
+        raise Stop("repeat recovery requires all first-attempt charges to be settled")
+    known = sum(number(call["cost_usd"]) for call in ledger["calls"])
+    spend = max(known, number(ledger["charged_usd"]), number(ledger["highwater_usage"])-number(ledger["start_usage"]))
+    carryover, unsettled = recovery_limits(config)
+    if abs(spend-REPEAT_CARRYOVER_USD) > 1e-12 or carryover != REPEAT_CARRYOVER_USD or unsettled:
+        raise Stop("repeat recovery must preserve the complete first-attempt cost")
+    plan = json.loads(files["prior_schedule_file"].read_text())
+    slots = plan.get("slots", [])
+    if (plan.get("stage") != REPEAT_STAGE or plan.get("batch_id") != REPEAT_BUDGET
+            or len(slots) != 32 or len({slot["id"] for slot in slots}) != 32
+            or (expected_slots is not None and slots != expected_slots)):
+        raise Stop("repeat recovery prior schedule differs from the original 32 slots")
+    statuses = json.loads(files["prior_slot_status_file"].read_text())["slots"]
+    ids = [slot["id"] for slot in slots]
+    terminal = {"answered", "failed", "timeout", "closed by the block"}
+    if (set(statuses) != set(ids)
+            or any(statuses[key].get("status") not in terminal for key in ids[:6])
+            or any(statuses[key].get("status") != "not_started" for key in ids[6:])
+            or any(statuses[key].get("phase") != "transfer" for key in ids)):
+        raise Stop("repeat recovery must retain six terminal slots and continue only 26 unstarted slots")
+    results = files["prior_slot_status_file"].parent
+    completed_path = results / "completed.json"
+    completed = json.loads(completed_path.read_text())
+    if completed.get("completed") != ids[:6] or completed.get("expected") != 32:
+        raise Stop("repeat recovery completed manifest differs from the retained prefix")
+    required = {str(path.relative_to(repo)) for path in files.values()}
+    required.add(str(completed_path.relative_to(repo)))
+    for slot in slots[:6]:
+        path = results / (slot["id"] + ".json")
+        if not path.resolve().is_relative_to(results) or not path.is_file():
+            raise Stop("repeat recovery is missing a retained first-attempt record")
+        # Inspect identifiers and terminal status only. Never select on the answer.
+        record = json.loads(path.read_text())
+        if any(record.get(field) != expected for field, expected in {
+                "slot": slot["id"], "task": slot["question"]["id"], "repeat": slot["repeat"],
+                "condition": slot["condition"], "phase": "transfer", "batch_id": REPEAT_BUDGET,
+                "outcome": statuses[slot["id"]]["status"]}.items()):
+            raise Stop("repeat recovery retained-record identity differs from its slot")
+        required.add(str(path.relative_to(repo)))
+    if not required <= set(config["hashes"]):
+        raise Stop("repeat recovery metadata and every retained record must be hash-bound")
+    for relative in required:
+        if sha(repo / relative) != config["hashes"][relative]:
+            raise Stop("repeat recovery evidence changed after it was bound")
+    return ids[6:]
 
 
 def validate_repeat_identity(config):
@@ -365,6 +445,21 @@ def validate_repeat_identity(config):
             raise Stop("free repeat checks predate the current code")
 
 
+def validate_review_receipt(config, receipt, head, digest, command):
+    if (receipt.get("verdict") != "PASS" or receipt.get("config_sha256") != digest
+            or receipt.get("head") != head or receipt.get("request_bound_verified") is not True):
+        raise Stop("independent verification does not bind this command and request bound")
+    if config["stage"] in REPEAT_STAGES:
+        # The user authorized Codex's final recovery verification and continuation.
+        # Identify the actual independent reviewer honestly.
+        verifier = "codex-independent" if config["stage"] == REPEAT_RECOVERY_STAGE else "claude"
+        if (receipt.get("verifier") != verifier or receipt.get("independent") is not True
+                or receipt.get("command") != command
+                or (config["stage"] == REPEAT_RECOVERY_STAGE
+                    and receipt.get("reviewer_identity") != "browser_transfer_analysis")):
+            raise Stop("plain repeats require the designated independent review of the exact command")
+
+
 def validate_config(path, *, require_approval=False):
     path = Path(path).resolve()
     config = json.loads(path.read_text())
@@ -374,7 +469,7 @@ def validate_config(path, *, require_approval=False):
     if config.get("stage") not in ({"pilot", REPEAT_STAGE} | RECOVERY_STAGES) or config.get("version") != 1:
         raise Stop("only a separately approved development pilot is supported")
     recovery_limits(config)
-    if config["stage"] == REPEAT_STAGE:
+    if config["stage"] in REPEAT_STAGES:
         validate_repeat_budget(config)
     if not 0 < number(config["cap_usd"]) <= 2 or number(config["minimum_balance_usd"]) < 20:
         raise Stop("pilot cap must be at most $2 and account reserve at least $20")
@@ -393,7 +488,7 @@ def validate_config(path, *, require_approval=False):
                 "experiments/runners/browser_use_runner.py", config["protocol_file"], config["dependencies_lock"]}
     required.update(str(p.relative_to(repo)) for p in (repo / "experiments/box").glob("*.py"))
     required.update(config["runtime_input_files"])
-    if config["stage"] == REPEAT_STAGE:
+    if config["stage"] in REPEAT_STAGES:
         required.update({config["reference_config_file"], config["analysis_plan_file"], config["preflight_receipt"],
                          "experiments/paths.py"})
     if config["stage"] in RECOVERY_STAGES:
@@ -411,19 +506,16 @@ def validate_config(path, *, require_approval=False):
     if not required <= set(config["hashes"]):
         raise Stop("launcher, adapter, protocol, dependency lock, block/parser and inputs must be hash-bound")
     head = verify_identity(config)
-    if config["stage"] == REPEAT_STAGE:
+    if config["stage"] in REPEAT_STAGES:
         validate_repeat_identity(config)
+        if config["stage"] == REPEAT_RECOVERY_STAGE:
+            validate_repeat_recovery(config)
     if require_approval:
         digest = sha(path)
         receipt = json.loads(Path(config["verification_receipt"]).read_text())
         approval = json.loads(Path(config["approval_record"]).read_text())
         command = [config["python"], str(repo / "tools/guarded_browser_use.py"), "--config", str(path), "--execute"]
-        if (receipt.get("verdict") != "PASS" or receipt.get("config_sha256") != digest
-                or receipt.get("head") != head or receipt.get("request_bound_verified") is not True):
-            raise Stop("independent verification does not bind this command and request bound")
-        if config["stage"] == REPEAT_STAGE and (receipt.get("verifier") != "claude"
-                or receipt.get("independent") is not True or receipt.get("command") != command):
-            raise Stop("plain repeats require Claude verification of the exact command")
+        validate_review_receipt(config, receipt, head, digest, command)
         if (approval.get("approved") is not True or approval.get("config_sha256") != digest
                 or approval.get("command") != command or not approval.get("user_message")):
             raise Stop("concrete user approval is missing")
@@ -443,16 +535,16 @@ def terminate_owned(child):
 
 def claim_repeat_launch(config, config_path):
     """Retained exclusive marker prevents duplicate workers under one allowance."""
-    if config.get("stage") != REPEAT_STAGE:
+    if config.get("stage") not in REPEAT_STAGES:
         return
     validate_repeat_budget(config)
-    marker = Path(config["ledger_path"]).with_name("attempt1.launch.json")
+    marker = Path(config["ledger_path"]).with_name(f"attempt{config['attempt']}.launch.json")
     try:
         descriptor = os.open(marker, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     except FileExistsError:
         raise Stop("repeat attempt already claimed; concurrent launch or implicit resume forbidden") from None
     with os.fdopen(descriptor, "w") as handle:
-        json.dump({"study_budget_id": REPEAT_BUDGET, "attempt": 1, "config_sha256": sha(config_path),
+        json.dump({"study_budget_id": REPEAT_BUDGET, "attempt": config["attempt"], "config_sha256": sha(config_path),
                    "launcher_pid": os.getpid(), "claimed_at": time.time()}, handle, indent=2)
         handle.flush()
         os.fsync(handle.fileno())
@@ -500,9 +592,9 @@ def execute(path):
                 caffeinate = subprocess.Popen(["/usr/bin/caffeinate", "-i", "-w", str(child.pid)], start_new_session=True)
             last_watchdog_tick = time.time()
             while child.poll() is None:
-                if time.time() >= stop_at or (config["stage"] == REPEAT_STAGE and time.monotonic() >= monotonic_stop):
+                if time.time() >= stop_at or (config["stage"] in REPEAT_STAGES and time.monotonic() >= monotonic_stop):
                     raise Stop("absolute deadline reached")
-                if config["stage"] == REPEAT_STAGE and time.time() - last_watchdog_tick > 60:
+                if config["stage"] in REPEAT_STAGES and time.time() - last_watchdog_tick > 60:
                     raise Stop("watchdog suspended over 60 seconds; retain interruption without replay")
                 last_watchdog_tick = time.time()
                 if sha(path) != env["IGR_BROWSER_USE_CONFIG_SHA256"]:

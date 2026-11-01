@@ -24,7 +24,7 @@ import paths  # noqa: E402
 import box  # noqa: E402
 import page as page_module  # noqa: E402
 import primitives  # noqa: E402
-from guarded_browser_use import CallBudget, Stop, account_snapshot, atomic_json, read_key, sha, validate_config, verify_browser_version, REPEAT_STAGE, REPEAT_BUDGET  # noqa: E402
+from guarded_browser_use import CallBudget, Stop, account_snapshot, atomic_json, read_key, sha, validate_config, verify_browser_version, REPEAT_STAGE, REPEAT_BUDGET, REPEAT_STAGES, REPEAT_RECOVERY_STAGE, validate_repeat_recovery  # noqa: E402
 
 STUDY_ID = "browser-use-transfer-2026-10-31"
 ARMS = ("baseline", "block")
@@ -111,7 +111,7 @@ def preview(config):
     if config.get("stage") == "pilot":
         if len(questions) != 2 or config.get("repeats") != [1]:
             raise ValueError("pilot is two questions, two arms, one repeat")
-    elif config.get("stage") == REPEAT_STAGE:
+    elif config.get("stage") in REPEAT_STAGES:
         if (tuple(q["id"] for q in questions) != TASK_IDS or config.get("repeats") != [2, 3]
                 or config.get("clock_s") != 2700):
             raise ValueError("plain repeats require all eight questions, repeats 2 and 3, and 2700 seconds")
@@ -138,11 +138,15 @@ def preview(config):
         for slot in schedule(transfer, (1,)):
             slot.update(id="transfer-" + slot["id"], phase="transfer", clock_s=2700)
             slots.append(slot)
-    if config["stage"] == REPEAT_STAGE:
+    if config["stage"] in REPEAT_STAGES:
         for slot in slots:
             slot.update(id="transfer-" + slot["id"], phase="transfer", clock_s=2700)
+    if config["stage"] == REPEAT_RECOVERY_STAGE:
+        remaining = validate_repeat_recovery(config, expected_slots=slots)
+        slots = [slot for slot in slots if slot["id"] in remaining]
     return {"study_id": STUDY_ID, "stage": config["stage"], "paid_calls": 0,
-            **({"batch_id": REPEAT_BUDGET} if config["stage"] == REPEAT_STAGE else {}),
+            **({"prior_completed_count": 6, "original_slot_count": 32} if config["stage"] == REPEAT_RECOVERY_STAGE else {}),
+            **({"batch_id": REPEAT_BUDGET} if config["stage"] in REPEAT_STAGES else {}),
             "warning_sha256": digest(COMMON_BRIEFING), "warning": COMMON_BRIEFING,
             "slots": slots,
             "block_preview": "The model parser is not called in preview. Its prompt and frozen logic are inspected separately."}
@@ -167,7 +171,8 @@ def validate_pilot_record(record, phase="pilot"):
             # Native evaluate errors append source code, which can contain URLs.
             # Classify the error header, not the explicitly labelled code echo.
             text = re.split(r"\n\s*Validated Code\b", str(error), maxsplit=1)[0]
-            if infrastructure.search(text) or not ordinary.search(text):
+            absent_node = re.fullmatch(r"Element index -?\d+ not found in browser state", text.strip())
+            if infrastructure.search(text) or not (ordinary.search(text) or absent_node):
                 raise Stop("infrastructure or unknown agent error; inspect it before continuing")
         return  # Ordinary failures are observations, not grounds for selective replay.
     if record.get("error") or record.get("error_type") or record.get("outcome") not in {"answered", "closed by the block"}:
@@ -214,7 +219,7 @@ async def execute_study(config_path):
     loop = asyncio.get_running_loop()
     completed = []
     pilot_records = []
-    pilot_passed = config["stage"] == REPEAT_STAGE  # No new paid diagnostics in the repeat batch.
+    pilot_passed = config["stage"] in REPEAT_STAGES  # No new paid diagnostics in the repeat batch.
     for slot in plan["slots"]:
         verify_browser_version(config)  # Before the parser or executor can make a paid call.
         if slot.get("phase") == "transfer" and not pilot_passed:
@@ -283,7 +288,7 @@ async def execute_study(config_path):
                           parse_cost_usd=sum(c["cost_usd"] for c in parser_calls),
                           total_cost_usd=sum(c["cost_usd"] for c in new_calls),
                           elapsed_with_parser_s=time.perf_counter() - started)
-            if config["stage"] == REPEAT_STAGE:
+            if config["stage"] in REPEAT_STAGES:
                 record["batch_id"] = REPEAT_BUDGET
             atomic_json(output_dir / f"{slot['id']}.json", record)
             statuses[slot["id"]]["status"] = record["outcome"]
