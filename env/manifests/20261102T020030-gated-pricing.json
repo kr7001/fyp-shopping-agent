@@ -1,0 +1,2182 @@
+{
+  "seeded_at": "2026-11-02T02:00:30",
+  "base_url": "http://localhost:7770",
+  "fixture": "tee_fresh_2_nov.json",
+  "parent_skus": [
+    "IGR-FM02-01",
+    "IGR-FM02-02",
+    "IGR-FM02-03",
+    "IGR-FM02-04",
+    "IGR-FM02-05",
+    "IGR-FM02-06",
+    "IGR-FM02-07",
+    "IGR-FM02-08",
+    "IGR-FM02-09",
+    "IGR-FM02-10",
+    "IGR-FM02-11",
+    "IGR-FM02-12",
+    "IGR-FM02-13",
+    "IGR-FM02-14",
+    "IGR-FM02-15",
+    "IGR-FM02-16",
+    "IGR-FM02-17",
+    "IGR-FM02-18",
+    "IGR-FM02-19",
+    "IGR-FM02-20",
+    "IGR-FM02-21",
+    "IGR-FM02-22",
+    "IGR-FM02-23",
+    "IGR-FM02-24",
+    "IGR-FM02-25",
+    "IGR-FM02-26",
+    "IGR-FM02-27",
+    "IGR-FM02-28",
+    "IGR-FM02-29",
+    "IGR-FM02-30",
+    "IGR-FM02-31",
+    "IGR-FM02-32",
+    "IGR-FM02-33",
+    "IGR-FM02-34",
+    "IGR-FM02-35",
+    "IGR-FM02-36",
+    "IGR-FM02-37",
+    "IGR-FM02-38",
+    "IGR-FM02-39",
+    "IGR-FM02-40",
+    "IGR-FM02-41",
+    "IGR-FM02-42",
+    "IGR-FM02-43",
+    "IGR-FM02-44",
+    "IGR-FM02-45"
+  ],
+  "child_skus": [
+    "IGR-FM02-01-XS",
+    "IGR-FM02-01-L",
+    "IGR-FM02-01-XL",
+    "IGR-FM02-01-XXL",
+    "IGR-FM02-02-S",
+    "IGR-FM02-02-M",
+    "IGR-FM02-02-L",
+    "IGR-FM02-02-XL",
+    "IGR-FM02-02-XXL",
+    "IGR-FM02-03-S",
+    "IGR-FM02-03-M",
+    "IGR-FM02-03-L",
+    "IGR-FM02-03-XL",
+    "IGR-FM02-03-XXL",
+    "IGR-FM02-04-XS",
+    "IGR-FM02-04-S",
+    "IGR-FM02-04-L",
+    "IGR-FM02-04-XL",
+    "IGR-FM02-05-XS",
+    "IGR-FM02-05-S",
+    "IGR-FM02-05-M",
+    "IGR-FM02-05-XL",
+    "IGR-FM02-05-XXL",
+    "IGR-FM02-06-XS",
+    "IGR-FM02-06-S",
+    "IGR-FM02-06-M",
+    "IGR-FM02-06-XL",
+    "IGR-FM02-06-XXL",
+    "IGR-FM02-07-XS",
+    "IGR-FM02-07-S",
+    "IGR-FM02-07-M",
+    "IGR-FM02-07-XL",
+    "IGR-FM02-07-XXL",
+    "IGR-FM02-08-XS",
+    "IGR-FM02-08-S",
+    "IGR-FM02-08-L",
+    "IGR-FM02-08-XL",
+    "IGR-FM02-08-XXL",
+    "IGR-FM02-09-XS",
+    "IGR-FM02-09-S",
+    "IGR-FM02-09-L",
+    "IGR-FM02-09-XL",
+    "IGR-FM02-09-XXL",
+    "IGR-FM02-10-XS",
+    "IGR-FM02-10-L",
+    "IGR-FM02-10-XL",
+    "IGR-FM02-10-XXL",
+    "IGR-FM02-11-S",
+    "IGR-FM02-11-M",
+    "IGR-FM02-11-XL",
+    "IGR-FM02-11-XXL",
+    "IGR-FM02-12-XS",
+    "IGR-FM02-12-M",
+    "IGR-FM02-12-L",
+    "IGR-FM02-12-XL",
+    "IGR-FM02-12-XXL",
+    "IGR-FM02-13-XS",
+    "IGR-FM02-13-S",
+    "IGR-FM02-13-M",
+    "IGR-FM02-13-L",
+    "IGR-FM02-13-XXL",
+    "IGR-FM02-14-S",
+    "IGR-FM02-14-M",
+    "IGR-FM02-14-L",
+    "IGR-FM02-14-XL",
+    "IGR-FM02-14-XXL",
+    "IGR-FM02-15-XS",
+    "IGR-FM02-15-S",
+    "IGR-FM02-15-M",
+    "IGR-FM02-15-L",
+    "IGR-FM02-15-XL",
+    "IGR-FM02-15-XXL",
+    "IGR-FM02-16-XS",
+    "IGR-FM02-16-S",
+    "IGR-FM02-16-M",
+    "IGR-FM02-16-XL",
+    "IGR-FM02-17-XS",
+    "IGR-FM02-17-S",
+    "IGR-FM02-17-M",
+    "IGR-FM02-17-L",
+    "IGR-FM02-17-XL",
+    "IGR-FM02-17-XXL",
+    "IGR-FM02-18-XS",
+    "IGR-FM02-18-S",
+    "IGR-FM02-18-M",
+    "IGR-FM02-18-L",
+    "IGR-FM02-18-XL",
+    "IGR-FM02-18-XXL",
+    "IGR-FM02-19-XS",
+    "IGR-FM02-19-S",
+    "IGR-FM02-19-M",
+    "IGR-FM02-19-L",
+    "IGR-FM02-19-XL",
+    "IGR-FM02-19-XXL",
+    "IGR-FM02-20-XS",
+    "IGR-FM02-20-S",
+    "IGR-FM02-20-M",
+    "IGR-FM02-20-L",
+    "IGR-FM02-20-XL",
+    "IGR-FM02-21-XS",
+    "IGR-FM02-21-S",
+    "IGR-FM02-21-M",
+    "IGR-FM02-21-L",
+    "IGR-FM02-21-XL",
+    "IGR-FM02-21-XXL",
+    "IGR-FM02-22-XS",
+    "IGR-FM02-22-S",
+    "IGR-FM02-22-M",
+    "IGR-FM02-22-L",
+    "IGR-FM02-22-XL",
+    "IGR-FM02-22-XXL",
+    "IGR-FM02-23-XS",
+    "IGR-FM02-23-S",
+    "IGR-FM02-23-L",
+    "IGR-FM02-23-XL",
+    "IGR-FM02-23-XXL",
+    "IGR-FM02-24-XS",
+    "IGR-FM02-24-S",
+    "IGR-FM02-24-M",
+    "IGR-FM02-24-L",
+    "IGR-FM02-24-XL",
+    "IGR-FM02-24-XXL",
+    "IGR-FM02-25-XS",
+    "IGR-FM02-25-S",
+    "IGR-FM02-25-M",
+    "IGR-FM02-25-L",
+    "IGR-FM02-25-XL",
+    "IGR-FM02-25-XXL",
+    "IGR-FM02-26-XS",
+    "IGR-FM02-26-S",
+    "IGR-FM02-26-M",
+    "IGR-FM02-26-L",
+    "IGR-FM02-26-XL",
+    "IGR-FM02-26-XXL",
+    "IGR-FM02-27-XS",
+    "IGR-FM02-27-S",
+    "IGR-FM02-27-M",
+    "IGR-FM02-27-L",
+    "IGR-FM02-27-XL",
+    "IGR-FM02-27-XXL",
+    "IGR-FM02-28-XS",
+    "IGR-FM02-28-S",
+    "IGR-FM02-28-M",
+    "IGR-FM02-28-L",
+    "IGR-FM02-28-XL",
+    "IGR-FM02-29-XS",
+    "IGR-FM02-29-M",
+    "IGR-FM02-29-L",
+    "IGR-FM02-29-XXL",
+    "IGR-FM02-30-S",
+    "IGR-FM02-30-M",
+    "IGR-FM02-30-L",
+    "IGR-FM02-31-XS",
+    "IGR-FM02-31-S",
+    "IGR-FM02-31-M",
+    "IGR-FM02-31-L",
+    "IGR-FM02-31-XL",
+    "IGR-FM02-31-XXL",
+    "IGR-FM02-32-XS",
+    "IGR-FM02-32-M",
+    "IGR-FM02-32-L",
+    "IGR-FM02-32-XL",
+    "IGR-FM02-32-XXL",
+    "IGR-FM02-33-S",
+    "IGR-FM02-33-M",
+    "IGR-FM02-33-L",
+    "IGR-FM02-33-XL",
+    "IGR-FM02-33-XXL",
+    "IGR-FM02-34-XS",
+    "IGR-FM02-34-S",
+    "IGR-FM02-34-M",
+    "IGR-FM02-34-L",
+    "IGR-FM02-34-XL",
+    "IGR-FM02-34-XXL",
+    "IGR-FM02-35-XS",
+    "IGR-FM02-35-S",
+    "IGR-FM02-35-L",
+    "IGR-FM02-35-XL",
+    "IGR-FM02-35-XXL",
+    "IGR-FM02-36-XS",
+    "IGR-FM02-36-M",
+    "IGR-FM02-36-XL",
+    "IGR-FM02-36-XXL",
+    "IGR-FM02-37-S",
+    "IGR-FM02-37-M",
+    "IGR-FM02-37-L",
+    "IGR-FM02-37-XL",
+    "IGR-FM02-37-XXL",
+    "IGR-FM02-38-XS",
+    "IGR-FM02-38-S",
+    "IGR-FM02-38-M",
+    "IGR-FM02-38-L",
+    "IGR-FM02-38-XL",
+    "IGR-FM02-38-XXL",
+    "IGR-FM02-39-XS",
+    "IGR-FM02-39-S",
+    "IGR-FM02-39-M",
+    "IGR-FM02-39-L",
+    "IGR-FM02-39-XL",
+    "IGR-FM02-39-XXL",
+    "IGR-FM02-40-XS",
+    "IGR-FM02-40-S",
+    "IGR-FM02-40-M",
+    "IGR-FM02-40-L",
+    "IGR-FM02-40-XL",
+    "IGR-FM02-41-S",
+    "IGR-FM02-41-M",
+    "IGR-FM02-41-L",
+    "IGR-FM02-41-XXL",
+    "IGR-FM02-42-XS",
+    "IGR-FM02-42-S",
+    "IGR-FM02-42-M",
+    "IGR-FM02-42-L",
+    "IGR-FM02-42-XL",
+    "IGR-FM02-42-XXL",
+    "IGR-FM02-43-XS",
+    "IGR-FM02-43-S",
+    "IGR-FM02-43-M",
+    "IGR-FM02-43-L",
+    "IGR-FM02-43-XL",
+    "IGR-FM02-43-XXL",
+    "IGR-FM02-44-S",
+    "IGR-FM02-44-M",
+    "IGR-FM02-44-L",
+    "IGR-FM02-44-XL",
+    "IGR-FM02-44-XXL",
+    "IGR-FM02-45-XS",
+    "IGR-FM02-45-M",
+    "IGR-FM02-45-XL",
+    "IGR-FM02-45-XXL"
+  ],
+  "ground_truth": {
+    "families": {
+      "tee-01": {
+        "parent_sku": "IGR-FM02-01",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 18.7,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-01-XS",
+            "price": 19.85,
+            "qty": 42,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-01-L",
+            "price": 18.7,
+            "qty": 105,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-01-XL",
+            "price": 21.95,
+            "qty": 128,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-01-XXL",
+            "price": 23.09,
+            "qty": 69,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-02": {
+        "parent_sku": "IGR-FM02-02",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 10.32,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-FM02-02-S",
+            "price": 11.2,
+            "qty": 70,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-02-M",
+            "price": 10.32,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-02-L",
+            "price": 11.3,
+            "qty": 75,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-02-XL",
+            "price": 13.03,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-02-XXL",
+            "price": 13.4,
+            "qty": 88,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "XL"
+        ]
+      },
+      "tee-03": {
+        "parent_sku": "IGR-FM02-03",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 16.09,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-FM02-03-S",
+            "price": 17.02,
+            "qty": 48,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-03-M",
+            "price": 17.53,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-03-L",
+            "price": 16.09,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-03-XL",
+            "price": 17.59,
+            "qty": 29,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-03-XXL",
+            "price": 17.91,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "L",
+          "XXL"
+        ]
+      },
+      "tee-04": {
+        "parent_sku": "IGR-FM02-04",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 18.46,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-04-XS",
+            "price": 23.55,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-04-S",
+            "price": 21.26,
+            "qty": 56,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-04-L",
+            "price": 19.37,
+            "qty": 101,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-04-XL",
+            "price": 18.46,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "XL"
+        ]
+      },
+      "tee-05": {
+        "parent_sku": "IGR-FM02-05",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 21.07,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-05-XS",
+            "price": 21.07,
+            "qty": 51,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-05-S",
+            "price": 27.11,
+            "qty": 16,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-05-M",
+            "price": 22.64,
+            "qty": 13,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-05-XL",
+            "price": 28.8,
+            "qty": 103,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-05-XXL",
+            "price": 28.74,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XXL"
+        ]
+      },
+      "tee-06": {
+        "parent_sku": "IGR-FM02-06",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 20.04,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-06-XS",
+            "price": 20.88,
+            "qty": 36,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-06-S",
+            "price": 20.04,
+            "qty": 135,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-06-M",
+            "price": 22.87,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-06-XL",
+            "price": 22.35,
+            "qty": 14,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-06-XXL",
+            "price": 24.51,
+            "qty": 63,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "tee-07": {
+        "parent_sku": "IGR-FM02-07",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 24.55,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-07-XS",
+            "price": 27.83,
+            "qty": 32,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-07-S",
+            "price": 26.48,
+            "qty": 106,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-07-M",
+            "price": 25.83,
+            "qty": 18,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-07-XL",
+            "price": 24.55,
+            "qty": 119,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-07-XXL",
+            "price": 29.51,
+            "qty": 90,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-08": {
+        "parent_sku": "IGR-FM02-08",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 19.28,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-08-XS",
+            "price": 20.51,
+            "qty": 97,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-08-S",
+            "price": 22.94,
+            "qty": 14,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-08-L",
+            "price": 19.28,
+            "qty": 21,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-08-XL",
+            "price": 23.2,
+            "qty": 27,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-08-XXL",
+            "price": 19.94,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XXL"
+        ]
+      },
+      "tee-09": {
+        "parent_sku": "IGR-FM02-09",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 40.28,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-09-XS",
+            "price": 42.82,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-09-S",
+            "price": 43.55,
+            "qty": 137,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-09-L",
+            "price": 40.77,
+            "qty": 26,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-09-XL",
+            "price": 40.28,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-09-XXL",
+            "price": 44.36,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "XL",
+          "XXL"
+        ]
+      },
+      "tee-10": {
+        "parent_sku": "IGR-FM02-10",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 20.34,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-10-XS",
+            "price": 23.1,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-10-L",
+            "price": 20.34,
+            "qty": 60,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-10-XL",
+            "price": 20.81,
+            "qty": 139,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-10-XXL",
+            "price": 24.73,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "XXL"
+        ]
+      },
+      "tee-11": {
+        "parent_sku": "IGR-FM02-11",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 34.17,
+        "from_price_option": "XL",
+        "variants": {
+          "S": {
+            "sku": "IGR-FM02-11-S",
+            "price": 38.49,
+            "qty": 119,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-11-M",
+            "price": 38.18,
+            "qty": 111,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-11-XL",
+            "price": 34.17,
+            "qty": 129,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-11-XXL",
+            "price": 36.97,
+            "qty": 131,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-12": {
+        "parent_sku": "IGR-FM02-12",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 13.71,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-12-XS",
+            "price": 17.76,
+            "qty": 41,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-12-M",
+            "price": 13.71,
+            "qty": 72,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-12-L",
+            "price": 17.82,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-12-XL",
+            "price": 13.99,
+            "qty": 82,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-12-XXL",
+            "price": 15.03,
+            "qty": 41,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "tee-13": {
+        "parent_sku": "IGR-FM02-13",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 20.62,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-13-XS",
+            "price": 21.1,
+            "qty": 95,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-13-S",
+            "price": 22.37,
+            "qty": 34,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-13-M",
+            "price": 26.25,
+            "qty": 36,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-13-L",
+            "price": 20.62,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-13-XXL",
+            "price": 25.85,
+            "qty": 37,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "tee-14": {
+        "parent_sku": "IGR-FM02-14",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 31.85,
+        "from_price_option": "M",
+        "variants": {
+          "S": {
+            "sku": "IGR-FM02-14-S",
+            "price": 35.66,
+            "qty": 87,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-14-M",
+            "price": 31.85,
+            "qty": 107,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-14-L",
+            "price": 33.78,
+            "qty": 125,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-14-XL",
+            "price": 32.0,
+            "qty": 108,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-14-XXL",
+            "price": 34.03,
+            "qty": 75,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-15": {
+        "parent_sku": "IGR-FM02-15",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 25.75,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-15-XS",
+            "price": 25.75,
+            "qty": 31,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-15-S",
+            "price": 29.46,
+            "qty": 90,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-15-M",
+            "price": 30.04,
+            "qty": 92,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-15-L",
+            "price": 27.2,
+            "qty": 136,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-15-XL",
+            "price": 28.34,
+            "qty": 76,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-15-XXL",
+            "price": 31.68,
+            "qty": 80,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-16": {
+        "parent_sku": "IGR-FM02-16",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 31.98,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-16-XS",
+            "price": 31.98,
+            "qty": 83,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-16-S",
+            "price": 37.44,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-16-M",
+            "price": 36.48,
+            "qty": 59,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-16-XL",
+            "price": 32.93,
+            "qty": 45,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      },
+      "tee-17": {
+        "parent_sku": "IGR-FM02-17",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 33.29,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-17-XS",
+            "price": 36.6,
+            "qty": 76,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-17-S",
+            "price": 35.7,
+            "qty": 77,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-17-M",
+            "price": 38.64,
+            "qty": 36,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-17-L",
+            "price": 37.34,
+            "qty": 132,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-17-XL",
+            "price": 39.75,
+            "qty": 48,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-17-XXL",
+            "price": 33.29,
+            "qty": 128,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-18": {
+        "parent_sku": "IGR-FM02-18",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 30.58,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-18-XS",
+            "price": 33.06,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-18-S",
+            "price": 36.81,
+            "qty": 50,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-18-M",
+            "price": 36.43,
+            "qty": 46,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-18-L",
+            "price": 37.3,
+            "qty": 16,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-18-XL",
+            "price": 30.58,
+            "qty": 127,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-18-XXL",
+            "price": 34.31,
+            "qty": 130,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS"
+        ]
+      },
+      "tee-19": {
+        "parent_sku": "IGR-FM02-19",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 12.01,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-19-XS",
+            "price": 12.36,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-19-S",
+            "price": 12.01,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-19-M",
+            "price": 12.5,
+            "qty": 124,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-19-L",
+            "price": 14.91,
+            "qty": 82,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-19-XL",
+            "price": 14.96,
+            "qty": 117,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-19-XXL",
+            "price": 12.62,
+            "qty": 37,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "S"
+        ]
+      },
+      "tee-20": {
+        "parent_sku": "IGR-FM02-20",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 20.71,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-20-XS",
+            "price": 20.71,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-20-S",
+            "price": 26.9,
+            "qty": 131,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-20-M",
+            "price": 23.87,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-20-L",
+            "price": 24.75,
+            "qty": 52,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-20-XL",
+            "price": 22.51,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "M",
+          "XL"
+        ]
+      },
+      "tee-21": {
+        "parent_sku": "IGR-FM02-21",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 17.71,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-21-XS",
+            "price": 23.71,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-21-S",
+            "price": 20.76,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-21-M",
+            "price": 21.63,
+            "qty": 53,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-21-L",
+            "price": 19.7,
+            "qty": 90,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-21-XL",
+            "price": 21.21,
+            "qty": 43,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-21-XXL",
+            "price": 17.71,
+            "qty": 81,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "S"
+        ]
+      },
+      "tee-22": {
+        "parent_sku": "IGR-FM02-22",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 20.43,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-22-XS",
+            "price": 20.43,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-22-S",
+            "price": 22.24,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-22-M",
+            "price": 26.18,
+            "qty": 103,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-22-L",
+            "price": 21.71,
+            "qty": 53,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-22-XL",
+            "price": 21.19,
+            "qty": 50,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-22-XXL",
+            "price": 24.49,
+            "qty": 24,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "S"
+        ]
+      },
+      "tee-23": {
+        "parent_sku": "IGR-FM02-23",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 11.52,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-23-XS",
+            "price": 11.52,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-23-S",
+            "price": 12.79,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-23-L",
+            "price": 12.35,
+            "qty": 88,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-23-XL",
+            "price": 12.14,
+            "qty": 84,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-23-XXL",
+            "price": 12.87,
+            "qty": 59,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "S"
+        ]
+      },
+      "tee-24": {
+        "parent_sku": "IGR-FM02-24",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 19.38,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-24-XS",
+            "price": 20.92,
+            "qty": 115,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-24-S",
+            "price": 21.52,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-24-M",
+            "price": 23.83,
+            "qty": 81,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-24-L",
+            "price": 19.38,
+            "qty": 69,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-24-XL",
+            "price": 22.33,
+            "qty": 21,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-24-XXL",
+            "price": 22.04,
+            "qty": 87,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      },
+      "tee-25": {
+        "parent_sku": "IGR-FM02-25",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 26.17,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-25-XS",
+            "price": 33.86,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-25-S",
+            "price": 26.29,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-25-M",
+            "price": 33.08,
+            "qty": 76,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-25-L",
+            "price": 27.45,
+            "qty": 80,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-25-XL",
+            "price": 26.17,
+            "qty": 33,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-25-XXL",
+            "price": 32.03,
+            "qty": 105,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "S"
+        ]
+      },
+      "tee-26": {
+        "parent_sku": "IGR-FM02-26",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 29.3,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-26-XS",
+            "price": 34.78,
+            "qty": 75,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-26-S",
+            "price": 34.7,
+            "qty": 59,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-26-M",
+            "price": 34.08,
+            "qty": 70,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-26-L",
+            "price": 38.24,
+            "qty": 81,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-26-XL",
+            "price": 40.96,
+            "qty": 130,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-26-XXL",
+            "price": 29.3,
+            "qty": 91,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-27": {
+        "parent_sku": "IGR-FM02-27",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 29.93,
+        "from_price_option": "XL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-27-XS",
+            "price": 30.9,
+            "qty": 77,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-27-S",
+            "price": 36.7,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-27-M",
+            "price": 30.98,
+            "qty": 125,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-27-L",
+            "price": 32.01,
+            "qty": 32,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-27-XL",
+            "price": 29.93,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-27-XXL",
+            "price": 38.61,
+            "qty": 67,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S",
+          "XL"
+        ]
+      },
+      "tee-28": {
+        "parent_sku": "IGR-FM02-28",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 10.09,
+        "from_price_option": "L",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-28-XS",
+            "price": 10.59,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-28-S",
+            "price": 10.29,
+            "qty": 44,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-28-M",
+            "price": 11.63,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-28-L",
+            "price": 10.09,
+            "qty": 88,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-28-XL",
+            "price": 12.45,
+            "qty": 110,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS",
+          "M"
+        ]
+      },
+      "tee-29": {
+        "parent_sku": "IGR-FM02-29",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 15.49,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-29-XS",
+            "price": 15.91,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-29-M",
+            "price": 17.81,
+            "qty": 119,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-29-L",
+            "price": 18.15,
+            "qty": 58,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-29-XXL",
+            "price": 15.49,
+            "qty": 55,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS"
+        ]
+      },
+      "tee-30": {
+        "parent_sku": "IGR-FM02-30",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 37.21,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-FM02-30-S",
+            "price": 37.21,
+            "qty": 63,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-30-M",
+            "price": 38.16,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-30-L",
+            "price": 38.74,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "L"
+        ]
+      },
+      "tee-31": {
+        "parent_sku": "IGR-FM02-31",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 16.29,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-31-XS",
+            "price": 19.39,
+            "qty": 33,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-31-S",
+            "price": 16.51,
+            "qty": 55,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-31-M",
+            "price": 16.29,
+            "qty": 125,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-31-L",
+            "price": 20.37,
+            "qty": 18,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-31-XL",
+            "price": 20.62,
+            "qty": 38,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-31-XXL",
+            "price": 20.67,
+            "qty": 112,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-32": {
+        "parent_sku": "IGR-FM02-32",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 27.18,
+        "from_price_option": "M",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-32-XS",
+            "price": 33.94,
+            "qty": 108,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-32-M",
+            "price": 27.18,
+            "qty": 74,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-32-L",
+            "price": 32.06,
+            "qty": 77,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-32-XL",
+            "price": 31.43,
+            "qty": 18,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-32-XXL",
+            "price": 34.96,
+            "qty": 46,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-33": {
+        "parent_sku": "IGR-FM02-33",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 23.99,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-FM02-33-S",
+            "price": 25.08,
+            "qty": 0,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-33-M",
+            "price": 26.44,
+            "qty": 80,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-33-L",
+            "price": 23.99,
+            "qty": 72,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-33-XL",
+            "price": 28.28,
+            "qty": 103,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-33-XXL",
+            "price": 27.3,
+            "qty": 35,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "S"
+        ]
+      },
+      "tee-34": {
+        "parent_sku": "IGR-FM02-34",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 31.43,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-34-XS",
+            "price": 36.36,
+            "qty": 138,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-34-S",
+            "price": 31.43,
+            "qty": 123,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-34-M",
+            "price": 41.52,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-34-L",
+            "price": 35.64,
+            "qty": 70,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-34-XL",
+            "price": 41.81,
+            "qty": 36,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-34-XXL",
+            "price": 33.04,
+            "qty": 43,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M"
+        ]
+      },
+      "tee-35": {
+        "parent_sku": "IGR-FM02-35",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 38.13,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-35-XS",
+            "price": 38.13,
+            "qty": 17,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-35-S",
+            "price": 40.7,
+            "qty": 136,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-35-L",
+            "price": 40.97,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-35-XL",
+            "price": 38.56,
+            "qty": 98,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-35-XXL",
+            "price": 38.81,
+            "qty": 85,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L"
+        ]
+      },
+      "tee-36": {
+        "parent_sku": "IGR-FM02-36",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 26.73,
+        "from_price_option": "XXL",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-36-XS",
+            "price": 34.52,
+            "qty": 48,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-36-M",
+            "price": 34.58,
+            "qty": 12,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-36-XL",
+            "price": 31.67,
+            "qty": 122,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-36-XXL",
+            "price": 26.73,
+            "qty": 76,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-37": {
+        "parent_sku": "IGR-FM02-37",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 11.32,
+        "from_price_option": "XL",
+        "variants": {
+          "S": {
+            "sku": "IGR-FM02-37-S",
+            "price": 12.05,
+            "qty": 57,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-37-M",
+            "price": 14.72,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-37-L",
+            "price": 14.41,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-37-XL",
+            "price": 11.32,
+            "qty": 122,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-37-XXL",
+            "price": 11.86,
+            "qty": 89,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "L"
+        ]
+      },
+      "tee-38": {
+        "parent_sku": "IGR-FM02-38",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 27.75,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-38-XS",
+            "price": 27.75,
+            "qty": 65,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-38-S",
+            "price": 30.04,
+            "qty": 53,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-38-M",
+            "price": 27.76,
+            "qty": 28,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-38-L",
+            "price": 28.71,
+            "qty": 92,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-38-XL",
+            "price": 28.16,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-38-XXL",
+            "price": 38.37,
+            "qty": 90,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XL"
+        ]
+      },
+      "tee-39": {
+        "parent_sku": "IGR-FM02-39",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 16.02,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-39-XS",
+            "price": 20.7,
+            "qty": 31,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-39-S",
+            "price": 16.02,
+            "qty": 39,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-39-M",
+            "price": 20.25,
+            "qty": 16,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-39-L",
+            "price": 19.04,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-39-XL",
+            "price": 17.76,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-39-XXL",
+            "price": 21.92,
+            "qty": 90,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "L",
+          "XL"
+        ]
+      },
+      "tee-40": {
+        "parent_sku": "IGR-FM02-40",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 29.83,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-40-XS",
+            "price": 37.14,
+            "qty": 17,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-40-S",
+            "price": 29.83,
+            "qty": 103,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-40-M",
+            "price": 37.37,
+            "qty": 0,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-40-L",
+            "price": 30.62,
+            "qty": 0,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-40-XL",
+            "price": 37.11,
+            "qty": 37,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "M",
+          "L"
+        ]
+      },
+      "tee-41": {
+        "parent_sku": "IGR-FM02-41",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 28.77,
+        "from_price_option": "L",
+        "variants": {
+          "S": {
+            "sku": "IGR-FM02-41-S",
+            "price": 32.27,
+            "qty": 57,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-41-M",
+            "price": 31.63,
+            "qty": 83,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-41-L",
+            "price": 28.77,
+            "qty": 135,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-41-XXL",
+            "price": 31.16,
+            "qty": 76,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-42": {
+        "parent_sku": "IGR-FM02-42",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 15.0,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-42-XS",
+            "price": 15.0,
+            "qty": 0,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-42-S",
+            "price": 18.65,
+            "qty": 84,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-42-M",
+            "price": 19.21,
+            "qty": 132,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-42-L",
+            "price": 17.66,
+            "qty": 137,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-42-XL",
+            "price": 15.58,
+            "qty": 87,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-42-XXL",
+            "price": 18.93,
+            "qty": 129,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XS"
+        ]
+      },
+      "tee-43": {
+        "parent_sku": "IGR-FM02-43",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 20.24,
+        "from_price_option": "S",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-43-XS",
+            "price": 24.02,
+            "qty": 137,
+            "unit_price": null
+          },
+          "S": {
+            "sku": "IGR-FM02-43-S",
+            "price": 20.24,
+            "qty": 36,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-43-M",
+            "price": 26.02,
+            "qty": 44,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-43-L",
+            "price": 23.55,
+            "qty": 133,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-43-XL",
+            "price": 24.49,
+            "qty": 22,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-43-XXL",
+            "price": 24.5,
+            "qty": 17,
+            "unit_price": null
+          }
+        }
+      },
+      "tee-44": {
+        "parent_sku": "IGR-FM02-44",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 25.4,
+        "from_price_option": "S",
+        "variants": {
+          "S": {
+            "sku": "IGR-FM02-44-S",
+            "price": 25.4,
+            "qty": 81,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-44-M",
+            "price": 33.3,
+            "qty": 47,
+            "unit_price": null
+          },
+          "L": {
+            "sku": "IGR-FM02-44-L",
+            "price": 25.49,
+            "qty": 71,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-44-XL",
+            "price": 27.77,
+            "qty": 60,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-44-XXL",
+            "price": 30.12,
+            "qty": 0,
+            "unit_price": null
+          }
+        },
+        "out_of_stock_options": [
+          "XXL"
+        ]
+      },
+      "tee-45": {
+        "parent_sku": "IGR-FM02-45",
+        "gating": "price-and-stock-by-variant",
+        "from_price": 27.21,
+        "from_price_option": "XS",
+        "variants": {
+          "XS": {
+            "sku": "IGR-FM02-45-XS",
+            "price": 27.21,
+            "qty": 116,
+            "unit_price": null
+          },
+          "M": {
+            "sku": "IGR-FM02-45-M",
+            "price": 32.56,
+            "qty": 39,
+            "unit_price": null
+          },
+          "XL": {
+            "sku": "IGR-FM02-45-XL",
+            "price": 29.03,
+            "qty": 95,
+            "unit_price": null
+          },
+          "XXL": {
+            "sku": "IGR-FM02-45-XXL",
+            "price": 28.51,
+            "qty": 50,
+            "unit_price": null
+          }
+        }
+      }
+    },
+    "cross_listing": {
+      "XS": {
+        "cheapest_listing": "tee-28",
+        "cheapest_price": 10.59,
+        "listing_a_card_probe_would_pick": "tee-28",
+        "card_probe_wrong": false
+      },
+      "L": {
+        "cheapest_listing": "tee-28",
+        "cheapest_price": 10.09,
+        "listing_a_card_probe_would_pick": "tee-28",
+        "card_probe_wrong": false
+      },
+      "XL": {
+        "cheapest_listing": "tee-37",
+        "cheapest_price": 11.32,
+        "listing_a_card_probe_would_pick": "tee-28",
+        "card_probe_wrong": true
+      },
+      "XXL": {
+        "cheapest_listing": "tee-37",
+        "cheapest_price": 11.86,
+        "listing_a_card_probe_would_pick": "tee-02",
+        "card_probe_wrong": true
+      },
+      "S": {
+        "cheapest_listing": "tee-28",
+        "cheapest_price": 10.29,
+        "listing_a_card_probe_would_pick": "tee-28",
+        "card_probe_wrong": false
+      },
+      "M": {
+        "cheapest_listing": "tee-02",
+        "cheapest_price": 10.32,
+        "listing_a_card_probe_would_pick": "tee-28",
+        "card_probe_wrong": true
+      }
+    }
+  }
+}

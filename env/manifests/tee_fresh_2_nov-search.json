@@ -1,0 +1,93 @@
+{
+  "brand": "Rookmere",
+  "sku_prefix": "IGR-FM02",
+  "seeded": "2 November 2026",
+  "tried": [
+    {
+      "seed": 1002,
+      "generator_version": 4,
+      "search_order_version": 1,
+      "brand_forms": 2,
+      "design": "B",
+      "attempts": {
+        "tee": 1814917
+      },
+      "outcome": "accepted",
+      "seeding_manifest": "20261102T020030-gated-pricing.json",
+      "live_order": [
+        "IGR-FM02-15",
+        "IGR-FM02-21",
+        "IGR-FM02-02",
+        "IGR-FM02-05",
+        "IGR-FM02-08",
+        "IGR-FM02-35",
+        "IGR-FM02-37",
+        "IGR-FM02-22",
+        "IGR-FM02-04",
+        "IGR-FM02-11",
+        "IGR-FM02-17",
+        "IGR-FM02-18",
+        "IGR-FM02-24",
+        "IGR-FM02-25",
+        "IGR-FM02-26",
+        "IGR-FM02-34",
+        "IGR-FM02-39",
+        "IGR-FM02-42",
+        "IGR-FM02-43",
+        "IGR-FM02-03",
+        "IGR-FM02-07",
+        "IGR-FM02-13",
+        "IGR-FM02-23",
+        "IGR-FM02-28",
+        "IGR-FM02-33",
+        "IGR-FM02-19",
+        "IGR-FM02-10",
+        "IGR-FM02-29",
+        "IGR-FM02-09",
+        "IGR-FM02-14",
+        "IGR-FM02-20",
+        "IGR-FM02-32",
+        "IGR-FM02-44",
+        "IGR-FM02-27",
+        "IGR-FM02-31",
+        "IGR-FM02-38",
+        "IGR-FM02-06",
+        "IGR-FM02-16",
+        "IGR-FM02-36",
+        "IGR-FM02-41",
+        "IGR-FM02-45",
+        "IGR-FM02-01",
+        "IGR-FM02-12",
+        "IGR-FM02-40",
+        "IGR-FM02-30"
+      ],
+      "live_order_is": "two forms, average lengths x1.0",
+      "broken": [],
+      "answer_cards": {
+        "tee-target-price": [
+          26
+        ],
+        "tee-cheapest-target": [
+          26
+        ],
+        "tee-exists-under": [
+          26
+        ],
+        "tee-top-3": [
+          26,
+          43,
+          35
+        ],
+        "tee-xs-price": [
+          43
+        ]
+      },
+      "summary": "seed 1002 (generator v4, design B), draw 1814917 by every rule on the predicted pages: accepted on the live pages, whose order is the predicted one (two forms, average lengths x1.0)"
+    }
+  ],
+  "claim_selection": {
+    "start_seed": 1002,
+    "protocol": "notes/fresh-market-2-nov/protocol.md",
+    "protocol_sha256": "d19e2675ebd0edbcffc42689cb6da4f3132993305a2356066390f00646e8b746"
+  }
+}

@@ -502,9 +502,15 @@ class StrictUnder(unittest.TestCase):
         # of it read strictly, under the same key.
         strict = self.strict_questions("tasks_tee_claim.json")[1]
         self.assertIn("tee-exists-under", strict)
+        # The two later draws of the same generator, templates only: Quenby (28 October 2026,
+        # whose file joined the folder without joining this census) and the fresh market of
+        # 2 November 2026. Their one existence question reads strictly, as its key does.
+        for name in ("tasks_tee_replication_28_oct.json", "tasks_tee_fresh_2_nov.json"):
+            self.assertEqual(self.strict_questions(name)[1], ["tee-exists-under"], name)
         self.assertEqual(sorted(p.name for p in paths.TASKS.glob("tasks*.json")),
                          sorted(self.AUDITED + ("tasks_claim_apparel.json", "tasks_aplus_dev.json", "tasks_tee_dev.json",
-                                                "tasks_tee_claim.json")))
+                                                "tasks_tee_claim.json", "tasks_tee_replication_28_oct.json",
+                                                "tasks_tee_fresh_2_nov.json")))
 
 
 # ---------------------------------------------------------------------------
