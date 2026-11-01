@@ -13,6 +13,7 @@ import json
 import math
 import os
 from pathlib import Path
+import re
 import secrets
 import signal
 import subprocess
@@ -23,6 +24,10 @@ import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 RECOVERY_STAGES = {"pilot-recovery", "overnight-transfer", "monitored-transfer"}
+REPEAT_STAGE = "plain-repeat-transfer"
+REPEAT_BUDGET = "browser-use-plain-repeat-2026-11-01"
+LEGACY_UNSETTLED_USD = 0.2117632
+REFERENCE_CONFIG_SHA256 = "404e45a0f7e029047a5a35394fbcbe79354bb53a9a13b2972a83478bc970e4ed"
 
 
 class Stop(RuntimeError):
@@ -178,6 +183,7 @@ class CallBudget:
             raise Stop("ledger already exists; implicit resume is forbidden")
         self.account_reader, self.clock = account_reader, clock
         self.deadline = deadline_epoch(config["deadline"])
+        self.monotonic_deadline = time.monotonic() + max(0, self.deadline - self.clock())
         self.cap = number(config["cap_usd"])
         self.reserve = number(config["minimum_balance_usd"])
         self.carryover, self.prior_unsettled = recovery_limits(config)
@@ -190,6 +196,11 @@ class CallBudget:
                       "account_decreases": 0, "deadline": config["deadline"], "cap_usd": self.cap,
                       "carryover_usd": self.carryover, "prior_unsettled_reserve_usd": self.prior_unsettled}
         self.state["prior_ledger_files"] = prior_ledger_names(config) if config.get("stage") in RECOVERY_STAGES else []
+        if config.get("stage") == REPEAT_STAGE:
+            validate_repeat_budget(config)
+            self.state.update(study_budget_id=REPEAT_BUDGET, attempt=1, shared_cap_usd=2,
+                              legacy_unsettled_reserve_usd=LEGACY_UNSETTLED_USD,
+                              minimum_balance_usd=self.reserve)
         self._account()
         self._save()
 
@@ -219,7 +230,9 @@ class CallBudget:
         with self.lock:
             if self.state["blocked_reason"]:
                 raise Stop(self.state["blocked_reason"])
-            if self.clock() >= self.deadline - 15:
+            if (self.clock() >= self.deadline - 15 or
+                    (self.config.get("stage") == REPEAT_STAGE and
+                     time.monotonic() >= self.monotonic_deadline - 15)):
                 self._block("absolute deadline reached")
             try:
                 verify_identity(self.config)
@@ -285,15 +298,84 @@ def verify_identity(config):
     return head
 
 
+def verify_browser_version(config):
+    if config.get("stage") != REPEAT_STAGE:
+        return
+    try:
+        result = subprocess.run([config["browser_executable"], "--version"],
+                                capture_output=True, text=True, timeout=15, check=True)
+        version = re.search(r"\b\d+\.\d+\.\d+\.\d+\b", result.stdout)
+        if version is None or version.group() != config["preflight_browser_version"]:
+            raise Stop("browser build changed since the verified free preflight")
+    except (OSError, subprocess.SubprocessError):
+        raise Stop("browser version check failed before any new trial call") from None
+
+
+def validate_repeat_budget(config):
+    """A separate fixed allowance, with no implicit recovery or budget reset."""
+    if (config.get("study_budget_id") != REPEAT_BUDGET
+            or config.get("attempt") != 1 or config.get("carryover_usd") != 0
+            or config.get("shared_cap_usd") != 2 or config.get("cap_usd") != 2
+            or config.get("estimate_usd") != 1.6
+            or config.get("legacy_unsettled_reserve_usd") != LEGACY_UNSETTLED_USD
+            or number(config.get("minimum_balance_usd")) < 20 + LEGACY_UNSETTLED_USD
+            or any(config.get(k) for k in ("prior_ledger_file", "prior_ledger_files", "reconciliation_file"))):
+        raise Stop("plain repeats require the fixed first-attempt $2 budget and legacy reserve")
+    base = Path(config["repo"]).resolve() / "notes/browser-use-repeat-1-nov"
+    for field, name in {"ledger_path": "attempt1.ledger.json", "status_path": "attempt1.status.json",
+                        "output_dir": "attempt1.results", "log_path": "attempt1.log"}.items():
+        if Path(config[field]).resolve() != base / name:
+            raise Stop("plain-repeat paths cannot reset the shared budget")
+    if deadline_epoch(config["deadline"]) > deadline_epoch("2026-11-03T00:00:00+08:00"):
+        raise Stop("no paid repeat calls are authorized from Tuesday onward")
+
+
+def validate_repeat_identity(config):
+    """Preserve the original experimental inputs, while changing only scheduling."""
+    repo = Path(config["repo"]).resolve()
+    reference_path = repo / config["reference_config_file"]
+    if sha(reference_path) != REFERENCE_CONFIG_SHA256:
+        raise Stop("plain repeats must bind the exact original monitored command")
+    reference = json.loads(reference_path.read_text())
+    fields = ("python", "page_python", "model", "provider", "allowed_served_providers",
+              "maximum_input_tokens", "max_input_bytes", "max_output_tokens", "max_steps",
+              "clock_s", "llm_timeout", "temperature", "frequency_penalty", "top_p",
+              "use_vision", "browser_executable", "preflight_browser_version", "max_failures",
+              "dependencies_lock")
+    if any(config.get(field) != reference.get(field) for field in fields):
+        raise Stop("plain-repeat execution settings differ from the original monitored command")
+    if config.get("questions") != reference["transfer_questions"] or config.get("repeats") != [2, 3]:
+        raise Stop("plain repeats must retain all eight original questions and use repeats 2 and 3")
+    if "observation_contract" in config:
+        raise Stop("plain repeats cannot enable an observation adapter")
+    frozen = {"experiments/runners/browser_use_runner.py", "experiments/paths.py", config["dependencies_lock"]}
+    frozen.update(str(p.relative_to(repo)) for p in (repo / "experiments/box").glob("*.py"))
+    for relative in frozen:
+        if sha(repo / relative) != reference["hashes"].get(relative):
+            raise Stop("plain repeats changed the frozen runner, block/parser or dependency lock")
+    verify_browser_version(config)
+    preflight = json.loads((repo / config["preflight_receipt"]).read_text())
+    if (preflight.get("verdict") != "PASS" or preflight.get("study_id") != REPEAT_BUDGET
+            or preflight.get("model_calls") != 0
+            or preflight.get("browser_version") != config["preflight_browser_version"]):
+        raise Stop("plain repeats require their free preflight receipt")
+    for relative in ("tools/guarded_browser_use.py", "experiments/runners/browser_use_transfer.py",
+                     "experiments/runners/browser_use_runner.py"):
+        if preflight.get("source_sha256", {}).get(relative) != sha(repo / relative):
+            raise Stop("free repeat checks predate the current code")
+
+
 def validate_config(path, *, require_approval=False):
     path = Path(path).resolve()
     config = json.loads(path.read_text())
     repo = Path(config["repo"]).resolve()
     if repo != ROOT:
         raise Stop("configuration belongs to another checkout")
-    if config.get("stage") not in ({"pilot"} | RECOVERY_STAGES) or config.get("version") != 1:
+    if config.get("stage") not in ({"pilot", REPEAT_STAGE} | RECOVERY_STAGES) or config.get("version") != 1:
         raise Stop("only a separately approved development pilot is supported")
     recovery_limits(config)
+    if config["stage"] == REPEAT_STAGE:
+        validate_repeat_budget(config)
     if not 0 < number(config["cap_usd"]) <= 2 or number(config["minimum_balance_usd"]) < 20:
         raise Stop("pilot cap must be at most $2 and account reserve at least $20")
     if number(config["estimate_usd"]) > config["cap_usd"]:
@@ -311,6 +393,9 @@ def validate_config(path, *, require_approval=False):
                 "experiments/runners/browser_use_runner.py", config["protocol_file"], config["dependencies_lock"]}
     required.update(str(p.relative_to(repo)) for p in (repo / "experiments/box").glob("*.py"))
     required.update(config["runtime_input_files"])
+    if config["stage"] == REPEAT_STAGE:
+        required.update({config["reference_config_file"], config["analysis_plan_file"], config["preflight_receipt"],
+                         "experiments/paths.py"})
     if config["stage"] in RECOVERY_STAGES:
         required.update(prior_ledger_names(config))
         required.add(config["reconciliation_file"])
@@ -326,6 +411,8 @@ def validate_config(path, *, require_approval=False):
     if not required <= set(config["hashes"]):
         raise Stop("launcher, adapter, protocol, dependency lock, block/parser and inputs must be hash-bound")
     head = verify_identity(config)
+    if config["stage"] == REPEAT_STAGE:
+        validate_repeat_identity(config)
     if require_approval:
         digest = sha(path)
         receipt = json.loads(Path(config["verification_receipt"]).read_text())
@@ -334,6 +421,9 @@ def validate_config(path, *, require_approval=False):
         if (receipt.get("verdict") != "PASS" or receipt.get("config_sha256") != digest
                 or receipt.get("head") != head or receipt.get("request_bound_verified") is not True):
             raise Stop("independent verification does not bind this command and request bound")
+        if config["stage"] == REPEAT_STAGE and (receipt.get("verifier") != "claude"
+                or receipt.get("independent") is not True or receipt.get("command") != command):
+            raise Stop("plain repeats require Claude verification of the exact command")
         if (approval.get("approved") is not True or approval.get("config_sha256") != digest
                 or approval.get("command") != command or not approval.get("user_message")):
             raise Stop("concrete user approval is missing")
@@ -349,6 +439,23 @@ def terminate_owned(child):
     except subprocess.TimeoutExpired:
         os.killpg(child.pid, signal.SIGKILL)
         child.wait(timeout=3)
+
+
+def claim_repeat_launch(config, config_path):
+    """Retained exclusive marker prevents duplicate workers under one allowance."""
+    if config.get("stage") != REPEAT_STAGE:
+        return
+    validate_repeat_budget(config)
+    marker = Path(config["ledger_path"]).with_name("attempt1.launch.json")
+    try:
+        descriptor = os.open(marker, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError:
+        raise Stop("repeat attempt already claimed; concurrent launch or implicit resume forbidden") from None
+    with os.fdopen(descriptor, "w") as handle:
+        json.dump({"study_budget_id": REPEAT_BUDGET, "attempt": 1, "config_sha256": sha(config_path),
+                   "launcher_pid": os.getpid(), "claimed_at": time.time()}, handle, indent=2)
+        handle.flush()
+        os.fsync(handle.fileno())
 
 
 def mark_unfinished(config, reason):
@@ -369,6 +476,7 @@ def execute(path):
     status_path, ledger = Path(config["status_path"]), Path(config["ledger_path"])
     if status_path.exists() or ledger.exists():
         raise Stop("pilot artifacts already exist; no implicit resume")
+    claim_repeat_launch(config, path)
     key = read_key(config["environment_file"])
     before = account_snapshot(key)
     carryover, prior_unsettled = recovery_limits(config)
@@ -381,6 +489,7 @@ def execute(path):
             "--config", str(Path(path).resolve()), "--execute"]
     child = caffeinate = None
     stop_at = deadline_epoch(config["deadline"]) - 15
+    monotonic_stop = time.monotonic() + max(0, stop_at - time.time())
     try:
         atomic_json(status_path, {"status": "running", "config_sha256": sha(path), "started_at": time.time()})
         log_path = Path(config["log_path"])
@@ -389,9 +498,13 @@ def execute(path):
             child = subprocess.Popen(argv, cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
             if sys.platform == "darwin":
                 caffeinate = subprocess.Popen(["/usr/bin/caffeinate", "-i", "-w", str(child.pid)], start_new_session=True)
+            last_watchdog_tick = time.time()
             while child.poll() is None:
-                if time.time() >= stop_at:
+                if time.time() >= stop_at or (config["stage"] == REPEAT_STAGE and time.monotonic() >= monotonic_stop):
                     raise Stop("absolute deadline reached")
+                if config["stage"] == REPEAT_STAGE and time.time() - last_watchdog_tick > 60:
+                    raise Stop("watchdog suspended over 60 seconds; retain interruption without replay")
+                last_watchdog_tick = time.time()
                 if sha(path) != env["IGR_BROWSER_USE_CONFIG_SHA256"]:
                     raise Stop("configuration changed during pilot")
                 time.sleep(1)

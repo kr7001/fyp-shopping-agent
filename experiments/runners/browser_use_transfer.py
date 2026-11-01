@@ -24,7 +24,7 @@ import paths  # noqa: E402
 import box  # noqa: E402
 import page as page_module  # noqa: E402
 import primitives  # noqa: E402
-from guarded_browser_use import CallBudget, Stop, account_snapshot, atomic_json, read_key, sha, validate_config  # noqa: E402
+from guarded_browser_use import CallBudget, Stop, account_snapshot, atomic_json, read_key, sha, validate_config, verify_browser_version, REPEAT_STAGE, REPEAT_BUDGET  # noqa: E402
 
 STUDY_ID = "browser-use-transfer-2026-10-31"
 ARMS = ("baseline", "block")
@@ -111,6 +111,10 @@ def preview(config):
     if config.get("stage") == "pilot":
         if len(questions) != 2 or config.get("repeats") != [1]:
             raise ValueError("pilot is two questions, two arms, one repeat")
+    elif config.get("stage") == REPEAT_STAGE:
+        if (tuple(q["id"] for q in questions) != TASK_IDS or config.get("repeats") != [2, 3]
+                or config.get("clock_s") != 2700):
+            raise ValueError("plain repeats require all eight questions, repeats 2 and 3, and 2700 seconds")
     elif config.get("stage") in {"pilot-recovery", "overnight-transfer", "monitored-transfer"}:
         pilot_clock = 1800 if config["stage"] == "pilot-recovery" else 2700
         expected_ids = ["tee-count-buyable"] if config["stage"] == "monitored-transfer" else ["tee-cheapest-target", "tee-count-buyable"]
@@ -134,7 +138,11 @@ def preview(config):
         for slot in schedule(transfer, (1,)):
             slot.update(id="transfer-" + slot["id"], phase="transfer", clock_s=2700)
             slots.append(slot)
+    if config["stage"] == REPEAT_STAGE:
+        for slot in slots:
+            slot.update(id="transfer-" + slot["id"], phase="transfer", clock_s=2700)
     return {"study_id": STUDY_ID, "stage": config["stage"], "paid_calls": 0,
+            **({"batch_id": REPEAT_BUDGET} if config["stage"] == REPEAT_STAGE else {}),
             "warning_sha256": digest(COMMON_BRIEFING), "warning": COMMON_BRIEFING,
             "slots": slots,
             "block_preview": "The model parser is not called in preview. Its prompt and frozen logic are inspected separately."}
@@ -206,8 +214,9 @@ async def execute_study(config_path):
     loop = asyncio.get_running_loop()
     completed = []
     pilot_records = []
-    pilot_passed = False
+    pilot_passed = config["stage"] == REPEAT_STAGE  # No new paid diagnostics in the repeat batch.
     for slot in plan["slots"]:
+        verify_browser_version(config)  # Before the parser or executor can make a paid call.
         if slot.get("phase") == "transfer" and not pilot_passed:
             gate = technical_gate(pilot_records, budget.state, expected=2 if config["stage"] == "monitored-transfer" else 4,
                                   allow_agent_failures=config["stage"] == "monitored-transfer")
@@ -274,6 +283,8 @@ async def execute_study(config_path):
                           parse_cost_usd=sum(c["cost_usd"] for c in parser_calls),
                           total_cost_usd=sum(c["cost_usd"] for c in new_calls),
                           elapsed_with_parser_s=time.perf_counter() - started)
+            if config["stage"] == REPEAT_STAGE:
+                record["batch_id"] = REPEAT_BUDGET
             atomic_json(output_dir / f"{slot['id']}.json", record)
             statuses[slot["id"]]["status"] = record["outcome"]
             atomic_json(output_dir / "slot-status.json", {"slots": statuses})
