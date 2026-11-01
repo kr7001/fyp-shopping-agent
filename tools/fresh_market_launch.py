@@ -42,7 +42,9 @@ B_PROTOCOL = "experiments/tasks/matched_briefing_2_nov.json"
 B_OLD = "experiments/tasks/matched_briefing_29_oct.json"
 B_STUDY = "matched-briefing-fresh-2026-11-02"
 APPROVAL = "notes/fresh-market-2-nov/student-approval-2-nov.md"
-DEADLINE = "2026-11-03T12:00:00+08:00"  # the protocol's absolute stop
+# The student's plan: no paid run on Tuesday 3 November or later. Earlier than the protocol's
+# absolute stop (3 November 12:00), which each launcher may not pass.
+DEADLINE = "2026-11-02T23:59:00+08:00"
 # The repeats 2-3 cohort's continuation command and its sibling inputs, kept beside its notes.
 COHORT = ROOT / "notes/browser-use-repeat-1-nov/attempt2-complete-1-nov"
 # The 29 October study's launch, whose steps, interpreter and environment B repeats.

@@ -211,7 +211,7 @@
     "cap_usd": 2.0,
     "minimum_key_credit_usd": 20,
     "inflight_reserve_usd": 0.5,
-    "deadline": "2026-11-03T12:00:00+08:00",
+    "deadline": "2026-11-02T23:59:00+08:00",
     "estimate_usd": 1.2
   },
   "historical_reference": {
