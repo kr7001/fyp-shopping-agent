@@ -1,0 +1,3 @@
+# Browser Use transfer pilot; local Python3.11 environment.
+browser-use==0.13.14
+playwright==1.63.0
