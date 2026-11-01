@@ -14,21 +14,32 @@ import guarded_replication as original
 STUDY = 'matched-briefing-2026-10-29'
 LATEST = dt.datetime.fromisoformat('2026-10-30T12:00:00+08:00')
 CAP = 10.0
+# Every study this launcher may run, by its id: the latest deadline, the cap and the smallest
+# in-flight reserve its design allows. The 29 October study keeps its own values. The fresh
+# market's (notes/fresh-market-2-nov/protocol.md, 2 November 2026) has a USD 2 cap, so the
+# replication guard's USD 1 reserve would stop it at USD 1; its USD 0.50 reserve is more than
+# twice the 29 October study's largest trial charge, USD 0.194.
+STUDIES = {
+    STUDY: {'latest': LATEST, 'cap': CAP, 'min_reserve': 1.0},
+    'matched-briefing-fresh-2026-11-02': {
+        'latest': dt.datetime.fromisoformat('2026-11-03T12:00:00+08:00'), 'cap': 2.0, 'min_reserve': 0.5},
+}
 
 
 def validate_config(path):
     cfg = json.loads(Path(path).read_text())
-    if cfg.get('study_id') != STUDY or cfg.get('round') != 1 or 'prior_round' in cfg:
+    study = STUDIES.get(cfg.get('study_id'))
+    if study is None or cfg.get('round') != 1 or 'prior_round' in cfg:
         raise original.Stop('wrong supplementary study or budget scope')
-    if original.number(cfg.get('cap_usd')) != CAP:
-        raise original.Stop('supplementary study cap must be USD10')
+    if original.number(cfg.get('cap_usd')) != study['cap']:
+        raise original.Stop('supplementary study cap differs from its design')
     deadline = dt.datetime.fromisoformat(cfg['deadline'])
-    if deadline.tzinfo is None or deadline > LATEST:
+    if deadline.tzinfo is None or deadline > study['latest']:
         raise original.Stop('supplementary deadline exceeds verified design')
     root = Path(cfg['repo'])
     protocol_path = root / cfg['protocol']
     protocol = json.loads(protocol_path.read_text())
-    if (protocol.get('study_id') != STUDY or protocol.get('status') != 'frozen'
+    if (protocol.get('study_id') != cfg['study_id'] or protocol.get('status') != 'frozen'
             or cfg['hashes'].get(cfg['protocol']) != original.sha(protocol_path)):
         raise original.Stop('supplementary protocol is not frozen and bound')
     paid = [step for step in cfg['steps'] if step['kind'] == 'paid']
@@ -70,12 +81,16 @@ def check_key_context(root, environment=None):
 
 
 class MatchedGuard(original.Guard):
+    study_id = STUDY  # the configuration's, set by the constructor
+
     def __init__(self, config_path, *, account_command=None):
         cfg, self.protocol = validate_config(config_path)
+        self.study_id = cfg['study_id']
+        self.MIN_RESERVE_USD = STUDIES[self.study_id]['min_reserve']
         # Constructor reads this constant once. Restore it even if it refuses.
         old = original.AUTHORIZED_DEADLINE
         try:
-            original.AUTHORIZED_DEADLINE = LATEST
+            original.AUTHORIZED_DEADLINE = STUDIES[self.study_id]['latest']
             super().__init__(config_path, account_command=account_command)
         finally:
             original.AUTHORIZED_DEADLINE = old
@@ -91,7 +106,7 @@ class MatchedGuard(original.Guard):
             data = json.loads(Path(output['output']).read_text())
             expected = step['study_slot']
             for stamp in [data] + data['rows']:
-                if (stamp.get('study_id') != STUDY
+                if (stamp.get('study_id') != self.study_id
                         or stamp.get('condition') != expected['arm']
                         or stamp.get('slot_id') != expected['slot']
                         or stamp.get('protocol_sha256') != self.protocol_sha):

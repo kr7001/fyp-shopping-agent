@@ -29,6 +29,13 @@ import voids  # noqa: E402
 VERSION = 1
 ARMS = {"full-block": "box-model", "matched-briefing": "matched-briefing"}
 TASKS = ("tee-cheapest-target", "tee-xs-price", "tee-top-3", "tee-count-buyable")
+# Every study this reader may read, by id, with the scope its analysis states. The fresh
+# market's (2 November 2026) is the same design on a market drawn after its protocol was
+# committed (notes/fresh-market-2-nov/analysis-plan-B.md); the two are never pooled.
+STUDIES = {
+    "matched-briefing-2026-10-29": "Descriptive mechanism audit on already-observed Quenby; four templates, two repeats; no generalisation or significance claim.",
+    "matched-briefing-fresh-2026-11-02": "Descriptive mechanism audit on the fresh held-out market of 2 November 2026; four templates, two repeats; not pooled with Quenby; no generalisation or significance claim.",
+}
 COLUMNS = claim.SHEET_COLUMNS
 
 
@@ -66,7 +73,7 @@ def close(a, b, label):
 def protocol_at(path):
     path = pathlib.Path(path).resolve()
     config = json.loads(path.read_text())
-    require(config.get("study_id") == "matched-briefing-2026-10-29", "wrong study_id")
+    require(config.get("study_id") in STUDIES, "wrong study_id")
     require(set(config.get("tasks", [])) == set(TASKS) and len(config["tasks"]) == 4,
             "protocol must hold exactly the four predeclared tasks")
     require(config.get("repeats") == [1, 2], "protocol repeats must be [1, 2]")
@@ -452,7 +459,7 @@ def analyse(study, hand):
                 "human_assessable": sum(r.get("hand_verdict") in ("correct", "not correct") for r in group),
                 "automatic_correct": sum(r.get("automatic_verdict") == "correct" for r in group)}
     return {**check_summary(study), "scorer_version": score.VERSION, "per_task_counts": counts,
-            "scope": "Descriptive mechanism audit on already-observed Quenby; four templates, two repeats; no generalisation or significance claim.",
+            "scope": STUDIES[study["config"]["study_id"]],
             "paired_by_task_repeat": paired, "human_automatic_disagreements": disagreements,
             "technical_rule": "Original voids.classify; voids excluded, charges retained; no automatic replay."}
 

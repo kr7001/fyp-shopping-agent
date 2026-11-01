@@ -32,6 +32,36 @@ LEGACY_UNSETTLED_USD = 0.2117632
 REPEAT_ATTEMPT1_SHA256 = "2a1b0ec9f9a58e047fed80680b03252a30a2c8d2f9594381f9c32257e762d700"
 REPEAT_CARRYOVER_USD = 0.28053916066
 REFERENCE_CONFIG_SHA256 = "404e45a0f7e029047a5a35394fbcbe79354bb53a9a13b2972a83478bc970e4ed"
+# The fresh held-out market of 2 November 2026 (notes/fresh-market-2-nov/protocol.md and
+# analysis-plan-A.md): the repeats 2-3 cohort's condition on a newly drawn market, as one
+# attempt with its own budget, cap and deadline. Only the market and its questions, the repeat
+# numbers, the study identity, the budget and the paths change; everything the agent receives
+# is checked against the cohort's command before a call is paid for.
+FRESH_STAGE = "fresh-market-transfer"
+FRESH_BUDGET = "browser-use-fresh-market-2026-11-02"
+FRESH_CAP_USD = 3.0
+FRESH_ESTIMATE_USD = 1.5
+FRESH_LATEST = "2026-11-03T12:00:00+08:00"  # the protocol's absolute stop, before the talk
+FRESH_NOTES = "notes/fresh-market-2-nov"
+# The cohort's continuation command (attempt 2 at 966e711), whose settings and frozen sources
+# the fresh stage keeps.
+FRESH_REFERENCE_SHA256 = "d92255c29e88f96631126c647bf67fdefb94276c7db255ed17a2331418d92d8d"
+# What the agent receives is decided by these definitions of browser_use_transfer.py, which
+# gained the fresh stage beside them. Each is pinned by the SHA-256 of its source text at
+# 966e711, so a change to the question, the warning, the page read or the schedule stops the
+# launch even though the file's own hash moved (`agent_facing_digests`).
+AGENT_FACING = {
+    "ARMS": "4e6ea65d67b7dbc3311e2983f392fbdb75dfa306885eea398b9703ec91a2b481",
+    "TASK_IDS": "73b9b3f3cdd8343799643635b9189fe81193e9099459a5bce12716ed82e353f5",
+    "QUESTION_FIELDS": "a01d64c5307bafe167e71f32311df18c4df87596c705606355c8ea85202a94c4",
+    "COMMON_BRIEFING": "01e8f26824ffc34c4f2c74230ab88b17e80534477f0e379575f9161e623106d6",
+    "validate_questions": "8d9ebba12ad7ac2c4797f207c6df555fb21cbcabe4cf8164bbc48d314c8fccc2",
+    "schedule": "344b768b047c2aa6edb43e89e23c97fdf9d5d682d0cb8d210547a453d46d34b4",
+    "validate_observation": "60b1657328d22118705b47d2b3a9e7ba8b6460fc502e60e13bb4d1d6bcc6eb3c",
+    "build_query": "54f02bc99012ae0cbbf2ed86c8d02c0e693629cc96c7efe353911eae7beb4c5b",
+    "read_observation": "47a13bd36a4c95b5ea195fd804db8b320774e9b0f8c8d8706f8a28420ab56f10",
+}
+GUARDED_STAGES = REPEAT_STAGES | {FRESH_STAGE}
 
 
 class Stop(RuntimeError):
@@ -65,6 +95,41 @@ def deadline_epoch(value):
     if deadline.tzinfo is None:
         raise Stop("deadline must include a timezone")
     return deadline.timestamp()
+
+
+def agent_facing_digests(source):
+    """SHA-256 of the source text of each top-level definition named in AGENT_FACING, read
+    from a browser_use_transfer.py source with `ast`, without importing it (2 November 2026)."""
+    import ast
+    found = {}
+    for node in ast.parse(source).body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            name = node.name
+        elif isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+            name = node.targets[0].id
+        else:
+            continue
+        if name in AGENT_FACING:
+            if name in found:
+                raise Stop("an agent-facing definition appears twice")
+            found[name] = hashlib.sha256(ast.get_source_segment(source, node).encode()).hexdigest()
+    return found
+
+
+def runtime_questions(task_data, ids):
+    """The questions as the agent receives them, from a generated task file: for each id, in
+    the given order, the template's query with the shop's address filled in and the brand's
+    results page it opens with. Only id, query and start_url, never a key (2 November 2026)."""
+    tasks = {task["id"]: task for task in task_data["tasks"]}
+    base, brand = task_data["base_url"], task_data["brand"]
+    start = f"{base}/catalogsearch/result/?q={brand}"
+    questions = []
+    for task_id in ids:
+        query = tasks[task_id]["query"].format(base=base)
+        if not query.startswith(f"Go to {start} . "):
+            raise Stop("a generated question does not open the brand's results page")
+        questions.append({"id": task_id, "query": query, "start_url": start})
+    return questions
 
 
 def read_key(path):
@@ -205,6 +270,11 @@ class CallBudget:
             self.state.update(study_budget_id=REPEAT_BUDGET, attempt=config["attempt"], shared_cap_usd=2,
                               legacy_unsettled_reserve_usd=LEGACY_UNSETTLED_USD,
                               minimum_balance_usd=self.reserve)
+        if config.get("stage") == FRESH_STAGE:
+            validate_fresh_budget(config)
+            self.state.update(study_budget_id=FRESH_BUDGET, attempt=1, shared_cap_usd=FRESH_CAP_USD,
+                              legacy_unsettled_reserve_usd=LEGACY_UNSETTLED_USD,
+                              minimum_balance_usd=self.reserve)
         self._account()
         self._save()
 
@@ -235,7 +305,7 @@ class CallBudget:
             if self.state["blocked_reason"]:
                 raise Stop(self.state["blocked_reason"])
             if (self.clock() >= self.deadline - 15 or
-                    (self.config.get("stage") in REPEAT_STAGES and
+                    (self.config.get("stage") in GUARDED_STAGES and
                      time.monotonic() >= self.monotonic_deadline - 15)):
                 self._block("absolute deadline reached")
             try:
@@ -303,7 +373,7 @@ def verify_identity(config):
 
 
 def verify_browser_version(config):
-    if config.get("stage") not in REPEAT_STAGES:
+    if config.get("stage") not in GUARDED_STAGES:
         return
     try:
         result = subprocess.run([config["browser_executable"], "--version"],
@@ -445,6 +515,81 @@ def validate_repeat_identity(config):
             raise Stop("free repeat checks predate the current code")
 
 
+def validate_fresh_budget(config):
+    """One attempt on the fresh market under its own cap: no carry from another study, fixed
+    paths so the budget cannot be reset by renaming them, and no call after the protocol's
+    absolute stop."""
+    if (config.get("study_budget_id") != FRESH_BUDGET or config.get("attempt") != 1
+            or number(config.get("carryover_usd")) != 0
+            or config.get("shared_cap_usd") != FRESH_CAP_USD or number(config.get("cap_usd")) != FRESH_CAP_USD
+            or config.get("estimate_usd") != FRESH_ESTIMATE_USD
+            or config.get("legacy_unsettled_reserve_usd") != LEGACY_UNSETTLED_USD
+            or number(config.get("minimum_balance_usd")) < 20 + LEGACY_UNSETTLED_USD
+            or any(config.get(k) for k in ("prior_ledger_file", "prior_ledger_files", "reconciliation_file"))):
+        raise Stop("the fresh market requires its own single attempt, cap, estimate and reserve")
+    base = Path(config["repo"]).resolve() / FRESH_NOTES
+    for field, name in {"ledger_path": "study-a.ledger.json", "status_path": "study-a.status.json",
+                        "output_dir": "study-a.results", "log_path": "study-a.log"}.items():
+        if Path(config[field]).resolve() != base / name:
+            raise Stop("fresh-market paths are fixed so the budget cannot be reset")
+    if deadline_epoch(config["deadline"]) > deadline_epoch(FRESH_LATEST):
+        raise Stop("no paid fresh-market call is authorized after the protocol's absolute stop")
+
+
+def validate_fresh_identity(config):
+    """The cohort's condition on the fresh market (analysis-plan-A.md, identity table): the
+    bound reference command's settings by value, its frozen adapter, block, import paths and
+    dependency lock by hash, the agent-facing definitions by the hash of their source, the
+    questions exactly as the generator wrote them, and a free preflight of the current code."""
+    repo = Path(config["repo"]).resolve()
+    reference_path = repo / config["reference_config_file"]
+    if sha(reference_path) != FRESH_REFERENCE_SHA256:
+        raise Stop("the fresh market must bind the repeats 2-3 cohort's exact command")
+    reference = json.loads(reference_path.read_text())
+    fields = ("python", "page_python", "model", "provider", "allowed_served_providers",
+              "maximum_input_tokens", "max_input_bytes", "max_output_tokens", "max_steps",
+              "clock_s", "llm_timeout", "temperature", "frequency_penalty", "top_p",
+              "use_vision", "browser_executable", "preflight_browser_version", "max_failures",
+              "dependencies_lock")
+    if any(config.get(field) != reference.get(field) for field in fields):
+        raise Stop("fresh-market execution settings differ from the cohort's command")
+    if config.get("repeats") != [1, 2] or "observation_contract" in config:
+        raise Stop("the fresh market runs repeats 1 and 2 of the cohort's plain condition")
+    frozen = {"experiments/runners/browser_use_runner.py", "experiments/paths.py", config["dependencies_lock"]}
+    frozen.update(str(p.relative_to(repo)) for p in (repo / "experiments/box").glob("*.py"))
+    for relative in frozen:
+        if sha(repo / relative) != reference["hashes"].get(relative):
+            raise Stop("the fresh market changed the frozen adapter, block/parser or dependency lock")
+    transfer = (repo / "experiments/runners/browser_use_transfer.py").read_text()
+    if agent_facing_digests(transfer) != AGENT_FACING:
+        raise Stop("the agent-facing definitions differ from the cohort's")
+    ids = tuple(question["id"] for question in reference["questions"])
+    task_data = json.loads((repo / config["tasks_file"]).read_text())
+    if config.get("questions") != runtime_questions(task_data, ids):
+        raise Stop("the questions differ from the fresh market's generated task file")
+    # The market stamped on every record is the one the task file and its seed search name.
+    market = config.get("market") or {}
+    search = json.loads((repo / market.get("search_record", "")).read_text()) if market.get("search_record") else {}
+    accepted = (search.get("tried") or [{}])[-1]
+    if (market.get("fixture") != f"env/fixtures/{task_data.get('fixture')}" or market.get("brand") != task_data.get("brand")
+            or not {market.get("fixture"), market.get("search_record")} <= set(config.get("market_files", []))
+            or (search.get("brand"), search.get("sku_prefix")) != (market.get("brand"), market.get("sku_prefix"))
+            or (accepted.get("seed"), accepted.get("outcome")) != (market.get("seed"), "accepted")):
+        raise Stop("the market identity differs from the task file and its seed search")
+    verify_browser_version(config)
+    preflight = json.loads((repo / config["preflight_receipt"]).read_text())
+    if (preflight.get("verdict") != "PASS" or preflight.get("study_id") != FRESH_BUDGET
+            or preflight.get("model_calls") != 0
+            or preflight.get("browser_version") != config["preflight_browser_version"]
+            or preflight.get("dependencies_match_frozen_lock") is not True
+            or (preflight.get("shop_check") or {}).get("failed") != 0):
+        raise Stop("the fresh market requires its free preflight receipt")
+    for relative in ("tools/guarded_browser_use.py", "experiments/runners/browser_use_transfer.py",
+                     "experiments/runners/browser_use_runner.py", "experiments/runners/browser_use_fetches.py"):
+        if preflight.get("source_sha256", {}).get(relative) != sha(repo / relative):
+            raise Stop("free fresh-market checks predate the current code")
+
+
 def validate_review_receipt(config, receipt, head, digest, command):
     if (receipt.get("verdict") != "PASS" or receipt.get("config_sha256") != digest
             or receipt.get("head") != head or receipt.get("request_bound_verified") is not True):
@@ -458,6 +603,12 @@ def validate_review_receipt(config, receipt, head, digest, command):
                 or (config["stage"] == REPEAT_RECOVERY_STAGE
                     and receipt.get("reviewer_identity") != "browser_transfer_analysis")):
             raise Stop("plain repeats require the designated independent review of the exact command")
+    if config["stage"] == FRESH_STAGE:
+        # The project's verifier passes the exact command (WORKFLOW.md); the student then
+        # approves it in a separate record.
+        if (receipt.get("verifier") != "claude" or receipt.get("independent") is not True
+                or receipt.get("command") != command):
+            raise Stop("the fresh market requires the verifier's review of the exact command")
 
 
 def validate_config(path, *, require_approval=False):
@@ -466,13 +617,18 @@ def validate_config(path, *, require_approval=False):
     repo = Path(config["repo"]).resolve()
     if repo != ROOT:
         raise Stop("configuration belongs to another checkout")
-    if config.get("stage") not in ({"pilot", REPEAT_STAGE} | RECOVERY_STAGES) or config.get("version") != 1:
+    if (config.get("stage") not in ({"pilot", REPEAT_STAGE, FRESH_STAGE} | RECOVERY_STAGES)
+            or config.get("version") != 1):
         raise Stop("only a separately approved development pilot is supported")
     recovery_limits(config)
     if config["stage"] in REPEAT_STAGES:
         validate_repeat_budget(config)
-    if not 0 < number(config["cap_usd"]) <= 2 or number(config["minimum_balance_usd"]) < 20:
-        raise Stop("pilot cap must be at most $2 and account reserve at least $20")
+    if config["stage"] == FRESH_STAGE:
+        validate_fresh_budget(config)
+    # The fresh market's own cap is USD 3 (its protocol); every earlier stage keeps USD 2.
+    limit = FRESH_CAP_USD if config["stage"] == FRESH_STAGE else 2
+    if not 0 < number(config["cap_usd"]) <= limit or number(config["minimum_balance_usd"]) < 20:
+        raise Stop(f"cap must be at most ${limit:g} and account reserve at least $20")
     if number(config["estimate_usd"]) > config["cap_usd"]:
         raise Stop("estimate exceeds pilot cap")
     if deadline_epoch(config["deadline"]) <= time.time() + 30:
@@ -491,6 +647,11 @@ def validate_config(path, *, require_approval=False):
     if config["stage"] in REPEAT_STAGES:
         required.update({config["reference_config_file"], config["analysis_plan_file"], config["preflight_receipt"],
                          "experiments/paths.py"})
+    if config["stage"] == FRESH_STAGE:
+        # The market itself and the passive script-fetch listener the worker adds are bound too.
+        required.update({config["reference_config_file"], config["analysis_plan_file"], config["preflight_receipt"],
+                         "experiments/paths.py", "experiments/runners/browser_use_fetches.py",
+                         config["tasks_file"], *config["market_files"]})
     if config["stage"] in RECOVERY_STAGES:
         required.update(prior_ledger_names(config))
         required.add(config["reconciliation_file"])
@@ -510,6 +671,8 @@ def validate_config(path, *, require_approval=False):
         validate_repeat_identity(config)
         if config["stage"] == REPEAT_RECOVERY_STAGE:
             validate_repeat_recovery(config)
+    if config["stage"] == FRESH_STAGE:
+        validate_fresh_identity(config)
     if require_approval:
         digest = sha(path)
         receipt = json.loads(Path(config["verification_receipt"]).read_text())
@@ -535,16 +698,22 @@ def terminate_owned(child):
 
 def claim_repeat_launch(config, config_path):
     """Retained exclusive marker prevents duplicate workers under one allowance."""
-    if config.get("stage") not in REPEAT_STAGES:
+    if config.get("stage") not in GUARDED_STAGES:
         return
-    validate_repeat_budget(config)
-    marker = Path(config["ledger_path"]).with_name(f"attempt{config['attempt']}.launch.json")
+    if config["stage"] == FRESH_STAGE:
+        # The fresh market's one attempt, marked beside its own ledger (2 November 2026).
+        validate_fresh_budget(config)
+        budget_id, marker = FRESH_BUDGET, Path(config["ledger_path"]).with_name("study-a.launch.json")
+    else:
+        validate_repeat_budget(config)
+        budget_id = REPEAT_BUDGET
+        marker = Path(config["ledger_path"]).with_name(f"attempt{config['attempt']}.launch.json")
     try:
         descriptor = os.open(marker, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     except FileExistsError:
         raise Stop("repeat attempt already claimed; concurrent launch or implicit resume forbidden") from None
     with os.fdopen(descriptor, "w") as handle:
-        json.dump({"study_budget_id": REPEAT_BUDGET, "attempt": config["attempt"], "config_sha256": sha(config_path),
+        json.dump({"study_budget_id": budget_id, "attempt": config["attempt"], "config_sha256": sha(config_path),
                    "launcher_pid": os.getpid(), "claimed_at": time.time()}, handle, indent=2)
         handle.flush()
         os.fsync(handle.fileno())
@@ -592,9 +761,9 @@ def execute(path):
                 caffeinate = subprocess.Popen(["/usr/bin/caffeinate", "-i", "-w", str(child.pid)], start_new_session=True)
             last_watchdog_tick = time.time()
             while child.poll() is None:
-                if time.time() >= stop_at or (config["stage"] in REPEAT_STAGES and time.monotonic() >= monotonic_stop):
+                if time.time() >= stop_at or (config["stage"] in GUARDED_STAGES and time.monotonic() >= monotonic_stop):
                     raise Stop("absolute deadline reached")
-                if config["stage"] in REPEAT_STAGES and time.time() - last_watchdog_tick > 60:
+                if config["stage"] in GUARDED_STAGES and time.time() - last_watchdog_tick > 60:
                     raise Stop("watchdog suspended over 60 seconds; retain interruption without replay")
                 last_watchdog_tick = time.time()
                 if sha(path) != env["IGR_BROWSER_USE_CONFIG_SHA256"]:

@@ -22,9 +22,12 @@ sys.path.insert(0, str(ROOT / "experiments"))
 sys.path.insert(0, str(ROOT / "tools"))
 import paths  # noqa: E402
 import box  # noqa: E402
+import browser_use_fetches  # noqa: E402  (the fresh market's passive script-fetch listener)
 import page as page_module  # noqa: E402
 import primitives  # noqa: E402
 from guarded_browser_use import CallBudget, Stop, account_snapshot, atomic_json, read_key, sha, validate_config, verify_browser_version, REPEAT_STAGE, REPEAT_BUDGET, REPEAT_STAGES, REPEAT_RECOVERY_STAGE, validate_repeat_recovery  # noqa: E402
+# The fresh held-out market of 2 November 2026: the cohort's condition, its own identity.
+from guarded_browser_use import FRESH_BUDGET, FRESH_STAGE, GUARDED_STAGES  # noqa: E402
 
 STUDY_ID = "browser-use-transfer-2026-10-31"
 ARMS = ("baseline", "block")
@@ -115,6 +118,10 @@ def preview(config):
         if (tuple(q["id"] for q in questions) != TASK_IDS or config.get("repeats") != [2, 3]
                 or config.get("clock_s") != 2700):
             raise ValueError("plain repeats require all eight questions, repeats 2 and 3, and 2700 seconds")
+    elif config.get("stage") == FRESH_STAGE:
+        if (tuple(q["id"] for q in questions) != TASK_IDS or config.get("repeats") != [1, 2]
+                or config.get("clock_s") != 2700):
+            raise ValueError("the fresh market requires all eight questions, repeats 1 and 2, and 2700 seconds")
     elif config.get("stage") in {"pilot-recovery", "overnight-transfer", "monitored-transfer"}:
         pilot_clock = 1800 if config["stage"] == "pilot-recovery" else 2700
         expected_ids = ["tee-count-buyable"] if config["stage"] == "monitored-transfer" else ["tee-cheapest-target", "tee-count-buyable"]
@@ -138,15 +145,17 @@ def preview(config):
         for slot in schedule(transfer, (1,)):
             slot.update(id="transfer-" + slot["id"], phase="transfer", clock_s=2700)
             slots.append(slot)
-    if config["stage"] in REPEAT_STAGES:
+    if config["stage"] in GUARDED_STAGES:
         for slot in slots:
             slot.update(id="transfer-" + slot["id"], phase="transfer", clock_s=2700)
     if config["stage"] == REPEAT_RECOVERY_STAGE:
         remaining = validate_repeat_recovery(config, expected_slots=slots)
         slots = [slot for slot in slots if slot["id"] in remaining]
-    return {"study_id": STUDY_ID, "stage": config["stage"], "paid_calls": 0,
+    fresh = config["stage"] == FRESH_STAGE
+    return {"study_id": FRESH_BUDGET if fresh else STUDY_ID, "stage": config["stage"], "paid_calls": 0,
             **({"prior_completed_count": 6, "original_slot_count": 32} if config["stage"] == REPEAT_RECOVERY_STAGE else {}),
             **({"batch_id": REPEAT_BUDGET} if config["stage"] in REPEAT_STAGES else {}),
+            **({"batch_id": FRESH_BUDGET} if fresh else {}),
             "warning_sha256": digest(COMMON_BRIEFING), "warning": COMMON_BRIEFING,
             "slots": slots,
             "block_preview": "The model parser is not called in preview. Its prompt and frozen logic are inspected separately."}
@@ -219,7 +228,7 @@ async def execute_study(config_path):
     loop = asyncio.get_running_loop()
     completed = []
     pilot_records = []
-    pilot_passed = config["stage"] in REPEAT_STAGES  # No new paid diagnostics in the repeat batch.
+    pilot_passed = config["stage"] in GUARDED_STAGES  # No new paid diagnostics in the repeat or fresh batch.
     for slot in plan["slots"]:
         verify_browser_version(config)  # Before the parser or executor can make a paid call.
         if slot.get("phase") == "transfer" and not pilot_passed:
@@ -275,13 +284,20 @@ async def execute_study(config_path):
                          "clock_s": slot.get("clock_s", config["clock_s"]),
                          "candidate_urls": [item.url for item in observed.listings],
                          "out_dir": str(output_dir / slot["id"])}
-                record = await run_trial(trial, budget, api_key=key)
+                if config["stage"] == FRESH_STAGE:
+                    # The same trial, with product pages fetched by script recorded beside it.
+                    with browser_use_fetches.recording(sys.modules["browser_use_runner"],
+                                                       trial["candidate_urls"]) as fetches:
+                        record = await run_trial(trial, budget, api_key=key)
+                    record["script_fetches"] = fetches.record()
+                else:
+                    record = await run_trial(trial, budget, api_key=key)
             if budget.state["blocked_reason"] or budget.state["inflight"]:
                 atomic_json(output_dir / f"{slot['id']}.interrupted.json", record)
                 raise Stop(budget.state["blocked_reason"] or "request remains in flight")
             new_calls = budget.state["calls"][before_calls:]
             parser_calls = budget.state["calls"][before_calls:call_start]
-            record.update(study_id=STUDY_ID, stage=config["stage"], phase=slot.get("phase", "pilot"), slot=slot["id"], condition=slot["condition"],
+            record.update(study_id=plan["study_id"], stage=config["stage"], phase=slot.get("phase", "pilot"), slot=slot["id"], condition=slot["condition"],
                           repeat=slot["repeat"], task=slot["question"]["id"], question=slot["question"]["query"],
                           sent_query=query, briefing_sha256=digest(COMMON_BRIEFING), page=observed.record(),
                           box=decision.record() if decision else None, calls=new_calls,
@@ -290,6 +306,11 @@ async def execute_study(config_path):
                           elapsed_with_parser_s=time.perf_counter() - started)
             if config["stage"] in REPEAT_STAGES:
                 record["batch_id"] = REPEAT_BUDGET
+            if config["stage"] == FRESH_STAGE:
+                # Which market, configuration and commit produced this record.
+                record.update(batch_id=FRESH_BUDGET, market=config["market"],
+                              config_sha256=os.environ["IGR_BROWSER_USE_CONFIG_SHA256"],
+                              head=config["expected_head"])
             atomic_json(output_dir / f"{slot['id']}.json", record)
             statuses[slot["id"]]["status"] = record["outcome"]
             atomic_json(output_dir / "slot-status.json", {"slots": statuses})

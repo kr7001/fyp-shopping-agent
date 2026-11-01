@@ -110,6 +110,11 @@ def account_probe(env_file):
 
 
 class Guard:
+    # The smallest in-flight reserve a configuration may declare. A subclass for a study whose
+    # protocol sets a smaller one, from its own largest measured trial, overrides it before
+    # this constructor runs (the fresh-market matched briefing, 2 November 2026).
+    MIN_RESERVE_USD = 1.0
+
     def __init__(self, config_path, *, account_command=None):
         self.config_path = Path(config_path).resolve()
         self.config_hash = sha(self.config_path)
@@ -130,7 +135,7 @@ class Guard:
         self.kill_grace = 4
         self.cap = number(self.config.get("cap_usd", 20))
         self.reserve = number(self.config.get("reserve_usd", 1))
-        if not 0 < self.cap <= 20 or self.reserve < 1 or self.reserve >= self.cap:
+        if not 0 < self.cap <= 20 or self.reserve < self.MIN_RESERVE_USD or self.reserve >= self.cap:
             raise Stop("invalid authorized budget or inflight reserve")
         self.manifest = self.path(self.config["manifest"])
         self.status_path = self.path(self.config["status"])

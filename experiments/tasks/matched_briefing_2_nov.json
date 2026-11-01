@@ -1,0 +1,241 @@
+{
+  "study_id": "matched-briefing-fresh-2026-11-02",
+  "version": 1,
+  "status": "frozen",
+  "protocol": "notes/fresh-market-2-nov/protocol.md",
+  "tasks_file": "tasks_tee_fresh_2_nov.json",
+  "model": "deepseek/deepseek-v4-flash",
+  "arms": {
+    "full-block": {
+      "payload_arm": "box-model"
+    },
+    "matched-briefing": {
+      "payload_arm": "matched-briefing"
+    }
+  },
+  "tasks": [
+    "tee-cheapest-target",
+    "tee-xs-price",
+    "tee-top-3",
+    "tee-count-buyable"
+  ],
+  "repeats": [
+    1,
+    2
+  ],
+  "schedule": [
+    {
+      "slot": 1,
+      "arm": "full-block",
+      "task": "tee-cheapest-target",
+      "repeat": 1
+    },
+    {
+      "slot": 2,
+      "arm": "matched-briefing",
+      "task": "tee-cheapest-target",
+      "repeat": 1
+    },
+    {
+      "slot": 3,
+      "arm": "matched-briefing",
+      "task": "tee-xs-price",
+      "repeat": 1
+    },
+    {
+      "slot": 4,
+      "arm": "full-block",
+      "task": "tee-xs-price",
+      "repeat": 1
+    },
+    {
+      "slot": 5,
+      "arm": "full-block",
+      "task": "tee-top-3",
+      "repeat": 1
+    },
+    {
+      "slot": 6,
+      "arm": "matched-briefing",
+      "task": "tee-top-3",
+      "repeat": 1
+    },
+    {
+      "slot": 7,
+      "arm": "matched-briefing",
+      "task": "tee-count-buyable",
+      "repeat": 1
+    },
+    {
+      "slot": 8,
+      "arm": "full-block",
+      "task": "tee-count-buyable",
+      "repeat": 1
+    },
+    {
+      "slot": 9,
+      "arm": "matched-briefing",
+      "task": "tee-cheapest-target",
+      "repeat": 2
+    },
+    {
+      "slot": 10,
+      "arm": "full-block",
+      "task": "tee-cheapest-target",
+      "repeat": 2
+    },
+    {
+      "slot": 11,
+      "arm": "full-block",
+      "task": "tee-xs-price",
+      "repeat": 2
+    },
+    {
+      "slot": 12,
+      "arm": "matched-briefing",
+      "task": "tee-xs-price",
+      "repeat": 2
+    },
+    {
+      "slot": 13,
+      "arm": "matched-briefing",
+      "task": "tee-top-3",
+      "repeat": 2
+    },
+    {
+      "slot": 14,
+      "arm": "full-block",
+      "task": "tee-top-3",
+      "repeat": 2
+    },
+    {
+      "slot": 15,
+      "arm": "full-block",
+      "task": "tee-count-buyable",
+      "repeat": 2
+    },
+    {
+      "slot": 16,
+      "arm": "matched-briefing",
+      "task": "tee-count-buyable",
+      "repeat": 2
+    }
+  ],
+  "require": {
+    "max_steps": 300,
+    "clock_s": 1800,
+    "browser_tool": "0.0.83",
+    "browser_origins": "http://localhost:7770",
+    "browser_flags": "--block-service-workers --isolated",
+    "agent_core_commit": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
+    "agent_core_patch": "e455d3eba23bc37528505e59e4d13ed265fff67e",
+    "model": "deepseek/deepseek-v4-flash",
+    "scaffold": "openjiuwen",
+    "shop": "gated",
+    "probe": "viewport",
+    "policy": "off",
+    "confidence": "off"
+  },
+  "arm_require": {
+    "full-block": {
+      "box_version": 20,
+      "page_reader": "rendered",
+      "rate_plan": "bound",
+      "targeting_version": 9,
+      "planner_version": 2,
+      "form_version": 15,
+      "primitives_version": 13,
+      "prompt_version": 4,
+      "parser_temperature": 0,
+      "normalise_version": 5,
+      "parser_model": "deepseek/deepseek-v4-flash",
+      "parser": "model",
+      "box": true,
+      "box_exhaust": false
+    },
+    "matched-briefing": {
+      "box": false,
+      "box_exhaust": false,
+      "parser": null,
+      "parser_model": null,
+      "page_reader": null,
+      "rate_plan": null
+    }
+  },
+  "provider_routing": {
+    "deepseek/deepseek-v4-flash": {
+      "order": [
+        "gmicloud",
+        "deepinfra",
+        "streamlake"
+      ],
+      "allow_fallbacks": false,
+      "quantizations": [
+        "fp8"
+      ]
+    }
+  },
+  "input_sha256": {
+    "experiments/tasks/tasks_tee_fresh_2_nov.json": "2e92b1876d3f7ca6da2440da62dc4aab3e10f91535ca08fc8a4edbc2d06748ef",
+    "experiments/tasks/readings_tee_fresh_2_nov.json": "002b29f994dae1c4bab2bf2324a3bafa552a584939391eb3ef85f917899c361a",
+    "env/fixtures/tee_fresh_2_nov.json": "48222402dd41b95cf31297996b685e3b3e7f5953c305ba14190f8dcf6f2b0712",
+    "env/manifests/tee_fresh_2_nov-search.json": "5aa31e86f992bbc847ec7c2b59478d584726eaa196d8c41c1af1f095900de7a1",
+    "docs/content/claim2-reading-rules.md": "9433423f14f4de200da4b0376e84839c57751af93b98c9f8e599b35a6d274bb4",
+    "notes/fresh-market-2-nov/protocol.md": "d19e2675ebd0edbcffc42689cb6da4f3132993305a2356066390f00646e8b746",
+    "notes/fresh-market-2-nov/analysis-plan-B.md": "da0b674b6dc9c85fb07c8089ca3a5ce1ca542a9e60fe57d8723887805d7c5c55"
+  },
+  "analysis": {
+    "scope": "the 29 October design on the fresh held-out market of 2 November 2026",
+    "primary": "per-task paired listing openings for two repetitions; descriptive only",
+    "report": [
+      "all scheduled slot outcomes",
+      "blind human correctness",
+      "separate automatic correctness and disagreement",
+      "per-task paired provider charges including parser",
+      "pre-read and browser elapsed time separately",
+      "observed execution compliance"
+    ],
+    "inferential_tests": false,
+    "unscorable": "preserve student grade and report missing assessable denominator; also list all scheduled outcomes",
+    "pooling": "no pooling with the 29 October Quenby study or any other",
+    "reporting_rules": "notes/replication-prep/matched-briefing-pre-unblinding-note-29-oct.md"
+  },
+  "technical_failures": {
+    "rule_source": "experiments/analysis/voids.py frozen original rules",
+    "automatic_retries": 0,
+    "one_time_retry": "only after independent operational audit and separately approved exact recovery command",
+    "ordinary_wrong_or_noncommittal_answer": "retain, do not replay",
+    "report_incomplete_design": true
+  },
+  "budget": {
+    "cap_usd": 2.0,
+    "minimum_key_credit_usd": 20,
+    "inflight_reserve_usd": 0.5,
+    "deadline": "2026-11-03T12:00:00+08:00",
+    "estimate_usd": 1.2
+  },
+  "historical_reference": {
+    "matched_briefing_29_oct_usd": 1.136407,
+    "largest_trial_usd": 0.1937,
+    "slots": 16
+  },
+  "integrity_notes": [
+    "Protocol and analysis plans committed before the market was drawn; no outcome-informed change.",
+    "matched_briefing.py is byte-identical to afba41b; matched_briefing_study.py only sets its study identity.",
+    "Only the factual briefing is matched; the full block also supplies its plan and reporting rules.",
+    "Report provider charges separately from local browser and page-reading compute."
+  ],
+  "analysis_plan": "notes/fresh-market-2-nov/analysis-plan-B.md",
+  "design_of": {
+    "study_id": "matched-briefing-2026-10-29",
+    "file": "experiments/tasks/matched_briefing_29_oct.json",
+    "sha256": "fd8edd4fec1e51594f570c557d235cb3c5228c47d862840f3c47c7e632d34c5d"
+  },
+  "market": {
+    "fixture": "env/fixtures/tee_fresh_2_nov.json",
+    "search_record": "env/manifests/tee_fresh_2_nov-search.json",
+    "brand": "Rookmere",
+    "sku_prefix": "IGR-FM02",
+    "seed": 1002
+  }
+}
