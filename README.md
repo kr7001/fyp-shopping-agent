@@ -39,6 +39,44 @@ and [pinned agent setup](agent/README.md). They additionally require Docker, Nod
 `uv`, Playwright and the local agent patch. The storefront runs at `http://localhost:7770`.
 The final report PDF will be added when complete; the unfinished draft remains local.
 
+## Results at a glance
+
+Primary studies, each on a held-out market drawn after its protocol was frozen. One row is one
+study and one model. Rows are never pooled. Accuracy is on the questions whose answer does not
+depend on how an ambiguous word is read. Listings and charge are medians per run on the
+questions that need gated information. Each cell gives the block first, then the comparison,
+with the exact test's Holm-adjusted *p* within the study.
+
+| Study, market, model | Scored by | Correct: block vs shipped | Listings opened: block vs open everything | Charge a run: block vs open everything |
+| --- | --- | --- | --- | --- |
+| Claim 1, Ashcombe (15 listings), Claude Haiku 4.5 | automatic scorer | 12/12 vs 4/12, *p* = .0010 | 6 vs 15, *p* = .0005 | $0.197 vs $0.405, *p* = 4.9e-5 |
+| Claim 1, Ashcombe, DeepSeek V4 Flash | automatic scorer | 12/12 vs 5/12, *p* = .005 | 6 vs 15, *p* = .002 | $0.028 vs $0.109, *p* = 4.9e-5 |
+| Claim 2, Wexcombe (45 listings, two pages), DeepSeek V4 Flash | blind human reading | 21/21 vs 13/21, *p* = .004 | 5 vs 45, *p* = 1.3e-7 | $0.0497 vs $0.2210, *p* = 7.7e-7 |
+| Replication, Quenby (45 listings), DeepSeek V4 Flash | blind human reading | 14/14 vs 9/13, *p* = .083, not significant | 6 vs 45, *p* = .0010 | $0.047 vs $0.215, *p* = .0019 |
+
+On Wexcombe the model-parsing block also read held-out shopper wordings better than the
+rule-based parser: 36/36 against 29/36 correct (*p* = .004). The gap is not conclusive once
+the ambiguous templates are removed. Count questions leave nothing to prune, so there the block
+opens as much as exhaustive retrieval.
+
+Supplementary studies are exploratory, small and descriptive, with no significance test:
+
+| Study | Result | Protocol |
+| --- | --- | --- |
+| Matched briefing, Quenby, 16 trials | Full block 8 of 8 correct. openJiuwen given the same facts without the plan 7 of 8, a difference the pre-set rule calls no observable difference. The block cost more in every pair | [protocol](docs/content/matched-briefing-29-oct-protocol.md) |
+| Browser Use transfer, Quenby | Browser Use with the block 6 of 8, then 14 of 16 in two added repeats. Browser Use alone 3 of 8, then 7 of 16 | [protocol](docs/content/browser-use-transfer-31-oct-protocol.md), [repeats](docs/content/browser-use-repeat-1-nov-protocol.md) |
+| Fresh market Rookmere: both studies repeated unchanged | Pending | [protocol](notes/fresh-market-2-nov/protocol.md), [plan A](notes/fresh-market-2-nov/analysis-plan-A.md), [plan B](notes/fresh-market-2-nov/analysis-plan-B.md) |
+
+How to reproduce:
+
+- Wexcombe and Quenby, from the released measurements, with no dependencies:
+  `python3 tools/reproduce_report.py`.
+- Claim 1, from the recorded runs: `python3 experiments/analysis/claim.py --json claim1.json
+  experiments/results/claim-20261020.manifest` (Haiku), and the same with
+  `night-20261020.manifest` (DeepSeek). These need the raw browser logs, which are not in the
+  repository (see [Reproducing and checking the work](#reproducing-and-checking-the-work)).
+- Every run record and its manifest are in `experiments/results/`.
+
 ## Research question
 
 Can an agent retrieve the facts needed for a shopping question more accurately than the
@@ -76,6 +114,21 @@ reproduction; ambiguous questions are scored under the reading actually used.
 
 The [Quenby replication protocol](docs/content/replication-28-oct-protocol.md) extends the test to a second held-out market. The [released primary analyses](experiments/artifacts/README.md) retain the original human verdicts and automatic scores separately, and analyse the markets separately.
 
+The supplementary studies have their own dated protocols, each frozen before its runs:
+
+- [Matched briefing](docs/content/matched-briefing-29-oct-protocol.md): the full block against
+  openJiuwen given the same facts without the plan, on Quenby.
+- [Browser Use transfer](docs/content/browser-use-transfer-31-oct-protocol.md), with its
+  [pilot recovery](docs/content/browser-use-pilot-recovery-1-nov-protocol.md),
+  [overnight](docs/content/browser-use-overnight-1-nov-protocol.md),
+  [monitored](docs/content/browser-use-monitored-1-nov-protocol.md),
+  [repeat](docs/content/browser-use-repeat-1-nov-protocol.md) and
+  [repeat recovery](docs/content/browser-use-repeat-recovery-1-nov-protocol.md) protocols: the
+  unchanged block in front of a second browser agent.
+- [Fresh market, 2 November](notes/fresh-market-2-nov/protocol.md), with analysis plans
+  [A](notes/fresh-market-2-nov/analysis-plan-A.md) and [B](notes/fresh-market-2-nov/analysis-plan-B.md):
+  both supplementary studies repeated unchanged on a newly drawn market, Rookmere (seed 1002).
+
 The second experiment is a constrained stress test: it combines hidden variant prices with
 deliberately false promotional/stock labels, and only the block receives a label warning.
 The generator selects markets with useful bounds. Findings concern that distribution and the
@@ -97,8 +150,14 @@ env/                   Magento fixtures, generators, seeding and live checks
 docs/index.html        Technical overview
 docs/user-guide.md     Setup, execution and reproduction guide
 docs/content/          Frozen protocols and scoring rules
-tools/                 Blind-review helper and experiment tooling
+notes/fresh-market-2-nov/  Frozen protocol and analysis plans of the 2 November studies
+tools/                 Blind review, guarded launchers and analyses of the later studies
+tools/workbench/       Optional Claude Code plugin that gated paid runs
+LICENSE                Apache License 2.0 for the project's own code
 ```
+
+The rest of `notes/`, the report source and the assistants' working files stay on the
+author's machine.
 
 ## Reproducing and checking the work
 
@@ -128,10 +187,19 @@ claims. Personal planning notes, meeting updates and intermediate drafts are kep
 
 The student directs the research and is responsible for the submitted work. Claude Code assisted
 with much of the implementation, experiments and documentation. Codex assisted with review,
-report wording, blind-review tooling and repository maintenance. Human review of the second
-claim's answers is pending; AI assistance is not presented as independent human validation.
+report wording, blind-review tooling and repository maintenance. The student graded every
+human-scored answer blind, and a classmate independently re-graded a sample of 62 and agreed
+with all of them. AI assistance is not presented as independent human validation.
 
-The environment extension has been proposed in
-[WebArena-Verified issue #60](https://github.com/ServiceNow/webarena-verified/issues/60).
-No upstream PR has been merged. openJiuwen and the Magento-derived template retain their
-upstream licence notices; this repository does not currently provide a project-wide licence.
+The environment extension was proposed in
+[WebArena-Verified issue #60](https://github.com/ServiceNow/webarena-verified/issues/60) and
+offered as [pull request #61](https://github.com/ServiceNow/webarena-verified/pull/61), which
+is open and not merged.
+
+## Licence
+
+Copyright 2026 Kayleen Lee Kai Rong. The project's own code and documentation are released
+under the [Apache License 2.0](LICENSE), the licence openJiuwen uses. Third-party parts keep
+their own licences: the openJiuwen submodule in `agent/agent-core` (Apache 2.0) and the
+Magento-derived template in `env/gated_theme/`, whose OSL-3.0 and AFL-3.0 notice is kept in the
+file.
