@@ -10,6 +10,10 @@ data/
 downloads/
 .DS_Store
 CLAUDE.md
+
+# Private research notebook, handovers, archived pages and reference files. Never pushed.
+/private/
+
 # Raw agent traces. Each log replays the whole conversation every turn, so a single
 # run is hundreds of KB and the results directory reaches hundreds of MB. The tool
 # sequence and counts that matter are folded into each run's JSON record by
@@ -52,9 +56,12 @@ CLAUDE.md.bak-*
 /experiments/results/*.agreement.txt
 /experiments/results/*.csv.backup-*
 /notes/handover-chatgpt-27-oct.md
+# Superseded analysis kept beside its results.
+/experiments/results/*.before-span-fix
 
 # Browser tooling output and editor caches.
-/output/playwright/
+/output/
+/.playwright-cli/
 .pytest_cache/
 .ruff_cache/
 .vscode/
@@ -77,15 +84,12 @@ CLAUDE.md.bak-*
 !/docs/content/claim2-reading-rules.md
 !/docs/content/replication-28-oct-protocol.md
 !/docs/content/matched-briefing-29-oct-protocol.md
-
-# Separate Browser Use transfer development environment.
-/.venv-browser-use/
 !/docs/content/browser-use-transfer-31-oct-protocol.md
-
 !/docs/content/browser-use-pilot-recovery-1-nov-protocol.md
-
 !/docs/content/browser-use-overnight-1-nov-protocol.md
-
 !/docs/content/browser-use-monitored-1-nov-protocol.md
 !/docs/content/browser-use-repeat-1-nov-protocol.md
 !/docs/content/browser-use-repeat-recovery-1-nov-protocol.md
+
+# Separate Browser Use transfer development environment.
+/.venv-browser-use/

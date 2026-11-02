@@ -31,7 +31,7 @@ only install step. The browser itself is Playwright MCP, fetched by `npx` at run
   `browser_probe_interactives`. Upstream, a page with no cards was reported to the agent as
   "Could not parse ... result JSON", so the agent retried the probe instead of moving on.
 
-Found on 8 September 2026, see `notes/first-agent-runs.md`. Not offered upstream yet. No
+Found on 8 September 2026, in the first end-to-end runs. Not offered upstream yet. No
 upstream contribution is claimed unless a pull request is merged.
 
 The decision log for 8 September also names a second local fix, for the worker's

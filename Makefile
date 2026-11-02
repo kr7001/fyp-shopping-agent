@@ -2,7 +2,7 @@
 #
 # There is deliberately no target for a paid run. The workbench spend guard reads the
 # command line, and `make run` would hide the paid script from it. Paid runs are typed in
-# full, as WORKFLOW.md shows.
+# full, as docs/user-guide.md shows.
 
 PY ?= python3
 BATCH ?= experiments/results/20261007T112057
