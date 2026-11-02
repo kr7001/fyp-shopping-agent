@@ -102,7 +102,15 @@ FRESH_NO_ANSWER_STOP = 3
 FRESH_ATTEMPT3_STAGE = "fresh-market-attempt-3"
 FRESH_RERUN_STAGE = "timeout-rerun"
 FRESH_RERUN_ATTEMPT = "timeout-rerun"  # a rerun record's attempt, never a primary attempt's number
-FRESH_A4_STAGES = {FRESH_ATTEMPT3_STAGE, FRESH_RERUN_STAGE}
+# Amendment 6 (17:40): attempt 3 stopped at 17:31 when executor request call-00909 came back as an
+# error reply with no usage. Attempt 4 runs only the slots attempt 3 never started, under its
+# condition and its USD 10 cap. In attempt 4 and the reruns an executor's error reply without a
+# charge is settled at its bound like a request with no response, and counts toward the same run
+# of 3 that stops the batch; attempts 1 to 3 keep their rules.
+FRESH_ATTEMPT4_STAGE = "fresh-market-attempt-4"
+FRESH_ERROR_REPLY_STAGES = {FRESH_ATTEMPT4_STAGE, FRESH_RERUN_STAGE}
+FRESH_ATTEMPT3_SHA256 = "c06e8b5d244045e60295ca5b3f0ffda6883d23ce76366af6ffb9d7b802ed8df1"  # attempt 3's command
+FRESH_A4_STAGES = {FRESH_ATTEMPT3_STAGE, FRESH_ATTEMPT4_STAGE, FRESH_RERUN_STAGE}
 FRESH_A4_CAP_USD = 10.0
 # Amendment 4 point 6 (12:50, after the verifier's review): the rerun stage's share of Study A's
 # total cap is USD 15, since settlements at the reserved bound run far ahead of the account;
@@ -120,9 +128,11 @@ START_CUTOFF_REASON = "start cutoff reached; no new trial"
 # Every stage's files sit beside the others in FRESH_NOTES, named by one prefix: its ledger,
 # status, launch claim, log and results folder. Fixed, so a budget cannot be reset by renaming.
 FRESH_PREFIX = {FRESH_STAGE: "study-a", FRESH_CONTINUATION_STAGE: "study-a-continuation",
-                FRESH_ATTEMPT3_STAGE: "study-a-attempt3", FRESH_RERUN_STAGE: "study-a-rerun"}
+                FRESH_ATTEMPT3_STAGE: "study-a-attempt3", FRESH_ATTEMPT4_STAGE: "study-a-attempt4",
+                FRESH_RERUN_STAGE: "study-a-rerun"}
 FRESH_LEDGER = {stage: f"{FRESH_NOTES}/{prefix}.ledger.json" for stage, prefix in FRESH_PREFIX.items()}
 FRESH_A4_RECONCILIATION = {FRESH_ATTEMPT3_STAGE: f"{FRESH_NOTES}/study-a-attempt3-reconciliation.json",
+                           FRESH_ATTEMPT4_STAGE: f"{FRESH_NOTES}/study-a-attempt4-reconciliation.json",
                            FRESH_RERUN_STAGE: f"{FRESH_NOTES}/study-a-rerun-reconciliation.json"}
 FRESH_CONTINUATION_SHA256 = "4b8c88dbd01af0ea9ad787a860e70e65396a33952b1844ee1348da0fcff37d9a"  # attempt 2's command
 # The settings validate_fresh_continuation held attempt 2 to; every later stage keeps them.
@@ -420,6 +430,8 @@ class CallBudget:
             self.state.update(settled_usd=0.0, no_response_settlements=0, clock_settlements=0,
                               no_response_settlement_limit=None, no_response_run=0,
                               no_response_run_stop=FRESH_NO_RESPONSE_RUN_STOP)
+        if config.get("stage") in FRESH_ERROR_REPLY_STAGES:
+            self.state.update(error_reply_settlements=0)  # amendment 6
         self._account()
         self._save()
 
@@ -536,15 +548,38 @@ class CallBudget:
         Amendment 4's stages (point 5, 2 November 2026) settle the provider's no-responses with
         no count limit. The third executor request in a row with no response is settled too, then
         stops the batch: a provider outage is then likely. A clock settlement neither counts toward
-        that run nor breaks it, and an executor request with a response breaks it (after_call)."""
-        if (self.config.get("stage") not in FRESH_SETTLING_STAGES or response_json is not None
-                or usage is not None or not error or item.get("role") != "executor"):
+        that run nor breaks it, and an executor request with a response breaks it (after_call).
+
+        Attempt 4 and the reruns (amendment 6, 2 November 2026) also settle an executor's error
+        reply that carries no charge, no usage or a usage without its cost, as call-00909 was, at
+        its bound, labelled apart, counted in the same run of 3. A reply with a charge, a reply
+        that is not an error, one from an unexpected provider, and a parser's still block."""
+        stage = self.config.get("stage")
+        if stage not in FRESH_SETTLING_STAGES or item.get("role") != "executor":
             return False
-        unlimited = self.config["stage"] in FRESH_A4_STAGES
-        by_clock = (str(error) == "CancelledError" and self.trial_clock_at is not None
+        reply = response_json is not None
+        if not reply and (usage is not None or not error):
+            return False
+        if reply and not self._error_reply_without_charge(response_json, usage, error):
+            return False
+        unlimited = stage in FRESH_A4_STAGES
+        by_clock = (not reply and str(error) == "CancelledError" and self.trial_clock_at is not None
                     and self.monotonic() >= self.trial_clock_at)
         done = self.state["no_response_settlements"]
-        item["error_name"] = str(error)
+        item["error_name"] = str(error) if error else None
+        if reply:
+            run = self.state["no_response_run"] + 1
+            item.update(error_reply=error_message(response_json), settled_usd=item["reserved_usd"],
+                        settlement_kind="error reply without usage",
+                        settlement=f"an error reply without usage; settled at its reserved bound, "
+                                   f"{run} in a row of {FRESH_NO_RESPONSE_RUN_STOP} that stop the batch")
+            self.state["settled_usd"] += item["reserved_usd"]
+            self.state.update(error_reply_settlements=self.state["error_reply_settlements"] + 1, no_response_run=run)
+            if run >= FRESH_NO_RESPONSE_RUN_STOP:
+                self._block(f"{run} executor requests in a row ended with no response or an error reply "
+                            "without usage; a provider outage is likely")
+            self._save()
+            return True
         if not by_clock and not unlimited and done >= FRESH_NO_RESPONSE_SETTLEMENTS:
             item["settlement"] = f"not settled: request {done + 1} with no response stops the batch"
             self._block(f"a request ended with no response after {done} settlements; reconciliation required")
@@ -571,6 +606,24 @@ class CallBudget:
             self.state["no_response_settlements"] = done + 1
         self._save()
         return True
+
+    def _error_reply_without_charge(self, reply, usage, error):
+        """An executor's error reply that carries no charge: attempt 4 and the reruns only."""
+        if self.config.get("stage") not in FRESH_ERROR_REPLY_STAGES or not isinstance(reply, dict):
+            return False
+        failed = bool(error) or "error" in reply
+        uncharged = usage is None or (isinstance(usage, dict) and usage.get("cost") is None)
+        provider = reply.get("provider")
+        known = provider is None or provider in self.config.get("allowed_served_providers", [])
+        return failed and uncharged and known
+
+
+def error_message(reply):
+    """What an error reply said, for the ledger: its error's message, else its code, at most 300
+    characters. The reply carries no key."""
+    error = reply.get("error")
+    text = (error.get("message") or error.get("code")) if isinstance(error, dict) else error
+    return None if text is None else str(text)[:300]
 
 
 def verify_identity(config):
@@ -754,10 +807,11 @@ def validate_fresh_budget(config):
     elif config.get("stage") in FRESH_A4_STAGES:
         # Amendment 4's stages: every earlier attempt carried into Study A's USD 10 total.
         carryover, estimate = number(config.get("carryover_usd")), number(config.get("estimate_usd"))
-        chains = ([[FRESH_LEDGER[FRESH_STAGE], FRESH_LEDGER[FRESH_CONTINUATION_STAGE]]]
-                  + ([[FRESH_LEDGER[FRESH_STAGE], FRESH_LEDGER[FRESH_CONTINUATION_STAGE], FRESH_LEDGER[FRESH_ATTEMPT3_STAGE]]]
-                     if config["stage"] == FRESH_RERUN_STAGE else []))
-        attempt = 3 if config["stage"] == FRESH_ATTEMPT3_STAGE else FRESH_RERUN_ATTEMPT
+        ledgers = [FRESH_LEDGER[stage] for stage in (FRESH_STAGE, FRESH_CONTINUATION_STAGE, FRESH_ATTEMPT3_STAGE,
+                                                    FRESH_ATTEMPT4_STAGE)]
+        chains = {FRESH_ATTEMPT3_STAGE: [ledgers[:2]], FRESH_ATTEMPT4_STAGE: [ledgers[:3]],
+                  FRESH_RERUN_STAGE: [ledgers[:2], ledgers[:3], ledgers[:4]]}[config["stage"]]
+        attempt = {FRESH_ATTEMPT3_STAGE: 3, FRESH_ATTEMPT4_STAGE: 4}.get(config["stage"], FRESH_RERUN_ATTEMPT)
         shared = fresh_shared_cap(config["stage"])
         if (config.get("study_budget_id") != FRESH_BUDGET or config.get("attempt") != attempt
                 or not 0 < carryover < shared or config.get("shared_cap_usd") != shared
@@ -1059,6 +1113,64 @@ def validate_fresh_attempt3(config, expected_slots=None):
     return remaining
 
 
+def validate_fresh_attempt4(config, expected_slots=None):
+    """Attempt 3 as it ended at 17:31, bound by hash, and the ids of the slots it left never
+    started, in their scheduled order (amendment 6, 2 November 2026). Its interrupted slot is a
+    technical void, never re-run, and every slot it ran keeps its record. Attempt 3's own slots
+    are checked again to be the ones attempt 2 left never started. The carryover is attempts 1 to
+    3's counted spend as `carried_spend` computes it. Every file attempt 3 ran with keeps its hash
+    except the launcher and the runner's scheduling code. Reads identifiers, dispositions and
+    charges, never an answer."""
+    repo = Path(config["repo"]).resolve()
+    notes = FRESH_NOTES
+    if launched(repo, FRESH_RERUN_STAGE):
+        raise Stop("attempt 4 comes before the timeout reruns, whose carryover leaves it out, never after")
+    fixed = {"prior_config_file": f"{notes}/study-a-attempt3-command.json",
+             "prior_status_file": f"{notes}/study-a-attempt3.status.json",
+             "prior_schedule_file": f"{notes}/study-a-attempt3.results/schedule.json",
+             "prior_slot_status_file": f"{notes}/study-a-attempt3.results/slot-status.json"}
+    if any(config.get(field) != name for field, name in fixed.items()):
+        raise Stop("attempt 4 reads attempt 3's own files, nothing else")
+    if sha(repo / fixed["prior_config_file"]) != FRESH_ATTEMPT3_SHA256:
+        raise Stop("attempt 4 must bind attempt 3's exact command")
+    prior = json.loads((repo / fixed["prior_config_file"]).read_text())
+    if (prior.get("stage") != FRESH_ATTEMPT3_STAGE or prior.get("attempt") != 3
+            or any(config.get(key) != prior.get(key) for key in FRESH_CONDITION)):
+        raise Stop("attempt 4 runs attempt 3's condition unchanged")
+    if any(config["hashes"].get(name) != digest for name, digest in prior["hashes"].items() if name not in FRESH_RENEWED):
+        raise Stop("attempt 4 changed a file attempt 3 ran with")
+    first = json.loads((repo / notes / "study-a.results/schedule.json").read_text()).get("slots", [])
+    if len(first) != 32 or (expected_slots is not None and first != expected_slots):
+        raise Stop("attempt 1's schedule differs from the planned 32 slots")
+    second, _ = ended_stage(repo, FRESH_CONTINUATION_STAGE, FRESH_CONTINUATION_SHA256, 2,
+                            first[FRESH_KEPT_ANSWERED + FRESH_KEPT_INTERRUPTED:])
+    given = [slot for slot in first[FRESH_KEPT_ANSWERED + FRESH_KEPT_INTERRUPTED:]
+             if second[slot["id"]]["status"] == "not_started"]
+    if [slot["id"] for slot in given] != prior.get("slot_ids"):
+        raise Stop("attempt 3's slots are not the ones attempt 2 left never started")
+    statuses, bound = ended_stage(repo, FRESH_ATTEMPT3_STAGE, FRESH_ATTEMPT3_SHA256, 3, given)
+    ledger = json.loads((repo / FRESH_LEDGER[FRESH_ATTEMPT3_STAGE]).read_text())
+    if (ledger.get("carryover_usd") != prior.get("carryover_usd")
+            or ledger.get("prior_ledger_files") != prior.get("prior_ledger_files")):
+        raise Stop("attempt 3's ledger does not carry attempts 1 and 2 as its command did")
+    names = prior_ledger_names(config)
+    carryover, _ = recovery_limits(config)
+    if abs(carryover - carried_spend([repo / name for name in names], names)[0]) > 1e-9:
+        raise Stop("the carryover must be attempts 1 to 3's counted spend, as the guard computes it")
+    required = set(bound) | {fixed["prior_config_file"], config["reconciliation_file"], f"{notes}/amendment-6-2-nov.md"}
+    if not required <= set(config["hashes"]):
+        raise Stop("attempt 3's command, ledger, statuses, every record and amendment 6 must be hash-bound")
+    for relative in required:
+        if sha(repo / relative) != config["hashes"][relative]:
+            raise Stop("attempt 3's evidence changed after it was bound")
+    remaining = [slot["id"] for slot in given if statuses[slot["id"]]["status"] == "not_started"]
+    if config.get("slot_ids") != remaining:
+        raise Stop("attempt 4's slots are not the ones attempt 3 left never started, in their order")
+    if remaining and not number(config["estimate_usd"]) > 0:
+        raise Stop("attempt 4 needs a positive estimate for its slots")
+    return remaining
+
+
 def launched(repo, stage):
     """Whether a stage of Study A has left any file: its launch claim, status, ledger or results."""
     prefix = Path(repo) / FRESH_NOTES / FRESH_PREFIX[stage]
@@ -1082,28 +1194,36 @@ def ended_primary_stages(repo):
     given = first[FRESH_KEPT_ANSWERED + FRESH_KEPT_INTERRUPTED:]
     statuses, bound = ended_stage(repo, FRESH_CONTINUATION_STAGE, FRESH_CONTINUATION_SHA256, 2, given)
     chain, ran = [FRESH_LEDGER[FRESH_STAGE], FRESH_LEDGER[FRESH_CONTINUATION_STAGE]], [(FRESH_CONTINUATION_STAGE, 2, statuses)]
-    if launched(repo, FRESH_ATTEMPT3_STAGE):
-        prefix = f"{notes}/{FRESH_PREFIX[FRESH_ATTEMPT3_STAGE]}"
+    # Amendment 4 point 6 and amendment 6: the reruns start only after attempt 3 has ended when
+    # attempt 2 left a slot never started, and after attempt 4 has ended when attempt 3 left one.
+    for stage, attempt in ((FRESH_ATTEMPT3_STAGE, 3), (FRESH_ATTEMPT4_STAGE, 4)):
+        given = [slot for slot in given if statuses[slot["id"]]["status"] == "not_started"]
+        prefix = f"{notes}/{FRESH_PREFIX[stage]}"
+        if not launched(repo, stage):
+            if given:
+                raise Stop(f"attempt {attempt - 1} left slots never started and attempt {attempt} has not run; "
+                           f"the reruns start only after attempt {attempt} has ended")
+            later = [later for later in (FRESH_ATTEMPT4_STAGE,) if later != stage and launched(repo, later)]
+            if later:
+                raise Stop(f"a later attempt ran though attempt {attempt} did not; inspect it")
+            break
+        if not given:
+            raise Stop(f"attempt {attempt} ran though the attempt before it left no slot never started; inspect it")
         if not (repo / f"{prefix}.status.json").exists():
-            raise Stop("attempt 3 has not ended")
+            raise Stop(f"attempt {attempt} has not ended")
         status = json.loads((repo / f"{prefix}.status.json").read_text())
         if status.get("status") not in ("complete", "stopped"):
-            raise Stop("attempt 3: a later stage needs this stage's terminal status")
+            raise Stop(f"attempt {attempt}: a later stage needs this stage's terminal status")
         if (repo / f"{prefix}.results").exists():
-            given = [slot for slot in given if statuses[slot["id"]]["status"] == "not_started"]
-            third, files = ended_stage(repo, FRESH_ATTEMPT3_STAGE, status.get("config_sha256"), 3, given)
-            chain.append(FRESH_LEDGER[FRESH_ATTEMPT3_STAGE])
-            ran.append((FRESH_ATTEMPT3_STAGE, 3, third))
+            statuses, files = ended_stage(repo, stage, status.get("config_sha256"), attempt, given)
+            chain.append(FRESH_LEDGER[stage])
+            ran.append((stage, attempt, statuses))
             bound += files
         elif (repo / f"{prefix}.ledger.json").exists():
-            raise Stop("attempt 3 left a ledger without its results; inspect it")
+            raise Stop(f"attempt {attempt} left a ledger without its results; inspect it")
         else:  # it stopped before its worker started, with no call
             bound += [f"{prefix}.{name}" for name in ("status.json", "launch.json") if (repo / f"{prefix}.{name}").exists()]
-    elif any(row["status"] == "not_started" for row in statuses.values()):
-        # Amendment 4 point 6: the reruns start only after attempt 3 has ended, and attempt 3
-        # runs whenever attempt 2 left a slot never started.
-        raise Stop("attempt 2 left slots never started and attempt 3 has not run; the reruns start only "
-                   "after attempt 3 has ended")
+            break
     order = [slot["id"] for slot in first]
     timeouts = []
     for stage, attempt, rows in ran:
@@ -1284,6 +1404,8 @@ def validate_config(path, *, require_approval=False):
         validate_fresh_continuation(config)
     if config["stage"] == FRESH_ATTEMPT3_STAGE:
         validate_fresh_attempt3(config)
+    if config["stage"] == FRESH_ATTEMPT4_STAGE:
+        validate_fresh_attempt4(config)
     if config["stage"] == FRESH_RERUN_STAGE:
         validate_fresh_rerun(config, config_sha256=sha(path))
         if deadline_epoch(config["deadline"]) - 15 - time.time() < config["rerun_clock_s"] + FRESH_RERUN_FIT_MARGIN_S:
@@ -1354,7 +1476,8 @@ def nothing_left(path):
     record is a timeout (amendment 4, 2 November 2026): the configuration is checked in full, free,
     against the bound evidence, and the stage then ends without a claim, a ledger or a paid call."""
     config = json.loads(Path(path).read_text())
-    empty = {FRESH_ATTEMPT3_STAGE: config.get("slot_ids") == [], FRESH_RERUN_STAGE: config.get("rerun_slots") == []}
+    empty = {FRESH_ATTEMPT3_STAGE: config.get("slot_ids") == [], FRESH_ATTEMPT4_STAGE: config.get("slot_ids") == [],
+             FRESH_RERUN_STAGE: config.get("rerun_slots") == []}
     if not empty.get(config.get("stage")):
         return False
     validate_config(path)

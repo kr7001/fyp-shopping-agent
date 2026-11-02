@@ -37,6 +37,8 @@ from guarded_browser_use import (FRESH_ATTEMPT3_STAGE, FRESH_SETTLING_STAGES, ST
                                  deadline_epoch, validate_fresh_attempt3)
 from guarded_browser_use import FRESH_RERUN_ATTEMPT, FRESH_RERUN_STAGE, validate_fresh_rerun  # noqa: E402
 from guarded_browser_use import FRESH_RERUN_FIT_MARGIN_S, NO_TIME_REASON  # noqa: E402
+# Amendment 6: attempt 4, and error replies settled apart (2 November 2026).
+from guarded_browser_use import FRESH_ATTEMPT4_STAGE, FRESH_ERROR_REPLY_STAGES, validate_fresh_attempt4  # noqa: E402
 
 STUDY_ID = "browser-use-transfer-2026-10-31"
 ARMS = ("baseline", "block")
@@ -180,6 +182,14 @@ def preview(config):
         if [slot["id"] for slot in slots] != remaining:
             raise Stop("attempt 3's slots are not attempt 2's unstarted ones in their order")
         continuation = {"attempt": 3, "original_slot_count": original}
+    if config["stage"] == FRESH_ATTEMPT4_STAGE:
+        # The slots attempt 3 left never started, in their order (amendment 6).
+        remaining = validate_fresh_attempt4(config, expected_slots=slots)
+        original = len(slots)
+        slots = [slot for slot in slots if slot["id"] in remaining]
+        if [slot["id"] for slot in slots] != remaining:
+            raise Stop("attempt 4's slots are not attempt 3's unstarted ones in their order")
+        continuation = {"attempt": 4, "original_slot_count": original}
     if config["stage"] == FRESH_RERUN_STAGE:
         # Each timed-out slot once, in schedule order, its clock doubled and nothing else changed,
         # carrying the primary record it reruns (amendment 4).
@@ -437,6 +447,10 @@ async def execute_study(config_path):
                 record.update(attempt=config["attempt"], no_response_settlements=len(settled) - len(by_clock),
                               clock_settlements=len(by_clock),
                               settled_bound_usd=sum(call["settled_usd"] for call in settled))
+                if config["stage"] in FRESH_ERROR_REPLY_STAGES:
+                    # Of the no-response settlements, the error replies without usage (amendment 6).
+                    record["error_reply_settlements"] = sum(call.get("settlement_kind") == "error reply without usage"
+                                                            for call in settled)
                 # A trial-clock timeout or a void after a settled request ends its slot here.
                 disposition, reason = continuation_disposition(record)
                 if disposition:
