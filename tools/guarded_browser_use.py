@@ -81,6 +81,10 @@ FRESH_RECONCILIATION = f"{FRESH_NOTES}/study-a-continuation-reconciliation.json"
 # In the continuation only, an executor request that ends in error with no response and no
 # usage is settled at its reserved bound, at most this many times; the next one stops the batch.
 FRESH_NO_RESPONSE_SETTLEMENTS = 3
+# In the continuation only, a trial that reaches its clock and one left without an answer after
+# a settled request each end their slot and the batch goes on (browser_use_transfer.py); this
+# many slots in a row without an answer stop it, since something systemic is then likely wrong.
+FRESH_NO_ANSWER_STOP = 3
 GUARDED_STAGES = REPEAT_STAGES | FRESH_STAGES
 # The continuation is a recovery too: it carries a prior ledger and its reconciliation.
 RECOVERY_STAGES = RECOVERY_STAGES | {FRESH_CONTINUATION_STAGE}

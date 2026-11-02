@@ -564,6 +564,166 @@ class Execution(Attempt1, unittest.IsolatedAsyncioTestCase):
         self.assertEqual(after, before)
 
 
+TIMED_OUT = "LLM call timed out after 120 seconds. Keep your thinking and output short."
+
+
+def settle(budget):
+    """A request with no response, settled at its bound, as the guard records it."""
+    budget.state["calls"].append({"reservation": f"call-{len(budget.state['calls']) + 1:05d}", "role": "executor",
+                                  "cost_usd": None, "settled_usd": BOUND, "error": True})
+
+
+def answered(budget):
+    return {"outcome": "answered", "answer": "synthetic answer", "trace": {"measurement_valid": True},
+            "agent_errors": [None], "elapsed_s": 300.0, "settings": {"clock_s": 2700}, "cost_usd": 0.001}
+
+
+def clock_timeout(budget, elapsed=2703.4, valid=True):
+    """A trial stopped by its clock, which cancelled the request in flight, then settled."""
+    settle(budget)
+    return {"outcome": "timeout", "answer": None, "trace": {"measurement_valid": valid},
+            "elapsed_s": elapsed, "settings": {"clock_s": 2700}, "cost_usd": None}
+
+
+def void(budget, settled=True, error_type=None):
+    """A trial that ran out of tries without an answer after a request that timed out."""
+    if settled:
+        settle(budget)
+    record = {"outcome": "failed", "answer": None, "trace": {"measurement_valid": True},
+              "agent_errors": [None, TIMED_OUT, None], "elapsed_s": 900.0, "settings": {"clock_s": 2700},
+              "cost_usd": None}
+    return {**record, "error_type": error_type} if error_type else record
+
+
+def ordinary_failure(budget):
+    return {"outcome": "failed", "answer": None, "trace": {"measurement_valid": True},
+            "agent_errors": [None, "max steps reached"], "elapsed_s": 1500.0, "settings": {"clock_s": 2700},
+            "cost_usd": 0.01}
+
+
+async def run_batch(case, results, closed=(), config=None):
+    """The batch loop on the synthetic attempt 1, every paid step stood in for. `results` maps a
+    slot's index among those the loop runs to a function (budget) -> its trial's record; every
+    other slot answers, and those in `closed` are closed by the block."""
+    cfg = config or {**case.cfg, "expected_head": "head"}
+    budget = types.SimpleNamespace(state={"calls": [], "inflight": {}, "blocked_reason": None})
+    ids = [slot["id"] for slot in study.preview(cfg)["slots"]]
+    trials, built = [], []
+
+    async def run(trial, *_args, **_kwargs):
+        trials.append(Path(trial["out_dir"]).name)
+        return results.get(ids.index(trials[-1]), answered)(budget)
+
+    def query(question, condition, observed, call=None):
+        built.append(question["id"])
+        if len(built) - 1 in closed:
+            return None, types.SimpleNamespace(refuse="The shop does not show that.", ask=None,
+                                               record=lambda: {"kind": None})
+        return "synthetic unchanged query", None
+
+    @asynccontextmanager
+    async def research_browser(config, recorder):
+        yield types.SimpleNamespace(on=lambda *a: None), "cdp"
+
+    adapter = types.SimpleNamespace(create_llm=mock.Mock(), close_llm=mock.AsyncMock(), run_trial=run,
+                                    configure_private_runtime=mock.Mock(), research_browser=research_browser)
+    observed = page.Page(cfg["questions"][0]["start_url"], [page.Listing(
+        "A", "Rookmere tee", "http://localhost:7770/a.html", 9)], total=1, next_page=False, reader="rendered")
+    error = None
+    with mock.patch.dict(sys.modules, {"browser_use_runner": adapter,
+                                       "browser_use.llm.messages": types.SimpleNamespace(UserMessage=mock.Mock())}), \
+            mock.patch.dict(study.os.environ, {"IGR_BROWSER_USE_GUARD": "test", "IGR_BROWSER_USE_CONFIG_SHA256": "hash"}), \
+            mock.patch.object(study, "validate_config", return_value=cfg), \
+            mock.patch.object(study, "sha", return_value="hash"), \
+            mock.patch.object(study, "read_key", return_value="SYNTHETIC"), \
+            mock.patch.object(study, "CallBudget", return_value=budget), \
+            mock.patch.object(study, "read_observation", return_value=observed), \
+            mock.patch.object(study, "verify_browser_version"), \
+            mock.patch.object(study, "build_query", side_effect=query):
+        try:
+            await study.execute_study("unused")
+        except guard.Stop as stop:
+            error = str(stop)
+    output = Path(cfg["output_dir"])
+    return types.SimpleNamespace(trials=trials, error=error, ids=ids, output=output,
+                                 statuses=json.loads((output / "slot-status.json").read_text())["slots"],
+                                 record=lambda slot_id: json.loads((output / f"{slot_id}.json").read_text()))
+
+
+class BatchLoop(Attempt1, unittest.IsolatedAsyncioTestCase):
+    """The continuation's batch loop: a trial-clock timeout and a void after a settled request end
+    their slot and the batch goes on; three slots in a row without an answer stop it."""
+
+    async def test_a_trial_clock_timeout_ends_its_slot_and_the_batch_goes_on(self):
+        run = await run_batch(self, {0: clock_timeout})
+        self.assertIsNone(run.error)
+        self.assertEqual(run.trials, self.ids[5:])  # each once, in order; attempt 1's five never
+        first = run.statuses[run.ids[0]]
+        self.assertEqual((first["status"], first["disposition"]), ("timeout", "timeout"))
+        record = run.record(run.ids[0])
+        self.assertEqual((record["disposition"], record["no_response_settlements"], record["outcome"]),
+                         ("timeout", 1, "timeout"))
+        self.assertIn("2703 s against 2700 s", record["disposition_reason"])
+        self.assertTrue(all(run.statuses[i]["status"] == "answered" for i in run.ids[1:]))
+
+    async def test_a_timeout_before_its_clock_still_stops_the_batch(self):
+        run = await run_batch(self, {0: lambda budget: clock_timeout(budget, elapsed=100.0)})
+        self.assertIn("unclassified or infrastructure timeout", run.error)
+        self.assertEqual(run.trials, run.ids[:1])
+        self.assertNotIn("disposition", run.statuses[run.ids[0]])
+
+    async def test_a_clock_timeout_with_a_failed_measurement_still_stops_the_batch(self):
+        run = await run_batch(self, {0: lambda budget: clock_timeout(budget, valid=False)})
+        self.assertIn("measurement failed", run.error)
+        self.assertEqual(run.trials, run.ids[:1])
+
+    async def test_no_answer_after_a_settled_request_is_a_void_and_the_batch_goes_on(self):
+        run = await run_batch(self, {3: void})
+        self.assertIsNone(run.error)
+        self.assertEqual(run.trials, self.ids[5:])
+        row, record = run.statuses[run.ids[3]], run.record(run.ids[3])
+        self.assertEqual((row["status"], row["disposition"], record["disposition"]),
+                         ("failed", "technical void", "technical void"))
+        self.assertIn("infrastructure or unknown agent error", record["disposition_reason"])
+
+    async def test_the_same_failure_without_a_settled_request_still_stops_the_batch(self):
+        run = await run_batch(self, {3: lambda budget: void(budget, settled=False)})
+        self.assertIn("infrastructure or unknown agent error", run.error)
+        self.assertEqual(run.trials, run.ids[:4])
+        self.assertNotIn("disposition", run.statuses[run.ids[3]])
+
+    async def test_a_runner_exception_after_a_settled_request_still_stops_the_batch(self):
+        run = await run_batch(self, {3: lambda budget: void(budget, error_type="TargetClosedError")})
+        self.assertIn("infrastructure or unknown agent error", run.error)
+        self.assertEqual(run.trials, run.ids[:4])
+
+    async def test_three_slots_in_a_row_without_an_answer_stop_the_batch(self):
+        run = await run_batch(self, {0: clock_timeout, 1: void, 2: ordinary_failure})
+        self.assertIn("3 slots in a row ended without an answer", run.error)
+        self.assertEqual(run.trials, run.ids[:3])
+        self.assertEqual([run.statuses[i]["status"] for i in run.ids[:3]], ["timeout", "failed", "failed"])
+        self.assertTrue(all(run.statuses[i] == {"phase": "transfer", "status": "not_started",
+                                                "reason": "3 slots in a row ended without an answer"}
+                            for i in run.ids[3:]))
+        completed = json.loads((run.output / "completed.json").read_text())
+        self.assertEqual(completed, {"completed": run.ids[:3], "expected": 27})
+
+    async def test_an_answer_or_the_blocks_closure_resets_the_count(self):
+        # no answer, closed by the block, no, no, answered, no, no, then answers: never three in a row
+        run = await run_batch(self, {0: ordinary_failure, 2: void, 3: clock_timeout, 5: ordinary_failure,
+                                     6: ordinary_failure}, closed=(1,))
+        self.assertIsNone(run.error)
+        self.assertEqual(run.statuses[run.ids[1]]["status"], "closed by the block")
+        self.assertEqual(run.trials, [i for i in run.ids if i != run.ids[1]])
+
+    async def test_attempt1s_own_stage_still_stops_on_a_clock_timeout(self):
+        config = {**self.prior, "expected_head": "head", "output_dir": str(self.repo / "attempt1-again.results")}
+        run = await run_batch(self, {0: clock_timeout}, config=config)
+        self.assertIn("unclassified or infrastructure timeout", run.error)
+        self.assertEqual(run.trials, run.ids[:1])
+        self.assertNotIn("disposition", run.record(run.ids[0]))
+
+
 class Charges(unittest.TestCase):
     def test_an_unknown_charge_leaves_the_total_unknown(self):
         self.assertEqual(study.charge_total([{"cost_usd": 0.25}, {"cost_usd": 0.5}]), 0.75)

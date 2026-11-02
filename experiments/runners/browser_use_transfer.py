@@ -30,7 +30,7 @@ from guarded_browser_use import CallBudget, Stop, account_snapshot, atomic_json,
 from guarded_browser_use import FRESH_BUDGET, FRESH_STAGE, GUARDED_STAGES  # noqa: E402
 # Its one continuation: attempt 1's unstarted slots only (2 November 2026).
 from guarded_browser_use import (FRESH_CONTINUATION_STAGE, FRESH_KEPT_ANSWERED, FRESH_KEPT_INTERRUPTED,  # noqa: E402
-                                 FRESH_STAGES, validate_fresh_continuation)
+                                 FRESH_NO_ANSWER_STOP, FRESH_STAGES, validate_fresh_continuation)
 
 STUDY_ID = "browser-use-transfer-2026-10-31"
 ARMS = ("baseline", "block")
@@ -232,6 +232,50 @@ def charge_total(calls):
     return None if any(cost is None for cost in costs) else sum(costs)
 
 
+def has_answer(record):
+    """Whether a saved slot ended with an answer: the agent's final answer, or the block's own
+    question or refusal when it closed the slot (2 November 2026)."""
+    if record.get("outcome") == "closed by the block":
+        return True
+    return (record.get("outcome") == "answered" and isinstance(record.get("answer"), str)
+            and bool(record["answer"].strip()))
+
+
+def continuation_disposition(record):
+    """How the fresh continuation's batch loop ends a slot the frozen classification
+    (`validate_pilot_record`, unchanged) would stop the batch on, so the batch goes on to the
+    next slot (2 November 2026). Two cases, scored as amendment 2 says:
+
+    - a timeout whose own elapsed time reached its trial clock, with nothing else the frozen
+      classification stops on, is a timeout, scored 0 (the analysis tool's own rule);
+    - a failed trial that made a request settled at its bound (no response, no usage), with a
+      valid measurement and no exception from the runner, is a technical void, left out of the
+      test. Its record keeps what the frozen classification says, since the two can differ.
+
+    A clock timeout stays a timeout though the clock usually cancels a request in flight, which
+    is then settled. Returns (disposition, reason), or (None, None) for every other slot, which
+    the frozen classification passes or stops on as before."""
+    if record.get("outcome") == "timeout":
+        elapsed, clock = record.get("elapsed_s"), (record.get("settings") or {}).get("clock_s")
+        if isinstance(elapsed, (int, float)) and type(clock) is int and elapsed >= clock:
+            try:
+                validate_pilot_record({**record, "timeout_kind": "trial_clock"}, "transfer")
+                return "timeout", f"the trial clock: {elapsed:.0f} s against {clock} s"
+            except Stop:
+                pass
+    if (record.get("outcome") == "failed" and record.get("no_response_settlements")
+            and record.get("trace", {}).get("measurement_valid") is True
+            and not record.get("error") and not record.get("error_type")):
+        try:
+            validate_pilot_record(record, "transfer")
+            frozen = "passes, as an ordinary failure"
+        except Stop as stop:
+            frozen = str(stop)
+        return "technical void", (f"no answer after {record['no_response_settlements']} request(s) with no "
+                                  f"response, settled at the bound; the frozen classification: {frozen}")
+    return None, None
+
+
 async def execute_study(config_path):
     config = validate_config(config_path, require_approval=True)
     if (not os.environ.get("IGR_BROWSER_USE_GUARD")
@@ -252,6 +296,7 @@ async def execute_study(config_path):
     completed = []
     pilot_records = []
     pilot_passed = config["stage"] in GUARDED_STAGES  # No new paid diagnostics in the repeat or fresh batch.
+    without_answer = 0  # the continuation's slots in a row that ended without an answer
     for slot in plan["slots"]:
         verify_browser_version(config)  # Before the parser or executor can make a paid call.
         if slot.get("phase") == "transfer" and not pilot_passed:
@@ -334,19 +379,40 @@ async def execute_study(config_path):
                 record.update(batch_id=FRESH_BUDGET, market=config["market"],
                               config_sha256=os.environ["IGR_BROWSER_USE_CONFIG_SHA256"],
                               head=config["expected_head"])
+            disposition = reason = None
             if config["stage"] == FRESH_CONTINUATION_STAGE:
                 # Which attempt, and the requests settled at their bound, apart from the charges.
                 settled = [call for call in new_calls if "settled_usd" in call]
                 record.update(attempt=config["attempt"], no_response_settlements=len(settled),
                               settled_bound_usd=sum(call["settled_usd"] for call in settled))
+                # A trial-clock timeout or a void after a settled request ends its slot here.
+                disposition, reason = continuation_disposition(record)
+                if disposition:
+                    record.update(disposition=disposition, disposition_reason=reason)
             atomic_json(output_dir / f"{slot['id']}.json", record)
             statuses[slot["id"]]["status"] = record["outcome"]
+            if disposition:
+                statuses[slot["id"]].update(disposition=disposition, reason=reason)
             atomic_json(output_dir / "slot-status.json", {"slots": statuses})
             if slot.get("phase") == "pilot":
                 pilot_records.append(record)
             completed.append(slot["id"])
             atomic_json(output_dir / "completed.json", {"completed": completed, "expected": len(plan["slots"])})
-            validate_pilot_record(record, "transfer" if config["stage"] == "monitored-transfer" else slot.get("phase", "pilot"))
+            if config["stage"] != FRESH_CONTINUATION_STAGE:
+                validate_pilot_record(record, "transfer" if config["stage"] == "monitored-transfer" else slot.get("phase", "pilot"))
+            else:
+                if disposition is None:
+                    validate_pilot_record(record, "transfer")  # passes, or stops the batch as before
+                without_answer = 0 if has_answer(record) else without_answer + 1
+                if without_answer >= FRESH_NO_ANSWER_STOP:
+                    # Something systemic is likely wrong, such as the shop being down: stop, and
+                    # say why on every slot not started.
+                    stop = f"{without_answer} slots in a row ended without an answer"
+                    for row in statuses.values():
+                        if row["status"] == "scheduled":
+                            row.update(status="not_started", reason=stop)
+                    atomic_json(output_dir / "slot-status.json", {"slots": statuses})
+                    raise Stop(stop + "; the batch stops")
         finally:
             pending = list(pending_parser_tasks)
             for task in pending:
