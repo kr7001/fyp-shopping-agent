@@ -703,6 +703,97 @@ def attempt3(output, preflight, *, deadline=guard_a.FRESH_LATEST, start_cutoff=g
     return written
 
 
+def agent_check():
+    """openJiuwen's checked-out commit and the digest of its local patch, as config_b reads them."""
+    agent = ROOT / "agent/agent-core"
+    commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=agent, capture_output=True, text=True,
+                            check=True).stdout.strip()
+    patch = subprocess.run(["git", "diff", "--binary", "HEAD"], cwd=agent, capture_output=True, check=True).stdout
+    return [{"cwd": "agent/agent-core", "head": commit, "diff_sha256": hashlib.sha256(patch).hexdigest()}]
+
+
+def b_later(stage, commit, output, deadline, start_cutoff, steps, carryover, estimate, evidence, header, **fields):
+    """Study B's primary configuration with a later stage's identity, cap, reserve, carryover,
+    cutoff, paths, steps and commit, every file the primary run bound at its hash and `evidence`
+    bound beside them. Its sheet is prepared once every stage has ended, so no review paths."""
+    primary = json.loads((ROOT / guard_b.FRESH_PRIMARY_CONFIG).read_text())
+    if agent_check() != primary["git_checks"]:
+        raise SystemExit("openJiuwen's commit or local patch differs from the primary run's")
+    build = chrome_build("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
+    config = {key: value for key, value in primary.items()
+              if key not in ("review_sheet", "review_html", "preparation_log", "preparation_status")}
+    stop = guard_b.LATER_CAP - guard_b.LATER_RESERVE
+    config.update({"stage": stage, "expected_head": commit, "deadline": deadline, "start_cutoff": start_cutoff,
+                   "cap_usd": guard_b.LATER_CAP, "shared_cap_usd": guard_b.LATER_CAP,
+                   "reserve_usd": guard_b.LATER_RESERVE, "carryover_usd": carryover,
+                   **guard_b.LATER[stage], "declared_estimate_usd": estimate,
+                   "verification_receipt": str(Path(output).resolve().with_name(f"study-b-{stage}.verification.json")),
+                   "manifest_header": [
+                       f"study {guard_b.FRESH} {header}; amendment 4; no pooling with Quenby",
+                       f"conditions commit {commit} browser Google Chrome {build}; the primary run's agent, steps "
+                       f"and protocol, {guard_b.FRESH_PRIMARY_CONFIG} sha256 {guard_b.FRESH_PRIMARY_SHA256}",
+                       f"conditions amendment {guard_b.AMENDMENT} sha256 {sha(ROOT / guard_b.AMENDMENT)}",
+                       f"WATCHDOG USD{guard_b.LATER_CAP:g} shared study cap; carryover USD{carryover:.10f}; "
+                       f"USD{guard_b.LATER_RESERVE:.2f} inflight reserve, a running trial stops at USD{stop:.2f} "
+                       f"counted; no trial starts at or after {start_cutoff}; preserve USD20 key credit; "
+                       f"no automatic retries"],
+                   "steps": steps, **fields})
+    names = set(primary["hashes"]) | set(evidence)
+    config["hashes"] = {name: sha(ROOT / name) for name in sorted(names)}
+    moved = sorted(name for name, digest in primary["hashes"].items()
+                   if name not in guard_b.RENEWED and config["hashes"][name] != digest)
+    if moved:
+        raise SystemExit("files the primary run ran with have changed: " + ", ".join(moved))
+    return config
+
+
+def write_b(output, config):
+    path = write_json(output, config)
+    validated, _ = guard_b.validate_config(path)
+    print(f"Study B {config['stage']}: {sum(s['kind'] == 'paid' for s in config['steps'])} paid step(s); carryover "
+          f"USD {config['carryover_usd']:.10f}, cap USD {config['cap_usd']}, a running trial stops at USD "
+          f"{config['cap_usd'] - config['reserve_usd']:.2f}; declared estimate USD {config['declared_estimate_usd']}")
+    return [path]
+
+
+def b_continuation(output, ruling=None, *, deadline=guard_a.FRESH_LATEST, start_cutoff=guard_a.FRESH_START_CUTOFF):
+    """Study B's continuation: the primary run's steps it never completed (slot 16), unchanged,
+    after the same live check, with the primary run's counted spend carried into USD 2.75. When
+    the primary run had started such a step before it stopped, the configuration says so and
+    needs the student's ruling, since amendment 4 point 4 forbids replaying a started slot."""
+    commit = head()
+    if sha(ROOT / guard_b.FRESH_PRIMARY_CONFIG) != guard_b.FRESH_PRIMARY_SHA256:
+        raise SystemExit("study-b-command.json is not the primary run's command")
+    primary = json.loads((ROOT / guard_b.FRESH_PRIMARY_CONFIG).read_text())
+    status = json.loads((ROOT / primary["status"]).read_text())
+    if status.get("status") not in ("complete", "stopped"):
+        raise SystemExit("the primary run has not ended")
+    completed = status["completed_steps"]
+    steps = [primary["steps"][0]] + [step for step in primary["steps"][1:] if step["id"] not in completed]
+    if len(steps) < 2:
+        raise SystemExit("the primary run completed every step; nothing to continue")
+    partial = guard_b.partial_run(ROOT, primary, status)
+    fields = {}
+    if partial:
+        if not ruling or not ruling.strip():
+            raise SystemExit(
+                f"the primary run started {partial['step']} before it stopped: its launcher log "
+                f"{partial['log']} names results folder {partial['results_folder']}, which holds "
+                f"{partial['results_files']} and no suite record. Running it again replays a started slot, "
+                f"which amendment 4 point 4 forbids unless the student rules otherwise; pass that ruling "
+                f"with --ruling")
+        fields = {"partial_run": partial, "partial_run_ruling": ruling}
+    carryover = guard_b.primary_spent(status)
+    recorded = guard_b.batch_slots(ROOT / primary["manifest"])
+    estimate = up_to_ten_cents(status["recorded_usd"] / len(recorded) * (len(steps) - 1))
+    evidence = [guard_b.FRESH_PRIMARY_CONFIG, primary["status"], primary["manifest"], guard_b.AMENDMENT,
+                *([partial["log"]] if partial else [])]
+    slots = ", ".join(str(step["study_slot"]["slot"]) for step in steps[1:])
+    config = b_later(guard_b.CONTINUATION, commit, output, deadline, start_cutoff, steps, carryover, estimate,
+                     evidence, f"continuation of the primary run, slot(s) {slots} unchanged", **fields)
+    return write_b(output, config)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     modes = parser.add_subparsers(dest="mode", required=True)
@@ -721,9 +812,11 @@ def main():
     a4.add_argument("--tests-log", type=Path, required=True)
     a4.add_argument("--output", type=Path, required=True)
     third = modes.add_parser("attempt3")
-    for stage in (third,):
+    third.add_argument("--preflight", type=Path, required=True, help="the a4-preflight receipt")
+    b16 = modes.add_parser("b-continuation")
+    b16.add_argument("--ruling", help="the student's ruling, when the primary run had started the step")
+    for stage in (third, b16):
         stage.add_argument("--output", type=Path, required=True, help="where the configuration is written")
-        stage.add_argument("--preflight", type=Path, required=True, help="the a4-preflight receipt")
         stage.add_argument("--deadline", default=guard_a.FRESH_LATEST,
                            help="no paid call after this (default and latest: the protocol's absolute stop)")
         stage.add_argument("--start-cutoff", default=guard_a.FRESH_START_CUTOFF,
@@ -744,6 +837,8 @@ def main():
         written = [receipt, receipt.with_name(receipt.stem + "-installed-packages.txt")]
     elif args.mode == "attempt3":
         written = attempt3(args.output, args.preflight, deadline=args.deadline, start_cutoff=args.start_cutoff)
+    elif args.mode == "b-continuation":
+        written = b_continuation(args.output, args.ruling, deadline=args.deadline, start_cutoff=args.start_cutoff)
     elif args.mode == "continuation":
         written = continuation()
     else:

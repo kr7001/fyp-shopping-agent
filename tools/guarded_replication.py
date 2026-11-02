@@ -233,7 +233,12 @@ class Guard:
                     "round_spent_usd": self.round_spent(),
                     "prior_recorded_usd": self.prior_recorded,
                     "aggregate_recorded_usd": self.prior_recorded + self.recorded,
-                    "current_step": self.current, "completed_steps": self.completed})
+                    "current_step": self.current, "completed_steps": self.completed,
+                    **self.status_fields()})
+
+    def status_fields(self):
+        """Fields a subclass adds to every status it writes; none here (2 November 2026)."""
+        return {}
 
     def append(self, line):
         if "\n" in line or "\r" in line:
