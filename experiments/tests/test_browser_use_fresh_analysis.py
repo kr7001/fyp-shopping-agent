@@ -467,14 +467,15 @@ class Staged(Case):
     reruns ran the three timeouts once each, the second timing out again. The test grades one
     timeout correct (it still counts 0) and one answer unscorable."""
 
-    def build(self, attempt3=True, rerun=True, second=SECOND, third=("answered",) * 9 + ("timeout",)):
+    def build(self, attempt3=True, rerun=True, second=SECOND, third=("answered",) * 9 + ("timeout",),
+              reruns=("answered", "timeout", "answered"), unstarted_reason=None):
         self.batch = fresh_batch.Batch(self.root / "repo", ["answered"] * 4 + ["interrupted"])
         self.study = self.batch.study
         self.second = self.batch.later(blind.ATTEMPT2, second, full_path={1, 5})
         if attempt3:
             self.third = self.batch.later(blind.ATTEMPT3, list(third))
         if rerun:
-            self.reruns = self.batch.later(blind.RERUN, ["answered", "timeout", "answered"])
+            self.reruns = self.batch.later(blind.RERUN, list(reruns), unstarted_reason=unstarted_reason)
         blind.prepare(self.study, self.batch.stage_args(), self.bundle)
         stage2 = guard.FRESH_CONTINUATION_STAGE
         self.special = {(stage2, self.second.slots[0]["id"]): "correct",
@@ -593,6 +594,8 @@ class Staged(Case):
         result = self.build()
         stages = {a["stage"]: a for a in result["accounting"]["stages"]}
         self.assertEqual(list(stages), ["attempt 1", "attempt 2", "attempt 3", "timeout rerun"])
+        # Each stage's share of the total cap, as its configuration bound it (amendment 4 point 6).
+        self.assertEqual([a["shared_cap_usd"] for a in stages.values()], [3.0, 3.0, 10.0, 15.0])
         self.assertEqual(stages["attempt 1"]["their_slot"], self.batch.slots[4]["id"])
         self.assertEqual(stages["attempt 2"]["settled_calls"], 4)  # 2 clock, 2 no-response
         self.assertAlmostEqual(stages["attempt 2"]["settled_bound_usd"], 4 * fresh_batch.BOUND, places=12)
@@ -607,17 +610,32 @@ class Staged(Case):
                          (None, 1, 1))
         self.assertIsNotNone(settled["charge_known_part_usd"])
 
+    def test_a_rerun_the_deadline_left_no_time_for_keeps_its_primary_zero(self):
+        # The rerun stage's deadline-fit check stopped it before its last slot (amendment 4 point 6).
+        result = self.build(reruns=("answered", "timeout"), unstarted_reason=guard.NO_TIME_REASON)
+        rows = self.expected()
+        ran = lambda r: r["disposition"] in ("answered", "failed", "timeout", blind.CLOSED)  # noqa: E731
+        view = result["sensitivities"]["timeouts_replaced_by_rerun"]
+        self.check(view, self.strata(rows, ran, lambda r: r["rerun"] if r["disposition"] == "timeout"
+                                     and r["rerun"] is not None else r["counted"]))
+        last = view["substituted"][-1]
+        self.assertEqual((last["rerun_disposition"], last["used"]), ("not started", None))
+        self.assertIn(guard.NO_TIME_REASON, last["label"])
+        self.assertIn("The primary timeout is kept, counted 0", last["label"])
+        self.assertEqual([s["used"] for s in view["substituted"]], [1, 0, None])
+        self.assertEqual(result["reruns"]["trials"][-1]["disposition"], "not started")
+
     def test_without_reruns_the_timeouts_keep_their_zero_in_sensitivity_2(self):
         result = self.build(rerun=False)
         rows = self.expected()
         ran = lambda r: r["disposition"] in ("answered", "failed", "timeout", blind.CLOSED)  # noqa: E731
         view = result["sensitivities"]["timeouts_replaced_by_rerun"]
         self.check(view, self.strata(rows, ran))
-        self.assertTrue(all(s["used"] is None and "not rerun" in s["label"] for s in view["substituted"]))
+        self.assertTrue(all(s["used"] is None and "it was not rerun" in s["label"] for s in view["substituted"]))
         self.assertEqual(result["reruns"]["trials"], [])
 
     def test_without_attempt_3_its_slots_are_not_started_and_the_test_incomplete(self):
-        result = self.build(attempt3=False)
+        result = self.build(attempt3=False, rerun=False)  # no reruns before attempt 3 (point 6)
         left = Counter(r["disposition"] for r in result["primary_test"]["left_out"])
         self.assertEqual(left, {"technical void": 3, "not started": 10})
         self.assertEqual(result["primary_test"]["slots_in_test"], 19)

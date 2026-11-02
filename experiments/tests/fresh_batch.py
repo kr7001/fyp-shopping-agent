@@ -91,9 +91,16 @@ class Stage:
     """One stage's files, as its launcher and worker leave them. `kinds` holds one kind per slot
     the stage ran, in the order it was given them; every later slot never started."""
 
-    def __init__(self, batch, spec, kinds, given=None, full_path=(), bind=(), before_worker=False):
+    def __init__(self, batch, spec, kinds, given=None, full_path=(), bind=(), before_worker=False,
+                 unstarted_reason=None):
         self.batch, self.spec, self.kinds = batch, spec, list(kinds)
+        # Why the slots after the last one run never started, when no stop in the slots says so:
+        # the worker ending, or for the reruns the deadline-fit check (amendment 4 point 6).
+        self.unstarted_reason = unstarted_reason or STOP_REASON
         self.calls = []
+        # Each stage's share of Study A's total cap: USD 3 to attempts 1 and 2, USD 10 to attempt 3
+        # and USD 15 to the reruns (guarded_browser_use.fresh_shared_cap).
+        self.shared_cap = guard.fresh_shared_cap(spec.stage)
         notes, prefix = batch.notes, spec.prefix
         self.results = notes / f"{prefix}.results"
         self.config = {
@@ -102,6 +109,7 @@ class Stage:
             "approval_record": str(notes / f"{prefix}.approval.json"),
             "ledger_path": str(notes / f"{prefix}.ledger.json"), "status_path": str(notes / f"{prefix}.status.json"),
             "log_path": str(notes / f"{prefix}.log"), "output_dir": str(self.results),
+            "cap_usd": self.shared_cap, "shared_cap_usd": self.shared_cap,
             "hashes": {**batch.base["hashes"], **{name: sha(batch.repo / name) for name in bind}}}
         if not spec.primary:
             self.config.update(rerun_slots=[slot["rerun_of"] for slot in given], rerun_clock_s=2 * 2700)
@@ -214,7 +222,7 @@ class Stage:
             kind = self.kinds[index] if index < len(self.kinds) and stop_reason is None else None
             if kind is None:
                 statuses[slot["id"]] = {"phase": "transfer", "status": "not_started",
-                                        "reason": stop_reason or STOP_REASON}
+                                        "reason": stop_reason or self.unstarted_reason}
                 continue
             parser = [self.call("parser")] if slot["condition"] == "block" else []
             if kind == "interrupted":
@@ -281,8 +289,9 @@ class Stage:
             "schema": 1, "charged_usd": charged, "inflight": {}, "calls": self.calls,
             "blocked_reason": None, "start_usage": 100.0, "highwater_usage": 100.0 + charged, "start_remaining": 50.0,
             "minimum_remaining": 50.0 - charged, "account_decreases": 0, "deadline": "2026-11-02T23:59:00+08:00",
-            "cap_usd": 3.0, "carryover_usd": 0.0, "prior_unsettled_reserve_usd": 0.0, "prior_ledger_files": [],
-            "study_budget_id": guard.FRESH_BUDGET, "attempt": self.spec.attempt, "shared_cap_usd": 3.0,
+            "cap_usd": self.shared_cap, "carryover_usd": 0.0, "prior_unsettled_reserve_usd": 0.0,
+            "prior_ledger_files": [], "study_budget_id": guard.FRESH_BUDGET, "attempt": self.spec.attempt,
+            "shared_cap_usd": self.shared_cap,
             "legacy_unsettled_reserve_usd": 0.2117632, "minimum_balance_usd": 20.2117632}
         if settling:
             ledger.update(settled_usd=sum(c["settled_usd"] for c in settled),
@@ -294,7 +303,7 @@ class Stage:
                                              "charged_usd": charged, "carryover_usd": 0, "shared_cost_upper_usd": charged})
         else:
             put(self.config["status_path"], {"status": "stopped", "config_sha256": self.config_sha,
-                                             "reason": stop_reason or STOP_REASON, "stopped_at": 2.0})
+                                             "reason": stop_reason or self.unstarted_reason, "stopped_at": 2.0})
 
     def files(self):
         """Every file this stage left, as repository paths: what a later stage binds by hash."""
@@ -357,7 +366,7 @@ class Batch(Stage):
         super().__init__(self, blind.ATTEMPT1, kinds, full_path=full_path)
         self.stages.append(self)
 
-    def later(self, spec, kinds, full_path=(), bind=True, before_worker=False):
+    def later(self, spec, kinds, full_path=(), bind=True, before_worker=False, unstarted_reason=None):
         """The next stage: a primary attempt is given the slots the one before it left never
         started; the timeout reruns every primary slot that reached its clock, its clock doubled.
         With `bind`, its configuration binds every earlier stage's files by hash, as the launcher's do."""
@@ -380,7 +389,8 @@ class Batch(Stage):
             by_id = {slot["id"]: slot for slot in self.slots}
             given = [{**by_id[row["slot"]], "clock_s": 2 * 2700, "rerun_of": row} for row in rows]
         bound = [name for stage in self.stages for name in stage.files()] if bind else []
-        stage = Stage(self, spec, kinds, given=given, full_path=full_path, bind=bound, before_worker=before_worker)
+        stage = Stage(self, spec, kinds, given=given, full_path=full_path, bind=bound, before_worker=before_worker,
+                      unstarted_reason=unstarted_reason)
         self.stages.append(stage)
         return stage
 

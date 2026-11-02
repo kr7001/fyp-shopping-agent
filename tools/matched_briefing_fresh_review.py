@@ -202,7 +202,12 @@ def load_study(study, continuation=None, rerun=None):
     # Slot 16 (amendment 4, correction of 12:30): the primary run started it, and its budget stop
     # ended it with no record. It is a technical void unless the student ruled it be run again,
     # which the continuation's configuration carries.
-    partial = guard.partial_run(root, primary, status)
+    try:
+        # Since f4035ed it also reads the charges the started run's own logs show, and refuses a
+        # completion logged without its charge.
+        partial = guard.partial_run(root, primary, status)
+    except guard.original.Stop as stop:
+        raise Refused(f"The primary run's started slot cannot be accounted: {stop}") from None
     cont = later[CONTINUATION]
     if cont:
         config = cont["config"]
@@ -223,7 +228,8 @@ def load_study(study, continuation=None, rerun=None):
         run["stage"] = entry[3]
     require(len({run["folder"] for run in runs}) == len(runs), "Two slots name one results folder.")
     # A slot no stage ran: the one the primary run had started when it stopped is a technical
-    # void, its charges in the account's usage but in no record; any other was never started.
+    # void, its charges in its own run log (`partial_run`) but in no record. Any other was never
+    # started.
     started = next_step_slot(primary, status) if partial else None
     left = {}
     for number in schedule:
@@ -247,8 +253,16 @@ def load_study(study, continuation=None, rerun=None):
         files += [config["status"], config["manifest"]]
         manifests = [primary["manifest"]] + ([cont["config"]["manifest"]] if cont else [])
         timeouts = guard.primary_timeouts(root, manifests)
-        rows = [step.get("rerun_of") for step in config["steps"] if step["kind"] == "paid"]
+        paid = [step for step in config["steps"] if step["kind"] == "paid"]
+        rows = [step.get("rerun_of") for step in paid]
         require(rows == timeouts, "The reruns are not every primary timeout, each once, in slot order.")
+        # Each rerun ran the frozen code through the reviewed wrapper, which hands suite.py the
+        # doubled clock and nothing else (amendment 4 point 6), bound by the stage at its pin.
+        require(config["hashes"].get(guard.RERUN_RUNNER) == guard.RERUN_RUNNER_SHA256
+                and all(step["argv"][1] == guard.RERUN_RUNNER and "--clock" in step["argv"]
+                        and step["argv"][step["argv"].index("--clock") + 1] == str(guard.RERUN_CLOCK_S)
+                        for step in paid),
+                "The reruns did not run through the reviewed wrapper at the doubled clock.")
         added = manifest_lines(root / config["manifest"], "rerun")
         by_slot = {run["slot"]: run for run in runs}
         rerun_slots = [slot_of(line["args"]) for line in added]
@@ -267,7 +281,8 @@ def load_study(study, continuation=None, rerun=None):
         reruns_left = []
     inputs = {str((root / name).resolve()): blind.digest(root / name) for name in files}
     if partial:
-        inputs[str((root / partial["log"]).resolve())] = blind.digest(root / partial["log"])
+        for name in (partial["log"], *partial["run_logs"]):
+            inputs[str((root / name).resolve())] = blind.digest(root / name)
     for later_stage in (cont, rer):
         if later_stage:
             inputs[later_stage["path"]] = later_stage["sha256"]
@@ -568,8 +583,12 @@ def analyse(study, bundle):
              "counted": s["counted"]} for s in graded
             if s["hand_verdict"] == "correct" and s["classification"] == voids.NOT_CORRECT],
         "charges": {"known_usd": round(sum(r["cost_usd"] for r in loaded["runs"] + loaded["reruns"]), 6),
-                    "slots_with_unknown_charge": [s["slot"] for s in slots if s["outcome"] == voids.VOID
-                                                  and s.get("cost_usd") is None]},
+                    # A started slot no runner recorded: its charges only from its own run logs, by
+                    # the frozen trace reader, as the later stages' carryover counts them.
+                    "slots_without_a_record": [
+                        {"slot": s["slot"], "logged_charges_usd": (s["partial_run"] or {}).get("charges_usd"),
+                         "logged_charged_calls": (s["partial_run"] or {}).get("charged_calls")}
+                        for s in slots if s["outcome"] == voids.VOID and s.get("cost_usd") is None]},
         "technical_rule": "Original voids.classify; voids excluded, charges retained; no automatic replay.",
         "no_significance_test": "analysis-plan-B.md declares none. Totals are exact counts with no significance claim"}
 

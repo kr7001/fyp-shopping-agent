@@ -117,7 +117,25 @@ class Slot16(Case):
         pair = next(p for p in result["paired_by_task_repeat"] if (p["task"], p["repeat"]) == ("tee-count-buyable", 2))
         self.assertIn("not comparable", pair["comparable"])
         self.assertTrue(all(v is None for v in pair["full_block_minus_matched"].values()))
-        self.assertEqual(result["charges"]["slots_with_unknown_charge"], [16])
+        # Slot 16 has no record: its charges come from its own run log only.
+        self.assertEqual(result["charges"]["slots_without_a_record"],
+                         [{"slot": 16, "logged_charges_usd": 0.1757, "logged_charged_calls": 1}])
+        self.assertEqual(slot16["partial_run"]["run_logs"], ["experiments/results/started-16/tee-count-buyable-2.log"])
+
+    def test_the_started_slots_run_log_is_bound_at_preparation(self):
+        self.build()
+        self.prepare()
+        self.grade()
+        log = self.b.results / "started-16/tee-count-buyable-2.log"
+        log.write_text(log.read_text() + "a line added after preparation\n")
+        with self.assertRaisesRegex(review.Refused, "bound at preparation changed"):
+            self.analyse()
+
+    def test_a_started_slot_whose_log_has_a_completion_without_its_charge_is_refused(self):
+        self.build({"started_log": "CompletionUsage(completion_tokens=10, prompt_tokens=20, total_tokens=30)\n"})
+        with self.assertRaisesRegex(review.Refused, "started slot cannot be accounted"):
+            self.prepare()
+        self.assertFalse(self.bundle.exists())
 
     def test_slot_16_run_on_the_students_ruling_is_on_the_sheet_and_labelled(self):
         self.build(continuation=True, ruling="Run slot 16 again: the budget stop was ours.")
@@ -239,9 +257,26 @@ class Reruns(Case):
             with self.subTest(label):
                 if ("R", 7) in b.folders:
                     shutil.rmtree(b.folders.pop(("R", 7)))
-                steps = [{**b.steps[row["slot"]], "rerun_of": row} for row in rows]
-                b.later("timeout-rerun", steps, [b.run_line(by_slot[7], clock, "R", named["batch"])])
+                b.later("timeout-rerun", b.rerun_steps(rows), [b.run_line(by_slot[7], clock, "R", named["batch"])],
+                        hashes=b.wrapper())
                 with self.assertRaisesRegex(review.Refused, pattern):
+                    self.prepare()
+        self.assertFalse(self.bundle.exists())
+
+    def test_the_reruns_ran_through_the_reviewed_wrapper(self):
+        b = self.build(self.KINDS, continuation=True, rerun=True)
+        self.assertEqual(self.prepare()[0], 17)  # quiet on the reruns as the launcher builds them
+        shutil.rmtree(self.bundle)
+        timeouts = [step["rerun_of"] for step in json.loads(b.stages["timeout-rerun"][0].read_text())["steps"][1:]]
+        frozen_steps = [{**step, "argv": [step["argv"][0], review.guard.FROZEN_RUNNER, *step["argv"][2:]]}
+                        for step in b.rerun_steps(timeouts)]
+        lines = (b.root / review.guard.LATER["timeout-rerun"]["manifest"]).read_text().splitlines()[2:-1]
+        for label, steps, hashes in (("the frozen runner", frozen_steps, b.wrapper()),
+                                     ("another wrapper", b.rerun_steps(timeouts), {review.guard.RERUN_RUNNER: "0" * 64}),
+                                     ("no binding", b.rerun_steps(timeouts), {})):
+            with self.subTest(label):
+                b.later("timeout-rerun", steps, lines, hashes=hashes)
+                with self.assertRaisesRegex(review.Refused, "reviewed wrapper"):
                     self.prepare()
         self.assertFalse(self.bundle.exists())
 

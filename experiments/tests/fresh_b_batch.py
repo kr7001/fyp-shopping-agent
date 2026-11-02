@@ -77,9 +77,12 @@ class StudyB:
             "arms": {arm: {"payload_arm": value} for arm, value in ARMS.items()},
             "schedule": self.schedule, "require": {"max_steps": 300, "clock_s": 1800},
             "provider_routing": {"synthetic/model": ROUTING}})
+        # Each paid step as the launch builder writes it: the frozen runner, the 1800 s clock, and
+        # its wall budget, so that guarded_matched_briefing.rerun_step can turn it into a rerun.
         self.steps = [{"id": "preflight", "kind": "preflight"}] + [
             {"id": f"slot-{s['slot']}-{s['arm']}-{s['task']}-r{s['repeat']}", "kind": "paid", "study_slot": s,
-             "argv": ["python", "experiments/runners/matched_briefing_study.py", "--slot-id", str(s["slot"])]}
+             "argv": ["python", guard.FROZEN_RUNNER, *self.runner_args(s, 1800).split()], "max_seconds": 1920,
+             "estimate_usd": 0.075, "manifest_line_template": "batch|{batch}|" + self.runner_args(s, 1800)}
             for s in self.schedule]
         self.config_path = put(self.root / PRIMARY_CONFIG, {
             "study_id": STUDY, "round": 1, "repo": str(self.root), "manifest": f"{guard.FRESH_STEM}.manifest",
@@ -107,7 +110,10 @@ class StudyB:
             # The started slot: its launcher log names a results folder with caches and a log only.
             started = self.results / f"started-{ran + 1:02d}"
             (started / "caches").mkdir(parents=True)
-            (started / "tee-count-buyable-2.log").write_text("synthetic run log\n")
+            # Its run log, with the charges the later stages' carryover counts (151 calls on 2 November).
+            (started / "tee-count-buyable-2.log").write_text(
+                self.kinds.get("started_log", "2026-11-02 06:24:00 | start\nCompletionUsage(completion_tokens=10, "
+                               "prompt_tokens=20, total_tokens=30) cost=0.1757, is_byok=False, provider='fake'\n"))
             (logs / f"{ran + 1:03d}.log").write_text(f"slot {ran + 1} -> {started}\n")
             status["current_step"] = self.steps[ran + 1]["id"]
         lines.append("STOP budget stop or insufficient budget for next step" if ran < 16 else "end 2026-11-02T06:40:00 usage 137")
@@ -170,18 +176,24 @@ class StudyB:
                 "2026-11-02 03:00:00 | start\nCompletionUsage(completion_tokens=10, prompt_tokens=20, total_tokens=30) "
                 "cost=0.1, is_byok=False, provider='fake'\n2026-11-02 03:00:04 | end\n")
         (folder / "suite.json").write_text(json.dumps(payload))
-        args = (f"--condition {arm} --protocol {PROTOCOL} --slot-id {number} --tasks experiments/tasks/tasks.json "
-                f"--only {task} --repeats 1 --repeat-start {repeat} --page-reader rendered --max-steps 300 --clock {clock}")
+        args = self.runner_args(slot, clock)
         if rerun_of:
             return f"rerun|{folder}|stage {guard.RERUN}|primary {rerun_of}|{args}"
         return f"batch|{folder}|{args}"
 
-    def later(self, stage, steps, lines, extra=None, status="complete"):
+    @staticmethod
+    def runner_args(slot, clock):
+        """A slot's runner arguments, as its manifest line repeats them."""
+        return (f"--condition {slot['arm']} --protocol {PROTOCOL} --slot-id {slot['slot']} --tasks "
+                f"experiments/tasks/tasks.json --only {slot['task']} --repeats 1 --repeat-start {slot['repeat']} "
+                f"--page-reader rendered --max-steps 300 --clock {clock}")
+
+    def later(self, stage, steps, lines, extra=None, status="complete", hashes=None):
         """A later stage's configuration, verifier's receipt, status and manifest."""
         files = guard.LATER[stage]
         config = {"study_id": STUDY, "round": 1, "stage": stage, "repo": str(self.root), **files,
                   "results_dir": "experiments/results", "steps": [self.steps[0]] + steps,
-                  "hashes": {PRIMARY_CONFIG: self.config_sha}, "expected_head": "synthetic-head",
+                  "hashes": {PRIMARY_CONFIG: self.config_sha, **(hashes or {})}, "expected_head": "synthetic-head",
                   "verification_receipt": str(self.root / f"notes/fresh-market-2-nov/study-b-{stage}.verification.json"),
                   **(extra or {})}
         path = put(self.root / f"notes/fresh-market-2-nov/study-b-{stage}-command.json", config)
@@ -211,11 +223,18 @@ class StudyB:
             manifests.append(guard.LATER[guard.CONTINUATION]["manifest"])
         timeouts = guard.primary_timeouts(self.root, manifests)
         by_slot = {s["slot"]: s for s in self.schedule}
-        steps = [{**self.steps[row["slot"]], "id": "rerun-" + self.steps[row["slot"]]["id"], "rerun_of": row}
-                 for row in timeouts]
         lines = [self.run_line(by_slot[row["slot"]], clock=3600, prefix="R", rerun_of=row["batch"])
                  for row in timeouts[:ran]]
-        return self.later(guard.RERUN, steps, lines)
+        return self.later(guard.RERUN, self.rerun_steps(timeouts), lines, hashes=self.wrapper())
+
+    def rerun_steps(self, rows):
+        """Each rerun step as the launcher builds it, through the reviewed wrapper (f4035ed)."""
+        return [guard.rerun_step(self.steps[row["slot"]], row) for row in rows]
+
+    @staticmethod
+    def wrapper():
+        """The rerun stage's binding of the wrapper at its reviewed SHA-256."""
+        return {guard.RERUN_RUNNER: guard.RERUN_RUNNER_SHA256}
 
     def args(self):
         """The later stages as `prepare` is given them."""

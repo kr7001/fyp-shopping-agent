@@ -488,6 +488,18 @@ class Stages(unittest.TestCase):
         with self.assertRaisesRegex(blind.Refused, "no status"):
             self.prepare()
 
+    def test_the_reruns_come_after_attempt_3_when_attempt_2_left_slots(self):
+        # Amendment 4 point 6: attempt 2 left nine slots never started, so the reruns may start
+        # only once attempt 3 has ended.
+        self.build(attempt3=False)
+        with self.assertRaisesRegex(blind.Refused, "reruns ran before attempt 3"):
+            self.prepare()
+        self.assertFalse(self.bundle.exists())
+        shutil.rmtree(self.root)
+        self.root.mkdir()
+        self.build(attempt3=False, kinds=["timeout"] + ["answered"] * 26)  # attempt 2 left none
+        self.assertEqual(self.prepare()[0], 4 + 27 + 1)
+
     def test_reruns_absent_leave_the_timeouts_unrerun(self):
         self.build(rerun=False)
         rows, _ = self.prepare()

@@ -468,6 +468,10 @@ def load_study(study, stages):
                 if (held[s["id"]]["record"] or {}).get("disposition") == "timeout"]
     reruns = None
     if RERUN.name in stages:
+        # The reruns start only after attempt 3 has ended, and attempt 3 runs whenever attempt 2
+        # left a slot never started (amendment 4 point 6, guarded_browser_use.ended_primary_stages).
+        require(not left or loaded[-1]["spec"] is ATTEMPT3,
+                "The reruns ran before attempt 3, while slots were left never started.")
         by_id = {slot["id"]: slot for slot in slots}
         given = [{**by_id[row["slot"]], "clock_s": 2 * study.clock_s, "rerun_of": row} for row in timeouts]
         reruns = load_stage(study, RERUN, *stages[RERUN.name], given=given)

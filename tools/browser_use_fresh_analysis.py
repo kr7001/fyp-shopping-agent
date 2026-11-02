@@ -365,14 +365,20 @@ def sensitivities(compare_cells, rows, task_ids):
             return rerun["counted"]
         return r["counted"]
 
+    def label(r):
+        """What sensitivity 2 used for a timed-out slot, and why when it kept the primary's 0: no
+        rerun, or a rerun that was a void or never started, as one the deadline left no time for."""
+        rerun = r["rerun"]
+        if rerun and rerun["in_test"]:
+            return f"rerun with its clock doubled to {rerun['clock_s']} s"
+        why = (f"its rerun is a {rerun['disposition']}: {rerun['disposition_reason']}" if rerun
+               else "it was not rerun")
+        return f"no rerun outcome, since {why}. The primary timeout is kept, counted 0"
+
     substituted = [{"slot": r["slot"], "condition": r["condition"], "primary": TIMEOUT,
                     "rerun_disposition": (r["rerun"] or {}).get("disposition"),
                     "used": with_rerun(r) if r["rerun"] and r["rerun"]["in_test"] else None,
-                    "label": ("rerun with its clock doubled to " + str(r["rerun"]["clock_s"]) + " s"
-                              if r["rerun"] and r["rerun"]["in_test"]
-                              else "no rerun outcome (" + ("the rerun a " + r["rerun"]["disposition"] if r["rerun"]
-                                                           else "not rerun") + "), so the primary timeout is kept, counted 0")}
-                   for r in rows if timed_out(r)]
+                    "label": label(r)} for r in rows if timed_out(r)]
     return {
         "unscorable_left_out": {**exact_test(compare_cells, rows, task_ids, leave_out_unscorable=True),
                                 "role": "declared sensitivity (plan, amendment 2): answered slots graded unscorable left out"},
@@ -475,6 +481,9 @@ def reconcile(batch, rows):
     spec, ledger, slots = batch["spec"], batch["ledger"], batch["slots"]
     out = {"stage": spec.name, "batch_status": batch["status"]["status"], "batch_stop_reason": batch["status"].get("reason"),
            "cap_usd": batch["config"]["cap_usd"], "estimate_usd": batch["config"]["estimate_usd"],
+           # The stage's share of Study A's total cap: USD 3 to attempt 2, 10 to attempt 3 and 15
+           # to the reruns (amendment 4 points 5 and 6), as its own configuration bound it.
+           "shared_cap_usd": batch["config"].get("shared_cap_usd", batch["config"]["cap_usd"]),
            "carryover_usd": batch["config"].get("carryover_usd", 0)}
     if ledger is None:
         return {**out, "ledger_calls": 0, "known_charge_usd": 0, "unknown_charge_calls": 0, "settled_calls": 0,
