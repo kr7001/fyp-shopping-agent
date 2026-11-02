@@ -33,16 +33,26 @@ class StudyA(unittest.TestCase):
         self.assertEqual(blind.STUDY_A.study_id, guard.FRESH_BUDGET)
         # Attempts 1 and 2 ran under the commands the launcher pins; the later stages are named.
         self.assertEqual(blind.STUDY_A.pinned, {"attempt 1": guard.FRESH_ATTEMPT1_SHA256,
-                                                "attempt 2": guard.FRESH_CONTINUATION_SHA256})
-        self.assertEqual([(s.stage, s.attempt, s.prefix) for s in blind.STAGES if s is not blind.ATTEMPT4],
+                                                "attempt 2": guard.FRESH_CONTINUATION_SHA256,
+                                                "attempt 3": guard.FRESH_ATTEMPT3_SHA256})
+        self.assertEqual([(s.stage, s.attempt, s.prefix) for s in blind.STAGES],
                          [(stage, attempt, guard.FRESH_PREFIX[stage]) for stage, attempt in (
                              (guard.FRESH_STAGE, 1), (guard.FRESH_CONTINUATION_STAGE, 2),
-                             (guard.FRESH_ATTEMPT3_STAGE, 3), (guard.FRESH_RERUN_STAGE, guard.FRESH_RERUN_ATTEMPT))])
+                             (guard.FRESH_ATTEMPT3_STAGE, 3), (guard.FRESH_ATTEMPT4_STAGE, 4),
+                             (guard.FRESH_RERUN_STAGE, guard.FRESH_RERUN_ATTEMPT))])
         # Attempt 4 as amendment 6 names it, its records under the same settling rules.
-        self.assertEqual((blind.ATTEMPT4.stage, blind.ATTEMPT4.attempt, blind.ATTEMPT4.prefix),
-                         ("fresh-market-attempt-4", 4, "study-a-attempt4"))
+        self.assertEqual((blind.ATTEMPT4.stage, blind.ATTEMPT4.prefix), ("fresh-market-attempt-4", "study-a-attempt4"))
         self.assertIn(blind.ATTEMPT4.stage, blind.SETTLING)
         self.assertEqual(blind.PRIMARY[-1], blind.ATTEMPT4)
+        self.assertEqual(blind.ERROR_REPLY_STAGES, {blind.ATTEMPT4.stage, blind.RERUN.stage})
+
+    def test_the_error_reply_label_is_the_launchers_and_the_runners(self):
+        # The label is a literal in both files, so a change in either would leave this review behind.
+        for name in ("tools/guarded_browser_use.py", "experiments/runners/browser_use_transfer.py"):
+            with self.subTest(name=name):
+                self.assertIn(f'settlement_kind="{blind.ERROR_REPLY_KIND}"'
+                              if name.startswith("tools") else f'== "{blind.ERROR_REPLY_KIND}"',
+                              (ROOT / name).read_text())
 
     def test_rookmere_keys_do_not_depend_on_the_reading(self):
         tasks = json.loads((ROOT / blind.STUDY_A.tasks_file).read_text())
@@ -532,6 +542,34 @@ class Stages(unittest.TestCase):
                          {guard.FRESH_CONTINUATION_STAGE: 2, guard.FRESH_ATTEMPT3_STAGE: 1, blind.ATTEMPT4.stage: 1})
         key = self.key()
         self.assertEqual(sum(v["stage"] == blind.ATTEMPT4.stage for v in key["codes"].values()), 5)
+
+    def test_error_reply_settlements_are_held_to_the_calls_and_the_stage(self):
+        self.build4()
+        index = 0  # attempt 4's first slot answered after an error reply without usage
+        record = json.loads(self.fourth.path(index).read_text())
+        self.assertEqual((record["error_reply_settlements"], record["no_response_settlements"]), (1, 1))
+        self.assertEqual(self.prepare()[0], 4 + 18 + 3 + 5 + 4)  # quiet as the runner writes it
+        shutil.rmtree(self.bundle)
+        original = self.fourth.path(index).read_bytes()
+        for change in ({"error_reply_settlements": 0}, {"error_reply_settlements": None}):
+            with self.subTest(change=change):
+                self.fourth.edit(index, **change)
+                with self.assertRaisesRegex(blind.Refused, "error-reply settlements"):
+                    self.prepare()
+                self.fourth.path(index).write_bytes(original)
+        # An attempt 3 record may not carry the count: attempt 3 settled no error reply.
+        self.third.edit(0, error_reply_settlements=0)
+        with self.assertRaisesRegex(blind.Refused, "error-reply settlements"):
+            self.prepare()
+
+    def test_an_attempt_after_one_that_left_nothing_is_refused(self):
+        # Attempt 2 ran every slot it was given, so an attempt 3 has nothing it may run.
+        self.build(attempt3=False, rerun=False, kinds=["answered"] * 27)
+        self.assertEqual(self.prepare()[0], 4 + 27)  # quiet without it
+        shutil.rmtree(self.bundle)
+        self.batch.later(blind.ATTEMPT3, [])
+        with self.assertRaisesRegex(blind.Refused, "attempt 3 ran though the attempt before it left no slot"):
+            self.prepare()
 
     def test_attempt_4_must_be_named_and_come_before_the_reruns(self):
         self.build4()

@@ -83,9 +83,10 @@ RAN_WITH = ("experiments/runners/browser_use_runner.py", "experiments/runners/br
 SCRIPT_KINDS = ("fetch", "xhr", "subframe-document")  # browser_use_fetches.ScriptFetches.observe
 MEASURES = ("charge_usd", "parser_charge_usd", "openings", "script_fetches", "steps", "elapsed_with_parser_s")
 # How a request was settled at its bound: by the trial clock, after the provider gave no response
-# (amendment 3), or, from attempt 4, after an error reply without usage (amendment 6 point 2). The
-# runner counts every kind but the clock's in `no_response_settlements`.
-CLOCK_KIND, NO_RESPONSE_KIND = "trial clock", "no response"
+# (amendment 3), or, in attempt 4 and the reruns, after an error reply without usage (amendment 6
+# point 2). The runner counts every kind but the clock's in `no_response_settlements`, and the error
+# replies again in `error_reply_settlements`, which the review holds to the calls.
+CLOCK_KIND, NO_RESPONSE_KIND, ERROR_REPLY_KIND = "trial clock", "no response", blind.ERROR_REPLY_KIND
 
 
 def function_digest(path, name):
@@ -262,8 +263,8 @@ def measure(record):
             "no_response_settlements": record.get("no_response_settlements", 0),
             "clock_settlements": record.get("clock_settlements", 0),
             # Amendment 6's error replies without usage, apart from the provider's no-responses.
-            "error_reply_settlements": sum("settled_usd" in call and call.get("settlement_kind")
-                                           not in (CLOCK_KIND, NO_RESPONSE_KIND) for call in record["calls"])}
+            "error_reply_settlements": sum("settled_usd" in call and call.get("settlement_kind") == ERROR_REPLY_KIND
+                                           for call in record["calls"])}
 
 
 def reached_clock(record):

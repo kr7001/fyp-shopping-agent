@@ -58,9 +58,8 @@ FROZEN = (TASKS_FILE, READINGS_FILE, MARKET["fixture"], MARKET["search_record"],
 EXECUTOR_USD, PARSER_USD = 0.00125, 0.0005
 BOUND = 0.2117632  # every request's reserved bound, at which a request with no response is settled
 ANSWERS = ("answered", "wrong", "answered-settled", "answered-error-reply")
-# Amendment 6's settlement of an error reply without usage, by the label the amendment gives it
-# until the launcher's commit names its own.
-ERROR_REPLY = "error reply without usage"
+# Amendment 6's settlement of an error reply without usage, by the launcher's own label.
+ERROR_REPLY = blind.ERROR_REPLY_KIND
 STOP_REASON = "pilot worker did not complete"
 
 
@@ -277,6 +276,9 @@ class Stage:
                 clock = [c for c in settled if c["settlement_kind"] == "trial clock"]
                 record.update(attempt=self.spec.attempt, no_response_settlements=len(settled) - len(clock),
                               clock_settlements=len(clock), settled_bound_usd=sum(c["settled_usd"] for c in settled))
+                if self.spec.stage in guard.FRESH_ERROR_REPLY_STAGES:
+                    # Of the no-response settlements, the error replies without usage (amendment 6).
+                    record["error_reply_settlements"] = sum(c["settlement_kind"] == ERROR_REPLY for c in settled)
                 disposition, reason = transfer.continuation_disposition(record)
                 if disposition:
                     record.update(disposition=disposition, disposition_reason=reason)

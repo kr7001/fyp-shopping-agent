@@ -109,16 +109,20 @@ ATTEMPT1 = Stage("attempt 1", guard.FRESH_STAGE, 1, guard.FRESH_PREFIX[guard.FRE
 ATTEMPT2 = Stage("attempt 2", guard.FRESH_CONTINUATION_STAGE, 2, guard.FRESH_PREFIX[guard.FRESH_CONTINUATION_STAGE])
 ATTEMPT3 = Stage("attempt 3", guard.FRESH_ATTEMPT3_STAGE, 3, guard.FRESH_PREFIX[guard.FRESH_ATTEMPT3_STAGE])
 # Amendment 6 (2 November 2026, 17:40): attempt 4 runs the slots attempt 3 left never started,
-# under attempt 3's conditions. Its stage id and prefix are the amendment's, named here until the
-# launcher's commit for it defines them.
-ATTEMPT4 = Stage("attempt 4", "fresh-market-attempt-4", 4, "study-a-attempt4")
+# under attempt 3's conditions.
+ATTEMPT4 = Stage("attempt 4", guard.FRESH_ATTEMPT4_STAGE, 4, guard.FRESH_PREFIX[guard.FRESH_ATTEMPT4_STAGE])
 RERUN = Stage("timeout rerun", guard.FRESH_RERUN_STAGE, guard.FRESH_RERUN_ATTEMPT,
               guard.FRESH_PREFIX[guard.FRESH_RERUN_STAGE], primary=False)
 STAGES = (ATTEMPT1, ATTEMPT2, ATTEMPT3, ATTEMPT4, RERUN)
 PRIMARY = (ATTEMPT1, ATTEMPT2, ATTEMPT3, ATTEMPT4)
 # The stages that end a clock timeout or a void after a settled request as its own slot and go
 # on (amendment 3), whose records carry `attempt`, the settlement counts and `disposition`.
-SETTLING = guard.FRESH_SETTLING_STAGES | {ATTEMPT4.stage}
+SETTLING = guard.FRESH_SETTLING_STAGES
+# Attempt 4 and the reruns also settle an executor's error reply without usage at its bound, by
+# this label, and their records count those apart in `error_reply_settlements`, as well as inside
+# `no_response_settlements` (amendment 6; guarded_browser_use.CallBudget, browser_use_transfer).
+ERROR_REPLY_STAGES = guard.FRESH_ERROR_REPLY_STAGES
+ERROR_REPLY_KIND = "error reply without usage"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -141,7 +145,7 @@ class Study:
 
 # Each SHA-256 below is the committed file's at b1c67c8, the configuration's own hash for it,
 # and is checked against the repository by tests/test_browser_use_fresh_review.py. Attempts 1
-# and 2 ran under the commands the launcher pins; attempt 3's and the reruns' are named on the
+# to 3 ran under the commands the launcher pins; attempt 4's and the reruns' are named on the
 # command line with their SHA-256, which their verifier's receipt and launch claim must bind.
 STUDY_A = Study(
     study_id=guard.FRESH_BUDGET, task_ids=transfer.TASK_IDS, repeats=(1, 2), clock_s=2700,
@@ -160,7 +164,8 @@ STUDY_A = Study(
     },
     rules_sha256="9433423f14f4de200da4b0376e84839c57751af93b98c9f8e599b35a6d274bb4",
     sheet="study-a-fresh-2-nov.sheet.csv",
-    pinned={ATTEMPT1.name: guard.FRESH_ATTEMPT1_SHA256, ATTEMPT2.name: guard.FRESH_CONTINUATION_SHA256})
+    pinned={ATTEMPT1.name: guard.FRESH_ATTEMPT1_SHA256, ATTEMPT2.name: guard.FRESH_CONTINUATION_SHA256,
+            ATTEMPT3.name: guard.FRESH_ATTEMPT3_SHA256})
 
 
 class Refused(ValueError):
@@ -256,6 +261,10 @@ def check_record(study, spec, config, config_sha256, slot, row, record):
         state, _ = transfer.continuation_disposition(record)
         require(record.get("disposition") == state and row.get("disposition") == state,
                 f"{spec.name}: a record's disposition differs from the runner's rule.")
+        replies = sum(call.get("settlement_kind") == ERROR_REPLY_KIND for call in settled)
+        require(record.get("error_reply_settlements") == replies if spec.stage in ERROR_REPLY_STAGES
+                else "error_reply_settlements" not in record and not replies,
+                f"{spec.name}: a record's error-reply settlements disagree with its calls or its stage.")
     else:
         require("disposition" not in record and "disposition" not in row
                 and not any("settled_usd" in call for call in record["calls"]),
@@ -458,6 +467,7 @@ def load_study(study, stages):
             continue
         require(loaded[-1]["spec"] is PRIMARY[PRIMARY.index(spec) - 1],
                 f"{spec.name} follows the attempt before it, which was not named.")
+        require(left, f"{spec.name} ran though the attempt before it left no slot never started. Inspect it.")
         batch = load_stage(study, spec, *stages[spec.name], given=left)
         loaded.append(batch)
         left = [slot for slot in left if batch["statuses"][slot["id"]]["status"] == NOT_STARTED]
