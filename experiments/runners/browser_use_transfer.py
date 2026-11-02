@@ -28,6 +28,9 @@ import primitives  # noqa: E402
 from guarded_browser_use import CallBudget, Stop, account_snapshot, atomic_json, read_key, sha, validate_config, verify_browser_version, REPEAT_STAGE, REPEAT_BUDGET, REPEAT_STAGES, REPEAT_RECOVERY_STAGE, validate_repeat_recovery  # noqa: E402
 # The fresh held-out market of 2 November 2026: the cohort's condition, its own identity.
 from guarded_browser_use import FRESH_BUDGET, FRESH_STAGE, GUARDED_STAGES  # noqa: E402
+# Its one continuation: attempt 1's unstarted slots only (2 November 2026).
+from guarded_browser_use import (FRESH_CONTINUATION_STAGE, FRESH_KEPT_ANSWERED, FRESH_KEPT_INTERRUPTED,  # noqa: E402
+                                 FRESH_STAGES, validate_fresh_continuation)
 
 STUDY_ID = "browser-use-transfer-2026-10-31"
 ARMS = ("baseline", "block")
@@ -118,7 +121,7 @@ def preview(config):
         if (tuple(q["id"] for q in questions) != TASK_IDS or config.get("repeats") != [2, 3]
                 or config.get("clock_s") != 2700):
             raise ValueError("plain repeats require all eight questions, repeats 2 and 3, and 2700 seconds")
-    elif config.get("stage") == FRESH_STAGE:
+    elif config.get("stage") in FRESH_STAGES:
         if (tuple(q["id"] for q in questions) != TASK_IDS or config.get("repeats") != [1, 2]
                 or config.get("clock_s") != 2700):
             raise ValueError("the fresh market requires all eight questions, repeats 1 and 2, and 2700 seconds")
@@ -151,9 +154,21 @@ def preview(config):
     if config["stage"] == REPEAT_RECOVERY_STAGE:
         remaining = validate_repeat_recovery(config, expected_slots=slots)
         slots = [slot for slot in slots if slot["id"] in remaining]
-    fresh = config["stage"] == FRESH_STAGE
+    continuation = {}
+    if config["stage"] == FRESH_CONTINUATION_STAGE:
+        # Attempt 1's schedule filtered to the slots it never started, in their order; its four
+        # answered slots and its interrupted fifth stay as they are, never replayed.
+        remaining = validate_fresh_continuation(config, expected_slots=slots)
+        kept = [slot["id"] for slot in slots if slot["id"] not in remaining]
+        slots = [slot for slot in slots if slot["id"] in remaining]
+        if [slot["id"] for slot in slots] != remaining or len(kept) != FRESH_KEPT_ANSWERED + FRESH_KEPT_INTERRUPTED:
+            raise Stop("the continuation's slots are not attempt 1's unstarted ones in their order")
+        continuation = {"attempt": 2, "prior_completed_count": FRESH_KEPT_ANSWERED,
+                        "prior_interrupted": kept[FRESH_KEPT_ANSWERED:], "original_slot_count": len(kept) + len(slots)}
+    fresh = config["stage"] in FRESH_STAGES
     return {"study_id": FRESH_BUDGET if fresh else STUDY_ID, "stage": config["stage"], "paid_calls": 0,
             **({"prior_completed_count": 6, "original_slot_count": 32} if config["stage"] == REPEAT_RECOVERY_STAGE else {}),
+            **continuation,
             **({"batch_id": REPEAT_BUDGET} if config["stage"] in REPEAT_STAGES else {}),
             **({"batch_id": FRESH_BUDGET} if fresh else {}),
             "warning_sha256": digest(COMMON_BRIEFING), "warning": COMMON_BRIEFING,
@@ -207,6 +222,14 @@ def technical_gate(records, budget_state, expected=4, allow_agent_failures=False
             passed = False
     return {"passed": bool(passed), "kind": "technical_only", "answers": "unscored; await human review",
             "records_checked": len(records)}
+
+
+def charge_total(calls):
+    """The provider's charges summed, or None when one is unknown: in the fresh continuation a
+    request settled at its bound has no provider charge (2 November 2026). Every earlier stage
+    blocks on an unknown charge before a record is written, so its sums are unchanged."""
+    costs = [call["cost_usd"] for call in calls]
+    return None if any(cost is None for cost in costs) else sum(costs)
 
 
 async def execute_study(config_path):
@@ -284,7 +307,7 @@ async def execute_study(config_path):
                          "clock_s": slot.get("clock_s", config["clock_s"]),
                          "candidate_urls": [item.url for item in observed.listings],
                          "out_dir": str(output_dir / slot["id"])}
-                if config["stage"] == FRESH_STAGE:
+                if config["stage"] in FRESH_STAGES:
                     # The same trial, with product pages fetched by script recorded beside it.
                     with browser_use_fetches.recording(sys.modules["browser_use_runner"],
                                                        trial["candidate_urls"]) as fetches:
@@ -301,16 +324,21 @@ async def execute_study(config_path):
                           repeat=slot["repeat"], task=slot["question"]["id"], question=slot["question"]["query"],
                           sent_query=query, briefing_sha256=digest(COMMON_BRIEFING), page=observed.record(),
                           box=decision.record() if decision else None, calls=new_calls,
-                          parse_cost_usd=sum(c["cost_usd"] for c in parser_calls),
-                          total_cost_usd=sum(c["cost_usd"] for c in new_calls),
+                          parse_cost_usd=charge_total(parser_calls),
+                          total_cost_usd=charge_total(new_calls),
                           elapsed_with_parser_s=time.perf_counter() - started)
             if config["stage"] in REPEAT_STAGES:
                 record["batch_id"] = REPEAT_BUDGET
-            if config["stage"] == FRESH_STAGE:
+            if config["stage"] in FRESH_STAGES:
                 # Which market, configuration and commit produced this record.
                 record.update(batch_id=FRESH_BUDGET, market=config["market"],
                               config_sha256=os.environ["IGR_BROWSER_USE_CONFIG_SHA256"],
                               head=config["expected_head"])
+            if config["stage"] == FRESH_CONTINUATION_STAGE:
+                # Which attempt, and the requests settled at their bound, apart from the charges.
+                settled = [call for call in new_calls if "settled_usd" in call]
+                record.update(attempt=config["attempt"], no_response_settlements=len(settled),
+                              settled_bound_usd=sum(call["settled_usd"] for call in settled))
             atomic_json(output_dir / f"{slot['id']}.json", record)
             statuses[slot["id"]]["status"] = record["outcome"]
             atomic_json(output_dir / "slot-status.json", {"slots": statuses})
