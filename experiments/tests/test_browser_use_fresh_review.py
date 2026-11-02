@@ -34,10 +34,15 @@ class StudyA(unittest.TestCase):
         # Attempts 1 and 2 ran under the commands the launcher pins; the later stages are named.
         self.assertEqual(blind.STUDY_A.pinned, {"attempt 1": guard.FRESH_ATTEMPT1_SHA256,
                                                 "attempt 2": guard.FRESH_CONTINUATION_SHA256})
-        self.assertEqual([(s.stage, s.attempt, s.prefix) for s in blind.STAGES],
+        self.assertEqual([(s.stage, s.attempt, s.prefix) for s in blind.STAGES if s is not blind.ATTEMPT4],
                          [(stage, attempt, guard.FRESH_PREFIX[stage]) for stage, attempt in (
                              (guard.FRESH_STAGE, 1), (guard.FRESH_CONTINUATION_STAGE, 2),
                              (guard.FRESH_ATTEMPT3_STAGE, 3), (guard.FRESH_RERUN_STAGE, guard.FRESH_RERUN_ATTEMPT))])
+        # Attempt 4 as amendment 6 names it, its records under the same settling rules.
+        self.assertEqual((blind.ATTEMPT4.stage, blind.ATTEMPT4.attempt, blind.ATTEMPT4.prefix),
+                         ("fresh-market-attempt-4", 4, "study-a-attempt4"))
+        self.assertIn(blind.ATTEMPT4.stage, blind.SETTLING)
+        self.assertEqual(blind.PRIMARY[-1], blind.ATTEMPT4)
 
     def test_rookmere_keys_do_not_depend_on_the_reading(self):
         tasks = json.loads((ROOT / blind.STUDY_A.tasks_file).read_text())
@@ -492,13 +497,53 @@ class Stages(unittest.TestCase):
         # Amendment 4 point 6: attempt 2 left nine slots never started, so the reruns may start
         # only once attempt 3 has ended.
         self.build(attempt3=False)
-        with self.assertRaisesRegex(blind.Refused, "reruns ran before attempt 3"):
+        with self.assertRaisesRegex(blind.Refused, "reruns ran before the last attempt"):
             self.prepare()
         self.assertFalse(self.bundle.exists())
         shutil.rmtree(self.root)
         self.root.mkdir()
         self.build(attempt3=False, kinds=["timeout"] + ["answered"] * 26)  # attempt 2 left none
         self.assertEqual(self.prepare()[0], 4 + 27 + 1)
+
+    def build4(self, attempt4=True, rerun=True):
+        """Amendment 6: attempt 3 answered, then the guard stopped a slot (an error reply without
+        usage), and five slots never started; attempt 4 runs those five, one after an error reply."""
+        self.build(attempt3=False, rerun=False)
+        self.third = self.batch.later(blind.ATTEMPT3, ["answered", "timeout", "answered", "interrupted"])
+        if attempt4:
+            self.fourth = self.batch.later(blind.ATTEMPT4, ["answered-error-reply", "answered", "timeout",
+                                                            "void-error-reply", "answered"])
+        if rerun:
+            self.reruns = self.batch.later(blind.RERUN, ["answered"] * 4)
+
+    def test_attempt_4_runs_exactly_attempt_3s_unstarted_slots(self):
+        self.build4()
+        rows, _ = self.prepare()
+        self.assertEqual(rows, 4 + 18 + 3 + 5 + 4)  # every saved record; attempt 3's interrupted slot is not a row
+        loaded = blind.load_study(self.batch.study, self.batch.stage_args())
+        held = Counter(entry["spec"].name for entry in loaded["held"].values())
+        self.assertEqual(held, {"attempt 1": 5, "attempt 2": 18, "attempt 3": 4, "attempt 4": 5})
+        interrupted = self.third.slots[3]["id"]
+        self.assertEqual((loaded["held"][interrupted]["spec"], loaded["held"][interrupted]["status"]["status"]),
+                         (blind.ATTEMPT3, "interrupted"))  # a void that stays attempt 3's, never rerun
+        self.assertEqual([s["id"] for s in self.fourth.slots], [s["id"] for s in self.third.slots[4:]])
+        # The reruns are every primary timeout: attempt 2's two, attempt 3's and attempt 4's.
+        self.assertEqual(Counter(row["stage"] for row in loaded["timeouts"]),
+                         {guard.FRESH_CONTINUATION_STAGE: 2, guard.FRESH_ATTEMPT3_STAGE: 1, blind.ATTEMPT4.stage: 1})
+        key = self.key()
+        self.assertEqual(sum(v["stage"] == blind.ATTEMPT4.stage for v in key["codes"].values()), 5)
+
+    def test_attempt_4_must_be_named_and_come_before_the_reruns(self):
+        self.build4()
+        stages = {k: v for k, v in self.batch.stage_args().items() if k != "attempt 4"}
+        with self.assertRaisesRegex(blind.Refused, "attempt 4 was launched"):
+            self.prepare(stages)
+        shutil.rmtree(self.root)
+        self.root.mkdir()
+        self.build4(attempt4=False)  # the reruns ran with attempt 3's five slots never started
+        with self.assertRaisesRegex(blind.Refused, "reruns ran before the last attempt"):
+            self.prepare()
+        self.assertFalse(self.bundle.exists())
 
     def test_reruns_absent_leave_the_timeouts_unrerun(self):
         self.build(rerun=False)

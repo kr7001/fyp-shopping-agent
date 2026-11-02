@@ -25,6 +25,9 @@ A slot's kind says what its trial did:
     answered-settled  a correct answer after a request the provider left without a response
                       (later stages only)
     void-settled      no answer after such a request: the runner's technical void (later stages)
+    answered-error-reply, void-error-reply
+                      the same after an executor error reply without usage, settled at its bound
+                      from attempt 4 (amendment 6)
 """
 from __future__ import annotations
 
@@ -54,7 +57,10 @@ TASKS_FILE, READINGS_FILE = "experiments/tasks/tasks_synthetic.json", "experimen
 FROZEN = (TASKS_FILE, READINGS_FILE, MARKET["fixture"], MARKET["search_record"], "notes/protocol.md", "notes/plan.md")
 EXECUTOR_USD, PARSER_USD = 0.00125, 0.0005
 BOUND = 0.2117632  # every request's reserved bound, at which a request with no response is settled
-ANSWERS = ("answered", "wrong", "answered-settled")
+ANSWERS = ("answered", "wrong", "answered-settled", "answered-error-reply")
+# Amendment 6's settlement of an error reply without usage, by the label the amendment gives it
+# until the launcher's commit names its own.
+ERROR_REPLY = "error reply without usage"
 STOP_REASON = "pilot worker did not complete"
 
 
@@ -75,7 +81,7 @@ def put(path, data):
 
 def answer_for(kind, slot):
     task = transfer.TASK_IDS.index(slot["question"]["id"])
-    if kind in ("answered", "answered-settled"):
+    if kind in ("answered", "answered-settled", "answered-error-reply"):
         # Markup that must stay inert in the reader page.
         return f"The answer is ${price(task):.2f}. Literal </script><img src=x> stays text."
     if kind == "wrong":
@@ -163,6 +169,8 @@ class Stage:
         executor = [self.call("executor") for _ in range(2)]
         if kind in ("answered-settled", "void-settled"):
             executor.insert(1, self.call("executor", settled="no response"))
+        if kind in ("answered-error-reply", "void-error-reply"):
+            executor.insert(1, self.call("executor", settled=ERROR_REPLY))
         if kind == "timeout" and self.spec.stage in blind.SETTLING:
             executor.append(self.call("executor", settled="trial clock"))
         costs = [c["cost_usd"] for c in executor]
@@ -170,7 +178,8 @@ class Stage:
         record = {"scaffold": "browser-use", "browser_use_version": "0.13.14", "answer": answer_for(kind, slot),
                   "outcome": {"answered": "answered", "wrong": "answered", "failed": "failed", "infra": "failed",
                               "timeout": "timeout", "short": "timeout", "interrupted": "answered",
-                              "answered-settled": "answered", "void-settled": "failed"}[kind],
+                              "answered-settled": "answered", "void-settled": "failed",
+                              "answered-error-reply": "answered", "void-error-reply": "failed"}[kind],
                   "model": self.config["model"], "provider_routing": PROVIDER, "offline_scripted": False,
                   "dropdown_semantics": "native-disabled-state-v1", "evaluate_semantics": "fresh-local-script-scope-v1",
                   "settings": {"start_url": START, **{k: self.config[k] for k in blind.SETTINGS}, "clock_s": clock},
@@ -187,9 +196,10 @@ class Stage:
                                      "script_events": [{"url": url, "status": 200, "kind": "fetch", "product_document": True}
                                                        for url in fetched], "script_errors": [],
                                      "definition": fetches.DEFINITION, "complete": True}}
-        if kind in ("answered", "wrong", "failed", "infra", "interrupted", "answered-settled", "void-settled"):
+        if kind in ("answered", "wrong", "failed", "infra", "interrupted", "answered-settled", "void-settled",
+                    "answered-error-reply", "void-error-reply"):
             errors = {"failed": "Maximum steps reached", "infra": "CDP connection closed",
-                      "void-settled": "Maximum steps reached"}.get(kind)
+                      "void-settled": "Maximum steps reached", "void-error-reply": "Maximum steps reached"}.get(kind)
             record.update(steps=7 if block else 12, agent_errors=[None] * 3 + ([errors] if errors else []))
         return record
 

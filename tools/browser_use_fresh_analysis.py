@@ -5,7 +5,7 @@ It refuses to run until browser_use_fresh_review.py has validated a complete rev
 row on the sheet and written its receipt, and only then opens the private key. It computes what
 notes/fresh-market-2-nov/analysis-plan-A.md pre-registers, with amendments 1 to 4 applied:
 
-- each of the 32 slots' disposition, from whichever stage ran it (attempts 1, 2 and 3): answered,
+- each of the 32 slots' disposition, from whichever stage ran it (attempts 1 to 4): answered,
   failed, timeout, closed by the block, technical void or not started. Attempt 1's voids are the
   launcher's frozen classification (`browser_use_transfer.validate_pilot_record`) or the guard's
   stop; the later stages also end a clock timeout, or a void after a settled request, by the
@@ -82,6 +82,10 @@ RAN_WITH = ("experiments/runners/browser_use_runner.py", "experiments/runners/br
             "experiments/paths.py")
 SCRIPT_KINDS = ("fetch", "xhr", "subframe-document")  # browser_use_fetches.ScriptFetches.observe
 MEASURES = ("charge_usd", "parser_charge_usd", "openings", "script_fetches", "steps", "elapsed_with_parser_s")
+# How a request was settled at its bound: by the trial clock, after the provider gave no response
+# (amendment 3), or, from attempt 4, after an error reply without usage (amendment 6 point 2). The
+# runner counts every kind but the clock's in `no_response_settlements`.
+CLOCK_KIND, NO_RESPONSE_KIND = "trial clock", "no response"
 
 
 def function_digest(path, name):
@@ -256,7 +260,10 @@ def measure(record):
             "steps_basis": steps_basis, "elapsed_with_parser_s": number(record.get("elapsed_with_parser_s")),
             "agent_error_count": sum(bool(error) for error in record.get("agent_errors") or []),
             "no_response_settlements": record.get("no_response_settlements", 0),
-            "clock_settlements": record.get("clock_settlements", 0)}
+            "clock_settlements": record.get("clock_settlements", 0),
+            # Amendment 6's error replies without usage, apart from the provider's no-responses.
+            "error_reply_settlements": sum("settled_usd" in call and call.get("settlement_kind")
+                                           not in (CLOCK_KIND, NO_RESPONSE_KIND) for call in record["calls"])}
 
 
 def reached_clock(record):
@@ -355,7 +362,8 @@ def sensitivities(compare_cells, rows, task_ids):
     """Every sensitivity the amendments declare, each the plan's test on another view of the same
     slots, none a second primary. A slot's own count is the primary's unless a view says otherwise."""
     timed_out = lambda r: r["disposition"] == TIMEOUT  # noqa: E731
-    settled = lambda r: bool(r["no_response_settlements"] or r["clock_settlements"])  # noqa: E731
+    settled = lambda r: bool(r["no_response_settlements"] or r["clock_settlements"]  # noqa: E731
+                             or r["error_reply_settlements"])
 
     def with_rerun(r):
         """Sensitivity 2: a timed-out slot counts its rerun's outcome, when its rerun is a trial the
@@ -400,12 +408,17 @@ def sensitivities(compare_cells, rows, task_ids):
             **stratified(compare_cells, rows, task_ids, keep=lambda r: r["in_test"] and not settled(r),
                          why_out=lambda r: "a request settled at its bound" if r["in_test"] else r["disposition_reason"]),
             "role": "amendment 3 as written: every slot with a request settled at its bound, by the provider's "
-                    "no-response or by the trial clock, left out"},
+                    "no-response, by the trial clock or, from attempt 4, after an error reply without usage "
+                    "(amendment 6), left out"},
         "no_response_slots_left_out": {
-            **stratified(compare_cells, rows, task_ids, keep=lambda r: r["in_test"] and not r["no_response_settlements"],
-                         why_out=lambda r: "a provider no-response settled" if r["in_test"] else r["disposition_reason"]),
-            "role": "amendment 3, narrower reading: only slots where the provider left a request without a "
-                    "response, after which the agent saw a timeout message and went on, left out"},
+            **stratified(compare_cells, rows, task_ids,
+                         keep=lambda r: r["in_test"] and not (r["no_response_settlements"] or r["error_reply_settlements"]),
+                         why_out=lambda r: ("a request settled with no usable reply" if r["in_test"]
+                                            else r["disposition_reason"])),
+            "role": "amendment 3, narrower reading: only slots where a request was settled with no usable reply, "
+                    "after which the agent saw an error and went on, left out. That is the provider's no-response "
+                    "and, from attempt 4, an error reply without usage, which amendment 6 settles the same way and "
+                    "this view treats the same way"},
         "full_path_slots_left_out": {
             **stratified(compare_cells, rows, task_ids, keep=lambda r: r["in_test"] and not r["full_path"],
                          why_out=lambda r: "conversation holds Full path:" if r["in_test"] else r["disposition_reason"]),
@@ -538,7 +551,8 @@ def trial_row(study, batch, key, human, score, keys, slot, entry, index):
            "conversation_files": None, "reading": None, "automatic_verdict": None, "automatic_reason": None,
            **{field: None for field in MEASURES}, "charge_known_part_usd": None, "executor_charge_usd": None,
            "unknown_charge_calls": None, "settled_calls": 0, "settled_bound_usd": 0, "provider_calls": 0,
-           "providers": {}, "no_response_settlements": 0, "clock_settlements": 0, "record_sha256": None}
+           "providers": {}, "no_response_settlements": 0, "clock_settlements": 0, "error_reply_settlements": 0,
+           "record_sha256": None}
     if record is not None:
         path = str((entry["batch"]["results"] / (slot["id"] + ".json")).resolve())
         row["record_sha256"] = batch["inputs"][path]
@@ -637,8 +651,11 @@ def analyse(study, bundle):
                              for arm in transfer.ARMS},
         "slots_run_by_stage": dict(stage_count),
         "settled_request_slots": [{**slim(r), "no_response_settlements": r["no_response_settlements"],
-                                   "clock_settlements": r["clock_settlements"], "settled_bound_usd": r["settled_bound_usd"]}
-                                  for r in every if r["no_response_settlements"] or r["clock_settlements"]],
+                                   "clock_settlements": r["clock_settlements"],
+                                   "error_reply_settlements": r["error_reply_settlements"],
+                                   "settled_bound_usd": r["settled_bound_usd"]}
+                                  for r in every if r["no_response_settlements"] or r["clock_settlements"]
+                                  or r["error_reply_settlements"]],
         "full_path_slots": {"count_primary": sum(bool(r["full_path"]) for r in rows),
                             "by_arm_primary": {arm: sum(bool(r["full_path"]) for r in rows if r["condition"] == arm)
                                                for arm in transfer.ARMS},

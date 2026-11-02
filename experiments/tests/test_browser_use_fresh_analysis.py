@@ -21,7 +21,7 @@ import browser_use_fresh_analysis as analysis  # noqa: E402
 import browser_use_fresh_review as blind  # noqa: E402
 import guarded_browser_use as guard  # noqa: E402
 
-CORRECT = ("answered", "answered-settled")  # the kinds whose answer names the key's price
+CORRECT = ("answered", "answered-settled", "answered-error-reply")  # the kinds whose answer names the key's price
 
 
 def enumerated_p(strata):
@@ -452,6 +452,7 @@ class Faults(Case):
 # the code under test (fresh_batch's kinds; a "short" timeout and an infrastructure error are the
 # frozen classification's voids, an interrupted slot the guard's).
 DISPOSITION = {"answered": "answered", "wrong": "answered", "answered-settled": "answered", "failed": "failed",
+               "answered-error-reply": "answered", "void-error-reply": "technical void",
                "timeout": "timeout", "closed": blind.CLOSED, "void-settled": "technical void",
                "short": "technical void", "infra": "technical void", "interrupted": "technical void"}
 # Attempt 2's frozen void sits in another question than its settled void, so the two voids'
@@ -640,6 +641,34 @@ class Staged(Case):
         self.assertIn(slot_id, [r["slot"] for r in result["primary_test"]["left_out"]])
         self.assertEqual(result["primary_test"]["slots_in_test"], 4 + 6 + 20)
         self.assertEqual(result["timeouts_per_arm"]["block"]["timeouts"] + result["timeouts_per_arm"]["baseline"]["timeouts"], 2)
+
+    def test_attempt_4s_error_reply_settlements_count_in_both_settled_views(self):
+        # Amendment 6: attempt 3 left five slots, attempt 4 ran them, one answering after an error
+        # reply without usage was settled and one failing after another, a void.
+        self.batch = fresh_batch.Batch(self.root / "repo", ["answered"] * 4 + ["interrupted"])
+        self.study = self.batch.study
+        self.second = self.batch.later(blind.ATTEMPT2, SECOND, full_path={1, 5})
+        self.third = self.batch.later(blind.ATTEMPT3, ["answered", "timeout", "answered", "interrupted"])
+        fourth = self.batch.later(blind.ATTEMPT4, ["answered-error-reply", "answered", "timeout", "void-error-reply",
+                                                   "answered", "answered"])
+        self.batch.later(blind.RERUN, ["answered"] * 4)
+        blind.prepare(self.study, self.batch.stage_args(), self.bundle)
+        self.grade({})
+        result = self.run_analysis()
+        replied, void = fourth.slots[0]["id"], fourth.slots[3]["id"]
+        row = next(r for r in result["slots"] if r["slot"] == replied)
+        self.assertEqual((row["stage"], row["disposition"], row["error_reply_settlements"], row["no_response_settlements"]),
+                         ("attempt 4", "answered", 1, 1))  # the runner counts it with the no-responses
+        views = result["sensitivities"]
+        for name in ("settled_request_slots_left_out", "no_response_slots_left_out"):
+            self.assertIn(replied, [r["slot"] for r in views[name]["left_out"]], name)
+        self.assertIn("error reply without usage", views["no_response_slots_left_out"]["role"])
+        self.assertIn(void, views["voids_after_settlement_not_correct"]["counted_not_correct"])
+        listed = {r["slot"]: r["error_reply_settlements"] for r in result["settled_request_slots"]}
+        self.assertEqual((listed[replied], listed[void]), (1, 1))
+        self.assertEqual(result["slots_run_by_stage"]["attempt 4"], 6)
+        # Quiet elsewhere: no slot of attempts 1 to 3 has an error-reply settlement.
+        self.assertTrue(all(r["error_reply_settlements"] == 0 for r in result["slots"] if r["stage"] != "attempt 4"))
 
     def test_without_reruns_the_timeouts_keep_their_zero_in_sensitivity_2(self):
         result = self.build(rerun=False)

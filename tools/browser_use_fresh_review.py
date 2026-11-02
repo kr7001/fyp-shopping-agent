@@ -2,10 +2,10 @@
 """Blind review of Study A, Browser Use on the fresh market, prepared and validated offline.
 
 Study A (notes/fresh-market-2-nov/analysis-plan-A.md) runs 32 Browser Use trials on Rookmere,
-seed 1002: 8 questions, 2 arms, repeats 1 and 2. They ran in stages (amendments 3 and 4,
+seed 1002: 8 questions, 2 arms, repeats 1 and 2. They ran in stages (amendments 3, 4 and 6,
 2 November 2026): attempt 1; attempt 2, its continuation; attempt 3, for any slot attempt 2 left
-never started; and one timeout rerun of each slot whose primary record reached its 2700 s clock,
-with the clock doubled. `prepare` checks every stage against the configuration it ran under and
+never started; attempt 4, for any slot attempt 3 left never started; and one timeout rerun of each
+slot whose primary record reached its 2700 s clock, with the clock doubled. `prepare` checks every stage against the configuration it ran under and
 against the stages before it, then copies the answer text of every trial the agent ran, primary
 or rerun, into one blank sheet under random codes, failed and timed-out trials included. The
 student sees the question, the key and the full answer only: no arm, repeat, attempt, stage,
@@ -24,6 +24,7 @@ review is bound to is one `Study` value, so the tests run the same code on synth
         --attempt1 notes/fresh-market-2-nov/study-a-command.json <its SHA-256> \\
         --attempt2 notes/fresh-market-2-nov/study-a-continuation-command.json <its SHA-256> \\
         [--attempt3 <attempt 3's configuration> <its SHA-256>] \\
+        [--attempt4 <attempt 4's configuration> <its SHA-256>] \\
         [--rerun <the timeout reruns' configuration> <its SHA-256>] \\
         --bundle notes/fresh-market-2-nov/study-a-review
     python3 tools/browser_use_fresh_review.py validate \\
@@ -107,13 +108,17 @@ class Stage:
 ATTEMPT1 = Stage("attempt 1", guard.FRESH_STAGE, 1, guard.FRESH_PREFIX[guard.FRESH_STAGE])
 ATTEMPT2 = Stage("attempt 2", guard.FRESH_CONTINUATION_STAGE, 2, guard.FRESH_PREFIX[guard.FRESH_CONTINUATION_STAGE])
 ATTEMPT3 = Stage("attempt 3", guard.FRESH_ATTEMPT3_STAGE, 3, guard.FRESH_PREFIX[guard.FRESH_ATTEMPT3_STAGE])
+# Amendment 6 (2 November 2026, 17:40): attempt 4 runs the slots attempt 3 left never started,
+# under attempt 3's conditions. Its stage id and prefix are the amendment's, named here until the
+# launcher's commit for it defines them.
+ATTEMPT4 = Stage("attempt 4", "fresh-market-attempt-4", 4, "study-a-attempt4")
 RERUN = Stage("timeout rerun", guard.FRESH_RERUN_STAGE, guard.FRESH_RERUN_ATTEMPT,
               guard.FRESH_PREFIX[guard.FRESH_RERUN_STAGE], primary=False)
-STAGES = (ATTEMPT1, ATTEMPT2, ATTEMPT3, RERUN)
-PRIMARY = (ATTEMPT1, ATTEMPT2, ATTEMPT3)
+STAGES = (ATTEMPT1, ATTEMPT2, ATTEMPT3, ATTEMPT4, RERUN)
+PRIMARY = (ATTEMPT1, ATTEMPT2, ATTEMPT3, ATTEMPT4)
 # The stages that end a clock timeout or a void after a settled request as its own slot and go
 # on (amendment 3), whose records carry `attempt`, the settlement counts and `disposition`.
-SETTLING = guard.FRESH_SETTLING_STAGES
+SETTLING = guard.FRESH_SETTLING_STAGES | {ATTEMPT4.stage}
 
 
 @dataclasses.dataclass(frozen=True)
@@ -468,10 +473,10 @@ def load_study(study, stages):
                 if (held[s["id"]]["record"] or {}).get("disposition") == "timeout"]
     reruns = None
     if RERUN.name in stages:
-        # The reruns start only after attempt 3 has ended, and attempt 3 runs whenever attempt 2
-        # left a slot never started (amendment 4 point 6, guarded_browser_use.ended_primary_stages).
-        require(not left or loaded[-1]["spec"] is ATTEMPT3,
-                "The reruns ran before attempt 3, while slots were left never started.")
+        # The reruns start only after the last attempt has ended: each attempt runs whenever the one
+        # before it left a slot never started (amendment 4 point 6, amendment 6 point 4).
+        require(not left or loaded[-1]["spec"] is PRIMARY[-1],
+                "The reruns ran before the last attempt, while slots were left never started.")
         by_id = {slot["id"]: slot for slot in slots}
         given = [{**by_id[row["slot"]], "clock_s": 2 * study.clock_s, "rerun_of": row} for row in timeouts]
         reruns = load_stage(study, RERUN, *stages[RERUN.name], given=given)
@@ -644,7 +649,7 @@ def validate(study, bundle, incoming, save=False):
 def stage_arguments(args):
     """The stages named on the command line, by name: (configuration, SHA-256) each."""
     named = {ATTEMPT1.name: args.attempt1, ATTEMPT2.name: args.attempt2, ATTEMPT3.name: args.attempt3,
-             RERUN.name: args.rerun}
+             ATTEMPT4.name: args.attempt4, RERUN.name: args.rerun}
     return {name: (Path(value[0]), value[1]) for name, value in named.items() if value}
 
 
@@ -652,7 +657,8 @@ def main(study=STUDY_A):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     modes = parser.add_subparsers(dest="mode", required=True)
     prep = modes.add_parser("prepare")
-    for flag, needed in (("--attempt1", True), ("--attempt2", False), ("--attempt3", False), ("--rerun", False)):
+    for flag, needed in (("--attempt1", True), ("--attempt2", False), ("--attempt3", False), ("--attempt4", False),
+                         ("--rerun", False)):
         prep.add_argument(flag, nargs=2, metavar=("CONFIG", "SHA256"), required=needed,
                           help="a stage's configuration and the SHA-256 its verifier's receipt and launch claim name")
     prep.add_argument("--bundle", type=Path, required=True)
