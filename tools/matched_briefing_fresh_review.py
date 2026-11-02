@@ -355,6 +355,17 @@ def preamble_check(loaded):
             "listings_in_briefing": sorted({s[3] for s in seen}), "one_preamble": len(hashes) == 1}
 
 
+def public_preamble_check(check):
+    """Rule 5's result as the public manifest may show it: whether there is one briefing, and
+    counts. Which slots ran, were rerun or never ran would, through the public schedule, tell how
+    many rows of each task come from each arm, so those lists stay in the private key (the
+    verifier, 2 November 2026)."""
+    return {"rule": check["rule"], "one_preamble": check["one_preamble"],
+            "slots_checked": len(check["slots_checked"]), "reruns_checked": len(check["reruns_checked"]),
+            "slots_not_run": len(check["slots_not_run"]), "distinct_preambles": len(check["preamble_sha256"]),
+            "listings_in_briefing": check["listings_in_briefing"]}
+
+
 def prepare(study, bundle, continuation=None, rerun=None):
     bundle = Path(bundle)
     require(not bundle.exists(), "The bundle already exists; its random codes are kept, never made again.")
@@ -377,11 +388,11 @@ def prepare(study, bundle, continuation=None, rerun=None):
     integrity = preamble_check(loaded)
     blind.write_bundle(study, bundle, rows, {
         "study_id": study.study_id, "stages": loaded["stage_args"], "codes": codes, "off_sheet": off_sheet,
-        "inputs": loaded["inputs"]}, {
+        "preamble_check": integrity, "inputs": loaded["inputs"]}, {
         "trials_scheduled": 16 + len(loaded["reruns"]) + len(loaded["reruns_not_run"]),
         "stages_sha256": {name: sha for name, (_, sha) in loaded["stage_args"].items()},
         "generator_sha256": blind.digest(Path(__file__)), "reader_sha256": blind.digest(Path(frozen.__file__)),
-        "preamble_check": integrity})
+        "preamble_check": public_preamble_check(integrity)})
     return len(rows), integrity
 
 
@@ -547,6 +558,20 @@ def analyse(study, bundle):
             return rerun
         return s
 
+    def used(s):
+        """What sensitivity 2 used for a timed-out slot, and why when it kept the primary's 0: a
+        rerun that was a technical void, one the rerun stage never started, or none."""
+        rerun = reruns.get(s["slot"])
+        if with_rerun(s) is not s:
+            return "rerun with its clock doubled to 3600 s"
+        if rerun:
+            why = f"its rerun is a technical void: {rerun['technical_reason']}"
+        elif s["slot"] in loaded["reruns_not_run"]:
+            why = "the rerun stage ended before its rerun started"
+        else:
+            why = "it was not rerun"
+        return f"no rerun outcome, since {why}. The primary timeout is kept, counted 0"
+
     timeouts = [s for s in slots if s["timeout"]]
     by_code = {s["code"]: s for s in slots + items[RERUN] if s.get("code")}
     graded = list(by_code.values())
@@ -579,8 +604,7 @@ def analyse(study, bundle):
             **table(slots, with_rerun),
             "substituted": [{"slot": s["slot"], "arm": s["arm"], "rerun": bool(reruns.get(s["slot"])),
                              "rerun_outcome": (reruns.get(s["slot"]) or {}).get("outcome"),
-                             "used": "rerun with its clock doubled to 3600 s" if with_rerun(s) is not s
-                             else "no rerun outcome: the primary timeout kept, counted 0"} for s in timeouts],
+                             "used": used(s)} for s in timeouts],
             "role": "amendment 4, secondary: each timed-out slot counts its rerun, run once with its clock doubled"},
         "paired_by_task_repeat": pairs(slots),
         "slots": slots,

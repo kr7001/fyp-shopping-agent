@@ -190,7 +190,8 @@ class StudyB:
                 f"--page-reader rendered --max-steps 300 --clock {clock}")
 
     def later(self, stage, steps, lines, extra=None, status="complete", hashes=None):
-        """A later stage's configuration, verifier's receipt, status and manifest."""
+        """A later stage's configuration, verifier's receipt, status and manifest. A stage that
+        stopped says why, as its start cutoff does."""
         files = guard.LATER[stage]
         config = {"study_id": STUDY, "round": 1, "stage": stage, "repo": str(self.root), **files,
                   "results_dir": "experiments/results", "steps": [self.steps[0]] + steps,
@@ -218,7 +219,8 @@ class StudyB:
         return self.later(guard.CONTINUATION, [self.steps[16]], lines, extra)
 
     def rerun(self, ran=None):
-        """Every primary timeout once more, its clock doubled to 3600 s, in slot order."""
+        """Every primary timeout once more, its clock doubled to 3600 s, in slot order; with `ran`,
+        only the first `ran` of them before the stage stopped."""
         manifests = [str(self.manifest.relative_to(self.root))]
         if guard.CONTINUATION in self.stages:
             manifests.append(guard.LATER[guard.CONTINUATION]["manifest"])
@@ -226,7 +228,8 @@ class StudyB:
         by_slot = {s["slot"]: s for s in self.schedule}
         lines = [self.run_line(by_slot[row["slot"]], clock=3600, prefix="R", rerun_of=row["batch"])
                  for row in timeouts[:ran]]
-        return self.later(guard.RERUN, self.rerun_steps(timeouts), lines, hashes=self.wrapper())
+        return self.later(guard.RERUN, self.rerun_steps(timeouts), lines, hashes=self.wrapper(),
+                          status="complete" if ran is None or ran >= len(timeouts) else "stopped")
 
     def rerun_steps(self, rows):
         """Each rerun step as the launcher builds it, through the reviewed wrapper (f4035ed)."""

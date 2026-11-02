@@ -48,7 +48,7 @@ class Case(unittest.TestCase):
         self.root = Path(self.tmp.name)
         self.bundle = self.root / "bundle"
 
-    def build(self, kinds=None, continuation=False, rerun=False, ran=15, **options):
+    def build(self, kinds=None, continuation=False, rerun=False, ran=15, reruns_ran=None, **options):
         shutil.rmtree(self.root / "repo", ignore_errors=True)
         self.b = fresh_b_batch.StudyB(self.root / "repo", kinds, ran=ran)
         patcher = mock.patch.object(paths, "TASKS", self.b.tasks_dir)
@@ -57,7 +57,7 @@ class Case(unittest.TestCase):
         if continuation:
             self.b.continuation(**options)
         if rerun:
-            self.b.rerun()
+            self.b.rerun(ran=reruns_ran)
         return self.b
 
     def prepare(self, **stages):
@@ -242,7 +242,33 @@ class Reruns(Case):
         result = self.analyse()
         sens2 = result["sensitivity_2_timeouts_replaced_by_rerun"]
         self.assertEqual(sens2["per_arm"], result["primary"]["per_arm"])
-        self.assertTrue(all("primary timeout kept" in s["used"] for s in sens2["substituted"]))
+        self.assertTrue(all("it was not rerun. The primary timeout is kept" in s["used"] for s in sens2["substituted"]))
+
+    def test_a_void_or_unstarted_rerun_never_replaces_its_primary_timeout(self):
+        # Slot 7's rerun ended on a provider error, a technical void by the frozen rules: it keeps
+        # its primary timeout's 0. Then the rerun stage stopped before slot 14's rerun started.
+        kinds = {**self.KINDS, ("R", 7): "void"}
+        for label, options, reasons in (
+                ("void rerun", {"rerun": True}, ("its rerun is a technical void", "its rerun is a technical void")),
+                ("not started", {"rerun": True, "reruns_ran": 0},
+                 ("the rerun stage ended before its rerun started",) * 2)):
+            with self.subTest(label):
+                if self.bundle.exists():
+                    shutil.rmtree(self.bundle)
+                self.build(kinds, continuation=True, **options)
+                self.prepare()
+                self.grade()
+                result = self.analyse()
+                sens2 = result["sensitivity_2_timeouts_replaced_by_rerun"]
+                self.assertEqual(sens2["per_task"], result["primary"]["per_task"])  # nothing replaced
+                slot7 = sens2["substituted"][0]
+                self.assertEqual(slot7["slot"], 7)
+                self.assertIn(reasons[0], slot7["used"])
+                self.assertIn("The primary timeout is kept, counted 0", slot7["used"])
+                count = sens2["per_task"]["tee-count-buyable"]["matched-briefing"]
+                self.assertEqual((count["in_table"], count["correct"], count["timeouts"]), (2, 1, 1))
+        self.assertEqual(result["reruns"]["not_run"], [7, 14])
+        self.assertEqual(result["reruns"]["trials"], [])
 
     def test_the_reruns_must_be_every_timeout_once_with_its_clock_doubled(self):
         b = self.build(self.KINDS, continuation=True)
@@ -314,6 +340,18 @@ class Integrity(Case):
         self.assertEqual(len(integrity["preamble_sha256"]), 2)
         manifest = json.loads((self.bundle / "manifest.json").read_text())
         self.assertFalse(manifest["preamble_check"]["one_preamble"])  # recorded before the sheet is opened
+        self.assertEqual(manifest["preamble_check"]["distinct_preambles"], 2)
+
+    def test_rule_5_shows_only_counts_in_public_and_its_slots_in_the_private_key(self):
+        self.build(Reruns.KINDS, rerun=True)  # slot 16 not run, slots 7 and 14 rerun
+        self.prepare()
+        public = json.loads((self.bundle / "manifest.json").read_text())["preamble_check"]
+        self.assertEqual(public, {"rule": "reporting rule 5: all slots carry one preamble_sha256, the same briefing",
+                                  "one_preamble": True, "slots_checked": 15, "reruns_checked": 2,
+                                  "slots_not_run": 1, "distinct_preambles": 1, "listings_in_briefing": [45]})
+        private = self.key()["preamble_check"]
+        self.assertEqual((private["reruns_checked"], private["slots_not_run"]), ([7, 14], [16]))
+        self.assertEqual(private["slots_checked"], list(range(1, 16)))
 
     def test_reporting_rule_3_calls_one_answer_no_difference(self):
         kinds = {("P", 2): "wrong", ("P", 9): "wrong", ("P", 3): "wrong"}
