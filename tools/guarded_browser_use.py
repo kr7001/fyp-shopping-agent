@@ -1047,10 +1047,14 @@ def ended_primary_stages(repo):
     2026): the ledgers they spent from, the files that must stay bound, and every slot whose
     primary record reached its 2700 s clock, in the original schedule's order. A clock timeout is
     a slot its stage recorded with outcome and disposition `timeout`, whose record shows its own
-    elapsed time at or past its 2700 s clock; one the frozen classification stopped the batch on,
-    with no disposition, is a technical void under amendment 2 and is not rerun. Attempt 1's stage
-    stopped on any timeout, so it has none. Reads identifiers, dispositions, clocks and charges,
-    never an answer."""
+    elapsed time at or past its 2700 s clock. In attempts 2 and 3 a timeout without that
+    disposition did not reach its clock or failed the frozen classification, so amendment 2
+    point 1 makes it a technical void, and it is not rerun. Attempt 1's launcher set no
+    disposition, and under amendment 2 point 1 a timeout of its that reached the clock would
+    count as a timeout, scored 0. Attempt 1 has none to rerun: its five started slots ended as
+    four answers and one interrupted slot (FRESH_KEPT_ANSWERED, FRESH_KEPT_INTERRUPTED), which
+    the continuation checks. Reads identifiers, dispositions, clocks and charges, never an answer.
+    (Docstring corrected 2 November 2026 to match amendment 2. The code is unchanged.)"""
     repo = Path(repo).resolve()
     notes = FRESH_NOTES
     first = json.loads((repo / notes / "study-a.results/schedule.json").read_text()).get("slots", [])
