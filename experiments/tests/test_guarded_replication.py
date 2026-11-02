@@ -379,20 +379,49 @@ class AccountProbeTests(unittest.TestCase):
         failures = [guarded.urllib.error.URLError("synthetic transient failure"), response]
         with mock.patch.dict(os.environ, {"OPENROUTER_API_KEY": "synthetic-test-key"}), \
              mock.patch.object(guarded.urllib.request, "urlopen", side_effect=failures) as opened, \
+             mock.patch.object(guarded.time, "sleep") as slept, \
              mock.patch("sys.stdout", new_callable=io.StringIO) as stdout:
             self.assertEqual(guarded.account_probe("unused"), 0)
             self.assertEqual(json.loads(stdout.getvalue()), {"usage": 100, "remaining": 74})
             self.assertEqual(opened.call_count, 2)
-            self.assertTrue(all(0 < call.kwargs["timeout"] <= 2 for call in opened.call_args_list))
+            # 20 s a read since a slow reply stopped Study A on 2 November 2026, 2 s before the second.
+            self.assertTrue(all(call.kwargs["timeout"] == 20 for call in opened.call_args_list))
+            self.assertEqual([call.args[0] for call in slept.call_args_list], [2])
 
     def test_three_transient_failures_return_no_output(self):
         with mock.patch.dict(os.environ, {"OPENROUTER_API_KEY": "synthetic-test-key"}), \
              mock.patch.object(guarded.urllib.request, "urlopen",
                                side_effect=guarded.urllib.error.URLError("synthetic failure")) as opened, \
+             mock.patch.object(guarded.time, "sleep") as slept, \
              mock.patch("sys.stdout", new_callable=io.StringIO) as stdout:
             self.assertEqual(guarded.account_probe("unused"), 2)
             self.assertEqual(opened.call_count, 3)
+            self.assertEqual([call.args[0] for call in slept.call_args_list], [2, 5])
             self.assertEqual(stdout.getvalue(), "")
+
+    def test_two_timeouts_then_a_reply_go_on_and_a_refusal_stops_at_once(self):
+        response = io.BytesIO(b'{"data":{"usage":100,"limit_remaining":74}}')
+        with mock.patch.dict(os.environ, {"OPENROUTER_API_KEY": "synthetic-test-key"}), \
+             mock.patch.object(guarded.urllib.request, "urlopen",
+                               side_effect=[TimeoutError("slow"), TimeoutError("slow"), response]) as opened, \
+             mock.patch.object(guarded.time, "sleep"), \
+             mock.patch("sys.stdout", new_callable=io.StringIO) as stdout:
+            self.assertEqual(guarded.account_probe("unused"), 0)
+            self.assertEqual((opened.call_count, json.loads(stdout.getvalue())["usage"]), (3, 100))
+        refused = guarded.urllib.error.HTTPError("https://openrouter.ai/api/v1/key", 401, "no", {}, None)
+        with mock.patch.dict(os.environ, {"OPENROUTER_API_KEY": "synthetic-test-key"}), \
+             mock.patch.object(guarded.urllib.request, "urlopen", side_effect=refused) as opened, \
+             mock.patch.object(guarded.time, "sleep"):
+            self.assertEqual((guarded.account_probe("unused"), opened.call_count), (2, 1))
+
+    def test_the_guard_waits_for_every_probe_read(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "config.json"
+            path.write_text(json.dumps({"repo": folder, "deadline": "2026-10-28T07:00:00+08:00", "cap_usd": 2,
+                                        "reserve_usd": 1, "manifest": "m", "status": "s", "log_dir": "l",
+                                        "results_dir": "r"}))
+            guard = guarded.Guard(path, account_command=["unused-synthetic"])
+        self.assertGreater(guard.account_timeout, 3 * guarded.PROBE_TIMEOUT_S + sum(guarded.PROBE_RETRY_WAITS_S))
 
     def test_invalid_balance_fails_without_retry(self):
         response = io.BytesIO(b'{"data":{"usage":100,"limit_remaining":-1}}')

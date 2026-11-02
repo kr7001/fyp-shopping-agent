@@ -585,6 +585,59 @@ class Batch(Attempt2Ended, unittest.IsolatedAsyncioTestCase):
                          "pilot worker did not complete: 3 executor requests in a row ended with no response")
 
 
+def account_reply(body):
+    return io.BytesIO(json.dumps({"data": body}).encode())
+
+
+class AccountReads(unittest.TestCase):
+    """2 November 2026, 13:18: one slow reply from /key stopped attempt 2. A read now waits 20 s a
+    request and is tried three times, 2 s and 5 s apart, on network and HTTP errors and timeouts."""
+    key = {"usage": 100, "limit_remaining": 50}
+    credits = {"total_credits": 200, "total_usage": 190}
+
+    def read(self, replies, clock=None):
+        slept = []
+        with mock.patch.object(guard.urllib.request, "urlopen", side_effect=replies) as opened:
+            try:
+                result = guard.account_snapshot("SYNTHETIC", sleep=slept.append, clock=clock)
+            except guard.Stop as stop:
+                result = stop
+        return result, slept, [call.kwargs["timeout"] for call in opened.call_args_list]
+
+    def test_two_timeouts_then_a_reply_go_on(self):
+        result, slept, timeouts = self.read([TimeoutError("slow"), TimeoutError("slow"),
+                                             account_reply(self.key), account_reply(self.credits)])
+        self.assertEqual(result, {"usage": 100, "remaining": 10})  # still the smaller of key and credit
+        self.assertEqual((slept, timeouts), ([2, 5], [20, 20, 20, 20]))
+
+    def test_a_slow_credits_read_or_a_server_error_is_retried_too(self):
+        unavailable = guard.urllib.error.HTTPError("https://openrouter.ai/api/v1/credits", 503, "busy", {}, None)
+        result, slept, _ = self.read([account_reply(self.key), unavailable, account_reply(self.key),
+                                      account_reply(self.credits)])
+        self.assertEqual((result, slept), ({"usage": 100, "remaining": 10}, [2]))
+
+    def test_three_failures_stop(self):
+        result, slept, timeouts = self.read([TimeoutError("slow")] * 3)
+        self.assertIsInstance(result, guard.Stop)
+        self.assertEqual(str(result), "account check failed; no further model call permitted")
+        self.assertEqual((slept, len(timeouts)), ([2, 5], 3))
+
+    def test_a_malformed_or_inconsistent_reply_stops_at_once(self):
+        for replies in ([io.BytesIO(b"<html>busy</html>"), account_reply(self.credits)],
+                        [account_reply({"usage": -1, "limit_remaining": 50}), account_reply(self.credits)],
+                        [account_reply(self.key), RuntimeError("PRIVATE")]):
+            with self.subTest(replies=replies[0]):
+                result, slept, timeouts = self.read(replies)
+                self.assertIsInstance(result, guard.Stop)
+                self.assertEqual((slept, len(timeouts)), ([], 2))
+
+    def test_the_whole_read_stays_inside_ninety_seconds(self):
+        now = iter([0, 0, 85, 85, 89])  # started, first timeout, failed at 85 s, then 89 s
+        result, slept, timeouts = self.read([TimeoutError("slow"), TimeoutError("slow")], clock=lambda: next(now))
+        self.assertIsInstance(result, guard.Stop)
+        self.assertEqual((slept, timeouts), ([2], [20, 5]))  # the second read gets only what is left
+
+
 class AgentFacing(unittest.TestCase):
     def test_the_agent_facing_definitions_are_still_the_cohorts(self):
         source = (ROOT / "experiments/runners/browser_use_transfer.py").read_text()

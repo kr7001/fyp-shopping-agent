@@ -10,6 +10,7 @@ import argparse
 import contextlib
 import datetime as dt
 import hashlib
+import http.client
 import json
 import math
 import os
@@ -240,14 +241,36 @@ def read_key(path):
     return key
 
 
-def account_snapshot(key):
+# 2 November 2026, 13:18: attempt 2 stopped when one reply from /key outlasted the 6 s timeout
+# (5.5 to 9.2 s a reply that afternoon). A read now waits up to 20 s a request and is tried three
+# times, 2 s and then 5 s apart, on network and HTTP errors and timeouts only; a reply that cannot
+# be read as an account still stops at once. The whole read stays within 90 s, inside Browser
+# Use's 120 s LLM timeout, because before_call reads the account in a thread and a request
+# cancelled meanwhile would leave its reservation in flight.
+ACCOUNT_TIMEOUT_S, ACCOUNT_RETRY_WAITS_S, ACCOUNT_BUDGET_S = 20, (2, 5), 90
+
+
+def account_snapshot(key, *, sleep=None, clock=None):
+    sleep, clock = sleep or time.sleep, clock or time.monotonic  # looked up when called
+    started = clock()
     try:
-        data = {}
-        for endpoint in ("key", "credits"):
-            request = urllib.request.Request(f"https://openrouter.ai/api/v1/{endpoint}",
-                                             headers={"Authorization": f"Bearer {key}"})
-            with urllib.request.urlopen(request, timeout=6) as response:
-                data[endpoint] = json.load(response)["data"]
+        for wait in (*ACCOUNT_RETRY_WAITS_S, None):
+            try:
+                bodies = {}
+                for endpoint in ("key", "credits"):
+                    request = urllib.request.Request(f"https://openrouter.ai/api/v1/{endpoint}",
+                                                     headers={"Authorization": f"Bearer {key}"})
+                    timeout = min(ACCOUNT_TIMEOUT_S, ACCOUNT_BUDGET_S - (clock() - started))
+                    if timeout <= 0:
+                        raise TimeoutError("account read budget spent")
+                    with urllib.request.urlopen(request, timeout=timeout) as response:
+                        bodies[endpoint] = response.read()
+                break
+            except (OSError, http.client.HTTPException):  # network, HTTP status and timeouts only
+                if wait is None or clock() - started + wait >= ACCOUNT_BUDGET_S:
+                    raise
+                sleep(wait)
+        data = {endpoint: json.loads(body)["data"] for endpoint, body in bodies.items()}
         credits = number(data["credits"]["total_credits"]) - number(data["credits"]["total_usage"])
         data = data["key"]
         usage = number(data["usage"])

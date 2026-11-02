@@ -61,8 +61,16 @@ def number(value):
     return value
 
 
-def account_probe(env_file):
-    """Three short transient-read attempts; print only usage and remaining balance."""
+# 2 November 2026, 13:18: Study A's guard stopped when one reply from /key outlasted its 6 s
+# timeout (5.5 to 9.2 s a reply that afternoon). This probe allowed 2 s a request within 6 s, so
+# the same afternoon would have stopped it too. It now waits up to 20 s a request and tries three
+# times, 2 s and then 5 s apart, on transient HTTP errors, network errors and timeouts only; a reply
+# it cannot read still fails at once. The guard waits for it as long (`account_timeout`).
+PROBE_TIMEOUT_S, PROBE_RETRY_WAITS_S = 20, (2, 5)
+
+
+def account_probe(env_file, *, sleep=None):
+    """Three transient-read attempts; print only usage and remaining balance."""
     try:
         key = os.environ.get("OPENROUTER_API_KEY")
         if not key:
@@ -77,34 +85,33 @@ def account_probe(env_file):
                                          headers={"Authorization": f"Bearer {key}"})
     except Exception:
         return 2
-    expires = time.monotonic() + 6
-    for _ in range(3):
-        remaining_time = expires - time.monotonic()
-        if remaining_time <= 0:
-            return 2
+    for wait in (*PROBE_RETRY_WAITS_S, None):
         try:
-            with urllib.request.urlopen(request, timeout=min(2, remaining_time)) as response:
+            with urllib.request.urlopen(request, timeout=PROBE_TIMEOUT_S) as response:
                 data = json.load(response)["data"]
         except urllib.error.HTTPError as error:
             if error.code not in (408, 429, 500, 502, 503, 504):
                 return 2
-            continue
         except (urllib.error.URLError, TimeoutError, OSError):
-            continue
+            pass
         except Exception:
             return 2
-        try:
-            usage = number(data["usage"])
-            remaining = data.get("limit_remaining")
-            if remaining is None and data.get("limit") is not None:
-                remaining = max(0, number(data["limit"]) - usage)
-            if remaining is None or time.monotonic() >= expires:
+        else:
+            try:
+                usage = number(data["usage"])
+                remaining = data.get("limit_remaining")
+                if remaining is None and data.get("limit") is not None:
+                    remaining = max(0, number(data["limit"]) - usage)
+                if remaining is None:
+                    return 2
+                remaining = number(remaining)
+            except Exception:
                 return 2
-            remaining = number(remaining)
-        except Exception:
+            print(json.dumps({"usage": usage, "remaining": remaining}))
+            return 0
+        if wait is None:
             return 2
-        print(json.dumps({"usage": usage, "remaining": remaining}))
-        return 0
+        (sleep or time.sleep)(wait)
     # Neither exception text nor HTTP response bodies may disclose a secret.
     return 2
 
@@ -134,7 +141,8 @@ class Guard:
         self.shutdown_monotonic = time.monotonic() + self.shutdown_epoch - time.time()
         self.launch_window = None  # Derive from each step's agent + setup wall budget.
         self.poll_interval = 10
-        self.account_timeout = 8
+        # Three probe reads of up to 20 s, 2 s and 5 s apart, and a margin (2 November 2026).
+        self.account_timeout = 3 * PROBE_TIMEOUT_S + sum(PROBE_RETRY_WAITS_S) + 8
         self.kill_grace = 4
         self.cap = number(self.config.get("cap_usd", 20))
         self.reserve = number(self.config.get("reserve_usd", 1))
