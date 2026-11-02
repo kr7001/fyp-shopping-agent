@@ -564,6 +564,10 @@ def continuation():
 
 CONTINUATION_COMMAND = f"{guard_a.FRESH_NOTES}/study-a-continuation-command.json"
 AMENDMENTS = [f"{guard_a.FRESH_NOTES}/amendment-3-2-nov.md", f"{guard_a.FRESH_NOTES}/amendment-4-2-nov.md"]
+# Attempt 4 and the reruns also bind amendments 5 and 6 (2 November 2026).
+LATER_AMENDMENTS = [*AMENDMENTS, f"{guard_a.FRESH_NOTES}/amendment-5-2-nov.md",
+                    f"{guard_a.FRESH_NOTES}/amendment-6-2-nov.md"]
+ATTEMPT3_COMMAND = f"{guard_a.FRESH_NOTES}/study-a-attempt3-command.json"
 
 
 def counted_spend(stage, names):
@@ -615,16 +619,19 @@ def a4_receipt(preflight):
     return receipt
 
 
-def a4_config(stage, commit, output, preflight, deadline, start_cutoff, evidence, carryover, estimate, **fields):
-    """Attempt 2's configuration with a stage of amendment 4's identity, budget, cutoff, paths,
-    preflight and commit, and `evidence` bound by hash beside every file attempt 2 ran with."""
-    prior = json.loads((ROOT / CONTINUATION_COMMAND).read_text())
-    if sha(ROOT / CONTINUATION_COMMAND) != guard_a.FRESH_CONTINUATION_SHA256:
-        raise SystemExit("study-a-continuation-command.json is not attempt 2's command")
+def a4_config(stage, commit, output, preflight, deadline, start_cutoff, evidence, carryover, estimate, *,
+              prior_command=CONTINUATION_COMMAND, prior_sha256=None,
+              amendments=AMENDMENTS, **fields):
+    """An earlier stage's configuration, attempt 2's unless `prior_command` names another, with a
+    stage of amendment 4's identity, budget, cutoff, paths, preflight and commit, and `evidence`
+    bound by hash beside every file that stage ran with."""
+    prior = json.loads((ROOT / prior_command).read_text())
+    if sha(ROOT / prior_command) != (prior_sha256 or guard_a.FRESH_CONTINUATION_SHA256):
+        raise SystemExit(f"{prior_command} is not the command it should be")
     receipt = a4_receipt(preflight)
     folder = Path(output).resolve().parent
     runtime = list(dict.fromkeys([*prior["runtime_input_files"], receipt["synthetic_tests"]["log"],
-                                  receipt["installed_packages"], *AMENDMENTS]))
+                                  receipt["installed_packages"], *amendments]))
     config = {**prior, "stage": stage, "estimate_usd": estimate,
               "cap_usd": guard_a.fresh_shared_cap(stage) - carryover, "carryover_usd": carryover,
               "shared_cap_usd": guard_a.fresh_shared_cap(stage), "deadline": deadline, "start_cutoff": start_cutoff,
@@ -639,11 +646,11 @@ def a4_config(stage, commit, output, preflight, deadline, start_cutoff, evidence
     moved = sorted(name for name, digest in prior["hashes"].items()
                    if name not in guard_a.FRESH_RENEWED and config["hashes"][name] != digest)
     if moved:
-        raise SystemExit("files attempt 2 ran with have changed: " + ", ".join(moved))
+        raise SystemExit(f"files {prior_command} ran with have changed: " + ", ".join(moved))
     return config
 
 
-def write_a4(stage, output, config, summary):
+def write_a4(stage, output, config, summary, amendment=AMENDMENTS[-1]):
     """The configuration at `output`, its exact command beside it, and its approval record,
     prepared but not approved: the session that holds the student's approval records their words."""
     path = write_json(output, config)
@@ -652,7 +659,7 @@ def write_a4(stage, output, config, summary):
     approval = write_json(config["approval_record"], {
         "approved": False, "config_sha256": sha(path), "command": command, "user_message": "",
         "approval_needed": f"the student's own words approving {summary}",
-        "amendment": AMENDMENTS[-1], "amendment_sha256": sha(ROOT / AMENDMENTS[-1]),
+        "amendment": amendment, "amendment_sha256": sha(ROOT / amendment),
         "estimate_usd": config["estimate_usd"], "cap_usd": config["cap_usd"], "carryover_usd": config["carryover_usd"],
         "shared_cap_usd": config["shared_cap_usd"], "deadline": config["deadline"],
         "start_cutoff": config["start_cutoff"], "prepared_at": dt.datetime.now(dt.timezone.utc).isoformat(),
@@ -704,6 +711,55 @@ def attempt3(output, preflight, *, deadline=guard_a.FRESH_LATEST, start_cutoff=g
     return written
 
 
+def attempt4(output, preflight, *, deadline=guard_a.FRESH_LATEST, start_cutoff=guard_a.FRESH_START_CUTOFF):
+    """Study A's attempt 4 (amendment 6): the slots attempt 3 left never started, in their order,
+    under attempt 3's condition, with attempts 1 to 3's counted spend carried into the USD 10 cap.
+    Attempt 3's interrupted slot stays a technical void. With none left the configuration still
+    says so, and its launch ends without a paid call."""
+    commit, stage, notes = head(), guard_a.FRESH_ATTEMPT4_STAGE, guard_a.FRESH_NOTES
+    a4_receipt(preflight)
+    if sha(ROOT / ATTEMPT3_COMMAND) != guard_a.FRESH_ATTEMPT3_SHA256:
+        raise SystemExit("study-a-attempt3-command.json is not attempt 3's command")
+    first = json.loads((NOTES / "study-a.results/schedule.json").read_text())["slots"]
+    given = first[guard_a.FRESH_KEPT_ANSWERED + guard_a.FRESH_KEPT_INTERRUPTED:]
+    try:
+        second, _ = guard_a.ended_stage(ROOT, guard_a.FRESH_CONTINUATION_STAGE, guard_a.FRESH_CONTINUATION_SHA256,
+                                        2, given)
+        given = [slot for slot in given if second[slot["id"]]["status"] == "not_started"]
+        statuses, bound = guard_a.ended_stage(ROOT, guard_a.FRESH_ATTEMPT3_STAGE, guard_a.FRESH_ATTEMPT3_SHA256,
+                                              3, given)
+    except guard_a.Stop as stop:
+        raise SystemExit(f"attempt 3 cannot be continued as it stands: {stop}") from None
+    remaining = [slot["id"] for slot in given if statuses[slot["id"]]["status"] == "not_started"]
+    names = [guard_a.FRESH_LEDGER[s] for s in (guard_a.FRESH_STAGE, guard_a.FRESH_CONTINUATION_STAGE,
+                                               guard_a.FRESH_ATTEMPT3_STAGE)]
+    carryover, reconciliation = counted_spend(stage, names)
+    started = (guard_a.FRESH_KEPT_ANSWERED + guard_a.FRESH_KEPT_INTERRUPTED
+               + sum(row["status"] != "not_started" for row in second.values())
+               + sum(row["status"] != "not_started" for row in statuses.values()))
+    estimate = up_to_ten_cents(charge_per_started_slot(names, started) * len(remaining)) if remaining else 0
+    written = [write_json(ROOT / guard_a.FRESH_A4_RECONCILIATION[stage], reconciliation)]
+    fields = {"attempt": 4, "prior_config_file": ATTEMPT3_COMMAND,
+              "prior_status_file": f"{notes}/study-a-attempt3.status.json",
+              "prior_schedule_file": f"{notes}/study-a-attempt3.results/schedule.json",
+              "prior_slot_status_file": f"{notes}/study-a-attempt3.results/slot-status.json",
+              "prior_ledger_files": names, "slot_ids": remaining}
+    evidence = [*bound, ATTEMPT3_COMMAND, guard_a.FRESH_A4_RECONCILIATION[stage], *LATER_AMENDMENTS]
+    config = a4_config(stage, commit, output, preflight, deadline, start_cutoff, evidence, carryover, estimate,
+                       prior_command=ATTEMPT3_COMMAND, prior_sha256=guard_a.FRESH_ATTEMPT3_SHA256,
+                       amendments=LATER_AMENDMENTS, **fields)
+    guard_a.validate_fresh_budget(config)
+    if guard_a.validate_fresh_attempt4(config) != remaining:
+        raise SystemExit("attempt 4's guard reads other slots than the builder")
+    written += write_a4(stage, output, config, f"attempt 4 of Study A, its {len(remaining)} slots never "
+                                               f"started, within Study A's USD 10 cap", amendment=LATER_AMENDMENTS[-1])
+    ended = json.loads((NOTES / "study-a-attempt3.status.json").read_text())
+    print(f"attempt 3 ended {ended['status']} ({ended.get('reason', 'all its slots')}); attempt 4 runs "
+          f"{len(remaining)} slot(s) {remaining}; carryover USD {carryover:.10f}, cap USD {config['cap_usd']:.10f}, "
+          f"estimate USD {estimate}" + ("" if remaining else "; its launch ends without a paid call"))
+    return written
+
+
 def a_rerun(output, preflight, *, deadline=guard_a.FRESH_LATEST, start_cutoff=guard_a.FRESH_START_CUTOFF):
     """Study A's timeout reruns: every slot whose primary record reached its 2700 s clock, once,
     in schedule order, with its clock doubled to 5400 s and nothing else changed, carrying the
@@ -727,16 +783,17 @@ def a_rerun(output, preflight, *, deadline=guard_a.FRESH_LATEST, start_cutoff=gu
     written = [write_json(ROOT / guard_a.FRESH_A4_RECONCILIATION[stage], reconciliation)]
     fields = {"attempt": guard_a.FRESH_RERUN_ATTEMPT, "prior_config_file": CONTINUATION_COMMAND,
               "prior_ledger_files": chain, "rerun_slots": timeouts, "rerun_clock_s": 2 * 2700}
-    evidence = [*bound, CONTINUATION_COMMAND, guard_a.FRESH_A4_RECONCILIATION[stage], *AMENDMENTS]
+    evidence = [*bound, CONTINUATION_COMMAND, guard_a.FRESH_A4_RECONCILIATION[stage], *LATER_AMENDMENTS]
     config = a4_config(stage, commit, output, preflight, deadline, start_cutoff, evidence, carryover, estimate,
-                       **fields)
+                       amendments=LATER_AMENDMENTS, **fields)
     for field in ("prior_status_file", "prior_schedule_file", "prior_slot_status_file"):
         config.pop(field, None)  # attempt 1's, as attempt 2 named them; the rerun reads them through its evidence
     guard_a.validate_fresh_budget(config)
     if guard_a.validate_fresh_rerun(config) != timeouts:
         raise SystemExit("the rerun's guard reads other slots than the builder")
     written += write_a4(stage, output, config, f"the timeout reruns of Study A, {len(timeouts)} slot(s) with "
-                                               f"their clock doubled, within Study A's USD 15 cap for them")
+                                               f"their clock doubled, within Study A's USD 15 cap for them",
+                        amendment=LATER_AMENDMENTS[-1])
     print(f"Study A timeout reruns: {len(timeouts)} slot(s) {[row['slot'] for row in timeouts]}; carryover USD "
           f"{carryover:.10f} from {len(chain)} attempts, cap USD {config['cap_usd']:.10f}, estimate USD {estimate}"
           + ("" if timeouts else "; its launch ends without a paid call"))
@@ -888,12 +945,14 @@ def main():
     a4.add_argument("--output", type=Path, required=True)
     third = modes.add_parser("attempt3")
     third.add_argument("--preflight", type=Path, required=True, help="the a4-preflight receipt")
+    fourth = modes.add_parser("attempt4")
+    fourth.add_argument("--preflight", type=Path, required=True, help="the a4-preflight receipt")
     b16 = modes.add_parser("b-continuation")
     b16.add_argument("--ruling", help="the student's ruling, when the primary run had started the step")
     reruns = modes.add_parser("a-rerun")
     reruns.add_argument("--preflight", type=Path, required=True, help="the a4-preflight receipt")
     b_reruns = modes.add_parser("b-rerun")
-    for stage in (third, b16, reruns, b_reruns):
+    for stage in (third, fourth, b16, reruns, b_reruns):
         stage.add_argument("--output", type=Path, required=True, help="where the configuration is written")
         stage.add_argument("--deadline", default=guard_a.FRESH_LATEST,
                            help="no paid call after this (default and latest: the protocol's absolute stop)")
@@ -915,6 +974,8 @@ def main():
         written = [receipt, receipt.with_name(receipt.stem + "-installed-packages.txt")]
     elif args.mode == "attempt3":
         written = attempt3(args.output, args.preflight, deadline=args.deadline, start_cutoff=args.start_cutoff)
+    elif args.mode == "attempt4":
+        written = attempt4(args.output, args.preflight, deadline=args.deadline, start_cutoff=args.start_cutoff)
     elif args.mode == "b-continuation":
         written = b_continuation(args.output, args.ruling, deadline=args.deadline, start_cutoff=args.start_cutoff)
     elif args.mode == "a-rerun":
@@ -926,7 +987,8 @@ def main():
     else:
         written = configs()
     for path in written:
-        print(f"written {Path(path).relative_to(ROOT)}  sha256 {sha(path)}")
+        shown = Path(path).resolve()  # a path given relative to the working folder resolves first
+        print(f"written {shown.relative_to(ROOT) if shown.is_relative_to(ROOT) else shown}  sha256 {sha(path)}")
     return 0
 
 

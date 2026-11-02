@@ -36,7 +36,9 @@ class Ended(Attempt2Ended):
         self.given3 = self.given[4:]
         self.end_attempt3()
 
-    def end_attempt3(self, ran=("timeout",) + ("answered",) * 22, status="complete"):
+    def end_attempt3(self, ran=("timeout",) + ("answered",) * 22, status="complete", sha=THIRD_SHA, carryover=1.0):
+        """Write attempt 3's files as its launcher and worker leave them; an `interrupted` slot
+        keeps only its .interrupted.json, as the worker writes it when the guard has blocked."""
         results = self.notes / "study-a-attempt3.results"
         if results.exists():
             for path in results.iterdir():
@@ -47,11 +49,16 @@ class Ended(Attempt2Ended):
             row = {"phase": "transfer", "status": outcome}
             if outcome == "timeout":
                 row.update(disposition="timeout", reason="the trial clock: 2705 s against 2700 s")
-            if outcome != "not_started":
+            if outcome == "interrupted":
+                row.update(reason="pilot worker did not complete: a request has an unknown charge; reconciliation required")
+                self.write(f"study-a-attempt3.results/{slot['id']}.interrupted.json", {"outcome": "failed"})
+            elif outcome == "not_started":
+                row.update(reason="pilot worker did not complete: a request has an unknown charge; reconciliation required")
+            else:
                 self.write(f"study-a-attempt3.results/{slot['id']}.json", {
                     "slot": slot["id"], "task": slot["question"]["id"], "repeat": slot["repeat"],
                     "condition": slot["condition"], "phase": "transfer", "stage": THIRD, "attempt": 3,
-                    "study_id": guard.FRESH_BUDGET, "batch_id": guard.FRESH_BUDGET, "config_sha256": THIRD_SHA,
+                    "study_id": guard.FRESH_BUDGET, "batch_id": guard.FRESH_BUDGET, "config_sha256": sha,
                     "outcome": outcome, "answer": "Synthetic content never read for eligibility",
                     "elapsed_s": 2705.0 if outcome == "timeout" else 600.0, "settings": {"clock_s": 2700},
                     **({"disposition": "timeout"} if outcome == "timeout" else {}),
@@ -63,15 +70,15 @@ class Ended(Attempt2Ended):
                                                               "slots": self.given3})
         self.write("study-a-attempt3.results/slot-status.json", {"slots": statuses})
         self.write("study-a-attempt3.results/completed.json", {"completed": completed, "expected": len(self.given3)})
-        self.write("study-a-attempt3.status.json", {"status": status, "config_sha256": THIRD_SHA})
+        self.write("study-a-attempt3.status.json", {"status": status, "config_sha256": sha})
         self.write("study-a-attempt3.launch.json", {"study_budget_id": guard.FRESH_BUDGET, "attempt": 3,
-                                                    "config_sha256": THIRD_SHA})
+                                                    "config_sha256": sha})
         self.ledger3 = {"schema": 1, "charged_usd": 0.5, "inflight": {}, "blocked_reason": None,
                         "calls": [{"reservation": "call-00001", "role": "executor", "reserved_usd": BOUND,
                                    "cost_usd": 0.5, "error": False},
                                   {"reservation": "call-00002", "role": "executor", "reserved_usd": BOUND,
                                    "cost_usd": None, "settled_usd": BOUND, "error": True}],
-                        "start_usage": 102.0, "highwater_usage": 102.5, "carryover_usd": 1.0,
+                        "start_usage": 102.0, "highwater_usage": 102.5, "carryover_usd": carryover,
                         "prior_unsettled_reserve_usd": 5 * BOUND, "prior_ledger_files": [L1, L2],
                         "study_budget_id": guard.FRESH_BUDGET, "attempt": 3, "shared_cap_usd": 10.0}
         self.write("study-a-attempt3.ledger.json", self.ledger3)

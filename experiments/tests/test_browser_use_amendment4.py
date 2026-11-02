@@ -42,7 +42,7 @@ class Attempt2Ended(Attempt1):
         path = self.write("study-a-continuation-command.json", self.continuation)
         self.patch(guard, "FRESH_CONTINUATION_SHA256", guard.sha(path))
         self.continuation_sha = guard.sha(path)
-        for name in ("amendment-3-2-nov.md", "amendment-4-2-nov.md"):
+        for name in ("amendment-3-2-nov.md", "amendment-4-2-nov.md", "amendment-5-2-nov.md", "amendment-6-2-nov.md"):
             self.write_text(f"{NOTES}/{name}", f"synthetic {name}\n")
         self.given = self.slots[5:]
         self.given_ids = [slot["id"] for slot in self.given]
