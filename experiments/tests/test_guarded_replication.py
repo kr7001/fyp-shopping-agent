@@ -206,8 +206,10 @@ class GuardTests(unittest.TestCase):
     def test_account_failure_stops_running_child(self):
         account = ('import pathlib; p=pathlib.Path("reads"); n=int(p.read_text()) if p.exists() else 0;'
                    'p.write_text(str(n+1));print(\'{"usage":100,"remaining":74}\') if n<2 else exit(2)')
-        self.config["steps"] = [self.step('import time;time.sleep(2);open("bad","w").write("bad")')]
+        self.config["steps"] = [self.step('import time;time.sleep(5);open("bad","w").write("bad")')]
         guard = self.instance(account)
+        # Headroom for the probe's interpreter to start under load; the child still outlives it.
+        guard.account_timeout = 2
         self.assertEqual(guard.run(), 2)
         self.assertEqual(self.status()["reason"], "account visibility lost")
         self.assertFalse((self.root / "bad").exists())
@@ -371,6 +373,81 @@ class GuardTests(unittest.TestCase):
             except subprocess.CalledProcessError:
                 status = ""
             self.assertTrue(not status or status.startswith("Z"), (pid, status))
+
+
+class ZombieGroupTests(unittest.TestCase):
+    """macOS answers killpg with EPERM for a group whose members are all dead but not yet reaped
+    (ESRCH once reaped). Cleanup must take that for an ended group and never let it, or any other
+    cleanup error, skip a finished step's manifest line, the STOP line or the final status. The
+    synthetic launch of GuardTests, without running its tests twice."""
+    setUp, write_config, instance = GuardTests.setUp, GuardTests.write_config, GuardTests.instance
+    step, status = GuardTests.step, GuardTests.status
+
+    def manifest(self):
+        return (self.root / "run.manifest").read_text().splitlines()
+
+    def finished_step(self, **kwargs):
+        return self.step('open("out.json","w").write("{}")', output_kind="file", expected_output="out.json",
+                         manifest_line_template="batch|{output}|finished", **kwargs)
+
+    def test_eperm_at_the_end_of_a_step_still_records_it_and_completes(self):
+        self.config["steps"] = [self.finished_step()]
+        guard = self.instance()
+        with mock.patch.object(guarded.os, "killpg", side_effect=PermissionError(1, "EPERM")) as killed:
+            self.assertEqual(guard.run(), 0)
+        self.assertEqual(self.status()["status"], "complete")
+        self.assertTrue(any(line.startswith("batch|") and line.endswith("|finished") for line in self.manifest()))
+        self.assertNotIn(signal.SIGKILL, [call.args[1] for call in killed.call_args_list])  # zombies cannot be killed
+
+    def test_eperm_during_a_stop_mid_step_still_writes_stop_and_status(self):
+        # The stand-in kill reaches no one, so the sleeper ends by itself 2 s later.
+        self.config["steps"] = [self.step("import time;time.sleep(3)", max_seconds=1)]
+        guard = self.instance()
+        with mock.patch.object(guarded.os, "killpg", side_effect=PermissionError(1, "EPERM")):
+            self.assertEqual(guard.run(), 2)
+        self.assertEqual((self.status()["status"], self.status()["reason"]), ("stopped", "step time limit reached"))
+        self.assertIn("STOP step time limit reached", self.manifest())
+
+    def test_any_cleanup_error_at_every_site_keeps_the_records(self):
+        self.config["steps"] = [self.finished_step()]
+        guard = self.instance()
+        with mock.patch.object(guarded.Guard, "cleanup_group", side_effect=RuntimeError("synthetic")) as cleaned:
+            self.assertEqual(guard.run(), 2)  # the step end, then the stop and the final cleanup
+        status = self.status()
+        self.assertEqual(status["status"], "stopped")
+        self.assertIn("process group cleanup failed after the step (RuntimeError)", status["reason"])
+        self.assertIn("; process group cleanup failed (RuntimeError", status["reason"])  # the stop's own, too
+        lines = self.manifest()
+        self.assertTrue(any(line.startswith("batch|") and line.endswith("|finished") for line in lines))
+        self.assertTrue(lines[-1].startswith("STOP process group cleanup failed"))
+        self.assertGreaterEqual(cleaned.call_count, 3)
+
+    def test_a_real_unreaped_zombie_group_is_cleaned_without_error(self):
+        process = subprocess.Popen([sys.executable, "-c", "pass"], start_new_session=True)
+        for _ in range(200):  # until it is a zombie, which nothing has reaped yet
+            state = subprocess.run(["ps", "-o", "stat=", "-p", str(process.pid)], capture_output=True,
+                                   text=True).stdout.strip()
+            if state.startswith("Z"):
+                break
+            time.sleep(.05)
+        else:
+            self.skipTest("the child did not become a zombie")
+        with self.assertRaises(PermissionError):
+            os.killpg(process.pid, 0)  # what this kernel says of such a group
+        reap, polls = process.poll, []
+
+        def late_poll():  # the group's member is reaped only on the third look, as by another parent
+            polls.append(1)
+            return reap() if len(polls) >= 3 else None
+        guard = self.instance()
+        guard.kill_grace = 6  # it ends as soon as the group is gone, not when the grace runs out
+        start = time.monotonic()
+        with mock.patch.object(process, "poll", side_effect=late_poll):
+            guard.cleanup_group(process)
+        self.assertLess(time.monotonic() - start, 3)
+        self.assertEqual(process.returncode, 0)
+        with self.assertRaises(ProcessLookupError):
+            os.killpg(process.pid, 0)
 
 
 class AccountProbeTests(unittest.TestCase):

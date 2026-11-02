@@ -286,38 +286,53 @@ class Guard:
             if actual != check["head"] or hashlib.sha256(patch).hexdigest() != check["diff_sha256"]:
                 raise Stop("agent or experiment git state changed")
 
+    @staticmethod
+    def signal_group(process, signum):
+        """Signal the process group this launcher created: "gone" when no member is left, "zombies"
+        when every member is dead but one is not yet reaped, which macOS answers with EPERM, for
+        signal 0 and SIGTERM alike (ESRCH once reaped), and "live" otherwise. Until 2 November 2026
+        only ESRCH was caught, so an EPERM at the end of a step escaped run() before the step's
+        manifest line, the STOP line and the final status were written (the verifier's finding)."""
+        try:
+            os.killpg(process.pid, signum)
+        except ProcessLookupError:
+            return "gone"
+        except PermissionError:
+            return "zombies"
+        return "live"
+
     def cleanup_group(self, process):
         if process is None:
             return
         # Reap a completed direct child before addressing its process group.
-        # macOS may return EPERM for an unreaped, already-dead group leader.
+        # macOS returns EPERM for a group of unreaped, already-dead members.
         process.poll()
         # Never use pgrep/pkill: only the process group this launcher created.
-        try:
-            os.killpg(process.pid, signal.SIGTERM)
-        except ProcessLookupError:
-            if process.stdout is not None:
-                process.stdout.close()
-            return
+        state = self.signal_group(process, signal.SIGTERM)
         end = time.monotonic() + self.kill_grace
-        while time.monotonic() < end:
-            process.poll()
-            try:
-                os.killpg(process.pid, 0)
-            except ProcessLookupError:
-                break
-            time.sleep(.05)
-        else:
-            try:
-                os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
+        while state != "gone" and time.monotonic() < end:
+            process.poll()  # waitpid(WNOHANG) of the one member this launcher owns
+            state = self.signal_group(process, 0)
+            if state != "gone":
+                time.sleep(.05)
+        if state == "live":  # a member still running after the grace period
+            self.signal_group(process, signal.SIGKILL)
         try:
             process.wait(timeout=.5)
         except subprocess.TimeoutExpired:
             pass
         if process.stdout is not None:
             process.stdout.close()
+
+    def cleanup_quietly(self, process):
+        """cleanup_group that never raises, so that no cleanup error can skip a finished step's
+        manifest line, the STOP line or the final status (2 November 2026): the error's name, or
+        None."""
+        try:
+            self.cleanup_group(process)
+        except Exception as error:
+            return type(error).__name__
+        return None
 
     def start_probe(self):
         self.probe = subprocess.Popen(self.account_command, cwd=self.repo, stdout=subprocess.PIPE,
@@ -332,7 +347,7 @@ class Guard:
             code = self.probe.poll()
             if code is not None:
                 raw = self.probe.communicate()[0]
-                self.cleanup_group(self.probe)
+                self.cleanup_quietly(self.probe)  # the read has ended; its reply decides
                 self.probe = None
                 try:
                     if code:
@@ -488,7 +503,7 @@ class Guard:
                 self.budget_check()
                 time.sleep(.05)
             code = self.child.returncode
-            self.cleanup_group(self.child)  # Also remove descendants surviving their parent.
+            cleanup = self.cleanup_quietly(self.child)  # Also remove descendants surviving their parent.
             self.child = None
         self.deadline_check()
         if code != 0:
@@ -501,6 +516,8 @@ class Guard:
         self.completed.append(step["id"])
         self.current = None
         self.status("running")
+        if cleanup:  # recorded first: the finished step's line is in the manifest
+            raise Stop(f"process group cleanup failed after the step ({cleanup}); its result is recorded")
         self.poll_account(required=True)
         self.update_recorded()
         self.budget_check()
@@ -555,18 +572,23 @@ class Guard:
             # Ignore repeated interrupts while guaranteeing owned-group cleanup.
             for signum in previous:
                 signal.signal(signum, signal.SIG_IGN)
-            self.cleanup_group(self.child)
-            self.child = None
-            self.cleanup_group(self.probe)
-            self.probe = None
+            problems = [problem for problem in (self.cleanup_quietly(self.child), self.cleanup_quietly(self.probe))
+                        if problem]
+            self.child = self.probe = None
             reason = str(exc) if isinstance(exc, Stop) else f"launcher failure ({type(exc).__name__})"
+            if problems:
+                reason += f"; process group cleanup failed ({', '.join(problems)})"
             if self.manifest_created:
-                self.append("STOP " + reason)
-                self.status("stopped", reason)
+                # Each written whatever befalls the other.
+                for write in (lambda: self.append("STOP " + reason), lambda: self.status("stopped", reason)):
+                    try:
+                        write()
+                    except Exception:
+                        pass
             return 2
         finally:
-            self.cleanup_group(self.child)
-            self.cleanup_group(self.probe)
+            self.cleanup_quietly(self.child)
+            self.cleanup_quietly(self.probe)
             for signum, handler in previous.items():
                 signal.signal(signum, handler)
             if self.lock is not None:
