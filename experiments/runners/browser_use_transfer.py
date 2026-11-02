@@ -7,6 +7,7 @@ prompt and plans are imported unchanged. No automatic scoring or analysis occurs
 from __future__ import annotations
 import argparse
 import asyncio
+import contextlib
 import hashlib
 import json
 import os
@@ -248,13 +249,14 @@ def continuation_disposition(record):
 
     - a timeout whose own elapsed time reached its trial clock, with nothing else the frozen
       classification stops on, is a timeout, scored 0 (the analysis tool's own rule);
-    - a failed trial that made a request settled at its bound (no response, no usage), with a
-      valid measurement and no exception from the runner, is a technical void, left out of the
-      test. Its record keeps what the frozen classification says, since the two can differ.
+    - a failed trial in which the provider left a request without a response or usage, settled
+      at its bound, with a valid measurement and no exception from the runner, is a technical
+      void, left out of the test. Its record keeps what the frozen classification says, since
+      the two can differ.
 
     A clock timeout stays a timeout though the clock usually cancels a request in flight, which
-    is then settled. Returns (disposition, reason), or (None, None) for every other slot, which
-    the frozen classification passes or stops on as before."""
+    is then settled apart (`clock_settlements`). Returns (disposition, reason), or (None, None)
+    for every other slot, which the frozen classification passes or stops on as before."""
     if record.get("outcome") == "timeout":
         elapsed, clock = record.get("elapsed_s"), (record.get("settings") or {}).get("clock_s")
         if isinstance(elapsed, (int, float)) and type(clock) is int and elapsed >= clock:
@@ -353,9 +355,13 @@ async def execute_study(config_path):
                          "candidate_urls": [item.url for item in observed.listings],
                          "out_dir": str(output_dir / slot["id"])}
                 if config["stage"] in FRESH_STAGES:
-                    # The same trial, with product pages fetched by script recorded beside it.
+                    # The same trial, with product pages fetched by script recorded beside it. In
+                    # the continuation the guard is told when the trial's clock is due, so that a
+                    # request the clock cancels is not counted as the provider's no-response.
+                    clock = (budget.trial_clock(trial["clock_s"]) if config["stage"] == FRESH_CONTINUATION_STAGE
+                             else contextlib.nullcontext())
                     with browser_use_fetches.recording(sys.modules["browser_use_runner"],
-                                                       trial["candidate_urls"]) as fetches:
+                                                       trial["candidate_urls"]) as fetches, clock:
                         record = await run_trial(trial, budget, api_key=key)
                     record["script_fetches"] = fetches.record()
                 else:
@@ -381,9 +387,12 @@ async def execute_study(config_path):
                               head=config["expected_head"])
             disposition = reason = None
             if config["stage"] == FRESH_CONTINUATION_STAGE:
-                # Which attempt, and the requests settled at their bound, apart from the charges.
+                # Which attempt, and the requests settled at their bound, apart from the charges:
+                # the provider's no-response ones and those the trial clock cancelled.
                 settled = [call for call in new_calls if "settled_usd" in call]
-                record.update(attempt=config["attempt"], no_response_settlements=len(settled),
+                by_clock = [call for call in settled if call.get("settlement_kind") == "trial clock"]
+                record.update(attempt=config["attempt"], no_response_settlements=len(settled) - len(by_clock),
+                              clock_settlements=len(by_clock),
                               settled_bound_usd=sum(call["settled_usd"] for call in settled))
                 # A trial-clock timeout or a void after a settled request ends its slot here.
                 disposition, reason = continuation_disposition(record)

@@ -7,6 +7,7 @@ reviewed recovery command. The $20 account reserve differs from request reservat
 """
 from __future__ import annotations
 import argparse
+import contextlib
 import datetime as dt
 import hashlib
 import json
@@ -80,6 +81,7 @@ FRESH_CONTINUATION_FILES = {"ledger_path": "study-a-continuation.ledger.json",
 FRESH_RECONCILIATION = f"{FRESH_NOTES}/study-a-continuation-reconciliation.json"
 # In the continuation only, an executor request that ends in error with no response and no
 # usage is settled at its reserved bound, at most this many times; the next one stops the batch.
+# A request the 2700 s trial clock cancels is settled too, but not counted toward this limit.
 FRESH_NO_RESPONSE_SETTLEMENTS = 3
 # In the continuation only, a trial that reaches its clock and one left without an answer after
 # a settled request each end their slot and the batch goes on (browser_use_transfer.py); this
@@ -275,12 +277,14 @@ def recovery_limits(config):
 
 
 class CallBudget:
-    def __init__(self, config, ledger_path, account_reader, *, clock=time.time):
+    def __init__(self, config, ledger_path, account_reader, *, clock=time.time, monotonic=time.monotonic):
         self.config = config
         self.path = Path(ledger_path)
         if self.path.exists():
             raise Stop("ledger already exists; implicit resume is forbidden")
         self.account_reader, self.clock = account_reader, clock
+        # When the running trial's clock is due, on `monotonic`'s scale (`trial_clock`).
+        self.monotonic, self.trial_clock_at = monotonic, None
         self.deadline = deadline_epoch(config["deadline"])
         self.monotonic_deadline = time.monotonic() + max(0, self.deadline - self.clock())
         self.cap = number(config["cap_usd"])
@@ -306,8 +310,10 @@ class CallBudget:
                               legacy_unsettled_reserve_usd=LEGACY_UNSETTLED_USD,
                               minimum_balance_usd=self.reserve)
         if config.get("stage") == FRESH_CONTINUATION_STAGE:
-            # Requests settled at their bound, kept apart from the provider's charges.
-            self.state.update(settled_usd=0.0, no_response_settlements=0,
+            # Requests settled at their bound, kept apart from the provider's charges: those
+            # with no response from the provider, which the limit counts, and those the trial
+            # clock cancelled, which it does not.
+            self.state.update(settled_usd=0.0, no_response_settlements=0, clock_settlements=0,
                               no_response_settlement_limit=FRESH_NO_RESPONSE_SETTLEMENTS)
         self._account()
         self._save()
@@ -392,28 +398,55 @@ class CallBudget:
             if error:
                 self._block("request failed; no automatic paid recovery")
 
+    @contextlib.contextmanager
+    def trial_clock(self, clock_s):
+        """While a continuation trial runs, when its clock is due (2 November 2026). The worker
+        enters this as the trial starts; the runner's own clock starts later, once the browser
+        is open, so every request the clock cancels ends at or after this moment. A provider's
+        own timeout that ends in those few seconds just before the clock counts as the clock's."""
+        with self.lock:
+            self.trial_clock_at = self.monotonic() + clock_s
+        try:
+            yield
+        finally:
+            with self.lock:
+                self.trial_clock_at = None
+
     def _settle_without_response(self, item, response_json, usage, error):
         """The fresh continuation only (2 November 2026): an executor request that ended in
         error with no response and no usage, as call-00253 did when Browser Use's 120 s LLM
         timeout cancelled it, is settled at its reserved bound, the most the provider can
         charge for it, and the agent goes on as Browser Use does after a timeout. The provider's
         charge stays unknown (`cost_usd` None); the bound counts as spent against the cap. At
-        most three settlements: the fourth such request stops the batch, its charge unknown. A
-        parser request is never settled, since the block would fall back to the rules' form,
-        and a response without usage still blocks. Returns whether the request was settled."""
+        most three settlements of requests the provider left without a response: the fourth
+        stops the batch, its charge unknown. A request the trial's 2700 s clock cancelled (a
+        cancellation at or after the clock was due, `trial_clock`) is settled the same way and
+        counts against the cap, but not toward that limit, since the clock stops every slow
+        trial while a request is almost always in flight. A parser request is never settled,
+        since the block would fall back to the rules' form, and a response without usage still
+        blocks. Returns whether the request was settled."""
         if (self.config.get("stage") != FRESH_CONTINUATION_STAGE or response_json is not None
                 or usage is not None or not error or item.get("role") != "executor"):
             return False
+        by_clock = (str(error) == "CancelledError" and self.trial_clock_at is not None
+                    and self.monotonic() >= self.trial_clock_at)
         done = self.state["no_response_settlements"]
         item["error_name"] = str(error)
-        if done >= FRESH_NO_RESPONSE_SETTLEMENTS:
+        if not by_clock and done >= FRESH_NO_RESPONSE_SETTLEMENTS:
             item["settlement"] = f"not settled: request {done + 1} with no response stops the batch"
             self._block(f"a request ended with no response after {done} settlements; reconciliation required")
-        item.update(settled_usd=item["reserved_usd"],
-                    settlement=f"no response and no usage; settled at its reserved bound, "
-                               f"{done + 1} of {FRESH_NO_RESPONSE_SETTLEMENTS}")
+        item["settled_usd"] = item["reserved_usd"]
         self.state["settled_usd"] += item["reserved_usd"]
-        self.state["no_response_settlements"] = done + 1
+        if by_clock:
+            item.update(settlement_kind="trial clock",
+                        settlement="cancelled by the trial clock; settled at its reserved bound, "
+                                   "not counted toward the limit")
+            self.state["clock_settlements"] += 1
+        else:
+            item.update(settlement_kind="no response",
+                        settlement=f"no response and no usage; settled at its reserved bound, "
+                                   f"{done + 1} of {FRESH_NO_RESPONSE_SETTLEMENTS}")
+            self.state["no_response_settlements"] = done + 1
         self._save()
         return True
 

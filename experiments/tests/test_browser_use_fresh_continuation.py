@@ -2,7 +2,7 @@
 paid, model, account or browser call. Attempt 1 stopped when Browser Use's LLM timeout cancelled
 executor request call-00253, so its charge was unknown and the guard refused every later call.
 Each check is shown quiet on a good case and firing on a planted fault."""
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, contextmanager
 import asyncio
 import copy
 import importlib.util
@@ -33,6 +33,12 @@ PROVIDER = {"order": ["deepinfra"], "allow_fallbacks": False, "quantizations": [
             "max_price": {"prompt": 0.2, "completion": 0.5, "request": 0}}
 COHORT = "966e711a49660893edc93b6d34306df4f458df97"  # the repeats 2-3 cohort's commit
 ATTEMPT1 = "b1c67c8aa9e5a5c3bd4d0f38f1be0f015c122717"  # the commit attempt 1 ran
+
+
+@contextmanager
+def no_clock(clock_s):
+    """A stand-in guard's trial clock, which records nothing."""
+    yield
 
 
 def git_show(commit, name):
@@ -368,16 +374,19 @@ class Budget(Attempt1):
                 guard.validate_review_receipt(self.cfg, {**receipt, **change}, "head", "hash", command)
 
 
-def settlement_budget(folder, stage=CONTINUATION, carryover=0.4):
-    """A continuation's spending guard, its prior evidence stood in for."""
+def settlement_budget(folder, stage=CONTINUATION, carryover=0.4, monotonic=None):
+    """A continuation's spending guard, its prior evidence stood in for; `monotonic` sets the
+    clock its trial clock is read on."""
     cfg = {"stage": stage, "attempt": 2 if stage == CONTINUATION else 1, "cap_usd": 3.0 - carryover,
            "minimum_balance_usd": 20.2117632, "deadline": "2099-01-01T00:00:00+08:00",
            "model": "deepseek/deepseek-v4-flash", "provider": PROVIDER, "maximum_input_tokens": 1048576,
            "max_input_bytes": 200000, "max_output_tokens": 4096, "allowed_served_providers": ["DeepInfra"],
            "prior_ledger_files": [LEDGER], "temperature": 0.2, "frequency_penalty": 0.1, "top_p": None}
     limits = (carryover, BOUND) if stage == CONTINUATION else (0.0, 0.0)
+    clock = {"monotonic": monotonic} if monotonic else {}
     with mock.patch.object(guard, "validate_fresh_budget"), mock.patch.object(guard, "recovery_limits", return_value=limits):
-        return guard.CallBudget(cfg, Path(folder) / "ledger.json", lambda: {"usage": 100.0, "remaining": 60.0}), cfg
+        return guard.CallBudget(cfg, Path(folder) / "ledger.json", lambda: {"usage": 100.0, "remaining": 60.0},
+                                **clock), cfg
 
 
 class Settlement(unittest.TestCase):
@@ -435,6 +444,60 @@ class Settlement(unittest.TestCase):
         self.assertIn("not settled", state["calls"][-1]["settlement"])
         with self.assertRaises(guard.Stop):
             self.budget.before_call(self.meta())
+
+    def clocked(self, name):
+        """A guard whose trial clock is read on a hand-turned clock, from 1000 s."""
+        now = [1000.0]
+        budget, _ = settlement_budget(Path(self.tmp.name) / name, monotonic=lambda: now[0])
+        return budget, now
+
+    def test_requests_the_trial_clock_cancels_are_settled_but_not_counted(self):
+        budget, now = self.clocked("clock")
+        with budget.trial_clock(2700):
+            for _ in range(3):  # the provider's own: the limit is used up
+                budget.after_call(budget.before_call(self.meta()), error="ReadTimeout")
+            now[0] += 2700  # the clock is due
+            for _ in range(4):  # cancelled by it: settled, never counted
+                budget.after_call(budget.before_call(self.meta()), error="CancelledError")
+        state = budget.state
+        self.assertEqual((state["no_response_settlements"], state["clock_settlements"], state["blocked_reason"]),
+                         (3, 4, None))
+        self.assertAlmostEqual(state["settled_usd"], 7 * BOUND, places=12)
+        self.assertEqual([call["settlement_kind"] for call in state["calls"]], ["no response"] * 3 + ["trial clock"] * 4)
+        self.assertIn("not counted toward the limit", state["calls"][-1]["settlement"])
+        self.assertIsNone(budget.trial_clock_at)
+        # Outside a trial the clock is not due: the provider's fourth stops the batch.
+        with self.assertRaisesRegex(guard.Stop, "after 3 settlements"):
+            budget.after_call(budget.before_call(self.meta()), error="CancelledError")
+
+    def test_before_the_clock_is_due_or_for_another_error_it_is_the_providers(self):
+        budget, now = self.clocked("early")
+        with budget.trial_clock(2700):
+            now[0] += 2699.9
+            budget.after_call(budget.before_call(self.meta()), error="CancelledError")
+            now[0] += 0.2
+            budget.after_call(budget.before_call(self.meta()), error="ReadTimeout")
+            budget.after_call(budget.before_call(self.meta()), error="CancelledError")
+        self.assertEqual([call["settlement_kind"] for call in budget.state["calls"]],
+                         ["no response", "no response", "trial clock"])
+        self.assertEqual((budget.state["no_response_settlements"], budget.state["clock_settlements"]), (2, 1))
+
+    def test_a_clock_settlement_counts_against_the_cap(self):
+        budget, now = self.clocked("cap")
+        budget.state["charged_usd"] = self.cfg["cap_usd"] - BOUND - BOUND / 2
+        with budget.trial_clock(10):
+            reservation = budget.before_call(self.meta())
+            now[0] += 10
+            budget.after_call(reservation, error="CancelledError")
+        self.assertEqual(budget.state["clock_settlements"], 1)
+        with self.assertRaisesRegex(guard.Stop, "cap would be exceeded"):
+            budget.before_call(self.meta())  # room for it without the settlement, none with it
+
+    def test_the_trial_clock_is_cleared_when_the_trial_raises(self):
+        budget, _ = self.clocked("raise")
+        with self.assertRaises(RuntimeError), budget.trial_clock(2700):
+            raise RuntimeError("the trial failed")
+        self.assertIsNone(budget.trial_clock_at)
 
     def test_every_other_unknown_charge_still_blocks(self):
         cases = {
@@ -509,11 +572,43 @@ class TimedOutRequest(unittest.IsolatedAsyncioTestCase):
             finally:
                 await runner.close_llm(llm)
 
+    async def test_requests_the_trial_clock_cancels_are_settled_apart(self):
+        """Four trials stopped by their clock with a request in flight, then the provider's own
+        timeouts well before the clock: three settle and the fourth stops the batch."""
+        import httpx
+        import browser_use_runner as runner
+        runner.configure_private_runtime()
+        from browser_use.llm.messages import UserMessage
+
+        async def respond(request):
+            await asyncio.sleep(30)  # never answers in time
+
+        with tempfile.TemporaryDirectory() as folder:
+            budget, cfg = settlement_budget(folder)
+            llm = runner.create_llm(cfg, budget, "offline-fake-key", transport=httpx.MockTransport(respond))
+            try:
+                for _ in range(4):  # the clock, due 0.1 s into the trial, cancels at 0.5 s
+                    with budget.trial_clock(0.1), self.assertRaises(asyncio.TimeoutError):
+                        await asyncio.wait_for(llm.ainvoke([UserMessage(content="slow")]), 0.5)
+                self.assertEqual((budget.state["no_response_settlements"], budget.state["clock_settlements"],
+                                  budget.state["blocked_reason"]), (0, 4, None))
+                for _ in range(3):  # the clock not due for 30 s: the provider's own timeouts
+                    with budget.trial_clock(30), self.assertRaises(asyncio.TimeoutError):
+                        await asyncio.wait_for(llm.ainvoke([UserMessage(content="slow")]), 0.5)
+                with budget.trial_clock(30), self.assertRaises(Exception):
+                    await asyncio.wait_for(llm.ainvoke([UserMessage(content="slow")]), 0.5)
+                self.assertIn("after 3 settlements", budget.state["blocked_reason"])
+                self.assertEqual([call.get("settlement_kind") for call in budget.state["calls"]],
+                                 ["trial clock"] * 4 + ["no response"] * 3 + [None])
+                self.assertAlmostEqual(budget.state["settled_usd"], 7 * BOUND, places=12)
+            finally:
+                await runner.close_llm(llm)
+
 
 class Execution(Attempt1, unittest.IsolatedAsyncioTestCase):
     async def test_runs_the_27_writes_beside_attempt1_and_keeps_settlements_apart(self):
         cfg = {**self.cfg, "expected_head": "head"}
-        budget = types.SimpleNamespace(state={"calls": [], "inflight": {}, "blocked_reason": None})
+        budget = types.SimpleNamespace(state={"calls": [], "inflight": {}, "blocked_reason": None}, trial_clock=no_clock)
         trials = []
         before = {path: guard.sha(path) for path in (self.notes / "study-a.results").rglob("*") if path.is_file()}
 
@@ -521,7 +616,8 @@ class Execution(Attempt1, unittest.IsolatedAsyncioTestCase):
             trials.append(trial)
             if len(trials) == 2:  # a request settled at its bound, then an ordinary one
                 budget.state["calls"] += [
-                    {"reservation": "call-00001", "role": "executor", "cost_usd": None, "settled_usd": BOUND},
+                    {"reservation": "call-00001", "role": "executor", "cost_usd": None, "settled_usd": BOUND,
+                     "settlement_kind": "no response"},
                     {"reservation": "call-00002", "role": "executor", "cost_usd": 0.001}]
             return {"outcome": "answered", "cost_usd": None, "trace": {"measurement_valid": True},
                     "answer": "synthetic answer", "agent_errors": [None]}
@@ -567,10 +663,11 @@ class Execution(Attempt1, unittest.IsolatedAsyncioTestCase):
 TIMED_OUT = "LLM call timed out after 120 seconds. Keep your thinking and output short."
 
 
-def settle(budget):
-    """A request with no response, settled at its bound, as the guard records it."""
+def settle(budget, kind="no response"):
+    """A request with no response, settled at its bound, as the guard records it: the provider's
+    own, or one the trial clock cancelled."""
     budget.state["calls"].append({"reservation": f"call-{len(budget.state['calls']) + 1:05d}", "role": "executor",
-                                  "cost_usd": None, "settled_usd": BOUND, "error": True})
+                                  "cost_usd": None, "settled_usd": BOUND, "settlement_kind": kind, "error": True})
 
 
 def answered(budget):
@@ -580,7 +677,7 @@ def answered(budget):
 
 def clock_timeout(budget, elapsed=2703.4, valid=True):
     """A trial stopped by its clock, which cancelled the request in flight, then settled."""
-    settle(budget)
+    settle(budget, kind="trial clock")
     return {"outcome": "timeout", "answer": None, "trace": {"measurement_valid": valid},
             "elapsed_s": elapsed, "settings": {"clock_s": 2700}, "cost_usd": None}
 
@@ -606,7 +703,14 @@ async def run_batch(case, results, closed=(), config=None):
     slot's index among those the loop runs to a function (budget) -> its trial's record; every
     other slot answers, and those in `closed` are closed by the block."""
     cfg = config or {**case.cfg, "expected_head": "head"}
-    budget = types.SimpleNamespace(state={"calls": [], "inflight": {}, "blocked_reason": None})
+    clocks = []
+
+    @contextmanager
+    def trial_clock(clock_s):  # what the worker tells the guard about each trial's clock
+        clocks.append(clock_s)
+        yield
+
+    budget = types.SimpleNamespace(state={"calls": [], "inflight": {}, "blocked_reason": None}, trial_clock=trial_clock)
     ids = [slot["id"] for slot in study.preview(cfg)["slots"]]
     trials, built = [], []
 
@@ -645,7 +749,7 @@ async def run_batch(case, results, closed=(), config=None):
         except guard.Stop as stop:
             error = str(stop)
     output = Path(cfg["output_dir"])
-    return types.SimpleNamespace(trials=trials, error=error, ids=ids, output=output,
+    return types.SimpleNamespace(trials=trials, error=error, ids=ids, output=output, clocks=clocks,
                                  statuses=json.loads((output / "slot-status.json").read_text())["slots"],
                                  record=lambda slot_id: json.loads((output / f"{slot_id}.json").read_text()))
 
@@ -661,10 +765,19 @@ class BatchLoop(Attempt1, unittest.IsolatedAsyncioTestCase):
         first = run.statuses[run.ids[0]]
         self.assertEqual((first["status"], first["disposition"]), ("timeout", "timeout"))
         record = run.record(run.ids[0])
-        self.assertEqual((record["disposition"], record["no_response_settlements"], record["outcome"]),
-                         ("timeout", 1, "timeout"))
+        self.assertEqual((record["disposition"], record["no_response_settlements"], record["clock_settlements"],
+                          record["settled_bound_usd"], record["outcome"]), ("timeout", 0, 1, BOUND, "timeout"))
         self.assertIn("2703 s against 2700 s", record["disposition_reason"])
         self.assertTrue(all(run.statuses[i]["status"] == "answered" for i in run.ids[1:]))
+        self.assertEqual(run.clocks, [2700] * 27)  # the guard knows every trial's clock
+
+    async def test_a_failure_whose_only_settlement_was_the_clocks_is_not_a_void(self):
+        def failed_after_a_clock_settlement(budget):
+            settle(budget, kind="trial clock")
+            return void(budget, settled=False)
+        run = await run_batch(self, {3: failed_after_a_clock_settlement})
+        self.assertIn("infrastructure or unknown agent error", run.error)
+        self.assertNotIn("disposition", run.statuses[run.ids[3]])
 
     async def test_a_timeout_before_its_clock_still_stops_the_batch(self):
         run = await run_batch(self, {0: lambda budget: clock_timeout(budget, elapsed=100.0)})
@@ -722,6 +835,7 @@ class BatchLoop(Attempt1, unittest.IsolatedAsyncioTestCase):
         self.assertIn("unclassified or infrastructure timeout", run.error)
         self.assertEqual(run.trials, run.ids[:1])
         self.assertNotIn("disposition", run.record(run.ids[0]))
+        self.assertEqual(run.clocks, [])  # the clock rule is the continuation's alone
 
 
 class Charges(unittest.TestCase):
