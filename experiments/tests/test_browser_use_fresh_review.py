@@ -1,5 +1,6 @@
 """Study A's blind review (2 November 2026), on synthetic batches only: no trial data, model,
 browser or shop. Each check is shown passing a good batch and refusing a planted fault."""
+from collections import Counter
 import contextlib
 import copy
 import io
@@ -29,7 +30,14 @@ class StudyA(unittest.TestCase):
                 self.assertEqual(blind.digest(ROOT / name), wanted)
         self.assertEqual(blind.digest(blind.RULES), blind.STUDY_A.rules_sha256)
         self.assertEqual(blind.STUDY_A.task_ids, transfer.TASK_IDS)
-        self.assertEqual((blind.STUDY_A.study_id, blind.STUDY_A.stage), (guard.FRESH_BUDGET, guard.FRESH_STAGE))
+        self.assertEqual(blind.STUDY_A.study_id, guard.FRESH_BUDGET)
+        # Attempts 1 and 2 ran under the commands the launcher pins; the later stages are named.
+        self.assertEqual(blind.STUDY_A.pinned, {"attempt 1": guard.FRESH_ATTEMPT1_SHA256,
+                                                "attempt 2": guard.FRESH_CONTINUATION_SHA256})
+        self.assertEqual([(s.stage, s.attempt, s.prefix) for s in blind.STAGES],
+                         [(stage, attempt, guard.FRESH_PREFIX[stage]) for stage, attempt in (
+                             (guard.FRESH_STAGE, 1), (guard.FRESH_CONTINUATION_STAGE, 2),
+                             (guard.FRESH_ATTEMPT3_STAGE, 3), (guard.FRESH_RERUN_STAGE, guard.FRESH_RERUN_ATTEMPT))])
 
     def test_rookmere_keys_do_not_depend_on_the_reading(self):
         tasks = json.loads((ROOT / blind.STUDY_A.tasks_file).read_text())
@@ -68,7 +76,7 @@ class Prepare(unittest.TestCase):
         return fresh_batch.Batch(self.root / "repo", kinds, **options)
 
     def prepare(self):
-        rows, _ = blind.prepare(self.batch.study, self.batch.config_path, self.batch.config_sha, self.bundle)
+        rows, _ = blind.prepare(self.batch.study, self.batch.stage_args(), self.bundle)
         return rows
 
     def refused(self, pattern):
@@ -86,15 +94,15 @@ class Prepare(unittest.TestCase):
         self.assertEqual(len({r["code"] for r in rows}), 31)
         self.assertTrue(all(not r["hand_verdict"] and not r["note"] for r in rows))
         key = json.loads((self.bundle / "private-arm-key.json").read_text())
-        self.assertEqual([v["outcome"] for v in key["off_sheet"].values()], [blind.CLOSED])
+        self.assertEqual([v["outcome"] for v in key["off_sheet"]], [blind.CLOSED])
         self.assertEqual(sorted(v["outcome"] for v in key["codes"].values()).count("failed"), 1)
         for code, mapped in key["codes"].items():
             row = next(r for r in rows if r["code"] == code)
             task = transfer.TASK_IDS.index(mapped["task"])
             self.assertEqual(json.loads(row["key"]), {"kind": "price", "value": fresh_batch.price(task)})
         manifest = json.loads((self.bundle / "manifest.json").read_text())
-        self.assertEqual((manifest["rows"], manifest["slots_scheduled"], manifest["config_sha256"]),
-                         (31, 32, self.batch.config_sha))
+        self.assertEqual((manifest["rows"], manifest["trials_scheduled"], manifest["stages_sha256"]),
+                         (31, 32, {"attempt 1": self.batch.config_sha}))
 
     def test_the_reader_shows_only_question_key_and_answer(self):
         self.prepare()
@@ -126,7 +134,7 @@ class Prepare(unittest.TestCase):
         leaked = (f"Saved to {self.batch.results / self.batch.slots[index]['id']}/agent-files/report.pdf. "
                   "The answer is $13.75.")
         self.batch.edit(index, answer=leaked)
-        rows, named = blind.prepare(self.batch.study, self.batch.config_path, self.batch.config_sha, self.bundle)
+        rows, named = blind.prepare(self.batch.study, self.batch.stage_args(), self.bundle)
         self.assertEqual((rows, named), (31, 1))  # quiet on the 30 other answers
         key = json.loads((self.bundle / "private-arm-key.json").read_text())
         flagged = [v["slot"] for v in key["codes"].values() if v["answer_names_an_arm"]]
@@ -153,7 +161,10 @@ class Prepare(unittest.TestCase):
 
     def test_another_configuration_or_an_unverified_batch_is_refused(self):
         with self.assertRaisesRegex(blind.Refused, "not the one named"):
-            blind.prepare(self.batch.study, self.batch.config_path, "0" * 64, self.bundle)
+            blind.prepare(self.batch.study, {"attempt 1": (self.batch.config_path, "0" * 64)}, self.bundle)
+        pinned = blind.dataclasses.replace(self.batch.study, pinned={"attempt 1": "0" * 64})
+        with self.assertRaisesRegex(blind.Refused, "not the configuration this study ran"):
+            blind.prepare(pinned, self.batch.stage_args(), self.bundle)
         for name, change, pattern in (
                 ("study-a.verification.json", {"verdict": "FAIL"}, "verifier"),
                 ("study-a.approval.json", {"approved": False}, "approval"),
@@ -176,7 +187,7 @@ class Prepare(unittest.TestCase):
         tasks.write_bytes(original)
         other = blind.dataclasses.replace(self.batch.study, repeats=(2, 3))
         with self.assertRaisesRegex(blind.Refused, "not this study's"):
-            blind.prepare(other, self.batch.config_path, self.batch.config_sha, self.bundle)
+            blind.prepare(other, self.batch.stage_args(), self.bundle)
 
     def test_a_key_that_depends_on_the_reading_is_refused(self):
         readings = json.loads((self.batch.repo / fresh_batch.READINGS_FILE).read_text())
@@ -191,7 +202,7 @@ class Prepare(unittest.TestCase):
                       [{**plan["slots"][0], "clock_s": 1800}] + plan["slots"][1:]):
             with self.subTest(slots=len(slots)):
                 fresh_batch.put(path, {**plan, "slots": slots})
-                self.refused("planned 32 slots")
+                self.refused("planned order")
         fresh_batch.put(path, plan)
         self.assertEqual(self.prepare(), 31)
 
@@ -275,7 +286,7 @@ class Validate(unittest.TestCase):
         self.root = Path(self.tmp.name)
         self.batch = fresh_batch.Batch(self.root / "repo", fresh_batch.kinds_with({0: "failed"}))
         self.study, self.bundle = self.batch.study, self.root / "bundle"
-        blind.prepare(self.study, self.batch.config_path, self.batch.config_sha, self.bundle)
+        blind.prepare(self.study, self.batch.stage_args(), self.bundle)
         self.incoming = self.root / "download.csv"
 
     def rows(self):
@@ -349,6 +360,211 @@ class Validate(unittest.TestCase):
             self.assertEqual(blind.main(self.study), 1)
         self.assertIn("refused", err.getvalue())
         self.assertNotIn(secret[:20], err.getvalue())
+
+
+class Stages(unittest.TestCase):
+    """Attempt 1 stopped on an interrupted fifth slot, as on 2 November; attempt 2 ran a clock
+    timeout, a void and an answer after settled requests, then stopped on a frozen void; attempt
+    3 ran what was left; and the timeout reruns ran each primary timeout once (amendments 3, 4)."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        self.bundle = self.root / "bundle"
+
+    def build(self, attempt3=True, rerun=True, full_path=(), **attempt2):
+        self.batch = fresh_batch.Batch(self.root / "repo", ["answered"] * 4 + ["interrupted"])
+        kinds = attempt2.pop("kinds", ["timeout", "answered", "void-settled", "answered-settled", "wrong",
+                                       "answered", "timeout"] + ["answered"] * 10 + ["short"])
+        self.second = self.batch.later(blind.ATTEMPT2, kinds, full_path=full_path, **attempt2)
+        if attempt3:
+            self.third = self.batch.later(blind.ATTEMPT3, ["answered"] * 8 + ["timeout"])
+        if rerun:
+            self.reruns = self.batch.later(blind.RERUN, ["answered", "timeout", "answered"])
+        return self.batch
+
+    def prepare(self, stages=None):
+        return blind.prepare(self.batch.study, stages or self.batch.stage_args(), self.bundle)
+
+    def key(self):
+        return json.loads((self.bundle / "private-arm-key.json").read_text())
+
+    def test_every_stage_and_rerun_answer_is_on_one_sheet(self):
+        self.build()
+        rows, _ = self.prepare()
+        saved = [(stage.spec.stage, slot["id"]) for stage in self.batch.stages for slot in stage.slots
+                 if stage.path(stage.index(slot["id"])).exists()]
+        self.assertEqual(rows, len(saved))  # no closure here, so every saved record is a row
+        key = self.key()
+        self.assertCountEqual([(v["stage"], v["slot"]) for v in key["codes"].values()], saved)
+        self.assertEqual(sum(v["rerun"] for v in key["codes"].values()), 3)
+        self.assertEqual({v["stage"] for v in key["codes"].values() if v["rerun"]}, {guard.FRESH_RERUN_STAGE})
+        # The three timed-out primary slots, rerun once each in schedule order.
+        reruns = [s["id"] for s in self.reruns.slots]
+        order = [s["id"] for s in self.batch.slots]
+        self.assertEqual(reruns, sorted(reruns, key=order.index))
+        self.assertEqual(len(reruns), 3)
+        # A failed, timed-out or voided trial keeps whatever text it recorded, as a row.
+        outcomes = Counter(v["outcome"] for v in key["codes"].values())
+        # Timeouts: attempt 2's two at the clock and its short one, attempt 3's, one rerun's.
+        self.assertEqual((outcomes["timeout"], outcomes["failed"]), (5, 1))
+        self.assertEqual(sum(v["disposition"] == "technical void" for v in key["codes"].values()), 1)
+        self.assertEqual(set(key["stages"]), {"attempt 1", "attempt 2", "attempt 3", "timeout rerun"})
+        manifest = json.loads((self.bundle / "manifest.json").read_text())
+        self.assertEqual(manifest["trials_scheduled"], 35)
+
+    def test_the_sheet_and_reader_carry_no_stage_rerun_arm_or_outcome(self):
+        self.build(full_path={1})
+        self.prepare()
+        sheet = (self.bundle / self.batch.study.sheet).read_text()
+        html = (self.bundle / "review.html").read_text()
+        payload = json.loads(html.split("const payload = ")[1].split(";\nconst columns")[0])
+        self.assertTrue(all(set(row) == set(blind.review.COLUMNS) for row in payload["rows"]))
+        rows_text = json.dumps(payload["rows"])
+        forbidden = [guard.FRESH_STAGE, guard.FRESH_CONTINUATION_STAGE, guard.FRESH_ATTEMPT3_STAGE,
+                     guard.FRESH_RERUN_STAGE, "study-a-", "transfer-tee-", "-r1-block", "-r2-baseline",
+                     "technical void", "closed by the block", "settled", "cost_usd", "synthetic-head",
+                     "Full path", str(self.batch.notes)]
+        forbidden += [stage.config_sha for stage in self.batch.stages]
+        for text in forbidden:
+            with self.subTest(text=text):
+                self.assertNotIn(text, sheet)
+                self.assertNotIn(text, rows_text)
+                self.assertNotIn(text, html.replace(blind.NOTE.replace("\n", "\\n"), ""))
+        for word in ("rerun", "attempt", "timeout", "disposition", "answered", "failed"):
+            self.assertNotIn(word, rows_text.lower().replace("literal", ""))
+        # The rows are shuffled whole: with the shuffle replaced by a reversal, the reruns, built
+        # last, come first, so they are mixed in with the primary rows, not appended.
+        shutil.rmtree(self.bundle)
+
+        class Reversal:
+            def shuffle(self, rows):
+                rows.reverse()
+        with mock.patch.object(blind.secrets, "SystemRandom", Reversal):
+            self.prepare()
+        key = self.key()
+        order = [key["codes"][row["code"]]["rerun"] for row in blind.review.read_sheet(self.bundle / self.batch.study.sheet)]
+        self.assertEqual(order[:3], [True, True, True])
+
+    def test_a_launched_stage_must_be_named(self):
+        self.build()
+        for left_out in ("attempt 2", "attempt 3", "timeout rerun"):
+            with self.subTest(left_out=left_out):
+                stages = {k: v for k, v in self.batch.stage_args().items() if k != left_out}
+                with self.assertRaisesRegex(blind.Refused, f"{left_out} was launched"):
+                    self.prepare(stages)
+                self.assertFalse(self.bundle.exists())
+        self.assertEqual(self.prepare()[0], 4 + 18 + 9 + 3)  # quiet when every stage is named
+
+    def test_attempt_3_absent_or_stopped_before_its_worker(self):
+        # Attempt 2 ran every slot it was given: no attempt 3, and the reruns follow attempt 2.
+        self.build(attempt3=False, kinds=["timeout"] + ["answered"] * 26)
+        rows, _ = self.prepare()
+        self.assertEqual(rows, 4 + 27 + 1)
+        shutil.rmtree(self.root)
+        self.root.mkdir()
+        # Attempt 3 refused before its worker started: its slots stay not started, no rows.
+        self.build(attempt3=False, rerun=False)
+        self.batch.later(blind.ATTEMPT3, [], before_worker=True)
+        rows, _ = self.prepare()
+        self.assertEqual(rows, 4 + 18)
+        loaded = blind.load_study(self.batch.study, self.batch.stage_args())
+        unstarted = [sid for sid, entry in loaded["held"].items() if entry["status"]["status"] == "not_started"]
+        self.assertEqual(len(unstarted), 9)
+        self.assertTrue(all(loaded["held"][sid]["spec"] is blind.ATTEMPT3 for sid in unstarted))
+        # The launcher refused its balance check after its launch claim, before any status.
+        shutil.rmtree(self.root)
+        self.root.mkdir()
+        self.build(attempt3=False, rerun=False)
+        third = self.batch.later(blind.ATTEMPT3, [], before_worker="claim only")
+        self.assertFalse(Path(third.config["status_path"]).exists())
+        self.assertEqual(self.prepare()[0], 4 + 18)
+        loaded = blind.load_study(self.batch.study, self.batch.stage_args())
+        reasons = {entry["status"]["reason"] for entry in loaded["held"].values() if entry["spec"] is blind.ATTEMPT3}
+        self.assertEqual(reasons, {"the launcher refused before its first trial: a launch claim and no status"})
+        shutil.rmtree(self.bundle)
+        fresh_batch.put(third.config["ledger_path"], {"calls": []})  # a ledger with no status: inspect it
+        with self.assertRaisesRegex(blind.Refused, "no status"):
+            self.prepare()
+
+    def test_reruns_absent_leave_the_timeouts_unrerun(self):
+        self.build(rerun=False)
+        rows, _ = self.prepare()
+        self.assertEqual(rows, 4 + 18 + 9)
+        self.assertFalse(any(v["rerun"] for v in self.key()["codes"].values()))
+
+    def test_the_reruns_must_be_every_primary_timeout_once(self):
+        self.build(rerun=False)
+        derived = self.batch.later(blind.RERUN, [], bind=False).slots
+        shutil.rmtree(self.batch.notes / "study-a-rerun.results")
+        self.batch.stages.pop()
+        for given in (derived[:-1], derived + derived[:1], derived[::-1]):
+            with self.subTest(slots=[s["id"] for s in given]):
+                self.batch.stages = self.batch.stages[:3]
+                for name in ("results",):
+                    shutil.rmtree(self.batch.notes / f"study-a-rerun.{name}", ignore_errors=True)
+                stage = fresh_batch.Stage(self.batch, blind.RERUN, ["answered"] * len(given), given=given)
+                self.batch.stages.append(stage)
+                with self.assertRaisesRegex(blind.Refused, "slots this stage was given"):
+                    self.prepare()
+
+    def test_a_record_whose_disposition_or_settlements_differ_from_the_runner_is_refused(self):
+        self.build(attempt3=False, rerun=False, bind=False)
+        index = 0  # attempt 2's first slot, a clock timeout
+        original = self.second.path(index).read_bytes()
+        for change, pattern in (({"disposition": None}, "disposition differs"),
+                                ({"disposition": "technical void"}, "disposition differs"),
+                                ({"no_response_settlements": 1}, "settlement counts"),
+                                ({"clock_settlements": 0}, "settlement counts"),
+                                ({"attempt": 3}, "scheduled slot")):
+            with self.subTest(change=change):
+                self.second.edit(index, **change)
+                with self.assertRaisesRegex(blind.Refused, pattern):
+                    self.prepare()
+                self.second.path(index).write_bytes(original)
+        self.assertEqual(self.prepare()[0], 4 + 18)
+
+    def test_a_file_a_later_stage_bound_may_not_change(self):
+        self.build(attempt3=False, rerun=False)
+        status = self.batch.notes / "study-a.status.json"
+        fresh_batch.put(status, {**json.loads(status.read_text()), "note": "edited after attempt 2 was prepared"})
+        with self.assertRaisesRegex(blind.Refused, "attempt 2: a file it bound has changed"):
+            self.prepare()
+
+    def test_a_rerun_record_names_the_primary_record_it_reruns(self):
+        self.build()
+        index = 0
+        rerun_of = json.loads(self.reruns.path(index).read_text())["rerun_of"]
+        self.reruns.edit(index, rerun_of={**rerun_of, "record_sha256": "0" * 64})
+        with self.assertRaisesRegex(blind.Refused, "scheduled slot"):
+            self.prepare()
+
+    def test_the_command_line_names_each_stage_and_shows_no_answer(self):
+        self.build()
+        argv = ["browser_use_fresh_review.py", "prepare", "--bundle", str(self.bundle)]
+        for flag, stage in (("--attempt1", "attempt 1"), ("--attempt2", "attempt 2"), ("--attempt3", "attempt 3"),
+                            ("--rerun", "timeout rerun")):
+            path, sha = self.batch.stage_args()[stage]
+            argv += [flag, str(path), sha]
+        out = io.StringIO()
+        with mock.patch.object(sys, "argv", argv), contextlib.redirect_stdout(out):
+            self.assertEqual(blind.main(self.batch.study), 0)
+        self.assertIn("Prepared 34 blank review rows", out.getvalue())
+        self.assertNotIn("The answer is", out.getvalue())
+        shutil.rmtree(self.bundle)
+        err = io.StringIO()
+        with mock.patch.object(sys, "argv", argv[:4] + argv[4:7]), contextlib.redirect_stderr(err):
+            self.assertEqual(blind.main(self.batch.study), 1)  # attempt 1 alone: the later stages exist
+        self.assertIn("attempt 2 was launched", err.getvalue())
+
+    def test_full_path_in_a_conversation_is_flagged_in_the_private_key_only(self):
+        self.build(full_path={1, 5})
+        self.prepare()
+        flagged = {(v["stage"], v["slot"]) for v in self.key()["codes"].values() if v["conversation"]["full_path"]}
+        expected = {(guard.FRESH_CONTINUATION_STAGE, self.second.slots[i]["id"]) for i in (1, 5)}
+        self.assertEqual(flagged, expected)  # quiet on every other conversation
+        self.assertTrue(all(v["conversation"]["files"] == 2 for v in self.key()["codes"].values()))
 
 
 if __name__ == "__main__":

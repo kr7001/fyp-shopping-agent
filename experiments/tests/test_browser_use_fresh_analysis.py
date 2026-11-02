@@ -19,6 +19,9 @@ sys.path.insert(0, str(ROOT / "tools"))
 import fresh_batch  # noqa: E402
 import browser_use_fresh_analysis as analysis  # noqa: E402
 import browser_use_fresh_review as blind  # noqa: E402
+import guarded_browser_use as guard  # noqa: E402
+
+CORRECT = ("answered", "answered-settled")  # the kinds whose answer names the key's price
 
 
 def enumerated_p(strata):
@@ -51,21 +54,28 @@ class Case(unittest.TestCase):
         self.study = self.batch.study
         if before_prepare:
             before_prepare(self.batch)
-        blind.prepare(self.study, self.batch.config_path, self.batch.config_sha, self.bundle)
+        blind.prepare(self.study, self.batch.stage_args(), self.bundle)
         if grades is not False:
             self.grade(grades or {})
 
     def index(self, slot_id):
         return next(i for i, s in enumerate(self.batch.slots) if s["id"] == slot_id)
 
+    def kind_of(self, mapped):
+        """The stage that saved a trial, and the kind of trial the fixture wrote there."""
+        stage = next(s for s in self.batch.stages if s.spec.stage == mapped["stage"])
+        return stage, stage.kinds[stage.index(mapped["slot"])]
+
     def grade(self, special, save=True):
-        """Answers of kind "answered" correct, the rest not correct, except `special` by index."""
+        """Answers of a correct kind graded correct, the rest not correct, except `special`: attempt
+        1's slots by schedule index, any other trial by (stage, slot id)."""
         key = json.loads((self.bundle / "private-arm-key.json").read_text())
         rows = blind.review.read_sheet(self.bundle / self.study.sheet)
         for row in rows:
-            index = self.index(key["codes"][row["code"]]["slot"])
-            kind = self.batch.kinds[index]
-            row["hand_verdict"] = special.get(index, "correct" if kind == "answered" else "not correct")
+            mapped = key["codes"][row["code"]]
+            stage, kind = self.kind_of(mapped)
+            name = self.index(mapped["slot"]) if stage is self.batch else (mapped["stage"], mapped["slot"])
+            row["hand_verdict"] = special.get(name, "correct" if kind in CORRECT else "not correct")
         incoming = self.root / "download.csv"
         incoming.write_text(blind.review.csv_text(rows), encoding="utf-8-sig", newline="")
         if save:
@@ -103,7 +113,7 @@ class Gate(Case):
         rows = blind.review.read_sheet(reviewed)
         rows[0]["hand_verdict"] = ""
         reviewed.write_text(blind.review.csv_text(rows), encoding="utf-8", newline="")
-        with mock.patch.object(analysis.blind, "load_batch", side_effect=AssertionError("no batch read")):
+        with mock.patch.object(analysis.blind, "load_study", side_effect=AssertionError("no batch read")):
             with self.assertRaisesRegex(analysis.Refused, "Complete all 32"):
                 self.run_analysis()
         rows[0]["hand_verdict"] = "not correct"  # complete, but not what the receipt bound
@@ -311,7 +321,7 @@ class Stopped(Case):
     def test_a_guard_interruption_is_a_void_whose_calls_are_still_charged(self):
         self.make(fresh_batch.kinds_with({10: "interrupted"}, ran=11))
         result = self.run_analysis()
-        void, accounting = self.slot(result, 10), result["accounting"]
+        void, accounting = self.slot(result, 10), result["accounting"]["stages"][0]
         self.assertEqual((void["disposition"], void["openings"], void["script_fetches"], void["code"]),
                          ("technical void", None, None, None))
         self.assertIn("guard stopped", void["disposition_reason"])
@@ -321,6 +331,7 @@ class Stopped(Case):
         self.assertAlmostEqual(void["charge_usd"], sum(c["cost_usd"] for c in leftover), places=12)
         ledger_total = json.loads(Path(self.batch.config["ledger_path"]).read_text())["charged_usd"]
         self.assertAlmostEqual(accounting["total_charge_usd"], ledger_total, places=12)
+        self.assertAlmostEqual(result["accounting"]["total_charge_usd"], ledger_total, places=12)
 
 
 class Unblinded(Case):
@@ -353,7 +364,7 @@ class Unknown(Case):
         self.assertIsNotNone(self.slot(result, 3)["charge_usd"])
         accounting = result["accounting"]
         self.assertEqual((accounting["unsettled_requests"], accounting["total_charge_usd"]), (1, None))
-        self.assertAlmostEqual(accounting["reserved_bound_of_unknown_usd"], 0.2117632, places=12)
+        self.assertAlmostEqual(accounting["stages"][0]["reserved_bound_of_unknown_usd"], 0.2117632, places=12)
 
 
 class FrozenCode(unittest.TestCase):
@@ -375,15 +386,17 @@ class FrozenCode(unittest.TestCase):
 
     def test_changed_code_is_refused(self):
         config = {"hashes": {name: blind.digest(ROOT / name) for name in analysis.RAN_WITH}}
-        analysis.frozen_code(config)  # quiet on the repository's own code
+        analysis.frozen_code([config, config])  # quiet on the repository's own code
         with mock.patch.object(analysis, "SCORE_SHA256", "0" * 64), \
                 self.assertRaisesRegex(analysis.Refused, "scorer changed"):
-            analysis.frozen_code(config)
-        with mock.patch.dict(analysis.FUNCTIONS, {key: "0" * 64 for key in analysis.FUNCTIONS}), \
-                self.assertRaisesRegex(analysis.Refused, "changed"):
-            analysis.frozen_code(config)
-        with self.assertRaisesRegex(analysis.Refused, "the file the batch ran with"):
-            analysis.frozen_code({"hashes": {**config["hashes"], "experiments/paths.py": "0" * 64}})
+            analysis.frozen_code([config])
+        for key in analysis.FUNCTIONS:
+            with self.subTest(function=key[1]), mock.patch.dict(analysis.FUNCTIONS, {key: "0" * 64}), \
+                    self.assertRaisesRegex(analysis.Refused, key[1] + " in .* changed"):
+                analysis.frozen_code([config])
+        # Every stage's own binding counts, not only attempt 1's.
+        with self.assertRaisesRegex(analysis.Refused, "the file a stage ran with"):
+            analysis.frozen_code([config, {"hashes": {**config["hashes"], "experiments/paths.py": "0" * 64}}])
 
 
 class Faults(Case):
@@ -433,6 +446,189 @@ class Faults(Case):
 
     def test_a_record_whose_own_sums_disagree_with_its_calls_is_refused(self):
         self.refused(lambda batch: batch.edit(9, total_cost_usd=1.0), "total_cost_usd")
+
+
+# What each kind of trial is under the plan and amendments 2 to 4, written out here apart from
+# the code under test (fresh_batch's kinds; a "short" timeout and an infrastructure error are the
+# frozen classification's voids, an interrupted slot the guard's).
+DISPOSITION = {"answered": "answered", "wrong": "answered", "answered-settled": "answered", "failed": "failed",
+               "timeout": "timeout", "closed": blind.CLOSED, "void-settled": "technical void",
+               "short": "technical void", "infra": "technical void", "interrupted": "technical void"}
+# Attempt 2's frozen void sits in another question than its settled void, so the two voids'
+# strata differ and a view that took one for the other would show it.
+SECOND = ["timeout", "answered", "void-settled", "answered-settled", "wrong", "answered", "timeout"] \
+    + ["answered"] * 9 + ["short"]
+
+
+class Staged(Case):
+    """Attempt 1 stopped on its interrupted fifth slot; attempt 2 ran 17 slots (two clock timeouts,
+    a void and an answer after settled requests, two answers whose conversation holds "Full
+    path:") and stopped on a frozen void; attempt 3 ran the 10 left, the last a clock timeout; the
+    reruns ran the three timeouts once each, the second timing out again. The test grades one
+    timeout correct (it still counts 0) and one answer unscorable."""
+
+    def build(self, attempt3=True, rerun=True, second=SECOND, third=("answered",) * 9 + ("timeout",)):
+        self.batch = fresh_batch.Batch(self.root / "repo", ["answered"] * 4 + ["interrupted"])
+        self.study = self.batch.study
+        self.second = self.batch.later(blind.ATTEMPT2, second, full_path={1, 5})
+        if attempt3:
+            self.third = self.batch.later(blind.ATTEMPT3, list(third))
+        if rerun:
+            self.reruns = self.batch.later(blind.RERUN, ["answered", "timeout", "answered"])
+        blind.prepare(self.study, self.batch.stage_args(), self.bundle)
+        stage2 = guard.FRESH_CONTINUATION_STAGE
+        self.special = {(stage2, self.second.slots[0]["id"]): "correct",
+                        (stage2, self.second.slots[7]["id"]): "unscorable"}
+        self.grade(self.special)
+        return self.run_analysis()
+
+    def expected(self):
+        """Each of the 32 slots, from the kinds alone: (task, arm, disposition, counted, timeout's
+        rerun count or None, settled by no-response, settled by any, full path, graded unscorable)."""
+        held, reruns = {}, {}
+        for stage in self.batch.stages:
+            for i, slot in enumerate(stage.slots):
+                if i < len(stage.kinds) and stage.path(i).exists() or stage.path(i, ".interrupted.json").exists():
+                    kind = stage.kinds[i]
+                    (held if stage.spec.primary else reruns)[slot["id"]] = (stage, i, kind)
+        rows = []
+        for slot in self.batch.slots:
+            stage, i, kind = held.get(slot["id"], (None, None, None))
+            state = DISPOSITION[kind] if kind else "not started"
+            grade = self.special.get((stage.spec.stage, slot["id"]) if stage and stage is not self.batch else None,
+                                     "correct" if kind in CORRECT else "not correct")
+            rerun = reruns.get(slot["id"])
+            settling = stage is not None and stage.spec.stage in blind.SETTLING
+            rows.append({"task": slot["question"]["id"], "condition": slot["condition"], "disposition": state,
+                         "counted": int(state == "answered" and grade == "correct"),
+                         "rerun": None if rerun is None else int(DISPOSITION[rerun[2]] == "answered"
+                                                                   and rerun[2] in CORRECT),
+                         "no_response": kind in ("answered-settled", "void-settled"),
+                         "settled": kind in ("answered-settled", "void-settled") or (settling and kind == "timeout"),
+                         "full_path": stage is self.second and i in (1, 5), "unscorable": grade == "unscorable"})
+        return rows
+
+    def strata(self, rows, keep, score=lambda r: r["counted"]):
+        out = []
+        for task in self.study.task_ids:
+            stratum = []
+            for arm in ("block", "baseline"):
+                used = [r for r in rows if r["task"] == task and r["condition"] == arm and keep(r)]
+                stratum += [sum(score(r) for r in used), len(used)]
+            out.append(tuple(stratum))
+        return out
+
+    def check(self, view, strata):
+        self.assertEqual([(s["block_correct"], s["block_trials"], s["baseline_correct"], s["baseline_trials"])
+                          for s in view["strata"]], strata)
+        self.assertAlmostEqual(view["p"], enumerated_p(strata), places=12)
+
+    def test_every_view_of_the_staged_slots(self):
+        result = self.build()
+        rows = self.expected()
+        ran = lambda r: r["disposition"] in ("answered", "failed", "timeout", blind.CLOSED)  # noqa: E731
+        timeout = lambda r: r["disposition"] == "timeout"  # noqa: E731
+        self.assertEqual([r["disposition"] for r in result["slots"]], [r["disposition"] for r in rows])
+        self.assertEqual(Counter(r["disposition"] for r in rows), {"answered": 26, "timeout": 3, "technical void": 3})
+        primary = result["primary_test"]
+        self.check(primary, self.strata(rows, ran))
+        self.assertEqual((primary["slots_in_test"], primary["complete_against_plan"]), (29, False))
+        self.assertEqual(sorted(r["reason"].split(":")[0] for r in primary["left_out"]),
+                         ["no answer after 1 request(s) with no response, settled at the bound; the frozen "
+                          "classification", "the frozen classification",
+                          "the guard stopped the slot while it ran (interrupted)"])
+        views = result["sensitivities"]
+        self.check(views["unscorable_left_out"], self.strata(rows, lambda r: ran(r) and not r["unscorable"]))
+        self.check(views["timeouts_left_out"], self.strata(rows, lambda r: ran(r) and not timeout(r)))
+        self.check(views["timeouts_replaced_by_rerun"],
+                   self.strata(rows, ran, lambda r: r["rerun"] if timeout(r) else r["counted"]))
+        self.check(views["voids_after_settlement_not_correct"],
+                   self.strata(rows, lambda r: ran(r) or r["no_response"], lambda r: r["counted"] if ran(r) else 0))
+        self.assertEqual({r["slot"] for r in views["voids_after_settlement_not_correct"]["left_out"]},
+                         {self.batch.slots[4]["id"], self.second.slots[16]["id"]})  # the guard's and the frozen void
+        self.check(views["settled_request_slots_left_out"], self.strata(rows, lambda r: ran(r) and not r["settled"]))
+        self.check(views["no_response_slots_left_out"], self.strata(rows, lambda r: ran(r) and not r["no_response"]))
+        self.check(views["full_path_slots_left_out"], self.strata(rows, lambda r: ran(r) and not r["full_path"]))
+        # The views differ from the primary, so each one's arithmetic is really exercised.
+        for name in ("timeouts_left_out", "settled_request_slots_left_out", "full_path_slots_left_out",
+                     "voids_after_settlement_not_correct", "unscorable_left_out", "no_response_slots_left_out"):
+            self.assertNotEqual(views[name]["slots_in_test"], primary["slots_in_test"], name)
+        self.assertNotEqual(views["timeouts_replaced_by_rerun"]["block_correct_of_trials"]
+                            + views["timeouts_replaced_by_rerun"]["baseline_correct_of_trials"],
+                            primary["block_correct_of_trials"] + primary["baseline_correct_of_trials"])
+
+    def test_timeouts_reruns_settlements_and_full_paths_are_listed(self):
+        result = self.build()
+        rows = self.expected()
+        for arm in ("block", "baseline"):
+            self.assertEqual(result["timeouts_per_arm"][arm]["timeouts"],
+                             sum(r["disposition"] == "timeout" for r in rows if r["condition"] == arm))
+        timed_out = [r for r in result["slots"] if r["disposition"] == "timeout"]
+        graded = next(r for r in timed_out if r["human_verdict"] == "correct")
+        self.assertEqual(graded["counted"], 0)  # a timeout scores 0 whatever its grade
+        self.assertIn(graded["slot"], [r["slot"] for r in result["graded_but_decided_by_disposition"]])
+        substituted = result["sensitivities"]["timeouts_replaced_by_rerun"]["substituted"]
+        self.assertEqual([s["slot"] for s in substituted], [r["slot"] for r in timed_out])
+        self.assertEqual([s["used"] for s in substituted], [1, 0, 1])
+        self.assertTrue(all("5400 s" in s["label"] for s in substituted))
+        reruns = result["reruns"]["trials"]
+        self.assertEqual([(r["rerun"], r["clock_s"], r["disposition"]) for r in reruns],
+                         [(True, 5400, "answered"), (True, 5400, "timeout"), (True, 5400, "answered")])
+        self.assertEqual(sum(v["rerun"] for v in result["reruns"]["by_arm"].values()), 3)
+        # Never pooled: the arms count only the 32 primary slots.
+        self.assertEqual(sum(a["scheduled"] for a in result["arms"].values()), 32)
+        voids = self.batch.slots[7]["id"]  # attempt 2's third slot, a void after a settled request
+        self.assertEqual(result["sensitivities"]["voids_after_settlement_not_correct"]["counted_not_correct"], [voids])
+        listed = {(r["slot"], r["stage"]) for r in result["settled_request_slots"]}
+        settled = {(self.second.slots[i]["id"], "attempt 2") for i in (0, 2, 3, 6)}
+        settled |= {(self.third.slots[9]["id"], "attempt 3")}
+        settled |= {(self.reruns.slots[1]["id"], "timeout rerun")}  # the rerun that timed out again
+        self.assertEqual(listed, settled)
+        paths = result["full_path_slots"]
+        self.assertEqual({r["slot"] for r in paths["slots"]}, {self.second.slots[i]["id"] for i in (1, 5)})
+        self.assertEqual(paths["count_primary"], 2)
+        self.assertEqual(sum(paths["by_arm_primary"].values()), 2)
+
+    def test_each_stage_reconciles_with_its_own_ledger(self):
+        result = self.build()
+        stages = {a["stage"]: a for a in result["accounting"]["stages"]}
+        self.assertEqual(list(stages), ["attempt 1", "attempt 2", "attempt 3", "timeout rerun"])
+        self.assertEqual(stages["attempt 1"]["their_slot"], self.batch.slots[4]["id"])
+        self.assertEqual(stages["attempt 2"]["settled_calls"], 4)  # 2 clock, 2 no-response
+        self.assertAlmostEqual(stages["attempt 2"]["settled_bound_usd"], 4 * fresh_batch.BOUND, places=12)
+        self.assertIsNone(stages["attempt 2"]["total_charge_usd"])  # a settled request has no provider charge
+        self.assertIsNotNone(stages["attempt 1"]["total_charge_usd"])
+        for stage in self.batch.stages:
+            ledger = json.loads(Path(stage.config["ledger_path"]).read_text())
+            self.assertAlmostEqual(stages[stage.spec.name]["known_charge_usd"], ledger["charged_usd"], places=12)
+        self.assertIsNone(result["accounting"]["total_charge_usd"])
+        settled = next(r for r in result["slots"] if r["slot"] == self.second.slots[3]["id"])
+        self.assertEqual((settled["charge_usd"], settled["settled_calls"], settled["no_response_settlements"]),
+                         (None, 1, 1))
+        self.assertIsNotNone(settled["charge_known_part_usd"])
+
+    def test_without_reruns_the_timeouts_keep_their_zero_in_sensitivity_2(self):
+        result = self.build(rerun=False)
+        rows = self.expected()
+        ran = lambda r: r["disposition"] in ("answered", "failed", "timeout", blind.CLOSED)  # noqa: E731
+        view = result["sensitivities"]["timeouts_replaced_by_rerun"]
+        self.check(view, self.strata(rows, ran))
+        self.assertTrue(all(s["used"] is None and "not rerun" in s["label"] for s in view["substituted"]))
+        self.assertEqual(result["reruns"]["trials"], [])
+
+    def test_without_attempt_3_its_slots_are_not_started_and_the_test_incomplete(self):
+        result = self.build(attempt3=False)
+        left = Counter(r["disposition"] for r in result["primary_test"]["left_out"])
+        self.assertEqual(left, {"technical void": 3, "not started": 10})
+        self.assertEqual(result["primary_test"]["slots_in_test"], 19)
+        self.assertEqual(result["slots_run_by_stage"], {"attempt 1": 5, "attempt 2": 17})
+
+    def test_attempt_2_ran_everything_so_no_attempt_3(self):
+        second = ["timeout"] + ["answered"] * 26
+        result = self.build(attempt3=False, second=second)
+        self.assertEqual(result["primary_test"]["slots_in_test"], 31)
+        self.assertEqual([r["disposition"] for r in result["primary_test"]["left_out"]], ["technical void"])
+        self.assertEqual(len(result["reruns"]["trials"]), 1)
 
 
 if __name__ == "__main__":
