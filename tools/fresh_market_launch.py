@@ -433,11 +433,17 @@ def reconcile(account=None):
         "account_read": "guarded_browser_use.account_snapshot: GET /api/v1/key and /api/v1/credits"})
 
 
-def continuation_preflight(tests_log, packages=None):
+def continuation_preflight(tests_log, packages=None, *, receipt_path=None, attempt=2):
     """The continuation's free preflight receipt: the Study A suites at the checked-out code
     (a new log), the Browser Use environment's packages read again against the frozen lock, the
     Chrome build now, and attempt 1's live shop check reused with its own date, not run again.
-    `packages` is a test seam for the package list."""
+    `packages` is a test seam for the package list. Amendment 4's stages (2 November 2026) write
+    the same receipt to their own `receipt_path`, their package list beside it."""
+    receipt_file = CONTINUATION_PREFLIGHT if receipt_path is None else Path(receipt_path).resolve()
+    package_file = (CONTINUATION_PACKAGES if receipt_path is None
+                    else receipt_file.with_name(receipt_file.stem + "-installed-packages.txt"))
+    if receipt_file.exists():
+        raise SystemExit(f"{receipt_file} exists; move it away first")
     prior = json.loads((NOTES / "study-a-preflight.json").read_text())
     reference = json.loads((NOTES / "reference/attempt2-command.json").read_text())
     tests = Path(tests_log).read_text()
@@ -450,26 +456,28 @@ def continuation_preflight(tests_log, packages=None):
     if packages is None:
         packages = subprocess.run([reference["python"], "-m", "pip", "freeze", "--all"],
                                   capture_output=True, text=True, check=True).stdout
-    if CONTINUATION_PACKAGES.exists():
-        raise SystemExit(f"{CONTINUATION_PACKAGES} exists; move it away first")
-    CONTINUATION_PACKAGES.write_text(packages)
+    if package_file.exists():
+        raise SystemExit(f"{package_file} exists; move it away first")
+    package_file.write_text(packages)
     build = chrome_build(reference["browser_executable"])
-    matches = CONTINUATION_PACKAGES.read_bytes() == (ROOT / reference["dependencies_lock"]).read_bytes()
+    matches = package_file.read_bytes() == (ROOT / reference["dependencies_lock"]).read_bytes()
     receipt = {"verdict": "PASS" if matches and build == reference["preflight_browser_version"] else "FAIL",
-               "scope": "free preparation of the continuation; the verifier's command review is a separate receipt",
-               "study_id": guard_a.FRESH_BUDGET, "attempt": 2, "model_calls": 0, "browser_version": build,
+               "scope": ("free preparation of the continuation" if receipt_path is None else
+                         "free preparation of amendment 4's stages") + "; the verifier's command review is a separate receipt",
+               "study_id": guard_a.FRESH_BUDGET, "attempt": attempt, "model_calls": 0, "browser_version": build,
                "checked_at": dt.datetime.now(dt.timezone.utc).isoformat(),
                "synthetic_tests": {"run": int(ran.group(1)), "failed": 0,
                                    "log": str(Path(tests_log).resolve().relative_to(ROOT)), "log_sha256": sha(tests_log)},
                "dependencies_match_frozen_lock": matches,
-               "installed_packages": str(CONTINUATION_PACKAGES.relative_to(ROOT)),
+               "installed_packages": str(package_file.relative_to(ROOT)),
                "shop_check": {**shop, "reused": "attempt 1's live check, run 2 November 02:09 to 02:17 "
-                                                "before attempt 1; not run again for the continuation",
+                                                "before attempt 1; not run again for the continuation"
+                                                + ("" if receipt_path is None else " or amendment 4's stages"),
                               "from_receipt": "notes/fresh-market-2-nov/study-a-preflight.json"},
                "source_sha256": {name: sha(ROOT / name) for name in (
                    "tools/guarded_browser_use.py", "experiments/runners/browser_use_transfer.py",
                    "experiments/runners/browser_use_runner.py", "experiments/runners/browser_use_fetches.py")}}
-    return write_json(CONTINUATION_PREFLIGHT, receipt)
+    return write_json(receipt_file, receipt)
 
 
 def continuation_estimate(ledger, slots):
@@ -548,6 +556,153 @@ def continuation():
     return [path, write_json(NOTES / "study-a-continuation-command.argv.json", command), approval]
 
 
+# ------------------------------------------------------------------------------ amendment 4
+#
+# notes/fresh-market-2-nov/amendment-4-2-nov.md: stages that start after attempt 2 ends, each
+# prepared from what the stages before it left, then verified and approved on its own. Study A
+# shares a total cap of USD 10 across them; every earlier attempt's counted spend carries over.
+
+CONTINUATION_COMMAND = f"{guard_a.FRESH_NOTES}/study-a-continuation-command.json"
+AMENDMENTS = [f"{guard_a.FRESH_NOTES}/amendment-3-2-nov.md", f"{guard_a.FRESH_NOTES}/amendment-4-2-nov.md"]
+
+
+def counted_spend(stage, names):
+    """The carryover of a stage of amendment 4: what the guard counts the attempts in `names`
+    spent (`carried_spend`), with each attempt's parts beside it for the reconciliation file."""
+    parts = []
+    for name in names:
+        ledger = json.loads((ROOT / name).read_text())
+        pending = (sum(c["reserved_usd"] for c in ledger["calls"] if c["cost_usd"] is None)
+                   + sum(c["reserved_usd"] for c in ledger["inflight"].values()))
+        known = sum(c["cost_usd"] for c in ledger["calls"] if c["cost_usd"] is not None)
+        account = max(0, ledger["highwater_usage"] - ledger["start_usage"])
+        parts.append({"ledger": name, "ledger_sha256": sha(ROOT / name), "calls": len(ledger["calls"]),
+                      "in_flight": len(ledger["inflight"]), "known_charge_usd": known,
+                      "without_known_charge_at_bound_usd": pending, "account_usage_usd": account,
+                      "counted_usd": max(max(known, ledger["charged_usd"]) + pending, account),
+                      "blocked_reason": ledger["blocked_reason"]})
+    carryover, unsettled = guard_a.carried_spend([ROOT / name for name in names], names)
+    return carryover, {
+        "study_budget_id": guard_a.FRESH_BUDGET, "stage": stage,
+        "prior_ledger_sha256": {part["ledger"]: part["ledger_sha256"] for part in parts},
+        "attempts": parts, "carryover_usd": carryover, "held_back_from_account_usd": unsettled,
+        "shared_cap_usd": guard_a.FRESH_A4_CAP_USD, "remaining_allowance_usd": guard_a.FRESH_A4_CAP_USD - carryover,
+        "rule": "each attempt counts the larger of its known charges plus every request without a known "
+                "charge at its reserved bound (settled, unknown or in flight), and the account's usage over "
+                "its own run; guarded_browser_use.carried_spend, the computation the launcher checks",
+        "prepared_at": dt.datetime.now(dt.timezone.utc).isoformat(), "model_calls": 0,
+        "account_read": "none here; the launcher reads the account before its first call"}
+
+
+def charge_per_started_slot(names, started):
+    """The provider's known charges in these ledgers over the slots their attempts started
+    (LESSONS 41): settlements are not charges, so they are left out, as in the continuation's."""
+    known = sum(call["cost_usd"] for name in names for call in json.loads((ROOT / name).read_text())["calls"]
+                if call["cost_usd"] is not None)
+    return known / started
+
+
+def up_to_ten_cents(value):
+    return math.ceil(round(value * 10, 9)) / 10
+
+
+def a4_receipt(preflight):
+    """The a4-preflight receipt, refused unless it passed, before anything is written."""
+    receipt = json.loads(Path(preflight).read_text())
+    if receipt.get("verdict") != "PASS" or receipt.get("attempt") != "amendment-4":
+        raise SystemExit("amendment 4's stages need a passing a4-preflight receipt")
+    return receipt
+
+
+def a4_config(stage, commit, output, preflight, deadline, start_cutoff, evidence, carryover, estimate, **fields):
+    """Attempt 2's configuration with a stage of amendment 4's identity, budget, cutoff, paths,
+    preflight and commit, and `evidence` bound by hash beside every file attempt 2 ran with."""
+    prior = json.loads((ROOT / CONTINUATION_COMMAND).read_text())
+    if sha(ROOT / CONTINUATION_COMMAND) != guard_a.FRESH_CONTINUATION_SHA256:
+        raise SystemExit("study-a-continuation-command.json is not attempt 2's command")
+    receipt = a4_receipt(preflight)
+    folder = Path(output).resolve().parent
+    runtime = list(dict.fromkeys([*prior["runtime_input_files"], receipt["synthetic_tests"]["log"],
+                                  receipt["installed_packages"], *AMENDMENTS]))
+    config = {**prior, "stage": stage, "estimate_usd": estimate,
+              "cap_usd": guard_a.FRESH_A4_CAP_USD - carryover, "carryover_usd": carryover,
+              "shared_cap_usd": guard_a.FRESH_A4_CAP_USD, "deadline": deadline, "start_cutoff": start_cutoff,
+              "preflight_receipt": str(Path(preflight).resolve().relative_to(ROOT)), "runtime_input_files": runtime,
+              "verification_receipt": str(folder / f"{guard_a.FRESH_PREFIX[stage]}.verification.json"),
+              "approval_record": str(folder / f"{guard_a.FRESH_PREFIX[stage]}.approval.json"),
+              **{field: str(NOTES / name) for field, name in guard_a.fresh_files(stage).items()},
+              "reconciliation_file": guard_a.FRESH_A4_RECONCILIATION[stage], **fields, "expected_head": commit}
+    config.pop("prior_ledger_file", None)
+    names = set(prior["hashes"]) | set(runtime) | set(evidence) | {config["preflight_receipt"]}
+    config["hashes"] = {name: sha(ROOT / name) for name in sorted(names)}
+    moved = sorted(name for name, digest in prior["hashes"].items()
+                   if name not in guard_a.FRESH_RENEWED and config["hashes"][name] != digest)
+    if moved:
+        raise SystemExit("files attempt 2 ran with have changed: " + ", ".join(moved))
+    return config
+
+
+def write_a4(stage, output, config, summary):
+    """The configuration at `output`, its exact command beside it, and its approval record,
+    prepared but not approved: the session that holds the student's approval records their words."""
+    path = write_json(output, config)
+    command = [config["python"], str(ROOT / "tools/guarded_browser_use.py"), "--config", str(Path(path).resolve()),
+               "--execute"]
+    approval = write_json(config["approval_record"], {
+        "approved": False, "config_sha256": sha(path), "command": command, "user_message": "",
+        "approval_needed": f"the student's own words approving {summary}",
+        "amendment": AMENDMENTS[-1], "amendment_sha256": sha(ROOT / AMENDMENTS[-1]),
+        "estimate_usd": config["estimate_usd"], "cap_usd": config["cap_usd"], "carryover_usd": config["carryover_usd"],
+        "shared_cap_usd": config["shared_cap_usd"], "deadline": config["deadline"],
+        "start_cutoff": config["start_cutoff"], "prepared_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "to_launch": "after the verifier's PASS receipt binds this config_sha256, head and command, the "
+                     "launching session records the student's approval in user_message, sets approved to "
+                     "true and records when"})
+    return [path, write_json(Path(path).with_suffix(".argv.json"), command), approval]
+
+
+def attempt3(output, preflight, *, deadline=guard_a.FRESH_LATEST, start_cutoff=guard_a.FRESH_START_CUTOFF):
+    """Study A's attempt 3: the slots attempt 2 left never started, in their order, under its
+    condition, with attempts 1 and 2's counted spend carried into the USD 10 cap. With none left the
+    configuration still says so, and its launch ends without a paid call."""
+    commit, stage, notes = head(), guard_a.FRESH_ATTEMPT3_STAGE, guard_a.FRESH_NOTES
+    a4_receipt(preflight)
+    if sha(ROOT / CONTINUATION_COMMAND) != guard_a.FRESH_CONTINUATION_SHA256:
+        raise SystemExit("study-a-continuation-command.json is not attempt 2's command")
+    first = json.loads((NOTES / "study-a.results/schedule.json").read_text())["slots"]
+    given = first[guard_a.FRESH_KEPT_ANSWERED + guard_a.FRESH_KEPT_INTERRUPTED:]
+    try:
+        statuses, bound = guard_a.ended_stage(ROOT, guard_a.FRESH_CONTINUATION_STAGE,
+                                              guard_a.FRESH_CONTINUATION_SHA256, 2, given)
+    except guard_a.Stop as stop:
+        raise SystemExit(f"attempt 2 cannot be continued as it stands: {stop}") from None
+    remaining = [slot["id"] for slot in given if statuses[slot["id"]]["status"] == "not_started"]
+    names = [guard_a.FRESH_LEDGER[guard_a.FRESH_STAGE], guard_a.FRESH_LEDGER[guard_a.FRESH_CONTINUATION_STAGE]]
+    carryover, reconciliation = counted_spend(stage, names)
+    started = (guard_a.FRESH_KEPT_ANSWERED + guard_a.FRESH_KEPT_INTERRUPTED
+               + sum(row["status"] != "not_started" for row in statuses.values()))
+    estimate = up_to_ten_cents(charge_per_started_slot(names, started) * len(remaining)) if remaining else 0
+    written = [write_json(ROOT / guard_a.FRESH_A4_RECONCILIATION[stage], reconciliation)]
+    fields = {"attempt": 3, "prior_config_file": CONTINUATION_COMMAND,
+              "prior_status_file": f"{notes}/study-a-continuation.status.json",
+              "prior_schedule_file": f"{notes}/study-a-continuation.results/schedule.json",
+              "prior_slot_status_file": f"{notes}/study-a-continuation.results/slot-status.json",
+              "prior_ledger_files": names, "slot_ids": remaining}
+    evidence = [*bound, CONTINUATION_COMMAND, guard_a.FRESH_A4_RECONCILIATION[stage], *AMENDMENTS]
+    config = a4_config(stage, commit, output, preflight, deadline, start_cutoff, evidence, carryover, estimate,
+                       **fields)
+    guard_a.validate_fresh_budget(config)
+    if guard_a.validate_fresh_attempt3(config) != remaining:
+        raise SystemExit("attempt 3's guard reads other slots than the builder")
+    written += write_a4(stage, output, config, f"attempt 3 of Study A, its {len(remaining)} slots never "
+                                               f"started, within Study A's USD 10 cap")
+    ended = json.loads((NOTES / "study-a-continuation.status.json").read_text())
+    print(f"attempt 2 ended {ended['status']} ({ended.get('reason', 'all its slots')}); attempt 3 runs "
+          f"{len(remaining)} slot(s); carryover USD {carryover:.10f}, cap USD {config['cap_usd']:.10f}, "
+          f"estimate USD {estimate}" + ("" if remaining else "; its launch ends without a paid call"))
+    return written
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     modes = parser.add_subparsers(dest="mode", required=True)
@@ -561,6 +716,18 @@ def main():
     again = modes.add_parser("continuation-preflight")
     again.add_argument("--tests-log", type=Path, required=True)
     modes.add_parser("continuation")
+    # Amendment 4's stages (2 November 2026), each written to the path given, never over a file.
+    a4 = modes.add_parser("a4-preflight")
+    a4.add_argument("--tests-log", type=Path, required=True)
+    a4.add_argument("--output", type=Path, required=True)
+    third = modes.add_parser("attempt3")
+    for stage in (third,):
+        stage.add_argument("--output", type=Path, required=True, help="where the configuration is written")
+        stage.add_argument("--preflight", type=Path, required=True, help="the a4-preflight receipt")
+        stage.add_argument("--deadline", default=guard_a.FRESH_LATEST,
+                           help="no paid call after this (default and latest: the protocol's absolute stop)")
+        stage.add_argument("--start-cutoff", default=guard_a.FRESH_START_CUTOFF,
+                           help="no trial starts at or after this (default 2026-11-03T12:00:00+08:00)")
     args = parser.parse_args()
     if args.mode == "protocol":
         written = [b_protocol()]
@@ -572,6 +739,11 @@ def main():
         written = [reconcile()]
     elif args.mode == "continuation-preflight":
         written = [continuation_preflight(args.tests_log), CONTINUATION_PACKAGES]
+    elif args.mode == "a4-preflight":
+        receipt = continuation_preflight(args.tests_log, receipt_path=args.output, attempt="amendment-4")
+        written = [receipt, receipt.with_name(receipt.stem + "-installed-packages.txt")]
+    elif args.mode == "attempt3":
+        written = attempt3(args.output, args.preflight, deadline=args.deadline, start_cutoff=args.start_cutoff)
     elif args.mode == "continuation":
         written = continuation()
     else:

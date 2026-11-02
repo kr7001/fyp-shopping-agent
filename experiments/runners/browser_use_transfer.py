@@ -32,6 +32,9 @@ from guarded_browser_use import FRESH_BUDGET, FRESH_STAGE, GUARDED_STAGES  # noq
 # Its one continuation: attempt 1's unstarted slots only (2 November 2026).
 from guarded_browser_use import (FRESH_CONTINUATION_STAGE, FRESH_KEPT_ANSWERED, FRESH_KEPT_INTERRUPTED,  # noqa: E402
                                  FRESH_NO_ANSWER_STOP, FRESH_STAGES, validate_fresh_continuation)
+# Amendment 4's stages, under the continuation's rules, with a start cutoff (2 November 2026).
+from guarded_browser_use import (FRESH_ATTEMPT3_STAGE, FRESH_SETTLING_STAGES, START_CUTOFF_REASON,  # noqa: E402
+                                 deadline_epoch, validate_fresh_attempt3)
 
 STUDY_ID = "browser-use-transfer-2026-10-31"
 ARMS = ("baseline", "block")
@@ -166,6 +169,15 @@ def preview(config):
             raise Stop("the continuation's slots are not attempt 1's unstarted ones in their order")
         continuation = {"attempt": 2, "prior_completed_count": FRESH_KEPT_ANSWERED,
                         "prior_interrupted": kept[FRESH_KEPT_ANSWERED:], "original_slot_count": len(kept) + len(slots)}
+    if config["stage"] == FRESH_ATTEMPT3_STAGE:
+        # The slots attempt 2 left never started, in their order (amendment 4); every slot
+        # attempts 1 and 2 ran or interrupted stays as it ended, never replayed.
+        remaining = validate_fresh_attempt3(config, expected_slots=slots)
+        original = len(slots)
+        slots = [slot for slot in slots if slot["id"] in remaining]
+        if [slot["id"] for slot in slots] != remaining:
+            raise Stop("attempt 3's slots are not attempt 2's unstarted ones in their order")
+        continuation = {"attempt": 3, "original_slot_count": original}
     fresh = config["stage"] in FRESH_STAGES
     return {"study_id": FRESH_BUDGET if fresh else STUDY_ID, "stage": config["stage"], "paid_calls": 0,
             **({"prior_completed_count": 6, "original_slot_count": 32} if config["stage"] == REPEAT_RECOVERY_STAGE else {}),
@@ -300,6 +312,14 @@ async def execute_study(config_path):
     pilot_passed = config["stage"] in GUARDED_STAGES  # No new paid diagnostics in the repeat or fresh batch.
     without_answer = 0  # the continuation's slots in a row that ended without an answer
     for slot in plan["slots"]:
+        if config.get("start_cutoff") and time.time() >= deadline_epoch(config["start_cutoff"]):
+            # Amendment 4's stages start no trial at or after their start cutoff; the slots left
+            # are not started and say why, and the batch stops (2 November 2026).
+            for row in statuses.values():
+                if row["status"] == "scheduled":
+                    row.update(status="not_started", reason=START_CUTOFF_REASON)
+            atomic_json(output_dir / "slot-status.json", {"slots": statuses})
+            raise Stop(START_CUTOFF_REASON)
         verify_browser_version(config)  # Before the parser or executor can make a paid call.
         if slot.get("phase") == "transfer" and not pilot_passed:
             gate = technical_gate(pilot_records, budget.state, expected=2 if config["stage"] == "monitored-transfer" else 4,
@@ -358,7 +378,7 @@ async def execute_study(config_path):
                     # The same trial, with product pages fetched by script recorded beside it. In
                     # the continuation the guard is told when the trial's clock is due, so that a
                     # request the clock cancels is not counted as the provider's no-response.
-                    clock = (budget.trial_clock(trial["clock_s"]) if config["stage"] == FRESH_CONTINUATION_STAGE
+                    clock = (budget.trial_clock(trial["clock_s"]) if config["stage"] in FRESH_SETTLING_STAGES
                              else contextlib.nullcontext())
                     with browser_use_fetches.recording(sys.modules["browser_use_runner"],
                                                        trial["candidate_urls"]) as fetches, clock:
@@ -386,7 +406,7 @@ async def execute_study(config_path):
                               config_sha256=os.environ["IGR_BROWSER_USE_CONFIG_SHA256"],
                               head=config["expected_head"])
             disposition = reason = None
-            if config["stage"] == FRESH_CONTINUATION_STAGE:
+            if config["stage"] in FRESH_SETTLING_STAGES:
                 # Which attempt, and the requests settled at their bound, apart from the charges:
                 # the provider's no-response ones and those the trial clock cancelled.
                 settled = [call for call in new_calls if "settled_usd" in call]
@@ -407,7 +427,7 @@ async def execute_study(config_path):
                 pilot_records.append(record)
             completed.append(slot["id"])
             atomic_json(output_dir / "completed.json", {"completed": completed, "expected": len(plan["slots"])})
-            if config["stage"] != FRESH_CONTINUATION_STAGE:
+            if config["stage"] not in FRESH_SETTLING_STAGES:
                 validate_pilot_record(record, "transfer" if config["stage"] == "monitored-transfer" else slot.get("phase", "pilot"))
             else:
                 if disposition is None:

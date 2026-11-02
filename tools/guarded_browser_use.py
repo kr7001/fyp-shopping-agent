@@ -87,11 +87,59 @@ FRESH_NO_RESPONSE_SETTLEMENTS = 3
 # a settled request each end their slot and the batch goes on (browser_use_transfer.py); this
 # many slots in a row without an answer stop it, since something systemic is then likely wrong.
 FRESH_NO_ANSWER_STOP = 3
+# Amendment 4, 2 November 2026 (notes/fresh-market-2-nov/amendment-4-2-nov.md): stages that start
+# after attempt 2 ends, each after its own verifier pass. They share Study A's total cap, raised
+# to USD 10 for them (point 5; attempt 2 keeps its USD 3), carry every earlier attempt's counted
+# spend into it, and stop starting trials at their configuration's `start_cutoff`. Amendment 3's
+# rules hold but one (point 5): a request the provider leaves without a response is settled at its
+# bound with no count limit, and 3 executor requests in a row with no response stop the batch,
+# since a provider outage is then likely.
+#   attempt 3   the slots attempt 2 left never started, in their order, under its condition
+FRESH_ATTEMPT3_STAGE = "fresh-market-attempt-3"
+FRESH_A4_STAGES = {FRESH_ATTEMPT3_STAGE}
+FRESH_A4_CAP_USD = 10.0
+FRESH_STAGES = FRESH_STAGES | FRESH_A4_STAGES
+# The stages under amendment 3's settlement and batch rules.
+FRESH_SETTLING_STAGES = {FRESH_CONTINUATION_STAGE} | FRESH_A4_STAGES
+FRESH_NO_RESPONSE_RUN_STOP = 3
+FRESH_START_CUTOFF = "2026-11-03T12:00:00+08:00"  # amendment 4's default; a configuration may set it earlier
+START_CUTOFF_REASON = "start cutoff reached; no new trial"
+# Every stage's files sit beside the others in FRESH_NOTES, named by one prefix: its ledger,
+# status, launch claim, log and results folder. Fixed, so a budget cannot be reset by renaming.
+FRESH_PREFIX = {FRESH_STAGE: "study-a", FRESH_CONTINUATION_STAGE: "study-a-continuation",
+                FRESH_ATTEMPT3_STAGE: "study-a-attempt3"}
+FRESH_LEDGER = {stage: f"{FRESH_NOTES}/{prefix}.ledger.json" for stage, prefix in FRESH_PREFIX.items()}
+FRESH_A4_RECONCILIATION = {FRESH_ATTEMPT3_STAGE: f"{FRESH_NOTES}/study-a-attempt3-reconciliation.json"}
+FRESH_CONTINUATION_SHA256 = "4b8c88dbd01af0ea9ad787a860e70e65396a33952b1844ee1348da0fcff37d9a"  # attempt 2's command
+# The settings validate_fresh_continuation held attempt 2 to; every later stage keeps them.
+FRESH_CONDITION = ("python", "page_python", "environment_file", "model", "provider", "allowed_served_providers",
+                   "maximum_input_tokens", "max_input_bytes", "max_output_tokens", "max_steps", "clock_s",
+                   "llm_timeout", "temperature", "frequency_penalty", "top_p", "use_vision", "browser_executable",
+                   "preflight_browser_version", "max_failures", "dependencies_lock", "questions_file", "questions",
+                   "repeats", "protocol_file", "analysis_plan_file", "reference_config_file", "tasks_file",
+                   "market_files", "market", "study_budget_id", "legacy_unsettled_reserve_usd", "minimum_balance_usd")
+# The launcher and the runner's scheduling code may change between stages; every other file a
+# stage ran with keeps its hash, and the agent-facing definitions are checked by their own pins.
+FRESH_RENEWED = {"tools/guarded_browser_use.py", "experiments/runners/browser_use_transfer.py"}
+# How a slot of a stage can end (browser_use_transfer.execute_study and mark_unfinished).
+FRESH_NOT_RUN = {"interrupted", "time_censored", "not_started"}
 GUARDED_STAGES = REPEAT_STAGES | FRESH_STAGES
 # The continuation is a recovery too: it carries a prior ledger and its reconciliation.
-RECOVERY_STAGES = RECOVERY_STAGES | {FRESH_CONTINUATION_STAGE}
+RECOVERY_STAGES = RECOVERY_STAGES | {FRESH_CONTINUATION_STAGE} | FRESH_A4_STAGES
 # A slot the worker saved a record for (browser_use_transfer.execute_study).
 TERMINAL = {"answered", "failed", "timeout", "closed by the block"}
+
+
+def fresh_files(stage):
+    """A fresh-market stage's own ledger, status, results folder and log, inside FRESH_NOTES."""
+    prefix = FRESH_PREFIX[stage]
+    return {"ledger_path": f"{prefix}.ledger.json", "status_path": f"{prefix}.status.json",
+            "output_dir": f"{prefix}.results", "log_path": f"{prefix}.log"}
+
+
+def fresh_shared_cap(stage):
+    """Study A's total cap as each stage counts it: USD 3 to attempt 2, USD 10 after (amendment 4)."""
+    return FRESH_A4_CAP_USD if stage in FRESH_A4_STAGES else FRESH_CAP_USD
 
 
 class Stop(RuntimeError):
@@ -246,13 +294,33 @@ def recovery_limits(config):
     reconciliation = json.loads(reconciliation_path.read_text())
     carryover = number(config["carryover_usd"])
     shared = number(config["shared_cap_usd"])
-    # The fresh market's continuation shares its study's USD 3 cap; every earlier recovery $2.
-    original = FRESH_CAP_USD if config.get("stage") == FRESH_CONTINUATION_STAGE else 2
+    # The fresh market's continuation shares its study's USD 3 cap, amendment 4's stages USD 10;
+    # every earlier recovery $2.
+    original = (fresh_shared_cap(config["stage"]) if config.get("stage") in FRESH_SETTLING_STAGES else 2)
     if shared != original or carryover + number(config["cap_usd"]) > shared + 1e-12:
         raise Stop(f"recovery would exceed the original shared ${original:g} cap")
+    minimum, unsettled = carried_spend(prior_paths, names)
+    if carryover + 1e-12 < minimum:
+        raise Stop("recovery carryover omits prior charges or unsettled reservations")
+    expected_hashes = {name: sha(path) for name, path in zip(names, prior_paths)}
+    recorded_hashes = reconciliation.get("prior_ledger_sha256")
+    if len(names) == 1 and isinstance(recorded_hashes, str):
+        recorded_hashes = {names[0]: recorded_hashes}
+    if (recorded_hashes != expected_hashes
+            or number(reconciliation.get("carryover_usd")) != carryover):
+        raise Stop("recovery reconciliation does not bind the prior ledger and carryover")
+    return carryover, unsettled
+
+
+def carried_spend(prior_paths, names):
+    """What the prior attempts spent as the cap counts it, and what of that is not a known charge.
+    Each attempt counts the larger of its known charges plus every request without one at its
+    reserved bound (settled, unknown or in flight), and the account's usage over its own run; an
+    attempt's own carryover counts too, so a chain can never shrink. Moved out of recovery_limits
+    unchanged on 2 November 2026, so amendment 4's stages compute their carryover with it."""
     unsettled = minimum_carry = inherited_minimum = inherited_unsettled = 0.0
     for prior_path in prior_paths:
-        prior = json.loads(prior_path.read_text())
+        prior = json.loads(Path(prior_path).read_text())
         if not set(prior.get("prior_ledger_files", [])) <= set(names):
             raise Stop("recovery ledger chain omits an earlier attempt")
         pending = sum(number(c["reserved_usd"]) for c in prior["calls"] if c.get("cost_usd") is None)
@@ -264,16 +332,7 @@ def recovery_limits(config):
         unsettled += pending
         inherited_minimum = max(inherited_minimum, number(prior.get("carryover_usd", 0)) + attempt_bound)
         inherited_unsettled = max(inherited_unsettled, number(prior.get("prior_unsettled_reserve_usd", 0)))
-    if carryover + 1e-12 < max(minimum_carry, inherited_minimum):
-        raise Stop("recovery carryover omits prior charges or unsettled reservations")
-    expected_hashes = {name: sha(path) for name, path in zip(names, prior_paths)}
-    recorded_hashes = reconciliation.get("prior_ledger_sha256")
-    if len(names) == 1 and isinstance(recorded_hashes, str):
-        recorded_hashes = {names[0]: recorded_hashes}
-    if (recorded_hashes != expected_hashes
-            or number(reconciliation.get("carryover_usd")) != carryover):
-        raise Stop("recovery reconciliation does not bind the prior ledger and carryover")
-    return carryover, max(unsettled, inherited_unsettled)
+    return max(minimum_carry, inherited_minimum), max(unsettled, inherited_unsettled)
 
 
 class CallBudget:
@@ -306,7 +365,8 @@ class CallBudget:
                               minimum_balance_usd=self.reserve)
         if config.get("stage") in FRESH_STAGES:
             validate_fresh_budget(config)
-            self.state.update(study_budget_id=FRESH_BUDGET, attempt=config["attempt"], shared_cap_usd=FRESH_CAP_USD,
+            self.state.update(study_budget_id=FRESH_BUDGET, attempt=config["attempt"],
+                              shared_cap_usd=fresh_shared_cap(config["stage"]),
                               legacy_unsettled_reserve_usd=LEGACY_UNSETTLED_USD,
                               minimum_balance_usd=self.reserve)
         if config.get("stage") == FRESH_CONTINUATION_STAGE:
@@ -315,6 +375,12 @@ class CallBudget:
             # clock cancelled, which it does not.
             self.state.update(settled_usd=0.0, no_response_settlements=0, clock_settlements=0,
                               no_response_settlement_limit=FRESH_NO_RESPONSE_SETTLEMENTS)
+        if config.get("stage") in FRESH_A4_STAGES:
+            # Amendment 4, point 5: no limit on the provider's no-responses, but a run of them
+            # in a row, the executor's requests with a response in between resetting it.
+            self.state.update(settled_usd=0.0, no_response_settlements=0, clock_settlements=0,
+                              no_response_settlement_limit=None, no_response_run=0,
+                              no_response_run_stop=FRESH_NO_RESPONSE_RUN_STOP)
         self._account()
         self._save()
 
@@ -389,6 +455,8 @@ class CallBudget:
                     return
                 self._block("a request has an unknown charge; reconciliation required")
             self.state["charged_usd"] += charge
+            if "no_response_run" in self.state and item.get("role") == "executor":
+                self.state["no_response_run"] = 0  # the provider answered: the run is broken
             allowed = self.config.get("allowed_served_providers", [])
             if response_json.get("provider") not in allowed:
                 self._block("missing or unexpected serving provider; reconciliation required")
@@ -424,15 +492,21 @@ class CallBudget:
         counts against the cap, but not toward that limit, since the clock stops every slow
         trial while a request is almost always in flight. A parser request is never settled,
         since the block would fall back to the rules' form, and a response without usage still
-        blocks. Returns whether the request was settled."""
-        if (self.config.get("stage") != FRESH_CONTINUATION_STAGE or response_json is not None
+        blocks. Returns whether the request was settled.
+
+        Amendment 4's stages (point 5, 2 November 2026) settle the provider's no-responses with
+        no count limit. The third executor request in a row with no response is settled too, then
+        stops the batch: a provider outage is then likely. A clock settlement neither counts toward
+        that run nor breaks it, and an executor request with a response breaks it (after_call)."""
+        if (self.config.get("stage") not in FRESH_SETTLING_STAGES or response_json is not None
                 or usage is not None or not error or item.get("role") != "executor"):
             return False
+        unlimited = self.config["stage"] in FRESH_A4_STAGES
         by_clock = (str(error) == "CancelledError" and self.trial_clock_at is not None
                     and self.monotonic() >= self.trial_clock_at)
         done = self.state["no_response_settlements"]
         item["error_name"] = str(error)
-        if not by_clock and done >= FRESH_NO_RESPONSE_SETTLEMENTS:
+        if not by_clock and not unlimited and done >= FRESH_NO_RESPONSE_SETTLEMENTS:
             item["settlement"] = f"not settled: request {done + 1} with no response stops the batch"
             self._block(f"a request ended with no response after {done} settlements; reconciliation required")
         item["settled_usd"] = item["reserved_usd"]
@@ -442,6 +516,15 @@ class CallBudget:
                         settlement="cancelled by the trial clock; settled at its reserved bound, "
                                    "not counted toward the limit")
             self.state["clock_settlements"] += 1
+        elif unlimited:
+            run = self.state["no_response_run"] + 1
+            item.update(settlement_kind="no response",
+                        settlement=f"no response and no usage; settled at its reserved bound, "
+                                   f"{run} in a row of {FRESH_NO_RESPONSE_RUN_STOP} that stop the batch")
+            self.state.update(no_response_settlements=done + 1, no_response_run=run)
+            if run >= FRESH_NO_RESPONSE_RUN_STOP:
+                self._block(f"{run} executor requests in a row ended with no response; "
+                            "a provider outage is likely")
         else:
             item.update(settlement_kind="no response",
                         settlement=f"no response and no usage; settled at its reserved bound, "
@@ -629,6 +712,22 @@ def validate_fresh_budget(config):
                 or config.get("reconciliation_file") != FRESH_RECONCILIATION):
             raise Stop("the fresh continuation carries attempt 1 into the same USD 3 cap, once")
         files = FRESH_CONTINUATION_FILES
+    elif config.get("stage") in FRESH_A4_STAGES:
+        # Amendment 4's stages: attempts 1 and 2 carried into Study A's USD 10 total.
+        carryover, estimate = number(config.get("carryover_usd")), number(config.get("estimate_usd"))
+        if (config.get("study_budget_id") != FRESH_BUDGET or config.get("attempt") != 3
+                or not 0 < carryover < FRESH_A4_CAP_USD or config.get("shared_cap_usd") != FRESH_A4_CAP_USD
+                or abs(number(config.get("cap_usd")) - (FRESH_A4_CAP_USD - carryover)) > 1e-12
+                or estimate > number(config.get("cap_usd"))
+                or config.get("legacy_unsettled_reserve_usd") != LEGACY_UNSETTLED_USD
+                or number(config.get("minimum_balance_usd")) < 20 + LEGACY_UNSETTLED_USD
+                or config.get("prior_ledger_files") != [FRESH_LEDGER[FRESH_STAGE], FRESH_LEDGER[FRESH_CONTINUATION_STAGE]]
+                or config.get("reconciliation_file") != FRESH_A4_RECONCILIATION[config["stage"]]):
+            raise Stop("attempt 3 carries attempts 1 and 2 into Study A's USD 10 cap, once")
+        cutoff = config.get("start_cutoff")
+        if not isinstance(cutoff, str) or deadline_epoch(cutoff) > deadline_epoch(config["deadline"]):
+            raise Stop("amendment 4's stages stop starting trials at a start cutoff no later than the deadline")
+        files = fresh_files(config["stage"])
     elif (config.get("study_budget_id") != FRESH_BUDGET or config.get("attempt") != 1
             or number(config.get("carryover_usd")) != 0
             or config.get("shared_cap_usd") != FRESH_CAP_USD or number(config.get("cap_usd")) != FRESH_CAP_USD
@@ -807,6 +906,112 @@ def validate_fresh_continuation(config, expected_slots=None):
     return ids[cut:]
 
 
+def ended_stage(repo, stage, config_sha256, attempt, slots):
+    """One earlier stage of Study A as it ended, whatever ended it (amendment 4, 2 November 2026):
+    its status, launch claim, ledger, schedule, slot statuses and completed list, and the record of
+    every slot it ran, checked against each other by identifier and disposition, never by answer.
+    `slots` are the slots it was given, in order. Returns the slot statuses and the files a later
+    stage must bind by hash. A slot it interrupted, as its no-response limit or cap does mid-trial,
+    or cut at the deadline, keeps that status: a technical void, never run again."""
+    prefix, notes = FRESH_PREFIX[stage], FRESH_NOTES
+    base = repo / notes
+    files = {name: f"{notes}/{prefix}.{name}" for name in ("status.json", "launch.json", "ledger.json")}
+    files.update({name: f"{notes}/{prefix}.results/{name}" for name in ("schedule.json", "slot-status.json",
+                                                                       "completed.json")})
+    status = json.loads((repo / files["status.json"]).read_text())
+    if status.get("status") not in ("complete", "stopped") or status.get("config_sha256") != config_sha256:
+        raise Stop(f"{prefix}: a later stage needs this stage's terminal status under its own command")
+    marker = json.loads((repo / files["launch.json"]).read_text())
+    ledger = json.loads((repo / files["ledger.json"]).read_text())
+    if ((marker.get("study_budget_id"), marker.get("attempt"), marker.get("config_sha256"))
+            != (FRESH_BUDGET, attempt, config_sha256)
+            or (ledger.get("study_budget_id"), ledger.get("attempt")) != (FRESH_BUDGET, attempt)):
+        raise Stop(f"{prefix}: its launch claim or ledger is not this stage's")
+    plan = json.loads((repo / files["schedule.json"]).read_text())
+    if ((plan.get("stage"), plan.get("study_id"), plan.get("batch_id")) != (stage, FRESH_BUDGET, FRESH_BUDGET)
+            or plan.get("slots") != slots):
+        raise Stop(f"{prefix}: its schedule differs from the slots it was given")
+    ids = [slot["id"] for slot in slots]
+    statuses = json.loads((repo / files["slot-status.json"]).read_text())["slots"]
+    if set(statuses) != set(ids) or any(row.get("phase") != "transfer" or row.get("status") not in TERMINAL | FRESH_NOT_RUN
+                                        for row in statuses.values()):
+        raise Stop(f"{prefix}: a slot is still running or ended in a way no later stage reads; inspect it")
+    ran = [slot_id for slot_id in ids if statuses[slot_id]["status"] in TERMINAL]
+    completed = json.loads((repo / files["completed.json"]).read_text())
+    if completed.get("completed") != ran or completed.get("expected") != len(ids):
+        raise Stop(f"{prefix}: its completed list differs from the slots it saved a record for")
+    bound = list(files.values())
+    for slot in slots:
+        record_path = base / f"{prefix}.results/{slot['id']}.json"
+        if slot["id"] not in ran:
+            if record_path.exists():
+                raise Stop(f"{prefix}: a slot marked {statuses[slot['id']]['status']} has a saved record; inspect it")
+            if (base / f"{prefix}.results/{slot['id']}.interrupted.json").is_file():
+                bound.append(f"{notes}/{prefix}.results/{slot['id']}.interrupted.json")
+            continue
+        # Identifiers and disposition only. Never select on the answer.
+        record = json.loads(record_path.read_text())
+        if any(record.get(field) != expected for field, expected in {
+                "slot": slot["id"], "task": slot["question"]["id"], "repeat": slot["repeat"],
+                "condition": slot["condition"], "phase": "transfer", "stage": stage, "attempt": attempt,
+                "study_id": FRESH_BUDGET, "batch_id": FRESH_BUDGET, "config_sha256": config_sha256,
+                "outcome": statuses[slot["id"]]["status"]}.items()):
+            raise Stop(f"{prefix}: a record differs from its slot")
+        bound.append(f"{notes}/{prefix}.results/{slot['id']}.json")
+    return statuses, bound
+
+
+def validate_fresh_attempt3(config, expected_slots=None):
+    """Attempt 2 as it ended, bound by hash, and the ids of the slots it left never started, in
+    their scheduled order (amendment 4, 2 November 2026). Whatever ended attempt 2, done, its cap,
+    its no-response limit, the deadline or its systemic stop, only a slot it never started runs:
+    one it ran stays as it ended, and one it interrupted is a technical void, never re-run. The
+    carryover is attempts 1 and 2's counted spend as `carried_spend` computes it, no more, no
+    less. Every file attempt 2 ran with keeps its hash except the launcher and the runner's
+    scheduling code, whose agent-facing definitions `validate_fresh_identity` checks."""
+    repo = Path(config["repo"]).resolve()
+    notes = FRESH_NOTES
+    fixed = {"prior_config_file": f"{notes}/study-a-continuation-command.json",
+             "prior_status_file": f"{notes}/study-a-continuation.status.json",
+             "prior_schedule_file": f"{notes}/study-a-continuation.results/schedule.json",
+             "prior_slot_status_file": f"{notes}/study-a-continuation.results/slot-status.json"}
+    if any(config.get(field) != name for field, name in fixed.items()):
+        raise Stop("attempt 3 reads attempt 2's own files, nothing else")
+    if sha(repo / fixed["prior_config_file"]) != FRESH_CONTINUATION_SHA256:
+        raise Stop("attempt 3 must bind attempt 2's exact command")
+    prior = json.loads((repo / fixed["prior_config_file"]).read_text())
+    if (prior.get("stage") != FRESH_CONTINUATION_STAGE or prior.get("attempt") != 2
+            or any(config.get(key) != prior.get(key) for key in FRESH_CONDITION)):
+        raise Stop("attempt 3 runs attempt 2's condition unchanged")
+    if any(config["hashes"].get(name) != digest for name, digest in prior["hashes"].items() if name not in FRESH_RENEWED):
+        raise Stop("attempt 3 changed a file attempt 2 ran with")
+    first = json.loads((repo / notes / "study-a.results/schedule.json").read_text()).get("slots", [])
+    if len(first) != 32 or (expected_slots is not None and first != expected_slots):
+        raise Stop("attempt 1's schedule differs from the planned 32 slots")
+    given = first[FRESH_KEPT_ANSWERED + FRESH_KEPT_INTERRUPTED:]
+    statuses, bound = ended_stage(repo, FRESH_CONTINUATION_STAGE, FRESH_CONTINUATION_SHA256, 2, given)
+    ledger = json.loads((repo / FRESH_LEDGER[FRESH_CONTINUATION_STAGE]).read_text())
+    if (ledger.get("carryover_usd") != prior.get("carryover_usd")
+            or ledger.get("prior_ledger_files") != [FRESH_LEDGER[FRESH_STAGE]]):
+        raise Stop("attempt 2's ledger does not carry attempt 1 as its command did")
+    names = prior_ledger_names(config)
+    carryover, _ = recovery_limits(config)
+    if abs(carryover - carried_spend([repo / name for name in names], names)[0]) > 1e-9:
+        raise Stop("the carryover must be attempts 1 and 2's counted spend, as the guard computes it")
+    required = set(bound) | {fixed["prior_config_file"], config["reconciliation_file"], f"{notes}/amendment-4-2-nov.md"}
+    if not required <= set(config["hashes"]):
+        raise Stop("attempt 2's command, ledger, statuses, every record and amendment 4 must be hash-bound")
+    for relative in required:
+        if sha(repo / relative) != config["hashes"][relative]:
+            raise Stop("attempt 2's evidence changed after it was bound")
+    remaining = [slot["id"] for slot in given if statuses[slot["id"]]["status"] == "not_started"]
+    if config.get("slot_ids") != remaining:
+        raise Stop("attempt 3's slots are not the ones attempt 2 left never started, in their order")
+    if remaining and not number(config["estimate_usd"]) > 0:
+        raise Stop("attempt 3 needs a positive estimate for its slots")
+    return remaining
+
+
 def validate_review_receipt(config, receipt, head, digest, command):
     if (receipt.get("verdict") != "PASS" or receipt.get("config_sha256") != digest
             or receipt.get("head") != head or receipt.get("request_bound_verified") is not True):
@@ -842,14 +1047,17 @@ def validate_config(path, *, require_approval=False):
         validate_repeat_budget(config)
     if config["stage"] in FRESH_STAGES:
         validate_fresh_budget(config)
-    # The fresh market's own cap is USD 3 (its protocol); every earlier stage keeps USD 2.
-    limit = FRESH_CAP_USD if config["stage"] in FRESH_STAGES else 2
+    # The fresh market's own cap is USD 3 (its protocol), USD 10 for amendment 4's stages; every
+    # earlier stage keeps USD 2.
+    limit = fresh_shared_cap(config["stage"]) if config["stage"] in FRESH_STAGES else 2
     if not 0 < number(config["cap_usd"]) <= limit or number(config["minimum_balance_usd"]) < 20:
         raise Stop(f"cap must be at most ${limit:g} and account reserve at least $20")
     if number(config["estimate_usd"]) > config["cap_usd"]:
         raise Stop("estimate exceeds pilot cap")
     if deadline_epoch(config["deadline"]) <= time.time() + 30:
         raise Stop("deadline leaves no launch window")
+    if config["stage"] in FRESH_A4_STAGES and deadline_epoch(config["start_cutoff"]) <= time.time() + 30:
+        raise Stop("the start cutoff leaves no launch window")
     if config.get("max_input_bytes", 0) <= 0 or config.get("max_output_tokens", 0) <= 0:
         raise Stop("request limits must be explicit")
     request_bound(config, {"model": config["model"], "provider": config["provider"],
@@ -892,6 +1100,8 @@ def validate_config(path, *, require_approval=False):
         validate_fresh_identity(config)
     if config["stage"] == FRESH_CONTINUATION_STAGE:
         validate_fresh_continuation(config)
+    if config["stage"] == FRESH_ATTEMPT3_STAGE:
+        validate_fresh_attempt3(config)
     if require_approval:
         digest = sha(path)
         receipt = json.loads(Path(config["verification_receipt"]).read_text())
@@ -920,10 +1130,10 @@ def claim_repeat_launch(config, config_path):
     if config.get("stage") not in GUARDED_STAGES:
         return
     if config["stage"] in FRESH_STAGES:
-        # The fresh market's attempt, or its one continuation, marked beside its own ledger
-        # (2 November 2026).
+        # The fresh market's attempt, its continuation, or a stage of amendment 4, each marked
+        # beside its own ledger (2 November 2026).
         validate_fresh_budget(config)
-        name = "study-a-continuation.launch.json" if config["stage"] == FRESH_CONTINUATION_STAGE else "study-a.launch.json"
+        name = f"{FRESH_PREFIX[config['stage']]}.launch.json"
         budget_id, marker = FRESH_BUDGET, Path(config["ledger_path"]).with_name(name)
     else:
         validate_repeat_budget(config)
@@ -953,7 +1163,33 @@ def mark_unfinished(config, reason):
     atomic_json(path, manifest)
 
 
+def nothing_left(path):
+    """Attempt 3 when attempt 2 left no slot never started (amendment 4, 2 November 2026): the
+    configuration is checked in full, free, against attempt 2's bound evidence, and the stage then
+    ends without a claim, a ledger or a paid call."""
+    config = json.loads(Path(path).read_text())
+    if config.get("stage") != FRESH_ATTEMPT3_STAGE or config.get("slot_ids") != []:
+        return False
+    validate_config(path)
+    return True
+
+
+def worker_stop_reason(config, blocked):
+    """Why a stage of amendment 4 stopped, when its worker stopped it: the guard's blocked reason
+    (its cap, a run of no-responses), or the reason the worker wrote on the slots it did not start
+    (its start cutoff, or slots in a row without an answer). None when neither says."""
+    if blocked:
+        return f"pilot worker did not complete: {blocked}"
+    path = Path(config["output_dir"]) / "slot-status.json"
+    rows = json.loads(path.read_text())["slots"].values() if path.exists() else []
+    reasons = {row["reason"] for row in rows if row.get("status") == "not_started" and row.get("reason")}
+    return f"pilot worker did not complete: {reasons.pop()}" if len(reasons) == 1 else None
+
+
 def execute(path):
+    if nothing_left(path):
+        print("Attempt 2 left no slot never started; this stage ends without a paid call.")
+        return
     config = validate_config(path, require_approval=True)
     status_path, ledger = Path(config["status_path"]), Path(config["ledger_path"])
     if status_path.exists() or ledger.exists():
@@ -992,20 +1228,23 @@ def execute(path):
                 time.sleep(1)
             if child.returncode:
                 reason = "pilot worker did not complete"
-                if ledger.exists() and json.loads(ledger.read_text()).get("blocked_reason") == "absolute deadline reached":
+                blocked = json.loads(ledger.read_text()).get("blocked_reason") if ledger.exists() else None
+                if blocked == "absolute deadline reached":
                     reason = "absolute deadline reached"
+                elif config["stage"] in FRESH_A4_STAGES:
+                    reason = worker_stop_reason(config, blocked) or reason
                 raise Stop(reason)
         ledger_data = json.loads(ledger.read_text())
         if ledger_data["blocked_reason"] or ledger_data["inflight"]:
             raise Stop("pilot charges or pending requests need reconciliation")
         after = account_snapshot(key)
-        # Requests settled at their bound (the fresh continuation only) count in the upper bound.
+        # Requests settled at their bound (the continuation and later) count in the upper bound.
         settled = ledger_data.get("settled_usd", 0.0)
         atomic_json(status_path, {"status": "complete", "config_sha256": sha(path),
                                  "charged_usd": ledger_data["charged_usd"], "account_before": before,
                                  "carryover_usd": carryover,
                                  "shared_cost_upper_usd": carryover + ledger_data["charged_usd"] + settled,
-                                 **({"settled_usd": settled} if config["stage"] == FRESH_CONTINUATION_STAGE else {}),
+                                 **({"settled_usd": settled} if config["stage"] in FRESH_SETTLING_STAGES else {}),
                                  "account_after": after, "completed_at": time.time()})
     except BaseException as error:
         terminate_owned(child)
