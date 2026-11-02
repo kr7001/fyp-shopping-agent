@@ -27,9 +27,10 @@ STUDIES = {
 }
 # Amendment 4, 2 November 2026 (notes/fresh-market-2-nov/amendment-4-2-nov.md): later stages of
 # the fresh study, each its own launch after its own verifier pass, sharing one total cap of
-# USD 2.75 with the primary run, whose counted spend each carries. A later stage runs the primary
-# run's own steps unchanged and writes its own manifest, status and logs beside the primary's,
-# which it never touches.
+# USD 4 with the primary run (USD 2.75 in point 1, USD 4 in point 6), whose counted spend each
+# carries. A later stage runs the primary run's own steps unchanged, the reruns through their
+# reviewed wrapper, and writes its own manifest, status and logs beside the primary's, which it
+# never touches.
 #   continuation   the primary run's steps it never completed (slot 16), after the same live check
 #   timeout-rerun  each slot whose primary record reached its 1800 s clock, once more, in slot
 #                  order, its clock doubled to 3600 s and nothing else changed, with its own record
@@ -42,18 +43,26 @@ LATER = {stage: {'manifest': f'{FRESH_STEM}.{name}.manifest', 'status': f'{FRESH
                  'log_dir': f'{FRESH_STEM}.{name}.logs'} for stage, name in ((CONTINUATION, 'continuation'),
                                                                              (RERUN, 'rerun'))}
 CLOCK_S, RERUN_CLOCK_S = 1800, 3600
-# A rerun step keeps the primary step's 120 s beside its clock, and declares twice its estimate.
-RERUN_WALL_S, RERUN_ESTIMATE = RERUN_CLOCK_S + 120, 0.15
-# The thresholds, chosen 2 November 2026. A running trial stops when the counted spend, the
-# carryover included, reaches the cap less the in-flight reserve, USD 2.50; a trial starts only
-# while the counted spend plus twice its estimate stays below that. The largest charge of any
-# trial of this study so far is USD 0.2498 (slot 7, at its 1800 s clock), so a trial started just
-# below its threshold that charged that much, wholly unseen by the account until it ended, still
-# ends below USD 2.75 (2.50 - 2 x 0.075 + 0.25 = 2.60 for slot 16). A rerun, at twice the clock,
-# is taken to charge up to twice that, USD 0.50, and declares twice the estimate, so it starts only
-# below USD 2.20 and ends at most at 2.70. The primary run's USD 0.50 reserve would stop a running
-# trial at USD 2.25 and is not needed for that.
-LATER_CAP, LATER_RESERVE = 2.75, 0.25
+# The reruns run the frozen code through a separately reviewed wrapper that hands suite.py a
+# 3600 s clock and changes nothing else (amendment 4 point 6), pinned here by its SHA-256. The
+# frozen runner, which accepts only 1800 s, stays byte-identical.
+FROZEN_RUNNER = 'experiments/runners/matched_briefing_study.py'
+RERUN_RUNNER = 'experiments/runners/matched_briefing_rerun.py'
+RERUN_RUNNER_SHA256 = '99bea5a628d88ce1f360bbc70d7df353a24c4b9bc8188cc269d743488abfbfa8'
+# Amendment 4 point 6 (12:50): Study B's shared cap is USD 4, and slot 16's estimate about USD 0.25
+# to 0.45, going by slot 7 (USD 0.2498) and slot 16's own partial run (USD 0.1757 at step 152).
+LATER_CAP, CONTINUATION_ESTIMATE_USD = 4.0, 0.45
+# The thresholds, chosen 2 November 2026 for the USD 4 cap. A running trial stops when the counted
+# spend, the carryover included, reaches the cap less the in-flight reserve, USD 3.65; a trial
+# starts only while the counted spend plus twice its step's estimate stays below that. Taking a
+# trial at the 1800 s clock to charge at most USD 0.45 (point 6's upper figure) and a rerun at
+# twice the clock at most twice that, USD 0.90, a trial started just below its threshold that
+# charged that much, wholly unseen by the account until it ended, still ends below USD 4:
+#   slot 16, its primary step's estimate 0.075 unchanged: starts below 3.50, ends at most 3.95
+#   a rerun, estimate 0.30:                               starts below 3.05, ends at most 3.95
+LATER_RESERVE = 0.35
+# A rerun step keeps the primary step's 120 s beside its clock.
+RERUN_WALL_S, RERUN_ESTIMATE = RERUN_CLOCK_S + 120, 0.30
 # Only the launchers may change after the primary run; every other file it bound keeps its hash.
 RENEWED = {'tools/guarded_matched_briefing.py', 'tools/guarded_replication.py'}
 AMENDMENT = 'notes/fresh-market-2-nov/amendment-4-2-nov.md'
@@ -87,10 +96,13 @@ def validate_config(path):
     return cfg, protocol
 
 
-def primary_spent(status):
-    """The primary run's counted spend: the larger of its recorded charges and the account's
-    usage over its run, as its guard counted it (`spent_usd`)."""
-    return max(original.number(status['recorded_usd']), original.number(status['spent_usd']))
+def primary_spent(root, primary, status):
+    """The primary run's counted spend: the larger of the account's usage over its run, as its
+    guard counted it (`spent_usd`), and its recorded charges plus those its partial run's log shows,
+    which no record holds (slot 16's 151 calls; amendment 4 point 6, the verifier's finding)."""
+    partial = partial_run(root, primary, status)
+    charges = partial['charges_usd'] if partial else 0.0
+    return max(original.number(status['spent_usd']), original.number(status['recorded_usd']) + charges)
 
 
 def batch_slots(manifest):
@@ -113,10 +125,22 @@ def partial_run(root, primary, status):
         return None
     named = re.search(r'-> (\S+)\s*$', log.read_text(errors='replace'), re.M)
     folder = Path(named.group(1)) if named else None
+    # The charges its run logs show, by the frozen trace reader (`trace_stats.cost_reported`),
+    # every completion with its charge, or the run is refused as unaccounted.
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'experiments'))
+    import paths  # noqa: F401  (puts analysis/ on the path)
+    import trace_stats
+    runs = sorted(folder.glob('*.log')) if folder and folder.is_dir() else []
+    texts = [path.read_text(errors='replace') for path in runs]
+    calls = sum(len(trace_stats.USAGE.findall(text)) for text in texts)
+    if sum(len(trace_stats.COST_FIELD.findall(text)) for text in texts) != calls:
+        raise original.Stop("the partial run's log has a completion without its charge; inspect it")
+    charges = round(sum(trace_stats.cost_reported(text) or 0.0 for text in texts), 6)
     return {'step': status.get('current_step'), 'log': str(log.relative_to(root)), 'log_sha256': original.sha(log),
             'results_folder': str(folder) if folder else None,
             'results_files': sorted(p.name for p in folder.iterdir()) if folder and folder.is_dir() else [],
-            'suite_written': bool(folder and (folder / 'suite.json').exists())}
+            'suite_written': bool(folder and (folder / 'suite.json').exists()),
+            'run_logs': [str(path.relative_to(root)) for path in runs], 'charged_calls': calls, 'charges_usd': charges}
 
 
 def launched(root, stage):
@@ -125,14 +149,15 @@ def launched(root, stage):
 
 
 def rerun_step(step, timeout):
-    """A primary step run once more for its timed-out slot: its clock 1800 s to 3600 s and its wall
-    budget with it, its declared estimate doubled, every other argument and the environment as they
-    were, and a `rerun|` manifest line that names the primary record's folder."""
+    """A primary step run once more for its timed-out slot: through the reviewed wrapper, its clock
+    1800 s to 3600 s and its wall budget with it, its estimate the reruns', every other argument and
+    the environment as they were, and a `rerun|` manifest line that names the primary record's
+    folder."""
     argv = list(step['argv'])
     at = argv.index('--clock')
-    if argv[at + 1] != str(CLOCK_S) or step.get('max_seconds') != CLOCK_S + 120:
+    if argv[at + 1] != str(CLOCK_S) or step.get('max_seconds') != CLOCK_S + 120 or argv[1] != FROZEN_RUNNER:
         raise original.Stop("a rerun doubles a primary step's 1800 s clock")
-    argv[at + 1] = str(RERUN_CLOCK_S)
+    argv[1], argv[at + 1] = RERUN_RUNNER, str(RERUN_CLOCK_S)
     return {**step, 'id': 'rerun-' + step['id'], 'argv': argv, 'max_seconds': RERUN_WALL_S,
             'estimate_usd': RERUN_ESTIMATE, 'rerun_of': timeout,
             'manifest_line_template': f"rerun|{{batch}}|stage {RERUN}|primary {timeout['batch']}|" + ' '.join(argv[2:])}
@@ -183,12 +208,12 @@ def rerun_carryover(root, primary, status):
     spend, its carryover included, once it ran, else the primary run's."""
     path = Path(root) / LATER[CONTINUATION]['status']
     if not launched(root, CONTINUATION):
-        return primary_spent(status), [primary['manifest']], []
+        return primary_spent(root, primary, status), [primary['manifest']], []
     if not path.exists():
         raise original.Stop('the continuation left files but no status; inspect it')
     continuation = json.loads(path.read_text())
     if (continuation.get('status') not in ('complete', 'stopped') or continuation.get('stage') != CONTINUATION
-            or abs(original.number(continuation.get('carryover_usd')) - primary_spent(status)) > 1e-12):
+            or abs(original.number(continuation.get('carryover_usd')) - primary_spent(root, primary, status)) > 1e-12):
         raise original.Stop("the reruns need the continuation's terminal status, carrying the primary run's spend")
     return (original.number(continuation['spent_usd']), [primary['manifest'], LATER[CONTINUATION]['manifest']],
             [LATER[CONTINUATION]['status'], LATER[CONTINUATION]['manifest']])
@@ -207,7 +232,7 @@ def validate_later(cfg, protocol, deadline):
     if any(cfg.get(field) != value for field, value in LATER[stage].items()) or cfg.get('results_dir') != primary['results_dir']:
         raise original.Stop("a later stage writes its own manifest, status and logs, fixed beside the primary run's")
     if original.number(cfg.get('reserve_usd')) != LATER_RESERVE or cfg.get('shared_cap_usd') != LATER_CAP:
-        raise original.Stop("a later stage keeps the shared USD 2.75 cap and its USD 0.25 in-flight reserve")
+        raise original.Stop("a later stage keeps the shared USD 4 cap and its USD 0.35 in-flight reserve")
     cutoff = dt.datetime.fromisoformat(cfg['start_cutoff'])
     if cutoff.tzinfo is None or cutoff > deadline:
         raise original.Stop('a later stage stops starting trials at a start cutoff no later than its deadline')
@@ -247,9 +272,14 @@ def validate_later(cfg, protocol, deadline):
         evidence.update(later)
         for row in timeouts:
             evidence.update({row['suite'], row['record'], row['log']})
+        if original.sha(root / RERUN_RUNNER) != RERUN_RUNNER_SHA256:
+            raise original.Stop('the rerun wrapper is not the reviewed one')
+        evidence.add(RERUN_RUNNER)
     if stage == CONTINUATION:
-        if abs(original.number(cfg.get('carryover_usd')) - primary_spent(status)) > 1e-12:
+        if abs(original.number(cfg.get('carryover_usd')) - primary_spent(root, primary, status)) > 1e-12:
             raise original.Stop("the continuation carries the primary run's counted spend")
+        if cfg.get('declared_estimate_usd') != CONTINUATION_ESTIMATE_USD:
+            raise original.Stop("the continuation declares amendment 4's estimate for slot 16")
         steps = [primary['steps'][0]] + [step for step in primary['steps'][1:] if step['id'] not in completed]
         if cfg['steps'] != steps or len(steps) < 2:
             raise original.Stop("the continuation runs the primary run's uncompleted steps, unchanged, after its live check")
@@ -263,7 +293,7 @@ def validate_later(cfg, protocol, deadline):
             if cfg.get('partial_run') != partial or not isinstance(ruling, str) or not ruling.strip():
                 raise original.Stop("the primary run started this step before it stopped; the configuration "
                                     "must show it and record the ruling that allows running it again")
-            evidence.add(partial['log'])
+            evidence.update([partial['log'], *partial['run_logs']])
         elif 'partial_run' in cfg:
             raise original.Stop('the configuration names a partial run the primary run does not show')
     if not evidence <= set(cfg['hashes']):

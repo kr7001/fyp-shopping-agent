@@ -586,7 +586,8 @@ def counted_spend(stage, names):
         "study_budget_id": guard_a.FRESH_BUDGET, "stage": stage,
         "prior_ledger_sha256": {part["ledger"]: part["ledger_sha256"] for part in parts},
         "attempts": parts, "carryover_usd": carryover, "held_back_from_account_usd": unsettled,
-        "shared_cap_usd": guard_a.FRESH_A4_CAP_USD, "remaining_allowance_usd": guard_a.FRESH_A4_CAP_USD - carryover,
+        "shared_cap_usd": guard_a.fresh_shared_cap(stage),
+        "remaining_allowance_usd": guard_a.fresh_shared_cap(stage) - carryover,
         "rule": "each attempt counts the larger of its known charges plus every request without a known "
                 "charge at its reserved bound (settled, unknown or in flight), and the account's usage over "
                 "its own run; guarded_browser_use.carried_spend, the computation the launcher checks",
@@ -625,8 +626,8 @@ def a4_config(stage, commit, output, preflight, deadline, start_cutoff, evidence
     runtime = list(dict.fromkeys([*prior["runtime_input_files"], receipt["synthetic_tests"]["log"],
                                   receipt["installed_packages"], *AMENDMENTS]))
     config = {**prior, "stage": stage, "estimate_usd": estimate,
-              "cap_usd": guard_a.FRESH_A4_CAP_USD - carryover, "carryover_usd": carryover,
-              "shared_cap_usd": guard_a.FRESH_A4_CAP_USD, "deadline": deadline, "start_cutoff": start_cutoff,
+              "cap_usd": guard_a.fresh_shared_cap(stage) - carryover, "carryover_usd": carryover,
+              "shared_cap_usd": guard_a.fresh_shared_cap(stage), "deadline": deadline, "start_cutoff": start_cutoff,
               "preflight_receipt": str(Path(preflight).resolve().relative_to(ROOT)), "runtime_input_files": runtime,
               "verification_receipt": str(folder / f"{guard_a.FRESH_PREFIX[stage]}.verification.json"),
               "approval_record": str(folder / f"{guard_a.FRESH_PREFIX[stage]}.approval.json"),
@@ -706,7 +707,7 @@ def attempt3(output, preflight, *, deadline=guard_a.FRESH_LATEST, start_cutoff=g
 def a_rerun(output, preflight, *, deadline=guard_a.FRESH_LATEST, start_cutoff=guard_a.FRESH_START_CUTOFF):
     """Study A's timeout reruns: every slot whose primary record reached its 2700 s clock, once,
     in schedule order, with its clock doubled to 5400 s and nothing else changed, carrying the
-    counted spend of attempts 1, 2 and 3 (when it ran) into the USD 10 cap. With no timeout the
+    counted spend of attempts 1, 2 and 3 (when it ran) into the reruns' USD 15 cap. With no timeout the
     configuration still says so, and its launch ends without a paid call."""
     commit, stage = head(), guard_a.FRESH_RERUN_STAGE
     a4_receipt(preflight)
@@ -735,7 +736,7 @@ def a_rerun(output, preflight, *, deadline=guard_a.FRESH_LATEST, start_cutoff=gu
     if guard_a.validate_fresh_rerun(config) != timeouts:
         raise SystemExit("the rerun's guard reads other slots than the builder")
     written += write_a4(stage, output, config, f"the timeout reruns of Study A, {len(timeouts)} slot(s) with "
-                                               f"their clock doubled, within Study A's USD 10 cap")
+                                               f"their clock doubled, within Study A's USD 15 cap for them")
     print(f"Study A timeout reruns: {len(timeouts)} slot(s) {[row['slot'] for row in timeouts]}; carryover USD "
           f"{carryover:.10f} from {len(chain)} attempts, cap USD {config['cap_usd']:.10f}, estimate USD {estimate}"
           + ("" if timeouts else "; its launch ends without a paid call"))
@@ -797,7 +798,7 @@ def write_b(output, config):
 
 def b_continuation(output, ruling=None, *, deadline=guard_a.FRESH_LATEST, start_cutoff=guard_a.FRESH_START_CUTOFF):
     """Study B's continuation: the primary run's steps it never completed (slot 16), unchanged,
-    after the same live check, with the primary run's counted spend carried into USD 2.75. When
+    after the same live check, with the primary run's counted spend carried into USD 4. When
     the primary run had started such a step before it stopped, the configuration says so and
     needs the student's ruling, since amendment 4 point 4 forbids replaying a started slot."""
     commit = head()
@@ -811,7 +812,10 @@ def b_continuation(output, ruling=None, *, deadline=guard_a.FRESH_LATEST, start_
     steps = [primary["steps"][0]] + [step for step in primary["steps"][1:] if step["id"] not in completed]
     if len(steps) < 2:
         raise SystemExit("the primary run completed every step; nothing to continue")
-    partial = guard_b.partial_run(ROOT, primary, status)
+    try:
+        partial = guard_b.partial_run(ROOT, primary, status)
+    except guard_b.original.Stop as stop:
+        raise SystemExit(f"the primary run's partial step cannot be counted: {stop}") from None
     fields = {}
     if partial:
         if not ruling or not ruling.strip():
@@ -822,11 +826,10 @@ def b_continuation(output, ruling=None, *, deadline=guard_a.FRESH_LATEST, start_
                 f"which amendment 4 point 4 forbids unless the student rules otherwise; pass that ruling "
                 f"with --ruling")
         fields = {"partial_run": partial, "partial_run_ruling": ruling}
-    carryover = guard_b.primary_spent(status)
-    recorded = guard_b.batch_slots(ROOT / primary["manifest"])
-    estimate = up_to_ten_cents(status["recorded_usd"] / len(recorded) * (len(steps) - 1))
+    carryover = guard_b.primary_spent(ROOT, primary, status)
+    estimate = guard_b.CONTINUATION_ESTIMATE_USD  # amendment 4 point 6
     evidence = [guard_b.FRESH_PRIMARY_CONFIG, primary["status"], primary["manifest"], guard_b.AMENDMENT,
-                *([partial["log"]] if partial else [])]
+                *([partial["log"], *partial["run_logs"]] if partial else [])]
     slots = ", ".join(str(step["study_slot"]["slot"]) for step in steps[1:])
     config = b_later(guard_b.CONTINUATION, commit, output, deadline, start_cutoff, steps, carryover, estimate,
                      evidence, f"continuation of the primary run, slot(s) {slots} unchanged", **fields)
@@ -837,7 +840,7 @@ def b_rerun(output, *, deadline=guard_a.FRESH_LATEST, start_cutoff=guard_a.FRESH
     """Study B's timeout reruns: every slot whose primary record reached its 1800 s clock, in the
     primary manifest or the continuation's, once, in slot order, its primary step with the clock
     doubled to 3600 s and nothing else changed, carrying every earlier stage's counted spend into
-    USD 2.75. With no timeout there is nothing to write."""
+    USD 4. With no timeout there is nothing to write."""
     commit, stage = head(), guard_b.RERUN
     if sha(ROOT / guard_b.FRESH_PRIMARY_CONFIG) != guard_b.FRESH_PRIMARY_SHA256:
         raise SystemExit("study-b-command.json is not the primary run's command")
@@ -859,7 +862,7 @@ def b_rerun(output, *, deadline=guard_a.FRESH_LATEST, start_cutoff=guard_a.FRESH
     charges = [json.loads((ROOT / row["record"]).read_text()).get("cost_usd") or 0 for row in timeouts]
     estimate = up_to_ten_cents(2 * sum(charges))
     evidence = [guard_b.FRESH_PRIMARY_CONFIG, primary["status"], primary["manifest"], guard_b.AMENDMENT, *later,
-                *(name for row in timeouts for name in (row["suite"], row["record"], row["log"]))]
+                guard_b.RERUN_RUNNER, *(name for row in timeouts for name in (row["suite"], row["record"], row["log"]))]
     slots = ", ".join(str(row["slot"]) for row in timeouts)
     config = b_later(stage, commit, output, deadline, start_cutoff, steps, carryover, estimate, evidence,
                      f"timeout reruns of slot(s) {slots}, each its primary step with the clock doubled to 3600 s")
