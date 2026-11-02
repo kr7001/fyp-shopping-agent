@@ -58,6 +58,14 @@ claim, score, verify_cells, voids = frozen.claim, frozen.score, frozen.verify_ce
 PRIMARY, CONTINUATION, RERUN = "primary", guard.CONTINUATION, guard.RERUN
 NOT_STARTED = "not started"
 TIMEOUT = (voids.NOT_CORRECT, "clock")  # the frozen void rules' class and reason for a clock limit
+# The code this review runs, each file held to the hash Study B's primary command bound, so the
+# reader, void rules, scorer, trace readers, reader page and reading rules are the ones the study
+# was launched under (as Study A's analysis holds its own, 2 November 2026).
+FROZEN_CODE = ("experiments/analysis/matched_briefing_analysis.py", "experiments/analysis/claim.py",
+               "experiments/analysis/score.py", "experiments/analysis/voids.py",
+               "experiments/analysis/verify_cells.py", "experiments/analysis/trace_stats.py",
+               "experiments/paths.py", "tools/hand_review.py", "tools/hand_review.html",
+               "docs/content/claim2-reading-rules.md")
 DIFFERENCES = ("opened", "cost_usd", "elapsed_s", "total_measured_elapsed_s")
 
 NOTE = """Matched-briefing fresh-market review (Rookmere), 2 November 2026
@@ -188,6 +196,9 @@ def load_study(study, continuation=None, rerun=None):
     primary_path = root / study.primary_config
     require(blind.digest(primary_path) == study.primary_sha256, "The primary run's configuration is not the one it ran.")
     primary = blind.read_json(primary_path)
+    for name in FROZEN_CODE:
+        require(primary["hashes"].get(name) == blind.digest(ROOT / name),
+                f"{name} is not the file Study B's primary run bound.")
     status = blind.read_json(root / primary["status"])
     require(status.get("status") in ("complete", "stopped") and status.get("config_sha256") == study.primary_sha256,
             "The primary run has not ended under its configuration.")

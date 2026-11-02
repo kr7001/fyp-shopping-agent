@@ -87,7 +87,8 @@ class StudyB:
         self.config_path = put(self.root / PRIMARY_CONFIG, {
             "study_id": STUDY, "round": 1, "repo": str(self.root), "manifest": f"{guard.FRESH_STEM}.manifest",
             "status": f"{guard.FRESH_STEM}.status.json", "log_dir": f"{guard.FRESH_STEM}.logs",
-            "results_dir": "experiments/results", "steps": self.steps, "hashes": {}})
+            "results_dir": "experiments/results", "steps": self.steps,
+            "hashes": {name: sha(ROOT / name) for name in review.FROZEN_CODE}})
         self.config_sha = sha(self.config_path)
         self.study = dataclasses.replace(review.STUDY_B, root=self.root, primary_sha256=self.config_sha,
                                          sheet="synthetic-b.sheet.csv")

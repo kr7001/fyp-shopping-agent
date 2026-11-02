@@ -570,6 +570,27 @@ class Stages(unittest.TestCase):
             self.assertEqual(blind.main(self.batch.study), 1)  # attempt 1 alone: the later stages exist
         self.assertIn("attempt 2 was launched", err.getvalue())
 
+    def test_attempt_2_as_it_ended_its_interrupted_slot_is_a_bound_void_not_a_row(self):
+        # 2 November: four answers, two clock timeouts, then the guard stopped the seventh slot
+        # (an account check failed), leaving its record as .interrupted.json and 20 not started.
+        self.build(kinds=["timeout", "answered", "answered", "timeout", "answered", "answered", "interrupted"], attempt3=False, rerun=False)
+        third = self.batch.later(blind.ATTEMPT3, ["answered"] * 20)
+        reruns = self.batch.later(blind.RERUN, ["answered", "answered"])
+        rows, _ = self.prepare()
+        self.assertEqual(rows, 4 + 6 + 20 + 2)
+        interrupted = self.second.path(6, ".interrupted.json")
+        self.assertTrue(interrupted.exists())
+        key = self.key()
+        self.assertIn(str(interrupted.resolve()), key["inputs"])  # bound by its SHA-256
+        slot_id = self.second.slots[6]["id"]
+        self.assertNotIn(slot_id, [v["slot"] for v in key["codes"].values()])  # a void: no row to grade
+        loaded = blind.load_study(self.batch.study, self.batch.stage_args())
+        held = loaded["held"][slot_id]
+        self.assertEqual((held["spec"], held["status"]["status"], held["record"] is None, held["interrupted"] is not None),
+                         (blind.ATTEMPT2, "interrupted", True, True))
+        self.assertEqual(len(third.slots), 20)
+        self.assertEqual([s["id"] for s in reruns.slots], [self.second.slots[0]["id"], self.second.slots[3]["id"]])
+
     def test_full_path_in_a_conversation_is_flagged_in_the_private_key_only(self):
         self.build(full_path={1, 5})
         self.prepare()

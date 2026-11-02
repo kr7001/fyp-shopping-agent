@@ -625,6 +625,22 @@ class Staged(Case):
         self.assertEqual([s["used"] for s in view["substituted"]], [1, 0, None])
         self.assertEqual(result["reruns"]["trials"][-1]["disposition"], "not started")
 
+    def test_attempt_2_as_it_ended_its_interrupted_slot_is_a_void_charged_its_calls(self):
+        result = self.build(second=["timeout", "answered", "answered", "timeout", "answered", "answered", "interrupted"], third=("answered",) * 20, reruns=("answered", "answered"))
+        slot_id = self.second.slots[6]["id"]
+        void = next(r for r in result["slots"] if r["slot"] == slot_id)
+        self.assertEqual((void["stage"], void["disposition"], void["code"], void["in_test"]),
+                         ("attempt 2", "technical void", None, False))
+        self.assertIn("the guard stopped the slot while it ran (interrupted)", void["disposition_reason"])
+        stages = {a["stage"]: a for a in result["accounting"]["stages"]}
+        self.assertEqual(stages["attempt 2"]["their_slot"], slot_id)
+        calls = 3 if self.second.slots[6]["condition"] == "block" else 2
+        self.assertEqual(stages["attempt 2"]["calls_after_last_saved_record"], calls)
+        self.assertEqual(void["provider_calls"], calls)  # its calls are charged to it, never dropped
+        self.assertIn(slot_id, [r["slot"] for r in result["primary_test"]["left_out"]])
+        self.assertEqual(result["primary_test"]["slots_in_test"], 4 + 6 + 20)
+        self.assertEqual(result["timeouts_per_arm"]["block"]["timeouts"] + result["timeouts_per_arm"]["baseline"]["timeouts"], 2)
+
     def test_without_reruns_the_timeouts_keep_their_zero_in_sensitivity_2(self):
         result = self.build(rerun=False)
         rows = self.expected()

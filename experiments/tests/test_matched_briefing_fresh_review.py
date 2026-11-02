@@ -292,6 +292,20 @@ class Reruns(Case):
 
 
 class Integrity(Case):
+    def test_the_code_run_is_the_code_the_primary_run_bound(self):
+        self.build()
+        self.assertEqual(self.prepare()[0], 15)  # quiet on the repository's own code
+        shutil.rmtree(self.bundle)
+        config = json.loads(self.b.config_path.read_text())
+        for name in ("experiments/analysis/score.py", "tools/hand_review.html"):
+            with self.subTest(name=name):
+                changed = {**config, "hashes": {**config["hashes"], name: "0" * 64}}
+                self.b.config_path.write_text(json.dumps(changed))
+                study = review.dataclasses.replace(self.b.study, primary_sha256=fresh_b_batch.sha(self.b.config_path))
+                with self.assertRaisesRegex(review.Refused, f"{name} is not the file"):
+                    review.prepare(study, self.bundle)
+        self.assertFalse(self.bundle.exists())
+
     def test_rule_5_flags_a_second_preamble(self):
         kinds = {**Reruns.KINDS, ("R", 7, "preamble"): "Another briefing"}
         self.build(kinds, continuation=True, rerun=True)
