@@ -85,6 +85,9 @@ class Primary(unittest.TestCase):
                         "hashes": {name: guarded.original.sha(self.root / name) for name in FROZEN + [PROTOCOL]},
                         "steps": steps}
         self.primary["hashes"]["tools/guarded_matched_briefing.py"] = "0" * 64  # the launcher as it ran then
+        # The replication guard's tests as they were then: they changed with its probe's retries.
+        self.write_text("experiments/tests/test_guarded_replication.py", "synthetic tests, now\n")
+        self.primary["hashes"]["experiments/tests/test_guarded_replication.py"] = "1" * 64
         path = self.write(guarded.FRESH_PRIMARY_CONFIG, self.primary)
         self.patch(guarded, "FRESH_PRIMARY_SHA256", guarded.original.sha(path))
         self.stop_primary()

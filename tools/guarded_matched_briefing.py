@@ -63,8 +63,11 @@ LATER_CAP, CONTINUATION_ESTIMATE_USD = 4.0, 0.45
 LATER_RESERVE = 0.35
 # A rerun step keeps the primary step's 120 s beside its clock.
 RERUN_WALL_S, RERUN_ESTIMATE = RERUN_CLOCK_S + 120, 0.30
-# Only the launchers may change after the primary run; every other file it bound keeps its hash.
-RENEWED = {'tools/guarded_matched_briefing.py', 'tools/guarded_replication.py'}
+# Only the launchers, and the replication guard's own tests, may change after the primary run;
+# every other file it bound keeps its hash. The tests changed with the account probe's retries
+# (2 November 2026, 13:18).
+RENEWED = {'tools/guarded_matched_briefing.py', 'tools/guarded_replication.py',
+           'experiments/tests/test_guarded_replication.py'}
 AMENDMENT = 'notes/fresh-market-2-nov/amendment-4-2-nov.md'
 START_CUTOFF_REASON = 'start cutoff reached; no new trial'
 
