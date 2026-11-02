@@ -30,21 +30,29 @@ STUDIES = {
 # USD 2.75 with the primary run, whose counted spend each carries. A later stage runs the primary
 # run's own steps unchanged and writes its own manifest, status and logs beside the primary's,
 # which it never touches.
-#   continuation  the primary run's steps it never completed (slot 16), after the same live check
+#   continuation   the primary run's steps it never completed (slot 16), after the same live check
+#   timeout-rerun  each slot whose primary record reached its 1800 s clock, once more, in slot
+#                  order, its clock doubled to 3600 s and nothing else changed, with its own record
+#                  in its own manifest, `rerun|` lines naming the primary record, never `batch|`
 FRESH_PRIMARY_CONFIG = 'notes/fresh-market-2-nov/study-b-command.json'
 FRESH_PRIMARY_SHA256 = '507aea6cad5222ad7f3b3d8d421ee32be3bb5db34c7fd694cae5a188f6799a12'
 FRESH_STEM = 'experiments/results/matched-briefing-fresh-2-nov'
-CONTINUATION = 'continuation'
-LATER = {CONTINUATION: {'manifest': f'{FRESH_STEM}.continuation.manifest',
-                        'status': f'{FRESH_STEM}.continuation.status.json',
-                        'log_dir': f'{FRESH_STEM}.continuation.logs'}}
+CONTINUATION, RERUN = 'continuation', 'timeout-rerun'
+LATER = {stage: {'manifest': f'{FRESH_STEM}.{name}.manifest', 'status': f'{FRESH_STEM}.{name}.status.json',
+                 'log_dir': f'{FRESH_STEM}.{name}.logs'} for stage, name in ((CONTINUATION, 'continuation'),
+                                                                             (RERUN, 'rerun'))}
+CLOCK_S, RERUN_CLOCK_S = 1800, 3600
+# A rerun step keeps the primary step's 120 s beside its clock, and declares twice its estimate.
+RERUN_WALL_S, RERUN_ESTIMATE = RERUN_CLOCK_S + 120, 0.15
 # The thresholds, chosen 2 November 2026. A running trial stops when the counted spend, the
 # carryover included, reaches the cap less the in-flight reserve, USD 2.50; a trial starts only
 # while the counted spend plus twice its estimate stays below that. The largest charge of any
 # trial of this study so far is USD 0.2498 (slot 7, at its 1800 s clock), so a trial started just
 # below its threshold that charged that much, wholly unseen by the account until it ended, still
-# ends below USD 2.75 (2.50 - 2 x 0.075 + 0.25 = 2.60 for slot 16). The primary run's USD 0.50
-# reserve would stop a running trial at USD 2.25 and is not needed for that.
+# ends below USD 2.75 (2.50 - 2 x 0.075 + 0.25 = 2.60 for slot 16). A rerun, at twice the clock,
+# is taken to charge up to twice that, USD 0.50, and declares twice the estimate, so it starts only
+# below USD 2.20 and ends at most at 2.70. The primary run's USD 0.50 reserve would stop a running
+# trial at USD 2.25 and is not needed for that.
 LATER_CAP, LATER_RESERVE = 2.75, 0.25
 # Only the launchers may change after the primary run; every other file it bound keeps its hash.
 RENEWED = {'tools/guarded_matched_briefing.py', 'tools/guarded_replication.py'}
@@ -111,6 +119,81 @@ def partial_run(root, primary, status):
             'suite_written': bool(folder and (folder / 'suite.json').exists())}
 
 
+def launched(root, stage):
+    """Whether a later stage has left any file: its manifest, status or logs."""
+    return any((Path(root) / path).exists() for path in LATER[stage].values())
+
+
+def rerun_step(step, timeout):
+    """A primary step run once more for its timed-out slot: its clock 1800 s to 3600 s and its wall
+    budget with it, its declared estimate doubled, every other argument and the environment as they
+    were, and a `rerun|` manifest line that names the primary record's folder."""
+    argv = list(step['argv'])
+    at = argv.index('--clock')
+    if argv[at + 1] != str(CLOCK_S) or step.get('max_seconds') != CLOCK_S + 120:
+        raise original.Stop("a rerun doubles a primary step's 1800 s clock")
+    argv[at + 1] = str(RERUN_CLOCK_S)
+    return {**step, 'id': 'rerun-' + step['id'], 'argv': argv, 'max_seconds': RERUN_WALL_S,
+            'estimate_usd': RERUN_ESTIMATE, 'rerun_of': timeout,
+            'manifest_line_template': f"rerun|{{batch}}|stage {RERUN}|primary {timeout['batch']}|" + ' '.join(argv[2:])}
+
+
+def primary_timeouts(root, manifests):
+    """Every slot whose primary record reached its 1800 s clock, in slot order, from the `batch|`
+    lines of the given manifests: the frozen void rules (experiments/analysis/voids.py) call the
+    run reported, not correct, by the clock, and its record's own elapsed time is at or past its
+    clock. A run those rules void, as a silent log or a provider error, is not rerun (amendment 4
+    point 4). Reads the record's markers and the log's timing, never judges an answer."""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'experiments'))
+    import paths  # noqa: F401  (puts analysis/ on the path)
+    import voids
+    root = Path(root).resolve()
+    found = []
+    for manifest in manifests:
+        for line in (root / manifest).read_text().splitlines():
+            if not line.startswith('batch|'):
+                continue
+            folder = Path(line.split('|')[1]).resolve()
+            slot = int(re.search(r'--slot-id (\d+)\b', line).group(1))
+            row = json.loads((folder / 'suite.json').read_text())['rows'][0]
+            record_path = folder / f"{row['task']}-{row['repeat']}.json"
+            log_path = record_path.with_suffix('.log')
+            record = json.loads(record_path.read_text()) if record_path.exists() else None
+            log = log_path.read_text(errors='replace') if log_path.exists() else None
+            outcome, reason, _ = voids.classify(record, log, row=row)
+            if (outcome, reason) != (voids.NOT_CORRECT, 'clock'):
+                continue
+            elapsed, clock = record.get('elapsed_s'), record.get('clock_s')
+            if clock != CLOCK_S or not isinstance(elapsed, (int, float)) or elapsed < clock:
+                continue
+            found.append({'slot': slot, 'batch': str(folder), 'manifest': manifest,
+                          'suite': str((folder / 'suite.json').relative_to(root)),
+                          'suite_sha256': original.sha(folder / 'suite.json'),
+                          'record': str(record_path.relative_to(root)), 'record_sha256': original.sha(record_path),
+                          'log': str(log_path.relative_to(root)), 'log_sha256': original.sha(log_path),
+                          'elapsed_s': elapsed, 'clock_s': clock})
+    found.sort(key=lambda row: row['slot'])
+    if len({row['slot'] for row in found}) != len(found):
+        raise original.Stop('a slot has two primary records')
+    return found
+
+
+def rerun_carryover(root, primary, status):
+    """The reruns' carryover and the manifests of primary records: the continuation's counted
+    spend, its carryover included, once it ran, else the primary run's."""
+    path = Path(root) / LATER[CONTINUATION]['status']
+    if not launched(root, CONTINUATION):
+        return primary_spent(status), [primary['manifest']], []
+    if not path.exists():
+        raise original.Stop('the continuation left files but no status; inspect it')
+    continuation = json.loads(path.read_text())
+    if (continuation.get('status') not in ('complete', 'stopped') or continuation.get('stage') != CONTINUATION
+            or abs(original.number(continuation.get('carryover_usd')) - primary_spent(status)) > 1e-12):
+        raise original.Stop("the reruns need the continuation's terminal status, carrying the primary run's spend")
+    return (original.number(continuation['spent_usd']), [primary['manifest'], LATER[CONTINUATION]['manifest']],
+            [LATER[CONTINUATION]['status'], LATER[CONTINUATION]['manifest']])
+
+
 def validate_later(cfg, protocol, deadline):
     """A later stage of the fresh study (amendment 4): the primary run's command by hash, its
     terminal status, manifest and files unchanged, its own paths, the shared cap with the primary
@@ -140,6 +223,30 @@ def validate_later(cfg, protocol, deadline):
     ids = [step['id'] for step in primary['steps']]
     if completed != ids[:len(completed)] or completed[:1] != ids[:1]:
         raise original.Stop("the primary run's completed steps are not its schedule's first ones")
+    if launched(root, RERUN):
+        raise original.Stop('the timeout reruns have already been launched: a slot is rerun once only, '
+                            'and no stage comes after them')
+    if stage == RERUN:
+        carryover, manifests, later = rerun_carryover(root, primary, status)
+        if abs(original.number(cfg.get('carryover_usd')) - carryover) > 1e-12:
+            raise original.Stop("the reruns carry the primary run's and the continuation's counted spend")
+        timeouts = primary_timeouts(root, manifests)
+        rows = [step.get('rerun_of') for step in cfg['steps'][1:]]
+        eligible = {row['slot'] for row in timeouts}
+        for row in rows:
+            if (row or {}).get('slot') not in eligible:
+                raise original.Stop(f"slot {(row or {}).get('slot')} is not a timeout: only a slot whose primary "
+                                    f"record reached its clock is rerun")
+        if len({row['slot'] for row in rows}) != len(rows):
+            raise original.Stop('a slot is rerun once only')
+        by_slot = {step['study_slot']['slot']: step for step in primary['steps'][1:]}
+        steps = [primary['steps'][0]] + [rerun_step(by_slot[row['slot']], row) for row in timeouts]
+        if rows != timeouts or cfg['steps'] != steps:
+            raise original.Stop('the reruns are every timed-out slot in slot order, its primary step with '
+                                'the clock doubled and nothing else changed')
+        evidence.update(later)
+        for row in timeouts:
+            evidence.update({row['suite'], row['record'], row['log']})
     if stage == CONTINUATION:
         if abs(original.number(cfg.get('carryover_usd')) - primary_spent(status)) > 1e-12:
             raise original.Stop("the continuation carries the primary run's counted spend")
@@ -212,6 +319,8 @@ class MatchedGuard(original.Guard):
         self.carryover = original.number(cfg.get('carryover_usd', 0))
         self.start_cutoff = dt.datetime.fromisoformat(cfg['start_cutoff']).timestamp() if self.stage else None
         self.MIN_RESERVE_USD = LATER_RESERVE if self.stage else STUDIES[self.study_id]['min_reserve']
+        if self.stage == RERUN:
+            self.MAX_STEP_SECONDS = RERUN_WALL_S
         # Constructor reads this constant once. Restore it even if it refuses.
         old = original.AUTHORIZED_DEADLINE
         try:

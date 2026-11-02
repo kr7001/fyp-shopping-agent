@@ -114,6 +114,9 @@ class Guard:
     # protocol sets a smaller one, from its own largest measured trial, overrides it before
     # this constructor runs (the fresh-market matched briefing, 2 November 2026).
     MIN_RESERVE_USD = 1.0
+    # The longest wall budget of one step: a trial's 1800 s clock and 120 s to start and save. A
+    # subclass for a stage with a longer trial clock raises it (the timeout reruns, 2 November 2026).
+    MAX_STEP_SECONDS = 1920
 
     def __init__(self, config_path, *, account_command=None):
         self.config_path = Path(config_path).resolve()
@@ -431,8 +434,8 @@ class Guard:
         paid = step["kind"] == "paid"
         estimate = number(step.get("estimate_usd", 0))
         wall_limit = number(step.get("max_seconds", 1920))
-        if not 0 < wall_limit <= 1920:
-            raise Stop("step wall budget must be within 1920 seconds")
+        if not 0 < wall_limit <= self.MAX_STEP_SECONDS:
+            raise Stop(f"step wall budget must be within {self.MAX_STEP_SECONDS} seconds")
         if paid and estimate <= 0:
             raise Stop("paid step requires a positive declared estimate")
         self.poll_account(required=True)

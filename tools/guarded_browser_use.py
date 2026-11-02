@@ -94,9 +94,14 @@ FRESH_NO_ANSWER_STOP = 3
 # rules hold but one (point 5): a request the provider leaves without a response is settled at its
 # bound with no count limit, and 3 executor requests in a row with no response stop the batch,
 # since a provider outage is then likely.
-#   attempt 3   the slots attempt 2 left never started, in their order, under its condition
+#   attempt 3      the slots attempt 2 left never started, in their order, under its condition
+#   timeout-rerun  each slot whose primary record reached its 2700 s clock, once more, in schedule
+#                  order, with its clock doubled and nothing else changed: a record of its own,
+#                  linked to the primary one, which it never replaces or edits
 FRESH_ATTEMPT3_STAGE = "fresh-market-attempt-3"
-FRESH_A4_STAGES = {FRESH_ATTEMPT3_STAGE}
+FRESH_RERUN_STAGE = "timeout-rerun"
+FRESH_RERUN_ATTEMPT = "timeout-rerun"  # a rerun record's attempt, never a primary attempt's number
+FRESH_A4_STAGES = {FRESH_ATTEMPT3_STAGE, FRESH_RERUN_STAGE}
 FRESH_A4_CAP_USD = 10.0
 FRESH_STAGES = FRESH_STAGES | FRESH_A4_STAGES
 # The stages under amendment 3's settlement and batch rules.
@@ -107,9 +112,10 @@ START_CUTOFF_REASON = "start cutoff reached; no new trial"
 # Every stage's files sit beside the others in FRESH_NOTES, named by one prefix: its ledger,
 # status, launch claim, log and results folder. Fixed, so a budget cannot be reset by renaming.
 FRESH_PREFIX = {FRESH_STAGE: "study-a", FRESH_CONTINUATION_STAGE: "study-a-continuation",
-                FRESH_ATTEMPT3_STAGE: "study-a-attempt3"}
+                FRESH_ATTEMPT3_STAGE: "study-a-attempt3", FRESH_RERUN_STAGE: "study-a-rerun"}
 FRESH_LEDGER = {stage: f"{FRESH_NOTES}/{prefix}.ledger.json" for stage, prefix in FRESH_PREFIX.items()}
-FRESH_A4_RECONCILIATION = {FRESH_ATTEMPT3_STAGE: f"{FRESH_NOTES}/study-a-attempt3-reconciliation.json"}
+FRESH_A4_RECONCILIATION = {FRESH_ATTEMPT3_STAGE: f"{FRESH_NOTES}/study-a-attempt3-reconciliation.json",
+                           FRESH_RERUN_STAGE: f"{FRESH_NOTES}/study-a-rerun-reconciliation.json"}
 FRESH_CONTINUATION_SHA256 = "4b8c88dbd01af0ea9ad787a860e70e65396a33952b1844ee1348da0fcff37d9a"  # attempt 2's command
 # The settings validate_fresh_continuation held attempt 2 to; every later stage keeps them.
 FRESH_CONDITION = ("python", "page_python", "environment_file", "model", "provider", "allowed_served_providers",
@@ -713,17 +719,22 @@ def validate_fresh_budget(config):
             raise Stop("the fresh continuation carries attempt 1 into the same USD 3 cap, once")
         files = FRESH_CONTINUATION_FILES
     elif config.get("stage") in FRESH_A4_STAGES:
-        # Amendment 4's stages: attempts 1 and 2 carried into Study A's USD 10 total.
+        # Amendment 4's stages: every earlier attempt carried into Study A's USD 10 total.
         carryover, estimate = number(config.get("carryover_usd")), number(config.get("estimate_usd"))
-        if (config.get("study_budget_id") != FRESH_BUDGET or config.get("attempt") != 3
+        chains = ([[FRESH_LEDGER[FRESH_STAGE], FRESH_LEDGER[FRESH_CONTINUATION_STAGE]]]
+                  + ([[FRESH_LEDGER[FRESH_STAGE], FRESH_LEDGER[FRESH_CONTINUATION_STAGE], FRESH_LEDGER[FRESH_ATTEMPT3_STAGE]]]
+                     if config["stage"] == FRESH_RERUN_STAGE else []))
+        attempt = 3 if config["stage"] == FRESH_ATTEMPT3_STAGE else FRESH_RERUN_ATTEMPT
+        if (config.get("study_budget_id") != FRESH_BUDGET or config.get("attempt") != attempt
                 or not 0 < carryover < FRESH_A4_CAP_USD or config.get("shared_cap_usd") != FRESH_A4_CAP_USD
                 or abs(number(config.get("cap_usd")) - (FRESH_A4_CAP_USD - carryover)) > 1e-12
                 or estimate > number(config.get("cap_usd"))
                 or config.get("legacy_unsettled_reserve_usd") != LEGACY_UNSETTLED_USD
                 or number(config.get("minimum_balance_usd")) < 20 + LEGACY_UNSETTLED_USD
-                or config.get("prior_ledger_files") != [FRESH_LEDGER[FRESH_STAGE], FRESH_LEDGER[FRESH_CONTINUATION_STAGE]]
+                or config.get("prior_ledger_files") not in chains
                 or config.get("reconciliation_file") != FRESH_A4_RECONCILIATION[config["stage"]]):
-            raise Stop("attempt 3 carries attempts 1 and 2 into Study A's USD 10 cap, once")
+            raise Stop("amendment 4's stages carry attempts 1 and 2, and attempt 3 once it ran, into "
+                       "Study A's USD 10 cap, once")
         cutoff = config.get("start_cutoff")
         if not isinstance(cutoff, str) or deadline_epoch(cutoff) > deadline_epoch(config["deadline"]):
             raise Stop("amendment 4's stages stop starting trials at a start cutoff no later than the deadline")
@@ -971,6 +982,8 @@ def validate_fresh_attempt3(config, expected_slots=None):
     scheduling code, whose agent-facing definitions `validate_fresh_identity` checks."""
     repo = Path(config["repo"]).resolve()
     notes = FRESH_NOTES
+    if launched(repo, FRESH_RERUN_STAGE):
+        raise Stop("attempt 3 comes before the timeout reruns, whose carryover leaves it out, never after")
     fixed = {"prior_config_file": f"{notes}/study-a-continuation-command.json",
              "prior_status_file": f"{notes}/study-a-continuation.status.json",
              "prior_schedule_file": f"{notes}/study-a-continuation.results/schedule.json",
@@ -1010,6 +1023,123 @@ def validate_fresh_attempt3(config, expected_slots=None):
     if remaining and not number(config["estimate_usd"]) > 0:
         raise Stop("attempt 3 needs a positive estimate for its slots")
     return remaining
+
+
+def launched(repo, stage):
+    """Whether a stage of Study A has left any file: its launch claim, status, ledger or results."""
+    prefix = Path(repo) / FRESH_NOTES / FRESH_PREFIX[stage]
+    return any(Path(f"{prefix}.{name}").exists() for name in ("launch.json", "status.json", "ledger.json", "results"))
+
+
+def ended_primary_stages(repo):
+    """Attempts 1 to 3 of Study A as they ended, for the timeout reruns (amendment 4, 2 November
+    2026): the ledgers they spent from, the files that must stay bound, and every slot whose
+    primary record reached its 2700 s clock, in the original schedule's order. A clock timeout is
+    a slot its stage recorded with outcome and disposition `timeout`, whose record shows its own
+    elapsed time at or past its 2700 s clock; one the frozen classification stopped the batch on,
+    with no disposition, is a technical void under amendment 2 and is not rerun. Attempt 1's stage
+    stopped on any timeout, so it has none. Reads identifiers, dispositions, clocks and charges,
+    never an answer."""
+    repo = Path(repo).resolve()
+    notes = FRESH_NOTES
+    first = json.loads((repo / notes / "study-a.results/schedule.json").read_text()).get("slots", [])
+    if len(first) != 32:
+        raise Stop("attempt 1's schedule differs from the planned 32 slots")
+    given = first[FRESH_KEPT_ANSWERED + FRESH_KEPT_INTERRUPTED:]
+    statuses, bound = ended_stage(repo, FRESH_CONTINUATION_STAGE, FRESH_CONTINUATION_SHA256, 2, given)
+    chain, ran = [FRESH_LEDGER[FRESH_STAGE], FRESH_LEDGER[FRESH_CONTINUATION_STAGE]], [(FRESH_CONTINUATION_STAGE, 2, statuses)]
+    if launched(repo, FRESH_ATTEMPT3_STAGE):
+        prefix = f"{notes}/{FRESH_PREFIX[FRESH_ATTEMPT3_STAGE]}"
+        if not (repo / f"{prefix}.status.json").exists():
+            raise Stop("attempt 3 has not ended")
+        status = json.loads((repo / f"{prefix}.status.json").read_text())
+        if status.get("status") not in ("complete", "stopped"):
+            raise Stop("attempt 3: a later stage needs this stage's terminal status")
+        if (repo / f"{prefix}.results").exists():
+            given = [slot for slot in given if statuses[slot["id"]]["status"] == "not_started"]
+            third, files = ended_stage(repo, FRESH_ATTEMPT3_STAGE, status.get("config_sha256"), 3, given)
+            chain.append(FRESH_LEDGER[FRESH_ATTEMPT3_STAGE])
+            ran.append((FRESH_ATTEMPT3_STAGE, 3, third))
+            bound += files
+        elif (repo / f"{prefix}.ledger.json").exists():
+            raise Stop("attempt 3 left a ledger without its results; inspect it")
+        else:  # it stopped before its worker started, with no call
+            bound += [f"{prefix}.{name}" for name in ("status.json", "launch.json") if (repo / f"{prefix}.{name}").exists()]
+    order = [slot["id"] for slot in first]
+    timeouts = []
+    for stage, attempt, rows in ran:
+        prefix = FRESH_PREFIX[stage]
+        for slot_id, row in rows.items():
+            if row.get("status") != "timeout" or row.get("disposition") != "timeout":
+                continue
+            relative = f"{notes}/{prefix}.results/{slot_id}.json"
+            record = json.loads((repo / relative).read_text())
+            elapsed, clock = record.get("elapsed_s"), (record.get("settings") or {}).get("clock_s")
+            if (record.get("outcome") != "timeout" or record.get("disposition") != "timeout" or clock != 2700
+                    or not isinstance(elapsed, (int, float)) or elapsed < clock):
+                raise Stop(f"{slot_id}: recorded as a clock timeout, but its record does not show its 2700 s "
+                           f"clock reached; inspect it")
+            timeouts.append({"slot": slot_id, "stage": stage, "attempt": attempt, "record": relative,
+                             "record_sha256": sha(repo / relative), "elapsed_s": elapsed, "clock_s": clock})
+    timeouts.sort(key=lambda row: order.index(row["slot"]))
+    if len({row["slot"] for row in timeouts}) != len(timeouts):
+        raise Stop("a slot has two primary records")
+    return chain, bound, timeouts
+
+
+def validate_fresh_rerun(config, expected_slots=None):
+    """The timeout reruns (amendment 4, 2 November 2026): every slot of Study A whose primary
+    record reached its 2700 s clock, each once, in schedule order, with its clock doubled to
+    5400 s and nothing else changed, under attempt 2's condition and Study A's USD 10 cap with
+    every earlier attempt's counted spend carried. Refuses a slot that is not such a timeout, a
+    slot listed twice, and any rerun once this stage has been launched. Returns the rows of
+    `rerun_slots`, each naming the primary record it reruns."""
+    repo = Path(config["repo"]).resolve()
+    notes = FRESH_NOTES
+    clock = config.get("clock_s")
+    if clock != 2700 or config.get("rerun_clock_s") != 2 * clock:
+        raise Stop("the rerun doubles the 2700 s trial clock to 5400 s and changes nothing else")
+    if config.get("prior_config_file") != f"{notes}/study-a-continuation-command.json":
+        raise Stop("the rerun holds itself to attempt 2's own command, nothing else")
+    if sha(repo / config["prior_config_file"]) != FRESH_CONTINUATION_SHA256:
+        raise Stop("the rerun must bind attempt 2's exact command")
+    prior = json.loads((repo / config["prior_config_file"]).read_text())
+    if any(config.get(key) != prior.get(key) for key in FRESH_CONDITION):
+        raise Stop("the rerun runs attempt 2's condition unchanged")
+    if any(config["hashes"].get(name) != digest for name, digest in prior["hashes"].items() if name not in FRESH_RENEWED):
+        raise Stop("the rerun changed a file attempt 2 ran with")
+    first = json.loads((repo / notes / "study-a.results/schedule.json").read_text()).get("slots", [])
+    if expected_slots is not None and first != expected_slots:
+        raise Stop("attempt 1's schedule differs from the planned 32 slots")
+    if launched(repo, FRESH_RERUN_STAGE):
+        raise Stop("each timed-out slot is rerun once; the timeout-rerun stage has already been launched")
+    chain, bound, timeouts = ended_primary_stages(repo)
+    if prior_ledger_names(config) != chain:
+        raise Stop("the rerun carries every earlier attempt's ledger, attempt 3's once it ran")
+    rows = config.get("rerun_slots")
+    eligible = {row["slot"] for row in timeouts}
+    if not isinstance(rows, list):
+        raise Stop("the rerun lists its slots")
+    for row in rows:
+        if row.get("slot") not in eligible:
+            raise Stop(f"{row.get('slot')} is not a timeout: only a slot whose primary record reached its "
+                       f"clock is rerun")
+    if len({row["slot"] for row in rows}) != len(rows):
+        raise Stop("a slot is rerun once only")
+    if rows != timeouts:
+        raise Stop("the rerun list is not every timed-out slot, with its record, in schedule order")
+    carryover, _ = recovery_limits(config)
+    if abs(carryover - carried_spend([repo / name for name in chain], chain)[0]) > 1e-9:
+        raise Stop("the carryover must be every earlier attempt's counted spend, as the guard computes it")
+    required = set(bound) | {config["prior_config_file"], config["reconciliation_file"], f"{notes}/amendment-4-2-nov.md"}
+    if not required <= set(config["hashes"]):
+        raise Stop("every earlier attempt's statuses, ledgers, records and amendment 4 must be hash-bound")
+    for relative in required:
+        if sha(repo / relative) != config["hashes"][relative]:
+            raise Stop("an earlier attempt's evidence changed after it was bound")
+    if rows and not number(config["estimate_usd"]) > 0:
+        raise Stop("the rerun needs a positive estimate for its slots")
+    return rows
 
 
 def validate_review_receipt(config, receipt, head, digest, command):
@@ -1102,6 +1232,8 @@ def validate_config(path, *, require_approval=False):
         validate_fresh_continuation(config)
     if config["stage"] == FRESH_ATTEMPT3_STAGE:
         validate_fresh_attempt3(config)
+    if config["stage"] == FRESH_RERUN_STAGE:
+        validate_fresh_rerun(config)
     if require_approval:
         digest = sha(path)
         receipt = json.loads(Path(config["verification_receipt"]).read_text())
@@ -1164,11 +1296,12 @@ def mark_unfinished(config, reason):
 
 
 def nothing_left(path):
-    """Attempt 3 when attempt 2 left no slot never started (amendment 4, 2 November 2026): the
-    configuration is checked in full, free, against attempt 2's bound evidence, and the stage then
-    ends without a claim, a ledger or a paid call."""
+    """Attempt 3 when attempt 2 left no slot never started, or the timeout reruns when no primary
+    record is a timeout (amendment 4, 2 November 2026): the configuration is checked in full, free,
+    against the bound evidence, and the stage then ends without a claim, a ledger or a paid call."""
     config = json.loads(Path(path).read_text())
-    if config.get("stage") != FRESH_ATTEMPT3_STAGE or config.get("slot_ids") != []:
+    empty = {FRESH_ATTEMPT3_STAGE: config.get("slot_ids") == [], FRESH_RERUN_STAGE: config.get("rerun_slots") == []}
+    if not empty.get(config.get("stage")):
         return False
     validate_config(path)
     return True
@@ -1188,7 +1321,7 @@ def worker_stop_reason(config, blocked):
 
 def execute(path):
     if nothing_left(path):
-        print("Attempt 2 left no slot never started; this stage ends without a paid call.")
+        print("No slot is left for this stage; it ends without a paid call.")
         return
     config = validate_config(path, require_approval=True)
     status_path, ledger = Path(config["status_path"]), Path(config["ledger_path"])

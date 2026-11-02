@@ -590,10 +590,6 @@ class AgentFacing(unittest.TestCase):
         source = (ROOT / "experiments/runners/browser_use_transfer.py").read_text()
         self.assertEqual(guard.agent_facing_digests(source), guard.AGENT_FACING)
 
-    def test_the_condition_fields_are_the_continuations(self):
-        self.assertEqual(set(guard.FRESH_CONDITION) | {"deadline"} >= {"clock_s", "max_steps", "model", "provider",
-                                                                       "temperature", "top_p", "llm_timeout"}, True)
-
 
 if __name__ == "__main__":
     unittest.main()

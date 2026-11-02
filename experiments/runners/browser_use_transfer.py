@@ -35,6 +35,7 @@ from guarded_browser_use import (FRESH_CONTINUATION_STAGE, FRESH_KEPT_ANSWERED, 
 # Amendment 4's stages, under the continuation's rules, with a start cutoff (2 November 2026).
 from guarded_browser_use import (FRESH_ATTEMPT3_STAGE, FRESH_SETTLING_STAGES, START_CUTOFF_REASON,  # noqa: E402
                                  deadline_epoch, validate_fresh_attempt3)
+from guarded_browser_use import FRESH_RERUN_ATTEMPT, FRESH_RERUN_STAGE, validate_fresh_rerun  # noqa: E402
 
 STUDY_ID = "browser-use-transfer-2026-10-31"
 ARMS = ("baseline", "block")
@@ -178,6 +179,14 @@ def preview(config):
         if [slot["id"] for slot in slots] != remaining:
             raise Stop("attempt 3's slots are not attempt 2's unstarted ones in their order")
         continuation = {"attempt": 3, "original_slot_count": original}
+    if config["stage"] == FRESH_RERUN_STAGE:
+        # Each timed-out slot once, in schedule order, its clock doubled and nothing else changed,
+        # carrying the primary record it reruns (amendment 4).
+        by_id = {slot["id"]: slot for slot in slots}
+        slots = [{**by_id[row["slot"]], "clock_s": config["rerun_clock_s"], "rerun_of": row}
+                 for row in validate_fresh_rerun(config, expected_slots=slots)]
+        continuation = {"attempt": FRESH_RERUN_ATTEMPT, "rerun_clock_s": config["rerun_clock_s"],
+                        "primary_clock_s": config["clock_s"]}
     fresh = config["stage"] in FRESH_STAGES
     return {"study_id": FRESH_BUDGET if fresh else STUDY_ID, "stage": config["stage"], "paid_calls": 0,
             **({"prior_completed_count": 6, "original_slot_count": 32} if config["stage"] == REPEAT_RECOVERY_STAGE else {}),
@@ -405,6 +414,8 @@ async def execute_study(config_path):
                 record.update(batch_id=FRESH_BUDGET, market=config["market"],
                               config_sha256=os.environ["IGR_BROWSER_USE_CONFIG_SHA256"],
                               head=config["expected_head"])
+            if config["stage"] == FRESH_RERUN_STAGE:
+                record["rerun_of"] = slot["rerun_of"]  # the primary record it reruns, by path and hash
             disposition = reason = None
             if config["stage"] in FRESH_SETTLING_STAGES:
                 # Which attempt, and the requests settled at their bound, apart from the charges:

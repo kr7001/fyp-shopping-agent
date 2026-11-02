@@ -703,6 +703,45 @@ def attempt3(output, preflight, *, deadline=guard_a.FRESH_LATEST, start_cutoff=g
     return written
 
 
+def a_rerun(output, preflight, *, deadline=guard_a.FRESH_LATEST, start_cutoff=guard_a.FRESH_START_CUTOFF):
+    """Study A's timeout reruns: every slot whose primary record reached its 2700 s clock, once,
+    in schedule order, with its clock doubled to 5400 s and nothing else changed, carrying the
+    counted spend of attempts 1, 2 and 3 (when it ran) into the USD 10 cap. With no timeout the
+    configuration still says so, and its launch ends without a paid call."""
+    commit, stage = head(), guard_a.FRESH_RERUN_STAGE
+    a4_receipt(preflight)
+    if sha(ROOT / CONTINUATION_COMMAND) != guard_a.FRESH_CONTINUATION_SHA256:
+        raise SystemExit("study-a-continuation-command.json is not attempt 2's command")
+    if guard_a.launched(ROOT, stage):
+        raise SystemExit("the timeout-rerun stage has already been launched; each slot is rerun once")
+    try:
+        chain, bound, timeouts = guard_a.ended_primary_stages(ROOT)
+    except guard_a.Stop as stop:
+        raise SystemExit(f"the reruns cannot be prepared as the attempts stand: {stop}") from None
+    carryover, reconciliation = counted_spend(stage, chain)
+    # Twice the provider's known charges of each timed-out record, for twice its clock.
+    known = sum(call["cost_usd"] for row in timeouts for call in json.loads((ROOT / row["record"]).read_text())["calls"]
+                if call.get("cost_usd") is not None)
+    estimate = up_to_ten_cents(2 * known) if timeouts else 0
+    written = [write_json(ROOT / guard_a.FRESH_A4_RECONCILIATION[stage], reconciliation)]
+    fields = {"attempt": guard_a.FRESH_RERUN_ATTEMPT, "prior_config_file": CONTINUATION_COMMAND,
+              "prior_ledger_files": chain, "rerun_slots": timeouts, "rerun_clock_s": 2 * 2700}
+    evidence = [*bound, CONTINUATION_COMMAND, guard_a.FRESH_A4_RECONCILIATION[stage], *AMENDMENTS]
+    config = a4_config(stage, commit, output, preflight, deadline, start_cutoff, evidence, carryover, estimate,
+                       **fields)
+    for field in ("prior_status_file", "prior_schedule_file", "prior_slot_status_file"):
+        config.pop(field, None)  # attempt 1's, as attempt 2 named them; the rerun reads them through its evidence
+    guard_a.validate_fresh_budget(config)
+    if guard_a.validate_fresh_rerun(config) != timeouts:
+        raise SystemExit("the rerun's guard reads other slots than the builder")
+    written += write_a4(stage, output, config, f"the timeout reruns of Study A, {len(timeouts)} slot(s) with "
+                                               f"their clock doubled, within Study A's USD 10 cap")
+    print(f"Study A timeout reruns: {len(timeouts)} slot(s) {[row['slot'] for row in timeouts]}; carryover USD "
+          f"{carryover:.10f} from {len(chain)} attempts, cap USD {config['cap_usd']:.10f}, estimate USD {estimate}"
+          + ("" if timeouts else "; its launch ends without a paid call"))
+    return written
+
+
 def agent_check():
     """openJiuwen's checked-out commit and the digest of its local patch, as config_b reads them."""
     agent = ROOT / "agent/agent-core"
@@ -794,6 +833,39 @@ def b_continuation(output, ruling=None, *, deadline=guard_a.FRESH_LATEST, start_
     return write_b(output, config)
 
 
+def b_rerun(output, *, deadline=guard_a.FRESH_LATEST, start_cutoff=guard_a.FRESH_START_CUTOFF):
+    """Study B's timeout reruns: every slot whose primary record reached its 1800 s clock, in the
+    primary manifest or the continuation's, once, in slot order, its primary step with the clock
+    doubled to 3600 s and nothing else changed, carrying every earlier stage's counted spend into
+    USD 2.75. With no timeout there is nothing to write."""
+    commit, stage = head(), guard_b.RERUN
+    if sha(ROOT / guard_b.FRESH_PRIMARY_CONFIG) != guard_b.FRESH_PRIMARY_SHA256:
+        raise SystemExit("study-b-command.json is not the primary run's command")
+    if guard_b.launched(ROOT, stage):
+        raise SystemExit("the timeout reruns have already been launched; each slot is rerun once")
+    primary = json.loads((ROOT / guard_b.FRESH_PRIMARY_CONFIG).read_text())
+    status = json.loads((ROOT / primary["status"]).read_text())
+    if status.get("status") not in ("complete", "stopped"):
+        raise SystemExit("the primary run has not ended")
+    try:
+        carryover, manifests, later = guard_b.rerun_carryover(ROOT, primary, status)
+        timeouts = guard_b.primary_timeouts(ROOT, manifests)
+    except guard_b.original.Stop as stop:
+        raise SystemExit(f"the reruns cannot be prepared as the stages stand: {stop}") from None
+    if not timeouts:
+        raise SystemExit("no primary record of Study B reached its clock; there is nothing to rerun")
+    by_slot = {step["study_slot"]["slot"]: step for step in primary["steps"][1:]}
+    steps = [primary["steps"][0]] + [guard_b.rerun_step(by_slot[row["slot"]], row) for row in timeouts]
+    charges = [json.loads((ROOT / row["record"]).read_text()).get("cost_usd") or 0 for row in timeouts]
+    estimate = up_to_ten_cents(2 * sum(charges))
+    evidence = [guard_b.FRESH_PRIMARY_CONFIG, primary["status"], primary["manifest"], guard_b.AMENDMENT, *later,
+                *(name for row in timeouts for name in (row["suite"], row["record"], row["log"]))]
+    slots = ", ".join(str(row["slot"]) for row in timeouts)
+    config = b_later(stage, commit, output, deadline, start_cutoff, steps, carryover, estimate, evidence,
+                     f"timeout reruns of slot(s) {slots}, each its primary step with the clock doubled to 3600 s")
+    return write_b(output, config)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     modes = parser.add_subparsers(dest="mode", required=True)
@@ -815,7 +887,10 @@ def main():
     third.add_argument("--preflight", type=Path, required=True, help="the a4-preflight receipt")
     b16 = modes.add_parser("b-continuation")
     b16.add_argument("--ruling", help="the student's ruling, when the primary run had started the step")
-    for stage in (third, b16):
+    reruns = modes.add_parser("a-rerun")
+    reruns.add_argument("--preflight", type=Path, required=True, help="the a4-preflight receipt")
+    b_reruns = modes.add_parser("b-rerun")
+    for stage in (third, b16, reruns, b_reruns):
         stage.add_argument("--output", type=Path, required=True, help="where the configuration is written")
         stage.add_argument("--deadline", default=guard_a.FRESH_LATEST,
                            help="no paid call after this (default and latest: the protocol's absolute stop)")
@@ -839,6 +914,10 @@ def main():
         written = attempt3(args.output, args.preflight, deadline=args.deadline, start_cutoff=args.start_cutoff)
     elif args.mode == "b-continuation":
         written = b_continuation(args.output, args.ruling, deadline=args.deadline, start_cutoff=args.start_cutoff)
+    elif args.mode == "a-rerun":
+        written = a_rerun(args.output, args.preflight, deadline=args.deadline, start_cutoff=args.start_cutoff)
+    elif args.mode == "b-rerun":
+        written = b_rerun(args.output, deadline=args.deadline, start_cutoff=args.start_cutoff)
     elif args.mode == "continuation":
         written = continuation()
     else:
