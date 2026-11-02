@@ -1,0 +1,413 @@
+{
+  "ran_at": "2026-10-28T01:36:42",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "provider_routing": {
+    "order": [
+      "gmicloud",
+      "deepinfra",
+      "streamlake"
+    ],
+    "allow_fallbacks": false,
+    "quantizations": [
+      "fp8"
+    ]
+  },
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Quenby . Which three sellers are cheapest for size M of the Quenby tee among listings that can actually supply it, and at what prices?",
+  "elapsed_s": 407.2,
+  "cost_usd": 0.135992,
+  "cost_note": null,
+  "spend_before_usd": 125.793208091,
+  "spend_after_usd": 125.938154664,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "32ba49af4a2a41918ef84410d62ffbc6",
+    "final": "The three cheapest sellers for size M of the Quenby tee among listings that can actually supply it: 1) Gisburn Clothing Co (Quenby Midweight Jersey Tee, Short Sleeve) at $12.58, 2) Garrick Workwear Supply Co (Quenby Midweight Jersey Knit Tee) at $15.33, 3) Hillside Garment Works (Quenby Midweight Jersey Knit Tee) at $17.39. All three were verified on their product pages: size M is selectable (not disabled) and marked 'In stock', and the displayed price after selecting M matches. Excluded: Pembroke Threads ($10.72 'as low as', M disabled) and Foxcombe Apparel (M disabled), among other listings that cannot supply M.",
+    "page": {
+      "url": "http://localhost:7770/igr-rp28-29.html",
+      "title": "Quenby Midweight Jersey Knit Tee - Hillside Garment Works"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 63,
+    "actions": 17,
+    "observations": 44,
+    "unclassified_tools": [
+      "mcp_playwright-official-browser_evaluate"
+    ],
+    "assistant_turns": 62,
+    "by_tool": {
+      "browser_evaluate": 40,
+      "browser_navigate": 11,
+      "browser_select_option": 6,
+      "browser_probe_cards": 3,
+      "mcp_playwright-official-browser_evaluate": 2,
+      "browser_probe_interactives": 1
+    },
+    "selections": [
+      "M",
+      "17",
+      "17",
+      "17",
+      "17",
+      "17"
+    ],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Quenby",
+      "http://localhost:7770/igr-rp28-05.html",
+      "http://localhost:7770/igr-rp28-21.html",
+      "http://localhost:7770/igr-rp28-22.html",
+      "http://localhost:7770/igr-rp28-12.html",
+      "http://localhost:7770/catalogsearch/result/?q=Quenby",
+      "http://localhost:7770/catalogsearch/result/index/?p=2&q=Quenby",
+      "http://localhost:7770/igr-rp28-12.html",
+      "http://localhost:7770/igr-rp28-02.html",
+      "http://localhost:7770/igr-rp28-17.html",
+      "http://localhost:7770/igr-rp28-29.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Quenby"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-05.html"
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "M"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-21.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "17"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-22.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-12.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "17"
+      },
+      {
+        "tool": "mcp_playwright-official-browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Quenby"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/index/?p=2&q=Quenby"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-12.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "mcp_playwright-official-browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-02.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "17"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-17.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "17"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-29.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "17"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_navigate",
+      "browser_probe_interactives",
+      "browser_probe_cards",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_select_option",
+      "mcp_playwright-official-browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_probe_cards",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "mcp_playwright-official-browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_evaluate"
+    ],
+    "tokens": {
+      "prompt": 4471988,
+      "completion": 28819,
+      "total": 4500807,
+      "calls": 63
+    },
+    "cost_reported_usd": 0.135992,
+    "providers": {
+      "GMICloud": 63
+    }
+  },
+  "spend_delta_usd": 0.144947,
+  "log": "tee-top-3-1.log",
+  "shop": "gated",
+  "probe": "viewport",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "scaffold": "openjiuwen"
+}

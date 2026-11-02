@@ -1,0 +1,24 @@
+{
+  "status": "stopped",
+  "reason": "account visibility lost",
+  "pid": 65760,
+  "updated_at": "2026-10-28T08:30:51.764361+00:00",
+  "deadline": "2026-10-28T21:00:00+08:00",
+  "config_sha256": "cde87f8f430c0ca9bbffa1e337176b73018f3f58141d9716c44696d21eaaf50d",
+  "start_usage": 125.249729661,
+  "last_usage": 128.942208984,
+  "recorded_usd": 0.0,
+  "spent_usd": 3.6924793229999864,
+  "round": 2,
+  "round_start_usage": 128.8348069,
+  "round_spent_usd": 0.10740208400000029,
+  "prior_recorded_usd": 3.5850809999999997,
+  "aggregate_recorded_usd": 3.5850809999999997,
+  "current_step": "run-01-tee-target-price",
+  "completed_steps": [
+    "live-market-check",
+    "arm-preflight-0",
+    "arm-preflight-1",
+    "arm-preflight-2"
+  ]
+}

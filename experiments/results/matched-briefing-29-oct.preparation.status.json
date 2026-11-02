@@ -1,0 +1,6 @@
+{
+  "status": "failed",
+  "paid_runs_repeated": false,
+  "reason": "offline review preparation failed; paid runs preserved",
+  "config_sha256": "d3be7c44ad7ec7f60ef7fb0cf0de9589d8e44ed985780dfe612b817c07a5d468"
+}

@@ -1,0 +1,335 @@
+{
+  "ran_at": "2026-10-28T01:12:53",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "provider_routing": {
+    "order": [
+      "gmicloud",
+      "deepinfra",
+      "streamlake"
+    ],
+    "allow_fallbacks": false,
+    "quantizations": [
+      "fp8"
+    ]
+  },
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Quenby . What is the lowest price anyone charges for size M of the Quenby tee, among those that can actually be bought?",
+  "elapsed_s": 387.6,
+  "cost_usd": 0.097645,
+  "cost_note": null,
+  "spend_before_usd": 125.249729661,
+  "spend_after_usd": 125.340909437,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "8ccdaabd70bc45a7a7f86d49f658e320",
+    "final": "The lowest price anyone charges for a size M Quenby tee that can actually be bought is $12.58, at Gisburn Clothing Co (Quenby Midweight Jersey Tee, Short Sleeve - Gisburn Clothing Co, http://localhost:7770/igr-rp28-02.html). Verified live on the site: on that product the Size M option is enabled (not greyed out/disabled), selecting it displays $12.58, and adding it to the cart charges exactly $12.58 for 'Size M'. Method: all 45 Quenby search results were checked; each seller's spConfig was parsed for the size-M variant, its salable/purchasable status (e.g., Pembroke Threads lists M but the option is disabled, so its ~$10.72 is not buyable; Ashgrove/others simply don't offer size M), and the per-variant price actually shown when M is selected (confirmed equal to the cart price, e.g., Elstead M = $42.37). The next-cheapest buyable size M is Fairhaven Outfitters at $13.95 ('M - Only 1 left!'), so $12.58 is the minimum.",
+    "page": {
+      "url": "http://localhost:7770/igr-rp28-45.html",
+      "title": "Quenby Midweight Jersey Tee, Short Sleeve - Fairhaven Outfitters"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 48,
+    "actions": 14,
+    "observations": 33,
+    "unclassified_tools": [
+      "mcp_playwright-official-browser_evaluate"
+    ],
+    "assistant_turns": 48,
+    "by_tool": {
+      "browser_evaluate": 27,
+      "browser_navigate": 9,
+      "browser_snapshot": 4,
+      "browser_select_option": 3,
+      "browser_click": 2,
+      "browser_probe_cards": 1,
+      "browser_probe_interactives": 1,
+      "mcp_playwright-official-browser_evaluate": 1
+    },
+    "selections": [
+      "17",
+      "17",
+      "25"
+    ],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Quenby",
+      "http://localhost:7770/igr-rp28-28.html",
+      "http://localhost:7770/igr-rp28-05.html",
+      "http://localhost:7770/igr-rp28-12.html",
+      "http://localhost:7770/igr-rp28-12.html",
+      "http://localhost:7770/checkout/cart/",
+      "http://localhost:7770/igr-rp28-02.html",
+      "http://localhost:7770/checkout/cart/",
+      "http://localhost:7770/igr-rp28-45.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Quenby"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-28.html"
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-05.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-12.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-12.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "17"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "mcp_playwright-official-browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "#product-addtocart-button"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/checkout/cart/"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-02.html"
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "17"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_click",
+        "target": "#product-addtocart-button"
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/checkout/cart/"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-45.html"
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "25"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_probe_interactives",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_evaluate",
+      "mcp_playwright-official-browser_evaluate",
+      "browser_evaluate",
+      "browser_click",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_click",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_snapshot"
+    ],
+    "tokens": {
+      "prompt": 3115582,
+      "completion": 33779,
+      "total": 3149361,
+      "calls": 49
+    },
+    "cost_reported_usd": 0.097645,
+    "providers": {
+      "GMICloud": 49
+    }
+  },
+  "spend_delta_usd": 0.09118,
+  "log": "tee-target-price-1.log",
+  "shop": "gated",
+  "probe": "viewport",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "scaffold": "openjiuwen"
+}

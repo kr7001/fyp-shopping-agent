@@ -1,0 +1,37 @@
+{
+  "status": "complete",
+  "reason": null,
+  "pid": 15328,
+  "updated_at": "2026-11-02T11:26:45.202109+00:00",
+  "deadline": "2026-11-03T12:00:00+08:00",
+  "config_sha256": "931ab97658ef22b984b17d2d6af51f07b767d1828ea84d5ebaeeed52ccc112d9",
+  "start_usage": 139.498922055,
+  "last_usage": 139.981040736,
+  "last_observed_usage": 139.981040736,
+  "last_observed_remaining": 60.01895926399999,
+  "remaining_credit_low_water": 60.01895926399999,
+  "usage_decrease_count": 1,
+  "last_usage_decrease": {
+    "from": 139.971691397,
+    "to": 139.95932306
+  },
+  "recorded_usd": 0.49058100000000004,
+  "spent_usd": 2.2644750000000005,
+  "round": 1,
+  "round_start_usage": 139.498922055,
+  "round_spent_usd": 0.49058100000000004,
+  "prior_recorded_usd": 0.0,
+  "aggregate_recorded_usd": 0.49058100000000004,
+  "current_step": null,
+  "completed_steps": [
+    "live-market-check",
+    "rerun-slot-07-matched-briefing-tee-count-buyable-r1",
+    "rerun-slot-14-full-block-tee-top-3-r2"
+  ],
+  "stage": "timeout-rerun",
+  "carryover_usd": 1.7738940000000003,
+  "stage_spent_usd": 0.49058100000000004,
+  "shared_cap_usd": 4.0,
+  "running_trial_stop_usd": 3.65,
+  "start_cutoff": "2026-11-03T12:00:00+08:00"
+}

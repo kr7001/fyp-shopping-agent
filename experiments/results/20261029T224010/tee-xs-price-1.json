@@ -1,0 +1,524 @@
+{
+  "ran_at": "2026-10-29T22:42:39",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "provider_routing": {
+    "order": [
+      "gmicloud",
+      "deepinfra",
+      "streamlake"
+    ],
+    "allow_fallbacks": false,
+    "quantizations": [
+      "fp8"
+    ]
+  },
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Quenby . What is the lowest price anyone charges for size XS of the Quenby tee, among those that can actually be bought?\n\nThe search results list 45 listings on 2 pages; there is no further page.\nListings by advertised price, read from the results pages:\n1. Ashgrove Clothing Co, advertised $10.20, http://localhost:7770/igr-rp28-28.html\n2. Pembroke Threads, advertised $10.72, http://localhost:7770/igr-rp28-05.html\n3. Fairhaven Outfitters, advertised $11.13, http://localhost:7770/igr-rp28-45.html\n4. Fordwich Garments, advertised $11.23, http://localhost:7770/igr-rp28-37.html\n5. Garrick Workwear Supply Co, advertised $11.96, http://localhost:7770/igr-rp28-17.html\n6. Gisburn Clothing Co, advertised $12.58, http://localhost:7770/igr-rp28-02.html\n7. Thornbury Textile Company, advertised $12.66, http://localhost:7770/igr-rp28-14.html\n8. Oakfield Outfitters, advertised $13.60, http://localhost:7770/igr-rp28-34.html\n9. Copperfield Threads, advertised $14.45, http://localhost:7770/igr-rp28-18.html\n10. Hillside Garment Works, advertised $15.81, http://localhost:7770/igr-rp28-29.html\n11. Grantley Outfitters, advertised $16.04, http://localhost:7770/igr-rp28-40.html\n12. Quarles Threads, advertised $16.52, http://localhost:7770/igr-rp28-27.html\n13. Chandler Textiles Official Store, advertised $17.23, http://localhost:7770/igr-rp28-11.html\n14. Fenwick Apparel, advertised $17.96, http://localhost:7770/igr-rp28-23.html\n15. Everleigh Textiles Official Store, advertised $18.49, http://localhost:7770/igr-rp28-33.html\n16. Abbotsley Workwear Supply Co, advertised $18.66, http://localhost:7770/igr-rp28-32.html\n17. Redhill Garments, advertised $18.83, http://localhost:7770/igr-rp28-10.html\n18. Crowhurst Textiles Official Store, advertised $18.87, http://localhost:7770/igr-rp28-42.html\n19. Holbeck Uniform Supply, advertised $19.17, http://localhost:7770/igr-rp28-41.html\n20. Pentland Garment Works, advertised $19.78, http://localhost:7770/igr-rp28-09.html\n21. Bramley Threads, advertised $21.66, http://localhost:7770/igr-rp28-31.html\n22. Brockwell Apparel, advertised $22.08, http://localhost:7770/igr-rp28-13.html\n23. Kelsall Clothing Company Ltd, advertised $22.73, http://localhost:7770/igr-rp28-03.html\n24. Whitlock Outfitters, advertised $23.59, http://localhost:7770/igr-rp28-21.html\n25. Marchmont Garment Works, advertised $24.59, http://localhost:7770/igr-rp28-39.html\n26. Dunmore Garments, advertised $24.98, http://localhost:7770/igr-rp28-19.html\n27. Brindle Threads, advertised $25.50, http://localhost:7770/igr-rp28-35.html\n28. Dovercourt Clothing Company Ltd, advertised $25.86, http://localhost:7770/igr-rp28-16.html\n29. Haldane Garment Works, advertised $27.15, http://localhost:7770/igr-rp28-44.html\n30. Dalston Threads, advertised $27.48, http://localhost:7770/igr-rp28-04.html\n31. Marlow Apparel Official Store, advertised $27.55, http://localhost:7770/igr-rp28-15.html\n32. Yarrow Garment Works, advertised $28.46, http://localhost:7770/igr-rp28-24.html\n33. Westmere Garments, advertised $29.23, http://localhost:7770/igr-rp28-08.html\n34. Bexhill Textiles Official Store, advertised $29.27, http://localhost:7770/igr-rp28-25.html\n35. Stonebridge Textile Company, advertised $30.88, http://localhost:7770/igr-rp28-36.html\n36. Alderney Garment Works, advertised $31.65, http://localhost:7770/igr-rp28-43.html\n37. Verity Garments, advertised $31.98, http://localhost:7770/igr-rp28-07.html\n38. Rookwood Workwear Supply Co, advertised $32.60, http://localhost:7770/igr-rp28-20.html\n39. Lymington Apparel Official Store, advertised $33.18, http://localhost:7770/igr-rp28-38.html\n40. Elstead Textile Company, advertised $33.32, http://localhost:7770/igr-rp28-12.html\n41. Kettering Threads, advertised $34.59, http://localhost:7770/igr-rp28-26.html\n42. Larkspur Clothing Company Ltd, advertised $34.78, http://localhost:7770/igr-rp28-01.html\n43. Ambleside Uniform Supply, advertised $35.46, http://localhost:7770/igr-rp28-06.html\n44. Carnforth Apparel Official Store, advertised $35.96, http://localhost:7770/igr-rp28-30.html\n45. Foxcombe Apparel, advertised $37.82, http://localhost:7770/igr-rp28-22.html\n\nUse this retrieval strategy, and follow it rather than opening listings in the order they appear.\n1. Read the advertised price of every listing from the search results first. That price is the cheapest option in that listing that can be bought, so nothing in it that can be bought costs less.\n2. Open listings in ascending order of advertised price. For each one, do two separate things. First, choose the option asked about, then look at the page again and read the price it now shows. The price a listing shows before you choose is its cheapest option that can be bought, not necessarily the one asked about, and the reply to choosing an option does not show the new price. Second, check whether that option can actually be bought. An option can be listed and still be unavailable, in which case it is shown as disabled or greyed out and cannot be chosen from the menu, so it has no price you can use.\n3. A listing only becomes your best candidate if the option is both cheaper and available. A cheaper unavailable one changes nothing.\n4. Skip every unopened listing whose advertised price is at or above your best available total. Such a listing cannot win whatever its stock.\n5. Stop when no unopened listing has an advertised price below your best available total.\nIn your answer, name the seller, give the price, and say explicitly that you checked the option was available rather than only listed. Say how many listings you opened, how many you skipped, and how many you rejected for being unavailable.\nImportant: the figure this bound produces is a limit used only to decide what to skip. It is not a price read for the option asked about, and must never appear in your answer as one. Only report a price you read from a listing you opened, for the exact option asked about, read after that option was chosen. Never pair an advertised price with an option unless you saw that price shown while that option was chosen.\nA size's label in the menu can carry promotional or stock text; the price is the one shown after the size is chosen, and a label's claim is not a checked fact.",
+  "elapsed_s": 144.4,
+  "cost_usd": 0.046588,
+  "cost_note": null,
+  "spend_before_usd": 133.154916064,
+  "spend_after_usd": 133.193404105,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "9df7941950db4b4e82cb474397d1e5dc",
+    "final": "The lowest price for a buyable size XS Quenby tee is $11.35, charged by Ashgrove Clothing Co (http://localhost:7770/igr-rp28-28.html). I explicitly checked availability rather than just the listing: the XS option was enabled (selectable) in the size menu \u2014 not disabled/greyed out \u2014 the page read \"IN STOCK\", and Add to Cart was enabled with XS chosen; the $11.35 figure was read from the product page after selecting XS. Other listings opened: Pembroke Threads (XS $12.58, available), Fordwich Garments (XS $12.70, available; its label's 'Promo $9.98' was not the actual shown price), and Fairhaven Outfitters (XS disabled -> rejected as unavailable). I opened 4 listings, skipped 41 (all with advertised price at or above the $11.35 best, starting from Garrick Workwear Supply Co at $11.96 through Foxcombe Apparel at $37.82), and rejected 1 for being unavailable (Fairhaven Outfitters).",
+    "page": {
+      "url": "http://localhost:7770/igr-rp28-28.html",
+      "title": "Quenby Midweight Jersey Tee - Ashgrove Clothing Co"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 22,
+    "actions": 10,
+    "observations": 11,
+    "unclassified_tools": [
+      "mcp_playwright-official-browser_evaluate"
+    ],
+    "assistant_turns": 22,
+    "by_tool": {
+      "browser_evaluate": 8,
+      "browser_navigate": 6,
+      "browser_select_option": 4,
+      "browser_probe_interactives": 2,
+      "browser_probe_cards": 1,
+      "mcp_playwright-official-browser_evaluate": 1
+    },
+    "selections": [
+      "15",
+      "15",
+      "35",
+      "15"
+    ],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Quenby",
+      "http://localhost:7770/igr-rp28-28.html",
+      "http://localhost:7770/igr-rp28-05.html",
+      "http://localhost:7770/igr-rp28-45.html",
+      "http://localhost:7770/igr-rp28-37.html",
+      "http://localhost:7770/igr-rp28-28.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Quenby"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-28.html"
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "15"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-05.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "15"
+      },
+      {
+        "tool": "mcp_playwright-official-browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-45.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-37.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "35"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-28.html"
+      },
+      {
+        "tool": "browser_select_option",
+        "target": "15"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_navigate",
+      "browser_probe_interactives",
+      "browser_probe_interactives",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_select_option",
+      "mcp_playwright-official-browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_select_option",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_select_option",
+      "browser_evaluate"
+    ],
+    "tokens": {
+      "prompt": 1579448,
+      "completion": 8646,
+      "total": 1588094,
+      "calls": 23
+    },
+    "cost_reported_usd": 0.0461,
+    "providers": {
+      "GMICloud": 23
+    }
+  },
+  "spend_delta_usd": 0.038488,
+  "log": "tee-xs-price-1.log",
+  "shop": "gated",
+  "probe": "viewport",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "scaffold": "openjiuwen",
+  "study_id": "matched-briefing-2026-10-29",
+  "protocol_id": "matched-briefing-2026-10-29",
+  "protocol_sha256": "fd8edd4fec1e51594f570c557d235cb3c5228c47d862840f3c47c7e632d34c5d",
+  "wrapper_id": "matched-briefing-v1",
+  "condition": "full-block",
+  "arm": "box-model",
+  "slot_id": 4,
+  "briefing": {
+    "query": "Go to http://localhost:7770/catalogsearch/result/?q=Quenby . What is the lowest price anyone charges for size XS of the Quenby tee, among those that can actually be bought?\n\nThe search results list 45 listings on 2 pages; there is no further page.\nListings by advertised price, read from the results pages:\n1. Ashgrove Clothing Co, advertised $10.20, http://localhost:7770/igr-rp28-28.html\n2. Pembroke Threads, advertised $10.72, http://localhost:7770/igr-rp28-05.html\n3. Fairhaven Outfitters, advertised $11.13, http://localhost:7770/igr-rp28-45.html\n4. Fordwich Garments, advertised $11.23, http://localhost:7770/igr-rp28-37.html\n5. Garrick Workwear Supply Co, advertised $11.96, http://localhost:7770/igr-rp28-17.html\n6. Gisburn Clothing Co, advertised $12.58, http://localhost:7770/igr-rp28-02.html\n7. Thornbury Textile Company, advertised $12.66, http://localhost:7770/igr-rp28-14.html\n8. Oakfield Outfitters, advertised $13.60, http://localhost:7770/igr-rp28-34.html\n9. Copperfield Threads, advertised $14.45, http://localhost:7770/igr-rp28-18.html\n10. Hillside Garment Works, advertised $15.81, http://localhost:7770/igr-rp28-29.html\n11. Grantley Outfitters, advertised $16.04, http://localhost:7770/igr-rp28-40.html\n12. Quarles Threads, advertised $16.52, http://localhost:7770/igr-rp28-27.html\n13. Chandler Textiles Official Store, advertised $17.23, http://localhost:7770/igr-rp28-11.html\n14. Fenwick Apparel, advertised $17.96, http://localhost:7770/igr-rp28-23.html\n15. Everleigh Textiles Official Store, advertised $18.49, http://localhost:7770/igr-rp28-33.html\n16. Abbotsley Workwear Supply Co, advertised $18.66, http://localhost:7770/igr-rp28-32.html\n17. Redhill Garments, advertised $18.83, http://localhost:7770/igr-rp28-10.html\n18. Crowhurst Textiles Official Store, advertised $18.87, http://localhost:7770/igr-rp28-42.html\n19. Holbeck Uniform Supply, advertised $19.17, http://localhost:7770/igr-rp28-41.html\n20. Pentland Garment Works, advertised $19.78, http://localhost:7770/igr-rp28-09.html\n21. Bramley Threads, advertised $21.66, http://localhost:7770/igr-rp28-31.html\n22. Brockwell Apparel, advertised $22.08, http://localhost:7770/igr-rp28-13.html\n23. Kelsall Clothing Company Ltd, advertised $22.73, http://localhost:7770/igr-rp28-03.html\n24. Whitlock Outfitters, advertised $23.59, http://localhost:7770/igr-rp28-21.html\n25. Marchmont Garment Works, advertised $24.59, http://localhost:7770/igr-rp28-39.html\n26. Dunmore Garments, advertised $24.98, http://localhost:7770/igr-rp28-19.html\n27. Brindle Threads, advertised $25.50, http://localhost:7770/igr-rp28-35.html\n28. Dovercourt Clothing Company Ltd, advertised $25.86, http://localhost:7770/igr-rp28-16.html\n29. Haldane Garment Works, advertised $27.15, http://localhost:7770/igr-rp28-44.html\n30. Dalston Threads, advertised $27.48, http://localhost:7770/igr-rp28-04.html\n31. Marlow Apparel Official Store, advertised $27.55, http://localhost:7770/igr-rp28-15.html\n32. Yarrow Garment Works, advertised $28.46, http://localhost:7770/igr-rp28-24.html\n33. Westmere Garments, advertised $29.23, http://localhost:7770/igr-rp28-08.html\n34. Bexhill Textiles Official Store, advertised $29.27, http://localhost:7770/igr-rp28-25.html\n35. Stonebridge Textile Company, advertised $30.88, http://localhost:7770/igr-rp28-36.html\n36. Alderney Garment Works, advertised $31.65, http://localhost:7770/igr-rp28-43.html\n37. Verity Garments, advertised $31.98, http://localhost:7770/igr-rp28-07.html\n38. Rookwood Workwear Supply Co, advertised $32.60, http://localhost:7770/igr-rp28-20.html\n39. Lymington Apparel Official Store, advertised $33.18, http://localhost:7770/igr-rp28-38.html\n40. Elstead Textile Company, advertised $33.32, http://localhost:7770/igr-rp28-12.html\n41. Kettering Threads, advertised $34.59, http://localhost:7770/igr-rp28-26.html\n42. Larkspur Clothing Company Ltd, advertised $34.78, http://localhost:7770/igr-rp28-01.html\n43. Ambleside Uniform Supply, advertised $35.46, http://localhost:7770/igr-rp28-06.html\n44. Carnforth Apparel Official Store, advertised $35.96, http://localhost:7770/igr-rp28-30.html\n45. Foxcombe Apparel, advertised $37.82, http://localhost:7770/igr-rp28-22.html\n\nUse this retrieval strategy, and follow it rather than opening listings in the order they appear.\n1. Read the advertised price of every listing from the search results first. That price is the cheapest option in that listing that can be bought, so nothing in it that can be bought costs less.\n2. Open listings in ascending order of advertised price. For each one, do two separate things. First, choose the option asked about, then look at the page again and read the price it now shows. The price a listing shows before you choose is its cheapest option that can be bought, not necessarily the one asked about, and the reply to choosing an option does not show the new price. Second, check whether that option can actually be bought. An option can be listed and still be unavailable, in which case it is shown as disabled or greyed out and cannot be chosen from the menu, so it has no price you can use.\n3. A listing only becomes your best candidate if the option is both cheaper and available. A cheaper unavailable one changes nothing.\n4. Skip every unopened listing whose advertised price is at or above your best available total. Such a listing cannot win whatever its stock.\n5. Stop when no unopened listing has an advertised price below your best available total.\nIn your answer, name the seller, give the price, and say explicitly that you checked the option was available rather than only listed. Say how many listings you opened, how many you skipped, and how many you rejected for being unavailable.\nImportant: the figure this bound produces is a limit used only to decide what to skip. It is not a price read for the option asked about, and must never appear in your answer as one. Only report a price you read from a listing you opened, for the exact option asked about, read after that option was chosen. Never pair an advertised price with an option unless you saw that price shown while that option was chosen.\nA size's label in the menu can carry promotional or stock text; the price is the one shown after the size is chosen, and a label's claim is not a checked fact.",
+    "query_sha256": "fadd86aa2f753bbe11e1702827500d1940b806c4f92ab986b1186f561f89bf2c",
+    "original_query": "Go to http://localhost:7770/catalogsearch/result/?q=Quenby . What is the lowest price anyone charges for size XS of the Quenby tee, among those that can actually be bought?",
+    "original_query_sha256": "f850167afbd8beab96abbb13b860048845198231732012f8e8585ec46aef6875",
+    "preamble": "The search results list 45 listings on 2 pages; there is no further page.\nListings by advertised price, read from the results pages:\n1. Ashgrove Clothing Co, advertised $10.20, http://localhost:7770/igr-rp28-28.html\n2. Pembroke Threads, advertised $10.72, http://localhost:7770/igr-rp28-05.html\n3. Fairhaven Outfitters, advertised $11.13, http://localhost:7770/igr-rp28-45.html\n4. Fordwich Garments, advertised $11.23, http://localhost:7770/igr-rp28-37.html\n5. Garrick Workwear Supply Co, advertised $11.96, http://localhost:7770/igr-rp28-17.html\n6. Gisburn Clothing Co, advertised $12.58, http://localhost:7770/igr-rp28-02.html\n7. Thornbury Textile Company, advertised $12.66, http://localhost:7770/igr-rp28-14.html\n8. Oakfield Outfitters, advertised $13.60, http://localhost:7770/igr-rp28-34.html\n9. Copperfield Threads, advertised $14.45, http://localhost:7770/igr-rp28-18.html\n10. Hillside Garment Works, advertised $15.81, http://localhost:7770/igr-rp28-29.html\n11. Grantley Outfitters, advertised $16.04, http://localhost:7770/igr-rp28-40.html\n12. Quarles Threads, advertised $16.52, http://localhost:7770/igr-rp28-27.html\n13. Chandler Textiles Official Store, advertised $17.23, http://localhost:7770/igr-rp28-11.html\n14. Fenwick Apparel, advertised $17.96, http://localhost:7770/igr-rp28-23.html\n15. Everleigh Textiles Official Store, advertised $18.49, http://localhost:7770/igr-rp28-33.html\n16. Abbotsley Workwear Supply Co, advertised $18.66, http://localhost:7770/igr-rp28-32.html\n17. Redhill Garments, advertised $18.83, http://localhost:7770/igr-rp28-10.html\n18. Crowhurst Textiles Official Store, advertised $18.87, http://localhost:7770/igr-rp28-42.html\n19. Holbeck Uniform Supply, advertised $19.17, http://localhost:7770/igr-rp28-41.html\n20. Pentland Garment Works, advertised $19.78, http://localhost:7770/igr-rp28-09.html\n21. Bramley Threads, advertised $21.66, http://localhost:7770/igr-rp28-31.html\n22. Brockwell Apparel, advertised $22.08, http://localhost:7770/igr-rp28-13.html\n23. Kelsall Clothing Company Ltd, advertised $22.73, http://localhost:7770/igr-rp28-03.html\n24. Whitlock Outfitters, advertised $23.59, http://localhost:7770/igr-rp28-21.html\n25. Marchmont Garment Works, advertised $24.59, http://localhost:7770/igr-rp28-39.html\n26. Dunmore Garments, advertised $24.98, http://localhost:7770/igr-rp28-19.html\n27. Brindle Threads, advertised $25.50, http://localhost:7770/igr-rp28-35.html\n28. Dovercourt Clothing Company Ltd, advertised $25.86, http://localhost:7770/igr-rp28-16.html\n29. Haldane Garment Works, advertised $27.15, http://localhost:7770/igr-rp28-44.html\n30. Dalston Threads, advertised $27.48, http://localhost:7770/igr-rp28-04.html\n31. Marlow Apparel Official Store, advertised $27.55, http://localhost:7770/igr-rp28-15.html\n32. Yarrow Garment Works, advertised $28.46, http://localhost:7770/igr-rp28-24.html\n33. Westmere Garments, advertised $29.23, http://localhost:7770/igr-rp28-08.html\n34. Bexhill Textiles Official Store, advertised $29.27, http://localhost:7770/igr-rp28-25.html\n35. Stonebridge Textile Company, advertised $30.88, http://localhost:7770/igr-rp28-36.html\n36. Alderney Garment Works, advertised $31.65, http://localhost:7770/igr-rp28-43.html\n37. Verity Garments, advertised $31.98, http://localhost:7770/igr-rp28-07.html\n38. Rookwood Workwear Supply Co, advertised $32.60, http://localhost:7770/igr-rp28-20.html\n39. Lymington Apparel Official Store, advertised $33.18, http://localhost:7770/igr-rp28-38.html\n40. Elstead Textile Company, advertised $33.32, http://localhost:7770/igr-rp28-12.html\n41. Kettering Threads, advertised $34.59, http://localhost:7770/igr-rp28-26.html\n42. Larkspur Clothing Company Ltd, advertised $34.78, http://localhost:7770/igr-rp28-01.html\n43. Ambleside Uniform Supply, advertised $35.46, http://localhost:7770/igr-rp28-06.html\n44. Carnforth Apparel Official Store, advertised $35.96, http://localhost:7770/igr-rp28-30.html\n45. Foxcombe Apparel, advertised $37.82, http://localhost:7770/igr-rp28-22.html",
+    "preamble_sha256": "2177aabe28aa84b8ad9d03ac749f7228634eae7b749f695681e731ee1823111e",
+    "page": {
+      "url": "http://localhost:7770/catalogsearch/result/?q=Quenby",
+      "count": 45,
+      "total": 45,
+      "next_page": false,
+      "pages": [
+        "http://localhost:7770/catalogsearch/result/?q=Quenby",
+        "http://localhost:7770/catalogsearch/result/index/?p=2&q=Quenby"
+      ],
+      "reader": "rendered",
+      "listings": [
+        {
+          "seller": "Whitlock Outfitters",
+          "advertised": 23.59,
+          "url": "http://localhost:7770/igr-rp28-21.html",
+          "title": "Quenby Midweight Jersey Tee - Whitlock Outfitters"
+        },
+        {
+          "seller": "Pembroke Threads",
+          "advertised": 10.72,
+          "url": "http://localhost:7770/igr-rp28-05.html",
+          "title": "Quenby Midweight Jersey Tee - Pembroke Threads"
+        },
+        {
+          "seller": "Foxcombe Apparel",
+          "advertised": 37.82,
+          "url": "http://localhost:7770/igr-rp28-22.html",
+          "title": "Quenby Midweight Jersey Tee - Foxcombe Apparel"
+        },
+        {
+          "seller": "Elstead Textile Company",
+          "advertised": 33.32,
+          "url": "http://localhost:7770/igr-rp28-12.html",
+          "title": "Quenby Midweight Jersey Tee - Elstead Textile Company"
+        },
+        {
+          "seller": "Dunmore Garments",
+          "advertised": 24.98,
+          "url": "http://localhost:7770/igr-rp28-19.html",
+          "title": "Quenby Midweight Jersey Knit Tee - Dunmore Garments"
+        },
+        {
+          "seller": "Holbeck Uniform Supply",
+          "advertised": 19.17,
+          "url": "http://localhost:7770/igr-rp28-41.html",
+          "title": "Quenby Midweight Jersey Tee - Holbeck Uniform Supply"
+        },
+        {
+          "seller": "Westmere Garments",
+          "advertised": 29.23,
+          "url": "http://localhost:7770/igr-rp28-08.html",
+          "title": "Quenby Midweight Jersey Knit Tee - Westmere Garments"
+        },
+        {
+          "seller": "Pentland Garment Works",
+          "advertised": 19.78,
+          "url": "http://localhost:7770/igr-rp28-09.html",
+          "title": "Quenby Midweight Jersey Tee - Pentland Garment Works"
+        },
+        {
+          "seller": "Yarrow Garment Works",
+          "advertised": 28.46,
+          "url": "http://localhost:7770/igr-rp28-24.html",
+          "title": "Quenby Midweight Jersey Tee - Yarrow Garment Works"
+        },
+        {
+          "seller": "Ashgrove Clothing Co",
+          "advertised": 10.2,
+          "url": "http://localhost:7770/igr-rp28-28.html",
+          "title": "Quenby Midweight Jersey Tee - Ashgrove Clothing Co"
+        },
+        {
+          "seller": "Alderney Garment Works",
+          "advertised": 31.65,
+          "url": "http://localhost:7770/igr-rp28-43.html",
+          "title": "Quenby Midweight Jersey Tee - Alderney Garment Works"
+        },
+        {
+          "seller": "Haldane Garment Works",
+          "advertised": 27.15,
+          "url": "http://localhost:7770/igr-rp28-44.html",
+          "title": "Quenby Midweight Jersey Tee - Haldane Garment Works"
+        },
+        {
+          "seller": "Marchmont Garment Works",
+          "advertised": 24.59,
+          "url": "http://localhost:7770/igr-rp28-39.html",
+          "title": "Quenby Midweight Jersey Tee - Marchmont Garment Works"
+        },
+        {
+          "seller": "Grantley Outfitters",
+          "advertised": 16.04,
+          "url": "http://localhost:7770/igr-rp28-40.html",
+          "title": "Quenby Midweight Jersey Knit Tee - Grantley Outfitters"
+        },
+        {
+          "seller": "Dalston Threads",
+          "advertised": 27.48,
+          "url": "http://localhost:7770/igr-rp28-04.html",
+          "title": "Quenby Midweight Jersey Tee - Dalston Threads"
+        },
+        {
+          "seller": "Brindle Threads",
+          "advertised": 25.5,
+          "url": "http://localhost:7770/igr-rp28-35.html",
+          "title": "Quenby Midweight Jersey Tee - Brindle Threads"
+        },
+        {
+          "seller": "Fenwick Apparel",
+          "advertised": 17.96,
+          "url": "http://localhost:7770/igr-rp28-23.html",
+          "title": "Quenby Midweight Jersey Knit Tee - Fenwick Apparel"
+        },
+        {
+          "seller": "Bramley Threads",
+          "advertised": 21.66,
+          "url": "http://localhost:7770/igr-rp28-31.html",
+          "title": "Quenby Midweight Jersey Knit Tee - Bramley Threads"
+        },
+        {
+          "seller": "Quarles Threads",
+          "advertised": 16.52,
+          "url": "http://localhost:7770/igr-rp28-27.html",
+          "title": "Quenby Midweight Jersey Tee, Short Sleeve - Quarles Threads"
+        },
+        {
+          "seller": "Hillside Garment Works",
+          "advertised": 15.81,
+          "url": "http://localhost:7770/igr-rp28-29.html",
+          "title": "Quenby Midweight Jersey Knit Tee - Hillside Garment Works"
+        },
+        {
+          "seller": "Oakfield Outfitters",
+          "advertised": 13.6,
+          "url": "http://localhost:7770/igr-rp28-34.html",
+          "title": "Quenby Midweight Jersey Tee, Short Sleeve - Oakfield Outfitters"
+        },
+        {
+          "seller": "Stonebridge Textile Company",
+          "advertised": 30.88,
+          "url": "http://localhost:7770/igr-rp28-36.html",
+          "title": "Quenby Midweight Jersey Knit Tee - Stonebridge Textile Company"
+        },
+        {
+          "seller": "Thornbury Textile Company",
+          "advertised": 12.66,
+          "url": "http://localhost:7770/igr-rp28-14.html",
+          "title": "Quenby Midweight Jersey Knit Tee - Thornbury Textile Company"
+        },
+        {
+          "seller": "Everleigh Textiles Official Store",
+          "advertised": 18.49,
+          "url": "http://localhost:7770/igr-rp28-33.html",
+          "title": "Quenby Midweight Jersey Tee - Everleigh Textiles Official Store"
+        },
+        {
+          "seller": "Lymington Apparel Official Store",
+          "advertised": 33.18,
+          "url": "http://localhost:7770/igr-rp28-38.html",
+          "title": "Quenby Midweight Jersey Tee - Lymington Apparel Official Store"
+        },
+        {
+          "seller": "Verity Garments",
+          "advertised": 31.98,
+          "url": "http://localhost:7770/igr-rp28-07.html",
+          "title": "Quenby Midweight Jersey Tee, Short Sleeve - Verity Garments"
+        },
+        {
+          "seller": "Fairhaven Outfitters",
+          "advertised": 11.13,
+          "url": "http://localhost:7770/igr-rp28-45.html",
+          "title": "Quenby Midweight Jersey Tee, Short Sleeve - Fairhaven Outfitters"
+        },
+        {
+          "seller": "Fordwich Garments",
+          "advertised": 11.23,
+          "url": "http://localhost:7770/igr-rp28-37.html",
+          "title": "Quenby Midweight Jersey Tee, Short Sleeve - Fordwich Garments"
+        },
+        {
+          "seller": "Redhill Garments",
+          "advertised": 18.83,
+          "url": "http://localhost:7770/igr-rp28-10.html",
+          "title": "Quenby Midweight Jersey Tee, Short Sleeve - Redhill Garments"
+        },
+        {
+          "seller": "Copperfield Threads",
+          "advertised": 14.45,
+          "url": "http://localhost:7770/igr-rp28-18.html",
+          "title": "Quenby Midweight Jersey Tee, Short Sleeve - Copperfield Threads"
+        },
+        {
+          "seller": "Kettering Threads",
+          "advertised": 34.59,
+          "url": "http://localhost:7770/igr-rp28-26.html",
+          "title": "Quenby Midweight Jersey Tee, Short Sleeve - Kettering Threads"
+        },
+        {
+          "seller": "Larkspur Clothing Company Ltd",
+          "advertised": 34.78,
+          "url": "http://localhost:7770/igr-rp28-01.html",
+          "title": "Quenby Midweight Jersey Knit Tee - Larkspur Clothing Company Ltd"
+        },
+        {
+          "seller": "Marlow Apparel Official Store",
+          "advertised": 27.55,
+          "url": "http://localhost:7770/igr-rp28-15.html",
+          "title": "Quenby Midweight Jersey Knit Tee - Marlow Apparel Official Store"
+        },
+        {
+          "seller": "Garrick Workwear Supply Co",
+          "advertised": 11.96,
+          "url": "http://localhost:7770/igr-rp28-17.html",
+          "title": "Quenby Midweight Jersey Knit Tee - Garrick Workwear Supply Co"
+        },
+        {
+          "seller": "Abbotsley Workwear Supply Co",
+          "advertised": 18.66,
+          "url": "http://localhost:7770/igr-rp28-32.html",
+          "title": "Quenby Midweight Jersey Knit Tee - Abbotsley Workwear Supply Co"
+        },
+        {
+          "seller": "Crowhurst Textiles Official Store",
+          "advertised": 18.87,
+          "url": "http://localhost:7770/igr-rp28-42.html",
+          "title": "Quenby Midweight Jersey Knit Tee - Crowhurst Textiles Official Store"
+        },
+        {
+          "seller": "Brockwell Apparel",
+          "advertised": 22.08,
+          "url": "http://localhost:7770/igr-rp28-13.html",
+          "title": "Quenby Midweight Jersey Tee, Short Sleeve - Brockwell Apparel"
+        },
+        {
+          "seller": "Carnforth Apparel Official Store",
+          "advertised": 35.96,
+          "url": "http://localhost:7770/igr-rp28-30.html",
+          "title": "Quenby Midweight Jersey Tee - Carnforth Apparel Official Store"
+        },
+        {
+          "seller": "Gisburn Clothing Co",
+          "advertised": 12.58,
+          "url": "http://localhost:7770/igr-rp28-02.html",
+          "title": "Quenby Midweight Jersey Tee, Short Sleeve - Gisburn Clothing Co"
+        },
+        {
+          "seller": "Ambleside Uniform Supply",
+          "advertised": 35.46,
+          "url": "http://localhost:7770/igr-rp28-06.html",
+          "title": "Quenby Midweight Jersey Tee, Short Sleeve - Ambleside Uniform Supply"
+        },
+        {
+          "seller": "Dovercourt Clothing Company Ltd",
+          "advertised": 25.86,
+          "url": "http://localhost:7770/igr-rp28-16.html",
+          "title": "Quenby Midweight Jersey Knit Tee - Dovercourt Clothing Company Ltd"
+        },
+        {
+          "seller": "Chandler Textiles Official Store",
+          "advertised": 17.23,
+          "url": "http://localhost:7770/igr-rp28-11.html",
+          "title": "Quenby Midweight Jersey Tee, Short Sleeve - Chandler Textiles Official Store"
+        },
+        {
+          "seller": "Rookwood Workwear Supply Co",
+          "advertised": 32.6,
+          "url": "http://localhost:7770/igr-rp28-20.html",
+          "title": "Quenby Midweight Jersey Tee, Short Sleeve - Rookwood Workwear Supply Co"
+        },
+        {
+          "seller": "Kelsall Clothing Company Ltd",
+          "advertised": 22.73,
+          "url": "http://localhost:7770/igr-rp28-03.html",
+          "title": "Quenby Midweight Jersey Tee, Short Sleeve - Kelsall Clothing Company Ltd"
+        },
+        {
+          "seller": "Bexhill Textiles Official Store",
+          "advertised": 29.27,
+          "url": "http://localhost:7770/igr-rp28-25.html",
+          "title": "Quenby Midweight Jersey Tee, Short Sleeve - Bexhill Textiles Official Store"
+        }
+      ]
+    },
+    "page_sha256": "0e5442108cbc74c677803e6b9f403c665bd182d886be5bbf890c5df9e00f581a",
+    "pre_read_elapsed_s": 2.034702542005107,
+    "pre_read_cached": false,
+    "query_build_elapsed_s": 2.35215120902285
+  },
+  "elapsed_with_briefing_s": 148.78685375102796,
+  "agent_cost_usd": 0.0461,
+  "parse_cost_usd": 0.000488,
+  "agent_tokens": {
+    "prompt": 1579448,
+    "completion": 8646,
+    "total": 1588094,
+    "calls": 23
+  },
+  "parse_tokens": {
+    "prompt": 5115,
+    "completion": 125,
+    "total": 5240,
+    "calls": 1
+  },
+  "tokens": {
+    "prompt": 1584563,
+    "completion": 8771,
+    "total": 1593334
+  },
+  "parse_provider": "GMICloud"
+}

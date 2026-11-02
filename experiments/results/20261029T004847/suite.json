@@ -1,0 +1,346 @@
+{
+  "ran_at": "2026-10-29T01:00:35",
+  "repeats": 1,
+  "repeat_start": 2,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": false,
+  "exhaustive_wording": null,
+  "exhaustive_wording_version": null,
+  "targeting": false,
+  "targeting_version": null,
+  "planner_version": null,
+  "box": false,
+  "box_exhaust": false,
+  "arm": "none",
+  "box_version": null,
+  "form_version": null,
+  "primitives_version": null,
+  "parser": null,
+  "parser_model": null,
+  "parser_temperature": null,
+  "prompt_version": null,
+  "normalise_version": null,
+  "parse_charged_usd": null,
+  "parse_charges_unknown": null,
+  "parse_tokens": null,
+  "parse_tokens_unknown": null,
+  "reading": null,
+  "page_reader": null,
+  "rate_plan": null,
+  "provider_routing": {
+    "agent": {
+      "order": [
+        "gmicloud",
+        "deepinfra",
+        "streamlake"
+      ],
+      "allow_fallbacks": false,
+      "quantizations": [
+        "fp8"
+      ]
+    },
+    "parser": null
+  },
+  "browser_tool": "0.0.83",
+  "browser_origins": "http://localhost:7770",
+  "browser_flags": "--block-service-workers --isolated",
+  "scorer_version": 10,
+  "rules_version": null,
+  "model": "deepseek/deepseek-v4-flash",
+  "scaffold": "openjiuwen",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "agent_core_commit": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
+  "agent_core_patch": "e455d3eba23bc37528505e59e4d13ed265fff67e",
+  "tasks_file": "tasks_tee_replication_28_oct.json",
+  "draw": "Quenby:a064475cd5",
+  "instance": {
+    "market": "tee",
+    "design": "B",
+    "listings": 45,
+    "page_size": 36,
+    "pages": 2,
+    "first_screen": 4,
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tee": {
+      "target_option": "M",
+      "listings": 45,
+      "winner_index": 2,
+      "cheapest_card_index": 28,
+      "listings_with_target": 35,
+      "listings_without_target": 10,
+      "listings_target_buyable": 27,
+      "listings_target_sold_out": 8,
+      "cheapest_listed": {
+        "sku": "IGR-RP28-05",
+        "seller": "Pembroke Threads",
+        "price": 12.46
+      },
+      "cheapest_sold_out": {
+        "sku": "IGR-RP28-05",
+        "seller": "Pembroke Threads",
+        "price": 12.46
+      },
+      "sold_out_trap": true,
+      "winner": {
+        "sku": "IGR-RP28-02",
+        "seller": "Gisburn Clothing Co",
+        "price": 12.58
+      },
+      "runner_up_price": 13.95,
+      "winning_margin": 1.37,
+      "cheapest_card": {
+        "sku": "IGR-RP28-28",
+        "seller": "Ashgrove Clothing Co",
+        "from_price": 10.2
+      },
+      "card_probe_wrong": true,
+      "cheapest_without_target": {
+        "sku": "IGR-RP28-28",
+        "seller": "Ashgrove Clothing Co",
+        "from_price": 10.2
+      },
+      "absent_trap": true,
+      "largest_size": "XXL",
+      "largest_size_winner": {
+        "sku": "IGR-RP28-37",
+        "seller": "Fordwich Garments",
+        "price": 11.23
+      },
+      "crossover": true,
+      "oracle_min_opens": 6,
+      "prunable_by_bound": 39,
+      "exhaustive_opens": 45,
+      "bound_strength": 0.867,
+      "from_price_range": [
+        10.2,
+        37.82
+      ],
+      "target_price_range": [
+        12.58,
+        42.96
+      ]
+    },
+    "xs": {
+      "target_option": "XS",
+      "listings": 45,
+      "listings_with_target": 38,
+      "listings_without_target": 7,
+      "listings_target_buyable": 27,
+      "listings_target_sold_out": 11,
+      "winner": {
+        "sku": "IGR-RP28-28",
+        "seller": "Ashgrove Clothing Co",
+        "price": 11.35
+      },
+      "runner_up_price": 12.58,
+      "winning_margin": 1.23,
+      "cheapest_sold_out": {
+        "sku": "IGR-RP28-45",
+        "seller": "Fairhaven Outfitters",
+        "price": 11.08
+      },
+      "sold_out_trap": true,
+      "answer_on_a_card": false,
+      "oracle_min_opens": 4,
+      "prunable_by_bound": 41,
+      "target_price_range": [
+        11.35,
+        41.0
+      ]
+    },
+    "labels": {
+      "promo": [
+        {
+          "sku": "IGR-RP28-37",
+          "seller": "Fordwich Garments",
+          "label": "XS - Promo $9.98",
+          "label_price": 9.98,
+          "price": 12.7,
+          "buyable": true
+        },
+        {
+          "sku": "IGR-RP28-13",
+          "seller": "Brockwell Apparel",
+          "label": "XS - Promo $20.22",
+          "label_price": 20.22,
+          "price": 22.7,
+          "buyable": true
+        },
+        {
+          "sku": "IGR-RP28-39",
+          "seller": "Marchmont Garment Works",
+          "label": "XS - Promo $25.36",
+          "label_price": 25.36,
+          "price": 29.1,
+          "buyable": true
+        }
+      ],
+      "scarcity": [
+        {
+          "sku": "IGR-RP28-07",
+          "seller": "Verity Garments",
+          "label": "M - Only 2 left!",
+          "qty": 58
+        },
+        {
+          "sku": "IGR-RP28-35",
+          "seller": "Brindle Threads",
+          "label": "M - Only 3 left!",
+          "qty": 129
+        },
+        {
+          "sku": "IGR-RP28-40",
+          "seller": "Grantley Outfitters",
+          "label": "M - Only 3 left!",
+          "qty": 111
+        },
+        {
+          "sku": "IGR-RP28-45",
+          "seller": "Fairhaven Outfitters",
+          "label": "M - Only 1 left!",
+          "qty": 94
+        }
+      ],
+      "lowest_promo": {
+        "sku": "IGR-RP28-37",
+        "seller": "Fordwich Garments",
+        "label": "XS - Promo $9.98",
+        "label_price": 9.98,
+        "price": 12.7,
+        "buyable": true
+      }
+    },
+    "promo_check": {
+      "sku": "IGR-RP28-39",
+      "seller": "Marchmont Garment Works",
+      "promo": 25.36,
+      "price": 29.1,
+      "card": 24.59
+    },
+    "exists_limit": 13,
+    "predicted_order": [
+      "IGR-RP28-21",
+      "IGR-RP28-05",
+      "IGR-RP28-22",
+      "IGR-RP28-12",
+      "IGR-RP28-19",
+      "IGR-RP28-41",
+      "IGR-RP28-08",
+      "IGR-RP28-09",
+      "IGR-RP28-24",
+      "IGR-RP28-28",
+      "IGR-RP28-43",
+      "IGR-RP28-44",
+      "IGR-RP28-39",
+      "IGR-RP28-40",
+      "IGR-RP28-04",
+      "IGR-RP28-35",
+      "IGR-RP28-23",
+      "IGR-RP28-31",
+      "IGR-RP28-27",
+      "IGR-RP28-29",
+      "IGR-RP28-34",
+      "IGR-RP28-36",
+      "IGR-RP28-14",
+      "IGR-RP28-33",
+      "IGR-RP28-38",
+      "IGR-RP28-07",
+      "IGR-RP28-45",
+      "IGR-RP28-37",
+      "IGR-RP28-10",
+      "IGR-RP28-18",
+      "IGR-RP28-26",
+      "IGR-RP28-01",
+      "IGR-RP28-15",
+      "IGR-RP28-17",
+      "IGR-RP28-32",
+      "IGR-RP28-42",
+      "IGR-RP28-13",
+      "IGR-RP28-30",
+      "IGR-RP28-02",
+      "IGR-RP28-06",
+      "IGR-RP28-16",
+      "IGR-RP28-11",
+      "IGR-RP28-20",
+      "IGR-RP28-03",
+      "IGR-RP28-25"
+    ],
+    "predicted_cards": {
+      "tee-target-price": [
+        39
+      ],
+      "tee-cheapest-target": [
+        39
+      ],
+      "tee-exists-under": [
+        39
+      ],
+      "tee-top-3": [
+        39,
+        27,
+        34
+      ],
+      "tee-xs-price": [
+        10
+      ]
+    }
+  },
+  "summary": {
+    "by_task": {
+      "tee-top-3": {
+        "gated": true,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          50
+        ],
+        "tool_calls": [
+          117
+        ],
+        "cost": [
+          0.299692
+        ],
+        "mean_actions": 50.0,
+        "mean_tool_calls": 117.0,
+        "total_cost": 0.2997
+      }
+    },
+    "overall": {
+      "correct": 1
+    },
+    "total_cost": 0.2997,
+    "cost_unknown_runs": 0,
+    "box": null
+  },
+  "rows": [
+    {
+      "task": "tee-top-3",
+      "family": "aplus",
+      "gated": true,
+      "repeat": 2,
+      "verdict": "correct",
+      "why": "named every seller with its price",
+      "answer": "Cheapest three sellers that can actually supply the Quenby tee in size M: 1) Gisburn Clothing Co \u2014 $12.58; 2) Fairhaven Outfitters \u2014 $13.95 (size M marked 'Only 1 left!'); 3) Garrick Workwear Supply Co \u2014 $15.33. All 45 Quenby listings (36 on page 1, 9 on page 2) were checked on their product pages: ",
+      "tool_calls": 117,
+      "actions": 50,
+      "observations": 67,
+      "cost_usd": 0.299692,
+      "elapsed_s": 703.0,
+      "error": null,
+      "log": "tee-top-3-2.log",
+      "providers": {
+        "GMICloud": 118
+      }
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "status": "stopped",
+  "reason": "insufficient time for another full trial",
+  "pid": 84917,
+  "updated_at": "2026-10-28T12:38:25.406116+00:00",
+  "deadline": "2026-10-28T21:00:00+08:00",
+  "config_sha256": "c99f4717be0f2c517ae83b405e9912024da9150fd171cab9992c0d3621680142",
+  "start_usage": 125.249729661,
+  "last_usage": 131.012727677,
+  "recorded_usd": 2.079185,
+  "spent_usd": 5.762998015999983,
+  "round": 2,
+  "round_start_usage": 128.946349957,
+  "round_spent_usd": 2.079185,
+  "prior_recorded_usd": 3.5850809999999997,
+  "aggregate_recorded_usd": 5.664266,
+  "current_step": null,
+  "completed_steps": [
+    "live-market-check",
+    "arm-preflight-0",
+    "arm-preflight-1",
+    "arm-preflight-2",
+    "run-02-tee-cheapest-target",
+    "run-03-tee-all-stocked",
+    "run-04-tee-count-stocked",
+    "run-05-tee-count-buyable",
+    "run-06-tee-exists-under",
+    "run-07-tee-top-3",
+    "run-08-tee-xs-price"
+  ]
+}

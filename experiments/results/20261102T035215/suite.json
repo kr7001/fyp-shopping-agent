@@ -1,0 +1,682 @@
+{
+  "ran_at": "2026-11-02T04:15:50",
+  "repeats": 1,
+  "repeat_start": 1,
+  "policy": "off",
+  "confidence": "off",
+  "exhaustive": false,
+  "exhaustive_wording": null,
+  "exhaustive_wording_version": null,
+  "targeting": false,
+  "targeting_version": null,
+  "planner_version": null,
+  "box": false,
+  "box_exhaust": false,
+  "arm": "matched-briefing",
+  "box_version": null,
+  "form_version": null,
+  "primitives_version": null,
+  "parser": null,
+  "parser_model": null,
+  "parser_temperature": null,
+  "prompt_version": null,
+  "normalise_version": null,
+  "parse_charged_usd": 0,
+  "parse_charges_unknown": 0,
+  "parse_tokens": {
+    "prompt": 0,
+    "completion": 0,
+    "total": 0,
+    "calls": 0
+  },
+  "parse_tokens_unknown": 0,
+  "reading": null,
+  "page_reader": null,
+  "rate_plan": null,
+  "provider_routing": {
+    "agent": {
+      "order": [
+        "gmicloud",
+        "deepinfra",
+        "streamlake"
+      ],
+      "allow_fallbacks": false,
+      "quantizations": [
+        "fp8"
+      ]
+    },
+    "parser": null
+  },
+  "browser_tool": "0.0.83",
+  "browser_origins": "http://localhost:7770",
+  "browser_flags": "--block-service-workers --isolated",
+  "scorer_version": 10,
+  "rules_version": null,
+  "model": "deepseek/deepseek-v4-flash",
+  "scaffold": "openjiuwen",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "agent_core_commit": "18d45d6e90d3735ef72c1ee9ad2467821212f7db",
+  "agent_core_patch": "e455d3eba23bc37528505e59e4d13ed265fff67e",
+  "tasks_file": "tasks_tee_fresh_2_nov.json",
+  "draw": "Rookmere:d266a02af7",
+  "instance": {
+    "market": "tee",
+    "design": "B",
+    "listings": 45,
+    "page_size": 36,
+    "pages": 2,
+    "first_screen": 4,
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "tee": {
+      "target_option": "M",
+      "listings": 45,
+      "winner_index": 19,
+      "cheapest_card_index": 28,
+      "listings_with_target": 38,
+      "listings_without_target": 7,
+      "listings_target_buyable": 29,
+      "listings_target_sold_out": 9,
+      "cheapest_listed": {
+        "sku": "IGR-FM02-02",
+        "seller": "Abbotsley Textile Company",
+        "price": 10.32
+      },
+      "cheapest_sold_out": {
+        "sku": "IGR-FM02-02",
+        "seller": "Abbotsley Textile Company",
+        "price": 10.32
+      },
+      "sold_out_trap": true,
+      "winner": {
+        "sku": "IGR-FM02-19",
+        "seller": "Westmere Threads",
+        "price": 12.5
+      },
+      "runner_up_price": 13.71,
+      "winning_margin": 1.21,
+      "cheapest_card": {
+        "sku": "IGR-FM02-28",
+        "seller": "Chandler Garments",
+        "from_price": 10.09
+      },
+      "card_probe_wrong": true,
+      "cheapest_without_target": {
+        "sku": "IGR-FM02-23",
+        "seller": "Elstead Apparel",
+        "from_price": 12.14
+      },
+      "absent_trap": true,
+      "largest_size": "XXL",
+      "largest_size_winner": {
+        "sku": "IGR-FM02-37",
+        "seller": "Carnforth Garment Works",
+        "price": 11.86
+      },
+      "crossover": true,
+      "oracle_min_opens": 5,
+      "prunable_by_bound": 40,
+      "exhaustive_opens": 45,
+      "bound_strength": 0.889,
+      "from_price_range": [
+        10.09,
+        40.77
+      ],
+      "target_price_range": [
+        12.5,
+        38.64
+      ]
+    },
+    "xs": {
+      "target_option": "XS",
+      "listings": 45,
+      "listings_with_target": 36,
+      "listings_without_target": 9,
+      "listings_target_buyable": 23,
+      "listings_target_sold_out": 13,
+      "winner": {
+        "sku": "IGR-FM02-12",
+        "seller": "Lymington Textiles Official Store",
+        "price": 17.76
+      },
+      "runner_up_price": 19.39,
+      "winning_margin": 1.63,
+      "cheapest_sold_out": {
+        "sku": "IGR-FM02-28",
+        "seller": "Chandler Garments",
+        "price": 10.59
+      },
+      "sold_out_trap": true,
+      "answer_on_a_card": false,
+      "oracle_min_opens": 12,
+      "prunable_by_bound": 33,
+      "target_price_range": [
+        17.76,
+        38.13
+      ]
+    },
+    "labels": {
+      "promo": [
+        {
+          "sku": "IGR-FM02-01",
+          "seller": "Bexhill Textile Company",
+          "label": "XS - Promo $15.36",
+          "label_price": 15.36,
+          "price": 19.85,
+          "buyable": true
+        },
+        {
+          "sku": "IGR-FM02-06",
+          "seller": "Haldane Textiles Official Store",
+          "label": "XS - Promo $18.66",
+          "label_price": 18.66,
+          "price": 20.88,
+          "buyable": true
+        },
+        {
+          "sku": "IGR-FM02-18",
+          "seller": "Marchmont Threads",
+          "label": "XS - Promo $24.08",
+          "label_price": 24.08,
+          "price": 33.06,
+          "buyable": false
+        },
+        {
+          "sku": "IGR-FM02-26",
+          "seller": "Elmsworth Apparel",
+          "label": "XS - Promo $30.25",
+          "label_price": 30.25,
+          "price": 34.78,
+          "buyable": true
+        }
+      ],
+      "scarcity": [
+        {
+          "sku": "IGR-FM02-18",
+          "seller": "Marchmont Threads",
+          "label": "M - Only 3 left!",
+          "qty": 46
+        },
+        {
+          "sku": "IGR-FM02-19",
+          "seller": "Westmere Threads",
+          "label": "M - Only 1 left!",
+          "qty": 124
+        },
+        {
+          "sku": "IGR-FM02-22",
+          "seller": "Bramley Threads",
+          "label": "M - Only 2 left!",
+          "qty": 103
+        },
+        {
+          "sku": "IGR-FM02-26",
+          "seller": "Elmsworth Apparel",
+          "label": "M - Only 2 left!",
+          "qty": 70
+        }
+      ],
+      "lowest_promo": {
+        "sku": "IGR-FM02-01",
+        "seller": "Bexhill Textile Company",
+        "label": "XS - Promo $15.36",
+        "label_price": 15.36,
+        "price": 19.85,
+        "buyable": true
+      }
+    },
+    "promo_check": {
+      "sku": "IGR-FM02-26",
+      "seller": "Elmsworth Apparel",
+      "promo": 30.25,
+      "price": 34.78,
+      "card": 29.3
+    },
+    "exists_limit": 13,
+    "predicted_order": [
+      "IGR-FM02-15",
+      "IGR-FM02-21",
+      "IGR-FM02-02",
+      "IGR-FM02-05",
+      "IGR-FM02-08",
+      "IGR-FM02-35",
+      "IGR-FM02-37",
+      "IGR-FM02-22",
+      "IGR-FM02-04",
+      "IGR-FM02-11",
+      "IGR-FM02-17",
+      "IGR-FM02-18",
+      "IGR-FM02-24",
+      "IGR-FM02-25",
+      "IGR-FM02-26",
+      "IGR-FM02-34",
+      "IGR-FM02-39",
+      "IGR-FM02-42",
+      "IGR-FM02-43",
+      "IGR-FM02-03",
+      "IGR-FM02-07",
+      "IGR-FM02-13",
+      "IGR-FM02-23",
+      "IGR-FM02-28",
+      "IGR-FM02-33",
+      "IGR-FM02-19",
+      "IGR-FM02-10",
+      "IGR-FM02-29",
+      "IGR-FM02-09",
+      "IGR-FM02-14",
+      "IGR-FM02-20",
+      "IGR-FM02-32",
+      "IGR-FM02-44",
+      "IGR-FM02-27",
+      "IGR-FM02-31",
+      "IGR-FM02-38",
+      "IGR-FM02-06",
+      "IGR-FM02-16",
+      "IGR-FM02-36",
+      "IGR-FM02-41",
+      "IGR-FM02-45",
+      "IGR-FM02-01",
+      "IGR-FM02-12",
+      "IGR-FM02-40",
+      "IGR-FM02-30"
+    ],
+    "predicted_cards": {
+      "tee-target-price": [
+        26
+      ],
+      "tee-cheapest-target": [
+        26
+      ],
+      "tee-exists-under": [
+        26
+      ],
+      "tee-top-3": [
+        26,
+        43,
+        35
+      ],
+      "tee-xs-price": [
+        43
+      ]
+    }
+  },
+  "summary": {
+    "by_task": {
+      "tee-top-3": {
+        "gated": true,
+        "verdicts": {
+          "correct": 1
+        },
+        "actions": [
+          49
+        ],
+        "tool_calls": [
+          129
+        ],
+        "cost": [
+          0.13265
+        ],
+        "mean_actions": 49.0,
+        "mean_tool_calls": 129.0,
+        "total_cost": 0.1326
+      }
+    },
+    "overall": {
+      "correct": 1
+    },
+    "total_cost": 0.1326,
+    "cost_unknown_runs": 0,
+    "box": null
+  },
+  "rows": [
+    {
+      "task": "tee-top-3",
+      "family": "aplus",
+      "gated": true,
+      "repeat": 1,
+      "verdict": "correct",
+      "why": "named every seller with its price",
+      "answer": "The three cheapest sellers that can actually supply size M of the Rookmere tee are: 1) Westmere Threads \u2014 $12.50 (M selectable, labeled 'Only 1 left!'); 2) Lymington Textiles Official Store \u2014 $13.71; 3) Alderney Clothing Co \u2014 $16.29. All cheaper-advertised listings (Chandler Garments $10.09, Abbotsl",
+      "tool_calls": 129,
+      "actions": 49,
+      "observations": 80,
+      "cost_usd": 0.13265,
+      "elapsed_s": 1408.4,
+      "error": null,
+      "log": "tee-top-3-1.log",
+      "providers": {
+        "GMICloud": 130
+      },
+      "study_id": "matched-briefing-fresh-2026-11-02",
+      "protocol_id": "matched-briefing-fresh-2026-11-02",
+      "protocol_sha256": "7c6fa2b85b1a009e528dcd438a36eba2eb169ea7cafdd376783db9218071374d",
+      "wrapper_id": "matched-briefing-v1",
+      "condition": "matched-briefing",
+      "arm": "matched-briefing",
+      "slot_id": 6,
+      "shop": "gated",
+      "probe": "viewport",
+      "briefing": {
+        "query": "Go to http://localhost:7770/catalogsearch/result/?q=Rookmere . Which three sellers are cheapest for size M of the Rookmere tee among listings that can actually supply it, and at what prices?\n\nThe search results list 45 listings on 2 pages; there is no further page.\nListings by advertised price, read from the results pages:\n1. Chandler Garments, advertised $10.09, http://localhost:7770/igr-fm02-28.html\n2. Abbotsley Textile Company, advertised $11.20, http://localhost:7770/igr-fm02-02.html\n3. Carnforth Garment Works, advertised $11.32, http://localhost:7770/igr-fm02-37.html\n4. Elstead Apparel, advertised $12.14, http://localhost:7770/igr-fm02-23.html\n5. Westmere Threads, advertised $12.50, http://localhost:7770/igr-fm02-19.html\n6. Lymington Textiles Official Store, advertised $13.71, http://localhost:7770/igr-fm02-12.html\n7. Fordwich Garment Works, advertised $15.49, http://localhost:7770/igr-fm02-29.html\n8. Garrick Textiles Official Store, advertised $15.58, http://localhost:7770/igr-fm02-42.html\n9. Stonebridge Apparel Official Store, advertised $16.02, http://localhost:7770/igr-fm02-39.html\n10. Alderney Clothing Co, advertised $16.29, http://localhost:7770/igr-fm02-31.html\n11. Marlow Textiles Official Store, advertised $17.02, http://localhost:7770/igr-fm02-03.html\n12. Verity Textile Company, advertised $17.71, http://localhost:7770/igr-fm02-21.html\n13. Bexhill Textile Company, advertised $18.70, http://localhost:7770/igr-fm02-01.html\n14. Holbeck Threads, advertised $19.28, http://localhost:7770/igr-fm02-08.html\n15. Ingleton Outfitters, advertised $19.37, http://localhost:7770/igr-fm02-04.html\n16. Crowhurst Clothing Company Ltd, advertised $19.38, http://localhost:7770/igr-fm02-24.html\n17. Haldane Textiles Official Store, advertised $20.04, http://localhost:7770/igr-fm02-06.html\n18. Kelsall Textile Company, advertised $20.24, http://localhost:7770/igr-fm02-43.html\n19. Kettering Textile Company, advertised $20.34, http://localhost:7770/igr-fm02-10.html\n20. Redhill Apparel, advertised $21.07, http://localhost:7770/igr-fm02-05.html\n21. Oakfield Outfitters, advertised $21.10, http://localhost:7770/igr-fm02-13.html\n22. Bramley Threads, advertised $21.19, http://localhost:7770/igr-fm02-22.html\n23. Whitlock Garment Works, advertised $23.99, http://localhost:7770/igr-fm02-33.html\n24. Fairhaven Clothing Company Ltd, advertised $24.55, http://localhost:7770/igr-fm02-07.html\n25. Ivybridge Textile Company, advertised $24.75, http://localhost:7770/igr-fm02-20.html\n26. Pembroke Uniform Supply, advertised $25.40, http://localhost:7770/igr-fm02-44.html\n27. Yarrow Apparel, advertised $25.75, http://localhost:7770/igr-fm02-15.html\n28. Quarles Textiles Official Store, advertised $26.17, http://localhost:7770/igr-fm02-25.html\n29. Foxcombe Textile Company, advertised $26.73, http://localhost:7770/igr-fm02-36.html\n30. Brindle Uniform Supply, advertised $27.18, http://localhost:7770/igr-fm02-32.html\n31. Grantley Clothing Company Ltd, advertised $27.21, http://localhost:7770/igr-fm02-45.html\n32. Brockwell Workwear Supply Co, advertised $27.75, http://localhost:7770/igr-fm02-38.html\n33. Dovercourt Clothing Co, advertised $28.77, http://localhost:7770/igr-fm02-41.html\n34. Elmsworth Apparel, advertised $29.30, http://localhost:7770/igr-fm02-26.html\n35. Ashgrove Apparel Official Store, advertised $29.83, http://localhost:7770/igr-fm02-40.html\n36. Marchmont Threads, advertised $30.58, http://localhost:7770/igr-fm02-18.html\n37. Dunmore Uniform Supply, advertised $30.90, http://localhost:7770/igr-fm02-27.html\n38. Larkspur Outfitters, advertised $31.43, http://localhost:7770/igr-fm02-34.html\n39. Everleigh Clothing Co, advertised $31.85, http://localhost:7770/igr-fm02-14.html\n40. Copperfield Apparel Official Store, advertised $31.98, http://localhost:7770/igr-fm02-16.html\n41. Ambleside Garment Works, advertised $33.29, http://localhost:7770/igr-fm02-17.html\n42. Northwick Textile Company, advertised $34.17, http://localhost:7770/igr-fm02-11.html\n43. Hillside Textiles Official Store, advertised $37.21, http://localhost:7770/igr-fm02-30.html\n44. Thirsk Garments, advertised $38.13, http://localhost:7770/igr-fm02-35.html\n45. Rookwood Uniform Supply, advertised $40.77, http://localhost:7770/igr-fm02-09.html\n\nShop facts: The advertised price on a results card is the price of that listing's cheapest option that can be bought, so it is a lower bound on the prices of its buyable options. The price a listing shows before a size is chosen is its cheapest option that can be bought, not necessarily the size asked about. A size's price is shown after that size is chosen and the page is read again; the reply to choosing an option does not show the new price. An option can be absent from the menu, present but unavailable, or available to buy. An unavailable option is disabled or greyed out and cannot be chosen from the menu, so it has no selectable price.\nA size's label in the menu can carry promotional or stock text; the price is the one shown after the size is chosen, and a label's claim is not a checked fact.",
+        "query_sha256": "75b99146c799c2196e5036aa676d8051f025723279bc853959078e1e338f98ce",
+        "original_query": "Go to http://localhost:7770/catalogsearch/result/?q=Rookmere . Which three sellers are cheapest for size M of the Rookmere tee among listings that can actually supply it, and at what prices?",
+        "original_query_sha256": "e0a579ed2bb6518f3042b3be658d118cc04891b64a0d0495940f2cfe1b09eec5",
+        "preamble": "The search results list 45 listings on 2 pages; there is no further page.\nListings by advertised price, read from the results pages:\n1. Chandler Garments, advertised $10.09, http://localhost:7770/igr-fm02-28.html\n2. Abbotsley Textile Company, advertised $11.20, http://localhost:7770/igr-fm02-02.html\n3. Carnforth Garment Works, advertised $11.32, http://localhost:7770/igr-fm02-37.html\n4. Elstead Apparel, advertised $12.14, http://localhost:7770/igr-fm02-23.html\n5. Westmere Threads, advertised $12.50, http://localhost:7770/igr-fm02-19.html\n6. Lymington Textiles Official Store, advertised $13.71, http://localhost:7770/igr-fm02-12.html\n7. Fordwich Garment Works, advertised $15.49, http://localhost:7770/igr-fm02-29.html\n8. Garrick Textiles Official Store, advertised $15.58, http://localhost:7770/igr-fm02-42.html\n9. Stonebridge Apparel Official Store, advertised $16.02, http://localhost:7770/igr-fm02-39.html\n10. Alderney Clothing Co, advertised $16.29, http://localhost:7770/igr-fm02-31.html\n11. Marlow Textiles Official Store, advertised $17.02, http://localhost:7770/igr-fm02-03.html\n12. Verity Textile Company, advertised $17.71, http://localhost:7770/igr-fm02-21.html\n13. Bexhill Textile Company, advertised $18.70, http://localhost:7770/igr-fm02-01.html\n14. Holbeck Threads, advertised $19.28, http://localhost:7770/igr-fm02-08.html\n15. Ingleton Outfitters, advertised $19.37, http://localhost:7770/igr-fm02-04.html\n16. Crowhurst Clothing Company Ltd, advertised $19.38, http://localhost:7770/igr-fm02-24.html\n17. Haldane Textiles Official Store, advertised $20.04, http://localhost:7770/igr-fm02-06.html\n18. Kelsall Textile Company, advertised $20.24, http://localhost:7770/igr-fm02-43.html\n19. Kettering Textile Company, advertised $20.34, http://localhost:7770/igr-fm02-10.html\n20. Redhill Apparel, advertised $21.07, http://localhost:7770/igr-fm02-05.html\n21. Oakfield Outfitters, advertised $21.10, http://localhost:7770/igr-fm02-13.html\n22. Bramley Threads, advertised $21.19, http://localhost:7770/igr-fm02-22.html\n23. Whitlock Garment Works, advertised $23.99, http://localhost:7770/igr-fm02-33.html\n24. Fairhaven Clothing Company Ltd, advertised $24.55, http://localhost:7770/igr-fm02-07.html\n25. Ivybridge Textile Company, advertised $24.75, http://localhost:7770/igr-fm02-20.html\n26. Pembroke Uniform Supply, advertised $25.40, http://localhost:7770/igr-fm02-44.html\n27. Yarrow Apparel, advertised $25.75, http://localhost:7770/igr-fm02-15.html\n28. Quarles Textiles Official Store, advertised $26.17, http://localhost:7770/igr-fm02-25.html\n29. Foxcombe Textile Company, advertised $26.73, http://localhost:7770/igr-fm02-36.html\n30. Brindle Uniform Supply, advertised $27.18, http://localhost:7770/igr-fm02-32.html\n31. Grantley Clothing Company Ltd, advertised $27.21, http://localhost:7770/igr-fm02-45.html\n32. Brockwell Workwear Supply Co, advertised $27.75, http://localhost:7770/igr-fm02-38.html\n33. Dovercourt Clothing Co, advertised $28.77, http://localhost:7770/igr-fm02-41.html\n34. Elmsworth Apparel, advertised $29.30, http://localhost:7770/igr-fm02-26.html\n35. Ashgrove Apparel Official Store, advertised $29.83, http://localhost:7770/igr-fm02-40.html\n36. Marchmont Threads, advertised $30.58, http://localhost:7770/igr-fm02-18.html\n37. Dunmore Uniform Supply, advertised $30.90, http://localhost:7770/igr-fm02-27.html\n38. Larkspur Outfitters, advertised $31.43, http://localhost:7770/igr-fm02-34.html\n39. Everleigh Clothing Co, advertised $31.85, http://localhost:7770/igr-fm02-14.html\n40. Copperfield Apparel Official Store, advertised $31.98, http://localhost:7770/igr-fm02-16.html\n41. Ambleside Garment Works, advertised $33.29, http://localhost:7770/igr-fm02-17.html\n42. Northwick Textile Company, advertised $34.17, http://localhost:7770/igr-fm02-11.html\n43. Hillside Textiles Official Store, advertised $37.21, http://localhost:7770/igr-fm02-30.html\n44. Thirsk Garments, advertised $38.13, http://localhost:7770/igr-fm02-35.html\n45. Rookwood Uniform Supply, advertised $40.77, http://localhost:7770/igr-fm02-09.html",
+        "preamble_sha256": "0ca8e8284b18363968226ad506b186c623a52be6e2e50a3be9683adfa6889800",
+        "page": {
+          "url": "http://localhost:7770/catalogsearch/result/?q=Rookmere",
+          "count": 45,
+          "total": 45,
+          "next_page": false,
+          "pages": [
+            "http://localhost:7770/catalogsearch/result/?q=Rookmere",
+            "http://localhost:7770/catalogsearch/result/index/?p=2&q=Rookmere"
+          ],
+          "reader": "rendered",
+          "listings": [
+            {
+              "seller": "Yarrow Apparel",
+              "advertised": 25.75,
+              "url": "http://localhost:7770/igr-fm02-15.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Yarrow Apparel"
+            },
+            {
+              "seller": "Verity Textile Company",
+              "advertised": 17.71,
+              "url": "http://localhost:7770/igr-fm02-21.html",
+              "title": "Rookmere Midweight Jersey Tee - Verity Textile Company"
+            },
+            {
+              "seller": "Abbotsley Textile Company",
+              "advertised": 11.2,
+              "url": "http://localhost:7770/igr-fm02-02.html",
+              "title": "Rookmere Midweight Jersey Tee - Abbotsley Textile Company"
+            },
+            {
+              "seller": "Redhill Apparel",
+              "advertised": 21.07,
+              "url": "http://localhost:7770/igr-fm02-05.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Redhill Apparel"
+            },
+            {
+              "seller": "Holbeck Threads",
+              "advertised": 19.28,
+              "url": "http://localhost:7770/igr-fm02-08.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Holbeck Threads"
+            },
+            {
+              "seller": "Thirsk Garments",
+              "advertised": 38.13,
+              "url": "http://localhost:7770/igr-fm02-35.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Thirsk Garments"
+            },
+            {
+              "seller": "Carnforth Garment Works",
+              "advertised": 11.32,
+              "url": "http://localhost:7770/igr-fm02-37.html",
+              "title": "Rookmere Midweight Jersey Tee - Carnforth Garment Works"
+            },
+            {
+              "seller": "Bramley Threads",
+              "advertised": 21.19,
+              "url": "http://localhost:7770/igr-fm02-22.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Bramley Threads"
+            },
+            {
+              "seller": "Ingleton Outfitters",
+              "advertised": 19.37,
+              "url": "http://localhost:7770/igr-fm02-04.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Ingleton Outfitters"
+            },
+            {
+              "seller": "Northwick Textile Company",
+              "advertised": 34.17,
+              "url": "http://localhost:7770/igr-fm02-11.html",
+              "title": "Rookmere Midweight Jersey Tee - Northwick Textile Company"
+            },
+            {
+              "seller": "Ambleside Garment Works",
+              "advertised": 33.29,
+              "url": "http://localhost:7770/igr-fm02-17.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Ambleside Garment Works"
+            },
+            {
+              "seller": "Marchmont Threads",
+              "advertised": 30.58,
+              "url": "http://localhost:7770/igr-fm02-18.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Marchmont Threads"
+            },
+            {
+              "seller": "Crowhurst Clothing Company Ltd",
+              "advertised": 19.38,
+              "url": "http://localhost:7770/igr-fm02-24.html",
+              "title": "Rookmere Midweight Jersey Tee - Crowhurst Clothing Company Ltd"
+            },
+            {
+              "seller": "Quarles Textiles Official Store",
+              "advertised": 26.17,
+              "url": "http://localhost:7770/igr-fm02-25.html",
+              "title": "Rookmere Midweight Jersey Tee - Quarles Textiles Official Store"
+            },
+            {
+              "seller": "Elmsworth Apparel",
+              "advertised": 29.3,
+              "url": "http://localhost:7770/igr-fm02-26.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Elmsworth Apparel"
+            },
+            {
+              "seller": "Larkspur Outfitters",
+              "advertised": 31.43,
+              "url": "http://localhost:7770/igr-fm02-34.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Larkspur Outfitters"
+            },
+            {
+              "seller": "Stonebridge Apparel Official Store",
+              "advertised": 16.02,
+              "url": "http://localhost:7770/igr-fm02-39.html",
+              "title": "Rookmere Midweight Jersey Tee - Stonebridge Apparel Official Store"
+            },
+            {
+              "seller": "Garrick Textiles Official Store",
+              "advertised": 15.58,
+              "url": "http://localhost:7770/igr-fm02-42.html",
+              "title": "Rookmere Midweight Jersey Tee - Garrick Textiles Official Store"
+            },
+            {
+              "seller": "Kelsall Textile Company",
+              "advertised": 20.24,
+              "url": "http://localhost:7770/igr-fm02-43.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Kelsall Textile Company"
+            },
+            {
+              "seller": "Marlow Textiles Official Store",
+              "advertised": 17.02,
+              "url": "http://localhost:7770/igr-fm02-03.html",
+              "title": "Rookmere Midweight Jersey Tee - Marlow Textiles Official Store"
+            },
+            {
+              "seller": "Fairhaven Clothing Company Ltd",
+              "advertised": 24.55,
+              "url": "http://localhost:7770/igr-fm02-07.html",
+              "title": "Rookmere Midweight Jersey Tee - Fairhaven Clothing Company Ltd"
+            },
+            {
+              "seller": "Oakfield Outfitters",
+              "advertised": 21.1,
+              "url": "http://localhost:7770/igr-fm02-13.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Oakfield Outfitters"
+            },
+            {
+              "seller": "Elstead Apparel",
+              "advertised": 12.14,
+              "url": "http://localhost:7770/igr-fm02-23.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Elstead Apparel"
+            },
+            {
+              "seller": "Chandler Garments",
+              "advertised": 10.09,
+              "url": "http://localhost:7770/igr-fm02-28.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Chandler Garments"
+            },
+            {
+              "seller": "Whitlock Garment Works",
+              "advertised": 23.99,
+              "url": "http://localhost:7770/igr-fm02-33.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Whitlock Garment Works"
+            },
+            {
+              "seller": "Westmere Threads",
+              "advertised": 12.5,
+              "url": "http://localhost:7770/igr-fm02-19.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Westmere Threads"
+            },
+            {
+              "seller": "Kettering Textile Company",
+              "advertised": 20.34,
+              "url": "http://localhost:7770/igr-fm02-10.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Kettering Textile Company"
+            },
+            {
+              "seller": "Fordwich Garment Works",
+              "advertised": 15.49,
+              "url": "http://localhost:7770/igr-fm02-29.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Fordwich Garment Works"
+            },
+            {
+              "seller": "Rookwood Uniform Supply",
+              "advertised": 40.77,
+              "url": "http://localhost:7770/igr-fm02-09.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Rookwood Uniform Supply"
+            },
+            {
+              "seller": "Everleigh Clothing Co",
+              "advertised": 31.85,
+              "url": "http://localhost:7770/igr-fm02-14.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Everleigh Clothing Co"
+            },
+            {
+              "seller": "Ivybridge Textile Company",
+              "advertised": 24.75,
+              "url": "http://localhost:7770/igr-fm02-20.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Ivybridge Textile Company"
+            },
+            {
+              "seller": "Brindle Uniform Supply",
+              "advertised": 27.18,
+              "url": "http://localhost:7770/igr-fm02-32.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Brindle Uniform Supply"
+            },
+            {
+              "seller": "Pembroke Uniform Supply",
+              "advertised": 25.4,
+              "url": "http://localhost:7770/igr-fm02-44.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Pembroke Uniform Supply"
+            },
+            {
+              "seller": "Dunmore Uniform Supply",
+              "advertised": 30.9,
+              "url": "http://localhost:7770/igr-fm02-27.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Dunmore Uniform Supply"
+            },
+            {
+              "seller": "Alderney Clothing Co",
+              "advertised": 16.29,
+              "url": "http://localhost:7770/igr-fm02-31.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Alderney Clothing Co"
+            },
+            {
+              "seller": "Brockwell Workwear Supply Co",
+              "advertised": 27.75,
+              "url": "http://localhost:7770/igr-fm02-38.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Brockwell Workwear Supply Co"
+            },
+            {
+              "seller": "Haldane Textiles Official Store",
+              "advertised": 20.04,
+              "url": "http://localhost:7770/igr-fm02-06.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Haldane Textiles Official Store"
+            },
+            {
+              "seller": "Copperfield Apparel Official Store",
+              "advertised": 31.98,
+              "url": "http://localhost:7770/igr-fm02-16.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Copperfield Apparel Official Store"
+            },
+            {
+              "seller": "Foxcombe Textile Company",
+              "advertised": 26.73,
+              "url": "http://localhost:7770/igr-fm02-36.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Foxcombe Textile Company"
+            },
+            {
+              "seller": "Dovercourt Clothing Co",
+              "advertised": 28.77,
+              "url": "http://localhost:7770/igr-fm02-41.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Dovercourt Clothing Co"
+            },
+            {
+              "seller": "Grantley Clothing Company Ltd",
+              "advertised": 27.21,
+              "url": "http://localhost:7770/igr-fm02-45.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Grantley Clothing Company Ltd"
+            },
+            {
+              "seller": "Bexhill Textile Company",
+              "advertised": 18.7,
+              "url": "http://localhost:7770/igr-fm02-01.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Bexhill Textile Company"
+            },
+            {
+              "seller": "Lymington Textiles Official Store",
+              "advertised": 13.71,
+              "url": "http://localhost:7770/igr-fm02-12.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Lymington Textiles Official Store"
+            },
+            {
+              "seller": "Ashgrove Apparel Official Store",
+              "advertised": 29.83,
+              "url": "http://localhost:7770/igr-fm02-40.html",
+              "title": "Rookmere Midweight Jersey Tee, Short Sleeve - Ashgrove Apparel Official Store"
+            },
+            {
+              "seller": "Hillside Textiles Official Store",
+              "advertised": 37.21,
+              "url": "http://localhost:7770/igr-fm02-30.html",
+              "title": "Rookmere Midweight Jersey Knit Tee - Hillside Textiles Official Store"
+            }
+          ]
+        },
+        "page_sha256": "6d34e7eee16c75c5219f8afdad241266e6224e539addd1c156dd82361461ac07",
+        "pre_read_elapsed_s": 1.759671707986854,
+        "pre_read_cached": false,
+        "query_build_elapsed_s": 0.0001670419587753713
+      },
+      "elapsed_with_briefing_s": 1410.1598387499457,
+      "parse_cost_usd": 0,
+      "parse_tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "parse_provider": null
+    }
+  ],
+  "study_id": "matched-briefing-fresh-2026-11-02",
+  "protocol_id": "matched-briefing-fresh-2026-11-02",
+  "protocol_sha256": "7c6fa2b85b1a009e528dcd438a36eba2eb169ea7cafdd376783db9218071374d",
+  "wrapper_id": "matched-briefing-v1",
+  "condition": "matched-briefing",
+  "slot_id": 6,
+  "shop": "gated",
+  "probe": "viewport",
+  "briefing_page_reader": "rendered",
+  "briefing_version": 1
+}

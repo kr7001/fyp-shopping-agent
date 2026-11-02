@@ -1,0 +1,30 @@
+{
+  "status": "stopped",
+  "reason": "account usage moved backwards",
+  "pid": 46846,
+  "updated_at": "2026-10-28T14:02:02.037864+00:00",
+  "deadline": "2026-10-29T03:00:00+08:00",
+  "config_sha256": "08824f4e2a650441ce083579a286d69f3d010b7e77ef3149ba087b72db872699",
+  "start_usage": 125.249729661,
+  "last_usage": 131.696440438,
+  "recorded_usd": 0.6620739999999999,
+  "spent_usd": 6.446710776999993,
+  "round": 2,
+  "round_start_usage": 131.025534706,
+  "round_spent_usd": 0.6709057319999943,
+  "prior_recorded_usd": 3.5850809999999997,
+  "aggregate_recorded_usd": 4.247154999999999,
+  "current_step": "run-15-tee-top-3",
+  "completed_steps": [
+    "live-market-check",
+    "arm-preflight-0",
+    "arm-preflight-1",
+    "arm-preflight-2",
+    "run-09-tee-target-price",
+    "run-10-tee-cheapest-target",
+    "run-11-tee-all-stocked",
+    "run-12-tee-count-stocked",
+    "run-13-tee-count-buyable",
+    "run-14-tee-exists-under"
+  ]
+}

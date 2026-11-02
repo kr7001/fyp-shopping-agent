@@ -1,0 +1,7 @@
+start 2026-11-02T17:41:49.959844 usage 139.0623037280 cap 4.00
+study matched-briefing-fresh-2026-11-02 continuation of the primary run, slot(s) 16 unchanged; amendment 4; no pooling with Quenby
+conditions commit 7a1ff130708b7d40bc4d849d623cb2225c55fea0 browser Google Chrome 156.0.8078.79; the primary run's agent, steps and protocol, notes/fresh-market-2-nov/study-b-command.json sha256 507aea6cad5222ad7f3b3d8d421ee32be3bb5db34c7fd694cae5a188f6799a12
+conditions amendment notes/fresh-market-2-nov/amendment-4-2-nov.md sha256 7b60c05c22f989234d1768214fa65cf6bdee9ba7c5f12b725358f44d85e604d7
+WATCHDOG USD4 shared study cap; carryover USD1.5069150000; USD0.35 inflight reserve, a running trial stops at USD3.65 counted; no trial starts at or after 2026-11-03T12:00:00+08:00; preserve USD20 key credit; no automatic retries
+batch|/Users/kaironglee/projects/shopping-agent-against-information-gated-retrieval/experiments/results/20261102T174155|--condition matched-briefing --protocol experiments/tasks/matched_briefing_2_nov.json --slot-id 16 --tasks experiments/tasks/tasks_tee_fresh_2_nov.json --only tee-count-buyable --repeats 1 --repeat-start 2 --page-reader rendered --max-steps 300 --clock 1800
+end 2026-11-02T17:54:39.855646 usage 139.3220257070

@@ -1,0 +1,33 @@
+{
+  "status": "complete",
+  "reason": null,
+  "pid": 79769,
+  "updated_at": "2026-11-02T09:54:39.855719+00:00",
+  "deadline": "2026-11-03T12:00:00+08:00",
+  "config_sha256": "4b92a8c989d01b281f1a16e9789c6bd7ff85275dc322600cea7c531bf8092378",
+  "start_usage": 139.062303728,
+  "last_usage": 139.322025707,
+  "last_observed_usage": 139.322025707,
+  "last_observed_remaining": 60.677974293000005,
+  "remaining_credit_low_water": 60.677974293000005,
+  "usage_decrease_count": 0,
+  "last_usage_decrease": null,
+  "recorded_usd": 0.266979,
+  "spent_usd": 1.7738940000000003,
+  "round": 1,
+  "round_start_usage": 139.062303728,
+  "round_spent_usd": 0.266979,
+  "prior_recorded_usd": 0.0,
+  "aggregate_recorded_usd": 0.266979,
+  "current_step": null,
+  "completed_steps": [
+    "live-market-check",
+    "slot-16-matched-briefing-tee-count-buyable-r2"
+  ],
+  "stage": "continuation",
+  "carryover_usd": 1.5069150000000002,
+  "stage_spent_usd": 0.266979,
+  "shared_cap_usd": 4.0,
+  "running_trial_stop_usd": 3.65,
+  "start_cutoff": "2026-11-03T12:00:00+08:00"
+}

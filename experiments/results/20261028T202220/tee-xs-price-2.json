@@ -1,0 +1,908 @@
+{
+  "ran_at": "2026-10-28T20:38:21",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "provider_routing": {
+    "order": [
+      "gmicloud",
+      "deepinfra",
+      "streamlake"
+    ],
+    "allow_fallbacks": false,
+    "quantizations": [
+      "fp8"
+    ]
+  },
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Quenby . What is the lowest price anyone charges for size XS of the Quenby tee, among those that can actually be bought?\n\nBefore answering, open every tee listing in the search results, including any on later pages, and check every option the question needs on each one. Listings of anything else in the results are not part of the question and need not be opened. Do not stop early because a listing looks unpromising from its search-result price. Base the answer only on listings you have opened, and say how many you opened.",
+  "elapsed_s": 958.8,
+  "cost_usd": 0.705898,
+  "cost_note": null,
+  "spend_before_usd": 130.311829346,
+  "spend_after_usd": 131.012727677,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "e977c5d537d24c0e9177713084c5ea4f",
+    "final": "Lowest buyable XS price for the Quenby tee: $11.35, charged by Ashgrove Clothing Co (Quenby Midweight Jersey Tee - Ashgrove Clothing Co, /igr-rp28-28.html). XS is in stock there and can be added to cart (verified in cart: subtotal $11.35). I opened all 45 tee listings found in the search results (36 on page 1 and 9 on page 2) and checked the XS option on every one. Of those 45: 27 sell a buyable XS (Ashgrove $11.35 is the lowest; next cheapest are Pembroke Threads $12.58, Fordwich Garments $12.70, Garrick Workwear $13.10), 11 have XS listed but out of stock/disabled (Foxcombe Apparel, Westmere Garments, Haldane Garment Works, Grantley Outfitters, Bramley Threads, Oakfield Outfitters, Everleigh Textiles, Fairhaven Outfitters, Marlow Apparel, Dovercourt Clothing, Rookwood Workwear), and 7 offer no XS at all (Pentland Garment Works, Brindle Threads, Thornbury Textile Company, Lymington Apparel, Redhill Garments, Carnforth Apparel, Gisburn Clothing Co). No other product types appeared in the results to be excluded. Note: where dropdown labels advertised an XS 'Promo' price, the actual charged price (confirmed via cart) was the product-page price, e.g. Fordwich $12.70 not $9.98.",
+    "page": {
+      "url": "http://localhost:7770/checkout/cart/",
+      "title": "Shopping Cart"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 130,
+    "actions": 61,
+    "observations": 69,
+    "unclassified_tools": [],
+    "assistant_turns": 128,
+    "by_tool": {
+      "browser_evaluate": 53,
+      "browser_navigate": 51,
+      "browser_probe_interactives": 14,
+      "browser_batch_interact": 10,
+      "browser_probe_cards": 2
+    },
+    "selections": [
+      "XS",
+      "XS",
+      "34",
+      "35",
+      "XS"
+    ],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Quenby",
+      "http://localhost:7770/catalogsearch/result/index/?p=2&q=Quenby",
+      "http://localhost:7770/igr-rp28-21.html",
+      "http://localhost:7770/igr-rp28-05.html",
+      "http://localhost:7770/igr-rp28-22.html",
+      "http://localhost:7770/igr-rp28-12.html",
+      "http://localhost:7770/igr-rp28-19.html",
+      "http://localhost:7770/igr-rp28-41.html",
+      "http://localhost:7770/igr-rp28-08.html",
+      "http://localhost:7770/igr-rp28-09.html",
+      "http://localhost:7770/igr-rp28-24.html",
+      "http://localhost:7770/igr-rp28-28.html",
+      "http://localhost:7770/igr-rp28-43.html",
+      "http://localhost:7770/igr-rp28-44.html",
+      "http://localhost:7770/igr-rp28-39.html",
+      "http://localhost:7770/checkout/cart/",
+      "http://localhost:7770/igr-rp28-40.html",
+      "http://localhost:7770/igr-rp28-04.html",
+      "http://localhost:7770/igr-rp28-35.html",
+      "http://localhost:7770/igr-rp28-23.html",
+      "http://localhost:7770/igr-rp28-31.html",
+      "http://localhost:7770/igr-rp28-27.html",
+      "http://localhost:7770/igr-rp28-29.html",
+      "http://localhost:7770/igr-rp28-34.html",
+      "http://localhost:7770/igr-rp28-36.html",
+      "http://localhost:7770/igr-rp28-14.html",
+      "http://localhost:7770/igr-rp28-33.html",
+      "http://localhost:7770/igr-rp28-38.html",
+      "http://localhost:7770/igr-rp28-07.html",
+      "http://localhost:7770/igr-rp28-45.html",
+      "http://localhost:7770/igr-rp28-37.html",
+      "http://localhost:7770/checkout/cart/",
+      "http://localhost:7770/igr-rp28-10.html",
+      "http://localhost:7770/igr-rp28-18.html",
+      "http://localhost:7770/igr-rp28-26.html",
+      "http://localhost:7770/igr-rp28-01.html",
+      "http://localhost:7770/igr-rp28-15.html",
+      "http://localhost:7770/igr-rp28-17.html",
+      "http://localhost:7770/igr-rp28-32.html",
+      "http://localhost:7770/igr-rp28-42.html",
+      "http://localhost:7770/igr-rp28-13.html",
+      "http://localhost:7770/igr-rp28-30.html",
+      "http://localhost:7770/igr-rp28-02.html",
+      "http://localhost:7770/igr-rp28-06.html",
+      "http://localhost:7770/igr-rp28-16.html",
+      "http://localhost:7770/igr-rp28-11.html",
+      "http://localhost:7770/igr-rp28-20.html",
+      "http://localhost:7770/igr-rp28-03.html",
+      "http://localhost:7770/igr-rp28-25.html",
+      "http://localhost:7770/igr-rp28-28.html",
+      "http://localhost:7770/checkout/cart/"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Quenby"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/index/?p=2&q=Quenby"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-21.html"
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": "",
+        "batch": [
+          {
+            "op": "select_option",
+            "target": "XS"
+          },
+          {
+            "op": "wait_for_stable",
+            "target": ""
+          },
+          {
+            "op": "extract_text",
+            "target": ".product-info-price .price-box .price"
+          },
+          {
+            "op": "extract_text",
+            "target": "#product-addtocart-button"
+          }
+        ]
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": "",
+        "batch": [
+          {
+            "op": "select_option",
+            "target": "XS"
+          },
+          {
+            "op": "sleep",
+            "target": ""
+          }
+        ]
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-05.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-22.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-12.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-19.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-41.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-08.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-09.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-24.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-28.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-43.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-44.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-39.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": "",
+        "batch": [
+          {
+            "op": "select_option",
+            "target": "34"
+          },
+          {
+            "op": "sleep",
+            "target": ""
+          }
+        ]
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": "",
+        "batch": [
+          {
+            "op": "click",
+            "target": ""
+          },
+          {
+            "op": "sleep",
+            "target": ""
+          }
+        ]
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": "",
+        "batch": [
+          {
+            "op": "click",
+            "target": ""
+          },
+          {
+            "op": "sleep",
+            "target": ""
+          }
+        ]
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/checkout/cart/"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": "",
+        "batch": [
+          {
+            "op": "click",
+            "target": ""
+          },
+          {
+            "op": "sleep",
+            "target": ""
+          }
+        ]
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-40.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-04.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-35.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-23.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-31.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-27.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-29.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-34.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-36.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-14.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-33.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-38.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-07.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-45.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-37.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": "",
+        "batch": [
+          {
+            "op": "select_option",
+            "target": "35"
+          },
+          {
+            "op": "sleep",
+            "target": ""
+          },
+          {
+            "op": "click",
+            "target": ""
+          },
+          {
+            "op": "sleep",
+            "target": ""
+          }
+        ]
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/checkout/cart/"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": "",
+        "batch": [
+          {
+            "op": "click",
+            "target": ""
+          },
+          {
+            "op": "sleep",
+            "target": ""
+          }
+        ]
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-10.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-18.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-26.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-01.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-15.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-17.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-32.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-42.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-13.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-30.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-02.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-06.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-16.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-11.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-20.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-03.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-25.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-28.html"
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": "",
+        "batch": [
+          {
+            "op": "select_option",
+            "target": "XS"
+          },
+          {
+            "op": "sleep",
+            "target": ""
+          },
+          {
+            "op": "click",
+            "target": ""
+          },
+          {
+            "op": "sleep",
+            "target": ""
+          }
+        ]
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/checkout/cart/"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": "",
+        "batch": [
+          {
+            "op": "click",
+            "target": ""
+          },
+          {
+            "op": "sleep",
+            "target": ""
+          }
+        ]
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_probe_interactives",
+      "browser_probe_interactives",
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_probe_interactives",
+      "browser_navigate",
+      "browser_probe_interactives",
+      "browser_batch_interact",
+      "browser_batch_interact",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_probe_interactives",
+      "browser_batch_interact",
+      "browser_evaluate",
+      "browser_batch_interact",
+      "browser_probe_interactives",
+      "browser_batch_interact",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_probe_interactives",
+      "browser_batch_interact",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_probe_interactives",
+      "browser_probe_interactives",
+      "browser_batch_interact",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_probe_interactives",
+      "browser_batch_interact",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_probe_interactives",
+      "browser_probe_interactives",
+      "browser_probe_interactives",
+      "browser_batch_interact",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_probe_interactives",
+      "browser_batch_interact",
+      "browser_evaluate"
+    ],
+    "tokens": {
+      "prompt": 23968925,
+      "completion": 45646,
+      "total": 24014571,
+      "calls": 129
+    },
+    "cost_reported_usd": 0.705898,
+    "providers": {
+      "GMICloud": 129
+    }
+  },
+  "spend_delta_usd": 0.700898,
+  "log": "tee-xs-price-2.log",
+  "shop": "gated",
+  "probe": "viewport",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "scaffold": "openjiuwen"
+}

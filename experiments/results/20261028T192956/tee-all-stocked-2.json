@@ -1,0 +1,694 @@
+{
+  "ran_at": "2026-10-28T19:40:04",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "provider_routing": {
+    "order": [
+      "gmicloud",
+      "deepinfra",
+      "streamlake"
+    ],
+    "allow_fallbacks": false,
+    "quantizations": [
+      "fp8"
+    ]
+  },
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Quenby . Does every Quenby tee listing offer size M? Answer yes or no.\n\nBefore answering, open every tee listing in the search results, including any on later pages, and check every option the question needs on each one. Listings of anything else in the results are not part of the question and need not be opened. Do not stop early because a listing looks unpromising from its search-result price. Base the answer only on listings you have opened, and say how many you opened.",
+  "elapsed_s": 604.3,
+  "cost_usd": 0.181907,
+  "cost_note": null,
+  "spend_before_usd": 129.28917971,
+  "spend_after_usd": 129.468148025,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": false,
+    "session_id": "smoke",
+    "request_id": "fe83fdb358cf456aa0e7a94a3dea793c",
+    "final": "All 45 listings have now been opened and checked. Compiling the results.\n\n**Summary of checks (45 Quenby tee listings opened \u2014 36 on page 1, 9 on page 2; every search result was a Quenby tee, none other):**\n\nSize M offered (selectable/enabled): 27 listings\nSize M listed but disabled (cannot be chosen): 8 listings (igr-rp28-05 Pembroke, -22 Foxcombe, -41 Holbeck, -24 Yarrow, -34 Oakfield, -14 Thornbury, -10 Redhill, -18 Copperfield)\nSize M absent entirely: 10 listings (igr-rp28-28 Ashgrove, -43 Alderney, -04 Dalston, -31 Bramley, -37 Fordwich, -26 Kettering, -13 Brockwell, -30 Carnforth, -06 Ambleside, -03 Kelsall)\n\nSince 18 of the 45 opened tee listings do not actually offer a purchasable size M (and 10 don't carry M at all), the answer is No.\n\n{\"ok\": true, \"final\": \"No. I opened all 45 Quenby tee listings in the search results (36 on page 1 and 9 on page 2; every result was a Quenby tee). Only 27 of the 45 offer size M as a selectable option; 8 list M but with the option disabled (not purchasable: Pembroke Threads, Foxcombe Apparel, Holbeck Uniform Supply, Yarrow Garment Works, Oakfield Outfitters, Thornbury Textile Company, Redhill Garments, Copperfield Threads), and 10 do not list size M at all (Ashgrove Clothing Co, Alderney Garment Works, Dalston Threads, Bramley Threads, Fordwich Garments, Kettering Threads, Brockwell Apparel, Carnforth Apparel, Ambleside Uniform Supply, Kelsall Clothing Company Ltd). Because 18 of the 45 opened tee listings do not offer size M, not every Quenby tee listing offers size M.\", \"status\": \"completed\", \"page\": {\"url\": \"http://localhost:7770/igr-rp28-25.html\", \"title\": \"Quenby Midweight Jersey Tee, Short Sleeve - Bexhill Textiles Official Store\"}, \"screenshot\": null, \"error\":",
+    "page": {
+      "url": "",
+      "title": ""
+    },
+    "screenshot": null,
+    "error": "Browser worker did not return valid JSON output",
+    "attempt": 1,
+    "progress_state": {
+      "status": "failed",
+      "completed_steps": [],
+      "remaining_steps": [],
+      "next_step": null,
+      "completion_evidence": [],
+      "missing_requirements": [],
+      "recent_tool_steps": [
+        "mcp_playwright-official_browser_navigate: ### Ran Playwright code ```js await page.goto('http://localhost:7770/igr-rp28-11.html'); ``` ### Page - Page URL: http://localhost:7770/igr-rp28-11.html - Page ...[truncated]",
+        "mcp_playwright-official_browser_evaluate: ### Result { \"title\": \"Quenby Midweight Jersey Tee, Short Sleeve - Chandler Textiles Official Store\", \"options\": [ { \"v\": \"\", \"t\": \"Choose a...[truncated]",
+        "mcp_playwright-official_browser_navigate: ### Ran Playwright code ```js await page.goto('http://localhost:7770/igr-rp28-20.html'); ``` ### Page - Page URL: http://localhost:7770/igr-rp28-20.html - Page ...[truncated]",
+        "mcp_playwright-official_browser_evaluate: ### Result { \"title\": \"Quenby Midweight Jersey Tee, Short Sleeve - Rookwood Workwear Supply Co\", \"options\": [ { \"v\": \"\", \"t\": \"Choose an Opt...[truncated]",
+        "mcp_playwright-official_browser_navigate: ### Ran Playwright code ```js await page.goto('http://localhost:7770/igr-rp28-03.html'); ``` ### Page - Page URL: http://localhost:7770/igr-rp28-03.html - Page ...[truncated]",
+        "mcp_playwright-official_browser_evaluate: ### Result { \"title\": \"Quenby Midweight Jersey Tee, Short Sleeve - Kelsall Clothing Company Ltd\", \"options\": [ { \"v\": \"\", \"t\": \"Choose an Op...[truncated]",
+        "mcp_playwright-official_browser_navigate: ### Ran Playwright code ```js await page.goto('http://localhost:7770/igr-rp28-25.html'); ``` ### Page - Page URL: http://localhost:7770/igr-rp28-25.html - Page ...[truncated]",
+        "mcp_playwright-official_browser_evaluate: ### Result { \"title\": \"Quenby Midweight Jersey Tee, Short Sleeve - Bexhill Textiles Official Store\", \"options\": [ { \"v\": \"\", \"t\": \"Choose an...[truncated]"
+      ],
+      "last_page": {
+        "url": "",
+        "title": ""
+      },
+      "last_screenshot": null,
+      "last_worker_final": "All 45 listings have now been opened and checked. Compiling the results.\n\n**Summary of checks (45 Quenby tee listings opened \u2014 36 on page 1, 9 on page 2; every search result was a Quenby tee, none other):**\n\nSize M offered (selectable/enabled): 27 listings\nSize M listed but disabled (cannot be chosen): 8 listings (igr-rp28-05 Pembroke, -22 Foxcombe, -41 Holbeck, -24 Yarrow, -34 Oakfield, -14 Thornbury, -10 Redhill, -18 Copperfield)\nSize M absent entirely: 10 listings (igr-rp28-28 Ashgrove, -43 Alderney, -04 Dalston, -31 Bramley, -37 Fordwich, -26 Kettering, -13 Brockwell, -30 Carnforth, -06 Ambleside, -03 Kelsall)\n\nSince 18 of the 45 opened tee listings do not actually offer a purchasable size M (and 10 don't carry M at all), the answer is No.\n\n{\"ok\": true, \"final\": \"No. I opened all 45 Quenby tee listings in the search results (36 on page 1 and 9 on page 2; every result was a Quenby tee). Only 27 of the 45 offer size M as a selectable option; 8 list M but with the option disabled (not purchasable: Pembroke Threads, Foxcombe Apparel, Holbeck Uniform Supply, Yarrow Garment Works, Oakfield Outfitters, Thornbury Textile Company, Redhill Garments, Copperfield Threads), and 10 do not li...[truncated]",
+      "request_id": "fe83fdb358cf456aa0e7a94a3dea793c"
+    },
+    "failure_summary": "Failure summary for continuation:\n- Original task: Go to http://localhost:7770/catalogsearch/result/?q=Quenby . Does every Quenby tee listing offer size M? Answer yes or no.\n\nBefore answering, open every tee listing in the search results, including any on later pages, and check every option the question needs on each one. Listings of anything else in the results are not part of the question and need not be opened. Do not stop early because a listi...[truncated]\n- Failed attempt: 1\n- Error: Browser worker did not return valid JSON output\nKnown progress for continuation:\n- Known progress status: failed\n- Recent browser tool activity:\n  - mcp_playwright-official_browser_navigate: ### Ran Playwright code ```js await page.goto('http://localhost:7770/igr-rp28-20.html'); ``` ### Page - Page URL: http://localhost:7770/igr-rp28-20.html - Page ...[truncated]\n  - mcp_playwright-official_browser_evaluate: ### Result { \"title\": \"Quenby Midweight Jersey Tee, Short Sleeve - Rookwood Workwear Supply Co\", \"options\": [ { \"v\": \"\", \"t\": \"Choose an Opt...[truncated]\n  - mcp_playwright-official_browser_navigate: ### Ran Playwright code ```js await page.goto('http://localhost:7770/igr-rp28-03.html'); ``` ### Page - Page URL: http://localhost:7770/igr-rp28-03.html - Page ...[truncated]\n  - mcp_playwright-official_browser_evaluate: ### Result { \"title\": \"Quenby Midweight Jersey Tee, Short Sleeve - Kelsall Clothing Company Ltd\", \"options\": [ { \"v\": \"\", \"t\": \"Choose an Op...[truncated]\n  - mcp_playwright-official_browser_navigate: ### Ran Playwright code ```js await page.goto('http://localhost:7770/igr-rp28-25.html'); ``` ### Page - Page URL: http://localhost:7770/igr-rp28-25.html - Page ...[truncated]\n  - mcp_playwright-official_browser_evaluate: ### Result { \"title\": \"Quenby Midweight Jersey Tee, Short Sleeve - Bexhill Textiles Official Store\", \"options\": [ { \"v\": \"\", \"t\": \"Choose an...[truncated]\n- Partial output excerpt:\nAll 45 listings have now been opened and checked. Compiling the results.\n\n**Summary of checks (45 Quenby tee listings opened \u2014 36 on page 1, 9 on page 2; every search result was a Quenby tee, none other):**\n\nSize M offered (selectable/enabled): 27 listings\nSize M listed but disabled (cannot be chosen): 8 listings (igr-rp28-05 Pembroke, -22 Foxcombe, -41 Holbeck, -24 Yarrow, -34 Oakfield, -14 Thornbury, -10 Redhill, -18 Copperfield)\nSize M absent entirely: 10 listings (igr-rp28-28 Ashgrove, -43 Alderney, -04 Dalston, -31 Bramley, -37 Fordwich, -26 Kettering, -13 Brockwell, -30 Carnforth, -06 Ambleside, -03 Kelsall)\n\nSince 18 of the 45 opened tee listings do not actually offer a purchasable size M (and 10 don't carry M at all), the answer is No.\n\n{\"ok\": true, \"final\": \"No. I opened all 45 Quenby tee listings in the search results (36 on page 1 and 9 on page 2; every result was a Quenby tee). Only 27 of the 45 offer size M as a selectable option; 8 list M but with the option disabled (not purchasable: Pembroke Threads, Foxcombe Apparel, Holbeck Uniform Supply, Yarrow Garment Works, Oakfield Outfitters, Thornbury Textile Company, Redhill Garments, Copperfield Threads), and 10 do not li...[truncated]"
+  },
+  "trace": {
+    "tool_calls_total": 109,
+    "actions": 47,
+    "observations": 61,
+    "unclassified_tools": [
+      "mcp_playwright-official-browser_probe_cards"
+    ],
+    "assistant_turns": 109,
+    "by_tool": {
+      "browser_evaluate": 60,
+      "browser_navigate": 47,
+      "mcp_playwright-official-browser_probe_cards": 1,
+      "browser_snapshot": 1
+    },
+    "selections": [],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Quenby",
+      "http://localhost:7770/catalogsearch/result/index/?p=2&q=Quenby",
+      "http://localhost:7770/igr-rp28-21.html",
+      "http://localhost:7770/igr-rp28-05.html",
+      "http://localhost:7770/igr-rp28-22.html",
+      "http://localhost:7770/igr-rp28-12.html",
+      "http://localhost:7770/igr-rp28-19.html",
+      "http://localhost:7770/igr-rp28-41.html",
+      "http://localhost:7770/igr-rp28-08.html",
+      "http://localhost:7770/igr-rp28-09.html",
+      "http://localhost:7770/igr-rp28-24.html",
+      "http://localhost:7770/igr-rp28-28.html",
+      "http://localhost:7770/igr-rp28-43.html",
+      "http://localhost:7770/igr-rp28-44.html",
+      "http://localhost:7770/igr-rp28-39.html",
+      "http://localhost:7770/igr-rp28-40.html",
+      "http://localhost:7770/igr-rp28-04.html",
+      "http://localhost:7770/igr-rp28-35.html",
+      "http://localhost:7770/igr-rp28-23.html",
+      "http://localhost:7770/igr-rp28-31.html",
+      "http://localhost:7770/igr-rp28-27.html",
+      "http://localhost:7770/igr-rp28-29.html",
+      "http://localhost:7770/igr-rp28-34.html",
+      "http://localhost:7770/igr-rp28-36.html",
+      "http://localhost:7770/igr-rp28-14.html",
+      "http://localhost:7770/igr-rp28-33.html",
+      "http://localhost:7770/igr-rp28-38.html",
+      "http://localhost:7770/igr-rp28-07.html",
+      "http://localhost:7770/igr-rp28-45.html",
+      "http://localhost:7770/igr-rp28-37.html",
+      "http://localhost:7770/igr-rp28-10.html",
+      "http://localhost:7770/igr-rp28-18.html",
+      "http://localhost:7770/igr-rp28-26.html",
+      "http://localhost:7770/igr-rp28-01.html",
+      "http://localhost:7770/igr-rp28-15.html",
+      "http://localhost:7770/igr-rp28-17.html",
+      "http://localhost:7770/igr-rp28-32.html",
+      "http://localhost:7770/igr-rp28-42.html",
+      "http://localhost:7770/igr-rp28-13.html",
+      "http://localhost:7770/igr-rp28-30.html",
+      "http://localhost:7770/igr-rp28-02.html",
+      "http://localhost:7770/igr-rp28-06.html",
+      "http://localhost:7770/igr-rp28-16.html",
+      "http://localhost:7770/igr-rp28-11.html",
+      "http://localhost:7770/igr-rp28-20.html",
+      "http://localhost:7770/igr-rp28-03.html",
+      "http://localhost:7770/igr-rp28-25.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Quenby"
+      },
+      {
+        "tool": "mcp_playwright-official-browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_snapshot",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/index/?p=2&q=Quenby"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-21.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-05.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-22.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-12.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-19.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-41.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-08.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-09.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-24.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-28.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-43.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-44.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-39.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-40.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-04.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-35.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-23.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-31.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-27.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-29.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-34.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-36.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-14.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-33.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-38.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-07.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-45.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-37.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-10.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-18.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-26.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-01.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-15.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-17.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-32.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-42.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-13.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-30.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-02.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-06.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-16.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-11.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-20.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-03.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-25.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "mcp_playwright-official-browser_probe_cards",
+      "browser_snapshot",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate"
+    ],
+    "tokens": {
+      "prompt": 6145738,
+      "completion": 26622,
+      "total": 6172360,
+      "calls": 110
+    },
+    "cost_reported_usd": 0.181907,
+    "providers": {
+      "GMICloud": 110
+    }
+  },
+  "spend_delta_usd": 0.178968,
+  "log": "tee-all-stocked-2.log",
+  "shop": "gated",
+  "probe": "viewport",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "scaffold": "openjiuwen"
+}

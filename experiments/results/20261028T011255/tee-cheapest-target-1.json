@@ -1,0 +1,243 @@
+{
+  "ran_at": "2026-10-28T01:14:46",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "provider_routing": {
+    "order": [
+      "gmicloud",
+      "deepinfra",
+      "streamlake"
+    ],
+    "allow_fallbacks": false,
+    "quantizations": [
+      "fp8"
+    ]
+  },
+  "query": "Go to http://localhost:7770/catalogsearch/result/?q=Quenby . Across the Quenby tee listings, which seller is cheapest for size M, and what is that price? Only count a listing that can actually supply that size.",
+  "elapsed_s": 109.2,
+  "cost_usd": 0.025494,
+  "cost_note": null,
+  "spend_before_usd": 125.340909437,
+  "spend_after_usd": 125.365255842,
+  "error": null,
+  "usage": [],
+  "result": {
+    "ok": true,
+    "session_id": "smoke",
+    "request_id": "eaeafd40c4434843b612c9a4b6f2082b",
+    "final": "Whitlock Outfitters is the cheapest seller that can actually supply a Size M Quenby Midweight Jersey Tee, at $23.59 (in stock). Pembroke Threads ($10.72) and Foxcombe Apparel ($37.82) cannot supply size M (option disabled/out of stock), and Elstead Textile Company sells size M for $42.37.",
+    "page": {
+      "url": "http://localhost:7770/igr-rp28-22.html",
+      "title": "Quenby Midweight Jersey Tee - Foxcombe Apparel"
+    },
+    "screenshot": null,
+    "error": null,
+    "attempt": 1,
+    "progress_state": null,
+    "failure_summary": null
+  },
+  "trace": {
+    "tool_calls_total": 21,
+    "actions": 9,
+    "observations": 11,
+    "unclassified_tools": [
+      "mcp_playwright-official-browser_probe_cards"
+    ],
+    "assistant_turns": 21,
+    "by_tool": {
+      "browser_evaluate": 6,
+      "browser_navigate": 5,
+      "browser_batch_interact": 4,
+      "browser_probe_interactives": 3,
+      "browser_probe_cards": 2,
+      "mcp_playwright-official-browser_probe_cards": 1
+    },
+    "selections": [
+      "M",
+      "M",
+      "M",
+      "M"
+    ],
+    "opened": [
+      "http://localhost:7770/catalogsearch/result/?q=Quenby",
+      "http://localhost:7770/igr-rp28-05.html",
+      "http://localhost:7770/igr-rp28-21.html",
+      "http://localhost:7770/igr-rp28-12.html",
+      "http://localhost:7770/igr-rp28-22.html"
+    ],
+    "steps": [
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/catalogsearch/result/?q=Quenby"
+      },
+      {
+        "tool": "mcp_playwright-official-browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-05.html"
+      },
+      {
+        "tool": "browser_probe_cards",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": "",
+        "batch": [
+          {
+            "op": "select_option",
+            "target": "M"
+          },
+          {
+            "op": "wait_for_selector",
+            "target": "div.price-box.price-final_price .price"
+          },
+          {
+            "op": "extract_text",
+            "target": "div.price-box.price-final_price"
+          },
+          {
+            "op": "extract_text",
+            "target": "div.stock.available, div.stock.unavailable, .availability"
+          }
+        ]
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": "",
+        "batch": [
+          {
+            "op": "select_option",
+            "target": "M"
+          },
+          {
+            "op": "wait_for_stable",
+            "target": ""
+          }
+        ]
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-21.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": "",
+        "batch": [
+          {
+            "op": "select_option",
+            "target": "M"
+          },
+          {
+            "op": "wait_for_stable",
+            "target": ""
+          }
+        ]
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-12.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_probe_interactives",
+        "target": ""
+      },
+      {
+        "tool": "browser_batch_interact",
+        "target": "",
+        "batch": [
+          {
+            "op": "select_option",
+            "target": "M"
+          },
+          {
+            "op": "wait_for_stable",
+            "target": ""
+          }
+        ]
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      },
+      {
+        "tool": "browser_navigate",
+        "target": "http://localhost:7770/igr-rp28-22.html"
+      },
+      {
+        "tool": "browser_evaluate",
+        "target": ""
+      }
+    ],
+    "sequence": [
+      "browser_navigate",
+      "mcp_playwright-official-browser_probe_cards",
+      "browser_probe_cards",
+      "browser_navigate",
+      "browser_probe_cards",
+      "browser_probe_interactives",
+      "browser_batch_interact",
+      "browser_batch_interact",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_probe_interactives",
+      "browser_batch_interact",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate",
+      "browser_probe_interactives",
+      "browser_batch_interact",
+      "browser_evaluate",
+      "browser_navigate",
+      "browser_evaluate"
+    ],
+    "tokens": {
+      "prompt": 810650,
+      "completion": 5621,
+      "total": 816271,
+      "calls": 22
+    },
+    "cost_reported_usd": 0.025494,
+    "providers": {
+      "GMICloud": 22
+    }
+  },
+  "spend_delta_usd": 0.024346,
+  "log": "tee-cheapest-target-1.log",
+  "shop": "gated",
+  "probe": "viewport",
+  "max_steps": 300,
+  "clock_s": 1800,
+  "scaffold": "openjiuwen"
+}
