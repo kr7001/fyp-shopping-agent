@@ -36,6 +36,7 @@ from guarded_browser_use import (FRESH_CONTINUATION_STAGE, FRESH_KEPT_ANSWERED, 
 from guarded_browser_use import (FRESH_ATTEMPT3_STAGE, FRESH_SETTLING_STAGES, START_CUTOFF_REASON,  # noqa: E402
                                  deadline_epoch, validate_fresh_attempt3)
 from guarded_browser_use import FRESH_RERUN_ATTEMPT, FRESH_RERUN_STAGE, validate_fresh_rerun  # noqa: E402
+from guarded_browser_use import FRESH_RERUN_FIT_MARGIN_S, NO_TIME_REASON  # noqa: E402
 
 STUDY_ID = "browser-use-transfer-2026-10-31"
 ARMS = ("baseline", "block")
@@ -183,8 +184,10 @@ def preview(config):
         # Each timed-out slot once, in schedule order, its clock doubled and nothing else changed,
         # carrying the primary record it reruns (amendment 4).
         by_id = {slot["id"]: slot for slot in slots}
-        slots = [{**by_id[row["slot"]], "clock_s": config["rerun_clock_s"], "rerun_of": row}
-                 for row in validate_fresh_rerun(config, expected_slots=slots)]
+        # The worker runs this after the launcher has claimed the stage: that claim is its own.
+        rows = validate_fresh_rerun(config, expected_slots=slots,
+                                    config_sha256=os.environ.get("IGR_BROWSER_USE_CONFIG_SHA256"))
+        slots = [{**by_id[row["slot"]], "clock_s": config["rerun_clock_s"], "rerun_of": row} for row in rows]
         continuation = {"attempt": FRESH_RERUN_ATTEMPT, "rerun_clock_s": config["rerun_clock_s"],
                         "primary_clock_s": config["clock_s"]}
     fresh = config["stage"] in FRESH_STAGES
@@ -329,6 +332,15 @@ async def execute_study(config_path):
                     row.update(status="not_started", reason=START_CUTOFF_REASON)
             atomic_json(output_dir / "slot-status.json", {"slots": statuses})
             raise Stop(START_CUTOFF_REASON)
+        if (config["stage"] == FRESH_RERUN_STAGE and time.time() + slot["clock_s"] + FRESH_RERUN_FIT_MARGIN_S
+                > deadline_epoch(config["deadline"]) - 15):
+            # A rerun starts only if its doubled clock fits before the deadline's stop (amendment 4
+            # point 6); one cut by the deadline would be neither a rerun nor a timeout.
+            for row in statuses.values():
+                if row["status"] == "scheduled":
+                    row.update(status="not_started", reason=NO_TIME_REASON)
+            atomic_json(output_dir / "slot-status.json", {"slots": statuses})
+            raise Stop(NO_TIME_REASON)
         verify_browser_version(config)  # Before the parser or executor can make a paid call.
         if slot.get("phase") == "transfer" and not pilot_passed:
             gate = technical_gate(pilot_records, budget.state, expected=2 if config["stage"] == "monitored-transfer" else 4,

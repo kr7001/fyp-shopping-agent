@@ -1,7 +1,9 @@
 """Study B's later stages under amendment 4, 2 November 2026: a synthetic primary run in a
 temporary folder, a fake account, no network, no model and no credential. The continuation runs
-the primary run's uncompleted step (slot 16) unchanged under a shared USD 2.75 cap that carries
-the primary run's spend. Each check is shown quiet on a good case and firing on a planted fault."""
+the primary run's uncompleted step (slot 16) unchanged under a shared USD 4 cap that carries
+the primary run's spend, and the reruns run their primary steps through a reviewed wrapper that
+doubles the clock and changes nothing else. Each check is shown quiet on a good case and firing on a planted fault."""
+import contextlib
 from contextlib import redirect_stdout
 import copy
 import io
@@ -27,15 +29,20 @@ PROTOCOL = "experiments/tasks/matched_briefing_2_nov.json"
 NOTES = "notes/fresh-market-2-nov"
 FROZEN = ["experiments/runners/matched_briefing_study.py", "experiments/analysis/voids.py", ".env",
           "tools/guarded_matched_briefing.py", "tools/guarded_replication.py"]
+# The primary run's recorded charges and account spend, as its status holds them on 2 November, and
+# the charges of the two completions the synthetic partial run's log shows.
+RECORDED, ACCOUNT, PARTIAL = 1.3311680000000004, 1.5038982959999885, 0.2
+CARRY = RECORDED + PARTIAL  # the larger: recorded plus the partial run's charges
+COMPLETION = "usage=CompletionUsage(completion_tokens=5, prompt_tokens=10, total_tokens=15), cost=0.1, is_byok=False\n"
 
 
-def paid_step(slot, argv=None):
+def paid_step(slot, argv=None, python="python3.11"):
     args = ["--condition", slot["arm"], "--protocol", PROTOCOL, "--slot-id", str(slot["slot"]), "--tasks",
             "experiments/tasks/tasks_tee_fresh_2_nov.json", "--only", slot["task"], "--repeats", "1",
             "--repeat-start", str(slot["repeat"]), "--page-reader", "rendered", "--max-steps", "300",
             "--clock", "1800"]
     return {"id": f"slot-{slot['slot']:02d}-{slot['arm']}-{slot['task']}-r{slot['repeat']}", "kind": "paid",
-            "study_slot": slot, "argv": argv or ["python3.11", "experiments/runners/matched_briefing_study.py", *args],
+            "study_slot": slot, "argv": argv or [python, "experiments/runners/matched_briefing_study.py", *args],
             "env": {"MODEL_NAME": "deepseek/deepseek-v4-flash"}, "max_seconds": 1920, "estimate_usd": 0.075,
             "output_kind": "suite", "expected_tasks": [slot["task"]], "repeat": slot["repeat"],
             "manifest_line_template": "batch|{batch}|" + " ".join(args)}
@@ -47,6 +54,7 @@ class Primary(unittest.TestCase):
     git_checks = [{"cwd": "agent/agent-core", "head": "a" * 40, "diff_sha256": "b" * 64}]
     live_argv = ["python", "env/check_aplus_market.py", "--fixture", "tee_fresh_2_nov.json", "--no-browser"]
     argv_for = {}  # a slot's own argv, where a test runs it
+    python = "python3.11"
     # The primary records: slots 7 and 14 reached their 1800 s clock, as on 2 November; slot 3 is
     # a clock stop the void rules void, its log silent for longer than they allow.
     timeouts = {7: 1801.1, 14: 1800.7}
@@ -61,9 +69,10 @@ class Primary(unittest.TestCase):
         for name in FROZEN:
             self.write_text(name, f"synthetic {name}\n")
         self.write_text(f"{NOTES}/amendment-4-2-nov.md", "synthetic amendment 4\n")
+        self.write_text(guarded.RERUN_RUNNER, (ROOT / guarded.RERUN_RUNNER).read_text())  # the reviewed wrapper
         steps = [{"id": "live-market-check", "kind": "preflight", "argv": self.live_argv, "max_seconds": 180,
                   "env": {}}]
-        steps += [paid_step(slot, self.argv_for.get(slot["slot"])) for slot in self.schedule]
+        steps += [paid_step(slot, self.argv_for.get(slot["slot"]), self.python) for slot in self.schedule]
         self.primary = {"repo": str(self.root), "expected_head": "b1c67c8", "study_id": FRESH, "protocol": PROTOCOL,
                         "round": 1, "deadline": "2026-11-02T23:59:00+08:00", "cap_usd": 2.0, "reserve_usd": 0.5,
                         "manifest": f"{STEM}.manifest", "status": f"{STEM}.status.json", "log_dir": f"{STEM}.logs",
@@ -99,7 +108,7 @@ class Primary(unittest.TestCase):
     def write(self, relative, data):
         return self.write_text(relative, json.dumps(data))
 
-    def stop_primary(self, completed=15, partial=True, status="stopped"):
+    def stop_primary(self, completed=15, partial=True, status="stopped", spent=ACCOUNT):
         """The primary run's manifest, status and launcher logs after `completed` slots."""
         lines = ["start 2026-11-02T03:16:06 usage 136.2722801760 cap 2.00", "study " + FRESH + " synthetic"]
         for slot in self.schedule[:completed]:
@@ -115,12 +124,12 @@ class Primary(unittest.TestCase):
         stray.unlink(missing_ok=True)
         if partial:
             folder = self.root / "experiments/results/20261102T062351"
-            self.write_text(f"experiments/results/{folder.name}/tee-count-buyable-2.log", "a run log\n")
+            self.write_text(f"experiments/results/{folder.name}/tee-count-buyable-2.log", "a run log\n" + 2 * COMPLETION)
             self.write_text(str(stray.relative_to(self.root)), "study: {}\n1 tasks x 1 repeats = 1 runs, repeats 2 to 2 "
                                                                f"-> {folder}\nlimits: max steps 300, clock 1800 s\n")
         self.write(self.primary["status"], {"status": status, "reason": "budget stop or insufficient budget for next step",
                                             "config_sha256": guarded.FRESH_PRIMARY_SHA256,
-                                            "recorded_usd": 1.3311680000000004, "spent_usd": 1.5038982959999885,
+                                            "recorded_usd": RECORDED, "spent_usd": spent,
                                             "current_step": ids[completed + 1] if partial else None,
                                             "completed_steps": ids[:completed + 1]})
 
@@ -155,8 +164,12 @@ class Continuation(Primary):
         self.assertEqual(validated["steps"], [self.primary["steps"][0], self.primary["steps"][16]])
         self.assertEqual(validated["steps"][1]["argv"][-2:], ["--clock", "1800"])
         self.assertEqual((config["stage"], config["cap_usd"], config["reserve_usd"], config["shared_cap_usd"]),
-                         ("continuation", 2.75, 0.25, 2.75))
-        self.assertEqual(config["carryover_usd"], 1.5038982959999885)  # the larger of recorded and account spend
+                         ("continuation", 4.0, 0.35, 4.0))
+        # The recorded charges plus the partial run's, larger here than the account's spend.
+        self.assertEqual(config["carryover_usd"], CARRY)
+        self.assertEqual((config["partial_run"]["charges_usd"], config["partial_run"]["charged_calls"]), (PARTIAL, 2))
+        self.assertIn("experiments/results/20261102T062351/tee-count-buyable-2.log", config["hashes"])
+        self.assertEqual(config["declared_estimate_usd"], 0.45)
         self.assertEqual((config["deadline"], config["start_cutoff"]),
                          ("2026-11-03T12:00:00+08:00", "2026-11-03T12:00:00+08:00"))
         self.assertEqual((config["manifest"], config["status"], config["log_dir"]),
@@ -188,6 +201,23 @@ class Continuation(Primary):
         with self.assertRaisesRegex(guarded.original.Stop, "names a partial run"):
             guarded.validate_config(path)
 
+    def test_the_account_counts_when_it_shows_more(self):
+        self.stop_primary(spent=1.6)  # more than the recorded charges plus the partial run's
+        self.assertEqual(self.build()[1]["carryover_usd"], 1.6)
+
+    def test_the_partial_runs_logs_must_be_bound(self):
+        path, config = self.build()
+        for name in ("experiments/results/20261102T062351/tee-count-buyable-2.log", f"{STEM}.logs/016.log"):
+            with self.subTest(unbound=name), self.assertRaisesRegex(guarded.original.Stop, "hash-bound"):
+                path.write_text(json.dumps({**config, "hashes": {k: v for k, v in config["hashes"].items() if k != name}}))
+                guarded.validate_config(path)
+
+    def test_a_partial_run_with_a_completion_without_its_charge_is_refused(self):
+        log = self.root / "experiments/results/20261102T062351/tee-count-buyable-2.log"
+        log.write_text(log.read_text() + "usage=CompletionUsage(completion_tokens=5, prompt_tokens=10, total_tokens=15)\n")
+        with self.assertRaisesRegex(SystemExit, "without its charge"):
+            self.build()
+
     def test_other_steps_changed_steps_or_a_slot_with_a_result_are_refused(self):
         path, config = self.build()
         clocked = copy.deepcopy(config["steps"])
@@ -211,7 +241,9 @@ class Continuation(Primary):
         path, config = self.build()
         for change, message in (({"cap_usd": 2.0}, "cap differs"), ({"cap_usd": 3.0}, "cap differs"),
                                 ({"reserve_usd": 0.5}, "reserve"), ({"shared_cap_usd": 3.0}, "reserve"),
-                                ({"carryover_usd": 1.3311680000000004}, "counted spend"),
+                                ({"carryover_usd": RECORDED}, "counted spend"),
+                                ({"carryover_usd": ACCOUNT}, "counted spend"),
+                                ({"declared_estimate_usd": 0.1}, "estimate"),
                                 ({"manifest": self.primary["manifest"]}, "own manifest"),
                                 ({"status": self.primary["status"]}, "own manifest"),
                                 ({"start_cutoff": "2026-11-03T12:00:01+08:00"}, "start cutoff"),
@@ -260,12 +292,12 @@ class Guard(Primary):
         path, config = self.build()
         guard = guarded.MatchedGuard(path, account_command=["unused-synthetic"])
         self.assertEqual((guard.stage, guard.cap, guard.reserve, guard.carryover, guard.MIN_RESERVE_USD),
-                         ("continuation", 2.75, 0.25, 1.5038982959999885, 0.25))
+                         ("continuation", 4.0, 0.35, CARRY, 0.35))
         guard.start_usage, guard.usage, guard.recorded = 100.0, 100.4, 0.1
-        self.assertAlmostEqual(guard.spent(), 1.5038982959999885 + 0.4, places=12)
+        self.assertAlmostEqual(guard.spent(), CARRY + 0.4, places=12)
         fields = guard.status_fields()
         self.assertEqual((fields["stage"], fields["running_trial_stop_usd"], fields["shared_cap_usd"]),
-                         ("continuation", 2.5, 2.75))
+                         ("continuation", 3.65, 4.0))
         self.assertAlmostEqual(fields["stage_spent_usd"], 0.4, places=12)
         with mock.patch.object(guarded.time, "time", return_value=guard.start_cutoff), \
                 mock.patch.object(guarded.original.Guard, "execute_step") as parent:
@@ -347,19 +379,19 @@ class Thresholds(ThresholdRun):
     """The shared cap's two stops for the continuation: slot 16 only leaves a mark that it started."""
     argv_for = {16: [sys.executable, "-c", "open('slot16-started', 'w').write('x'); raise SystemExit(1)"]}
 
-    def test_a_running_trial_stops_at_two_fifty_counted(self):
-        code, status, started = self.run_with(1.0)  # 1.5039 carried + 1.0 seen
+    def test_a_running_trial_stops_at_three_sixty_five_counted(self):
+        code, status, started = self.run_with(2.12)  # 1.5312 carried + 2.12 seen = 3.6512
         self.assertEqual(code, 2)
         self.assertIn("budget", status["reason"])
         self.assertEqual((status["current_step"], status["completed_steps"], started), ("live-market-check", [], False))
-        self.assertAlmostEqual(status["spent_usd"], 2.5038982959999885, places=9)
-        self.assertEqual((status["stage"], status["running_trial_stop_usd"]), ("continuation", 2.5))
+        self.assertAlmostEqual(status["spent_usd"], CARRY + 2.12, places=9)
+        self.assertEqual((status["stage"], status["running_trial_stop_usd"]), ("continuation", 3.65))
 
-    def test_no_trial_starts_once_spend_plus_twice_its_estimate_reaches_two_fifty(self):
-        code, status, started = self.run_with(0.85)  # 2.3539 + 2 x 0.075 = 2.5039
+    def test_slot_16_starts_only_below_three_fifty(self):
+        code, status, started = self.run_with(1.97)  # 3.5012 + 2 x 0.075 = 3.6512
         self.assertEqual((code, status["completed_steps"], started), (2, ["live-market-check"], False))
         self.assertIn("insufficient budget for next step", status["reason"])
-        code, status, started = self.run_with(0.84)  # 2.3439 + 0.15 = 2.4939: slot 16 starts
+        code, status, started = self.run_with(1.96)  # 3.4912 + 0.15 = 3.6412: slot 16 starts
         self.assertEqual((code, status["completed_steps"], started), (2, ["live-market-check"], True))
         self.assertIn("step exited unsuccessfully", status["reason"])
 
@@ -381,8 +413,8 @@ class Reruns(Primary):
         later = guarded.LATER[guarded.CONTINUATION]
         self.write_text(later["manifest"], "start x\n" + paid_step(slot)["manifest_line_template"].format(batch=folder) + "\n")
         self.write_text(later["log_dir"] + "/000.log", "live check\n")
-        self.write(later["status"], {"status": status, "stage": "continuation", "carryover_usd": 1.5038982959999885,
-                                     "spent_usd": spent, "stage_spent_usd": spent - 1.5038982959999885})
+        self.write(later["status"], {"status": status, "stage": "continuation", "carryover_usd": CARRY,
+                                     "spent_usd": spent, "stage_spent_usd": spent - CARRY})
 
     def test_every_clock_timeout_once_in_slot_order_with_only_the_clock_doubled(self):
         path, config = self.build_rerun()
@@ -392,10 +424,11 @@ class Reruns(Primary):
         self.assertEqual(config["steps"][0], self.primary["steps"][0])
         for step, slot in zip(paid, (7, 14)):
             primary = self.primary["steps"][slot]
-            self.assertEqual(step["argv"][:-1], primary["argv"][:-1])
+            self.assertEqual((step["argv"][0], step["argv"][2:-1]), (primary["argv"][0], primary["argv"][2:-1]))
+            self.assertEqual((primary["argv"][1], step["argv"][1]), (guarded.FROZEN_RUNNER, guarded.RERUN_RUNNER))
             self.assertEqual((primary["argv"][-1], step["argv"][-1]), ("1800", "3600"))
             self.assertEqual((step["max_seconds"], step["estimate_usd"], step["id"]),
-                             (3720, 0.15, "rerun-" + primary["id"]))
+                             (3720, 0.30, "rerun-" + primary["id"]))
             same = ("kind", "study_slot", "env", "output_kind", "expected_tasks", "repeat")
             self.assertEqual({k: step[k] for k in same}, {k: primary[k] for k in same})
             folder = self.root / f"experiments/results/2026110200{slot:02d}"
@@ -404,7 +437,8 @@ class Reruns(Primary):
                 f"rerun|{{batch}}|stage timeout-rerun|primary {folder}|"))
             self.assertTrue(step["manifest_line_template"].endswith("--clock 3600"))
         self.assertEqual((config["stage"], config["carryover_usd"], config["declared_estimate_usd"]),
-                         ("timeout-rerun", 1.5038982959999885, 1.0))  # 2 x (0.25 + 0.25)
+                         ("timeout-rerun", CARRY, 1.0))  # 2 x (0.25 + 0.25)
+        self.assertIn(guarded.RERUN_RUNNER, config["hashes"])
         self.assertEqual((config["manifest"], config["status"]),
                          (f"{STEM}.rerun.manifest", f"{STEM}.rerun.status.json"))
 
@@ -441,7 +475,7 @@ class Reruns(Primary):
         self.assertEqual(config["carryover_usd"], 1.7)
         for name in (guarded.LATER[guarded.CONTINUATION]["status"], guarded.LATER[guarded.CONTINUATION]["manifest"]):
             self.assertIn(name, config["hashes"])
-        path.write_text(json.dumps({**config, "carryover_usd": 1.5038982959999885}))
+        path.write_text(json.dumps({**config, "carryover_usd": CARRY}))
         with self.assertRaisesRegex(guarded.original.Stop, "counted spend"):
             guarded.validate_config(path)
         self.end_continuation(timed_out=False)
@@ -449,6 +483,24 @@ class Reruns(Primary):
         self.end_continuation(status="running")
         with self.assertRaisesRegex(SystemExit, "terminal status"):
             self.build_rerun()
+
+    def test_only_the_reviewed_wrapper_runs_a_rerun(self):
+        path, config = self.build_rerun()
+        self.write_text(guarded.RERUN_RUNNER, (ROOT / guarded.RERUN_RUNNER).read_text() + "# changed\n")
+        with self.assertRaisesRegex(guarded.original.Stop, "not the reviewed one"):
+            guarded.validate_config(path)
+        self.write_text(guarded.RERUN_RUNNER, (ROOT / guarded.RERUN_RUNNER).read_text())
+        guarded.validate_config(path)
+        path.write_text(json.dumps({**config, "hashes": {k: v for k, v in config["hashes"].items()
+                                                         if k != guarded.RERUN_RUNNER}}))
+        with self.assertRaisesRegex(guarded.original.Stop, "hash-bound"):
+            guarded.validate_config(path)
+        frozen = copy.deepcopy(config["steps"])
+        frozen[1]["argv"][1] = guarded.FROZEN_RUNNER  # the frozen runner would refuse its 3600 s
+        path.write_text(json.dumps({**config, "steps": frozen}))
+        with self.assertRaisesRegex(guarded.original.Stop, "every timed-out slot"):
+            guarded.validate_config(path)
+        self.assertEqual(guarded.original.sha(ROOT / guarded.RERUN_RUNNER), guarded.RERUN_RUNNER_SHA256)
 
     def test_a_primary_record_changed_after_binding_is_refused(self):
         path, config = self.build_rerun()
@@ -473,21 +525,114 @@ class Reruns(Primary):
 
 
 class RerunThresholds(ThresholdRun):
-    """A rerun declares twice the estimate, so it starts only below USD 2.20 counted."""
-    argv_for = {7: [sys.executable, "-c", "open('slot7-started', 'w').write('x'); raise SystemExit(1)", "--clock", "1800"],
-                14: [sys.executable, "-c", "raise SystemExit(1)", "--clock", "1800"]}
+    """A rerun's estimate is USD 0.30, so it starts only below USD 3.05 counted. The wrapper is
+    stood in for by one that leaves a mark with the arguments it was given, pinned in its place."""
+    python = sys.executable
+
+    def setUp(self):
+        super().setUp()
+        stub = self.write_text(guarded.RERUN_RUNNER, "import sys\nopen('slot7-started', 'w').write(' '.join(sys.argv[1:]))\n"
+                                                     "raise SystemExit(1)\n")
+        self.patch(guarded, "RERUN_RUNNER_SHA256", guarded.original.sha(stub))
 
     def build_rerun(self):
         return Reruns.build_rerun(self)
 
-    def test_a_rerun_starts_below_two_twenty_and_runs_with_its_longer_wall_budget(self):
-        code, status, started = self.run_with(0.70, build=self.build_rerun, mark="slot7-started")  # 2.2039 + 0.30
+    def test_a_rerun_starts_below_three_oh_five_and_runs_with_its_longer_wall_budget(self):
+        code, status, started = self.run_with(1.52, build=self.build_rerun, mark="slot7-started")  # 3.0512 + 0.60
         self.assertEqual((code, status["completed_steps"], started), (2, ["live-market-check"], False))
         self.assertIn("insufficient budget for next step", status["reason"])
-        code, status, started = self.run_with(0.69, build=self.build_rerun, mark="slot7-started")  # 2.1939 + 0.30
+        code, status, started = self.run_with(1.51, build=self.build_rerun, mark="slot7-started")  # 3.0412 + 0.60
         self.assertEqual((code, started), (2, True))
         self.assertIn("step exited unsuccessfully", status["reason"])  # not refused for its 3720 s budget
         self.assertEqual(status["stage"], "timeout-rerun")
+        self.assertTrue((self.root / "slot7-started").read_text().endswith("--slot-id 7 --tasks "
+                        "experiments/tasks/tasks_tee_fresh_2_nov.json --only tee-count-buyable --repeats 1 "
+                        "--repeat-start 1 --page-reader rendered --max-steps 300 --clock 3600"))
+
+
+def form(quantifier, k=None):
+    """A model parser's reply in the form the recorded replies hold: no market in it."""
+    return json.dumps({"quantifier": quantifier, "objective": "price", "population": "results", "k": k,
+                       "filters": [{"attribute": "size", "op": "=", "value": "M"},
+                                   {"attribute": "availability", "op": "=", "value": "buyable"}],
+                       "negated": False, "reading": None, "unknowns": [], "ambiguities": [], "evidence": {}})
+
+
+class WrapperDryRun(unittest.TestCase):
+    """Every rerun's exact argv, free: through the wrapper with --dry-run (and parser replies for
+    the full block), the page read and every model call stood in for, nothing written. From the
+    committed protocol's slots 7 and 14 as the primary configuration's builder writes them, and,
+    in a checkout that holds them, from the real primary configuration and manifest."""
+
+    def dry_run(self, step, replies):
+        import matched_briefing as matched
+        import matched_briefing_rerun as wrapper
+        import page
+        import suite
+        owner = tempfile.TemporaryDirectory()
+        self.addCleanup(owner.cleanup)
+        argv = step["argv"][2:] + ["--dry-run"]
+        if step["study_slot"]["arm"] == "full-block":
+            argv += ["--parser-replies", str(replies)]
+        url = "http://localhost:7770/catalogsearch/result/?q=Rookmere"
+        observed = page.Page(url, [page.Listing(name, f"Rookmere Tee - {name}", f"http://localhost:7770/r-{i}.html", price)
+                                   for i, (name, price) in enumerate((("Ash", 12), ("Elm", 15), ("Oak", 9)), 1)],
+                             3, False, (url,), "rendered")
+        with contextlib.chdir(ROOT), \
+                mock.patch.object(matched, "STUDY_ID", matched.STUDY_ID), \
+                mock.patch.object(suite, "RESULTS", Path(owner.name)), \
+                mock.patch.object(suite, "run_once", side_effect=AssertionError("no executor in a dry run")), \
+                mock.patch.object(suite, "agent_model", return_value="deepseek/deepseek-v4-flash"), \
+                mock.patch.object(suite, "agent_code_identity", return_value={"agent_core_commit": "b" * 40,
+                                                                              "agent_core_patch": "c" * 40}), \
+                mock.patch.object(page, "read", return_value=observed), \
+                mock.patch.object(suite.plan_probe, "load_key", return_value="synthetic-key"), \
+                mock.patch.object(suite.parse_probe, "call_model", side_effect=AssertionError("no parser call")), \
+                redirect_stdout(io.StringIO()) as said, contextlib.redirect_stderr(io.StringIO()) as errors:
+            try:
+                code = wrapper.main(argv)
+            except SystemExit as stop:
+                code = stop.code
+        text = said.getvalue() + errors.getvalue()
+        self.assertEqual(code, 0, text[-600:])
+        self.assertIn("clock 3600 s", text)
+        self.assertEqual(list(Path(owner.name).iterdir()), [])  # nothing written
+
+    def test_the_committed_schedules_timed_out_slots(self):
+        protocol = json.loads((ROOT / PROTOCOL).read_text())
+        replies = Path(tempfile.mkdtemp()) / "replies.json"
+        self.addCleanup(lambda: replies.unlink(missing_ok=True))
+        replies.write_text(json.dumps({"replies": {"tee-top-3": form("topk", 3), "tee-count-buyable": form("count")}}))
+        for number in (7, 14):
+            slot = next(slot for slot in protocol["schedule"] if slot["slot"] == number)
+            step = guarded.rerun_step(paid_step(slot), {"slot": number, "batch": "primary-folder"})
+            with self.subTest(slot=number):
+                self.assertEqual(step["argv"][1:2] + step["argv"][-2:], [guarded.RERUN_RUNNER, "--clock", "3600"])
+                self.dry_run(step, replies)
+
+    def test_the_frozen_runner_alone_refuses_the_doubled_clock_and_the_wrapper_any_other(self):
+        import matched_briefing_rerun as wrapper
+        protocol = json.loads((ROOT / PROTOCOL).read_text())
+        slot = next(slot for slot in protocol["schedule"] if slot["slot"] == 7)
+        argv = guarded.rerun_step(paid_step(slot), {"slot": 7, "batch": "x"})["argv"][2:]
+        self.assertEqual(wrapper.frozen_argv(argv)[-2:], ["--clock", "1800"])
+        for bad in (argv[:-1] + ["5400"], argv[:-2], argv + ["--clock", "3600"], argv[:-2] + ["--clock=3600"]):
+            with self.subTest(bad=bad[-2:]), self.assertRaisesRegex(SystemExit, "exactly once"):
+                wrapper.frozen_argv(bad)
+
+    @unittest.skipUnless((ROOT / guarded.FRESH_PRIMARY_CONFIG).exists()
+                         and (ROOT / "experiments/results/matched-briefing-fresh-2-nov.manifest").exists(),
+                         "the primary run's configuration and manifest are local to the laptop that ran it")
+    def test_the_real_rerun_argv_from_the_real_manifest(self):
+        primary = json.loads((ROOT / guarded.FRESH_PRIMARY_CONFIG).read_text())
+        by_slot = {step["study_slot"]["slot"]: step for step in primary["steps"][1:]}
+        replies = ROOT / "notes/fresh-market-2-nov/study-b-parser-replies.json"
+        timeouts = guarded.primary_timeouts(ROOT, [primary["manifest"]])
+        self.assertTrue(timeouts)
+        for row in timeouts:
+            with self.subTest(slot=row["slot"]):
+                self.dry_run(guarded.rerun_step(by_slot[row["slot"]], row), replies)
 
 
 if __name__ == "__main__":

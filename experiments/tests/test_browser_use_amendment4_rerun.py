@@ -186,8 +186,12 @@ class Carryover(Ended):
         names = [L1, L2, L3]
         expected = guard.carried_spend([self.repo / name for name in names], names)[0]
         self.assertEqual(config["carryover_usd"], expected)
-        self.assertAlmostEqual(config["cap_usd"], 10.0 - expected, places=12)
+        self.assertAlmostEqual(config["cap_usd"], 15.0 - expected, places=12)  # amendment 4 point 6
+        self.assertEqual(config["shared_cap_usd"], 15.0)
         guard.validate_fresh_budget(config)
+        for shared in (10.0, 7.0):  # attempt 3's cap, or the earlier figure, is not the reruns'
+            with self.subTest(shared=shared), self.assertRaises(guard.Stop):
+                guard.validate_fresh_budget({**config, "shared_cap_usd": shared, "cap_usd": shared - expected})
         for chain in ([L1, L2], [L1, L3, L2]):
             with self.subTest(chain=chain), self.assertRaises(guard.Stop):
                 guard.validate_fresh_rerun({**config, "prior_ledger_files": chain})
@@ -196,17 +200,30 @@ class Carryover(Ended):
         for carry in (expected + 0.01, expected - BOUND):
             with self.subTest(carry=carry):
                 path.write_text(json.dumps({**json.loads(path.read_text()), "carryover_usd": carry}))
-                changed = {**config, "carryover_usd": carry, "cap_usd": 10.0 - carry}
+                changed = {**config, "carryover_usd": carry, "cap_usd": 15.0 - carry}
                 self.rebind(changed)
                 with self.assertRaises(guard.Stop):
                     guard.validate_fresh_rerun(changed)
 
-    def test_without_attempt3_only_attempts_1_and_2_are_carried(self):
+    def remove_attempt3(self):
         for path in list((self.notes / "study-a-attempt3.results").iterdir()):
             path.unlink()
         (self.notes / "study-a-attempt3.results").rmdir()
         for name in ("status.json", "launch.json", "ledger.json"):
             (self.notes / f"study-a-attempt3.{name}").unlink()
+
+    def test_the_reruns_wait_for_attempt3_when_attempt2_left_slots(self):
+        config = self.build_rerun()
+        self.remove_attempt3()  # attempt 2 left 23 slots never started, and attempt 3 has not run
+        with self.assertRaisesRegex(SystemExit, "start only after attempt 3 has ended"):
+            self.build_rerun()
+        with self.assertRaisesRegex(guard.Stop, "start only after attempt 3 has ended"):
+            guard.validate_fresh_rerun(config)
+
+    def test_with_nothing_left_for_attempt3_only_attempts_1_and_2_are_carried(self):
+        self.remove_attempt3()
+        self.end_attempt2(ran=("answered", "timeout") + ("answered",) * 25, stopped=None, status="complete")
+        self.end_attempt2_with_its_timeout()
         config = self.build_rerun()
         self.assertEqual(config["prior_ledger_files"], [L1, L2])
         self.assertEqual([row["slot"] for row in config["rerun_slots"]], [self.given[1]["id"]])
@@ -218,6 +235,89 @@ class Carryover(Ended):
         (self.notes / "study-a-attempt3.status.json").unlink()
         with self.assertRaisesRegex(SystemExit, "has not ended"):
             self.build_rerun()
+
+
+class OwnClaim(Ended):
+    """The worker checks the configuration again after the launcher has claimed the stage and
+    written its running status, as execute() does: that claim is its own (the verifier's repro,
+    verify_rerun_selfblock.py, 2 November 2026)."""
+
+    def setUp(self):
+        super().setUp()
+        self.end_attempt2_with_its_timeout()
+
+    def test_the_workers_checks_pass_after_its_own_claim(self):
+        config = self.build_rerun()
+        path = self.notes / "study-a-rerun-command.json"
+        digest = guard.sha(path)
+        guard.claim_repeat_launch(config, path)
+        guard.atomic_json(config["status_path"], {"status": "running", "config_sha256": digest, "started_at": 0})
+        self.assertEqual(guard.validate_fresh_rerun(config, config_sha256=digest), config["rerun_slots"])
+        with mock.patch.dict(study.os.environ, {"IGR_BROWSER_USE_CONFIG_SHA256": digest}):
+            self.assertEqual([slot["id"] for slot in study.preview(config)["slots"]],
+                             [row["slot"] for row in config["rerun_slots"]])
+        # Any other configuration, or none, still sees the stage as launched.
+        for other in (None, "0" * 64):
+            with self.subTest(other=other), self.assertRaisesRegex(guard.Stop, "already been launched"):
+                guard.validate_fresh_rerun(config, config_sha256=other)
+        with mock.patch.dict(study.os.environ, {"IGR_BROWSER_USE_CONFIG_SHA256": "0" * 64}), \
+                self.assertRaisesRegex(guard.Stop, "already been launched"):
+            study.preview(config)
+        # And the launcher refuses a second launch of the same configuration.
+        with self.assertRaisesRegex(guard.Stop, "already claimed"):
+            guard.claim_repeat_launch(config, path)
+
+
+class DeadlineFit(Ended, unittest.IsolatedAsyncioTestCase):
+    async def test_a_rerun_starts_only_if_its_doubled_clock_fits_before_the_deadline(self):
+        self.end_attempt2_with_its_timeout()
+        deadline = "2026-11-03T12:00:00+08:00"
+        config = {**self.build_rerun(), "deadline": deadline, "start_cutoff": deadline}
+        stop = guard.deadline_epoch(deadline) - 15
+        now = [stop - 5400 - guard.FRESH_RERUN_FIT_MARGIN_S]  # the first fits exactly, an hour later the second does not
+        run = await run_attempt3(self, config, now=now)
+        self.assertEqual(run.error, guard.NO_TIME_REASON)
+        self.assertEqual(run.trials, [config["rerun_slots"][0]["slot"]])
+        self.assertEqual(run.statuses[config["rerun_slots"][1]["slot"]],
+                         {"phase": "transfer", "status": "not_started", "reason": guard.NO_TIME_REASON})
+        # A second short of the clock and its margin: no rerun starts at all.
+        (self.notes / "study-a-rerun.results").rename(self.notes / "study-a-rerun.results.first")
+        run = await run_attempt3(self, config, now=[stop - 5400 - guard.FRESH_RERUN_FIT_MARGIN_S + 1])
+        self.assertEqual((run.error, run.trials), (guard.NO_TIME_REASON, []))
+
+    def test_the_whole_check_refuses_a_deadline_with_no_room_for_one_rerun(self):
+        self.end_attempt2_with_its_timeout()
+        config = self.build_rerun()
+        path = self.notes / "study-a-rerun-command.json"
+        deadline = guard.deadline_epoch(config["deadline"])
+        common = (mock.patch.object(guard, "ROOT", self.repo), mock.patch.object(guard, "recovery_limits"),
+                  mock.patch.object(guard, "validate_fresh_budget"), mock.patch.object(guard, "verify_identity"),
+                  mock.patch.object(guard, "validate_fresh_identity"), mock.patch.object(guard, "request_bound"),
+                  mock.patch.object(guard, "validate_fresh_rerun"))
+        full = {**config, "version": 1, "max_input_bytes": 1, "max_output_tokens": 1, "allowed_served_providers": ["x"],
+                "minimum_balance_usd": 20.3, "protocol_file": "p", "dependencies_lock": "l", "runtime_input_files": [],
+                "reference_config_file": "r", "analysis_plan_file": "a", "preflight_receipt": "f", "tasks_file": "t",
+                "market_files": [], "questions_file": str(self.repo / "q.json"), "model": "m", "provider": {}}
+        full["hashes"] = {name: "x" for name in (
+            "tools/guarded_browser_use.py", "experiments/runners/browser_use_transfer.py",
+            "experiments/runners/browser_use_runner.py", "p", "l", "r", "a", "f", "t", "q.json", "experiments/paths.py",
+            "experiments/runners/browser_use_fetches.py", *config["prior_ledger_files"], config["reconciliation_file"])}
+        path.write_text(json.dumps(full))
+        for patch in common:
+            patch.start()
+        try:
+            for seconds_left, refused in ((5400 + guard.FRESH_RERUN_FIT_MARGIN_S + 16, False),
+                                          (5400 + guard.FRESH_RERUN_FIT_MARGIN_S + 14, True)):
+                with self.subTest(seconds_left=seconds_left), \
+                        mock.patch.object(guard.time, "time", return_value=deadline - seconds_left):
+                    if refused:
+                        with self.assertRaisesRegex(guard.Stop, "no time for a full rerun trial"):
+                            guard.validate_config(path)
+                    else:
+                        guard.validate_config(path)
+        finally:
+            for patch in reversed(common):
+                patch.stop()
 
 
 class NothingToRerun(Ended):
