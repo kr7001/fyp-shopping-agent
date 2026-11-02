@@ -303,7 +303,7 @@ def load_study(study, continuation=None, rerun=None):
                 inputs[str((run["folder"] / name).resolve())] = blind.digest(run["folder"] / name)
     return {"protocol": protocol, "protocol_path": protocol_path, "primary": primary, "statuses": statuses,
             "later": later, "runs": runs, "left": left, "reruns": reruns, "reruns_not_run": reruns_left,
-            "partial_run": partial, "ruling": ruling, "inputs": inputs,
+            "partial_run": partial, "partial_slot": started, "ruling": ruling, "inputs": inputs,
             "spec": json.loads(frozen.task_path(protocol).read_text()),
             "stage_args": {PRIMARY: [str(primary_path.resolve()), study.primary_sha256],
                            **{name: [stage["path"], stage["sha256"]] for name, stage in later.items() if stage}}}
@@ -550,6 +550,9 @@ def analyse(study, bundle):
     def without_timeouts(s):
         return None if primary(s) is None or s["timeout"] else s
 
+    def without_slot_16(s):
+        return None if s["slot"] == 16 else primary(s)
+
     def with_rerun(s):
         if primary(s) is None:
             return None
@@ -586,18 +589,24 @@ def analyse(study, bundle):
         "study_id": study.study_id, "scope": frozen.STUDIES[study.study_id], "scorer_version": score.VERSION,
         "stages": {name: {"configuration": path, "sha256": sha} for name, (path, sha) in stages.items()},
         "integrity": preamble_check(loaded),
-        "slot_16": {"state": ("run again on the student's ruling, labelled" if loaded["ruling"] else
-                              slot16["outcome"]),
+        "slot_16": {"state": ("run again after a budget stop, on the student's ruling (amendment 5)"
+                              if loaded["ruling"] else slot16["outcome"]),
                     "ruling": loaded["ruling"], "partial_run": loaded["partial_run"],
                     "stage": slot16.get("stage"), "outcome": slot16["outcome"],
                     "note": "amendment 4, correction of 12:30: the primary run started slot 16 and its budget "
-                            "stop ended it with no record. A technical void unless the student ruled otherwise"},
+                            "stop ended it with no record, a technical void unless the student ruled otherwise. "
+                            "Amendment 5: the student ruled that it runs again. Its first start stays on record "
+                            "and its logged charges count in Study B's spend"},
         "primary": {**table(slots, primary),
                     "role": "pre-registered, descriptive: the student's grade. A timeout scores 0 (amendment 4). "
                             "A slot the block closed counts not correct (rule 1). Unscorable rows leave the "
                             "assessable denominator. Voids and slots not started are left out with their charges"},
         "timeouts_per_arm": {arm: {"timeouts": sum(s["arm"] == arm for s in timeouts),
                                    "slots": [s["slot"] for s in timeouts if s["arm"] == arm]} for arm in frozen.ARMS},
+        "without_slot_16": {**table(slots, without_slot_16),
+                            "role": "amendment 5: Study B's result without slot 16, which ran again on the student's "
+                                    "ruling after B's own budget stop ended its first start. Reported beside the "
+                                    "primary result, not instead of it"},
         "sensitivity_1_timeouts_left_out": {**table(slots, without_timeouts),
                                             "role": "amendment 4: timed-out slots left out"},
         "sensitivity_2_timeouts_replaced_by_rerun": {
@@ -618,12 +627,13 @@ def analyse(study, bundle):
              "counted": s["counted"]} for s in graded
             if s["hand_verdict"] == "correct" and s["classification"] == voids.NOT_CORRECT],
         "charges": {"known_usd": round(sum(r["cost_usd"] for r in loaded["runs"] + loaded["reruns"]), 6),
-                    # A started slot no runner recorded: its charges only from its own run logs, by
-                    # the frozen trace reader, as the later stages' carryover counts them.
+                    # A start no runner recorded: its charges only from its own run logs, by the frozen
+                    # trace reader, as the later stages' carryover counts them. They count in Study B's
+                    # spend whether or not the slot ran again (amendment 5).
                     "slots_without_a_record": [
-                        {"slot": s["slot"], "logged_charges_usd": (s["partial_run"] or {}).get("charges_usd"),
-                         "logged_charged_calls": (s["partial_run"] or {}).get("charged_calls")}
-                        for s in slots if s["outcome"] == voids.VOID and s.get("cost_usd") is None]},
+                        {"slot": loaded["partial_slot"], "logged_charges_usd": loaded["partial_run"]["charges_usd"],
+                         "logged_charged_calls": loaded["partial_run"]["charged_calls"],
+                         "run_again": loaded["partial_slot"] not in loaded["left"]}] if loaded["partial_run"] else []},
         "technical_rule": "Original voids.classify; voids excluded, charges retained; no automatic replay.",
         "no_significance_test": "analysis-plan-B.md declares none. Totals are exact counts with no significance claim"}
 

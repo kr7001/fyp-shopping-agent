@@ -119,7 +119,9 @@ class Slot16(Case):
         self.assertTrue(all(v is None for v in pair["full_block_minus_matched"].values()))
         # Slot 16 has no record: its charges come from its own run log only.
         self.assertEqual(result["charges"]["slots_without_a_record"],
-                         [{"slot": 16, "logged_charges_usd": 0.1757, "logged_charged_calls": 1}])
+                         [{"slot": 16, "logged_charges_usd": 0.1757, "logged_charged_calls": 1, "run_again": False}])
+        # Slot 16 is a void here, so the view without it is the primary result.
+        self.assertEqual(result["without_slot_16"]["per_task"], result["primary"]["per_task"])
         self.assertEqual(slot16["partial_run"]["run_logs"], ["experiments/results/started-16/tee-count-buyable-2.log"])
 
     def test_the_started_slots_run_log_is_bound_at_preparation(self):
@@ -146,10 +148,36 @@ class Slot16(Case):
         self.assertEqual(mapped["stage"], "continuation")
         self.grade()
         result = self.analyse()
-        self.assertEqual(result["slot_16"]["state"], "run again on the student's ruling, labelled")
+        self.assertEqual(result["slot_16"]["state"], "run again after a budget stop, on the student's ruling (amendment 5)")
+        self.assertIn("Amendment 5", result["slot_16"]["note"])
+        # Its first start's logged charges still count in Study B's spend.
+        self.assertEqual(result["charges"]["slots_without_a_record"],
+                         [{"slot": 16, "logged_charges_usd": 0.1757, "logged_charged_calls": 1, "run_again": True}])
         self.assertEqual(result["slot_16"]["ruling"], "Run slot 16 again: the budget stop was ours.")
         self.assertEqual(result["slot_16"]["stage"], "continuation")
         self.assertEqual(result["primary"]["per_arm"]["matched-briefing"]["in_table"], 8)
+
+    def test_the_result_without_slot_16_leaves_out_only_slot_16(self):
+        # Amendment 5: slot 16 ran again and is graded correct; the view without it drops that one
+        # slot from count-buyable's matched briefing and changes nothing else.
+        self.build({("P", 2): "wrong"}, continuation=True)
+        self.prepare()
+        self.grade()
+        result = self.analyse()
+        primary, without = result["primary"], result["without_slot_16"]
+        self.assertIn("amendment 5", without["role"])
+        cell = ("tee-count-buyable", "matched-briefing")
+        self.assertEqual((primary["per_task"][cell[0]][cell[1]]["in_table"], primary["per_task"][cell[0]][cell[1]]["correct"]),
+                         (2, 2))
+        self.assertEqual((without["per_task"][cell[0]][cell[1]]["slots"], without["per_task"][cell[0]][cell[1]]["in_table"],
+                          without["per_task"][cell[0]][cell[1]]["correct"]), (2, 1, 1))
+        self.assertEqual(without["per_arm"]["matched-briefing"]["in_table"], primary["per_arm"]["matched-briefing"]["in_table"] - 1)
+        self.assertEqual(without["per_arm"]["full-block"], primary["per_arm"]["full-block"])
+        for task in review.frozen.TASKS:
+            if task != cell[0]:
+                self.assertEqual(without["per_task"][task], primary["per_task"][task])
+        self.assertEqual(without["per_task"][cell[0]]["full_block_minus_matched_correct"],
+                         primary["per_task"][cell[0]]["full_block_minus_matched_correct"] + 1)
 
     def test_a_continuation_must_be_named_and_carry_the_ruling(self):
         self.build(continuation=True)
