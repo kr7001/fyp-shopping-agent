@@ -64,8 +64,8 @@ Browser Use on the fresh market Rookmere had one test, fixed before that market 
 
 | Study | Result | Protocol |
 | --- | --- | --- |
-| Matched briefing, Quenby, 16 trials | Full block 8 of 8 correct. openJiuwen given the same facts without the plan 7 of 8, a difference the pre-set rule calls no observable difference. The block cost more in every pair | [protocol](docs/content/matched-briefing-29-oct-protocol.md) |
-| Browser Use transfer, Quenby | Browser Use with the block 6 of 8, then 14 of 16 in two added repeats. Browser Use alone 3 of 8, then 7 of 16 | [protocol](docs/content/browser-use-transfer-31-oct-protocol.md), [repeats](docs/content/browser-use-repeat-1-nov-protocol.md) |
+| Matched briefing, Quenby, 16 trials | Full block 8 of 8 correct. openJiuwen given the same facts without the plan 7 of 8, a difference the pre-set rule calls no observable difference. The block cost more in every pair. Final report, Section 8.4 | [protocol](docs/content/matched-briefing-29-oct-protocol.md) |
+| Browser Use transfer, Quenby | Browser Use with the block 6 of 8, then 14 of 16 in two added repeats. Browser Use alone 3 of 8, then 7 of 16. Final report, Section 8.5 | [protocol](docs/content/browser-use-transfer-31-oct-protocol.md), [repeats](docs/content/browser-use-repeat-1-nov-protocol.md) |
 | Matched briefing, fresh market Rookmere, 16 trials | Complete, graded blind. Full block 5 of 8 correct, the factual briefing 7 of 8, one block miss a timeout. On the three cheapest M the briefing's lead of two is beyond the pre-set margin. In the pairs both arms got right the block saved little. Final report, Section 8.4 | [protocol](notes/fresh-market-2-nov/protocol.md), [plan B](notes/fresh-market-2-nov/analysis-plan-B.md) |
 | Browser Use transfer, fresh market Rookmere | Complete, graded blind. Browser Use with the block 14 of 15 correct, alone 8 of 14, *p* = .014. Three of 32 planned slots were technical voids. One sensitivity analysis gave *p* = .083. Final report, Section 8.5 | [protocol](notes/fresh-market-2-nov/protocol.md), [plan A](notes/fresh-market-2-nov/analysis-plan-A.md) |
 
@@ -85,8 +85,8 @@ Can an agent retrieve the facts needed for a shopping question more accurately t
 shipped agent, while spending less than opening every listing? When a question is ambiguous
 or asks for information the shop does not provide, the policy should clarify or decline.
 
-The registered title is *Ambiguity Without Adversary, Why Injection Defences Miss a Common
-Agent Failure in Commerce*. The motivating failure needs no injected instruction. This
+The project's full title is *Retrieval Policies for Shopping Agents Under Interaction-Gated
+Information*. The motivating failure needs no injected instruction. This
 project evaluates retrieval policies; it does not experimentally evaluate injection defences.
 
 ## How it works
