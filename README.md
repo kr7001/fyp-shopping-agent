@@ -66,7 +66,7 @@ Browser Use on the fresh market Rookmere had one test, fixed before that market 
 | --- | --- | --- |
 | Matched briefing, Quenby, 16 trials | Full block 8 of 8 correct. openJiuwen given the same facts without the plan 7 of 8, a difference the pre-set rule calls no observable difference. The block cost more in every pair. Final report, Section 8.4 | [protocol](docs/content/matched-briefing-29-oct-protocol.md) |
 | Browser Use transfer, Quenby | Browser Use with the block 6 of 8, then 14 of 16 in two added repeats. Browser Use alone 3 of 8, then 7 of 16. Final report, Section 8.5 | [protocol](docs/content/browser-use-transfer-31-oct-protocol.md), [repeats](docs/content/browser-use-repeat-1-nov-protocol.md) |
-| Matched briefing, fresh market Rookmere, 16 trials | Complete, graded blind. Full block 5 of 8 correct, the factual briefing 7 of 8, one block miss a timeout. On the three cheapest M the briefing's lead of two is beyond the pre-set margin. In the pairs both arms got right the block saved little. Final report, Section 8.4 | [protocol](notes/fresh-market-2-nov/protocol.md), [plan B](notes/fresh-market-2-nov/analysis-plan-B.md) |
+| Matched briefing, fresh market Rookmere, 16 trials | Complete, graded blind. Full block 5 of 8 correct, one miss a timeout. The factual briefing 7 of 8, including one count trial run again on the student's ruling after the study's own budget stop ended its first start, and 6 of 7 without it. On the three cheapest M the briefing's lead of two is beyond the pre-set margin. In the pairs both arms got right the block saved little. Final report, Section 8.4 | [protocol](notes/fresh-market-2-nov/protocol.md), [plan B](notes/fresh-market-2-nov/analysis-plan-B.md) |
 | Browser Use transfer, fresh market Rookmere | Complete, graded blind. Browser Use with the block 14 of 15 correct, alone 8 of 14, *p* = .014. Three of 32 planned slots were technical voids. One sensitivity analysis gave *p* = .083. Final report, Section 8.5 | [protocol](notes/fresh-market-2-nov/protocol.md), [plan A](notes/fresh-market-2-nov/analysis-plan-A.md) |
 
 How to reproduce:
@@ -77,7 +77,8 @@ How to reproduce:
   experiments/results/claim-20261020.manifest` (Haiku), and the same with
   `night-20261020.manifest` (DeepSeek). These need the raw browser logs, which are not in the
   repository (see [Reproducing and checking the work](#reproducing-and-checking-the-work)).
-- Every run record and its manifest are in `experiments/results/`.
+- The run records and manifests of the openJiuwen studies are in `experiments/results/`. The
+  Browser Use run records stay local.
 
 ## Research question
 
@@ -166,9 +167,9 @@ author's machine.
 | Command | Purpose |
 | --- | --- |
 | `python3 tools/reproduce_report.py` | Recompute primary counts, medians and exact tests without dependencies |
-| `make check-reproduction` | Curated implementation, protocol, review-tool and released-artifact checks |
+| `make check-reproduction` | Curated implementation, protocol, review-tool and released-artifact checks. The entry point for a clean clone |
 | `make check-offline` | Synthetic protocol, blind-review and reader-agreement checks |
-| `make check` | Full unit suite and planner regression; some tests require local historical logs |
+| `make check` | Full unit suite and planner regression. It also needs the openJiuwen submodule with its local patch applied and a `.env` file, and some tests need local historical logs |
 | `make check-all` | Full checks plus the optional legacy Claude plugin tests |
 | `make dry TASKS=tasks_apparel.json` | Print the planned task text without making model calls |
 | `make facts` | Recompute the original clothing-cell figures from local traces |
@@ -190,8 +191,11 @@ claims. Personal planning notes, meeting updates and intermediate drafts are kep
 The student directs the research and is responsible for the submitted work. Claude Code assisted
 with much of the implementation, experiments and documentation. Codex assisted with review,
 report wording, blind-review tooling and repository maintenance. The student graded every
-human-scored answer blind, and a classmate independently re-graded a sample of 62 and agreed
-with all of them. AI assistance is not presented as independent human validation.
+human-scored answer blind. A classmate independently graded 62 of them with the same rubric and
+answer keys: all 32 answers where the student's grade and the automatic scorer disagreed, and
+30 agreements sampled at random, across Wexcombe and Quenby. The two readers agreed on all 62.
+This targeted check does not estimate reliability over all answers. AI assistance is not
+presented as independent human validation.
 
 The environment extension was proposed in
 [WebArena-Verified issue #60](https://github.com/ServiceNow/webarena-verified/issues/60) and
