@@ -4,7 +4,7 @@
  "audit_version": 1,
  "counter_rules_version": 6,
  "claim_analysis_version": 2,
- "script_sha256": "47cb5f2d83f03923d887ad256add5f06450fd1d4ad74180e86aa75d5cd166608",
+ "script_sha256": "778ab009780cc68f419c9cc8e0cee083748b05bc86cb1193d1c095da83fce00e",
  "rule": "see the docstring of tools/audit_script_fetches.py",
  "studies": [
   {
