@@ -4,7 +4,7 @@
 
 Final Year Project · NUS Data Science and Analytics · August–November 2026
 
-**Student:** Kayleen Lee Kai Rong · **Supervisor:** A/Prof. Markus Kirchberg
+**Student:** Lee Kai Rong · **Supervisor:** A/Prof. Markus Kirchberg
 
 A product card may advertise “from $10” while the requested size costs $18 or is sold out.
 This project investigates that gap between the first observation and the information a
@@ -37,7 +37,7 @@ This reproduces counts, medians and exact tests from [192 released measurements]
 For browser experiments, follow the [environment setup](docs/user-guide.md)
 and [pinned agent setup](agent/README.md). They additionally require Docker, Node.js/npm,
 `uv`, Playwright and the local agent patch. The storefront runs at `http://localhost:7770`.
-The final report PDF will be added when complete; the unfinished draft remains local.
+The final report is submitted separately and is not included in this repository.
 
 ## Results at a glance
 
@@ -59,13 +59,15 @@ rule-based parser: 36/36 against 29/36 correct (*p* = .004). The gap is not conc
 the ambiguous templates are removed. Count questions leave nothing to prune, so there the block
 opens as much as exhaustive retrieval.
 
-Supplementary studies are exploratory, small and descriptive, with no significance test:
+Supplementary studies are small. All but one are descriptive, with no significance test.
+Browser Use on the fresh market Rookmere had one test, fixed before that market was drawn:
 
 | Study | Result | Protocol |
 | --- | --- | --- |
 | Matched briefing, Quenby, 16 trials | Full block 8 of 8 correct. openJiuwen given the same facts without the plan 7 of 8, a difference the pre-set rule calls no observable difference. The block cost more in every pair | [protocol](docs/content/matched-briefing-29-oct-protocol.md) |
 | Browser Use transfer, Quenby | Browser Use with the block 6 of 8, then 14 of 16 in two added repeats. Browser Use alone 3 of 8, then 7 of 16 | [protocol](docs/content/browser-use-transfer-31-oct-protocol.md), [repeats](docs/content/browser-use-repeat-1-nov-protocol.md) |
-| Fresh market Rookmere: both studies repeated unchanged | Pending | [protocol](notes/fresh-market-2-nov/protocol.md), [plan A](notes/fresh-market-2-nov/analysis-plan-A.md), [plan B](notes/fresh-market-2-nov/analysis-plan-B.md) |
+| Matched briefing, fresh market Rookmere, 16 trials | Complete, graded blind. Full block 5 of 8 correct, the factual briefing 7 of 8, one block miss a timeout. On the three cheapest M the briefing's lead of two is beyond the pre-set margin. In the pairs both arms got right the block saved little. Final report, Section 8.4 | [protocol](notes/fresh-market-2-nov/protocol.md), [plan B](notes/fresh-market-2-nov/analysis-plan-B.md) |
+| Browser Use transfer, fresh market Rookmere | Complete, graded blind. Browser Use with the block 14 of 15 correct, alone 8 of 14, *p* = .014. Three of 32 planned slots were technical voids. One sensitivity analysis gave *p* = .083. Final report, Section 8.5 | [protocol](notes/fresh-market-2-nov/protocol.md), [plan A](notes/fresh-market-2-nov/analysis-plan-A.md) |
 
 How to reproduce:
 
@@ -198,7 +200,7 @@ is open and not merged.
 
 ## Licence
 
-Copyright 2026 Kayleen Lee Kai Rong. The project's own code and documentation are released
+Copyright 2026 Lee Kai Rong. The project's own code and documentation are released
 under the [Apache License 2.0](LICENSE), the licence openJiuwen uses. Third-party parts keep
 their own licences: the openJiuwen submodule in `agent/agent-core` (Apache 2.0) and the
 Magento-derived template in `env/gated_theme/`, whose OSL-3.0 and AFL-3.0 notice is kept in the

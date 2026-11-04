@@ -96,7 +96,8 @@ were measured or answers graded. Source SHA-256 hashes identify the preserved an
 completed human sheets and mappings; they do not make private evidence available. The
 [artifact description](../experiments/artifacts/README.md) states its coverage and limits.
 This command does not reproduce every report figure, sensitivity analysis or reader-agreement
-result. It never pools the markets and does not include the pending matched-briefing study.
+result. It never pools the markets and does not include the matched-briefing study, which is
+complete and reported in Section 8.4 of the final report.
 
 ## 3. Rebuild the saved tasks and keys
 
@@ -324,6 +325,7 @@ separate. Do not combine markets, models or intervention versions into one arm, 
 
 Included in the reproduction package: source code, fixed tasks and fixtures, frozen
 protocols, the derived-measurements artifact and the offline commands above. Local-only:
-intermediate notes, the report draft, blind review files and raw traces. A code release and
+intermediate notes, blind review files and raw traces. The final report is submitted
+separately and is not included in this repository. A code release and
 a full evidence release are different deliverables. Record `git rev-parse HEAD` when
 reporting a reproduction so readers know which code and measurements were used.

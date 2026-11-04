@@ -23,7 +23,8 @@ covers the wider implementation checks and the requirements for a new experiment
 
 Rows are the union of the primary comparisons, not every trial in the study.
 The full Wexcombe study also includes controls, keyless questions and other arms
-outside this release. No pending matched-briefing data is included.
+outside this release. No matched-briefing data is included. That study is complete and
+reported in Section 8.4 of the final report.
 
 ## Fields and provenance
 
