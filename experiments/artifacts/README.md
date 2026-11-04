@@ -72,3 +72,12 @@ Quenby has one original human-unscorable answer: the shipped correctness denomin
 is 13 assessable answers out of 14 trials. The post hoc analysis counting this answer
 as incorrect is a sensitivity analysis, not the primary result in this package.
 The 192 rows contain no answers, browser logs, private paths or blind-review codes.
+
+## Script-fetch audit, 4 November 2026
+
+`script-fetch-audit-4-nov.json` counts, for every trial of the four primary comparisons,
+the product pages the agent fetched with its own page scripts. The `opened` measure counts
+navigations only, so it misses these. The file also recomputes H2 with them added.
+`tools/audit_script_fetches.py` wrote it from the stored run logs, which are private, so
+it cannot be rerun from a public clone. The script's docstring gives the counting rule.
+It holds counts, listing keys and test values, and no answers or browser logs.
