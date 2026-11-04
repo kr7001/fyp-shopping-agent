@@ -351,7 +351,13 @@ class Batch(Ended, unittest.IsolatedAsyncioTestCase):
         def long_timeout():
             return {"outcome": "timeout", "answer": None, "trace": {"measurement_valid": True},
                     "elapsed_s": 5403.0, "settings": {"clock_s": 5400}, "cost_usd": None}
-        run = await run_attempt3(self, config, results={1: long_timeout})
+        # A rerun starts only if its doubled clock fits before the config's deadline (FRESH_LATEST,
+        # 3 November 2026 12:00 +08). On the real clock none has fitted since that morning, so this
+        # test failed. The wall clock is held a day before the deadline, so the test no longer
+        # depends on today's date (4 November 2026).
+        a_day_before = guard.deadline_epoch(config["deadline"]) - 86400
+        with mock.patch.object(guard.time, "time", return_value=a_day_before):
+            run = await run_attempt3(self, config, results={1: long_timeout})
         self.assertIsNone(run.error)
         self.assertEqual(run.output, self.notes / "study-a-rerun.results")
         self.assertEqual(run.trials, [row["slot"] for row in config["rerun_slots"]])

@@ -202,6 +202,30 @@ class Quiet(unittest.TestCase):
                 "  .then(r => r.text()).then(h => /.\"07\".*\\[/.test(h))))")
         self.assertEqual(counts(evaluate(code))["fetched_by_script"], 0)
 
+    def test_a_number_without_the_markets_prefix_names_nothing(self):
+        # 20261025T142021/tee-target-price-3 fetched the product links its script had collected
+        # and read a size's stock as `sp.salable['140']['17']`. `['17']` is written like an array
+        # of strings, but no string of the code ends in the market's key prefix, so 17 names no
+        # listing. A link selector holds the prefix inside a string, not at its end, so it names
+        # none either. With the check that the prefix ends a string taken out of `keys_from_parts`,
+        # every other test in this file still passed (4 November 2026).
+        collect = {
+            "off a results page": ("const html = await (await fetch('/catalogsearch/result/?q=Tst')).text();\n"
+                                   "  const urls = [...html.matchAll(/href=\"([^\"]+\\.html)\"/g)].map(m => m[1]);"),
+            "by a link selector": "const urls = [...document.querySelectorAll('a[href*=\"igr-tst-\"]')].map(a => a.href);",
+        }
+        for how, links in collect.items():
+            code = ("async () => { " + links + "\n  const out = [];\n"
+                    "  for (const u of urls) {\n"
+                    "    const doc = new DOMParser().parseFromString(await (await fetch(u)).text(), 'text/html');\n"
+                    "    const sp = JSON.parse(doc.querySelector('[type=\"text/x-magento-init\"]').textContent)\n"
+                    "      ['#product_addtocart_form'].configurable.spConfig;\n"
+                    "    out.push([u, !!(sp.salable['140'] && sp.salable['140']['07'])]); }\n"
+                    "  return out; }")
+            with self.subTest(links=how):
+                found = counts(evaluate(code, result(json.dumps([[MARKET[4], True]]))))
+                self.assertEqual((found["fetched"], found["named_in_reply_only"]), ([], 1))
+
 
 class Arguments(unittest.TestCase):
     def test_strings_and_brackets_are_skipped_whole(self):
@@ -324,12 +348,14 @@ class KnownFaults(unittest.TestCase):
     """Stored runs whose script fetches earlier audits found by hand, and runs with none."""
 
     def test_claim1_deepseek_read_15_while_counted_as_2(self):
-        # The report's 27 October draft: "one read 15 listings while being counted as opening 2".
+        # The shipped agent. An earlier reading of its log found it read 15 listings by script
+        # while the counter counted 2.
         found = stored("20261021T002924/apparel-count-stocked-3.log")
         self.assertEqual((found["navigated"], found["fetched_by_script"], found["combined"]), (2, 15, 15))
 
     def test_matched_briefing_slots_7_and_13_fetched_all_45(self):
-        # notes/review-integration-1-nov/independent-fetch-caveat-1-nov.json: 7 and 5 navigations.
+        # An independent check of both logs on 1 November 2026 found each fetched all 45 product
+        # pages by script while recording 7 and 5 navigations.
         for relative, navigated in (("20261029T224819/tee-count-buyable-1.log", 7),
                                     ("20261029T231451/tee-top-3-2.log", 5)):
             with self.subTest(log=relative):

@@ -7,8 +7,8 @@ counter, `sufficiency.listings_opened`, reads the addresses a `page.goto` went t
 addresses a tool reply reports as the current page. A product page that the agent's own page
 script downloads never becomes the current page, so the counter never sees it. That happened
 in the supplementary studies (two Quenby matched-briefing trials fetched all 45 product
-documents while recording 7 and 5 navigations) and, as the 27 October draft of the report
-said, in two shipped DeepSeek runs of claim 1. This reads the stored run logs of the primary
+documents while recording 7 and 5 navigations) and in two shipped DeepSeek runs of claim 1,
+which an earlier reading of the logs had found. This reads the stored run logs of the primary
 studies and counts every such fetch, by study and arm. It never calls a model, the shop or the
 network, and it never runs the recorded code: it reads it.
 
@@ -38,8 +38,9 @@ The counting rule. A product document counts as fetched by script when all of th
    assigns `location`. A request whose method is not GET (POST, HEAD, PUT, PATCH, DELETE) reads
    no document: an add-to-cart form post is not a page read.
 4. Its target is a listing of the market. The market is the task file's own fixture's listing
-   URLs, the set the frozen counter counts against (`verify_cells.market_urls`, LESSONS 2 and
-   33). A target is read as written in the code, and is one of:
+   URLs, the set the frozen counter counts against (`verify_cells.market_urls`). As with the
+   counter, an address is a listing because it is in that set, never because of its shape. A
+   target is read as written in the code, and is one of:
      a listing          it names a listing's URL key, `igr-rp28-21.html` or a URL ending in it
      the current page   `location.href`, `window.location.href`, `document.URL` and the like:
                         the document the browser already shows, which the counter already
