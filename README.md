@@ -133,8 +133,9 @@ The supplementary studies have their own dated protocols, each frozen before its
 The second experiment is a constrained stress test: it combines hidden variant prices with
 deliberately false promotional/stock labels, and only the block receives a label warning.
 The generator selects markets with useful bounds. Findings concern that distribution and the
-whole block package, not typical-market prevalence or the stopping rule alone. Shipping,
-combined discounts and automated access to live commercial shops are outside this evaluation.
+block as a whole. They do not show how common the problem is in typical markets or the effect
+of the stopping rule alone. Shipping, combined discounts and automated access to live
+commercial shops are outside this evaluation.
 
 ## Repository structure
 
