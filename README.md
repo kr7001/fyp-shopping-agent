@@ -86,8 +86,7 @@ shipped agent, while spending less than opening every listing? When a question i
 or asks for information the shop does not provide, the policy should clarify or decline.
 
 The project's full title is *Retrieval Policies for Shopping Agents Under Interaction-Gated
-Information*. The motivating failure needs no injected instruction. This
-project evaluates retrieval policies; it does not experimentally evaluate injection defences.
+Information*.
 
 ## How it works
 
