@@ -112,7 +112,9 @@ reproduction; ambiguous questions are scored under the reading actually used.
 - [Claim 2 protocol](docs/content/claim2-protocol.md): the frozen tee-market design, hypotheses,
   exclusions and amendments.
 - [Blind scoring rules](docs/content/claim2-reading-rules.md): human scoring with automatic
-  scores and a separate reader-agreement analysis alongside it.
+  scores and a separate reader-agreement analysis alongside it. The file's title still says
+  “(DRAFT)”. It was frozen with the claim 2 protocol before any grading, and later studies
+  check its hash, so the title was not edited. The rules have not changed since.
 
 The [Quenby replication protocol](docs/content/replication-28-oct-protocol.md) extends the test to a second held-out market. The [released primary analyses](experiments/artifacts/README.md) retain the original human verdicts and automatic scores separately, and analyse the markets separately.
 
