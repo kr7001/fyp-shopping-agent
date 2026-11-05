@@ -18,7 +18,7 @@ help:
 	@echo "make test         unit tests, about a minute. The figure tests need the local logs"
 	@echo "make regression   the planner renders every question the same as targeting.py"
 	@echo "make mod          the workbench mod's own tests (needs the claude CLI)"
-	@echo "make facts        every clothing-cell figure on the results page, from the raw runs"
+	@echo "make facts        every clothing-cell figure, recomputed from the raw runs"
 	@echo "make compare      the cell comparisons, with both readings of 'offer'"
 	@echo "make verify BATCH=experiments/results/<stamp>   re-derive one batch, every answer in full"
 	@echo "make dry TASKS=tasks_apparel.json                the exact text each task would send, sending nothing"

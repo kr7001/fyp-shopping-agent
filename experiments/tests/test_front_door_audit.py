@@ -389,7 +389,7 @@ class OlderScriptsKnowTheParser(unittest.TestCase):
         self.assertEqual(claim.intended(line.format("--exhaustive --parser model"))[0], "exhaustive")
 
     def test_the_site_names_a_box_batch_as_the_box(self):
-        # 20261014T213118 is a box batch, which the site's batch table called "unmodified".
+        # 20261014T213118 is a box batch, which an earlier batch table called "unmodified".
         # Planted: `arm_name` without its box case, the stored batch was "unmodified" again.
         stored = json.loads((paths.RESULTS / "20261014T213118" / "suite.json").read_text())
         self.assertEqual(arms.arm_name(stored), "box")

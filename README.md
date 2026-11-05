@@ -11,12 +11,11 @@ This project investigates that gap between the first observation and the informa
 shopping question actually needs. It extends the openJiuwen browser agent with a retrieval
 block and evaluates it on a self-hosted WebArena-Verified shop with reproducible variant prices.
 
-[Technical overview](docs/index.html) · [User guide](docs/user-guide.md) ·
-[Experimental protocol](docs/content/claim2-protocol.md)
+[User guide](docs/user-guide.md) · [Experimental protocol](docs/content/claim2-protocol.md)
 
 ## Quick start: free checks
 
-Use Python 3.11 or later. These checks use synthetic inputs and released records; they need neither an API key nor a shop.
+Use Python 3.11 or later. These checks use synthetic inputs and released records, and need neither an API key nor a shop.
 
 ```bash
 git clone https://github.com/kr7001/fyp-shopping-agent.git
@@ -39,6 +38,21 @@ and [pinned agent setup](agent/README.md). They additionally require Docker, Nod
 `uv`, Playwright and the local agent patch. The storefront runs at `http://localhost:7770`.
 The final report is submitted separately and is not included in this repository.
 
+## What the project found
+
+- **RQ1, what gating looks like.** A hand check of 12 clothing listings on Shopee, Lazada and
+  Amazon, picked for their varying prices, found 11 that hid some variants' prices until those
+  variants were chosen (final report, Section 3.4). Every
+  listing opened on one variant and showed that variant's price.
+- **RQ2, why the shipped agent misses it.** On the design market Thornwood, openJiuwen as
+  shipped, with Claude Haiku 4.5, answered correctly in 4 of 15 runs and never said it had not retrieved enough. Its
+  card reader skips the cards outside the browser window without saying so. Turning that limit
+  off raised correct answers to 11 of 15, at almost three times the cost.
+- **RQ3, the retrieval block.** The block turns the question into a checked description of what
+  to find, asks the shopper back when a word is ambiguous, and hands openJiuwen a plan. For the
+  cheapest price, the plan opens listings by advertised price until no unopened one can be
+  cheaper.
+
 ## Results at a glance
 
 Primary studies, each on a held-out market drawn after its protocol was frozen. One row is one
@@ -54,8 +68,9 @@ with the exact test's Holm-adjusted *p* within the study.
 | Claim 2, Wexcombe (45 listings, two pages), DeepSeek V4 Flash | blind human reading | 21/21 vs 13/21, *p* = .004 | 5 vs 45, *p* = 1.3e-7 | $0.0497 vs $0.2210, *p* = 7.7e-7 |
 | Replication, Quenby (45 listings), DeepSeek V4 Flash | blind human reading | 14/14 vs 9/13, *p* = .083, not significant | 6 vs 45, *p* = .0010 | $0.047 vs $0.215, *p* = .0019 |
 
-On Wexcombe the model-parsing block also read held-out shopper wordings better than the
-rule-based parser: 36/36 against 29/36 correct (*p* = .004). The gap is not conclusive once
+On Wexcombe the model-parsing block asked the shopper back on 13 of 14 questions labelled
+ambiguous and on 1 of 68 labelled clear, where neither baseline asked. It also read held-out
+shopper wordings better than the rule-based parser: 36/36 against 29/36 correct (*p* = .004). The gap is not conclusive once
 the ambiguous templates are removed. Count questions leave nothing to prune, so there the block
 opens as much as exhaustive retrieval.
 
@@ -77,6 +92,12 @@ How to reproduce:
   experiments/results/claim-20261020.manifest` (Haiku), and the same with
   `night-20261020.manifest` (DeepSeek). These need the raw browser logs, which are not in the
   repository (see [Reproducing and checking the work](#reproducing-and-checking-the-work)).
+- Wexcombe's ask-back counts, from the recorded runs: `python3 experiments/analysis/claim.py
+  --json wexcombe-asks.json --protocol experiments/tasks/claim2_analysis.json
+  experiments/results/claim2b-stage1.manifest`. The counts are in `wexcombe-asks.json`, under
+  the model's `secondary` entry, in `asks_by_label`. Like Claim 1, this needs the raw browser logs.
+- Thornwood's cells behind RQ2, from the recorded runs: `make facts`. This also needs the raw
+  browser logs.
 - The run records and manifests of the openJiuwen studies are in `experiments/results/`. The
   Browser Use run records stay local.
 
@@ -106,7 +127,7 @@ faithful execution. The agent can still misread a page or fail to follow the pla
 The comparison conditions are shipped openJiuwen, an open-everything instruction, and the block
 with rules or model parsing. They share a pinned agent version and the documented local
 compatibility patch. Seeded fixtures, answer keys, version checks and recorded costs support
-reproduction; ambiguous questions are scored under the reading actually used.
+reproduction. Ambiguous questions are scored under the reading actually used.
 
 - [Claim 1 protocol](docs/content/claim-protocol.md): the earlier held-out clothing-market study.
 - [Claim 2 protocol](docs/content/claim2-protocol.md): the frozen tee-market design, hypotheses,
@@ -152,7 +173,6 @@ experiments/tests/      Unit, synthetic and historical regression checks
 experiments/results/   Historical experiment records
 experiments/artifacts/ Sanitized measurements for reproducing primary results
 env/                   Magento fixtures, generators, seeding and live checks
-docs/index.html        Technical overview
 docs/user-guide.md     Setup, execution and reproduction guide
 docs/content/          Frozen protocols and scoring rules
 notes/fresh-market-2-nov/  Frozen protocol and analysis plans of the 2 November studies
@@ -161,8 +181,12 @@ tools/workbench/       Optional Claude Code plugin that gated paid runs
 LICENSE                Apache License 2.0 for the project's own code
 ```
 
-The rest of `notes/`, the report source and the assistants' working files stay on the
-author's machine.
+`notes/fresh-market-2-nov/` holds the frozen protocol and two analysis plans of the 2 November
+studies, with a short README. The fresh market's seed-search record cites the protocol by this
+path with its SHA-256, the matched-briefing task file cites the protocol and plan B the same
+way, and the review tool `tools/browser_use_fresh_review.py` pins the protocol and plan A, so
+the files stay where they were committed before the market was drawn. Working notes, the
+report source and the assistants' files stay local.
 
 ## Reproducing and checking the work
 
@@ -177,12 +201,15 @@ author's machine.
 | `make facts` | Recompute the original clothing-cell figures from local traces |
 
 The [experiment guide](experiments/README.md) describes data layout and analysis commands.
-Raw browser traces, credentials, assistant state and the private report remain local; a clone
-does not contain every trace needed by the full historical checks. Recorded result paths and
-frozen experiment code are retained so this cleanup does not break their provenance.
+Raw browser traces, credentials, assistant state and the private report remain local. A clone
+does not contain every trace needed by the full historical checks. Result paths recorded in
+the run records are unchanged, and most run manifests name the commit they ran at, so the
+exact code of a run can be checked out from the history. Comments in some run code were tidied
+after the runs without changing what the code does, so a file's hash at the latest commit can
+differ from the hash a run recorded.
 
 Paid runs use OpenRouter and require a declared estimate, budget stop, verified command and
-explicit approval. The optional Claude workbench hook is specific to Claude; it does not
+explicit approval. The optional Claude workbench hook is specific to Claude Code and does not
 protect other clients automatically. See the [user guide](docs/user-guide.md#paid-runs-and-verification).
 
 ## Research provenance and acknowledgements

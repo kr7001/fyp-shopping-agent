@@ -9,7 +9,7 @@ neither requires an API key or a running shop.
 | Recompute the headline table | Git checkout and Python's standard library | The released measurements produce the primary counts, medians and exact tests |
 | Reanalyse or rerun the experiments | Original result bundle, or a configured shop, agent and paid model access | Reanalysis of recorded evidence, or a new experimental replication |
 
-The [technical overview](index.html) explains the method. The frozen
+The [README](../README.md) summarises the method and results. The frozen
 [Claim 1](content/claim-protocol.md), [Claim 2](content/claim2-protocol.md) and
 [Quenby replication](content/replication-28-oct-protocol.md) protocols specify the designs.
 A successful software test does not reproduce a model's answers.

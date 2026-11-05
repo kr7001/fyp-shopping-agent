@@ -642,7 +642,7 @@ class DevelopmentCell(unittest.TestCase):
         # only, so the sound reader cannot say the size is absent (20 Oct 2026; the run is
         # 20261014T222007 apparel-all-stocked-1, see test_box.BoxBatchesReplayed).
         self.assertEqual((d["check"]["other"], d["check"]["other_refused"]), (29, ["apparel-all-stocked-1"]))
-        # The four cells are the four cells still, and the site's tests table is theirs alone.
+        # The four cells are still the four cells, and the comparison tests cover them alone.
         self.assertEqual([n.split()[0] for n in facts["names"]], ["1", "2", "3", "5"])
         self.assertEqual({t["a"] for t in facts["tests"]}, {"2", "3", "5"})
 

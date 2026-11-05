@@ -75,7 +75,6 @@ CLAUDE.md.bak-*
 /Makefile.local
 /notes/
 /docs/*
-!/docs/index.html
 !/docs/user-guide.md
 !/docs/content/
 /docs/content/*

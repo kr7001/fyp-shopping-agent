@@ -185,7 +185,7 @@ rules select answer listings by their titles; its record is `manifests/aplus_dev
 
 ## The tee-only market, design B, added 24 October 2026
 
-The second claim run's redesign (docs/content/claim2-handover.md, section 3) sells one
+The second claim run's redesign (docs/content/claim2-protocol.md) sells one
 product: about 45 tee listings under one brand, so the search still spans two pages (36 and
 9), six sizes XS to XXL, and misleading labels in the size menu of the kind South-East Asian
 marketplaces render. The same five scripts make and check it, under `--design B`

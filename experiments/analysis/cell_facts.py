@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-"""Print every figure the catch-up page reports about the clothing cells, from the raw runs.
+"""Print every figure about the clothing cells, recomputed from the raw runs.
 
-The page's numbers are typed into HTML by hand, and on 7 October three of them were wrong.
-This is the one command that recomputes all of them, so the page can be checked against it
-line by line, before it is published and by anyone afterwards. It reads run files only,
-plus one optional call to the provider's account endpoint for the cost cross-check.
+This is the one command that recomputes all of them, so each reported figure can be checked
+against it line by line. It reads run files only, plus one optional call to the provider's
+account endpoint for the cost cross-check.
 
     python experiments/analysis/cell_facts.py
     python experiments/analysis/cell_facts.py --no-account     # skip the account lookup
 
-Sections A to G match the page: A and B the results, C the tests, D the kinds of error,
-E the refusal check replayed, F how the runs were checked, G cost against the account.
+Sections A and B give the results, C the tests, D the kinds of error, E the refusal check
+replayed, F how the runs were checked and G cost against the account.
 """
 
 from __future__ import annotations
@@ -226,11 +225,7 @@ def account_usage() -> float | None:
 
 
 def facts(account: bool = True) -> dict:
-    """Every figure in sections A to G, as data.
-
-    `main` prints it and `docs/build_site.py` renders it on the site, so the command and the
-    page are one computation and cannot disagree. Split out of `main` on 8 October 2026.
-    """
+    """Every figure in sections A to G, as data. `main` prints it, and test_figures.py pins it."""
     cells, truth = compare_cells.load()
     m_price = m_prices(compare_cells.fixture_of(
         [b for batches in compare_cells.CELLS.values() for b in batches]))

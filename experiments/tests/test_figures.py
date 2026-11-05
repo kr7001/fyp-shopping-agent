@@ -1,13 +1,11 @@
-"""Every clothing-cell figure the site shows, recomputed from the raw runs.
+"""Every clothing-cell figure, recomputed from the raw runs.
 
-The site and `make facts` both read `cell_facts.facts()`, so pinning its output pins both. A
-change here is a change to a published result. If a scorer or checker fix moves one of these
-numbers, update this file, regenerate the site (`make site`) and add a dated entry to the
-README decision log in the same commit, so the change is visible rather than silent.
+`make facts` reads `cell_facts.facts()`, so pinning its output pins the command too. A change
+here is a change to a reported result. If a scorer or checker fix moves one of these numbers,
+update this file in the same commit, so the change is visible rather than silent.
 
 The raw logs (about 400 MB for these four cells) stay on the laptop and are not in git, so on
-a fresh clone these tests are skipped rather than failed. The September water table is built
-by docs/build_site.py and is not pinned here.
+a fresh clone these tests are skipped rather than failed.
 """
 import contextlib
 import io
@@ -29,7 +27,7 @@ OFFER = 'read "offer" as "can sell it now"'
 REVEAL = "read the price before the page revealed it"
 STEPS = "ran out of its 100 steps"
 
-# Every comparison the site's tests table shows: reading of "offer", measure, cell a, cell b,
+# Every comparison of the cells: reading of "offer", measure, cell a, cell b,
 # distinct runs only, the counts, p by question, p pooled.
 TESTS = [
     ("menu", "correct", "2", "1", False, "11 of 15 against 4 of 15", 0.005, 0.02684),
@@ -54,7 +52,7 @@ TESTS = [
     ("buyable", "opened", "5", "2", False, "15 of 15 against 15 of 15", 1.0, 1.0),
 ]
 
-# Every row of the site's error table: each kind of error and the runs it was found in.
+# Every kind of error and the runs it was found in.
 ERRORS = {
     "1": {OPEN: ["cheapest-target-1", "cheapest-target-3", "count-buyable-1", "count-buyable-3",
                  "count-stocked-1", "count-stocked-3", "target-price-1", "target-price-2",
@@ -80,7 +78,7 @@ RESCORED = [{"batch": "20261007T115021", "run": "apparel-count-buyable-3", "from
              "to": "correct",
              "reason": "count rule no longer reads 'all 15' as the count, 8 Oct 2026"}]
 
-# Every row of the site's silence table: the longest silence in each batch's logs in seconds,
+# The longest silence in each batch's logs in seconds,
 # 0 where the log has no timestamps, the longest whole run there, and the suspended runs.
 SILENCE = {
     "20261007T112057": (31, None, []),
