@@ -161,11 +161,17 @@ class Records(unittest.TestCase):
 
 class Medians(unittest.TestCase):
     def test_an_even_count_averages_the_two_middle_times_exactly(self):
-        # Quenby's shipped arm: a float median of 374.9 and 375.0 is 374.95000000000005.
-        out = times(study([trial(OPEN, "q1", r) for r in (1, 2, 3, 4)]), [374.9, 375.0, 100.1, 900.2])
+        # Quenby's shipped arm: its middle pair, 362.3 s and 387.6 s, has a float mean of
+        # 374.95000000000005 and an exact mean of 374.95.
+        out = times(study([trial(OPEN, "q1", r) for r in (1, 2, 3, 4)]), [362.3, 387.6, 100.1, 900.2])
         self.assertEqual((row(out, OPEN)["median_s"], row(out, OPEN)["median_min"]), (D("374.95"), D("6.2")))
 
     def test_minutes_round_half_up(self):
+        # A tie: 15 s is 0.25 minutes exactly, 0.3 rounded half up and 0.2 rounded half to even.
+        # No stored median sits on a tie, so this one is made here, alone and as a study's median.
+        self.assertEqual(run_times.minutes(D("15")), D("0.3"))
+        out = times(study([trial(OPEN, "q1", r) for r in (1, 2)]), [10, 20])
+        self.assertEqual((row(out, OPEN)["median_s"], row(out, OPEN)["median_min"]), (D("15"), D("0.3")))
         # 189 s is 3.15 minutes exactly, which a float formats as 3.1.
         self.assertEqual(run_times.minutes(D("189.0")), D("3.2"))
 
