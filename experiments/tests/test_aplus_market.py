@@ -72,8 +72,8 @@ class OrderModel(unittest.TestCase):
                 two = fixture_name == "claim_apparel.json"
                 got = [f["parent_sku"] for f in search_order.order(fixture["families"], two)]
                 self.assertEqual(got, want)
-                # The fault this guards against: catalogue order, which the first picker's
-                # rules were once written against and which does not decide the page.
+                # The fault this guards against: rules written against catalogue order, which
+                # does not decide the page.
                 self.assertNotEqual([f["parent_sku"] for f in fixture["families"]], want)
 
     def test_the_order_is_the_development_markets_live_order(self):
@@ -586,7 +586,7 @@ class Phrasings(unittest.TestCase):
                 self.assertIn(words, "; ".join(aplus.phrase_problems()))
 
     def test_a_pool_that_names_more_than_one_product_fires(self):
-        # Version 3, from the verifier's fairness audit: version 2's claim tee pool set two
+        # Version 3, for the fairness audit: version 2's claim tee pool set two
         # materials and two fits against each other, so "the Larchmere tee" read two ways;
         # its phrasings share no one core. A water pool where one phrasing drops "Mineral"
         # fires too. Quiet: every pool as it stands, development's and the claim's.
@@ -809,8 +809,8 @@ class Guards(unittest.TestCase):
         for seed in (999, 950, 900, 0):
             with self.subTest(seed=seed):
                 self.assertIn("below 1000", aplus.refused(seed, True, self.claim_out, **ok))
-        # The protocol was frozen on 24 October 2026, so the claim is no longer refused for it; a
-        # draft still is.
+        # The protocol was frozen on 24 October 2026, so the claim is not refused for it, and
+        # a draft still is.
         self.assertTrue(aplus.protocol_final())
         self.assertIsNone(aplus.refused(1000, True, self.claim_out, "IGR-CL2"))
         draft = pathlib.Path(self.tmp.name) / "draft.md"
@@ -1202,7 +1202,7 @@ class Keys(DevMarket):
 
     def test_every_keyed_question_has_a_buyable_key(self):
         # The model parser can lead any question it reads to the buyable reading, so suite.py
-        # refuses a batch under it with a question that has none (22 October 2026).
+        # refuses a batch under it with a question that has none.
         readings = score.readings_for(DEV_TASKS)
         keyed = [t["id"] for t in self.spec["tasks"] if t["expect"]["kind"] != "none"]
         self.assertEqual((list(readings["buyable"]), len(keyed)), (keyed, 13))
@@ -1219,7 +1219,7 @@ class Keys(DevMarket):
         three = {"buyable": {task_id: readings["buyable"][task_id] for task_id in aplus_tasks.TWO_READINGS}}
         with ran:
             self.assertEqual(suite.unscorable(self.spec["tasks"], self.spec, args, readings), [])
-            # Fires on a sidecar of the three alone, as written until this change.
+            # Fires on a sidecar of the three alone, the file's older form.
             self.assertEqual(len(suite.unscorable(self.spec["tasks"], self.spec, args, three)), 10)
 
     def test_a_one_reading_key_is_its_own_over_the_market_as_bought(self):
@@ -1418,8 +1418,8 @@ class LiveCheckComparisons(DevMarket):
                       "seed search recorded when it accepted the market, in 2 positions", lines[2][1])
 
     def test_the_order_claim_reads_is_checked_and_not_only_the_predicted_one(self):
-        # The auditor's case (check of 41d7839): a live order that is the predicted one, where
-        # the order the seed search accepted, which claim.py's key positions read, is not.
+        # A live order that is the predicted one, where the order the seed search accepted,
+        # which claim.py's key positions read, is not.
         order = self.fixture["_instance"]["predicted_order"]
         other = copy.deepcopy(self.fixture)
         accepted = [e for e in other["_generated"]["search"]["tried"] if e.get("outcome") == "accepted"][-1]
@@ -1520,7 +1520,7 @@ class LiveCheckComparisons(DevMarket):
 
 # Every script the Playwright venv runs (`paths.NAIVE_PYTHON`): the A+ and first claim markets'
 # live checkers, the shop's own checks, the box's rendered page reader, the second agent, and
-# the reveal race, by folder (23 October 2026, after the auditor's check of 2df6dc3).
+# the reveal race, by folder (23 October 2026).
 VENV_SCRIPTS = {"env": ("check_aplus_market", "check_market", "verify_shop", "demo_gate"),
                 "experiments/box": ("page",), "experiments/runners": ("naive_agent",),
                 "experiments/analysis": ("reveal_race",)}

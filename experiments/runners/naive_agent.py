@@ -65,18 +65,19 @@ VIEWPORT = {"width": 1200, "height": 701}
 # than openJiuwen's compacted snapshot, which would confound cost with scaffold. This is
 # generous enough to hold a full search page of fifteen cards.
 PAGE_LIMIT = 7000
-# How many links the observation lists, and this has been wrong in both directions.
+# How many links the observation lists. One limit over every link is wrong in both
+# directions.
 #
-# It was 80, collected in page order. A Magento storefront puts its account links, category
-# menu and footer in the markup before the products, so all eighty slots went to navigation
-# and no product address was ever shown. The agent guessed addresses from product names and
-# this shop addresses products by code, so every guess returned the missing page notice.
-# Across the twelve stored runs of this scaffold: 0 product pages opened, 49 missing page
-# errors, no run ever saw a size menu. Every one of those runs is void.
+# A Magento storefront puts its account links, category menu and footer in the markup before
+# the products, so 80 links collected in page order all go to navigation and show no product
+# address. The agent then guesses addresses from product names, and this shop addresses
+# products by code, so every guess returns the missing page notice. The twelve stored runs
+# of this scaffold made under that limit opened 0 product pages, met 49 missing page errors
+# and never saw a size menu. Every one of those runs is void.
 #
-# Raising it to 150 fixed that and created a worse problem. This shop carries **316 unique
+# A limit of 150 shows the products but swamps them. This shop carries **316 unique
 # navigation links on every page** and only 17 content links on a search page, 5 on a
-# product page. At 150 the observation became 16,215 characters of which 13,352 were links,
+# product page. At 150 the observation measured 16,215 characters of which 13,352 were links,
 # so 82 per cent of what the agent read was the same site menu re-sent at every step, and
 # on a product page 91 per cent.
 #
@@ -250,7 +251,7 @@ def run(task: str, model: str, key: str, user_agent: str | None = None) -> dict:
     started = time.time()
     messages = [{"role": "system", "content": SYSTEM},
                 {"role": "user", "content": task}]
-    # Name and target together, the same shape `trace_stats` now records for openJiuwen,
+    # Name and target together, the same shape `trace_stats` records for openJiuwen,
     # so a claim about what either scaffold clicked can be checked rather than inferred.
     steps: list[dict] = []
     calls: list[str] = []
@@ -311,8 +312,8 @@ def run(task: str, model: str, key: str, user_agent: str | None = None) -> dict:
                 if name == "finish":
                     answer = args.get("answer", "")
                     # Printed like every other call so the log is a complete record. Without
-                    # this the log held one fewer call than the runner counted, and a trace
-                    # recomputed from the log disagreed with the one written during the run.
+                    # this the log would hold one fewer call than the runner counted, and a trace
+                    # recomputed from the log would disagree with the one written during the run.
                     print(f"[tool {name}] {json.dumps(args)}\n", flush=True)
                     break
                 observation = act(page, name, args)

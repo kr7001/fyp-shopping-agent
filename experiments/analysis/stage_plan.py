@@ -12,16 +12,16 @@ market's task file, never from a task's own flags: `design[model].asks` names, f
 the question sets it asks and the rounds it asks them in; `sets` holds each set's ids, and two
 names are the task file's: "templates", every task without a `template` field (the market's
 questions), and "held_out", every task with one (the held-out rewordings, v2 and v3 alike).
-Open everything asks the file's `gated` set, which the verifier fixed on 24 October without
-tee-promo-check, although that task's `gated` flag is true: a task flag is never read here.
+Open everything asks the file's `gated` set, fixed on 24 October without tee-promo-check,
+although that task's `gated` flag is true: a task flag is never read here.
 The arms run in the file's order, rotated by one each round, as the protocol says.
 
 **Invocations are small** (LESSONS 41: a 27-slot invocation cost $4.74 against a $2.80 high):
 one question each for shipped and open everything; for a block arm, at most `chunk` questions
 of one set in one round.
 
-**The pilot's plan** (handover section 6, command 1) is fixed here by the suite's own arm
-names: twelve runs on the development market, one question each.
+**The pilot's plan** is fixed here by the suite's own arm names: twelve runs on the
+development market, one question each.
 
 **The cost table prices stage 1 before the pilot runs**, from the one measured batch on a
 two-page market, the 23 October pilot on Larchmere (`PILOT_23_OCT`, the block with the model,
@@ -38,7 +38,7 @@ with them (`scale_for`). The rules, each a line of `estimate`:
   - open everything costs 1.3 times the dearer of the question's block cost and the count
     question's, and always grows with the listings (unmeasured on two pages, as the A+ draft
     priced it);
-  - shipped costs the verifier's $0.33 at the pilot's prices, whatever the question, and does
+  - shipped costs $0.33 at the pilot's prices, whatever the question, and does
     not grow: it stops early by nature;
   - a held-out rewording costs what its template does.
 
@@ -59,9 +59,9 @@ import paths  # noqa: E402
 
 VERSION = 1
 
-# Each template's kind, the per-kind rules of the pilot check and the cost table (24 October
-# 2026). A decline the table does not name is a decline by its prefix; any other unknown
-# template is refused, since no measured cost stands for it.
+# Each template's kind, the per-kind rules of the pilot check and the cost table. A decline
+# the table does not name is a decline by its prefix. Any other unknown template is refused,
+# since no measured cost stands for it.
 KINDS = {
     "tee-headline": "headline",
     "tee-target-price": "bound", "tee-cheapest-target": "bound", "tee-xs-price": "bound",
@@ -77,8 +77,8 @@ BLOCK_ARMS = ("box", "box-model")
 
 # The 23 October pilot's block batch on Larchmere, DeepSeek with the model parser, every
 # template once (experiments/results/pilot-20261023.manifest), and what its charges were over
-# list price: 2.16, the verifier's figure from the logs (README.md, 23 October; the handover
-# rounds it to 2.17). Dividing by the smaller figure estimates a little high, never low.
+# list price: 2.16, read off the logs (README.md, 23 October), against 2.17 rounded up.
+# Dividing by the smaller figure estimates a little high, never low.
 PILOT_23_OCT = "20261023T112840"
 PILOT_PRICE_FACTOR = 2.16
 # The 23 October probes on the 30 development rewordings, one call each, which price a parse
@@ -92,11 +92,11 @@ STAND_IN = {"tee-xs-price": "tee-target-price", "tee-promo-check": "tee-headline
             "decline-fit": "decline-delivery", "decline-scarcity": "decline-delivery"}
 OPEN_EVERYTHING_FACTOR = 1.3
 COUNT_QUESTION = "tee-count-buyable"
-SHIPPED_PILOT_PRICE = 0.33               # the verifier's figure at the pilot's prices
+SHIPPED_PILOT_PRICE = 0.33               # the shipped arm's cost at the pilot's prices
 HIGH = 2.0                               # an invocation's high is twice its estimate
 
-# The pilot of the morning (handover section 6, command 1), by the suite's arm names, in the
-# order the chain runs them; `pilot_invocations` puts them in the analysis file's arm order.
+# The pilot of the morning, by the suite's arm names, in the order the chain runs them.
+# `pilot_invocations` puts them in the analysis file's arm order.
 PILOT_PLAN = {
     "box-model": ["tee-xs-price", "tee-promo-check", "tee-count-buyable", "tee-cheapest-target",
                   "tee-count-stocked", "decline-fit"],

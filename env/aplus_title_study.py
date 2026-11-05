@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Do the A+ market's rules select answer listings by how they are titled?
 
-The verifier noticed that on Larchmere's first market all three cheapest buyable size M tees
-were titled "Heavyweight Cotton Crew Neck Tee", the longest tee phrasing (22 October 2026).
+On Larchmere's first market all three cheapest buyable size M tees were titled "Heavyweight
+Cotton Crew Neck Tee", the longest tee phrasing (22 October 2026).
 The suspicion is a selection effect: the shop ranks a listing lower the longer its names
 (`search_order.py`), and the page rules ask that answers render off the first screen and that
 one renders on page 2, so a market that passes may be one whose answers have long titles. An

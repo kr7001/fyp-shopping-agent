@@ -80,10 +80,10 @@ REPO = HERE.parent
 DEFAULT_OUT = HERE / "fixtures" / "scaled_apparel.json"
 DEFAULT_TASKS = REPO / "experiments" / "tasks" / "tasks_apparel.json"
 
-# Thornwood's, and the defaults, so every command written before 20 October 2026 still
-# draws Thornwood. Another market passes its own with --brand and --sku-prefix. The seeder
-# makes each listing's URL key from its SKU (`igr-app-07.html`), so a market with its own
-# prefix also has its own URL keys, and seeding it never touches a Thornwood listing.
+# Thornwood's, and the defaults, so a command that names no market draws Thornwood. Another
+# market passes its own with --brand and --sku-prefix. The seeder makes each listing's URL key
+# from its SKU (`igr-app-07.html`), so a market with its own prefix also has its own URL keys,
+# and seeding it never touches a Thornwood listing.
 BRAND = "Thornwood"
 SKU_PREFIX = "IGR-APP"
 TARGET_SIZE = "M"
@@ -112,8 +112,8 @@ P_SIZE_MISSING = 0.18
 # Whether a size a seller does offer is sold out right now. This is the third state, and it
 # is the one the live marketplace actually renders: Shopee shows a sold out size as a button
 # with `aria-disabled="true"`, so its existence is announced and its availability is denied.
-# WebArena used to collapse this into absence, because Magento hides out of stock variants by
-# default. With `cataloginventory/options/show_out_of_stock` set to 1 it renders them as
+# Magento hides out of stock variants by default, which collapses this state into absence.
+# With `cataloginventory/options/show_out_of_stock` set to 1 it renders them as
 # `<option disabled>`, which Playwright's accessibility snapshot prints as `option "M"
 # [disabled]`. Measured on a probe product on 18 Sep 2026, under both themes.
 #
@@ -199,13 +199,13 @@ generator stops making claims about position altogether, and `env/pick_apparel_m
 checks the rendered page, which it was written to do and can actually observe."""
 
 MIN_MARGIN_REL = 0.08
-# Percentage only, since 18 Sep 2026. There was an absolute floor of $1.50 alongside this,
-# and it was the binding constraint at these price levels while the percentage never was,
-# which made an arbitrary constant load bearing. Measured before removing it: of the draws
-# passing every other rule, percent-only admitted one extra water market in 33, at a margin
-# of $1.47, and no extra clothing market in 17. A scale-free rule states cleanly as "the
-# winner is at least 8 per cent cheaper" and survives a change of currency or category,
-# where the constant would have to be re-argued for every new product.
+# Percentage only. An absolute floor of $1.50 beside it would be the binding constraint at
+# these price levels while the percentage never is, which makes an arbitrary constant load
+# bearing. Measured against such a floor: of the draws passing every other rule, percent-only
+# admitted one extra water market in 33, at a margin of $1.47, and no extra clothing market
+# in 17. A scale-free rule states cleanly as "the winner is at least 8 per cent cheaper" and
+# survives a change of currency or category, where a constant would have to be re-argued for
+# every new product.
 
 
 def money(value: float) -> float:

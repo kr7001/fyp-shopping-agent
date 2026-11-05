@@ -80,9 +80,9 @@ READINGS_FILE = "readings_claim2dev.json"
 FIXTURE_NAME = "designb_dev.json"
 RIGHT_ON = {"shipped": {"tee-headline"}}       # besides the arms below
 
-# Design B's four new templates, word for word as the verifier's question check fixed them on
-# 24 October 2026 (docs/content/claim2-protocol.md, "Questions"), and what the protocol has the
-# block do with each, in the task file's `box` words.
+# Design B's four new templates, word for word as fixed on 24 October 2026 (docs/content/
+# claim2-protocol.md, "Questions"), and what the protocol has the block do with each, in the
+# task file's `box` words.
 NEW_TEMPLATES = {
     "tee-xs-price": "What is the lowest price anyone charges for size XS of the {brand} tee, among those that "
                     "can actually be bought?",
@@ -102,7 +102,7 @@ TEMPLATES = ("tee-headline", "tee-target-price", "tee-cheapest-target", "tee-all
              "decline-delivery", "decline-fit", "decline-scarcity")
 KEYED_TEMPLATES = TEMPLATES[:10]
 # How many rewordings of each template the synthetic v3-shaped set holds: the real v3's shop-run
-# entries by template (the coordinator's count of 24 October 2026, by id and template only).
+# entries by template (counted on 24 October 2026, by id and template only).
 V3_COUNTS = {**{template: 2 for template in KEYED_TEMPLATES}, "decline-delivery": 1, "decline-fit": 2,
              "decline-scarcity": 2}
 V2_SOURCE, V3_SOURCE = "paraphrases_v2.json", "paraphrases_v3.json"
@@ -158,7 +158,7 @@ def design_b_fixture(fixture: dict) -> dict:
     is below the real XS price, the first family's below every XS that can be bought, so a
     label reader names the wrong price (the generator's promo_trap); and a scarcity label on
     some buyable M, with no figure. The label fields are the generator's: `label`, `label_kind`
-    ("promo" or "scarcity") and `label_price` (fixed with its coder on 24 October 2026). The
+    ("promo" or "scarcity") and `label_price` (fixed on 24 October 2026). The
     fixture's `_instance` and search record are kept, so the task file names its market and
     the results order holds every tee where Larchmere's live search put it."""
     families = []
@@ -1144,7 +1144,7 @@ class Run2Faults(unittest.TestCase):
 
     def test_two_conditions_in_one_arm_refuse_that_model_alone(self):
         # Haiku's shipped batch run twice, the first on another market draw: one arm under two
-        # conditions is two arms (LESSONS 7). Until v4 that stopped every model's analysis.
+        # conditions is two arms (LESSONS 7), which refuses that model's analysis alone (v4).
         def plant(model, arm, folder):
             if model == HAIKU and arm.name == "shipped":
                 set_conditions(folder, draw="Larchmere:another")
@@ -1202,7 +1202,7 @@ class Run2Faults(unittest.TestCase):
                 self.assertIn(words, " ".join(result["models"][DEEPSEEK]["refused"]))
 
     def test_a_batch_routed_otherwise_than_the_protocol_names_for_its_model(self):
-        # The pilot coder's point a (v5): DeepSeek's routing, the agent's and in the model arm
+        # Routing (claim.py v5): DeepSeek's routing, the agent's and in the model arm
         # the parse's, as the batch's payload and its runs' records say. Quiet on the plain run
         # (SyntheticRun2), where DeepSeek's are routed. Haiku is a model the file does not name
         # since version 7, so the file requires null of it.
@@ -1215,7 +1215,7 @@ class Run2Faults(unittest.TestCase):
                  f"requires null for {HAIKU}"),
                 ("DeepSeek's parse unrouted", DEEPSEEK, "the block (model)", {"agent": proposed, "parser": None}, proposed,
                  "the block (model) with parser provider routing null"),
-                # The verifier's point 1: the parse's routing is per arm, null outside the model arm.
+                # The parse's routing is per arm, null outside the model arm.
                 ("a parse routing recorded in the rules arm", DEEPSEEK, "the block (rules)",
                  {"agent": proposed, "parser": proposed}, proposed,
                  f"the block (rules) with parser provider routing {json.dumps(proposed)}, where the protocol "
@@ -1231,7 +1231,7 @@ class Run2Faults(unittest.TestCase):
                 self.assertIn(words, " ".join(result["models"][model]["refused"]))
 
     def test_a_record_routed_otherwise_than_its_batch(self):
-        # The pilot coder's point b (v5): a run's record holds what its runner applied, held to
+        # Routing (claim.py v5): a run's record holds what its runner applied, held to
         # what its batch's payload says the agent ran under.
         def plant(model, arm, folder):
             if arm.name == "shipped":
@@ -1292,7 +1292,7 @@ class Run2Faults(unittest.TestCase):
 
     def test_a_run_is_scored_under_the_reading_it_answered(self):
         # The block (model)'s first round of tee-count-stocked answered under the buyable
-        # reading, as its box record now says, with the buyable count: correct under that
+        # reading, as its box record says, with the buyable count: correct under that
         # key, wrong under the question's own (score v4), and so correct.
         def plant(model, arm, folder):
             if arm.name == "the block (model)":
@@ -1385,7 +1385,7 @@ def drop_key(tasks_dir: pathlib.Path, task_id: str) -> dict:
 
 
 def showcase(model: str, arm: Plan, folder: pathlib.Path) -> None:
-    """Every fault the verifier's fairness audit of 23 October 2026 named, planted in one run
+    """Every fault the fairness audit of 23 October 2026 named, planted in one run
     of the synthetic batches: the block (model) closes two slots on the gated questions, an
     ask no reply answered; shipped sorts one run and sets 60 a page in another, gives a card
     price, a sold-out price and a plain wrong one after reaching page 2, and a card price
@@ -1462,7 +1462,7 @@ SHOWCASE_CLOSED = 3
 
 
 class AuditItems(unittest.TestCase):
-    """Protocol analysis v2 (23 October 2026): each rule the verifier's fairness audit asked
+    """Protocol analysis v2 (23 October 2026): each rule the fairness audit asked
     for, firing on the synthetic run that carries its fault (`showcase`), and design B's three
     measures and failure code (v8). The plain run, where each must stay quiet, is
     SyntheticRun2's."""
@@ -1655,7 +1655,7 @@ class AuditItems(unittest.TestCase):
         # are right and the even-numbered one's three wrong answers affirm the label, so 5 of 9.
         # Shipped affirmed the label on every tee-promo-check run, 3 of 3, and gave the figure on
         # tee-xs-price once, 1 of 3. The model arm fell for nothing.
-        # Since protocol analysis v9 the template's runs and the held-out rewordings' are apart.
+        # The template's runs and the held-out rewordings' are counted apart (protocol analysis v9).
         traps = self.m["secondary"]["promo_traps"]
         rules = traps["the block (rules)"]
         xs = rules["tee-xs-price"]
@@ -1935,7 +1935,7 @@ class ProtocolFile(unittest.TestCase):
                             for note in notes))
 
     def test_the_note_on_when_an_answer_is_unscorable(self):
-        # The auditor's check of the freeze candidate: only an answer that cannot be read at all.
+        # Only an answer that cannot be read at all is unscorable.
         notes = [note for note in self.config["_about"] if "'unscorable'" in note]
         self.assertEqual(len(notes), 1)
         self.assertIn("only when it cannot be read at all, being empty, garbled, or about another question", notes[0])
@@ -1980,7 +1980,7 @@ class ProtocolFile(unittest.TestCase):
                 ("a routing required of an arm by hand",
                  lambda c: c["arms"]["shipped"].update(require={"provider_routing_agent": None}),
                  "which the protocol names by model under provider_routing"),
-                # The verifier's check of 281c7e8: a typo OpenRouter would ignore.
+                # A typo OpenRouter would ignore.
                 ("a routing key OpenRouter does not document",
                  lambda c: c["provider_routing"][DEEPSEEK].update(allow_fallback=False),
                  "the provider keys ['allow_fallback'], which OpenRouter does not document"),
@@ -2184,7 +2184,7 @@ class ThePreflight(unittest.TestCase):
                 self.assertEqual(planned["provider_routing_agent"], provider_routing.PROPOSED[DEEPSEEK])
 
     def test_the_routing_in_the_environment_is_held_to_the_protocols_for_the_model(self):
-        # The pilot coder's point d: IGR_PROVIDER_ROUTING as the invocation would run under.
+        # Routing (claim.py v5): IGR_PROVIDER_ROUTING as the invocation would run under.
         model_arm = "the block (model)"
         self.assertEqual(self.preflight(model_arm), [])
         unset = self.preflight(model_arm, routed=None)
@@ -2942,9 +2942,8 @@ class HandReadBack(unittest.TestCase):
             self.assertEqual({t: v["p_holm"] for t, v in tests.items()}, claim.holm({t: v["p"] for t, v in tests.items()}))
 
     def test_the_unscorable_are_counted_by_arm_and_beside_each_test_of_correct(self):
-        # The auditor's check of the freeze candidate: an unscorable answer leaves every test
-        # of correct, so the count is shown. DeepSeek's one, shipped's tee-top-3-3, is on H1's
-        # questions and not H4's; Haiku has none.
+        # An unscorable answer leaves every test of correct, so the count is shown. DeepSeek's
+        # one, shipped's tee-top-3-3, is on H1's questions and not H4's, and Haiku has none.
         _, result, out = self.differed
         deepseek, haiku = (result["models"][m]["hand_reading"] for m in (DEEPSEEK, HAIKU))
         self.assertEqual({arm: row["unscorable"] for arm, row in deepseek["by_arm"].items()},
@@ -3087,7 +3086,8 @@ class TheSheetsOwnRuns(unittest.TestCase):
         self.assertEqual({c["model"] for c in self.key["codes"].values()}, {DEEPSEEK})
 
     def test_hand_reads_it_back_with_one_model_refused(self):
-        # Until v7 every run counted was asked a row, Haiku's too, so this sheet was refused.
+        # A sheet read back is held to the runs each model's analysis reads (v7), so a refused
+        # model's runs need no row and this sheet reads back.
         code, result, out = analyse(self.manifest, extra=("--hand", str(fill(self.sheet, "agreed.csv"))))
         self.assertEqual(code, 1)
         self.assertIn("refused", result["models"][HAIKU])

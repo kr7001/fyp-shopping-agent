@@ -234,7 +234,7 @@ class Reruns(Case):
     def test_timeouts_and_both_sensitivities(self):
         self.build(self.KINDS, continuation=True, rerun=True)
         self.prepare()
-        # The student grades slot 7's timeout correct: amendment 4 still scores it 0.
+        # The human reader grades slot 7's timeout correct: amendment 4 still scores it 0.
         self.grade({("primary", 7): "correct", ("primary", 3): "unscorable"})
         result = self.analyse()
         # Slot 7 is the matched briefing, slot 14 the full block (the frozen schedule).

@@ -78,7 +78,7 @@ def ensure_attribute(m: Magento, spec: dict, dry_run: bool = False) -> dict:
 
     for position, option_label in enumerate(spec["options"]):
         ensure_attribute_option(m, code, option_label, position, dry_run)
-    # A size menu's misleading labels (the tee-only market, 24 October 2026): each label text
+    # A size menu's misleading labels (the tee-only market): each label text
     # is one more option, at its plain size's position, so a menu that shows it shows it where
     # the size would sit. A listing has either the size or its label, never both, so the tie
     # in position never shows. The attribute is that market's own (`tee_size`), so the four
@@ -214,13 +214,13 @@ def ensure_parent(m: Magento, family: dict, fixture: dict,
             "stock_item": {"is_in_stock": True, "manage_stock": False,
                            "use_config_manage_stock": False},
         },
-        # The family's `note` is deliberately not sent. It used to become the product
-        # description, and on the hand-written fixture those notes explain each trap and
-        # in two cases state the answer ("Ground truth for 'cheapest 2 x 9.5L': this
-        # seller, 22.50 against 24.90"). The description renders in the Details section,
-        # which is inside the accessibility snapshot the agent reads, so the answer key
-        # was in context for 59 of 60 baseline runs. Notes stay in the fixture JSON, where
-        # the ground truth belongs, and never reach Magento. See README, 13 Sep 2026.
+        # The family's `note` is deliberately not sent. On the hand-written fixture those
+        # notes explain each trap and in two cases state the answer ("Ground truth for
+        # 'cheapest 2 x 9.5L': this seller, 22.50 against 24.90"). Sent as the product
+        # description, a note renders in the Details section, which is inside the
+        # accessibility snapshot the agent reads: that put the answer key in context for 59
+        # of 60 baseline runs (README, 13 Sep 2026). Notes stay in the fixture JSON, where
+        # the ground truth belongs, and never reach Magento.
         "custom_attributes": [
             {"attribute_code": "category_ids",
              "value": [str(c) for c in family["category_ids"]]},
@@ -463,7 +463,7 @@ def cmd_verify(m: Magento, args: argparse.Namespace) -> int:
                 print(f"PRICE MISMATCH {sku}: {prices[sku]} != {price}")
                 problems += 1
         # Each child's name carries its menu label, which the size menu renders and the
-        # search index reads (24 October 2026).
+        # search index reads.
         for variant in family["variants"]:
             want = f"{family['name']} - {menu_label(variant)}"
             if variant["sku"] in names and names[variant["sku"]] != want:

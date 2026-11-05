@@ -102,7 +102,7 @@ def validate_config(path):
 def primary_spent(root, primary, status):
     """The primary run's counted spend: the larger of the account's usage over its run, as its
     guard counted it (`spent_usd`), and its recorded charges plus those its partial run's log shows,
-    which no record holds (slot 16's 151 calls; amendment 4 point 6, the verifier's finding)."""
+    which no record holds (slot 16's 151 calls; amendment 4 point 6)."""
     partial = partial_run(root, primary, status)
     charges = partial['charges_usd'] if partial else 0.0
     return max(original.number(status['spent_usd']), original.number(status['recorded_usd']) + charges)
@@ -347,7 +347,7 @@ class MatchedGuard(original.Guard):
         cfg, self.protocol = validate_config(config_path)
         self.study_id = cfg['study_id']
         # A later stage of amendment 4: its own reserve, the primary run's spend carried, and a
-        # start cutoff. The primary run's configuration has none of these (2 November 2026).
+        # start cutoff. The primary run's configuration has none of these.
         self.stage = cfg.get('stage')
         self.carryover = original.number(cfg.get('carryover_usd', 0))
         self.start_cutoff = dt.datetime.fromisoformat(cfg['start_cutoff']).timestamp() if self.stage else None

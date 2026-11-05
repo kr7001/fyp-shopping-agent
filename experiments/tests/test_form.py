@@ -153,8 +153,8 @@ class NewForms(unittest.TestCase):
                 parsed = form.from_rules(question)
                 self.assertEqual((parsed.quantifier, parsed.objective, parsed.kind(), parsed.reading),
                                  ("exists", "price", "exists_price", "buyable"))
-                # Strict since form v9 (20 Oct 2026): "under" and "less than" exclude the
-                # figure; "$20 or less" below keeps it. `test_claim_arms.StrictUnder`.
+                # Strict (form v9): "under" and "less than" exclude the figure, "$20 or less"
+                # below keeps it. See `test_claim_arms.StrictUnder`.
                 self.assertEqual(parsed.filter("price"), Filter("price", "<", 20.0))
                 self.assertEqual(parsed.filter("size"), Filter("size", "=", "M"))
                 self.assertEqual(parsed.filter("availability"), Filter("availability", "=", "buyable"))
@@ -175,8 +175,8 @@ class NewForms(unittest.TestCase):
                             (GO + "List the top 3 sellers by price for size M.", 3),
                             (GO + "Name the cheapest three sellers for size M.", 3),
                             (GO + "Which are the 5 cheapest sellers for size L?", 5),
-                            # The count before "sellers" and the superlative elsewhere.
-                            # Parsed as the single cheapest until 14 Oct 2026 (verifier).
+                            # The count before "sellers" and the superlative elsewhere,
+                            # never the single cheapest.
                             (GO + "Which three sellers offer size M cheapest?", 3),
                             (GO + "Which 3 sellers are cheapest for size M?", 3)):
             with self.subTest(question=question):
@@ -267,8 +267,8 @@ class NewForms(unittest.TestCase):
 
 class Unknown(unittest.TestCase):
     """A question with no shape and no shopping signal is unknown, and one with a signal
-    but no shape keeps the survey fallback and says so (14 October 2026, at the student's
-    request). The box bypasses the first and runs the second, see `test_box.Bypass`."""
+    but no shape keeps the survey fallback and says so. The box bypasses the first and runs
+    the second, see `test_box.Bypass`."""
 
     UNRELATED = ("What is the weather in Singapore today?",
                  "Write a short poem about shoes.",
@@ -315,9 +315,9 @@ class Unknown(unittest.TestCase):
                 self.assertFalse(parsed.fallback)
 
     def test_sell_is_a_market_word(self):
-        # Verifier finding, 14 Oct 2026: "Who sells the softest tee?" bypassed the box.
-        # Since 20 Oct that question is refused for its superlative (`Graded`), so the
-        # market word is checked on a question without one.
+        # "sells" is a market word, so "Who sells the softest tee?" must not bypass the box.
+        # That question is refused for its superlative (`Graded`), so the market word is
+        # checked on a question without one.
         for question, word in (("Who sells the Thornwood tee?", "sells"),
                                ("Which of them sell tees?", "sell"),
                                ("Tell me what is sold here.", "sold"),
@@ -424,7 +424,7 @@ class Graded(unittest.TestCase):
                          ["delivery time"])
 
     def test_the_verifiers_probe(self):
-        # 20 Oct 2026, from the verifier's 48 questions on the live page: a shown attribute's
+        # From 48 questions put to the live page on 20 Oct 2026: a shown attribute's
         # own word, a range of sizes, and "the top", which ranks by nothing unless a count
         # follows it.
         for question, kind in (("Which seller has the best availability for size M?", "survey"),
@@ -523,8 +523,8 @@ class Shown(unittest.TestCase):
         text = form.refusal(["delivery time"])
         self.assertTrue(text.startswith("The shop does not show delivery time, so"))
         self.assertIn("advertised price", text)
-        # Since form v15 (the verifier's audit at cd49128) no refusal speaks of review pages,
-        # which the box does not read and the design B listings do not have.
+        # No refusal speaks of review pages (form v15), which the box does not read and the
+        # design B listings do not have.
         self.assertNotIn("review", text)
 
 
@@ -585,7 +585,7 @@ class Compose(unittest.TestCase):
     def test_the_new_texts_carry_their_stop_rule_and_the_quarantine(self):
         exists = primitives.compose(form.from_rules(GO + "Is there any seller under $20 for size M?"), self.page)
         self.assertEqual(exists.primitive, "witness")
-        # "under" is strict since form v9 (20 Oct 2026); `test_claim_arms.StrictUnder`.
+        # "under" is strict (form v9), as `test_claim_arms.StrictUnder` checks.
         self.assertIn("the price you read is below $20.00", exists.instruction)
         self.assertNotIn("at or below $20.00", exists.instruction)
         self.assertIn("choose size M, then look at the page again", exists.instruction)
@@ -657,10 +657,10 @@ class Checks(unittest.TestCase):
                                                              "Seller D", "Seller E"))["ok"])
 
     def test_witness_named_without_a_yes(self):
-        # Verifier findings, 14 Oct 2026: an answer that names its witness without the
-        # word "yes" first passed with nothing opened, then was read as a yes through the
-        # listing it names. Neither yes nor no is held to what a no owes, whatever it
-        # names: ten listings are advertised at or below $20.
+        # An answer that names its witness without the word "yes" must not pass with nothing
+        # opened, nor be read as a yes through the listing it names. Neither yes nor no is
+        # held to what a no owes, whatever it names: ten listings are advertised at or
+        # below $20.
         exists = GO + "Is there any seller under $20 for size M?"
         named = "Seller C sells size M at $12.15, so there is a seller under $20.00."
         for opened in (self.observed("Seller A", "Seller B"), "", self.observed("Seller C"),
@@ -681,10 +681,9 @@ class Checks(unittest.TestCase):
         self.assertTrue(self.check(exists, unclear, self.all_but())["ok"])
 
     def test_witness_reads_a_denial_however_it_starts(self):
-        # Verifier finding, 14 Oct 2026: on a page advertising $10.15, $15.00 and $25.00,
-        # under a limit of $20, each of these denials names Seller A, and with Seller A
-        # alone opened each passed as a yes through it. A no owes the two listings the
-        # limit does not rule out.
+        # On a page advertising $10.15, $15.00 and $25.00, under a limit of $20, each of
+        # these denials names Seller A, and with Seller A alone opened none may pass as a yes
+        # through it. A no owes the two listings the limit does not rule out.
         three = synthetic_page([10.15, 15.00, 25.00])
         exists = GO + "Is there any seller under $20 for size M?"
         parsed = form.from_rules(exists, three)
@@ -768,15 +767,15 @@ class Checks(unittest.TestCase):
         self.assertEqual(self.check(every, "Yes, all of them.", self.all_but("Seller D"))["flag"],
                          "unverified_universal")
         self.assertTrue(self.check(every, "Yes, all of them.", self.all_but())["ok"])
-        # A no read however it starts (14 Oct 2026), naming its counterexample.
+        # A no read however it starts, naming its counterexample.
         none = "None of them has it; Seller D is sold out."
         self.assertTrue(self.check(every, none, self.observed("Seller D"))["ok"])
         self.assertEqual(self.check(every, none, self.observed("Seller A"))["flag"], "counterexample_not_opened")
 
     def test_counterexample_named_without_a_no(self):
-        # Verifier finding, 14 Oct 2026: an answer with neither yes nor no passed with nothing
-        # opened. Naming a listing could be a counterexample or an example, so it is held to
-        # what a yes needs, every listing; naming nothing is unclear.
+        # An answer with neither yes nor no must not pass with nothing opened. Naming a
+        # listing could be a counterexample or an example, so it is held to what a yes
+        # needs, every listing. Naming nothing is unclear.
         every = GO + "Does every listing have size M in stock? Answer yes or no."
         for answer in ("Seller D lacks size M.", "All of them have it, Seller D included."):
             with self.subTest(answer=answer):
@@ -788,9 +787,9 @@ class Checks(unittest.TestCase):
         self.assertEqual((unclear["ok"], unclear["flag"]), (False, "answer_unclear"))
 
     def test_bound_and_prune_counts_a_tie_at_the_answer_once(self):
-        # Verifier finding, 14 Oct 2026: two listings advertised at the answer's price. The
-        # text says to skip a listing advertised at or above the best total, so a run that
-        # followed it opened three; the old floor of four refused it.
+        # Two listings advertised at the answer's price. The text says to skip a listing
+        # advertised at or above the best total, so a run that follows it opens three, which
+        # a floor of four would refuse.
         tie = synthetic_page([10.15, 11.15, 12.15, 12.15, 13.15])
         by_seller = {item.seller: item for item in tie.listings}
         opened = "\n".join(f"Page URL: {by_seller[s].url}" for s in ("Seller A", "Seller B", "Seller C"))

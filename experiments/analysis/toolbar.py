@@ -19,7 +19,7 @@ read from two things only: the addresses its navigations asked for, and the addr
 replies reported. Never from a page's links, which hold a pager's "p=2" on every first page and
 repeat the current address's parameters, nor from the text of a page (LESSONS 2, 3).
 
-Found by the verifier's audit of 23 October 2026: four stored runs of the second agent sorted the
+Found by the fairness audit of 23 October 2026: four stored runs of the second agent sorted the
 Calderwood results by name, one of them by price as well (20260918T054737 and 20260918T060028,
 scaled-all-stocked and scaled-cheapest-target), and two openJiuwen runs set the page size, to 24
 (20260910T000915 scaled-best-per-litre-1) and to 60 (20261020T221540 apparel-target-price-3, a
@@ -49,9 +49,8 @@ import trace_stats  # noqa: E402
 
 # Bumped when what this reads from a log would change for the same logs, and recorded in each
 # protocol analysis that counts sorts and page sizes with it (claim.py).
-#   1  23 October 2026, from the verifier's fairness audit: the sort, page size, view and
-#      page numbers a run asked for, from its navigations and its replies' pages. A VERSION
-#      since the auditor's check of 41d7839; what the module reads is unchanged
+#   1  23 October 2026, for the fairness audit: the sort, page size, view and page numbers
+#      a run asked for, from its navigations and its replies' pages
 VERSION = 1
 
 # How an openJiuwen reply states the page the browser is on after the call, besides the

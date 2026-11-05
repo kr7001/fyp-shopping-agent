@@ -232,9 +232,9 @@ def keys(fixture: dict, limits: tuple[int, int] | None = None) -> dict:
     # Like with like. `_instance.largest_size_winner` is the cheapest price listed for the
     # largest size, sold out or not (`generate_apparel.measure`), so it is compared with the
     # cheapest listed recomputed here, and the key, the cheapest that can be bought, is
-    # computed beside it. Until 20 October 2026 the key itself was compared, which on a
-    # market whose cheapest listed XL is sold out refuses a correct file; on Thornwood both
-    # are Ivybridge Collective at $18.08, so its file is unchanged.
+    # computed beside it. Comparing the key itself would refuse a correct file on a market
+    # whose cheapest listed XL is sold out. On Thornwood both are Ivybridge Collective at
+    # $18.08.
     listed = min((l for l in listings if apparel.price_for(l, largest) is not None),
                  key=lambda l: apparel.price_for(l, largest))
     if (listed["seller"], apparel.price_for(listed, largest)) != \
@@ -296,8 +296,8 @@ def v2_tasks(fixture: dict, v1: dict, limits: tuple[int, int] | None = None,
     # The pair's answer is whichever of the two is cheaper for the size. `comparison_pair`
     # prefers a pair the page points the wrong way on, where that is the one advertised
     # dearer, `high`; with no such pair it falls back to the two cheapest, where it is
-    # `low`, and until 20 October 2026 the key still named `high`, a wrong key. Thornwood's
-    # pair crosses over, so its file is unchanged; the claim market's does not.
+    # `low`, and a key naming `high` there would be wrong. Thornwood's pair crosses over,
+    # the claim market's does not.
     crossed = price(low, size) > price(high, size)
     cheaper, dearer = (high, low) if crossed else (low, high)
     new = [
@@ -459,7 +459,7 @@ def readings(v1_readings: dict, tasks: list[dict]) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# A market with no pilot: everything from its own fixture (20 October 2026)
+# A market with no pilot: everything from its own fixture
 
 def wrap(text: str) -> list[str]:
     return textwrap.wrap(text, 88)

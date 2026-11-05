@@ -151,9 +151,8 @@ class Parser(unittest.TestCase):
         record = page.parse(results_page(self.cards, ONE_PAGE), "x").record()
         self.assertEqual((record["url"], record["count"], record["total"], record["next_page"]),
                          ("x", 3, 3, False))
-        # The title too since 22 October 2026, so the model parser's title normalisation
-        # can be replayed from a run record; a record from before keeps none and reads
-        # back with none (`page.from_record`).
+        # The title too, so the model parser's title normalisation can be replayed from a
+        # run record. A record that keeps no titles reads back with none (`page.from_record`).
         self.assertEqual(record["listings"][1],
                          {"seller": "Mellow Fields", "advertised": 12.25,
                           "url": f"{BASE}/mellow-fields-tee.html",

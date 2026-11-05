@@ -372,9 +372,9 @@ UNRELATED = ("What is the weather in Singapore today?",
 
 class Bypass(unittest.TestCase):
     """A question with no shopping shape and no shopping signal goes to the agent unchanged,
-    and the record says so (14 Oct 2026, at the student's request). A shopping question the
-    rules can only survey runs and is recorded as a fallback. One about an attribute the
-    shop lacks keeps its refusal. The six clothing questions are none of these."""
+    and the record says so. A shopping question the rules can only survey runs and is
+    recorded as a fallback. One about an attribute the shop lacks keeps its refusal. The six
+    clothing questions are none of these."""
 
     def setUp(self):
         self.page = synthetic_page([31.40, 12.25, 19.50])
@@ -414,9 +414,9 @@ class Bypass(unittest.TestCase):
             box.decide("Which seller is cheapest for size M?", None)
 
     def test_who_sells_is_a_fallback_not_a_bypass(self):
-        # Verifier finding, 14 Oct 2026: "sells" was not a market word, so "Who sells the
-        # softest tee?" bypassed. Since 20 Oct that question is refused for its superlative
-        # (`Refusal`), so the market word is checked on one without a superlative.
+        # "sells" is a market word, so "Who sells the softest tee?" must not bypass. That
+        # question is refused for its superlative (`Refusal`), so the market word is checked
+        # on one without a superlative.
         decision = box.decide("Who sells the Thornwood tee?", self.page)
         self.assertFalse(decision.bypass)
         self.assertEqual((decision.kind, decision.record()["fallback"]), ("survey", True))
@@ -544,8 +544,8 @@ class Refusal(unittest.TestCase):
                 self.assertIsNotNone(decision.query)
 
     def test_a_superlative_on_an_attribute_the_shop_does_not_show_is_refused_whatever_the_word(self):
-        # 20 Oct 2026: "Who sells the softest Thornwood tee?" was planned by the fallback
-        # and opened all 15 listings for an attribute no page shows (verifier finding).
+        # Planned by the fallback, "Who sells the softest Thornwood tee?" would open all 15
+        # listings for an attribute no page shows.
         decision = box.decide(self.go + "Who sells the softest Thornwood tee?", self.page)
         self.assertTrue(decision.refuse.startswith("The shop does not show what 'softest' ranks by"))
         self.assertEqual((decision.query, decision.plan, decision.kind, decision.record()["fallback"]),
@@ -559,8 +559,8 @@ class Refusal(unittest.TestCase):
         self.assertIsNone(asks.refuse)
 
     def test_a_refusal_comes_before_the_ambiguity_ask(self):
-        # Verifier finding, 20 Oct 2026: these asked which reading of "offer" was meant and
-        # refused after the reply, spending a user turn on a question the shop cannot answer.
+        # Asking which reading of "offer" is meant and refusing after the reply would spend a
+        # user turn on a question the shop cannot answer.
         for q in ("Does every listing offer the softest tee in size M?",
                   "Which seller offers the most comfortable tee in size M?"):
             with self.subTest(question=q):
@@ -703,8 +703,8 @@ class ListingsOpened(unittest.TestCase):
     def test_without_a_market_the_generated_markets_product_pages_count(self):
         self.assertEqual(sufficiency.listings_opened(self.TEXT),
                          {"slug:igr-app-03", "slug:igr-rvn-07", "id:230"})
-        # The fault, planted: the old rule, any single-segment .html path, read the
-        # category page and the name slug as listings too.
+        # The fault, planted: a rule that takes any single-segment .html path for a listing
+        # reads the category page and the name slug as listings too.
         old = {sufficiency._listing_key(url) for url in sufficiency.PAGE_MARKER.findall(self.TEXT)}
         self.assertEqual(old - {None}, {"slug:electronics", "slug:igr-app-03", "slug:igr-rvn-07",
                                         "id:230",
@@ -796,8 +796,8 @@ class CounterexampleFromTheMenu(unittest.TestCase):
         self.assertIsNone(primitives.menu_has({"12 x 550ml": True, "9.5L": True}, "2 x 9.5L"))
 
     def test_an_excerpt_cut_inside_the_menu_shows_presence_only(self):
-        # Verifier finding, 20 Oct 2026: a find reply is an excerpt, cut wherever its three
-        # lines end, and one ending after S and M was read as a menu without L and XL.
+        # A find reply is an excerpt, cut wherever its three lines end, so one ending after S
+        # and M must not be read as a menu without L and XL.
         key = sufficiency.listing_key(self.urls[0])
         xl = box.decide(f"Go to {RESULTS_URL} . Does every listing offer size XL? Answer yes or no.",
                         self.page, reply="menu")
@@ -828,17 +828,16 @@ class CounterexampleFromTheMenu(unittest.TestCase):
         self.assertTrue(sufficiency.size_menus(both)[key].complete)
 
     def test_a_depth_cut_snapshot_gives_no_reading(self):
-        # Verifier finding, 20 Oct 2026: a snapshot taken with a depth prints the combobox
-        # as a leaf, no colon and no option lines, and carries the page URL, which the first
-        # rule took for a complete reading with no sizes: a bare No against a listing whose
-        # menu was never seen.
+        # A snapshot taken with a depth prints the combobox as a leaf, no colon and no option
+        # lines, and carries the page URL. Taken for a complete reading with no sizes, it
+        # would support a bare No against a listing whose menu was never seen.
         key = sufficiency.listing_key(self.urls[0])
         cut = menu_log(self.tmp.name, "depth", [(self.urls[0], {}, "depth-cut")])
         self.assertEqual(sufficiency.size_menus(cut), {})
         self.assertEqual(box.check(self.decision(), "No", cut)["flag"], "counterexample_not_opened")
-        # The fault, planted: the reading the first rule made of this snapshot, complete
-        # with no sizes, refutes every size; no text gives that reading now, a head with
-        # a colon and no option lines included.
+        # The fault, planted: a reading of this snapshot as complete with no sizes refutes
+        # every size. No text gives that reading, a head with a colon and no option lines
+        # included.
         forced = {key: sufficiency.MenuReading({}, True)}
         self.assertIsNotNone(primitives.counterexample_seen(self.decision().form, self.page, {key}, forced))
         text = cut.read_text().replace('[ref=f1e89]\\\\n', '[ref=f1e89]:\\\\n')
@@ -850,9 +849,9 @@ class CounterexampleFromTheMenu(unittest.TestCase):
         self.assertTrue(box.check(self.decision(), "No", whole)["ok"])
 
     def test_a_find_window_that_starts_inside_the_menu_shows_presence_only(self):
-        # Verifier finding, 20 Oct 2026: the find renderer prints three lines around a
-        # match with no mark of what it dropped before them, so a block whose first option
-        # is not the placeholder may have lost options in front of the window.
+        # The find renderer prints three lines around a match with no mark of what it
+        # dropped before them, so a block whose first option is not the placeholder may have
+        # lost options in front of the window.
         key = sufficiency.listing_key(self.urls[0])
         xs = box.decide(f"Go to {RESULTS_URL} . Does every listing offer size XS? Answer yes or no.",
                         self.page, reply="menu")
@@ -881,9 +880,9 @@ HAVE_V2_LOGS = all(any((paths.RESULTS / batch).glob("*.log")) for batch in V2_BA
 @unittest.skipUnless(HAVE_V2_LOGS, "the raw logs live on the laptop, not in git")
 class BoxBatchesReplayed(unittest.TestCase):
     """The box's own check replayed over the three batches of 14 October 2026 from the
-    stored page record and the logs (`replay_box`). The figures the verifier asked for on
-    20 Oct: no wrong run refused, and no other run refused either, where five correct bare
-    "No" runs were refused before the menu evidence was read."""
+    stored page record and the logs (`replay_box`). No wrong run refused, and no other run
+    refused either, where without the menu evidence five correct bare "No" runs are
+    refused."""
 
     @classmethod
     def setUpClass(cls):
@@ -900,8 +899,8 @@ class BoxBatchesReplayed(unittest.TestCase):
         self.assertEqual(reading, {"slug:igr-app-03": sufficiency.MenuReading({"S": True, "L": True}, False)})
         # All 32 stored texts are reproduced under the box version they ran under, v6: each
         # run's stored form is recomposed with today's code and the rewordings made since
-        # (box v10 and v11, `box.REWORDED`) are swapped back first (20 Oct 2026). Until
-        # then the comparison was with today's words, and 17 runs differed by them alone.
+        # (box v10 and v11, `box.REWORDED`) are swapped back first. Compared with today's
+        # words, 17 runs would differ by them alone.
         self.assertEqual((s["text_reproduced"], s["not_reproduced"]), (32, []))
         # 29 are decided the same today. The other three differ by deliberate changes,
         # named: the two "under $" questions read their limit strictly since form v9, and
@@ -932,7 +931,7 @@ class BoxBatchesReplayed(unittest.TestCase):
         self.assertEqual([b for blocks in finds for b in blocks],
                          [({"S": False, "M": False, "L": True, "XL": True}, False)])
         self.assertTrue(sufficiency.size_menus(log)["slug:igr-app-08"].complete)
-        # The verifier's case: on count-stocked-2 of 20261014T213118 a No to "every listing
+        # A case from the logs: on count-stocked-2 of 20261014T213118 a No to "every listing
         # offers XL" is refuted by the one complete reading, igr-app-03's menu of S and L,
         # and not by igr-app-02's excerpt of S and M.
         batch = paths.RESULTS / "20261014T213118"
@@ -1021,9 +1020,9 @@ class BoxCheck(unittest.TestCase):
         self.assertEqual(invented["flag"], "unsupported_number")
 
     def test_a_limit_written_without_decimals_is_still_the_questions_own(self):
-        # Verifier finding, 14 Oct 2026: `sufficiency.prices_in` needs decimals, so a
-        # question written "under $20" exempted nothing, while the witness text wrote the
-        # limit as "$20.00" and an answer echoing it was refused as an invented price.
+        # `sufficiency.prices_in` needs decimals, so a question written "under $20" would
+        # exempt nothing, while the witness text writes the limit as "$20.00" and an answer
+        # echoing it would be refused as an invented price.
         three = synthetic_page([10.15, 15.00, 25.00])
         opened = [item.url for item in three.listings[:2]]     # the two the limit allows
         answer = "No. No seller is under $20.00 for size M."
@@ -1031,8 +1030,8 @@ class BoxCheck(unittest.TestCase):
             with self.subTest(written=written):
                 decision = box.decide(self.go + f"Is there any seller under {written} for size M?", three)
                 self.assertEqual(decision.kind, "exists_price")
-                # "under" is a strict limit since form v9 (20 Oct 2026), so the text says
-                # below and never at or below; `test_claim_arms.StrictUnder`.
+                # "under" is a strict limit (form v9), so the text says below and never at
+                # or below, as `test_claim_arms.StrictUnder` checks.
                 self.assertIn("the price you read is below $20.00", decision.plan.instruction)
                 self.assertNotIn("at or below $20.00", decision.plan.instruction)
                 verdict = box.check(decision, answer, openjiuwen_log(self.tmp.name, f"limit-{n}", opened))
@@ -1117,10 +1116,10 @@ class GateFromPage(unittest.TestCase):
         self.assertEqual(policy.page_floor(self.CHEAPEST, self.page, "$12.50"), 3)
 
     def test_a_tie_at_the_price_named_is_counted_once(self):
-        # Verifier finding, 14 Oct 2026: two listings advertised at the answer's price. The
-        # text says to skip a listing advertised at or above the best total, so a run that
-        # followed it opened the three advertised at or below it and skipped the other at
-        # that price. The old floor of four refused it.
+        # Two listings advertised at the answer's price. The text says to skip a listing
+        # advertised at or above the best total, so a run that follows it opens the three
+        # advertised at or below it and skips the other at that price. A floor of four would
+        # refuse it.
         tie = synthetic_page([10.15, 11.15, 12.15, 12.15, 13.15])
         self.assertEqual(policy.page_floor(self.CHEAPEST, tie, "Seller C at $12.15"), 3)
         self.assertEqual(policy.bound_floor(tie, 12.15), 3)
@@ -1134,10 +1133,10 @@ class GateFromPage(unittest.TestCase):
                          "superlative_without_coverage")
 
     def test_the_extra_one_is_for_the_answers_own_listing(self):
-        # Verifier finding, 14 Oct 2026: the answer's own listing is advertised at $8 and
-        # sells size M at $12.00, and two other listings are advertised at $12. A run that
-        # followed the text opened the two advertised below its answer and skipped the
-        # two at it. The old rule added one for any listing at the price and refused it.
+        # The answer's own listing is advertised at $8 and sells size M at $12.00, and two
+        # other listings are advertised at $12. A run that follows the text opens the two
+        # advertised below its answer and skips the two at it. A rule that added one for any
+        # listing at the price would refuse it.
         tie = synthetic_page([8.00, 9.00, 12.00, 12.00, 20.00])
         answer = "Seller A is cheapest at $12.00 for size M."
         self.assertEqual(policy.bound_floor(tie, 12.00, answer), 2)
@@ -1148,9 +1147,9 @@ class GateFromPage(unittest.TestCase):
         one = openjiuwen_log(self.tmp.name, "own-1", [tie.listings[0].url], "Price: $12.00")
         self.assertEqual(policy.gate_from_page(self.CHEAPEST, tie, answer, one)["flag"],
                          "superlative_without_coverage")
-        # The answer's own listing advertised at the price: the one is added, as before.
+        # The answer's own listing advertised at the price: the one is added.
         self.assertEqual(policy.bound_floor(tie, 12.00, "Seller C is cheapest at $12.00."), 3)
-        # No seller named: the old rule, one for any listing advertised at the price.
+        # No seller named: one for any listing advertised at the price.
         self.assertEqual(policy.bound_floor(tie, 12.00, "$12.00"), 3)
         self.assertEqual(policy.bound_floor(tie, 12.00), 3)
         # A seller the page does not have is no seller named.
@@ -1158,8 +1157,8 @@ class GateFromPage(unittest.TestCase):
 
 
 class NamedIn(unittest.TestCase):
-    """The listings an answer names, as whole names (verifier finding, 14 Oct 2026: the
-    substring "seller a" was found inside "seller and")."""
+    """The listings an answer names, as whole names, so the substring "seller a" is never
+    found inside "seller and"."""
 
     def setUp(self):
         self.page = page.Page(url=RESULTS_URL, total=3, next_page=False, listings=[
@@ -1385,8 +1384,8 @@ class SuiteQuery(unittest.TestCase):
         self.assertIn("refused", row["why"])
 
     def test_the_reading_is_recorded_only_on_a_row_the_box_asked_on(self):
-        # Verifier finding, 14 Oct 2026: under --reading menu every row said "menu", the
-        # four clear questions included, where the box had asked nothing.
+        # Under --reading menu a row says "menu" only where the box asked, never on the four
+        # clear questions, where it asks nothing.
         args = self.args(box=True, reading="menu")
         for task in self.spec["tasks"]:
             with self.subTest(task=task["id"]):
@@ -1401,14 +1400,14 @@ class SuiteQuery(unittest.TestCase):
                                  "menu" if asked else None)
 
     def test_a_reading_the_box_took_is_recorded_printed_and_scored_under_its_key(self):
-        # Verifier finding, 20 Oct 2026: a run the box read as buyable recorded no reading
-        # and was scored under the menu key, the flag's.
+        # A run the box read as buyable records that reading and is scored under its key,
+        # never under the menu key the flag names.
         task = {"id": "best-price", "family": "apparel", "gated": True,
                 "query": "Go to {base}/catalogsearch/result/?q=Example . Which seller has the "
                          "best price for size M?",
                 "expect": {"kind": "contains", "any": ["Seller B"], "price": 12.25}}
-        # The made-up page, injected: until 22 October 2026 this read the live shop's own
-        # search for "Example", whose first page then stood in for it.
+        # The made-up page, injected, so the live shop's own search for "Example" never
+        # stands in for it.
         suite.PAGES[RESULTS_URL] = self.page
         self.addCleanup(suite.PAGES.pop, RESULTS_URL, None)
         query, applied = suite.build_query(task, self.spec, self.args(box=True, reading="menu"))
@@ -1485,8 +1484,8 @@ class SuiteQuery(unittest.TestCase):
                 row("refused", refuse="The shop does not show delivery time"),
                 row("wrong", bypassed=True), row("correct", fallback=True), row("correct"),
                 # Planned by the fallback and then refused, or asked on with no reading:
-                # nothing ran, so refused or asked alone (verifier finding, 14 Oct 2026:
-                # a refused fallback was counted twice).
+                # nothing ran, so refused or asked alone, and a refused fallback is counted
+                # once.
                 row("refused", refuse="The shop does not show shipping cost", fallback=True),
                 row("asked", asked=True, fallback=True)]
         summary = suite.summarise(rows)
@@ -1540,8 +1539,8 @@ class SuiteQuery(unittest.TestCase):
         self.assertIn("--box cannot be combined with --targeting or --exhaustive", run.stderr)
 
     def test_an_unknown_task_id_in_only_is_refused_by_name(self):
-        # Verifier finding, 14 Oct 2026, at 39f15e9: an id that named no task was dropped
-        # without a word, so a misspelt --only ran the rest as if nothing were missing.
+        # An id that names no task, dropped without a word, would let a misspelt --only run
+        # the rest as if nothing were missing.
         command = [sys.executable, str(paths.EXPERIMENTS / "runners" / "suite.py"),
                    "--tasks", str(paths.TASKS / "tasks_apparel.json"), "--repeats", "1",
                    "--dry-run", "--only", "apparel-headline"]
@@ -1578,16 +1577,15 @@ class SuiteQuery(unittest.TestCase):
         self.assertIs(suite.GATED_UA, page.GATED_UA)
 
     def test_the_browser_may_request_only_the_shop_on_the_gated_shop(self):
-        # A bypassed question names no shop page, so the browser is confined to the shop
-        # (verifier finding, 14 Oct 2026), and since 20 Oct service workers are blocked
-        # beside it, so every page the agent reads is one the shop served. The agent splits
-        # the string with shlex.
+        # A bypassed question names no shop page, so the browser is confined to the shop,
+        # and service workers are blocked beside it, so every page the agent reads is one
+        # the shop served. The agent splits the string with shlex.
         words = shlex.split(suite.browser_env("gated")["PLAYWRIGHT_MCP_ARGS"])
         self.assertEqual(words.count("--allowed-origins"), 1)
         self.assertEqual(words[words.index("--allowed-origins") + 1], "http://localhost:7770")
         self.assertEqual(words.count("--block-service-workers"), 1)
-        # Since 20 Oct 2026 the profile is in memory too (`--isolated`, verifier finding:
-        # every run had shared one profile on disk); `test_claim_arms.IsolatedProfile`.
+        # The profile is in memory too (`--isolated`), so no run shares a profile on disk
+        # with another, as `test_claim_arms.IsolatedProfile` checks.
         self.assertEqual(suite.BROWSER_FLAGS, "--block-service-workers --isolated")
         self.assertEqual(words[words.index("--user-agent") + 1], page.GATED_UA)
         self.assertEqual(words[:2], ["-y", f"@playwright/mcp@{suite.BROWSER_TOOL}"])
@@ -1607,8 +1605,8 @@ class SuiteQuery(unittest.TestCase):
 
 class AgentCode(unittest.TestCase):
     """Every batch says which openJiuwen code answered: the submodule's commit and the
-    sha1 of the uncommitted patch on it (verifier finding, 14 Oct 2026: the patch was a
-    held-constant condition that no record named)."""
+    sha1 of the uncommitted patch on it, since the patch is a held-constant condition that
+    no record would otherwise name."""
 
     HEX40 = r"^[0-9a-f]{40}$"
 
@@ -1623,7 +1621,7 @@ class AgentCode(unittest.TestCase):
         self.assertRegex(identity["agent_core_patch"], self.HEX40)
         # The same two figures taken independently: the digest is of the bytes git prints
         # with full blob ids, so an empty diff would give the sha1 of nothing, and the
-        # machine's abbreviation setting changes nothing (verifier finding, 20 Oct 2026).
+        # machine's abbreviation setting changes nothing.
         self.assertEqual(identity["agent_core_commit"], self.git("rev-parse", "HEAD").decode().strip())
         self.assertEqual(identity["agent_core_patch"],
                          hashlib.sha1(self.git("diff", "--full-index")).hexdigest())

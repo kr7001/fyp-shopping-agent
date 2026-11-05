@@ -68,10 +68,9 @@ SETTINGS = ("model", "provider", "temperature", "frequency_penalty", "top_p", "m
             "browser_executable")
 RULES = ROOT / "docs/content/claim2-reading-rules.md"
 # The adapter's save_as_pdf result shows the agent its output path, which holds the slot id and
-# so the arm (the verifier's receipt for Study A, 2 November 2026). An answer that repeats it
-# names its arm to the student: it is copied as it is, flagged and listed, never edited. None of
-# the 48 stored answers of the earlier Browser Use studies matches. A rerun's path also names its
-# stage folder, so the same flag covers it.
+# so the arm. An answer that repeats it names its arm to the human reader: it is copied as it
+# is, flagged and listed, never edited. None of the 48 stored answers of the earlier Browser
+# Use studies matches. A rerun's path also names its stage folder, so the same flag covers it.
 ARM_LABEL = re.compile(r"-r\d+-(?:block|baseline)\b", re.I)
 # Amendment 1: Browser Use writes a saved file's full path into the agent's memory as
 # "Full path: ..." (browser_use/tools/service.py 1666-1673). A slot whose conversation holds it
@@ -137,7 +136,7 @@ class Study:
     tasks_file: str      # the generated questions and keys, a repository path
     readings_file: str   # their readings sidecar
     files: dict          # repository path -> SHA-256 of every frozen file the plan names
-    rules_sha256: str    # the frozen reading rules the student grades under
+    rules_sha256: str    # the frozen reading rules the human reader grades under
     sheet: str           # the blank sheet's file name, and the reader's download name
     pinned: dict         # stage name -> the SHA-256 its configuration must have, where fixed
     note: str = NOTE     # what the reader says about this review before the rules
@@ -343,7 +342,7 @@ def load_stage(study, spec, config_path, config_sha256, given=None):
         expect = tasks[task_id].get("expect")
         require(isinstance(expect, dict) and expect.get("kind") != "none", "A question has no answer key.")
         # One key whatever reading a run took: a reading's own key on the sheet would tell the
-        # student which arm read the question that way.
+        # human reader which arm read the question that way.
         require(task_id not in readings.get("two_readings", [])
                 and all(keyed.get(task_id, expect) == expect for keyed in readings["readings"].values()),
                 "A question's key depends on its reading.")
@@ -354,7 +353,7 @@ def load_stage(study, spec, config_path, config_sha256, given=None):
         status = read_json(status_path)
     else:
         # The launcher refuses its balance check after its launch claim and before its first
-        # status (guarded_browser_use.execute, 2 November 2026): a claim and nothing else.
+        # status (guarded_browser_use.execute): a claim and nothing else.
         require(not results.exists() and not ledger_path.exists(),
                 f"{spec.name}: the stage left results or a ledger but no status. Inspect it.")
         status = {"status": "stopped", "config_sha256": config_sha256,
@@ -599,7 +598,7 @@ def prepare(study, stages, bundle):
             continue
         code = new_code(codes)
         # Copied as recorded: a failed or timed-out trial keeps whatever text it has, and no
-        # answer becomes an empty row for the student to judge, never a generated verdict.
+        # answer becomes an empty row for the human reader to judge, never a generated verdict.
         answer = record.get("answer") or ""
         rows.append({"code": code, "question": slot["question"]["query"],
                      "key": json.dumps(batch["tasks"][slot["question"]["id"]]["expect"], sort_keys=True),

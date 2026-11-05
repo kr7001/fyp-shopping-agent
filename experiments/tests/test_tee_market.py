@@ -1,6 +1,6 @@
 """The tee-only market of design B (env/generate_aplus.py version 4, 24 October 2026, docs/content/
-claim2-handover.md section 3): its generator's rules, labels and guards, the order model's reading
-of a label, the seeder's writing of one, and the live checker's label lines.
+claim2-protocol.md, "The market"): its generator's rules, labels and guards, the order model's
+reading of a label, the seeder's writing of one, and the live checker's label lines.
 
 Nothing here touches the shop. Every rule is shown firing on a planted fault and staying quiet on
 the development market (LESSONS 24, 31). Design A is shown unchanged: its own tests in
@@ -83,7 +83,7 @@ class Templates(unittest.TestCase):
                          [("tee-count-stocked", "menu"), ("tee-count-stocked", "buyable"), ("tee-count-buyable", "buyable")])
 
     def test_the_templates_words_format_without_a_seller(self):
-        # words_a_scorer_reads for design B blanks {seller} and {promo} too (the verifier's check).
+        # words_a_scorer_reads for design B blanks {seller} and {promo} too.
         texts = aplus.words_a_scorer_reads_b("Thurlby", [])
         self.assertIn("thurlby", texts)
         self.assertTrue(any("on promotion at $." in t for t in texts))
@@ -631,7 +631,8 @@ class Guards(unittest.TestCase):
 
     def test_the_design_b_claim_refuses_its_development_market_and_the_draft(self):
         B = aplus.DESIGN_B
-        # Frozen on 24 October 2026: the claim is no longer refused for the protocol; a draft still is.
+        # Frozen on 24 October 2026, so the claim is not refused for the protocol. A draft
+        # still is.
         self.assertTrue(aplus.protocol_final())
         self.assertIsNone(aplus.refused(1000, True, self.claim_out, "IGR-CL2", design=B))
         draft = pathlib.Path(self.tmp.name) / "draft.md"
@@ -919,8 +920,8 @@ class Questions(DevMarket):
 
 
 def synthetic_v3(fixture: dict, tasks: list[dict]) -> dict:
-    """A file in the shape the v3 held-out set is being written in (the coordinator's note of
-    24 October 2026): v2's schema, ids v3-NN, `ask_kind` on the entries whose template is null.
+    """A file in the shape of the v3 held-out set (24 October 2026): v2's schema, ids v3-NN,
+    `ask_kind` on the entries whose template is null.
     Its texts are made here and are nobody's held-out set."""
     by_id = {t["id"]: t for t in tasks}
     templates = {name: text for name, (_, text) in aplus.B_TEMPLATES.items()}
@@ -960,7 +961,7 @@ class Rewordings(DevMarket):
 
     def test_v2_is_filtered_to_the_tee_templates_and_decline_delivery(self):
         kept = [e for e in self.held["paraphrases"] if e["meaning_kept"] and e["template"] in aplus.B_TEMPLATES]
-        self.assertEqual(len(kept), 18)      # 16 keyed and 2 declines (the handover, section 4)
+        self.assertEqual(len(kept), 18)      # 16 keyed and 2 declines
         v2 = [t for t in self.spec["tasks"] if t.get("source") == "paraphrases_v2.json"]
         self.assertEqual([t["id"] for t in v2], [f"rw-{e['id']:02d}" for e in kept])
         self.assertEqual(sum(1 for t in v2 if t["expect"]["kind"] != "none"), 16)

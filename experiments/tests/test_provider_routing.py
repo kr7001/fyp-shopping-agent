@@ -83,19 +83,19 @@ class TheSetting(unittest.TestCase):
 
     def test_the_proposed_value(self):
         # The slugs, as GET /api/v1/providers gave them on 23 October 2026, fall back nowhere,
-        # and since the verifier's check of 281c7e8 hold to fp8 (part of decision 9).
+        # and hold to fp8 (part of decision 9).
         self.assertEqual(ROUTE, {"order": ["gmicloud", "deepinfra", "streamlake"], "allow_fallbacks": False,
                                  "quantizations": ["fp8"]})
         self.assertEqual(provider_routing.setting(ON), provider_routing.PROPOSED)
 
     def test_a_key_openrouter_does_not_document_is_refused(self):
-        # The verifier's check of 281c7e8: "allow_fallback" would be sent and ignored.
+        # "allow_fallback" would be sent and ignored.
         for typo in ({"order": ["gmicloud"], "allow_fallback": False}, {"quantisations": ["fp8"]}, {"zone": "eu"}):
             raw = json.dumps({DEEPSEEK: typo})
             with self.subTest(typo=typo), self.assertRaisesRegex(ValueError, "does not document"):
                 provider_routing.setting({provider_routing.ENV: raw})
-        # Quiet on every key OpenRouter documents, the verifier's list, named here and not read
-        # from the code it checks.
+        # Quiet on every key OpenRouter documents, named here and not read from the code it
+        # checks.
         documented = ("order", "allow_fallbacks", "only", "ignore", "quantizations", "sort", "require_parameters",
                       "data_collection", "max_price")
         every = {key: None for key in documented}
@@ -419,7 +419,7 @@ class TheLogsProviders(unittest.TestCase):
 
 
 class TheReRunLines(unittest.TestCase):
-    """voids.py's re-run lines (the verifier's check of 281c7e8): the flags cannot carry the
+    """voids.py's re-run lines: the flags cannot carry the
     routing, so the batch's recorded routing is printed beside them, and where a re-run here
     would be routed otherwise no flags are printed at all."""
 

@@ -1,11 +1,11 @@
-"""The verifier's audit of box v13 (22 October 2026): two blockers and five findings, fixed
-in box v14, form v11, normalisation v2, primitives v10 and score v4. Each has a case where
-the fault the verifier reproduced fires and one where the check stays quiet, and each fault
-named here was planted in the code, with a fresh bytecode cache (LESSONS 39), and seen to
-fail its test before the code was put back (LESSONS 31).
+"""The audit of box v13 (22 October 2026): two blockers and five findings, fixed in box v14,
+form v11, normalisation v2, primitives v10 and score v4. Each has a case where the fault
+fires and one where the check stays quiet, and each fault named here was planted in the
+code, with a fresh bytecode cache (LESSONS 39), and seen to fail its test before the code
+was put back (LESSONS 31).
 
 The costs (finding 5) are tested beside the code they changed: a failed parse in
-`test_model_parser.SuiteParser`, the verifier's cost line and section G in `test_checks`.
+`test_model_parser.SuiteParser`, verify_cells' cost line and section G in `test_checks`.
 
 Every model reply is a stub, every agent run is the fake runner of `test_claim_arms`, and
 nothing is sent anywhere.
@@ -81,12 +81,12 @@ def option_tasks(folder: pathlib.Path, buyable: int | None) -> pathlib.Path:
 
 
 class ScoredByTheRunsOwnRecord(unittest.TestCase):
-    """Until score v4 the reading a run was scored under was chosen by the word list, so a
-    model's ask on a question the word list reads as clear, answered as buyable, was scored
-    under the menu key: a correct 7 marked wrong against the menu's 10 (verifier finding,
-    `ver/score/drive.py`). Planted: `score.under_reading` keeping the task's own key when
-    the sidecar has none and the word list finds no ask, as it did until then: the batch
-    with no key ran, and the verifier's re-score of such a run was not unscored."""
+    """A run is scored under the reading its own record holds (score v4). Chosen by the word
+    list, the reading would score a model's ask on a question the word list reads as clear,
+    answered as buyable, under the menu key: a correct 7 marked wrong against the menu's 10.
+    Planted: `score.under_reading` keeping the task's own key when the sidecar has none and
+    the word list finds no ask, the batch with no key ran, and verify_cells' re-score of such
+    a run was not unscored."""
 
     def setUp(self):
         self.folder = pathlib.Path(self.enterContext(tempfile.TemporaryDirectory()))
@@ -105,7 +105,7 @@ class ScoredByTheRunsOwnRecord(unittest.TestCase):
         row = payload["rows"][0]
         self.assertEqual((row["box"]["reading"], row["box"]["parse"]["used"], row["verdict"]),
                          ("buyable", "model", "correct"))
-        # The verifier re-scores it the same way, from the row's box record.
+        # verify_cells re-scores it the same way, from the row's box record.
         keys = score.keys_for(self.folder / "tasks_option.json")
         task = json.loads((self.folder / "tasks_option.json").read_text())["tasks"][0]
         self.assertEqual(verify_cells.rescore(task, row["answer"], True, row, payload, keys)["verdict"],
@@ -166,8 +166,8 @@ LACKS = THORNWOOD + "Is there a Thornwood seller that doesn't have size M?"
 EVERY = THORNWOOD + "Does every Thornwood listing offer size M? Answer yes or no."
 BUYABLE = f("availability", "=", "buyable")
 
-# The verifier's cases (`ver/norm.py`, `ver/polarity.py`): each question, a form that
-# contradicts it, the words the box gives for refusing it, and the form that reads it right.
+# Each question, a form that contradicts it, the words the box gives for refusing it, and the
+# form that reads it right.
 CONTRADICTIONS = {
     "30 for under $24": (LIMIT, dict(quantifier="exists", filters=[f("size", "=", "M"), f("price", "<", 30), BUYABLE]),
                          "the form sets a price limit of 30, a figure the question does not state",
@@ -250,7 +250,7 @@ class ConflictsWithTheQuestion(unittest.TestCase):
 
 # On `named_page` "Quarry" is one seller's first word, Quarry Street Outfitters, and the
 # first question below names another seller with it, Quarry Lane Traders, which the page
-# does not list: the shape of the verifier's Rookwood case, with made-up names.
+# does not list: the shape of the Rookwood case below, with made-up names.
 PAIR = GO + "Between Quarry Lane Traders and Mellow Fields, who is cheaper for size M?"
 LISTED_PAIR = GO + "Between Quarry Street Outfitters and Mellow Fields, who is cheaper for size M?"
 
@@ -266,8 +266,8 @@ class SellersTheQuestionNames(unittest.TestCase):
                          "among its 4 listings. Which of them do you mean?")
 
     def test_a_shortened_seller_matched_to_another_seller_is_refused(self):
-        # The verifier's Rookwood case: "Rookwood" was matched to Rookwood Outfitters where
-        # the question named Rookwood Uniforms. Planted: the "named in full" check removed,
+        # The Rookwood case: "Rookwood" matched to Rookwood Outfitters where the question
+        # names Rookwood Uniforms. Planted: the "named in full" check removed,
         # the model's form was used and the plan opened Quarry Street Outfitters.
         decision = box.decide(PAIR, self.page, parser="model",
                               call=stub(lookup(f("seller", "in", ["Quarry", "Mellow Fields"]), f("size", "=", "M"))))
@@ -326,8 +326,8 @@ class SellersTheQuestionNames(unittest.TestCase):
             primitives.compose(unlisted, self.page)
 
     def test_a_value_that_is_not_a_word_is_no_form(self):
-        # The verifier's malformed replies (`ver/malformed.py`): each was read as a form, and
-        # some planned a listing called "None" or "123". Planted: `Filter` without its value
+        # Malformed replies, each of which would otherwise be read as a form, some planning a
+        # listing called "None" or "123". Planted: `Filter` without its value
         # check, five of them raised from the checks, the null and numeric sellers and URLs
         # and the nested seller; the other seven are refused by a check of their own too.
         both = f("seller", "in", ["Quarry Street Outfitters", "Mellow Fields"])

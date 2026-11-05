@@ -49,9 +49,8 @@ def listing(seller: str, sizes: list[tuple[str, float, int]], sku: str = "IGR-TS
 
 
 class PageRule(unittest.TestCase):
-    """The page rule reads what a card advertises: the cheapest size that can be bought.
-    Until 20 October 2026 it took the cheapest of every size, sold out included (verifier's
-    logic audit)."""
+    """The page rule reads what a card advertises: the cheapest size that can be bought,
+    never the cheapest of every size, sold out included."""
 
     def market(self) -> tuple[dict, list[str]]:
         # The answer costs $17.00. In the first row, a listing shaped like Thornwood's
@@ -222,8 +221,8 @@ class FreshMarketQuestions(unittest.TestCase):
 
     def test_the_largest_size_is_checked_like_with_like(self):
         # The cheapest XL listed sold out: _instance still names it, the key names the
-        # cheapest that can be bought, and the file is written. Before 20 October the key
-        # was compared with _instance and the file refused.
+        # cheapest that can be bought, and the file is written, where comparing the key with
+        # _instance would refuse it.
         market = copy.deepcopy(self.thornwood)
         ivybridge = next(f for f in market["families"] if f["parent_sku"] == "IGR-APP-08")
         next(v for v in ivybridge["variants"] if v["option"] == "XL")["qty"] = 0
@@ -277,8 +276,8 @@ class LiveCheckComparisons(unittest.TestCase):
 
     def test_a_stored_page_record_is_compared_on_the_fields_it_kept(self):
         # A record from before 22 October 2026 kept no titles, and the live page has them
-        # since box v14, so the two were compared whole and always differed. Planted: the
-        # whole records compared again, the first case failed.
+        # since box v14, so compared whole the two always differ. Planted: the whole records
+        # compared, the first case failed.
         live = copy.deepcopy(self.record)
         for item in live["listings"]:
             item["title"] = f"Thornwood Tee - {item['seller']}"
@@ -558,10 +557,9 @@ class ReadingsRefusal(unittest.TestCase):
         stocked = self.by["apparel-count-stocked"]
         self.assertIs(score.under_reading(stocked, "menu", {}), stocked)
         self.assertIs(score.under_reading(stocked, None, {}), stocked)
-        # Since score.py v4 (22 October 2026) a clear question answered under the buyable
-        # reading needs its key too: the reading is the run's, taken from what the box did,
-        # and a model's ask can put it on a question the word list reads as clear. Until
-        # then these fell back to their own keys (verifier finding).
+        # Under score.py v4 a clear question answered under the buyable reading needs its key
+        # too, never falling back to its own: the reading is the run's, taken from what the box
+        # did, and a model's ask can put it on a question the word list reads as clear.
         for task_id in ("apparel-headline", "apparel-target-price", "apparel-count-buyable",
                         "apparel-exists-under-24", "apparel-named-pair"):
             with self.subTest(task=task_id):
@@ -573,7 +571,7 @@ class ReadingsRefusal(unittest.TestCase):
         run = {"task": "apparel-count-stocked", "answer": "7 listings", "ok": True,
                "rescored": "wrong", "buyable_key": {"kind": "count", "value": 7}}
         self.assertTrue(compare_cells.correct(run, "buyable"))
-        # Thornwood's figure, the 5 this used to be typed as, would judge it wrong.
+        # Thornwood's figure, 5, typed here, would judge it wrong.
         self.assertFalse(compare_cells.correct({**run, "buyable_key": {"kind": "count", "value": 5}},
                                                "buyable"))
         with self.assertRaises(score.NoKeyForReading):

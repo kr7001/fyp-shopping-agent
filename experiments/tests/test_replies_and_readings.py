@@ -1,4 +1,4 @@
-"""The two fixes for the pilot after the verifier's FAIL at cce9ab0 (23 October 2026).
+"""The two fixes for the pilot of 23 October 2026.
 
 1. `form.parse_reply` reads a reply DeepSeek may give, which has never been the parser: a
    null content, a list of content parts, reasoning with braces before or after the form, a

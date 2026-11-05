@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Emit one of the second claim run's two paid commands (24 October 2026, the tee-only design).
 
-Written for the A+ design on 23 October, when the verifier dry-ran its mechanics (the order,
-the flags, the preflight under the run's model, exit codes 3 to 8, the routing gate, the
+Written for the A+ design on 23 October, whose mechanics were dry-run then (the order, the
+flags, the preflight under the run's model, exit codes 3 to 8, the routing gate, the
 watchdog, the voids loop, the reading test). Adapted on 24 October for the tee-only design
-and the morning's two taps (docs/content/claim2-handover.md, section 6): the plan and the
-cost table moved to experiments/analysis/stage_plan.py, which the pilot check shares, so the
-command that runs and the check that judges it read one plan.
+and the morning's two commands: the plan and the cost table moved to
+experiments/analysis/stage_plan.py, which the pilot check shares, so the command that runs
+and the check that judges it read one plan.
 
 The emitted text is what the verifier checks and the guard sees; this script only writes it.
 Each command declares its own IGR_ESTIMATE_USD and runs under caffeinate -i, as the guard reads
@@ -67,9 +67,8 @@ V1 = "experiments/tasks/paraphrases_v1.json"      # the routing gate's 30 develo
 HAIKU = "anthropic/claude-haiku-4.5"
 EXIT_PILOT_CHECK = 9
 # The agent reads BROWSER_WORKER_* and BROWSER_MODEL_* before MODEL_*, and the runner refills a
-# key the shell left unset from .env, so the chain unsets all six and stops if .env sets any
-# (the verifier's re-check of the audit fixes, 24 October 2026). Only key names are read from
-# .env, never a value.
+# key the shell left unset from .env, so the chain unsets all six and stops if .env sets any.
+# Only key names are read from .env, never a value.
 SAMPLING_KEYS = ("BROWSER_WORKER_TEMPERATURE", "BROWSER_WORKER_TOP_P", "BROWSER_MODEL_TEMPERATURE",
                  "BROWSER_MODEL_TOP_P", "MODEL_TEMPERATURE", "MODEL_TOP_P")
 EXIT_ENV_SAMPLING = 10
@@ -79,11 +78,11 @@ def header(a, est_total: float, routing: str, invocations: int, what: str, brand
     """The chain up to and including the `run` function: the manifest, the account at the
     start, the conditions line, the live check, the cap gate, the routing check and the
     watchdog. The same for both commands. The six sampling keys (`SAMPLING_KEYS`) are unset for
-    the whole chain, so the agent's code defaults, 0.2 and 0.1, hold whatever the shell carried
-    (the verifier's logic audit at cd49128), and the chain stops (exit 10) if .env sets any of
-    them, since the runner would refill it; the brand's search_query rows are written to the
-    manifest before and after each invocation (`terms`), since a search adds a "Related search
-    terms" block to the results page."""
+    the whole chain, so the agent's code defaults, 0.2 and 0.1, hold whatever the shell carried,
+    and the chain stops (exit 10) if .env sets any of them, since the runner would refill it;
+    the brand's search_query rows are written to the manifest before and after each
+    invocation (`terms`), since a search adds a "Related search terms" block to the results
+    page."""
     env = f"IGR_ESTIMATE_USD={est_total:.2f}"
     unset = " ".join(f"-u {key}" for key in SAMPLING_KEYS)
     out = [f"caffeinate -i env {unset} {env}{routing} bash <<'CHAIN'",
@@ -186,17 +185,17 @@ def run_lines(invocations, analysis, spec, costs) -> tuple[list[str], float]:
 
 def voids_lines() -> list[str]:
     # Both loops read their lines by process substitution, never through a pipe: a `| while`
-    # body runs in a subshell, where `exit 3` would end the loop and not the chain. Found by
-    # the dry run on 24 October 2026, when a refused re-run was followed by the reading tests.
-    # The commands in the loops take stdin from /dev/null so none can eat the loop's lines.
+    # body runs in a subshell, where `exit 3` would end the loop and not the chain, and a
+    # refused re-run would be followed by the reading tests. The commands in the loops take
+    # stdin from /dev/null so none can eat the loop's lines.
     return ["# Voids, decided from the log before any answer is judged, re-run once under the same routing.",
             "while IFS='|' read -r _ folder args; do",
             "  [ -n \"$folder\" ] && [ -d \"$folder\" ] || continue",
             "  report=$(python3 experiments/analysis/voids.py \"$folder\" </dev/null)",
             "  vflags=$(printf '%s\\n' \"$report\" | sed -n 's/^  re-run the [0-9]* void, each with \\(.*\\):$/\\1/p')",
             "  [ -n \"$vflags\" ] || continue",
-            # The arm the batch line names, for the re-run's preflight (the verifier's audit at
-            # cd49128: a re-run is an invocation too, checked like every other before it runs).
+            # The arm the batch line names, for the re-run's preflight: a re-run is an
+            # invocation too, checked like every other before it runs.
             "  arm=$(printf '%s' \"$args\" | sed -n 's/.* arm=\\(.*\\) round=.*/\\1/p')",
             "  while read -r only; do",
             "    fits 2.50 || { echo \"STOP before a void re-run $(date +%FT%T): $folder $only\" >> \"$MANIFEST\"; exit 3; }",
@@ -277,9 +276,9 @@ def main() -> int:
     fixture = pathlib.Path(a.fixture)
     fixture = fixture if fixture.exists() else paths.FIXTURES / a.fixture
     costs = stage_plan.costs_for(fixture, growth=a.growth)
-    # The routing the chain exports is held to the analysis file's for the run's model (the
-    # verifier's logic audit at cd49128): another object, or none for a model the file routes,
-    # is refused here, where the preflight would refuse every invocation later.
+    # The routing the chain exports is held to the analysis file's for the run's model:
+    # another object, or none for a model the file routes, is refused here, where the
+    # preflight would refuse every invocation later.
     given = json.loads(a.routing).get(a.model) if a.routing and a.routing != "none" else None
     wanted = (analysis.get("provider_routing") or {}).get(a.model)
     if given != wanted:

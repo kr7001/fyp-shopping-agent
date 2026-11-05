@@ -73,10 +73,10 @@ HERE = pathlib.Path(__file__).resolve().parent
 # Bumped whenever the order it predicts would change, since the A+ generator accepts or
 # rejects a draw by it. Recorded in every A+ fixture's `_generated`.
 #   1  22 October 2026, with the phrase prefix of a two-form brand as one term (the module
-#      docstring). Since 24 October 2026 a variant's menu label is counted in its child's
-#      name where a fixture gives one (`menu_label`, `lengths`), for the tee-only market
-#      (generate_aplus.py version 4). No market before it had a label, so no order predicted
-#      for any earlier market changes, and the version stays
+#      docstring). A variant's menu label is counted in its child's name where a fixture
+#      gives one (`menu_label`, `lengths`), for the tee-only market (generate_aplus.py
+#      version 4). No market before it had a label, so no order predicted for any earlier
+#      market changes, and the version stays
 VERSION = 1
 
 K1, B = 1.2, 0.75

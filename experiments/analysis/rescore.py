@@ -72,8 +72,8 @@ def main() -> int:
             row["answer"] = answer[:300]
 
         # The one scoring call, under the reading the run answered and the task file's keys
-        # (score v8, `score.score_run`): until 23 October 2026 this scored every run under its
-        # task's own key, whatever reading it was answered under (LESSONS 29).
+        # (score v8, `score.score_run`), never under the task's own key whatever reading the
+        # run answered (LESSONS 29).
         verdict = scoring.score_run(task, verify_cells.run_reading(row, payload), keys, answer,
                                     bool(result.get("ok")))
         if verdict["verdict"] != row["verdict"]:
@@ -82,16 +82,17 @@ def main() -> int:
             row["previous_verdict"] = row["verdict"]
         row["verdict"], row["why"] = verdict["verdict"], verdict["why"]
 
-    # `rescored` was once a bare True, which says a change happened and not what it was.
-    # It is now a list, one entry per rescore, so the history of a figure can be read back.
+    # `rescored` is a list, one entry per rescore, so the history of a figure can be read
+    # back. A bare True, which an older payload may hold, says a change happened and not
+    # what it was, and becomes one unrecorded entry.
     history = payload.get("rescored")
     if not isinstance(history, list):
         history = [] if not history else [{"on": "unrecorded", "reason": "earlier rescore"}]
     history.append({"on": dt.date.today().isoformat(), "reason": args.reason,
                     "changed": changes})
     payload["rescored"] = history
-    # The rows now carry the verdicts of this scorer, so the payload says so (LESSONS 10);
-    # until 20 October 2026 a rescored batch kept the version of the scorer that first
+    # The rows carry the verdicts of this scorer, so the payload says so (LESSONS 10). A
+    # batch rescored before 20 October 2026 kept the version of the scorer that first
     # judged it.
     payload["scorer_version"] = scoring.VERSION
     payload["summary"] = suite.summarise(payload["rows"])

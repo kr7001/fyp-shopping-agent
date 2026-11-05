@@ -29,13 +29,12 @@ MARK = "_igr_provider_routing"
 # order, and nowhere else. The slugs were read from GET /api/v1/providers, with no key, on
 # 23 October 2026, and each names an endpoint of the model in its endpoint list that day:
 # gmicloud GMICloud ($0.091 in, $0.0182 cached), deepinfra DeepInfra ($0.090, $0.018),
-# streamlake StreamLake ($0.070, $0.014), per million tokens. "quantizations": ["fp8"] since the
-# verifier's check of 281c7e8, so an endpoint that changes its quantisation is not used either
-# (part of decision 9).
+# streamlake StreamLake ($0.070, $0.014), per million tokens. "quantizations": ["fp8"] as well,
+# so an endpoint that changes its quantisation is not used either (part of decision 9).
 PROPOSED = {"deepseek/deepseek-v4-flash": {"order": ["gmicloud", "deepinfra", "streamlake"],
                                            "allow_fallbacks": False, "quantizations": ["fp8"]}}
 # The fields of OpenRouter's request-body "provider" object as its documentation names them,
-# the verifier's list on 23 October 2026. A key outside them, a typo such as "allow_fallback",
+# read on 23 October 2026. A key outside them, a typo such as "allow_fallback",
 # would be sent, and OpenRouter would ignore it without a word, so it is refused.
 PROVIDER_KEYS = ("order", "allow_fallbacks", "only", "ignore", "quantizations", "sort",
                  "require_parameters", "data_collection", "max_price")
@@ -50,8 +49,8 @@ def unknown_keys(provider: dict) -> list[str]:
 def setting(environ=None) -> dict[str, dict]:
     """The routing by model id, {} when the variable is unset or blank. Anything but a JSON
     object of model ids to objects is refused, so a mistyped setting stops a batch before
-    anything is spent rather than quietly routing nothing; since the verifier's check of
-    281c7e8 so is an object with a key OpenRouter does not document (`unknown_keys`)."""
+    anything is spent rather than quietly routing nothing, and so is an object with a key
+    OpenRouter does not document (`unknown_keys`)."""
     raw = ((os.environ if environ is None else environ).get(ENV) or "").strip()
     if not raw:
         return {}

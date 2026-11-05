@@ -91,10 +91,9 @@ def replay(only_suite: str | None = None) -> int:
         payload = json.loads(suite_path.read_text())
         # A suite already run under a policy is not a baseline, so replaying the gate over
         # it would be measuring the gate on top of itself. The same goes for every other
-        # condition that changes what the agent was asked to do. This filter has had to be
-        # widened three times as arms accumulated, each time after a figure came out wrong,
-        # so it is now written as an explicit list of everything that makes a suite not a
-        # baseline rather than as a test of the one flag that existed when it was written.
+        # condition that changes what the agent was asked to do, so this filter is an
+        # explicit list of everything that makes a suite not a baseline rather than a test
+        # of one flag.
         not_baseline = (
             payload.get("policy", "off") != "off"     # gate or retry already applied
             or payload.get("confidence", "off") != "off"  # prompt asked for a confidence
@@ -149,8 +148,7 @@ def replay(only_suite: str | None = None) -> int:
                          "draw": payload.get("draw") or "unrecorded",
                          # A second model is a second arm, and so is a second scaffold.
                          # Pooling either into one baseline is the same mistake as pooling
-                         # two catalogues, and each arrived the moment the dimension did.
-                         # Three times now, so the key is everything that decides what
+                         # two catalogues, so the key is everything that decides what
                          # produced the run rather than everything thought of so far.
                          "model": payload.get("model") or "anthropic/claude-haiku-4.5",
                          "scaffold": payload.get("scaffold") or "openjiuwen",
@@ -174,8 +172,8 @@ def replay(only_suite: str | None = None) -> int:
               f"regenerated")
     # One table per draw and model, because runs scored against different answer keys, or
     # produced by different models, are different measurements. A single pooled figure is
-    # the mistake the draw id was introduced to stop, and the same argument applies to the
-    # model the moment there is more than one.
+    # the mistake the draw id exists to stop, and the same argument applies to the model
+    # when there is more than one.
     for draw, model, scaffold in sorted({(r["draw"], r["model"], r["scaffold"])
                                          for r in rows}):
         part = [r for r in rows if r["draw"] == draw and r["model"] == model

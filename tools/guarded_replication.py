@@ -61,11 +61,11 @@ def number(value):
     return value
 
 
-# 2 November 2026, 13:18: Study A's guard stopped when one reply from /key outlasted its 6 s
-# timeout (5.5 to 9.2 s a reply that afternoon). This probe allowed 2 s a request within 6 s, so
-# the same afternoon would have stopped it too. It now waits up to 20 s a request and tries three
-# times, 2 s and then 5 s apart, on transient HTTP errors, network errors and timeouts only; a reply
-# it cannot read still fails at once. The guard waits for it as long (`account_timeout`).
+# The probe waits up to 20 s a request and tries three times, 2 s and then 5 s apart, on transient
+# HTTP errors, network errors and timeouts only. On 2 November 2026 at 13:18 Study A's guard
+# stopped when one reply from /key outlasted its 6 s timeout (5.5 to 9.2 s a reply that afternoon),
+# which 2 s a request within 6 s would not have survived either. A reply it cannot read still
+# fails at once. The guard waits for it as long (`account_timeout`).
 PROBE_TIMEOUT_S, PROBE_RETRY_WAITS_S = 20, (2, 5)
 
 
@@ -141,7 +141,7 @@ class Guard:
         self.shutdown_monotonic = time.monotonic() + self.shutdown_epoch - time.time()
         self.launch_window = None  # Derive from each step's agent + setup wall budget.
         self.poll_interval = 10
-        # Three probe reads of up to 20 s, 2 s and 5 s apart, and a margin (2 November 2026).
+        # Three probe reads of up to 20 s, 2 s and 5 s apart, and a margin.
         self.account_timeout = 3 * PROBE_TIMEOUT_S + sum(PROBE_RETRY_WAITS_S) + 8
         self.kill_grace = 4
         self.cap = number(self.config.get("cap_usd", 20))
@@ -290,9 +290,9 @@ class Guard:
     def signal_group(process, signum):
         """Signal the process group this launcher created: "gone" when no member is left, "zombies"
         when every member is dead but one is not yet reaped, which macOS answers with EPERM, for
-        signal 0 and SIGTERM alike (ESRCH once reaped), and "live" otherwise. Until 2 November 2026
-        only ESRCH was caught, so an EPERM at the end of a step escaped run() before the step's
-        manifest line, the STOP line and the final status were written (the verifier's finding)."""
+        signal 0 and SIGTERM alike (ESRCH once reaped), and "live" otherwise. Were only ESRCH
+        caught, an EPERM at the end of a step would escape run() before the step's manifest
+        line, the STOP line and the final status are written."""
         try:
             os.killpg(process.pid, signum)
         except ProcessLookupError:
@@ -395,7 +395,7 @@ class Guard:
     def update_recorded(self):
         total = 0.0
         # Only directories created since our exclusive launch are candidates.
-        # The pre-launch external-process check is the root verifier's job.
+        # Other processes are checked before launch, outside this guard.
         for folder in set(self.results_dir.iterdir()) - self.initial_dirs:
             if not folder.is_dir():
                 continue

@@ -1,7 +1,7 @@
 """The model's front door, box v13 (22 October 2026): prompt version 2, the form's three new
 fields, normalisation after the model, the checks a model's form must pass, `box.decide`
 with the model parser, the negated universal, and what the suite, the probe and the
-verifier's tools do with them.
+analysis tools do with them.
 
 Every model reply here is a stub, and nothing is sent. Every rule has a case where it fires
 and one where it stays quiet, and the faults named here were planted in the code and seen to
@@ -46,7 +46,7 @@ from test_claim_arms import run_suite  # noqa: E402
 GO = f"Go to {RESULTS_URL} . "
 THORNWOOD = paths.RESULTS / "20261014T213118" / "suite.json"
 PARAPHRASES = paths.TASKS / "paraphrases_v1.json"
-# The question the student asked to see under both parsers.
+# A question shown under both parsers.
 MEDIUM = ("Go to http://localhost:7770/catalogsearch/result/?q=Thornwood . Which seller is "
           "cheapest for size medium among the Thornwood listings?")
 # Prompt version 1 for the question below, as it was sent before version 2 existed: the
@@ -161,7 +161,7 @@ class FormV10(unittest.TestCase):
     def test_the_prompt_version_is_recorded(self):
         question = GO + "Which seller is cheapest for size M?"
         self.assertEqual(form.from_model(question, None, stub(reply())).prompt_version, form.PROMPT_VERSION)
-        self.assertEqual(form.PROMPT_VERSION, 4)     # 4 since 24 October 2026 (test_design_b.PromptV4)
+        self.assertEqual(form.PROMPT_VERSION, 4)     # see test_design_b.PromptV4
         self.assertEqual(form.parse_reply(reply(), version=1).prompt_version, 1)
         self.assertIsNone(form.from_rules(question).prompt_version)
         for bad in (0, True, "2"):
@@ -201,7 +201,7 @@ class FormV10(unittest.TestCase):
 # 2. Prompt version 2
 
 class PromptV3(unittest.TestCase):
-    """Version 3 (23 October 2026, the verifier's fairness audit of d357c72): version 2 with
+    """Version 3 (23 October 2026, the fairness audit of d357c72): version 2 with
     the two sentences of its context that were false of the shop made true."""
 
     def test_version_2_is_kept_byte_for_byte(self):
@@ -234,7 +234,7 @@ class PromptV2(unittest.TestCase):
             form.prompt(V1_QUESTION, version=5)
 
     def test_version_2_says_what_the_task_asked_and_ends_with_the_question(self):
-        # Version 3's words, the current prompt until version 4 (24 October 2026).
+        # Version 3's words, the prompt version 4 replaced.
         sent = form.prompt(V1_QUESTION, version=3)
         self.assertEqual(sent, form.prompt(V1_QUESTION, stored_thornwood(), version=3))
         self.assertTrue(sent.endswith(f"\n\nThe question:\n{V1_QUESTION}"))
@@ -331,9 +331,9 @@ class PromptV2(unittest.TestCase):
     def test_the_size_words_are_the_generated_clothing_markets(self):
         # Prompts 2 and 3 say the listings whose price depends on the size name their sizes S,
         # M, L and XL. Checked here against both clothing markets the shop was seeded from;
-        # the box itself never reads a fixture. Since normalisation v5 (24 October 2026) the
-        # shop's sizes are six, XS and XXL the design B markets' too, so each of those
-        # markets' sizes is among them (tests/test_design_b.py, SizeXS).
+        # the box itself never reads a fixture. Under normalisation v5 the shop's sizes are
+        # six, XS and XXL the design B markets' too, so each of those markets' sizes is
+        # among them (tests/test_design_b.py, SizeXS).
         for name in ("scaled_apparel.json", "claim_apparel.json"):
             with self.subTest(market=name):
                 fixture = json.loads((paths.FIXTURES / name).read_text())
@@ -771,11 +771,11 @@ class ModelPath(unittest.TestCase):
         self.assertIn(settled, decision.parse.changes)
         self.assertIn("normalised:ambiguities", decision.form.evidence)
         # The settled reading is applied, not only the flag dropped. The prompt tells a model
-        # that flags the ambiguity to leave availability out, and until normalisation v2 a
-        # reply that did so lost "in stock": a count of what can be bought became a count of
-        # what is listed (verifier finding, 22 October 2026). Planted: `settle` dropping the
-        # flag and keeping the form's filters, the reply that omits availability lost it and
-        # the box fell back to the rules.
+        # that flags the ambiguity to leave availability out, and a reply that does so must
+        # keep "in stock" (normalisation v2), or a count of what can be bought becomes a count
+        # of what is listed. Planted: `settle` dropping the flag and keeping the form's
+        # filters, the reply that omits availability lost it and the box fell back to the
+        # rules.
         omitted = reply(quantifier="count", objective="availability", filters=[f("size", "=", "M")],
                         ambiguities=[{"word": "have", "readings": ["listed", "buyable"]}])
         for text in (flagged, omitted):
@@ -978,7 +978,7 @@ OFFER_REPLY = reply(quantifier="forall", objective="availability", filters=[f("s
                     ambiguities=[{"word": "offer", "readings": ["listed", "buyable"]}])
 
 
-# The tokens a faked call says it used (23 October 2026), a count of no real call.
+# The tokens a faked call says it used, a count of no real call.
 PARSE_TOKENS = {"prompt": 5200, "completion": 140}
 
 
@@ -1105,9 +1105,8 @@ class SuiteParser(unittest.TestCase):
 
         only = (*self.keyed, "--only", "apparel-cheapest-target", "--box", "--parser", "model")
         # A request that fails may still have been charged, and nothing says how much, so its
-        # cost is unknown, never $0 (verifier finding, 22 October 2026). Planted: `parser_call`
-        # recording 0.0 for it, the first case failed. A reply that is no completion states
-        # its charge, which is kept.
+        # cost is unknown, never $0. Planted: `parser_call` recording 0.0 for it, the first
+        # case failed. A reply that is no completion states its charge, which is kept.
         for label, call_model, cost, words in (
                 ("a request that fails", timing_out, None, "the model call failed: Timeout: read timed out"),
                 ("a reply that is no completion", not_a_completion, 0.002,
@@ -1155,10 +1154,9 @@ class SuiteParser(unittest.TestCase):
             self.assertEqual(run.code, 0, run.out)
         # The clothing file's sidecar holds the buyable keys of its two questions with two
         # readings, and the model can lead any question it reads to that reading, whatever
-        # the word list makes of it (verifier finding, 22 October 2026). So a model batch on
-        # it is refused for the other four, by name, and one with a key for every question
-        # starts. Planted: the check reading the word list's two-reading questions only, the
-        # refusal did not come.
+        # the word list makes of it. So a model batch on it is refused for the other four,
+        # by name, and one with a key for every question starts. Planted: the check reading
+        # the word list's two-reading questions only, the refusal did not come.
         run, _ = self.run_model(*TASKS, "--box", "--parser", "model", "--dry-run")
         self.assertEqual(run.code, 2)
         for task in ("apparel-headline", "apparel-target-price", "apparel-cheapest-target", "apparel-count-buyable"):
@@ -1185,7 +1183,7 @@ class SuiteParser(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# 8. The verifier's re-sum of a run's cost
+# 8. verify_cells' re-sum of a run's cost
 
 class VerifyCellsCost(unittest.TestCase):
     def test_the_log_resums_to_the_agents_part_of_the_cost(self):

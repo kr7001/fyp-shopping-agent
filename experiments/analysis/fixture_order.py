@@ -3,9 +3,9 @@
 env/check_aplus_market.py, which checks the live shop against it before any run.
 
 Standard library only, and nothing of the analysis imported: the checker's browser checks run
-under the Playwright venv, .venv-naive, which holds no scipy. Until the auditor's check of
-2df6dc3 this lived in claim.py, so the checker imported claim.py, and through compare_cells
-scipy, and could not start under the venv (tests/test_aplus_market.py, TheVenvImports).
+under the Playwright venv, .venv-naive, which holds no scipy. Kept out of claim.py, which
+imports scipy through compare_cells, so the checker can start under the venv
+(tests/test_aplus_market.py, TheVenvImports).
 """
 
 from __future__ import annotations

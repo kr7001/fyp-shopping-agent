@@ -137,13 +137,13 @@ rather than hundreds. That is cheap arithmetic, and far preferable to relaxing a
 because the first few hundred tries missed."""
 
 MIN_MARGIN_REL = 0.08
-# Percentage only, since 18 Sep 2026. There was an absolute floor of $1.50 alongside this,
-# and it was the binding constraint at these price levels while the percentage never was,
-# which made an arbitrary constant load bearing. Measured before removing it: of the draws
-# passing every other rule, percent-only admitted one extra water market in 33, at a margin
-# of $1.47, and no extra clothing market in 17. A scale-free rule states cleanly as "the
-# winner is at least 8 per cent cheaper" and survives a change of currency or category,
-# where the constant would have to be re-argued for every new product.
+# Percentage only. An absolute floor of $1.50 beside it would be the binding constraint at
+# these price levels while the percentage never is, which makes an arbitrary constant load
+# bearing. Measured against such a floor: of the draws passing every other rule, percent-only
+# admitted one extra water market in 33, at a margin of $1.47, and no extra clothing market
+# in 17. A scale-free rule states cleanly as "the winner is at least 8 per cent cheaper" and
+# survives a change of currency or category, where a constant would have to be re-argued for
+# every new product.
 
 
 def money(value: float) -> float:

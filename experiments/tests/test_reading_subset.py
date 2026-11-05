@@ -23,7 +23,7 @@ import parse_probe  # noqa: E402
 from test_provider_routing import Posted  # noqa: E402
 from test_reading_test import BASE, BATCH, DEEPSEEK, LEAD, PILOT, Market, run, standin  # noqa: E402
 
-# The promo-check template as the verifier fixed it on 24 October 2026, and the market's
+# The promo-check template as fixed on 24 October 2026, and the market's
 # wording of it for one listing.
 PROMO = ("The {seller} listing of the {brand} tee says in its size menu that size XS is on promotion at "
          "${promo}. Is that what size XS costs on that listing? If not, what does it cost?")

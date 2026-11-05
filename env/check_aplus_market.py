@@ -64,11 +64,11 @@ PLAIN_UA = "Python-urllib/3.9"
 AGENTS = {"plain": PLAIN_UA, "gated": GATED_UA}
 CONTAINER = "webarena-shopping"
 # What Magento writes afresh each time it renders a page into its cache, masked before two
-# pages are compared. The first version masked the hidden form key alone, and after the
-# development market's reindex rebuilt the cache it reported all 142 earlier pages changed;
-# their database rows were unchanged, and every difference was one of these (22 October 2026,
-# read token by token across all 142). The form key is a session token, and the reason a
-# snapshot is never committed.
+# pages are compared. The hidden form key alone is not enough: after the development market's
+# reindex rebuilt the cache, all 142 earlier pages differed from their snapshots while their
+# database rows were unchanged, and every difference was one of these (22 October 2026, read
+# token by token across all 142). The form key is a session token, and the reason a snapshot
+# is never committed.
 FORM_KEY = re.compile(rb'(name="form_key" type="hidden" value=")[^"]*(")')
 RENDERED = (
     FORM_KEY,
@@ -182,11 +182,11 @@ def order_lines(fixture: dict, order: list[str]) -> list[tuple[bool, str]]:
     order the fixture records (`_instance.predicted_order`, the brand's form since version 2),
     and against the order claim.py reads where a key's listings render, the live order the
     seed search recorded when it accepted the market (`fixture_order.fixture_order`, 23
-    October 2026, from the auditor's check of 41d7839: the predicted order alone could hold
-    while the order claim.py reads did not); and the page rules on the live order. A fixture
-    from before the form was recorded is compared with both forms' orders. The order is read
-    from experiments/analysis/fixture_order.py, never through claim.py, whose imports need
-    scipy, which the Playwright venv this runs under has not (the auditor's check of 2df6dc3)."""
+    October 2026: the predicted order alone can hold while the order claim.py reads does
+    not); and the page rules on the live order. A fixture from before the form was recorded
+    is compared with both forms' orders. The order is read from
+    experiments/analysis/fixture_order.py, never through claim.py, whose imports need scipy,
+    which the Playwright venv this runs under has not."""
     forms = fixture["_generated"].get("brand_forms")
     design = fixture["_generated"].get("design", aplus.DESIGN_A)
     families = fixture["families"]
@@ -302,9 +302,9 @@ def mysql(sql: str) -> str:
 
 def flush_cache() -> None:
     """Magento's cache flushed, so a snapshot and the pages it is later compared with are both
-    rendered afresh (24 October 2026, the verifier's logic audit at cd49128: a page served from
-    the cache can differ from a fresh render in what the mask does not cover, and the earlier
-    markets were reported changed by nothing but that)."""
+    rendered afresh (24 October 2026: a page served from the cache can differ from a fresh
+    render in what the mask does not cover, and the earlier markets were reported changed by
+    nothing but that)."""
     subprocess.run(["docker", "exec", CONTAINER, "php", "/var/www/magento2/bin/magento", "cache:flush"],
                    capture_output=True, text=True, check=True)
 

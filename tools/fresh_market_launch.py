@@ -53,8 +53,8 @@ B_PROTOCOL = "experiments/tasks/matched_briefing_2_nov.json"
 B_OLD = "experiments/tasks/matched_briefing_29_oct.json"
 B_STUDY = "matched-briefing-fresh-2026-11-02"
 APPROVAL = "notes/fresh-market-2-nov/student-approval-2-nov.md"
-# The student's plan: no paid run on Tuesday 3 November or later. Earlier than the protocol's
-# absolute stop (3 November 12:00), which each launcher may not pass.
+# The plan: no paid run on Tuesday 3 November or later. Earlier than the protocol's absolute
+# stop (3 November 12:00), which each launcher may not pass.
 DEADLINE = "2026-11-02T23:59:00+08:00"
 # The repeats 2-3 cohort's continuation command and its sibling inputs, kept beside its notes.
 COHORT = ROOT / "notes/browser-use-repeat-1-nov/attempt2-complete-1-nov"
@@ -340,8 +340,8 @@ def configs():
     command_a = [json.loads(a.read_text())["python"], str(ROOT / "tools/guarded_browser_use.py"),
                  "--config", str(a), "--execute"]
     written += [a, write_json(NOTES / "study-a-command.argv.json", command_a)]
-    # Prepared, not approved: the student's approval is on file (APPROVAL), and the session that
-    # holds it confirms at launch that it covers this exact command by setting approved to true.
+    # Prepared, not approved: the approval is on file (APPROVAL), and approved is set to true at
+    # launch only once the approval is confirmed to cover this exact command.
     written.append(write_json(NOTES / "study-a.approval.json", {
         "approved": False, "config_sha256": sha(a), "command": command_a,
         "user_message": "Yes, unattended, cap $10", "approval_file": APPROVAL,
@@ -357,10 +357,10 @@ def configs():
 
 # ------------------------------------------------------------------------------ continuation
 #
-# Study A's attempt 1 stopped at 08:21 on 2 November (overnight-log.md): Browser Use's 120 s
-# LLM timeout cancelled executor request call-00253, which left no response and no usage, so
-# the guard refused every later call. Four slots answered, the fifth was interrupted and 27
-# never started. The one continuation runs those 27 only (guarded_browser_use.py).
+# Study A's attempt 1 stopped at 08:21 on 2 November: Browser Use's 120 s LLM timeout
+# cancelled executor request call-00253, which left no response and no usage, so the guard
+# refused every later call. Four slots answered, the fifth was interrupted and 27 never
+# started. The one continuation runs those 27 only (guarded_browser_use.py).
 
 LEDGER_1 = f"{guard_a.FRESH_NOTES}/study-a.ledger.json"
 CONTINUATION_PREFLIGHT = NOTES / "study-a-continuation-preflight.json"
@@ -539,9 +539,9 @@ def continuation():
     path = write_json(NOTES / "study-a-continuation-command.json", config_continuation(commit))
     config = json.loads(path.read_text())
     command = [config["python"], str(ROOT / "tools/guarded_browser_use.py"), "--config", str(path), "--execute"]
-    # Prepared, not approved. The student's 01:57 approval covered attempt 1; the protocol allows
-    # one recovery "separately verified and approved", so the session that holds the student's
-    # approval of this continuation records their words and sets approved to true.
+    # Prepared, not approved. The approval at 01:57 covered attempt 1 alone, and the protocol
+    # allows one recovery "separately verified and approved", so this continuation's own
+    # approval is recorded in its words before approved is set to true.
     approval = write_json(NOTES / "study-a-continuation.approval.json", {
         "approved": False, "config_sha256": sha(path), "command": command, "user_message": "",
         "approval_needed": "the student's own words approving this continuation of the 27 unstarted slots",
@@ -652,7 +652,7 @@ def a4_config(stage, commit, output, preflight, deadline, start_cutoff, evidence
 
 def write_a4(stage, output, config, summary, amendment=AMENDMENTS[-1]):
     """The configuration at `output`, its exact command beside it, and its approval record,
-    prepared but not approved: the session that holds the student's approval records their words."""
+    prepared but not approved: the approval is recorded in its own words before launch."""
     path = write_json(output, config)
     command = [config["python"], str(ROOT / "tools/guarded_browser_use.py"), "--config", str(Path(path).resolve()),
                "--execute"]

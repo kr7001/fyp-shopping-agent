@@ -276,9 +276,9 @@ class BoxRowsInTheReport(unittest.TestCase):
 
     def test_the_parse_of_a_slot_the_box_closed_is_in_the_cost(self):
         # Under the model parser an ask or a refusal ran no agent but paid for its parse,
-        # which only its row holds, so `make verify` and section G missed it (verifier
-        # finding, 22 October 2026). Planted: `closed_parse_charges` returning nothing, the
-        # charged figures below came out as the records' alone.
+        # which only its row holds, so `make verify` and section G must read it there.
+        # Planted: `closed_parse_charges` returning nothing, the charged figures below
+        # came out as the records' alone.
         text, result = self.report()
         records = sum(r["cost"] or 0 for r in self.runs)
         self.assertAlmostEqual(result["cost"], records)
@@ -310,7 +310,7 @@ class BoxRowsInTheReport(unittest.TestCase):
 
     def test_a_run_with_no_floor_rule_is_a_problem_not_a_crash(self):
         # A gated question no rule covers gets no floor, and the report says so by task
-        # rather than raising, which it did until 14 Oct 2026 on four v2 questions.
+        # rather than raising, as it would on four v2 questions.
         runs = json.loads(json.dumps(self.runs))
         runs[0].update(task="argmax-question", floor=None, met_floor=False)
         with contextlib.redirect_stdout(io.StringIO()) as out:
@@ -649,7 +649,7 @@ class DevelopmentCell(unittest.TestCase):
 
 class OwnFloor(unittest.TestCase):
     """The coverage floor of each v2 question shape, written down in `verify_cells.own_floor`
-    on 14 Oct 2026 (LESSONS 5) after the verifier found the four new shapes raised. Every
+    on 14 Oct 2026 (LESSONS 5), since without one the four new shapes raise. Every
     expected figure here is recomputed from the fixture with the generator's own helpers,
     never typed, and each rule has a case where it must fire and one where it must stay
     quiet: the six v1 questions keep their floors, and a wrong set of listings is not
@@ -697,8 +697,8 @@ class OwnFloor(unittest.TestCase):
         self.assertEqual(for_m.all_of, self.advertised_at_or_below(self.instance["winner"]["price"]))
         self.assertEqual(for_m.count, self.instance["oracle_min_opens"])
         # Size XL: the XL winner's price, which `_instance` records as the largest size's,
-        # and the listings advertised at or below it. Until 14 Oct 2026 this returned the
-        # M floor, read from `_instance` rather than from the question.
+        # and the listings advertised at or below it, never the M floor, read from
+        # `_instance` rather than from the question.
         winner = min((apparel.buyable_price_for(l, "XL") for l in self.listings
                       if apparel.buyable_price_for(l, "XL") is not None))
         self.assertEqual(winner, self.instance["largest_size_winner"]["price"])

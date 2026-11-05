@@ -246,8 +246,7 @@ class Carryover(Ended):
 
 class OwnClaim(Ended):
     """The worker checks the configuration again after the launcher has claimed the stage and
-    written its running status, as execute() does: that claim is its own (the verifier's repro,
-    verify_rerun_selfblock.py, 2 November 2026)."""
+    written its running status, as execute() does: that claim is its own."""
 
     def setUp(self):
         super().setUp()
@@ -352,9 +351,8 @@ class Batch(Ended, unittest.IsolatedAsyncioTestCase):
             return {"outcome": "timeout", "answer": None, "trace": {"measurement_valid": True},
                     "elapsed_s": 5403.0, "settings": {"clock_s": 5400}, "cost_usd": None}
         # A rerun starts only if its doubled clock fits before the config's deadline (FRESH_LATEST,
-        # 3 November 2026 12:00 +08). On the real clock none has fitted since that morning, so this
-        # test failed. The wall clock is held a day before the deadline, so the test no longer
-        # depends on today's date (4 November 2026).
+        # 3 November 2026 12:00 +08). On the real clock none fits after that morning, so the wall
+        # clock is held a day before the deadline and the test does not depend on today's date.
         a_day_before = guard.deadline_epoch(config["deadline"]) - 86400
         with mock.patch.object(guard.time, "time", return_value=a_day_before):
             run = await run_attempt3(self, config, results={1: long_timeout})

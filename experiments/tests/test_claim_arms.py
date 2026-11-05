@@ -1,4 +1,4 @@
-"""The claim run's arms and conditions, from the verifier's logic audit of the claim plan on
+"""The claim run's arms and conditions, from the logic audit of the claim plan on
 20 October 2026: the browser's profile kept in memory, strategy text v8, a strict "under",
 the box without its stop rule (`--box-exhaust`), and repeat numbers that say which round a
 run belongs to.
@@ -177,8 +177,8 @@ class IsolatedProfile(unittest.TestCase):
 # 2. Strategy texts v8 and v9
 
 # The rewordings are listed once, in `box.REWORDED`, which `replay_box` reads too. Five of
-# them are in the six clothing texts v1 rendered: four from the audit (v8) and the fifth from
-# what the leak counter found (v9).
+# them are in the six clothing texts v1 rendered: four made true of the gated shop (v8) and
+# the fifth from what the leak counter found (v9).
 IN_THE_V1_TEXTS = 5
 # The sha1 of the 18 queries in fixtures/v1_clothing_queries.json as frozen at 34c0356 from
 # the v1 code, json.dumps(queries, sort_keys=True), read before the amendment.
@@ -213,14 +213,14 @@ class StrategyTextV8(unittest.TestCase):
 
     def test_the_versions(self):
         # Box 13, form 10 and primitives 9 on 22 October 2026, the model's front door, then
-        # box 14, form 11 and primitives 10 the same day, the verifier's fixes to it
-        # (test_model_parser.py), and box 15, the model's decline, 16, every results page
-        # read, and 17, the product a question names, with primitives 11, their preamble, for
-        # the second claim run. Box 18, form 12 and primitives 12 on 23 October 2026, the
-        # verifier's fairness audit of d357c72 (test_fairness_audit.py), and form 13, a reply read
-        # as text (test_replies_and_readings.py). Box 19, form 14 and primitives 13 on 24 October
-        # 2026, for design B (test_design_b.py), then box 20 and form 15 the same day, the
-        # verifier's audit at cd49128. The strategy texts are v9 still.
+        # box 14, form 11 and primitives 10 the same day, fixes to it (test_model_parser.py),
+        # and box 15, the model's decline, 16, every results page read, and 17, the product a
+        # question names, with primitives 11, their preamble, for the second claim run. Box 18,
+        # form 12 and primitives 12 on 23 October 2026, for the fairness audit
+        # (test_fairness_audit.py), and form 13, a reply read as text
+        # (test_replies_and_readings.py). Box 19, form 14 and primitives 13 on 24 October 2026,
+        # for design B (test_design_b.py), then box 20 and form 15 the same day. The strategy
+        # texts are v9 still.
         self.assertEqual((targeting.VERSION, box.VERSION, form_module.VERSION, primitives.VERSION),
                          (9, 20, 15, 13))
 
@@ -517,7 +517,7 @@ class StrictUnder(unittest.TestCase):
 # 4. The box without its stop rule
 
 # The quarantine's first sentence, which says what the bound decides, and the one the box
-# without its stop rule sends in its place (20 October 2026).
+# without its stop rule sends in its place.
 QUARANTINE_LEAD = "Important: the figure this bound produces is a limit used only to decide what to skip."
 EXHAUST_LEAD = ("Important: the advertised price is the price of the cheapest option that can be bought, "
                 "which need not be the option asked about.")
@@ -1161,7 +1161,7 @@ class LeaksOnTheStoredBatches(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# The results pages' reader, a condition of every box batch (box v16, 22 October 2026)
+# The results pages' reader, a condition of every box batch (box v16)
 
 class PageReader(unittest.TestCase):
     TASKS = ("--tasks", str(paths.TASKS / "tasks_apparel.json"), "--repeats", "1", "--only", "apparel-headline")
@@ -1217,7 +1217,7 @@ class PageReader(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# The agent's step and clock limits, conditions of every run (22 October 2026)
+# The agent's step and clock limits, conditions of every run
 
 class StepAndClock(unittest.TestCase):
     TASKS = ("--tasks", str(paths.TASKS / "tasks_apparel.json"), "--repeats", "1", "--only", "apparel-headline")
@@ -1332,7 +1332,7 @@ class StepAndClock(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# Open everything on a search of two products (22 October 2026)
+# Open everything on a search of two products
 
 class OpenEverythingByProduct(unittest.TestCase):
     """The open-everything instruction says "every listing in the search results". On a

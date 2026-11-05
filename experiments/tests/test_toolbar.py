@@ -138,7 +138,7 @@ class PastPageOne(unittest.TestCase):
         self.assertFalse(toolbar.past_page_one({**reading, "results_pages": [1], "results_limits": [24]}, 36))
 
 
-# The stored runs where the fault is known (the verifier's audit, 23 October 2026, confirmed by
+# The stored runs where the fault is known (the fairness audit, 23 October 2026, confirmed by
 # reading every stored log that day): four of the second agent's sorted, two of openJiuwen's
 # resized. Every other run of their batches did neither.
 KNOWN = {"20260918T054737/scaled-all-stocked-1": (["name"], []),

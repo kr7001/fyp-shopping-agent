@@ -35,21 +35,20 @@ import trace_stats  # noqa: E402
 verify_cells = compare_cells.verify_cells
 RESULTS = compare_cells.RESULTS
 # The task file and fixture a figure is computed from are its batches' own, read from each
-# batch's suite payload (20 October 2026). Until then this read tasks_apparel.json and the
-# Thornwood fixture whatever the batch, which is right for every stored cell and would be
-# wrong for the first run on the claim market.
+# batch's suite payload. tasks_apparel.json and the Thornwood fixture are right for every
+# stored cell and wrong for a run on the claim market.
 PRICE_TASKS = ("apparel-target-price", "apparel-cheapest-target")
 # The batch run just before cell 1, kept only because its charge settled inside cell 1.
 PILOT = "20261007T111945"
 
 # The kinds of error, named once. The first two are read per seller: the seller named
-# first on a price question, and every ranked seller on a ranked one (20 Oct 2026).
+# first on a price question, and every ranked seller on a ranked one.
 SELLER = "named a seller that cannot sell M"
 REVEAL = "read the price before the page revealed it"
-# Written 20 Oct 2026 from 20261014T213118/apparel-count-buyable-2: on 12 of 15 listings
-# the only thing the run did after opening the listing was `browser_find` for the word
-# "disabled", so a listing whose menu has no size M at all, and so nothing disabled,
-# counted as having M available, and the count came out as 10 where 5 is right.
+# From 20261014T213118/apparel-count-buyable-2: on 12 of 15 listings the only thing the
+# run did after opening the listing was `browser_find` for the word "disabled", so a
+# listing whose menu has no size M at all, and so nothing disabled, counted as having M
+# available, and the count came out as 10 where 5 is right.
 MENU_UNREAD = ("tested for the word disabled and never read the menu, so an absent size "
                "counted as available")
 
@@ -373,7 +372,7 @@ def facts(account: bool = True) -> dict:
     out["account_now"] = now
 
     # H. The box's development cell, in-sample and no claim, kept apart from A to G: see
-    # `compare_cells.DEVELOPMENT`. Added 20 October 2026.
+    # `compare_cells.DEVELOPMENT`.
     out["development"] = development_facts(cells, truth, m_price)
     return out
 
@@ -555,8 +554,8 @@ def main() -> int:
               + (f": {', '.join(c['wrong_refused'])}" if c["wrong_refused"] else ""))
         print(f"    not wrong {c['other']}, refused {len(c['other_refused'])}"
               + (f": {', '.join(c['other_refused'])}" if c["other_refused"] else ""))
-        # Since 20 Oct 2026 a stored text is compared in the words of the box version that
-        # sent it, and a decision that differs today for a deliberate change says which.
+        # A stored text is compared in the words of the box version that sent it, and a
+        # decision that differs today for a deliberate change says which.
         for line in c.get("not_reproduced") or []:
             print(f"    stored text not reproduced: {line}")
         for line in c.get("expected_today") or []:

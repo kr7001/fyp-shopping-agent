@@ -30,8 +30,8 @@ role does not matter.
 prints on it (`generate_apparel.from_price`), and since 20 October 2026 the rule reads it off
 the live page. Until then it took the cheapest of every size, sold out included, so a listing
 like igr-app-07, whose S and M are sold out at $16.22 and $15.04 and whose card shows
-"As low as $18.33", counted as advertising $15.04 (verifier's logic audit, found before the
-claim market was drawn). On Thornwood the two readings name the same three listings.
+"As low as $18.33", counted as advertising $15.04 (found before the claim market was
+drawn). On Thornwood the two readings name the same three listings.
 
 **A second market** runs under its own fixture, brand and SKU prefix, so Thornwood's 15
 listings are never torn down. Each attempt removes the previous candidate, checks that no
@@ -177,10 +177,9 @@ def usable(answer: int | None, misleading: list[str]) -> bool:
 
 
 def reindex() -> None:
-    # Stock as well as search, since 18 Sep 2026. A market now seeds variants with qty 0 on
-    # purpose, and without the stock index Magento keeps serving the old availability, so a
-    # sold out size still renders as buyable and the draw is measured against a page that
-    # does not exist.
+    # Stock as well as search. A market seeds variants with qty 0 on purpose, and without
+    # the stock index Magento keeps serving the old availability, so a sold out size still
+    # renders as buyable and the draw is measured against a page that does not exist.
     run(["docker", "exec", CONTAINER, "php", MAGE, "indexer:reindex",
          "catalogsearch_fulltext", "cataloginventory_stock"])
     run(["docker", "exec", CONTAINER, "php", MAGE, "cache:flush"])

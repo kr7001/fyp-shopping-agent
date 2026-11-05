@@ -74,9 +74,9 @@ READINGS = ("menu", "buyable")
 
 def correct(run: dict, reading: str) -> bool:
     # The buyable key is the batch's own sidecar's (`load_batch`), never a number typed
-    # here: until 20 October 2026 it was Thornwood's 5, whatever market the run was on.
-    # Since 23 October 2026 through the one scoring call, with the run's task file's sellers
-    # and two-readings list beside its buyable key (`score.score_run`, LESSONS 29).
+    # here, since Thornwood's 5 is wrong on any other market. It is read through the one
+    # scoring call, with the run's task file's sellers and two-readings list beside its
+    # buyable key (`score.score_run`, LESSONS 29).
     if reading == "buyable" and run["task"] == "apparel-count-stocked":
         if not run.get("buyable_key"):
             raise verify_cells.scoring.NoKeyForReading(f"{run['task']} has no buyable key")

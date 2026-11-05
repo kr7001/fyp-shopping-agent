@@ -453,7 +453,7 @@ def tasks_b(fixture: dict) -> list[dict]:
 
 def rewording_task_id(entry_id) -> tuple[str, str]:
     """A held-out rewording's task id and its set: v2's numbered entries are rw-NN, v3's
-    "v3-NN" entries rw3-NN (the coordinator's note of 24 October 2026)."""
+    "v3-NN" entries rw3-NN (24 October 2026)."""
     if isinstance(entry_id, int):
         return REWORDING_ID.format(id=entry_id), "v2"
     matched = re.fullmatch(r"v3-(\d+)", str(entry_id))
@@ -1009,7 +1009,7 @@ def refused(fixture_path: pathlib.Path, fixture: dict, out: pathlib.Path,
     # from, so they never go into a claim market's task file, whose rewordings are its
     # held-out test. On a development market a pilot's files in experiments/tasks/pilot/ may
     # hold them, where no claim reads them; anywhere else under experiments/tasks/ the rule
-    # below holds for them too (23 October 2026).
+    # below holds for them too.
     if rewordings and development:
         if fixture["_generated"].get("phrasings") != "development":
             return ("the development rewordings are in sample, so they never go into a claim "
@@ -1024,8 +1024,7 @@ def refused(fixture_path: pathlib.Path, fixture: dict, out: pathlib.Path,
         return None
     # The rewordings go into the claim market's task file, or for a test into a file outside
     # experiments/tasks/. A development market's task file there is the one the free tests and
-    # probes put the rules to, which would tune them on the held-out set (LESSONS 19,
-    # 22 October 2026).
+    # probes put the rules to, which would tune them on the held-out set (LESSONS 19).
     if rewordings and fixture["_generated"].get("phrasings") == "development":
         for path in (out, readings_out):
             if TASKS.resolve() in path.resolve().parents:

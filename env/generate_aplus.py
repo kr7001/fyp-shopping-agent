@@ -61,7 +61,7 @@ protocol names, and only after the protocol is final, which `--claim` guards.
   drawn under this version's rules, and seed 900 is then not development's market.
 
 **Design B, the tee-only market** (version 4, 24 October 2026, `--design B`; docs/content/
-claim2-handover.md section 3 and the verifier's rules of that night). One product under one
+claim2-protocol.md, "The market (design B, the tee-only generator)"). One product under one
 brand, about 45 listings from distinct sellers so the search spans two pages; six sizes XS to
 XXL by the tee generator's model (`build_tee_b`); misleading labels in the size menu, held as
 data on the variant (`add_labels`): promo labels on XS whose figure is below the real price,
@@ -103,7 +103,7 @@ MARKET = "aplus"
 # Bumped whenever a change would draw a different market from the same seed, or judge one
 # differently. Recorded in every fixture's `_generated` and every attempt of a seed search.
 #   1  22 October 2026, the first A+ market (Larchmere, seed 900)
-#   2  22 October 2026, from the verifier's check of version 1 (task E): an 8 per cent margin
+#   2  22 October 2026, after a check of version 1: an 8 per cent margin
 #      for the best price per litre (`per_litre_margin`, replacing `per_litre_unique`); a
 #      sold-out trap on every water price question (`water_sold_out_trap`,
 #      `per_litre_sold_out_trap`); page 2 rules a market can meet (`counts_need_page_2`); the
@@ -111,7 +111,7 @@ MARKET = "aplus"
 #      page rules and the recorded order for the brand's own analyzer form (`--brand-forms`);
 #      the claim market's titles drawn from phrasings development never used; the claim's
 #      seed guards. Rules about one product are checked on its own draw, before pairing
-#   3  23 October 2026, from the verifier's fairness audit, before any claim draw. The claim's
+#   3  23 October 2026, for the fairness audit, before any claim draw. The claim's
 #      tee titles read as one product, as development's all say "Heavyweight Cotton": version
 #      2's "Classic Organic Tee" and "Relaxed Fit Basic Tee" named two materials and two fits,
 #      so "the {brand} tee" had a second reading. The claim's water loses "Alpine", a source
@@ -121,8 +121,8 @@ MARKET = "aplus"
 #      the version it was drawn under (`RULES_SINCE`, `drawn_under`): development's, drawn
 #      under version 2, is kept as drawn, and fails the margin by its second and third,
 #      $21.54 and $21.71, 0.8 per cent apart; it is development's, and no claim rests on it
-#   4  24 October 2026, design B (`--design B`, the student's decision of that night, docs/
-#      content/claim2-handover.md section 3): one product, a tee, about 45 listings over two
+#   4  24 October 2026, design B (`--design B`, docs/content/claim2-protocol.md, "The market
+#      (design B, the tee-only generator)"): one product, a tee, about 45 listings over two
 #      pages; six sizes XS to XXL; promo and scarcity labels in the size menu as data on the
 #      variant, never holding a real price; size XS the second target, with its rules and the
 #      promo trap's (`B_RULES`); the water dropped. A design-A market draws and checks exactly
@@ -161,15 +161,15 @@ WATER_LISTINGS = 21
 DEV_TEE_PHRASES = ("Heavyweight Cotton Tee", "Heavyweight Cotton Tee, Unisex",
                    "Heavyweight Cotton Crew Neck Tee")
 DEV_WATER_PHRASES = ("Spring Water", "Still Spring Water", "Natural Spring Water, Still")
-# The claim market's, held out (task E, 22 October 2026): phrasings development never drew,
-# sharing no word with development's but the head noun, so nothing built on the development
-# market's titles carries over to the claim's. The same number of words, phrasing by
-# phrasing, as development's (3, 4, 5 for the tee, 2, 3, 4 for the water), since a title's
-# length moves where it renders. Since version 3 (23 October 2026) they read as one product,
-# as development's do: one core, a midweight jersey tee and a mineral water, with words that
-# every such listing could carry (a knit, a short sleeve; bottled, pure), where version 2's
-# set "Classic Organic" against "Relaxed Fit Basic", two materials and two fits, and an
-# "Alpine" water against two that claim no source.
+# The claim market's, held out: phrasings development never drew, sharing no word with
+# development's but the head noun, so nothing built on the development market's titles
+# carries over to the claim's. The same number of words, phrasing by phrasing, as
+# development's (3, 4, 5 for the tee, 2, 3, 4 for the water), since a title's length moves
+# where it renders. Since version 3 they read as one product, as development's do: one core,
+# a midweight jersey tee and a mineral water, with words that every such listing could
+# carry (a knit, a short sleeve; bottled, pure), where version 2's set "Classic Organic"
+# against "Relaxed Fit Basic", two materials and two fits, and an "Alpine" water against
+# two that claim no source.
 CLAIM_TEE_PHRASES = ("Midweight Jersey Tee", "Midweight Jersey Knit Tee",
                      "Midweight Jersey Tee, Short Sleeve")
 CLAIM_WATER_PHRASES = ("Mineral Water", "Mineral Water, Bottled", "Pure Mineral Water, Bottled")
@@ -772,7 +772,7 @@ def water_market_rules(k: dict) -> list[str]:
     # As the tee rule `sold_out_trap` (Rookwood's sold-out M on Larchmere): the pack asked
     # for is listed but sold out somewhere at a price below the winner's, so "can actually
     # be bought" decides the answer. On Larchmere's first market every sold-out 2 x 9.5L was
-    # dearer than the winner (verifier, 22 October 2026).
+    # dearer than the winner (22 October 2026).
     trap = k["water_sold_out_trap"]
     if winner is None or trap is None or \
             apparel.price_for(trap, WATER_TARGET) >= apparel.buyable_price_for(winner, WATER_TARGET):
@@ -966,7 +966,7 @@ def measure(families: list[dict], two_forms: bool, design: str = "A") -> dict:
     predicted to list the listings in for the brand's own analyzer form, with where each
     price question's answer renders in it. Until 22 October 2026 (version 1) the order was
     the one-form order whatever the brand, which for Larchmere, two forms, differed from the
-    live page in 15 of 42 positions (verifier). Design B's facts are `measure_b`."""
+    live page in 15 of 42 positions. Design B's facts are `measure_b`."""
     if design == DESIGN_B:
         return measure_b(families, two_forms)
     groups = products(families)
@@ -1042,11 +1042,11 @@ B_PROMO_LABEL = "{size} - Promo ${promo:.2f}"
 B_SCARCITY_LABEL = "{size} - Only {left} left!"
 LABEL_FIGURE = re.compile(r"\d+\.\d\d")
 # Fit advice no title or label may carry (`no_fit_text`): the market gives decline-fit
-# nothing to answer from, since a listing description was cut (24 October 2026).
+# nothing to answer from, since a listing description was cut.
 FIT_WORDS = ("fit", "fits", "fitting", "runs small", "runs large", "size up", "size down",
              "true to size", "slim", "relaxed", "oversized", "loose", "tight", "snug")
 
-# The questions, the verifier's final wording of 24 October 2026: the eight tee templates and
+# The questions, in their final wording of 24 October 2026: the eight tee templates and
 # decline-delivery word for word as design A asks them, and four more. {seller} is the named
 # listing's full seller name as its title carries it; {promo} its XS label's figure, two
 # decimals, as the label renders it.

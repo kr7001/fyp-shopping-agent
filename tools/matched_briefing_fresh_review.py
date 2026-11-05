@@ -211,7 +211,7 @@ def load_study(study, continuation=None, rerun=None):
     require(slots == list(range(1, len(slots) + 1)), "The primary manifest's slots are not the schedule's first ones.")
     entries = [(schedule[s], line["folder"], line["args"], PRIMARY) for s, line in zip(slots, lines)]
     # Slot 16 (amendment 4, correction of 12:30): the primary run started it, and its budget stop
-    # ended it with no record. It is a technical void unless the student ruled it be run again,
+    # ended it with no record. It is a technical void unless it was ruled to be run again,
     # which the continuation's configuration carries.
     try:
         # Since f4035ed it also reads the charges the started run's own logs show, and refuses a
@@ -358,8 +358,7 @@ def preamble_check(loaded):
 def public_preamble_check(check):
     """Rule 5's result as the public manifest may show it: whether there is one briefing, and
     counts. Which slots ran, were rerun or never ran would, through the public schedule, tell how
-    many rows of each task come from each arm, so those lists stay in the private key (the
-    verifier, 2 November 2026)."""
+    many rows of each task come from each arm, so those lists stay in the private key."""
     return {"rule": check["rule"], "one_preamble": check["one_preamble"],
             "slots_checked": len(check["slots_checked"]), "reruns_checked": len(check["reruns_checked"]),
             "slots_not_run": len(check["slots_not_run"]), "distinct_preambles": len(check["preamble_sha256"]),
@@ -620,8 +619,9 @@ def analyse(study, bundle):
         "reruns": {"role": "never pooled into a primary figure, used only by sensitivity 2",
                    "trials": items[RERUN], "not_run": loaded["reruns_not_run"]},
         "human_automatic_disagreements": disagreements,
-        # A row the void rules call reported, not correct but the student graded correct keeps its
-        # grade (the plan's verdict of record), apart from a timeout, which amendment 4 scores 0.
+        # A row the void rules call reported, not correct but the human reader graded correct
+        # keeps its grade (the plan's verdict of record), apart from a timeout, which amendment 4
+        # scores 0.
         "graded_correct_but_reported_not_correct": [
             {"slot": s["slot"], "stage": s["stage"], "code": s["code"], "reason": s["classification_reason"],
              "counted": s["counted"]} for s in graded

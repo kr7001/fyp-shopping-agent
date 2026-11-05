@@ -682,7 +682,7 @@ def analyse(study, bundle):
         # trial graded correct or unscorable still counts 0, and stays in the sensitivity.
         "graded_but_decided_by_disposition": [slim(r) for r in graded if r["in_test"]
                                               and r["disposition"] != "answered" and r["human_verdict"] != "not correct"],
-        # Rows the student may have read unblinded: the answer repeats a slot's arm label.
+        # Rows the human reader may have read unblinded: the answer repeats a slot's arm label.
         "answers_naming_an_arm": [slim(r) for r in graded if r["answer_names_an_arm"]],
         "slots": [{k: v for k, v in r.items() if k != "rerun"} | {"rerun_disposition": (r["rerun"] or {}).get("disposition")}
                   for r in rows],

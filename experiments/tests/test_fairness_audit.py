@@ -1,4 +1,4 @@
-"""The fixes from the verifier's fairness audit of d357c72 (box v18, form v12, primitives v12,
+"""The fixes from the fairness audit of d357c72 (box v18, form v12, primitives v12,
 23 October 2026), each shown firing on the case it was written for and quiet on the texts it
 must leave alone, and each fault named planted with a fresh bytecode cache and seen to fail
 (LESSONS 31, 39).
@@ -400,7 +400,7 @@ class TheParsesTokens(unittest.TestCase):
 class TheVersions(unittest.TestCase):
     def test_they_moved_together(self):
         # Box 19, primitives 13 and form 14 on 24 October 2026, design B (test_design_b.py), then
-        # box 20 and form 15 the same day, the verifier's audit at cd49128.
+        # box 20 and form 15 the same day.
         self.assertEqual((box.VERSION, primitives.VERSION, form.VERSION, targeting.VERSION),
                          (20, 13, 15, 9))
 

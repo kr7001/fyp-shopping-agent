@@ -234,10 +234,10 @@ def planted_reply(entry: dict, page_: page.Page) -> str:
                                             "k", "reading", "unknowns", "evidence")}
     fault = PLANTED.get(entry["id"])
     if fault == "population":
-        # "reviews" rather than "listing" since 22 October 2026: the probe normalises the
-        # model's form as the box would use it, and a "listing" with no product page named
-        # is put back to the results page, which would plant nothing (test_probe.py says the
-        # same of its own planted fault).
+        # "reviews" rather than "listing": the probe normalises the model's form as the box
+        # would use it, and a "listing" with no product page named is put back to the
+        # results page, which would plant nothing (test_probe.py says the same of its own
+        # planted fault).
         reply["population"] = "reviews"
     elif fault == "objective":
         reply["objective"] = next(o for o in ("price", "rate") if o != reply["objective"])
@@ -311,14 +311,14 @@ class TheRealRulesHalf(unittest.TestCase):
                                  totals["rules"][tier] + totals["model_only"][tier] - totals["rules_only"][tier])
         # Failing the box's gate among the 24: 5's added colour filter (the shop shows no
         # colour), 6's reply that is no form, and 24's form, the expected one, since the shop
-        # shows no delivery time. Since normalisation v2 (22 October 2026) the gate also
-        # refuses a form that contradicts the question's own words, and the planted replies
+        # shows no delivery time. Under normalisation v2 the gate also refuses a form that
+        # contradicts the question's own words, and the planted replies
         # are the templates' forms given for reworded questions, so three more: 4's planted
         # dearest, where its words say "best price"; 11's universal, which drops the
         # paraphrase's "doesn't"; and 1's results-page form, which lacks the "listed" the
         # rules read in "the lowest listed price" as the menu, a reading of theirs the gate
-        # holds every model form to, so the rules decide that one, as they did before the
-        # model parser. 7's call failed, and 27's, one of the six.
+        # holds every model form to, so the rules decide that one. 7's call failed, and
+        # 27's, one of the six.
         kept = self.found["meaning_kept"]
         self.assertEqual((kept["model_forms_failing_verification"], kept["calls_failed"]), (6, 1))
         self.assertEqual(self.result["calls_failed"], 2)

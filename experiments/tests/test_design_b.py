@@ -1,7 +1,8 @@
-"""Box v19 for the second claim run's design B (24 October 2026, docs/content/claim2-handover.md,
-section 5): decision 11, the word list against the model; why each ask was put; at most one ask
-a question; and the size labels that carry the seller's own text, read as their size, their
-figure never a price and their claim never stock, with the one plan sentence about them.
+"""Box v19 for the second claim run's design B (24 October 2026, docs/content/claim2-protocol.md,
+"Decisions of 24 October"): decision 11, the word list against the model; why each ask was
+put; at most one ask a question; and the size labels that carry the seller's own text, read
+as their size, their figure never a price and their claim never stock, with the one plan
+sentence about them.
 
 Every model reply here is a stub, and nothing is sent. Every rule has a case where it fires and
 one where it stays quiet, and each fault named in a comment was planted in the code with a fresh
@@ -123,8 +124,8 @@ class Decision11(unittest.TestCase):
                          ("lists", "listed", "buyable"))
 
     def test_a_clash_the_box_settles_itself_is_recorded_as_settled(self):
-        # Box v20, the verifier's finding 3 at cd49128: a clash settled with no ask is marked,
-        # beside the clash asks, both forms in `clash`. Planted: the field always false.
+        # Box v20: a clash settled with no ask is marked, beside the clash asks, both
+        # forms in `clash`. Planted: the field always false.
         settled = box.decide(LISTS_LOWEST, self.page, parser="model", call=stub(reply(filters=[SIZE_M, BUYABLE])))
         record = settled.record()
         self.assertEqual((record["clash_settled"], record["ask_reason"], record["reading_by"]), (True, None, "box"))
@@ -233,8 +234,8 @@ class AskCap(unittest.TestCase):
         self.page = thornwood_page()
 
     def test_a_question_that_needs_two_asks_is_asked_once(self):
-        # "offer" asks for a reading and "cheap" for a limit. Until box v19 a reply to the first
-        # was followed by the second; now the one no reading answers is asked, alone.
+        # "offer" asks for a reading and "cheap" for a limit. The one no reading answers is
+        # asked, alone (box v19), so no reply to the first is followed by the second.
         # Planted: the early ask taken out of `decide_by_rules`, the reply was followed by it.
         threshold = ambiguity.threshold_ask("cheap").text
         model = reply(quantifier="forall", objective="availability", filters=[SIZE_M], unknowns=["price limit"],
@@ -291,8 +292,9 @@ class AskCap(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # 4. Size labels: read as their size, their figure never a price, their claim never stock
 
-# A design B size menu as the agent's snapshot prints it (handover section 3): a promotion's
-# figure on XS, a claim of stock on a buyable M, and the plain sizes around them.
+# A design B size menu as the agent's snapshot prints it (docs/content/claim2-protocol.md,
+# "The market (design B, the tee-only generator)"): a promotion's figure on XS, a claim
+# of stock on a buyable M, and the plain sizes around them.
 LABELLED = {"XS - Promo $9.99": True, "S": True, "M - Only 2 left!": True, "L": False, "XL": True,
             "XXL": False}
 TEE_URL = "http://localhost:7770/example-tee-01.html"
@@ -322,9 +324,9 @@ class SizeLabels(unittest.TestCase):
             {"XS": True, "S": True, "M": True, "L": False, "XL": True, "XXL": False}, True)})
 
     def test_a_whole_size_is_matched_and_never_one_inside_it(self):
-        # The coordinator's finding of 24 October 2026: S is inside XS, L inside XL and XXL,
-        # and XL inside XXL. Planted, each in turn: `primitives.menu_has` matching a size
-        # anywhere in a label, and `normalise.sizes_named` without its boundaries.
+        # S is inside XS, L inside XL and XXL, and XL inside XXL. Planted, each in turn:
+        # `primitives.menu_has` matching a size anywhere in a label, and `normalise.sizes_named`
+        # without its boundaries.
         menu = {"XS": True, "XL": True, "XXL": False}
         self.assertEqual([primitives.menu_has(menu, size) for size in ("S", "L", "XL", "XXL", "XS")],
                          [None, None, "XL", "XXL", "XS"])
@@ -446,7 +448,7 @@ class LabelSentence(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # 5. Size XS as a target, and the promo check
 
-# The two templates as the verifier finalised them on 24 October 2026, filled for the made-up
+# The two templates as finalised on 24 October 2026, filled for the made-up
 # Example search of `named_page`: a seller its titles name in full, and a promotion's figure.
 XS_PRICE = GO + ("What is the lowest price anyone charges for size XS of the Example tee, among those that "
                  "can actually be bought?")
@@ -548,7 +550,7 @@ class PromoCheck(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # 6. The declines for fit and for scarcity
 
-# The two decline templates as the verifier finalised them on 24 October 2026.
+# The two decline templates as finalised on 24 October 2026.
 DECLINE_FIT = GO + "I'm usually between a medium and a large. Will size M or size L of the Example tee fit me better?"
 DECLINE_SCARCITY = GO + ("Of the Example tee listings where size M can actually be bought, which seller has the "
                          "fewest units of it left?")
@@ -586,15 +588,15 @@ class Declines(unittest.TestCase):
                                                      call=stub(stock_model)))):
             with self.subTest(parser=label):
                 self.assertEqual((decision.query, decision.plan, decision.ask), (None, None, None))
-                # Form v15 (the verifier's audit at cd49128): stock is not named among what the
-                # shop "does not show", since a cart probe could bound it; the decline says so.
+                # Form v15: stock is not named among what the shop "does not show", since a
+                # cart probe could bound it, and the decline says so.
                 self.assertTrue(decision.refuse.startswith("This question cannot be answered from what the shop shows."))
                 self.assertIn(SHOWS, decision.refuse)
                 self.assertIn("displays no stock counts; finding one would mean probing a cart, which is out of "
                               "scope", decision.refuse)
                 self.assertTrue(decision.refuse.endswith(form.REFUSAL_STOCK))
                 self.assertNotIn("does not show stock", decision.refuse)
-                # The coordinator's finding of 24 October 2026: never "cannot know the stock left".
+                # Never "cannot know the stock left".
                 self.assertNotIn("stock left", decision.refuse)
         # A model's own name for it gets the same sentence.
         units = box.decide(DECLINE_SCARCITY, self.page, parser="model", call=stub(reply(
@@ -640,9 +642,9 @@ class Declines(unittest.TestCase):
                                                       or form.REFUSAL_STOCK in decision.refuse))
 
     def test_no_refusal_speaks_of_review_pages(self):
-        # Form v15, the verifier's audit at cd49128: every design B listing says "Be the first
-        # to review this product" and the box reads no review page, so no refusal says what
-        # one shows. Planted: the sentence put back, every refusal here failed.
+        # Form v15: every design B listing says "Be the first to review this product" and
+        # the box reads no review page, so no refusal says what one shows. Planted: the
+        # sentence put back, every refusal here failed.
         for question in (DECLINE_FIT, DECLINE_SCARCITY, GO + "Which Example seller delivers fastest?",
                          GO + "Which seller has the best warranty for size M?"):
             with self.subTest(question=question[-40:]):

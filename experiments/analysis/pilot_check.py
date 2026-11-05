@@ -2,11 +2,11 @@
 """The pilot's gate (24 October 2026): four checks on the pilot's records alone, never on
 whether an answer is right, and the smallest fix for any that fails.
 
-The pilot of the morning (handover section 6, command 1) runs twelve questions on the
-development market before stage 1 runs on the claim market. Its chain ends by running this,
-which writes PASS or FAIL for each rule below, the pilot's cost, the projected stage-1 cost
-and a proposed fix, into a summary file the student reads at about 10:40. The pilot is
-development only: its results may change limits or caps, never the design or the questions.
+The pilot of the morning runs twelve questions on the development market before stage 1
+runs on the claim market. Its chain ends by running this, which writes PASS or FAIL for each
+rule below, the pilot's cost, the projected stage-1 cost and a proposed fix, into a summary
+file the student reads. The pilot is development only: its results may change limits or
+caps, never the design or the questions.
 
 Nothing here reads a verdict of correct or wrong, a key or an answer's text: a test plants
 flipped verdicts and holds the output unchanged. The rules, fixed here and quoted in the

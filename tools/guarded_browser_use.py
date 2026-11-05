@@ -112,10 +112,10 @@ FRESH_ERROR_REPLY_STAGES = {FRESH_ATTEMPT4_STAGE, FRESH_RERUN_STAGE}
 FRESH_ATTEMPT3_SHA256 = "c06e8b5d244045e60295ca5b3f0ffda6883d23ce76366af6ffb9d7b802ed8df1"  # attempt 3's command
 FRESH_A4_STAGES = {FRESH_ATTEMPT3_STAGE, FRESH_ATTEMPT4_STAGE, FRESH_RERUN_STAGE}
 FRESH_A4_CAP_USD = 10.0
-# Amendment 4 point 6 (12:50, after the verifier's review): the rerun stage's share of Study A's
-# total cap is USD 15, since settlements at the reserved bound run far ahead of the account;
-# attempt 3 keeps USD 10. An A rerun starts only if its doubled clock, and this margin for the
-# page read and the browser, fits before the deadline's stop, as B's guard already checks.
+# Amendment 4 point 6 (12:50): the rerun stage's share of Study A's total cap is USD 15, since
+# settlements at the reserved bound run far ahead of the account. Attempt 3 keeps USD 10. An A
+# rerun starts only if its doubled clock, and this margin for the page read and the browser,
+# fits before the deadline's stop, as B's guard already checks.
 FRESH_RERUN_CAP_USD = 15.0
 FRESH_RERUN_FIT_MARGIN_S = 300
 NO_TIME_REASON = "no time for a full rerun trial before the deadline"
@@ -251,9 +251,9 @@ def read_key(path):
     return key
 
 
-# 2 November 2026, 13:18: attempt 2 stopped when one reply from /key outlasted the 6 s timeout
-# (5.5 to 9.2 s a reply that afternoon). A read now waits up to 20 s a request and is tried three
-# times, 2 s and then 5 s apart, on network and HTTP errors and timeouts only; a reply that cannot
+# A read of /key waits up to 20 s a request and is tried three times, 2 s and then 5 s apart, on
+# network and HTTP errors and timeouts only: on 2 November 2026 at 13:18 attempt 2 stopped when
+# one reply outlasted a 6 s timeout (5.5 to 9.2 s a reply that afternoon). A reply that cannot
 # be read as an account still stops at once. The whole read stays within 90 s, inside Browser
 # Use's 120 s LLM timeout, because before_call reads the account in a thread and a request
 # cancelled meanwhile would leave its reservation in flight.
@@ -1266,10 +1266,10 @@ def validate_fresh_rerun(config, expected_slots=None, config_sha256=None):
     every earlier attempt's counted spend carried. Refuses a slot that is not such a timeout, a
     slot listed twice, and any rerun once this stage has been launched by another configuration
     or before it has started: `config_sha256` names the configuration whose own claim this is, as
-    the worker does after the launcher's claim (an earlier check refused that claim too, so the
-    stage blocked itself; the verifier found it, 2 November 2026). A second launch of the same
-    configuration is refused by the launcher, whose claim and status files already exist. Returns
-    the rows of `rerun_slots`, each naming the primary record it reruns."""
+    the worker does after the launcher's claim (a check that refused that claim too would leave
+    the stage blocking itself). A second launch of the same configuration is refused by the
+    launcher, whose claim and status files already exist. Returns the rows of `rerun_slots`,
+    each naming the primary record it reruns."""
     repo = Path(config["repo"]).resolve()
     notes = FRESH_NOTES
     clock = config.get("clock_s")
@@ -1323,8 +1323,8 @@ def validate_review_receipt(config, receipt, head, digest, command):
             or receipt.get("head") != head or receipt.get("request_bound_verified") is not True):
         raise Stop("independent verification does not bind this command and request bound")
     if config["stage"] in REPEAT_STAGES:
-        # The user authorized Codex's final recovery verification and continuation.
-        # Identify the actual independent reviewer honestly.
+        # The receipt names the reviewer who checked the exact command: an independent one
+        # for the repeat's recovery, the project's verifier otherwise.
         verifier = "codex-independent" if config["stage"] == REPEAT_RECOVERY_STAGE else "claude"
         if (receipt.get("verifier") != verifier or receipt.get("independent") is not True
                 or receipt.get("command") != command
@@ -1332,8 +1332,8 @@ def validate_review_receipt(config, receipt, head, digest, command):
                     and receipt.get("reviewer_identity") != "browser_transfer_analysis")):
             raise Stop("plain repeats require the designated independent review of the exact command")
     if config["stage"] in FRESH_STAGES:
-        # The project's verifier passes the exact command (WORKFLOW.md); the student then
-        # approves it in a separate record. The continuation is reviewed the same way.
+        # The project's verifier passes the exact command, and the approval is a separate
+        # record. The continuation is reviewed the same way.
         if (receipt.get("verifier") != "claude" or receipt.get("independent") is not True
                 or receipt.get("command") != command):
             raise Stop("the fresh market requires the verifier's review of the exact command")
@@ -1443,7 +1443,7 @@ def claim_repeat_launch(config, config_path):
         return
     if config["stage"] in FRESH_STAGES:
         # The fresh market's attempt, its continuation, or a stage of amendment 4, each marked
-        # beside its own ledger (2 November 2026).
+        # beside its own ledger.
         validate_fresh_budget(config)
         name = f"{FRESH_PREFIX[config['stage']]}.launch.json"
         budget_id, marker = FRESH_BUDGET, Path(config["ledger_path"]).with_name(name)

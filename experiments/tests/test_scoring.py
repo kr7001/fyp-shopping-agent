@@ -120,7 +120,7 @@ class RankedRule(unittest.TestCase):
                 self.assertEqual(verdict(self.TOP3, answer), expected)
 
     def test_four_sellers_for_three(self):
-        # Score v8, from the verifier's re-audit (k27). Planted: the check left out, it was
+        # Score v8, from the re-audit. Planted: the check left out, it was
         # correct. Only with the market's sellers.
         sellers = ["Harbour Lane", "Mellow Fields", "Quiet Oak", "Kelsall Supply"]
         four = "The cheapest are Harbour Lane $12.15, Mellow Fields $13.15, Quiet Oak $14.15 and Kelsall $15.40."
@@ -154,9 +154,9 @@ class NoKey(unittest.TestCase):
     def test_an_answer_is_unscored_and_so_is_a_run_that_did_not_finish(self):
         self.assertEqual(verdict({"kind": "none"}, "Lisbon."), "unscored")
         self.assertEqual(verdict({"kind": "none"}, "I could not determine this."), "unscored")
-        # A keyless run that ended without ok has no key to fail against either. Until
-        # 20 Oct 2026 (scorer v3) it was "failed", and verify_cells counted it as a wrong
-        # control answer (verifier finding on 20261014T220116, apparel-softest-1).
+        # A keyless run that ended without ok has no key to fail against either (scorer v3).
+        # Scored "failed", it would count in verify_cells as a wrong control answer, as on
+        # 20261014T220116, apparel-softest-1.
         self.assertEqual(score.score({"expect": {"kind": "none"}}, "", False)["verdict"], "unscored")
         self.assertEqual(score.score({"expect": {"kind": "none"}}, "No softness found.", False)["verdict"],
                          "unscored")
@@ -250,7 +250,7 @@ class NamedBest(unittest.TestCase):
     PER_LITRE = {"kind": "contains", "any": ["Ambleside"], "not_any": ["Pembroke", "Chandler"]}
 
     def test_the_best_named_decides_where_both_are_named(self):
-        # The verifier's case. Planted: `named_best` never consulted, it was correct.
+        # Planted: `named_best` never consulted, it was correct.
         self.assertEqual(verdict(self.PER_LITRE, "Chandler Direct's 2 x 9.5L is the best value; Ambleside's "
                                                  "6 x 1.25L is close behind."), "wrong")
         for answer in ("Ambleside offers the lowest price per litre; Chandler Direct is second.",
@@ -292,7 +292,7 @@ LARCHMERE = {"tee-target-price": {"kind": "price", "value": 19.17},
              "water-target-price": {"kind": "price", "value": 20.3, "trap": 6.93},
              "tee-top-3": [("Elmsworth", 19.17), ("Everleigh", 21.54), ("Bexhill", 21.71)]}
 
-# The verifier's fairness audit of 23 October 2026, its three batteries of synthetic answers
+# The fairness audit of 23 October 2026, its three batteries of synthetic answers
 # word for word, each with what it is: every one a reader would judge right or wrong at a
 # glance. Under v6, 21 of the 51 were misscored.
 AUDIT = [
@@ -353,7 +353,7 @@ NEEDS_THE_MARKET = {2, 8, 26, 33}      # 1-based positions in AUDIT
 
 
 class TheAudit(unittest.TestCase):
-    """Score v7 on the verifier's audit of 23 October 2026: every answer judged as a reader
+    """Score v7 on the fairness audit of 23 October 2026: every answer judged as a reader
     would, with the market's sellers; without them, only the four that need them are not."""
 
     @classmethod
@@ -383,7 +383,7 @@ class TheAudit(unittest.TestCase):
         self.assertEqual(set(wrong), NEEDS_THE_MARKET)
 
 
-# The verifier's re-audit of v7 (23 October 2026), its 24 answers word for word, of which v7
+# The re-audit of v7 (23 October 2026), its 24 answers word for word, of which v7
 # misscored 15, and its seven controls, right answers that name more sellers after the winner.
 REAUDIT = [
     ("c1", "tee-cheapest-target", "right", "Elmsworth Apparel is the cheapest at $19.17, ignoring listings where M is sold out. Lymington had the lowest listed price, $16.62."),
@@ -423,7 +423,7 @@ V7_MISSCORED = {"c1", "c5", "c7", "p15", "p16", "p17", "n19", "n20", "n21", "n22
 
 
 class TheReaudit(unittest.TestCase):
-    """Score v8 on the verifier's re-audit of v7: every answer judged as a reader would, with the
+    """Score v8 on the re-audit of v7: every answer judged as a reader would, with the
     market's sellers. The first audit's still hold (`TheAudit`)."""
 
     setUpClass = classmethod(TheAudit.setUpClass.__func__)
@@ -499,7 +499,7 @@ class CountCoverage(unittest.TestCase):
 
 
 class CountV8(unittest.TestCase):
-    """Score v8, from the verifier's re-audit: what else a count answer says that is not its count."""
+    """Score v8, from the re-audit: what else a count answer says that is not its count."""
 
     def test_a_count_before_a_full_stop_is_read(self):
         # Planted: the number pattern of v1 to v7, "no number given".
@@ -540,7 +540,7 @@ class CountV8(unittest.TestCase):
 
 
 class ClaimsV8(unittest.TestCase):
-    """Score v8, from the verifier's re-audit: which claim of a best names what."""
+    """Score v8, from the re-audit: which claim of a best names what."""
 
     def test_a_rejection_of_other_listings_takes_nothing_back(self):
         # Planted: `ABOUT_OTHERS` matching nothing, the right c1 named Lymington (it took back
@@ -777,7 +777,7 @@ class SizeLabelsV10(unittest.TestCase):
     claim is no count. Each planted on the fault v8 showed and left alone where it must be."""
 
     def test_a_scarcity_label_is_not_a_count(self):
-        # v8 read "M - Only 2 left!" as a count of 2 (the verifier's check).
+        # v8 read "M - Only 2 left!" as a count of 2.
         self.assertEqual(verdict({"kind": "count", "value": 11},
                                  "The menu shows 'M - Only 2 left!' on Haldane. 11 listings have M in stock."), "correct")
         self.assertEqual(verdict({"kind": "count", "value": 17},

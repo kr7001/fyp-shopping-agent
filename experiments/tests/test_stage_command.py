@@ -243,15 +243,15 @@ class ThePilotChain(Tree):
         batches = [l for l in lines if l.startswith("batch|")]
         self.assertEqual(len(batches), 12)
         self.assertTrue(all(pathlib.Path(l.split("|")[1]).is_dir() for l in batches))
-        # The batch line carries the arm's flags as the analysis file writes them, not a literal:
-        # the literal pinned v6's `--rate-plan every` and broke when v7 dropped it (24 October 2026).
+        # The batch line carries the arm's flags as the analysis file writes them, not a literal,
+        # which would pin one version's flags, as v6's `--rate-plan every`, which v7 dropped.
         model_flags = stage_stubs.analysis_file()["arms"]["the block (model)"]["flags"]
         self.assertIn(f" arm=the block (model) round=1 --repeats 1 --repeat-start 1 {model_flags} --only decline-fit",
                       batches[-1])
         self.assertTrue(lines[-2].startswith("end "))
         self.assertEqual(lines[-1], "pilot-check|PASS|experiments/results/pilot-test.summary")
-        # Every line the chain wrote is one claim.py's manifest parser accepts (the analysis coder's
-        # CHAIN_LINES against the runner coder's chain, checked on a real emitted manifest).
+        # Every line the chain wrote is one claim.py's manifest parser accepts (claim.py's
+        # CHAIN_LINES against the chain the runner writes, checked on a real emitted manifest).
         self.assertEqual(claim.parse_manifest(manifest).problems, [])
         summary = (self.root / "experiments/results/pilot-test.summary").read_text()
         self.assertIn("verdict: PASS", summary)
@@ -403,7 +403,7 @@ class TheStageChain(Tree):
         self.assertTrue(all(r["spec_from"] == "experiments/tasks/tasks_claim.json" for r in results))
         self.assertEqual([len(r["rows"]) for r in results], [3, 4, 3, 4])
         # The re-run carried the batch's flags and the routing, under the chain's model, and its
-        # preflight ran first, under the arm the batch line names (the audit at cd49128).
+        # preflight ran first, under the arm the batch line names.
         suites = stage_stubs.calls(self.root, ".suite_calls")
         rerun = suites[-5]
         self.assertIn("--parser", rerun["argv"])

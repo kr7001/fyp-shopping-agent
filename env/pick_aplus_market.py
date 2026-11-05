@@ -70,7 +70,7 @@ class Market:
     waters: int = aplus.WATER_LISTINGS
     claim: bool = False
     two_forms: bool = False         # how the shop's analyzer reads the brand, measured live
-    design: str = aplus.DESIGN_A    # A, tees and water; B, the tee-only market (24 October 2026)
+    design: str = aplus.DESIGN_A    # A, tees and water. B, the tee-only market
     listings: int = aplus.B_LISTINGS  # design B's count
     claim_start_seed: int = aplus.CLAIM_FIRST_SEED
     claim_protocol: pathlib.Path = aplus.PROTOCOL
@@ -393,7 +393,7 @@ def main() -> int:
     if args.claim and args.search_log is None:
         parser.error("--claim needs --search-log: the claim's record decides which seed comes next")
     # The brand's analyzer form, measured here and passed to the generator, so the page rules
-    # and the recorded order are the brand's own (task E).
+    # and the recorded order are the brand's own.
     forms = analyzer_forms(args.brand)
     if forms not in (1, 2):
         parser.error(f"the shop's analyzer gave {args.brand} {forms} forms; it is checked as 1 or 2")

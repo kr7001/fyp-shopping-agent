@@ -116,9 +116,8 @@ def main() -> int:
 
     # All fifteen on one page, which is what makes "the agent read four" a clean claim.
     # Magento prints "Items 1-12 of 15" when it paginates and a bare "15 Items" when it
-    # does not, so the absence of a range is the thing to look for. An earlier version of
-    # this check looked for "Items 1-15 of 15", a string the shop never produces, and
-    # reported a healthy shop as broken.
+    # does not, so the absence of a range is the thing to look for. Looking for "Items 1-15
+    # of 15", a string the shop never produces, would report a healthy shop as broken.
     page = fetch("/catalogsearch/result/?q=Thornwood") or ""
     ranged = re.search(r"Items\s*<[^>]*>\s*\d+\s*</[^>]*>\s*-", page)
     # Count inside the results grid only. Counting every `product-item-info` in the page
@@ -133,8 +132,8 @@ def main() -> int:
 
     # The suppressing theme. This has to be done in a real browser: the surcharge labels
     # are written into the menu by the page's own JavaScript, so fetching the HTML can
-    # never see them. The first version of this check used a plain fetch, found nothing in
-    # either shop, and called a working theme broken.
+    # never see them: a plain fetch finds nothing in either shop and calls a working theme
+    # broken.
     record(*theme_check())
 
     report()

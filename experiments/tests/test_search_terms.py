@@ -1,6 +1,6 @@
-"""The live check's search-terms reading and its cache flush (24 October 2026, the verifier's
-logic audit at cd49128): the brand's search_query rows, which the claim chain writes to its
-manifest before and after each invocation, and the flush before a snapshot is taken or compared.
+"""The live check's search-terms reading and its cache flush (24 October 2026): the brand's
+search_query rows, which the claim chain writes to its manifest before and after each
+invocation, and the flush before a snapshot is taken or compared.
 No shop is touched: the database call and the flush are mocked."""
 import contextlib
 import io

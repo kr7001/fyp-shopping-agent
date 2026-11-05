@@ -64,11 +64,10 @@ def draw_suffix(payload: dict) -> str:
 
 def arm_name(payload: dict) -> str:
     # The box is an arm of its own, and the box read by the model parser another, as
-    # `suite.arm_of` names them. Until 22 October 2026 a box batch fell through to the last
-    # line and was called "unmodified", which the site's batch table then showed for
-    # 20261014T213118 (verifier finding). A payload without `arm` predates 20 October 2026
-    # and is named from its flags; without `parser` it was read by the rules. No box batch
-    # holds a water question, so no figure of the water study moves.
+    # `suite.arm_of` names them, so a box batch never falls through to the last line and is
+    # called "unmodified". A payload without `arm` predates 20 October 2026 and is named from
+    # its flags. Without `parser` it was read by the rules. No box batch holds a water
+    # question, so no figure of the water study depends on this.
     if payload.get("box") or payload.get("box_exhaust"):
         base = payload.get("arm") or suite.arm_of(argparse.Namespace(
             box=bool(payload.get("box")), box_exhaust=bool(payload.get("box_exhaust")),
@@ -81,13 +80,12 @@ def arm_name(payload: dict) -> str:
         # first screen without enumerating, which is a different policy, not a repeat.
         version = payload.get("targeting_version", 1)
         base = "targeting" if policy == "off" else f"targeting+{policy}"
-        # Runs on different markets are different measurements, not more repeats of one.
-        # This is the fifth time a figure has come out wrong from pooling things that only
-        # looked alike, so the market is now part of the arm's identity rather than an
-        # assumption that every suite used the development fixture.
+        # Runs on different markets are different measurements, not more repeats of one,
+        # so the market is part of the arm's identity rather than an assumption that every
+        # suite used the development fixture.
         return f"{base} v{version}"
     if payload.get("exhaustive"):
-        # The product wording is an arm of its own (22 October 2026); no water batch has it.
+        # The product wording is an arm of its own. No water batch has it.
         return "exhaustive-product" if payload.get("exhaustive_wording") == "product" else "exhaustive"
     if payload.get("confidence", "off") != "off":
         return f"confidence:{payload['confidence']}"
@@ -119,10 +117,10 @@ def replayed_gate(arms: dict[str, list[dict]]) -> list[dict]:
     out = []
     for suite_path in sorted(RESULTS.glob("*/suite.json")):
         payload = json.loads(suite_path.read_text())
-        # Only the unmodified arm, and only on the draw tasks_scaled.json describes. This
-        # used to test whether today's scorer reproduced the stored verdict, as a proxy for
-        # "same catalogue". The proxy let a superseded-draw run through whenever its answer
-        # happened to be wrong under both answer keys, which one was.
+        # Only the unmodified arm, and only on the draw tasks_scaled.json describes, by its
+        # draw id. Whether today's scorer reproduces the stored verdict is no proxy for "same
+        # catalogue": it lets a superseded-draw run through whenever its answer happens to be
+        # wrong under both answer keys, which one was.
         if arm_name(payload) != "unmodified" or payload.get("draw") != DEV_DRAW:
             continue
         for row in payload["rows"]:
@@ -178,11 +176,11 @@ def main() -> int:
     print("that refuses is not rewarded for the refusals nor punished for them here.")
 
     # The gate is a replay of baseline runs, so its cost and actions are those runs' own
-    # figures. It once read cheaper than the unmodified row because the replay and the
-    # baseline were drawn from different sets of runs. Presenting that as a saving would be
-    # wrong: the gate issues no browser action, so it cannot change cost at all. Paired
-    # against exactly the runs it replays, the cost is identical by construction and the
-    # verdicts are the only thing that moves.
+    # figures. With the replay and the baseline drawn from different sets of runs it can
+    # read cheaper than the unmodified row, and presenting that as a saving would be wrong:
+    # the gate issues no browser action, so it cannot change cost at all. Paired against
+    # exactly the runs it replays, the cost is identical by construction and the verdicts
+    # are the only thing that moves.
     gate = arms.get("gate") or []
     if gate:
         keys = {(r["task"], r["repeat"], round(r["cost_usd"], 6)) for r in gate}

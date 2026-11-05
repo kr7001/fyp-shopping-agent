@@ -2,7 +2,7 @@
 
 The agreement test compares numbers as numbers and leaves the rules' silent default out, a
 call that fails is recorded on its row and the probe goes on, and the result file is written
-whatever stops the loop, with the commit that made it (verifier findings, 14 October 2026).
+whatever stops the loop, with the commit that made it.
 The paraphrase probe, `--questions` (20 October 2026): the file holds the audit's thirty
 questions unchanged, the dry run prints the rules' half and the estimate and sends nothing,
 the same twice, the tiers are the census table's, a faked model's planted replies reach the
@@ -41,9 +41,9 @@ GO = f"Go to {RESULTS_URL} . "
 
 class Agree(unittest.TestCase):
     def setUp(self):
-        # "at most", which the rules read as <= 20 as the models below state it. Until form
-        # v9 (20 Oct 2026) this said "under $20", which is now the strict < 20, and every
-        # model here would disagree on the operator whatever else these tests vary.
+        # "at most", which the rules read as <= 20 as the models below state it. "under $20"
+        # is the strict < 20 (form v9), on which every model here would disagree on the
+        # operator whatever else these tests vary.
         self.rules = form.from_rules(GO + "Is there any seller at most $20 for size M?")
         self.assertEqual(self.rules.filter("price"), Filter("price", "<=", 20.0))
         # Size and the limit came from the words. Availability is the silent default.
@@ -57,7 +57,7 @@ class Agree(unittest.TestCase):
         return Form(filters=tuple(filters), source="model", **fields)
 
     def test_numbers_compare_as_numbers(self):
-        # The rules hold 20.0; a model says 20, or "20". Until 14 Oct 2026 these differed.
+        # The rules hold 20.0, a model says 20, or "20". All three are the same number.
         for value in (20, "20", 20.0):
             with self.subTest(value=value):
                 self.assertTrue(parse_probe.agree(
@@ -77,7 +77,8 @@ class Agree(unittest.TestCase):
 
     def test_a_filter_only_the_model_states_is_still_a_difference(self):
         # The stored census parse has five of these, a brand as a title filter among them.
-        # They are what the DIFF lines are read for, so the fix must not hide them.
+        # They are what the DIFF lines are read for, so leaving a silent default out must not
+        # hide them.
         invented = self.model(Filter("price", "<=", 20), Filter("size", "=", "M"),
                               Filter("title", "contains", "Thornwood"))
         self.assertFalse(parse_probe.agree(self.rules, invented))
@@ -107,7 +108,7 @@ class Agree(unittest.TestCase):
         self.assertEqual(parse_probe.comparable(("Seller A", "Seller B")), frozenset({"Seller A", "Seller B"}))
 
     def test_an_in_filters_values_compare_as_a_set(self):
-        # Verifier finding, 14 Oct 2026: seller in (B, C) and (C, B) were different filters.
+        # seller in (B, C) and (C, B) are the same filter.
         page_ = synthetic_page([31.40, 12.25, 19.50])
         rules = form.from_rules(GO + "Is Seller B cheaper than Seller C for size M?", page_)
         self.assertEqual(rules.filter("seller"), Filter("seller", "in", ("Seller B", "Seller C")))
@@ -219,12 +220,11 @@ class Probe(unittest.TestCase):
 
     def test_a_failed_call_is_recorded_and_the_probe_goes_on(self):
         # The last is what `reply.json()` raises for a 200 whose body is not JSON. It is a
-        # ValueError too, and until 14 Oct 2026 was recorded as a model problem (verifier).
+        # ValueError too, and is not a model problem.
         # A fresh folder for each fault: the probe names its file to the second
         # (parse_probe.py, `stamp`), so two subtests within one second in one folder would
-        # leave one file for two runs and the count below would fail by timing (verifier
-        # finding, 20 Oct 2026). A real probe is one invocation, minutes long, so the
-        # naming is not a fault there.
+        # leave one file for two runs and the count below would fail by timing. A real
+        # probe is one invocation, minutes long, so the naming is not a fault there.
         for fault in (requests.exceptions.HTTPError("429 Too Many Requests"),
                       requests.exceptions.Timeout("read timed out"),
                       requests.exceptions.ConnectionError("refused"),
@@ -298,8 +298,8 @@ class Probe(unittest.TestCase):
         return result
 
     def test_a_reply_without_a_completion_is_a_failed_call_that_keeps_its_charge(self):
-        # Verifier finding, 14 Oct 2026: a 200 whose body has no `choices` raised KeyError
-        # out of the loop, which lost the row and whatever it had been charged.
+        # A 200 whose body has no `choices`, raising KeyError out of the loop, would lose the
+        # row and whatever it had been charged.
         for body, cost in (({"usage": {"cost": 0.003}, "error": {"message": "overloaded"}}, 0.003),
                            ({"choices": []}, None),
                            ({"choices": [{"message": {}}], "usage": {"cost": 0.003}}, 0.003),
@@ -354,8 +354,8 @@ class Probe(unittest.TestCase):
         self.assertIn("warning", err.getvalue())
 
     def test_the_rules_see_the_page_the_question_names(self):
-        # Until 14 Oct 2026 the probe parsed without the page, so the third question, which
-        # names two of its sellers, fell to the survey fallback instead of a lookup.
+        # The probe parses with the page, so the third question, which names two of its
+        # sellers, is a lookup rather than the survey fallback.
         _, payload, _ = self.run_main(lambda key, model, prompt: (reply_for(prompt), 0.001, None, None))
         rules = payload["rows"][2]["rules"]
         self.assertEqual((rules["quantifier"], rules["kind"]), ("lookup", "named_lookup"))
@@ -383,7 +383,7 @@ class CensusUnchanged(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# Reworded questions, `--questions` (20 October 2026)
+# Reworded questions, `--questions`
 
 PARAPHRASES = paths.TASKS / "paraphrases_v1.json"
 # The batch whose stored page the audit judged the paraphrases on.
@@ -602,8 +602,8 @@ class QuestionsDryRun(unittest.TestCase):
         self.assertRegex(first, r"\n  same on every field +\d+ of 30\n")
         lines = first.splitlines()
         self.assertEqual(lines[-2], f"30 calls to {census_model}, text only, no browser. Nothing was sent.")
-        # Since 22 October 2026 the census's charge per call is scaled by how much longer
-        # prompt version 2 is than the version 1 prompts the census sent.
+        # The census's charge per call is scaled by how much longer prompt version 2 is than
+        # the version 1 prompts the census sent.
         _, entries = parse_probe.load_questions(PARAPHRASES)
         scale = parse_probe.prompt_scale([form.prompt(entry["question"]) for entry in entries])
         self.assertGreater(scale, 4)
@@ -620,7 +620,7 @@ class QuestionsDryRun(unittest.TestCase):
 
 # What the faked model does wrong, by paraphrase: every other one answers with the expected
 # form itself, so it reaches every tier. 8 writes its size as a word, which normalisation
-# puts right (22 October 2026): the form the box would use reaches every tier, the form as
+# puts right: the form the box would use reaches every tier, the form as
 # written all but every field.
 PLANTED = {2: "population", 3: "objective", 4: "quantifier", 5: "a filter", 6: "no form",
            7: "a failed call", 8: "a size word"}
@@ -633,7 +633,7 @@ def planted_reply(entry: dict, page_: page.Page) -> str:
                                             "k", "reading", "unknowns", "evidence")}
     fault = PLANTED.get(entry["id"])
     if fault == "population":
-        # "reviews" rather than "listing" since 22 October 2026: the probe measures the form
+        # "reviews" rather than "listing": the probe measures the form
         # normalised as the box would use it, and a "listing" with no product page named is
         # put back to the results page (`normalise.normalise`, `ModelPath` in
         # test_model_parser.py), so it would plant nothing.
@@ -761,7 +761,7 @@ class QuestionsFakedModel(unittest.TestCase):
                          advertised=1.0)])
         self.assertEqual(parse_probe.limits(paths.TASKS / "paraphrases_v9.json", titled), [])
         self.assertRegex(p["commit"], r"^[0-9a-f]{40}$")
-        # Which prompt and which normalisation made the model's forms (22 October 2026).
+        # Which prompt and which normalisation made the model's forms.
         self.assertEqual((p["prompt_version"], p["normalise_version"]),
                          (form.PROMPT_VERSION, normalise.VERSION))
 

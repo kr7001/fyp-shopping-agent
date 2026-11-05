@@ -51,7 +51,7 @@ VERSION = 1
 # Every agent trial of the four primary comparisons, as the script-fetch audit listed them.
 # The folder is named here, not in paths.py: the Browser Use cohorts pin paths.py byte for
 # byte as agent-facing code (test_browser_use_fresh, test_browser_use_fresh_continuation), and
-# a new line there failed both on 5 November 2026.
+# a new line there fails both.
 TRIALS = paths.EXPERIMENTS / "artifacts" / "script-fetch-audit-4-nov.json"
 
 # The open-everything arm is named "open everything" in claim 1 and "open everything

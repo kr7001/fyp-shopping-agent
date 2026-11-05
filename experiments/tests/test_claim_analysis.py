@@ -4,7 +4,7 @@ before the claim run.
 The statistics are checked on examples small enough to work out by hand, or against a
 published worked example; the analysis on synthetic arms whose every figure is computed in
 the comments here; and, where the raw logs are on this machine, on the Thornwood development
-batches against cells 1 and 5, where it must reproduce the verifier's in-sample figures.
+batches against cells 1 and 5, where it must reproduce the audit's in-sample figures.
 
 Every rule has a case where it must fire and one where it must stay quiet, and the faults
 the tests are said to catch were planted and seen to fail them (LESSONS 24 and 31). Nothing
@@ -50,7 +50,7 @@ WRONG = {TP: "Size M starts at $18.11.", CB: "5 listings have size M in stock.",
 # ---------------------------------------------------------------------------
 # 1. The stratified exact rank test
 
-# The verifier's function as its audit wrote it (audit/tools/strat_rank.py, 20 October 2026),
+# The audit's own implementation of the test (audit/tools/strat_rank.py, 20 October 2026),
 # kept here verbatim so the port can be held to it.
 AUDIT_STRAT_RANK = '''
 import itertools, collections
@@ -804,7 +804,7 @@ class InSampleThornwood(unittest.TestCase):
     """The development batches as the block (20261014T213118 under the menu reading,
     20261014T222007 under buyable), cell 1 as shipped and cell 5 as open everything
     (compare_cells.CELLS). In-sample, no claim (LESSONS 19): this checks the analysis, not
-    the box. The verifier's audit found the block against cell 5 at p = 0.00025 on listings
+    the box. The audit found the block against cell 5 at p = 0.00025 on listings
     opened and p < 1e-5 on cost."""
 
     @classmethod

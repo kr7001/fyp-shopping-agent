@@ -50,15 +50,14 @@ GATED_UA = page_module.GATED_UA
 # The reveal waits 60 ms after a size changes (LESSONS 13); the check waits far longer.
 REVEAL_WAIT_MS = 600
 # A size's label on the ordinary theme: the size, then the surcharge against the price box.
-# The size may hold spaces since 22 October 2026, for a pack such as "2 x 9.5L +$32.50": the
-# first version took the label up to its first space, so it read that one as a pack with no
-# surcharge. A tee's label reads as it did.
+# The size may hold spaces, for a pack such as "2 x 9.5L +$32.50", so the label is not cut at
+# its first space, which would read that one as a pack with no surcharge.
 LABEL = re.compile(r"^(?P<size>.+?)(?:\s+(?P<sign>[+-])\$(?P<amount>\d+\.\d\d))?$")
 SURCHARGE = re.compile(r"[+-]\$\d")
 # The page's own configuration blocks. Magento's loader removes them from the document once
 # it has applied them, so they are read from the HTML the server sent, never from the DOM
-# a browser holds afterwards: the first version of this check read the DOM, found no price
-# table and no leak on either theme, and passed a blind check (20 October 2026).
+# a browser holds afterwards: read from the DOM, the check would find no price table and no
+# leak on either theme, and pass blind.
 INIT = re.compile(r'<script type="text/x-magento-init">(.*?)</script>', re.S)
 
 
@@ -232,7 +231,7 @@ def check_listing(browser, listing: dict) -> tuple[list[str], dict]:
     menu = plain_menu(menu_options(page), spconfig_in(sent), base or 0.0)
     plain_text = page.inner_text("body") + "\n" + sent
     # The text each theme renders, for checks on what a page says beyond its menu and prices
-    # (check_aplus_market.label_lines, 24 October 2026).
+    # (check_aplus_market.label_lines).
     seen["texts"] = {"plain": page.inner_text("body")}
     plain.close()
     problems += menu_problems(menu, listing, "plain")

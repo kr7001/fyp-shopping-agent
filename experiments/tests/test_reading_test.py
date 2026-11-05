@@ -252,8 +252,8 @@ class FromMarket(Market):
         # it writes them into a claim market's task file.
         reworded = aplus_tasks.reworded(templates, standin(), "Larchmere", self.pilot["_instance"]["exists_limit"])
         # The generator's tasks name paraphrases_v2.json as their source, so the stand-in is
-        # written under that name here: a task from another file is never an entry's (24
-        # October 2026, `parse_probe.held_task`).
+        # written under that name here: a task from another file is never an entry's
+        # (`parse_probe.held_task`).
         claim = self.write("tasks_claim.json", {**self.pilot, "tasks": templates + reworded})
         spec, entries, _ = self.load(task_file=claim, name="paraphrases_v2.json")
         self.assertEqual(spec["held_to_tasks"], 4)
