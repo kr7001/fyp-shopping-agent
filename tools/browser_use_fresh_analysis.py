@@ -3,7 +3,7 @@
 
 It refuses to run until browser_use_fresh_review.py has validated a complete review of every
 row on the sheet and written its receipt, and only then opens the private key. It computes what
-notes/fresh-market-2-nov/analysis-plan-A.md pre-registers, with amendments 1 to 4 applied:
+fresh-market-protocol/analysis-plan-A.md pre-registers, with amendments 1 to 4 applied:
 
 - each of the 32 slots' disposition, from whichever stage ran it (attempts 1 to 4): answered,
   failed, timeout, closed by the block, technical void or not started. Attempt 1's voids are the

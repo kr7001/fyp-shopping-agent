@@ -157,7 +157,10 @@ class FreshProtocol(unittest.TestCase):
                          (FRESH, "frozen", "tasks_tee_fresh_2_nov.json"))
         self.assertEqual(self.fresh["budget"]["cap_usd"], 2.0)
         for relative, sha in self.fresh["input_sha256"].items():
-            self.assertEqual(analysis.digest(paths.REPO / relative), sha, relative)
+            # The frozen config cites the protocol and plan B at their original folder. They have
+            # since moved to fresh-market-protocol/, with the same bytes.
+            moved = relative.replace("notes/fresh-market-2-nov/", "fresh-market-protocol/")
+            self.assertEqual(analysis.digest(paths.REPO / moved), sha, relative)
         self.assertEqual(analysis.protocol_at(paths.TASKS / "matched_briefing_2_nov.json")["study_id"], FRESH)
 
 

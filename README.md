@@ -81,8 +81,8 @@ Browser Use on the fresh market Rookmere had one test, fixed before that market 
 | --- | --- | --- |
 | Matched briefing, Quenby, 16 trials | Full block 8 of 8 correct. openJiuwen given the same facts without the plan 7 of 8, a difference the pre-set rule calls no observable difference. The block cost more in every pair. Final report, Section 8.4 | [protocol](docs/content/matched-briefing-29-oct-protocol.md) |
 | Browser Use transfer, Quenby | Browser Use with the block 6 of 8, then 14 of 16 in two added repeats. Browser Use alone 3 of 8, then 7 of 16. Final report, Section 8.5 | [protocol](docs/content/browser-use-transfer-31-oct-protocol.md), [repeats](docs/content/browser-use-repeat-1-nov-protocol.md) |
-| Matched briefing, fresh market Rookmere, 16 trials | Complete, graded blind. Full block 5 of 8 correct, one miss a timeout. The factual briefing 7 of 8, including one count trial run again on the student's ruling after the study's own budget stop ended its first start, and 6 of 7 without it. On the three cheapest M the briefing's lead of two is beyond the pre-set margin. In the pairs both arms got right the block saved little. Final report, Section 8.4 | [protocol](notes/fresh-market-2-nov/protocol.md), [plan B](notes/fresh-market-2-nov/analysis-plan-B.md) |
-| Browser Use transfer, fresh market Rookmere | Complete, graded blind. Browser Use with the block 14 of 15 correct, alone 8 of 14, *p* = .014. Three of 32 planned slots were technical voids. One sensitivity analysis gave *p* = .083. Final report, Section 8.5 | [protocol](notes/fresh-market-2-nov/protocol.md), [plan A](notes/fresh-market-2-nov/analysis-plan-A.md) |
+| Matched briefing, fresh market Rookmere, 16 trials | Complete, graded blind. Full block 5 of 8 correct, one miss a timeout. The factual briefing 7 of 8, including one count trial run again on the student's ruling after the study's own budget stop ended its first start, and 6 of 7 without it. On the three cheapest M the briefing's lead of two is beyond the pre-set margin. In the pairs both arms got right the block saved little. Final report, Section 8.4 | [protocol](fresh-market-protocol/protocol.md), [plan B](fresh-market-protocol/analysis-plan-B.md) |
+| Browser Use transfer, fresh market Rookmere | Complete, graded blind. Browser Use with the block 14 of 15 correct, alone 8 of 14, *p* = .014. Three of 32 planned slots were technical voids. One sensitivity analysis gave *p* = .083. Final report, Section 8.5 | [protocol](fresh-market-protocol/protocol.md), [plan A](fresh-market-protocol/analysis-plan-A.md) |
 
 How to reproduce:
 
@@ -150,8 +150,8 @@ The supplementary studies have their own dated protocols, each frozen before its
   [repeat](docs/content/browser-use-repeat-1-nov-protocol.md) and
   [repeat recovery](docs/content/browser-use-repeat-recovery-1-nov-protocol.md) protocols: the
   unchanged block in front of a second browser agent.
-- [Fresh market, 2 November](notes/fresh-market-2-nov/protocol.md), with analysis plans
-  [A](notes/fresh-market-2-nov/analysis-plan-A.md) and [B](notes/fresh-market-2-nov/analysis-plan-B.md):
+- [Fresh market](fresh-market-protocol/protocol.md), with analysis plans
+  [A](fresh-market-protocol/analysis-plan-A.md) and [B](fresh-market-protocol/analysis-plan-B.md):
   both supplementary studies repeated unchanged on a newly drawn market, Rookmere (seed 1002).
 
 The second experiment is a constrained stress test: it combines hidden variant prices with
@@ -175,17 +175,17 @@ experiments/artifacts/ Sanitized measurements for reproducing primary results
 env/                   Magento fixtures, generators, seeding and live checks
 docs/user-guide.md     Setup, execution and reproduction guide
 docs/content/          Frozen protocols and scoring rules
-notes/fresh-market-2-nov/  Frozen protocol and analysis plans of the 2 November studies
+fresh-market-protocol/  Frozen protocol and analysis plans of the fresh-market studies
 tools/                 Blind review, guarded launchers and analyses of the later studies
 tools/workbench/       Optional Claude Code plugin that gated paid runs
 LICENSE                Apache License 2.0 for the project's own code
 ```
 
-`notes/fresh-market-2-nov/` holds the frozen protocol and two analysis plans of the 2 November
-studies, with a short README. The fresh market's seed-search record cites the protocol by this
-path with its SHA-256, the matched-briefing task file cites the protocol and plan B the same
-way, and the review tool `tools/browser_use_fresh_review.py` pins the protocol and plan A, so
-the files stay where they were committed before the market was drawn. Working notes, the
+`fresh-market-protocol/` holds the frozen protocol and two analysis plans of the fresh-market
+studies, with a short README. They were committed under `notes/fresh-market-2-nov/` before the
+market was drawn and moved here afterwards with the same bytes. The market's seed-search record,
+the matched-briefing task file and the run records still cite that original path, with SHA-256
+hashes that the moved files match, and `git log --follow` shows the move. Working notes, the
 report source and the assistants' files stay local.
 
 ## Reproducing and checking the work

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Write the launch inputs of the two fresh-market studies of 2 November 2026. Free.
 
-notes/fresh-market-2-nov/protocol.md fixed both studies before the market was drawn. This
+fresh-market-protocol/protocol.md fixed both studies before the market was drawn. This
 writes, from the repository and nothing typed, what the two guarded launchers read:
 
     protocol    experiments/tasks/matched_briefing_2_nov.json, Study B's analysis file: the
@@ -108,11 +108,11 @@ def b_protocol():
     charges = [payload["rows"][0]["cost_usd"] for payload in slots]
     fresh = market()
     inputs = [TASKS, READINGS, FIXTURE, SEARCH, "docs/content/claim2-reading-rules.md",
-              "notes/fresh-market-2-nov/protocol.md", "notes/fresh-market-2-nov/analysis-plan-B.md"]
+              "fresh-market-protocol/protocol.md", "fresh-market-protocol/analysis-plan-B.md"]
     new = {**old,
            "study_id": B_STUDY,
-           "protocol": "notes/fresh-market-2-nov/protocol.md",
-           "analysis_plan": "notes/fresh-market-2-nov/analysis-plan-B.md",
+           "protocol": "fresh-market-protocol/protocol.md",
+           "analysis_plan": "fresh-market-protocol/analysis-plan-B.md",
            "design_of": {"study_id": old["study_id"], "file": B_OLD, "sha256": sha(ROOT / B_OLD)},
            "tasks_file": Path(TASKS).name,
            "market": fresh,
@@ -256,8 +256,8 @@ def config_a(commit, fresh):
               "legacy_unsettled_reserve_usd": guard_a.LEGACY_UNSETTLED_USD, "deadline": DEADLINE,
               "study_budget_id": guard_a.FRESH_BUDGET, "attempt": 1,
               "questions_file": str(NOTES / "study-a-runtime-questions.json"), "questions": questions,
-              "repeats": [1, 2], "protocol_file": "notes/fresh-market-2-nov/protocol.md",
-              "analysis_plan_file": "notes/fresh-market-2-nov/analysis-plan-A.md",
+              "repeats": [1, 2], "protocol_file": "fresh-market-protocol/protocol.md",
+              "analysis_plan_file": "fresh-market-protocol/analysis-plan-A.md",
               "reference_config_file": "notes/fresh-market-2-nov/reference/attempt2-command.json",
               "preflight_receipt": "notes/fresh-market-2-nov/study-a-preflight.json",
               "tasks_file": TASKS, "market_files": [FIXTURE, SEARCH, READINGS], "market": fresh,
@@ -304,8 +304,8 @@ def config_b(commit, fresh):
     build = chrome_build("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
     bound = set(old["hashes"]) | {B_PROTOCOL, TASKS, READINGS, FIXTURE, SEARCH, APPROVAL,
                                   "experiments/runners/matched_briefing_study.py",
-                                  "notes/fresh-market-2-nov/protocol.md",
-                                  "notes/fresh-market-2-nov/analysis-plan-B.md",
+                                  "fresh-market-protocol/protocol.md",
+                                  "fresh-market-protocol/analysis-plan-B.md",
                                   "tools/guarded_matched_briefing.py", "tools/guarded_replication.py",
                                   "experiments/analysis/matched_briefing_analysis.py"}
     stem = "experiments/results/matched-briefing-fresh-2-nov"

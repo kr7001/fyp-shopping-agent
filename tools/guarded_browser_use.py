@@ -34,7 +34,7 @@ LEGACY_UNSETTLED_USD = 0.2117632
 REPEAT_ATTEMPT1_SHA256 = "2a1b0ec9f9a58e047fed80680b03252a30a2c8d2f9594381f9c32257e762d700"
 REPEAT_CARRYOVER_USD = 0.28053916066
 REFERENCE_CONFIG_SHA256 = "404e45a0f7e029047a5a35394fbcbe79354bb53a9a13b2972a83478bc970e4ed"
-# The fresh held-out market of 2 November 2026 (notes/fresh-market-2-nov/protocol.md and
+# The fresh held-out market of 2 November 2026 (fresh-market-protocol/protocol.md and
 # analysis-plan-A.md): the repeats 2-3 cohort's condition on a newly drawn market, as one
 # attempt with its own budget, cap and deadline. Only the market and its questions, the repeat
 # numbers, the study identity, the budget and the paths change; everything the agent receives

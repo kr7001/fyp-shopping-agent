@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Blind review and analysis of Study B, the matched briefing on the fresh market, offline.
 
-Study B (notes/fresh-market-2-nov/analysis-plan-B.md) runs 16 openJiuwen trials on Rookmere: the
+Study B (fresh-market-protocol/analysis-plan-B.md) runs 16 openJiuwen trials on Rookmere: the
 full block against a matched factual briefing, four tasks, two repeats. Under amendment 4
 (2 November 2026) it may have up to three stages, each with its own manifest beside the others:
 the primary run (`batch|` lines, slots 1 to 15, then a budget stop during slot 16), a

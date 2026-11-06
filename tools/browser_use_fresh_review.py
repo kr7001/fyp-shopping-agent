@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Blind review of Study A, Browser Use on the fresh market, prepared and validated offline.
 
-Study A (notes/fresh-market-2-nov/analysis-plan-A.md) runs 32 Browser Use trials on Rookmere,
+Study A (fresh-market-protocol/analysis-plan-A.md) runs 32 Browser Use trials on Rookmere,
 seed 1002: 8 questions, 2 arms, repeats 1 and 2. They ran in stages (amendments 3, 4 and 6,
 2 November 2026): attempt 1; attempt 2, its continuation; attempt 3, for any slot attempt 2 left
 never started; attempt 4, for any slot attempt 3 left never started; and one timeout rerun of each
@@ -158,8 +158,8 @@ STUDY_A = Study(
         "experiments/tasks/readings_tee_fresh_2_nov.json": "002b29f994dae1c4bab2bf2324a3bafa552a584939391eb3ef85f917899c361a",
         "env/fixtures/tee_fresh_2_nov.json": "48222402dd41b95cf31297996b685e3b3e7f5953c305ba14190f8dcf6f2b0712",
         "env/manifests/tee_fresh_2_nov-search.json": "5aa31e86f992bbc847ec7c2b59478d584726eaa196d8c41c1af1f095900de7a1",
-        "notes/fresh-market-2-nov/protocol.md": "d19e2675ebd0edbcffc42689cb6da4f3132993305a2356066390f00646e8b746",
-        "notes/fresh-market-2-nov/analysis-plan-A.md": "c0f3703672c3d0d7d4f7785426d65042755e92509e6401873a93d7ed8766852b",
+        "fresh-market-protocol/protocol.md": "d19e2675ebd0edbcffc42689cb6da4f3132993305a2356066390f00646e8b746",
+        "fresh-market-protocol/analysis-plan-A.md": "c0f3703672c3d0d7d4f7785426d65042755e92509e6401873a93d7ed8766852b",
     },
     rules_sha256="9433423f14f4de200da4b0376e84839c57751af93b98c9f8e599b35a6d274bb4",
     sheet="study-a-fresh-2-nov.sheet.csv",

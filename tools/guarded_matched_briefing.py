@@ -17,7 +17,7 @@ LATEST = dt.datetime.fromisoformat('2026-10-30T12:00:00+08:00')
 CAP = 10.0
 # Every study this launcher may run, by its id: the latest deadline, the cap and the smallest
 # in-flight reserve its design allows. The 29 October study keeps its own values. The fresh
-# market's (notes/fresh-market-2-nov/protocol.md, 2 November 2026) has a USD 2 cap, so the
+# market's (fresh-market-protocol/protocol.md, 2 November 2026) has a USD 2 cap, so the
 # replication guard's USD 1 reserve would stop it at USD 1; its USD 0.50 reserve is more than
 # twice the 29 October study's largest trial charge, USD 0.194.
 FRESH = 'matched-briefing-fresh-2026-11-02'

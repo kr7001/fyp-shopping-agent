@@ -76,7 +76,9 @@ class Market(unittest.TestCase):
 
     def test_drawn_from_the_protocols_stream(self):
         search = json.loads((ROOT / "env/manifests/tee_fresh_2_nov-search.json").read_text())
-        protocol = ROOT / "notes/fresh-market-2-nov/protocol.md"
+        # The search record cites the protocol at the path it had when it was frozen. The file has
+        # since moved to fresh-market-protocol/, with the same bytes.
+        protocol = ROOT / "fresh-market-protocol/protocol.md"
         self.assertEqual(search["claim_selection"], {"start_seed": 1002, "protocol": "notes/fresh-market-2-nov/protocol.md",
                                                      "protocol_sha256": guard.sha(protocol)})
         self.assertEqual([t["seed"] for t in search["tried"]][0], 1002)
