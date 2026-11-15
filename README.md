@@ -2,9 +2,9 @@
 
 **A question-aware retrieval policy for shopping facts hidden behind product options.**
 
-Final Year Project · NUS Data Science and Analytics · August–November 2026
+Final Year Project | NUS Data Science and Analytics | August-November 2026
 
-**Student:** Lee Kai Rong · **Supervisor:** A/Prof. Markus Kirchberg
+**Student:** Lee Kai Rong | **Supervisor:** A/Prof. Markus Kirchberg
 
 A product card may advertise “from $10” while the requested size costs $18 or is sold out.
 This project investigates that gap between the first observation and the information a
@@ -217,14 +217,9 @@ protect other clients automatically. See the [user guide](docs/user-guide.md#pai
 The frozen protocols, task definitions and recorded experiment artifacts support the research
 claims. Personal planning notes, meeting updates and intermediate drafts are kept locally.
 
-The student directs the research and is responsible for the submitted work. Claude Code assisted
-with much of the implementation, experiments and documentation. Codex assisted with review,
-report wording, blind-review tooling and repository maintenance. The student graded every
-human-scored answer blind. A classmate independently graded 62 of them with the same rubric and
-answer keys: all 32 answers where the student's grade and the automatic scorer disagreed, and
-30 agreements sampled at random, across Wexcombe and Quenby. The two readers agreed on all 62.
-This targeted check does not estimate reliability over all answers. AI assistance is not
-presented as independent human validation.
+The author directed the research, including the research questions, solution architecture and evaluation design, and is responsible for the submitted work and its claims. Claude Code (Anthropic) and Codex (OpenAI) were used as supporting tools under the author's direction. AI assistance included code implementation, data analysis, generating synthetic test wordings from task descriptions, report outlining and wording, figure generation, LaTeX conversion, review, blind-review tooling and repository maintenance. Final research decisions, methodological reasoning and interpretation remained the author's responsibility.
+
+I graded every human-scored answer blind, and a classmate independently reviewed a sample of 62 and agreed with all of them. Human grading is reported separately from automatic scores and from AI-assisted audits after unblinding.
 
 The environment extension was proposed in
 [WebArena-Verified issue #60](https://github.com/ServiceNow/webarena-verified/issues/60) and
